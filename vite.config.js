@@ -7,7 +7,7 @@ export default defineConfig({
 
     lib: {
       formats: ["iife"],
-      entry: "./src/component.ts",
+      entry: "./src/component.tsx",
       name: "vim",
     },
 
