@@ -1,22 +1,12 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "./",
   build: {
     sourcemap: true,
-
     lib: {
-      formats: ["iife"],
+      formats: ["iife", "es"],
       entry: "./src/component.tsx",
-      name: "vim",
-    },
-
-    rollupOptions: {
-      output: {
-        entryFileNames: `[name].js`,
-        chunkFileNames: `[name].js`,
-        assetFileNames: `[name].[ext]`,
-      },
+      name: "component",
     },
     // Minify set to true will break the IIFE output
     minify: false,
