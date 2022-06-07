@@ -3,17 +3,14 @@ import { defineConfig } from "vite";
 export default defineConfig({
   base: "./",
   build: {
-    outDir: "./docs/dev",
-    //emptyOutDir: true,
-
     sourcemap: true,
-    /*
+
     lib: {
       formats: ["iife"],
-      entry: "./src/vimWebApp.ts",
+      entry: "./src/component.ts",
       name: "vim",
     },
-    */
+
     rollupOptions: {
       output: {
         entryFileNames: `[name].js`,

@@ -14,12 +14,13 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && npm run declarations",
     "bump-dev": "npm version prerelease --preid=dev",
     "publish-dev": "npm publish --tag=dev",
     "serve-dev": "http-server ./docs -o ./dev",
     "release-patch": "npm version patch && git push && npm publish",
     "release-dev": "npm run build && npm run bump-dev && git push && npm run publish-dev",
+    "declarations": "tsc --declaration --emitDeclarationOnly --outdir ./dist/types",
     "eslint": "eslint --ext .js,.ts src --fix"
   },
   "devDependencies": {
@@ -44,12 +45,9 @@
     "vite": "^2.8.4"
   },
   "dependencies": {
-    "dat.gui": "^0.7.9",
-    "deepmerge": "^4.2.2",
     "jsx": "^0.9.89",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "stats-js": "^1.0.1",
     "vim-webgl-viewer": "1.2.28"
   },
   "keywords": [

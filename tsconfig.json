@@ -1,12 +1,14 @@
 {
   "compilerOptions": {
-    "jsx": "react",
     "target": "esnext",
     "module": "esnext",
     "moduleResolution": "node",
     "strict": false,
+    "declaration": true,
     "sourceMap": true,
     "lib": ["esnext", "dom"],
-    "allowSyntheticDefaultImports": true
-  }
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react"
+  },
+  "files": ["src/component.tsx", "src/module.d.ts"]
 }
