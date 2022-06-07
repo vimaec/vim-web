@@ -7,7 +7,7 @@
   ],
   "main": "./dist/vim-webgl-component.iife.js",
   "types": "./dist/types/component.d.ts",
-  "module": "/dist/vim-webgl-component.es.js",
+  "module": "./dist/vim-webgl-component.es.js",
   "homepage": "https://github.com/vimaec/vim-webgl-component.git",
   "bugs": {
     "url": "https://github.com/vimaec/vim-webgl-component/issues"
