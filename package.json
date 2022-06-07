@@ -1,16 +1,16 @@
 {
-  "name": "vim-web-component",
+  "name": "vim-webgl-component",
   "version": "0.1.1-dev.0",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
-  "homepage": "https://github.com/vimaec/vim-webgl-app.git",
+  "homepage": "https://github.com/vimaec/vim-webgl-component.git",
   "bugs": {
-    "url": "https://github.com/vimaec/vim-webgl-app/issues"
+    "url": "https://github.com/vimaec/vim-webgl-component/issues"
   },
   "license": "MIT",
   "author": "VIM <hello@vimaec.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vimaec/vim-webgl-app.git"
+    "url": "https://github.com/vimaec/vim-webgl-component.git"
   },
   "scripts": {
     "dev": "vite",
