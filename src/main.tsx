@@ -1,7 +1,7 @@
 import * as VIM from 'vim-webgl-viewer/'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { createRoot, VimComponent} from './vimReact'
+import { createRoot, VimComponent} from './component'
 
 // Parse URL
 const params = new URLSearchParams(window.location.search)

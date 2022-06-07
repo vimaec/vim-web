@@ -1,7 +1,8 @@
+
 // eslint-disable-next-line no-use-before-define
 import React, { useEffect, useRef, useState } from 'react'
 import ReactDOM from 'react-dom'
-import urlLogo from './assets/logo.png'
+import logo from './assets/logo.png'
 import * as VIM from 'vim-webgl-viewer/'
 import './style.css'
 
@@ -84,7 +85,7 @@ function Logo () {
   return (
     <div className="vim-logo">
       <a href="https://vimaec.com">
-        <img src={urlLogo}></img>
+        <img src={logo}></img>
       </a>
     </div>
   )
