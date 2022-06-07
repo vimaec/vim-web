@@ -2,6 +2,11 @@
   "name": "vim-webgl-component",
   "version": "0.1.1-dev.2",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/vim-webgl-component.iife.js",
+  "types": "./dist/types/component.d.ts",
   "homepage": "https://github.com/vimaec/vim-webgl-component.git",
   "bugs": {
     "url": "https://github.com/vimaec/vim-webgl-component/issues"
