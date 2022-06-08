@@ -53,7 +53,8 @@
   "dependencies": {
     "jsx": "^0.9.89",
     "react": "^17.0.2",
-    "vim-webgl-viewer": "1.2.28"
+    "vim-webgl-viewer": "1.2.28",
+    "three": "^0.133.1"
   },
   "keywords": [
     "3d",
