@@ -1,7 +1,6 @@
 
 // eslint-disable-next-line no-use-before-define
-import React, { useEffect, useRef, useState } from 'react'
-import ReactDOM from 'react-dom'
+import React, { useEffect, useState } from 'react'
 import logo from './assets/logo.png'
 import * as VIM from 'vim-webgl-viewer/'
 import './style.css'

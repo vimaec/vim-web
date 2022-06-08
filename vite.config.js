@@ -10,5 +10,8 @@ export default defineConfig({
     },
     // Minify set to true will break the IIFE output
     minify: false,
+    rollupOptions: {
+      external: ["react", "jsx"],
+    },
   },
 });
