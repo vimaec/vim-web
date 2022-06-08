@@ -22,9 +22,7 @@ export function createRoot(){
 export function VimComponent (props: {onViewerReady: (vim: VIM.Viewer) => void}) {
   const [progress, setProgress] = useState<Progress>()
   const [table, setTable] = useState<Table>()
-  console.log('VimUI')
   useEffect(() => {
-    console.log('VimUI.useEffect')
     const viewer = new VIM.Viewer({ 
       canvas: {id : canvasId},
       groundPlane: {
