@@ -19,7 +19,18 @@ export function createRoot(){
   return r
 }
 
-export function VimComponent (props: {onViewerReady: (vim: VIM.Viewer) => void}) {
+export function VimComponent (props: {
+  onViewerReady: (vim: VIM.Viewer) => void
+  logo?: boolean,
+  inspector?: boolean,
+  menu?: boolean,
+  loading?: boolean
+}) {
+  const useLogo = props.logo === undefined ? true: props.logo
+  const useInspector = props.inspector === undefined ? true: props.inspector
+  const useMenu = props.menu === undefined ? true: props.menu
+  const useLoading = props.loading === undefined ? true: props.loading
+
   const [progress, setProgress] = useState<Progress>()
   const [table, setTable] = useState<Table>()
   useEffect(() => {
@@ -54,10 +65,10 @@ export function VimComponent (props: {onViewerReady: (vim: VIM.Viewer) => void})
   return (
     <>
       <canvas id={canvasId}> </canvas>
-      <Logo />
-      <LoadingBox progress={progress} />
-      <Inspector data={table}/>
-      <Menu/>
+      {useLogo ? <Logo /> : null}
+      {useLoading ? <LoadingBox progress={progress} /> : null}
+      {useInspector ? <Inspector data={table}/> : null}
+      {useMenu ? <Menu/> : null}
     </>
   )
 }
