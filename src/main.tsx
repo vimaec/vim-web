@@ -1,7 +1,7 @@
 import * as VIM from 'vim-webgl-viewer/'
 import React from 'react'
-import ReactDOM from 'react-dom'
-import { createRoot, VimComponent} from './component'
+import {createRoot} from 'react-dom/client'
+import { createContainer, VimComponent} from './component'
 
 // Parse URL
 const params = new URLSearchParams(window.location.search)
@@ -9,9 +9,11 @@ let url = params.has('vim')
   ? params.get('vim')
   : 'https://vim.azureedge.net/samples/residence.vim'
 
-ReactDOM.render(<VimComponent onViewerReady={onViewerReady}/>, createRoot())
+const viewer = new VIM.Viewer()
+const root = createRoot(createContainer(viewer))
+root.render(<VimComponent viewer = {viewer} onMount ={loadVim}/>)
 
-function onViewerReady(viewer : VIM.Viewer){
+function loadVim(){
   viewer.loadVim(
     url,
     {
@@ -19,3 +21,5 @@ function onViewerReady(viewer : VIM.Viewer){
     }
   )
 }
+
+globalThis.viewer = viewer

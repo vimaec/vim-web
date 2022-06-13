@@ -1,4 +1,12 @@
+.vim-component {
+  top: 0;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
 .vim-ui {
+  top: 0;
   position: fixed;
   width: 100%;
   height: 100%;
@@ -51,7 +59,36 @@ body {
   position: fixed;
   bottom: 0px;
   right: 0px;
-  width: 5%;
+  width: 64px;
+  pointer-events: all;
+}
+
+.vim-menu button:focus {
+  outline: 0;
+}
+
+.vim-menu .iconButton {
+  border-width: 0;
+  background-color: rgba(0, 0, 0, 0) !important;
+}
+
+.vim-menu .iconButton img {
+  width: 42px;
+  height: 42px;
+}
+
+.vim-menu .iconButton:hover img {
+  transform: scale(1.1);
+}
+
+.vim-menu .iconButton:active img {
+  transform: scale(1.1);
+  filter: brightness(1.5);
+}
+
+.vim-menu .iconButton:disabled img {
+  filter: brightness(0.5);
+  transform: scale(1);
 }
 
 /* BIM Explorer */
