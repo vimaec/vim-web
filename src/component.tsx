@@ -10,6 +10,9 @@ import iconFocus from './assets/icon_focus.png'
 import iconHome from './assets/icon_home.png'
 import iconHide from './assets/icon_hide.png'
 import iconShowAll from './assets/icon_showall.jpg'
+import iconSection from './assets/icon_cube.png'
+import iconCutSectionOn from './assets/icon_cut.png'
+import iconCutSectionOff from './assets/icon_lemon.png'
 
 import * as VIM from 'vim-webgl-viewer/'
 import './style.css'
@@ -47,8 +50,9 @@ export function VimComponent (props: {
   const useMenu = props.menu === undefined ? true: props.menu
   const useLoading = props.loading === undefined ? true: props.loading
   
+  const [section, setSection] = useState(false)
+
   useEffect(() => {
-    console.log('props.onMount()')
     props.onMount()
   }, [])
 
@@ -57,19 +61,21 @@ export function VimComponent (props: {
       {useLogo ? <Logo /> : null}
       {useLoading ? <LoadingBox viewer={props.viewer}/> : null}
       {useInspector ? <Inspector viewer={props.viewer}/> : null}
-      {useMenu ? <Menu viewer={props.viewer}/> : null}
+      {useMenu ? <Menu viewer={props.viewer} section={section} setSection={setSection}/> : null}
     </>
   )
 }
 
-function Menu(props: {viewer: VIM.Viewer}){
+function Menu(props: {viewer: VIM.Viewer, section: boolean, setSection: (value: boolean)=> void}){
   console.log('render menu')
 
   const viewer = props.viewer
   const [orbit, setObit] = linkState(viewer.camera, 'orbitMode')
   const [ortho, setOrtho] = linkState(viewer.camera, 'orthographic')
   const [selection, setSelection] = useState<VIM.Object>(viewer.selection.object)
-  
+  const [section, setSection] = useState(false)
+  const [sectionActive, setSectionActive] = useState(viewer.gizmoSection.active)
+  const [sectionShow, setSectionShow] = useState(viewer.gizmoSection.show)
   
   useEffect(() => {
   // Patch Selection Select
@@ -85,6 +91,8 @@ function Menu(props: {viewer: VIM.Viewer}){
       prevClear()
       setSelection(undefined)
     }
+    viewer.gizmoSection.active = true
+    setSectionActive(true)
   },[])
 
   const btnOrbit = <button className="iconButton" type="button"> <img src={orbit ? iconFirstPerson : iconOrbit} onClick={() => setObit(!orbit)} /></button>
@@ -117,19 +125,59 @@ function Menu(props: {viewer: VIM.Viewer}){
 
   const btnShowAll = <button  className="iconButton" type="button"><img src={iconShowAll} onClick={onShowAllButton} /></button>
 
+
+  
+  const onSectionButton = function (){
+    viewer.gizmoSection.interactive = !section
+    viewer.gizmoSection.show = !section
+    setSection(!section)
+  }
+
+  const btnSection = <button  className="iconButton" type="button"><img src={iconSection} onClick={onSectionButton} /></button>
+
+  const onActivateSectionButton = function (){
+    viewer.gizmoSection.active = !sectionActive
+    setSectionActive(!sectionActive)
+  }
+
+  console.log('btnSectionActive:' + sectionActive)
+  const btnSectionActive = <button  className="iconButton" type="button"><img src={sectionActive ? iconCutSectionOn : iconCutSectionOff} onClick={onActivateSectionButton} /></button>
+  const empty = <td className='empty'></td>
+  const rowSection = section
+    ? <tr><td>{btnSectionActive}</td><td>{btnSection}</td></tr>
+    : <tr>{empty}<td>{btnSection}</td></tr>
+
+   
   return <div className="vim-menu">
     <table>
       <tbody>
-      <tr><td>{btnOrbit}</td></tr>
-      <tr><td>{btnOrtho}</td></tr>
-      <tr><td>{btnFocus}</td></tr>
-      <tr><td>{btnHome}</td></tr>
-      <tr><td>{btnHide}</td></tr>
-      <tr><td>{btnShowAll}</td></tr>
+      <tr>{empty}<td>{btnOrbit}</td></tr>
+      <tr>{empty}<td>{btnOrtho}</td></tr>
+      <tr>{empty}<td>{btnFocus}</td></tr>
+      <tr>{empty}<td>{btnHome}</td></tr>
+      <tr>{empty}<td>{btnHide}</td></tr>
+      <tr>{empty}<td>{btnShowAll}</td></tr>
+      {rowSection}
       </tbody>
     </table>
   </div>
 }
+/*
+function Section(){
+
+ 
+    return <div className="vim-section">
+    <table>
+      <tbody>
+        <tr>
+          <td>{btnShow}</td>
+          <td>{btnActive}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+}
+*/
 
 function Logo () {
   console.log('Logo')

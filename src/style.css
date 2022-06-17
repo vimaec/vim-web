@@ -55,12 +55,32 @@ body {
   color: #050c1a;
 }
 
+.vim-section {
+  position: fixed;
+  bottom: 0px;
+  right: 64px;
+  width: 64px;
+  pointer-events: all;
+}
+
+/* MENU */
 .vim-menu {
   position: fixed;
   bottom: 0px;
   right: 0px;
-  width: 64px;
+  pointer-events: none;
+}
+
+.vim-menu td {
   pointer-events: all;
+}
+
+.vim-menu td.empty {
+  pointer-events: none;
+}
+
+.vim-menu table {
+  width: 64px;
 }
 
 .vim-menu button:focus {
