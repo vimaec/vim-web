@@ -11,8 +11,11 @@ import iconHome from './assets/icon_home.png'
 import iconHide from './assets/icon_hide.png'
 import iconShowAll from './assets/icon_showall.jpg'
 import iconSection from './assets/icon_cube.png'
-import iconCutSectionOn from './assets/icon_cut.png'
-import iconCutSectionOff from './assets/icon_lemon.png'
+import iconSectionClipOn from './assets/icon_cut.png'
+import iconSectionClipOff from './assets/icon_lemon.png'
+import iconIsolate from './assets/icon_ghost.png'
+import iconIsolateClear from './assets/icon_ghostbuster.png'
+import iconIsolateFamily from './assets/icon_ghostfamily.png'
 
 import * as VIM from 'vim-webgl-viewer/'
 import './style.css'
@@ -74,8 +77,8 @@ function Menu(props: {viewer: VIM.Viewer, section: boolean, setSection: (value: 
   const [ortho, setOrtho] = linkState(viewer.camera, 'orthographic')
   const [selection, setSelection] = useState<VIM.Object>(viewer.selection.object)
   const [section, setSection] = useState(false)
-  const [sectionActive, setSectionActive] = useState(viewer.gizmoSection.active)
-  const [sectionShow, setSectionShow] = useState(viewer.gizmoSection.show)
+  const [sectionActive, setSectionActive] = useState(viewer.gizmoSection.clip)
+  const [sectionShow, setSectionShow] = useState(viewer.gizmoSection.visible)
   
   useEffect(() => {
   // Patch Selection Select
@@ -91,7 +94,7 @@ function Menu(props: {viewer: VIM.Viewer, section: boolean, setSection: (value: 
       prevClear()
       setSelection(undefined)
     }
-    viewer.gizmoSection.active = true
+    viewer.gizmoSection.clip = true
     setSectionActive(true)
   },[])
 
@@ -124,40 +127,86 @@ function Menu(props: {viewer: VIM.Viewer, section: boolean, setSection: (value: 
   }
 
   const btnShowAll = <button  className="iconButton" type="button"><img src={iconShowAll} onClick={onShowAllButton} /></button>
-
-
   
   const onSectionButton = function (){
     viewer.gizmoSection.interactive = !section
-    viewer.gizmoSection.show = !section
+    viewer.gizmoSection.visible = !section
     setSection(!section)
   }
 
   const btnSection = <button  className="iconButton" type="button"><img src={iconSection} onClick={onSectionButton} /></button>
 
   const onActivateSectionButton = function (){
-    viewer.gizmoSection.active = !sectionActive
+    viewer.gizmoSection.clip = !sectionActive
     setSectionActive(!sectionActive)
   }
 
   console.log('btnSectionActive:' + sectionActive)
-  const btnSectionActive = <button  className="iconButton" type="button"><img src={sectionActive ? iconCutSectionOn : iconCutSectionOff} onClick={onActivateSectionButton} /></button>
+  const btnSectionActive = <button className="iconButton" type="button"><img src={sectionActive ? iconSectionClipOn : iconSectionClipOff} onClick={onActivateSectionButton} /></button>
   const empty = <td className='empty'></td>
   const rowSection = section
-    ? <tr><td>{btnSectionActive}</td><td>{btnSection}</td></tr>
-    : <tr>{empty}<td>{btnSection}</td></tr>
+    ? <tr>{empty}<td>{btnSectionActive}</td><td>{btnSection}</td></tr>
+    : <tr>{empty}{empty}<td>{btnSection}</td></tr>
+
+  const onIsolateBtn =  function(){
+    for (const obj of viewer.selection.object.vim.getAllObjects()) {
+      obj.visible = false
+    }
+
+    viewer.environment.groundPlane.visible = false
+    viewer.selection.object.vim.scene.material = VIM.Materials.getDefaultLibrary().isolation
+    viewer.selection.object.visible = true
+    viewer.selection.object.color = new VIM.THREE.Color(0,0.75, 1)
+  }
+
+  const onIsolateClearBtn =  function(){
+    for (const obj of viewer.vims[0].getAllObjects()) {
+      obj.visible = true
+      obj.color = undefined
+    }
+    viewer.environment.groundPlane.visible = viewer.settings.getGroundPlaneVisible()
+    viewer.selection.object.vim.scene.material = undefined
+  }
+
+  const onIsolateFamilyBtn = async function(){
+    const ref = await viewer.selection.object
+    .getBimElementValue('string:FamilyName', false)
+    
+    const p: Promise<void>[] = []
+    const objs = viewer.selection.object.vim.getAllObjects()
+    viewer.environment.groundPlane.visible = false
+    viewer.selection.object.vim.scene.material = VIM.Materials.getDefaultLibrary().isolation
+    const result: VIM.Object[] = []
+    for (const obj of objs) {
+      p.push(
+        obj
+          .getBimElementValue('string:FamilyName', false)
+          .then((value) => {
+              obj.visible = value === ref
+              obj.color = value === ref ? new VIM.THREE.Color(0,0.75, 1) : undefined
+
+          })
+      )
+    }
+
+    await Promise.all(p)
+  }
+  const btnIsolate = <button className="iconButton" type="button"><img src={iconIsolate} onClick={onIsolateBtn} /></button>
+  const btnIsolateClear = <button className="iconButton" type="button"><img src={iconIsolateClear} onClick={onIsolateClearBtn} /></button>
+  const btnIsolateFamily = <button className="iconButton" type="button"><img src={iconIsolateFamily} onClick={onIsolateFamilyBtn} /></button>
 
    
   return <div className="vim-menu">
     <table>
       <tbody>
-      <tr>{empty}<td>{btnOrbit}</td></tr>
-      <tr>{empty}<td>{btnOrtho}</td></tr>
-      <tr>{empty}<td>{btnFocus}</td></tr>
-      <tr>{empty}<td>{btnHome}</td></tr>
-      <tr>{empty}<td>{btnHide}</td></tr>
-      <tr>{empty}<td>{btnShowAll}</td></tr>
+      <tr>{empty}{empty}<td>{btnOrbit}</td></tr>
+      <tr>{empty}{empty}<td>{btnOrtho}</td></tr>
+      <tr>{empty}{empty}<td>{btnFocus}</td></tr>
+      <tr>{empty}{empty}<td>{btnHome}</td></tr>
+      <tr>{empty}{empty}<td>{btnHide}</td></tr>
+      <tr>{empty}{empty}<td>{btnShowAll}</td></tr>
       {rowSection}
+      <tr><td>{btnIsolateFamily}</td><td>{btnIsolate}</td><td>{btnIsolateClear}</td></tr>
       </tbody>
     </table>
   </div>
