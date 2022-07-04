@@ -1,6 +1,6 @@
 {
   "name": "vim-webgl-component",
-  "version": "0.1.1-dev.12",
+  "version": "0.1.2",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "files": [
     "dist"
@@ -19,7 +19,7 @@
     "url": "https://github.com/vimaec/vim-webgl-component.git"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build && npm run declarations",
     "bump-dev": "npm version prerelease --preid=dev",
     "publish-dev": "npm publish --tag=dev",
@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "@types/react": "^17.0.39",
+    "@types/react-dom": "^18.0.5",
     "@types/three": "^0.133.0",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
@@ -44,13 +45,14 @@
     "http-server": "^14.1.0",
     "opener": "^1.5.2",
     "prettier": "^2.5.1",
+    "react-dom": "^18.1.0",
     "typescript": "^4.5.5",
     "vite": "^2.8.4"
   },
   "dependencies": {
     "jsx": "^0.9.89",
-    "react": "^17.0.2",
-    "vim-webgl-viewer": "1.2.28"
+    "react": "^18.1.0",
+    "vim-webgl-viewer": "1.2.30"
   },
   "keywords": [
     "3d",
