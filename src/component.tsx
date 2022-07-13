@@ -16,12 +16,15 @@ import iconSectionClipOff from './assets/icon_lemon.png'
 import iconIsolate from './assets/icon_ghost.png'
 import iconIsolateClear from './assets/icon_ghostbuster.png'
 import iconIsolateFamily from './assets/icon_ghostfamily.png'
+import iconMeasure from './assets/icon_measure.png'
+
 
 import * as VIM from 'vim-webgl-viewer/'
 import './style.css'
 
 type Progress = 'processing'| number | string
 type Table = [string, string][]
+type Parameter = {name: string, value: string, group: string}
 const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100
 
 export function createContainer(viewer: VIM.Viewer){
@@ -78,7 +81,8 @@ function Menu(props: {viewer: VIM.Viewer, section: boolean, setSection: (value: 
   const [selection, setSelection] = useState<VIM.Object>(viewer.selection.object)
   const [section, setSection] = useState(false)
   const [sectionActive, setSectionActive] = useState(viewer.gizmoSection.clip)
-  const [sectionShow, setSectionShow] = useState(viewer.gizmoSection.visible)
+  const [measuring, setMeasuring] = useState(false)
+  const [measurement, setMeasurement] = useState<VIM.THREE.Vector3>()
   
   useEffect(() => {
   // Patch Selection Select
@@ -154,7 +158,7 @@ function Menu(props: {viewer: VIM.Viewer, section: boolean, setSection: (value: 
     }
 
     viewer.environment.groundPlane.visible = false
-    viewer.selection.object.vim.scene.material = VIM.Materials.getDefaultLibrary().isolation
+    viewer.selection.object.vim.scene.material = viewer.renderer.materials.isolation
     viewer.selection.object.visible = true
     viewer.selection.object.color = new VIM.THREE.Color(0,0.75, 1)
   }
@@ -175,7 +179,7 @@ function Menu(props: {viewer: VIM.Viewer, section: boolean, setSection: (value: 
     const p: Promise<void>[] = []
     const objs = viewer.selection.object.vim.getAllObjects()
     viewer.environment.groundPlane.visible = false
-    viewer.selection.object.vim.scene.material = VIM.Materials.getDefaultLibrary().isolation
+    viewer.selection.object.vim.scene.material = viewer.renderer.materials.isolation
     const result: VIM.Object[] = []
     for (const obj of objs) {
       p.push(
@@ -195,7 +199,29 @@ function Menu(props: {viewer: VIM.Viewer, section: boolean, setSection: (value: 
   const btnIsolateClear = <button className="iconButton" type="button"><img src={iconIsolateClear} onClick={onIsolateClearBtn} /></button>
   const btnIsolateFamily = <button className="iconButton" type="button"><img src={iconIsolateFamily} onClick={onIsolateFamilyBtn} /></button>
 
-   
+  const onMeasureBtn = () => {
+    if(measuring){
+      viewer.gizmoMeasure.clear()
+      setMeasuring(false)
+    }
+    else{
+      setMeasurement(undefined)
+      setMeasuring(true)
+      viewer.gizmoMeasure.measure()
+      .then(() => setMeasurement(viewer.gizmoMeasure.measurement))
+      .catch(() => setMeasurement(undefined))
+      .finally(() => setMeasuring(false))
+    }
+
+  }
+  const btnMeasure = <button className="iconButton" style={ measuring? {border: "solid"} : {border: "none"} } type="button"><img src={iconMeasure} onClick={onMeasureBtn} /></button>
+  const txtMeasure = <div>
+    Dist: {measurement?.length().toFixed(2)} <br/>
+    X: {measurement?.x.toFixed(2)} <br/>
+    Y: {measurement?.y.toFixed(2)} <br/>
+    Z: {measurement?.z.toFixed(2)}
+  </div>
+  
   return <div className="vim-menu">
     <table>
       <tbody>
@@ -205,6 +231,7 @@ function Menu(props: {viewer: VIM.Viewer, section: boolean, setSection: (value: 
       <tr>{empty}{empty}<td>{btnHome}</td></tr>
       <tr>{empty}{empty}<td>{btnHide}</td></tr>
       <tr>{empty}{empty}<td>{btnShowAll}</td></tr>
+      <tr>{empty}{measurement ? txtMeasure : empty}<td>{btnMeasure}</td></tr>
       {rowSection}
       <tr><td>{btnIsolateFamily}</td><td>{btnIsolate}</td><td>{btnIsolateClear}</td></tr>
       </tbody>
@@ -287,6 +314,7 @@ function Inspector(props: { viewer: VIM.Viewer })
   },[])
 
   const [table, setTable] = useState<Table>()
+  const [parameters, setParameters] = useState<Parameter[]>()
 
   // Patch on click
   useEffect(() => {
@@ -294,10 +322,17 @@ function Inspector(props: { viewer: VIM.Viewer })
     props.viewer.onMouseClick = (hit) => {
       prevClick(hit)
       createTable(hit.object).then(t => setTable(t))
+      if(hit.object){
+        hit.object.getBimParameters().then(p => setParameters(p))
+      }
+      else{
+        setParameters(undefined)
+      }
+      
     }
   })
 
-  if(!table) return null
+  if(!table || !parameters) return null
 
   const set = new Set(["Type", "Name", "FamilyName", "Id"])
   const mains = table.filter(pair => set.has(pair[0])).map((pair, index) => {
@@ -313,6 +348,37 @@ function Inspector(props: { viewer: VIM.Viewer })
       <td key={'details-td' + index}>{pair[1]}</td>
     </tr>
   })
+
+  parameters.sort((a, b) =>  a.group.localeCompare(b.group))
+  const groups = new Map<string, {name: string, value: string}[]>()
+  parameters.map((p) => {
+    if(!groups.has(p.group))
+      groups.set(p.group, [])
+    groups.get(p.group).push(p)
+  })
+
+  const elements =[]
+  for (const key of groups.keys()) {
+    
+    const list = groups.get(key)
+    elements.push(
+      <div className={"parameters"}>
+      <table>
+        <thead>
+          <tr><th>{key}</th></tr>
+        </thead>
+        <tbody>
+          {list.map((p,i) => {
+            return <tr key={'parameters-tr' + key + p.name}>
+              <th key={'parameters-th' + key + p.name}>{p.name}</th>
+              <td key={'parameters-td' + key + p.name}>{p.value}</td>
+            </tr>
+          })}
+        </tbody>
+      </table>
+    </div>
+    )
+  }
 
   return(
     <div className="vim-bim-explorer">
@@ -335,7 +401,7 @@ function Inspector(props: { viewer: VIM.Viewer })
           </tbody>
         </table>
       </div>
-
+      {elements}
     </div>
   )
 }

@@ -124,6 +124,8 @@ body {
   padding-right: 15px;
   font-family: "Roboto", sans-serif;
   font-size: 12.65px;
+  overflow-y: scroll;
+  pointer-events: all;
 }
 
 /* Title */
@@ -216,4 +218,16 @@ body {
   border-right-width: 1px;
   border-right-color: #b6b9bf;
   color: #050c1a;
+}
+
+/* Details labels */
+.vim-bim-explorer .parameters thead th {
+  text-align: center;
+}
+
+/* Details labels */
+.vim-bim-explorer .parameters {
+  border: #050c1a;
+  border-width: 1px;
+  border-style: solid;
 }
