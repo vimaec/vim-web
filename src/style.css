@@ -1,17 +1,54 @@
-.vim-component {
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --c-primary: #0590CC;
+  --c-primary-green: #7EBF50;
+  --c-primary-yellow: #FFB700;
+  --c-primary-pink: #D93393;
+  --c-primary-royal: #284EA2;
+  --c-primary-purple: #5E3C97;
+  
+  --c-darkest-gray: #050C1A;
+  --c-darker-gray: #212329;
+  --c-dark-gray-warm: #3C3C3C;
+  --c-dark-gray-cool: #56585F;
+  --c-medium-gray: #8A8D95;
+  --c-gray: #B6B9Bf;
+  --c-gray-divider: #E3E3E3;
+  --c-light-gray: #D1D3D8;
+  --c-lighter-gray: #F0EFEE;
+  --c-lightest-gray: #F6F6F6;
+  
+  --c-secondary: #0076AA;
+  --c-secondary-green: #5E9F30;
+  --c-secondary-yellow: #ECA500;
+  --c-secondary-pink: #B51873;
+  --c-secondary-royal: #103381;
+  --c-secondary-purple: #33004D;
+  
+  --c-light-blue: #40A6DE;
+  --c-light-green: #82DE40;
+  
+  --c-list-hover: #FFF8E5;
+
+  --c-white: #FFFFFF;
+}
+/* .vim-component {
   top: 0;
   position: fixed;
   width: 100%;
   height: 100%;
-}
+} */
 
-.vim-ui {
+/* .vim-ui {
   top: 0;
   position: fixed;
   width: 100%;
   height: 100%;
   pointer-events: none;
-}
+} */
 
 .vim-loading-box {
   width: fit-content;
@@ -64,12 +101,12 @@ body {
 }
 
 /* MENU */
-.vim-menu {
+/* .vim-menu {
   position: fixed;
   bottom: 0px;
   right: 0px;
   pointer-events: none;
-}
+} */
 
 .vim-menu td {
   pointer-events: all;
@@ -88,10 +125,13 @@ body {
 }
 
 .vim-menu .iconButton {
-  border-width: 0;
-  background-color: rgba(0, 0, 0, 0) !important;
+  color: var(--c-white);
+  border: none;
+  background-color: transparent;
 }
-
+.vim-menu .iconButton.active {
+  background-color: var(--c-primary-royal);
+}
 .vim-menu .iconButton img {
   width: 42px;
   height: 42px;
