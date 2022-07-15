@@ -21,6 +21,9 @@ import iconMeasure from './assets/icon_measure.png'
 
 import * as VIM from 'vim-webgl-viewer/'
 import './style.css'
+import 'react-complex-tree/lib/style.css';
+import { UncontrolledTreeEnvironment, Tree, StaticTreeDataProvider } from 'react-complex-tree';
+import {toMapTree, flatten} from './data'
 
 type Progress = 'processing'| number | string
 type Table = [string, string][]
@@ -315,6 +318,7 @@ function Inspector(props: { viewer: VIM.Viewer })
 
   const [table, setTable] = useState<Table>()
   const [parameters, setParameters] = useState<Parameter[]>()
+  const [elementTree, setElementTree] = useState<{}>()
 
   // Patch on click
   useEffect(() => {
@@ -324,9 +328,23 @@ function Inspector(props: { viewer: VIM.Viewer })
       createTable(hit.object).then(t => setTable(t))
       if(hit.object){
         hit.object.getBimParameters().then(p => setParameters(p))
+        const flat = {}
+        hit.object.vim.document.getElementsSummary().then(s =>{
+
+          const tree = toMapTree(s, [
+            e => e.categoryName,
+            e => e.familyName,
+            e => e.familyTypeName
+          ])
+          console.log(tree)
+          flatten(tree, flat, e => e.name)
+          console.log(flat)
+          setElementTree(flat)
+        })
       }
       else{
         setParameters(undefined)
+        setElementTree(undefined)
       }
       
     }
@@ -383,6 +401,9 @@ function Inspector(props: { viewer: VIM.Viewer })
   return(
     <div className="vim-bim-explorer">
       <h1>Bim Inspector</h1>
+      <div className="tree">
+      <ElementTree tree={elementTree}/>
+      </div>
       <div className="main">
         <table>
           <tbody>
@@ -404,6 +425,16 @@ function Inspector(props: { viewer: VIM.Viewer })
       {elements}
     </div>
   )
+}
+
+function ElementTree(props: { tree: {} }){
+  return <UncontrolledTreeEnvironment
+  dataProvider={new StaticTreeDataProvider(props.tree, (item, data) => ({ ...item, data }))}
+  getItemTitle={item => item.data}
+  viewState={{}}
+  >
+    <Tree treeId= "tree-1" rootItem="0" treeLabel="Tree Example" />
+  </UncontrolledTreeEnvironment>
 }
 
 async function createTable(object: VIM.Object): Promise<[string, string][]>{
