@@ -43,7 +43,8 @@ module.exports = {
       },
       list: {
         DEFAULT: 'var(--c-list-hover)'
-      }
+      },
+      'hover-t40': 'var(--c-hover-t40)'
     },
     extend: {},
   },
