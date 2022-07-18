@@ -1,15 +1,25 @@
   export type MapTree<K, V> = Map<K, V[] | MapTree<K, V>>
 
-  export function toMapTree<V> (summary: V[], grouping: ((v:V) => string)[]): MapTree<string, V> {
+  /**
+   * Creates N-level grouping of items using given grouping selector in the order provided.
+   * @param items array of items to groups
+   * @param grouping array of selectors
+   * @returns a Map of Map ... of Map<string, item> with the first map containing a single element called root.
+   */
+  export function toMapTree<V> (items: V[], grouping: ((v:V) => string)[]): MapTree<string, V> {
     const root = new Map<string, V[]>() as MapTree<
       string,
       V
     >
-    root.set('root', summary)
+    root.set('root', items)
     grouping.forEach(g => deepen(root, g))
     return root
   }
 
+  /**
+   * groups elements of an array into a map using values returned by selector.
+   * Intended to work as Linq.GroupBy
+   */
   function groupBy<K, V> (array: V[], selector: (o: V) => K) {
     const result = new Map<K, V[]>()
     array.forEach((a) => {
@@ -20,6 +30,9 @@
     return result
   }
 
+  /**
+   * Takes a N-deep Map tree and applies a new grouping to leaves resulting in a N+1 deep three.
+   */
   function deepen<K, V> (map: MapTree<K, V>, selector: (v: V) => K) {
     for (const [k, v] of map.entries()) {
       if (v instanceof Map) {
@@ -31,33 +44,4 @@
     }
   }
 
-  export function flatten<K, V> (
-    map: MapTree<K, V>,
-    result: {},
-    selector: (value: V) => K,
-    i = -1
-  ) : [number, number[]]{
-    const keys: number[] = []
-
-    for (const [k, v] of map.entries()) {
-      keys.push(++i)
-      if (v instanceof Map) {
-        // Recurse down the tree
-        const [next, children] = flatten(v, result, selector, i)
-        result[i] = {index: i, hasChildren: children.length > 0, data: k, children: children }
-        i = next
-      } else {
-        // Add the leaves
-        result[i] = {index: i, hasChildren:v.length > 0, data: k, children: range(v.length, i+1) }
-        v.forEach((e) => {
-          result[++i] = {index: i, hasChildren:false, data: selector(e), children: [] }
-        })
-      }
-    }
-    // return last used index and sibbling indices at this level.
-    return [i, keys]
-  }
-
-  function range (size: number, startAt = 0) {
-    return [...Array(size).keys()].map((i) => i + startAt)
-  }
+ 
