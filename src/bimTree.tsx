@@ -5,7 +5,7 @@ import * as VIM from 'vim-webgl-viewer/'
 import {MapTree, toMapTree, } from './data'
 
 export function BimTree(props: { tree: {} }){
-  return <div className="vim-bim-tree">
+  return <div className="vim-bim-tree mb-6">
     <UncontrolledTreeEnvironment
     dataProvider={new StaticTreeDataProvider(props.tree, (item, data) => ({ ...item, data }))}
     getItemTitle={item => item.data}

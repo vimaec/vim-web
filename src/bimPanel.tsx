@@ -28,22 +28,21 @@ export function Inspector(props: { viewer: VIM.Viewer })
   if(!table || !parameters || !elementTree) return null
 
   return(
-    <div className="vim-bim-panel">
-      <h1>Project Inspector</h1>
+    <div className="vim-bim-panel w-4/12 fixed left-0 top-0 bg-gray-lightest p-6 text-gray-darker">
+      <h2 className="text-xs font-bold uppercase mb-6">Project Inspector</h2>
       <SearchBar/>
-      <hr />
       <BimTree tree ={elementTree}/>
-      <h1>Bim Inspector</h1>
+      <h2 className="text-xs font-bold uppercase mb-6">Bim Inspector</h2>
       <BimInspector table={table}/>
-      <h1>Instance Properties</h1>
+      <h2 className="text-xs font-bold uppercase mb-6">Instance Properties</h2>
       <BimParameters parameters={parameters}/>
     </div>
   )
 }
 
 function SearchBar(){
-  return <div className="vim-bim-search">
-    <input type="text" name="name" value={"Type here to search"} />
+  return <div className="vim-bim-search mb-4">
+    <input className="w-full bg-transparent border-b border-gray-light placeholder-text-gray-medium py-1 px-4" type="search" name="name" placeholder={"Type here to search"} />
   </div>
 }
 

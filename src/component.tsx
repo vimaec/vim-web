@@ -55,7 +55,7 @@ export function VimComponent (props: {
       {useInspector ? <Inspector viewer={props.viewer}/> : null}
       {useMenu ? <MenuTools viewer={props.viewer} moreMenuVisible={moreMenuVisible} setMoreMenuVisible = {setMoreMenuVisible}/> : null}
       {useMenuTop ? <MenuTop viewer={props.viewer}/> : null}
-      {moreMenuVisible ?  <MenuMore /> : null}
+      {moreMenuVisible ?  <MenuMore viewer={props.viewer}/> : null}
     </>
   )
 }

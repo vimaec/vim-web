@@ -7,18 +7,16 @@ export function BimInspector(props: { table: InspectorInfo }){
   const set = new Set(["Type", "Name", "FamilyName", "Id"])
   const table = props.table
   const mains = table.filter(pair => set.has(pair[0])).map((pair, index) => {
-    return <tr key={'main-tr' + index} >
-      <th key={'main-th' + index}>{pair[0]}</th>
-      <td key={'main-td' + index}>{pair[1]}</td>
-    </tr>
+    return <li className="flex w-full" key={'main-tr' + index} >
+      <span className="text-gray-medium w-3/12 py-1" key={'main-th' + index}>{pair[0]}</span>
+      <span className="py-1" key={'main-td' + index}>{pair[1]}</span>
+    </li>
   })
 
-  return <div className="vim-bim-inspector">
-  <table>
-    <tbody>
+  return <div className="vim-bim-inspector mb-6">
+    <ul>
       {mains}
-    </tbody>
-  </table>
+    </ul>
 </div>
 }
 
