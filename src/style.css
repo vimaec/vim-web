@@ -188,3 +188,6 @@ body {
 .rct-tree-items-container li:nth-child(odd) {
   background-color: var(--c-white);
 }
+.vim-inspector-properties {
+  max-height: 500px;
+}

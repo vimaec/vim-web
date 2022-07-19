@@ -20,24 +20,22 @@ export function BimParameters(props: { parameters: Parameter[] }){
     const list = groups.get(key)
     elements.push(
       <div className={"parameters"}>
-      <table>
-        <thead>
-          <tr><th>{key}</th></tr>
-        </thead>
-        <tbody>
-          {list.map((p,i) => {
-            const id =key + p.name +i
-            return <tr key={'parameters-tr-' + id }>
-              <th key={'parameters-th-' + id}>{p.name}</th>
-              <td key={'parameters-td-' + id}>{p.value}</td>
-            </tr>
-          })}
-        </tbody>
-      </table>
+      <ul className="">
+        <li>
+          <h3 className="text-xs font-bold uppercase bg-gray-light px-2 py-2 rounded-t">{key}</h3>
+        </li>
+        {list.map((p,i) => {
+          const id =key + p.name +i
+          return <li className="odd:bg-white p-2 flex" key={'parameters-tr-' + id }>
+            <span className="w-1/2" key={'parameters-th-' + id}>{p.name}</span>
+            <span className="w-1/2 text-gray-medium" key={'parameters-td-' + id}>{p.value}</span>
+          </li>
+        })}
+      </ul>
     </div>
     )
   }
-  return <div className="vim-inspector-properties">
+  return <div className="vim-inspector-properties overflow-y-auto">
     {elements}
   </div>
 }
