@@ -20,7 +20,7 @@
    * groups elements of an array into a map using values returned by selector.
    * Intended to work as Linq.GroupBy
    */
-  function groupBy<K, V> (array: V[], selector: (o: V) => K) {
+  export function groupBy<K, V> (array: V[], selector: (o: V) => K) {
     const result = new Map<K, V[]>()
     array.forEach((a) => {
       const key = selector(a)

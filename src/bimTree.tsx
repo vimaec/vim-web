@@ -10,36 +10,65 @@ type VimTreeNode = TreeItem<ElementInfo> & {
   parent: number
 } 
 
-export function BimTree(props: {viewer: VIM.Viewer, tree: BimTreeData, element: number, setElement: (e:number) => void }){
-  const node = props.tree.getNode(props.element)
-  const parents = node ? props.tree.getParents(node) : undefined
+export function BimTree(props: {viewer: VIM.Viewer, object:VIM.Object, filter: string}){
+  console.log('Render BimTree Init')
 
-  const [currentElement, setCurrentElement] = useState(props.element);
-  const [focusedItem, setFocusedItem] = useState(node);
-  const [expandedItems, setExpandedItems] = useState(parents);
-  const [selectedItems, setSelectedItems] = useState([node]);
+  const [object, setObject] = useState<VIM.Object>()
+  const [vim, setVim] = useState<VIM.Vim>();
+  const [filter, setFilter] = useState<string>();
+  const [tree, setTree] = useState<BimTreeData>()
+
+  const [focusedItem, setFocusedItem] = useState<number>();
+  const [expandedItems, setExpandedItems] = useState<number[]>([]);
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const div = useRef<HTMLDivElement>()
   
-  if(currentElement !== props.element){
-    console.log('Update element')
-    setCurrentElement(props.element)
-    setFocusedItem(node)
-    setExpandedItems(parents)
-    setSelectedItems([node])
-    return
-  }
-
   // Scroll view so that element is visible, if needed.
   useEffect(()=>{
     scrollToSelection(div.current)
-  }, [currentElement])
-  
+  }, [object])
+    
+  // Generate or regenerate tree as needed.
+  if(props.object.vim !== vim || props.filter !== filter){
+    setVim(props.object.vim)
+    setFilter(props.filter)
+    toTreeData(props.object.vim.document, props.filter).then(t => 
+      setTree(t))
+  }
 
-  console.log('Render Tree')
+  // Display loading until tree is ready.
+  if(!tree) {
+    console.log('Render BimTree Loading')
+    return <div className="vim-bim-tree" ref={div}>
+      Loading . . .
+    </div>
+  }
+
+  // Update tree state
+  if(props.object !== object){  
+    setObject(props.object)
+    const node = tree.getNode(props.object.element)
+    const parents = node ? tree.getParents(node) : undefined
+    setFocusedItem(node)
+    setExpandedItems(parents)
+    setSelectedItems([node])
+  }
+
+  const onFocus = () => {
+    props.viewer.inputs.unregisterKeyboard()
+    console.log('focus ON')
+  }
+
+  const onBlur = () => {
+    console.log('focus OFF')
+    props.viewer.inputs.registerKeyboard()
+  }
+
+  console.log('Render BimTree Done')
   return (
-    <div className="vim-bim-tree" ref={div}>
+    <div className="vim-bim-tree" ref={div} tabIndex={0} onFocus={onFocus} onBlur={onBlur}>
       <ControlledTreeEnvironment
-        items={props.tree.nodes}
+        items={tree.nodes}
         getItemTitle={item => (item as VimTreeNode).title}
         defaultInteractionMode={InteractionMode.ClickItemToExpand}
         viewState={{
@@ -49,25 +78,33 @@ export function BimTree(props: {viewer: VIM.Viewer, tree: BimTreeData, element: 
             selectedItems,
           },
         }}
-        onFocusItem={item => setFocusedItem(item.index as number)}
+        onFocusItem={(item ) => {
+          console.log('Focus' + item?.index ?? -1)
+          const index = item.index as number
+          if(index !== selectedItems?.[0]){
+            selectElementInViewer(tree, props.viewer, index)
+          }
+        }}
+        
+        //Default behavior
         onExpandItem={item => setExpandedItems([...expandedItems, item.index  as number])}
+        //Default behavior
         onCollapseItem={item =>
           setExpandedItems(expandedItems.filter(expandedItemIndex => expandedItemIndex !== item.index))
         }
         onSelectItems={(items :number[]) => {
-          setSelectedItems(items)
-          setFocusedItem(items[0])
           if(items[0] !== selectedItems[0]){
-            selectElementInViewer(props.tree, props.viewer, items[0])
+            selectElementInViewer(tree, props.viewer, items[0])
           }
-        }
-        }
+        }}
       >
         <Tree treeId="tree-bim" rootItem="0" treeLabel="Tree Example" />
       </ControlledTreeEnvironment>
+      
     </div>
   );
 }
+
 
 function selectElementInViewer(tree: BimTreeData, viewer: VIM.Viewer, node : number ){
   const item = tree.nodes[node]
@@ -80,7 +117,7 @@ function selectElementInViewer(tree: BimTreeData, viewer: VIM.Viewer, node : num
 
 function scrollToSelection(div: HTMLDivElement ){
   // A bit of hack relying on the property of selected element
-  const selection = div.querySelectorAll('[aria-selected="true"]')?.[0]
+  const selection = div?.querySelectorAll('[aria-selected="true"]')?.[0]
   if(!selection) return
 
   const rectElem = selection.getBoundingClientRect()

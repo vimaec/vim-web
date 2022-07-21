@@ -1,12 +1,28 @@
-import React from "react"
+import React, { useState } from "react"
 import * as VIM from 'vim-webgl-viewer/'
 
 export type InspectorInfo = [string, string][]
 
-export function BimInspector(props: { table: InspectorInfo }){
-  const set = new Set(["Type", "Name", "FamilyName", "Id"])
-  const table = props.table
-  const mains = table.filter(pair => set.has(pair[0])).map((pair, index) => {
+const set = new Set(["Type", "Name", "FamilyName", "Id"])
+export function BimInspector(props: { object: VIM.Object}){
+  console.log("Render BimInspector Init")
+  const [object, setObject] = useState<VIM.Object>()
+  const [data, setData] = useState<InspectorInfo>()
+
+  if(props.object !== object){
+    setObject(props.object)
+    toInspectorData(props.object).then(d => setData(d))
+  }
+  
+  if(!data){
+    console.log("Render BimInspector Loading")
+    return <div className="vim-bim-inspector">
+      Loading . . .
+    </div>
+  }
+  
+  console.log("Render BimInspector Done")
+  const mains = data.map((pair, index) => {
     return <tr key={'main-tr' + index} >
       <th key={'main-th' + index}>{pair[0]}</th>
       <td key={'main-td' + index}>{pair[1]}</td>
@@ -36,7 +52,8 @@ export async function toInspectorData(object: VIM.Object): Promise<[string, stri
       : pair[1]
     table.push([key, value])
   }
-  return table
+  const result = table.filter(pair => set.has(pair[0]))
+  return result
 }
 
 const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100

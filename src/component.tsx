@@ -8,7 +8,7 @@ import './style.css'
 import {MenuTop} from './menuTop'
 import {MenuTools} from './menuTools'
 import {LoadingBox} from './loadingBox'
-import {Inspector} from './bimPanel'
+import {BimPanel} from './bimPanel'
 import {MenuMore} from './menuMore'
 
 export function createContainer(viewer: VIM.Viewer){
@@ -31,28 +31,29 @@ export function VimComponent (props: {
   viewer: VIM.Viewer,
   onMount: () => void,
   logo?: boolean,
-  inspector?: boolean,
+  bimPanel?: boolean,
   menu?: boolean,
   menuTop?: boolean,
   loading?: boolean
 }) {
   const useLogo = props.logo === undefined ? true: props.logo
-  const useInspector = props.inspector === undefined ? true: props.inspector
+  const useInspector = props.bimPanel === undefined ? true: props.bimPanel
   const useMenu = props.menu === undefined ? true: props.menu
   const useMenuTop = props.menuTop === undefined ? true: props.menuTop
   const useLoading = props.loading === undefined ? true: props.loading
 
   useEffect(() => {
     props.onMount()
+    props.viewer.viewport.canvas.tabIndex =0
   }, [])
 
   const [moreMenuVisible, setMoreMenuVisible] = useState(false)
-
+  console.log('render component')
   return (
     <>
       {useLogo ? <Logo /> : null}
       {useLoading ? <LoadingBox viewer={props.viewer}/> : null}
-      {useInspector ? <Inspector viewer={props.viewer}/> : null}
+      {useInspector ? <BimPanel viewer={props.viewer}/> : null}
       {useMenu ? <MenuTools viewer={props.viewer} moreMenuVisible={moreMenuVisible} setMoreMenuVisible = {setMoreMenuVisible}/> : null}
       {useMenuTop ? <MenuTop viewer={props.viewer}/> : null}
       {moreMenuVisible ?  <MenuMore /> : null}
