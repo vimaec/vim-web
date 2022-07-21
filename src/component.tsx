@@ -17,12 +17,24 @@ export function createContainer(viewer: VIM.Viewer){
   root.style.height = '100%'
   document.body.append(root)
 
-  root.append(viewer.viewport.canvas)
+  
 
+  // container for canvases
+  const gfx = document.createElement('div')
+  gfx.className = 'vim-gfx'
+  gfx.style.height = '100%'
+  root.append(gfx)
+
+  gfx.append(viewer.viewport.canvas)
+  gfx.append(viewer.axesCanvas)
+
+  // container for ui
   const ui = document.createElement('div')
   ui.className = 'vim-ui'
   ui.style.height = '100%'
   root.append(ui)
+
+ 
 
   return ui
 }
@@ -42,9 +54,24 @@ export function VimComponent (props: {
   const useMenuTop = props.menuTop === undefined ? true: props.menuTop
   const useLoading = props.loading === undefined ? true: props.loading
 
+  const [ortho, setOrtho] = useState<boolean>(props.viewer.camera.orthographic)
+  const [orbit, setOrbit] = useState<boolean>(props.viewer.camera.orbitMode)
+  
+
+  const updateOrtho =(b: boolean) => {
+    setOrtho(b)
+    props.viewer.camera.orthographic = b
+  }
+
+  const updateOrbit =(b: boolean) => {
+    setOrbit(b)
+    props.viewer.camera.orbitMode = b
+  }
+
   useEffect(() => {
     props.onMount()
     props.viewer.viewport.canvas.tabIndex =0
+    props.viewer.gizmoSection.clip = true
   }, [])
 
   const [moreMenuVisible, setMoreMenuVisible] = useState(false)
@@ -55,8 +82,8 @@ export function VimComponent (props: {
       {useLoading ? <LoadingBox viewer={props.viewer}/> : null}
       {useInspector ? <BimPanel viewer={props.viewer}/> : null}
       {useMenu ? <MenuTools viewer={props.viewer} moreMenuVisible={moreMenuVisible} setMoreMenuVisible = {setMoreMenuVisible}/> : null}
-      {useMenuTop ? <MenuTop viewer={props.viewer}/> : null}
-      {moreMenuVisible ?  <MenuMore viewer={props.viewer}/> : null}
+      {useMenuTop ? <MenuTop viewer={props.viewer} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho}/> : null}
+      {moreMenuVisible ?  <MenuMore viewer={props.viewer} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho}/> : null}
     </>
   )
 }

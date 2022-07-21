@@ -4,7 +4,7 @@ import * as VIM from 'vim-webgl-viewer/'
 import * as Icons from './icons'
 
 
-export function MenuTools(props: {viewer: VIM.Viewer }){
+export function MenuTools(props: {viewer: VIM.Viewer, moreMenuVisible:boolean, setMoreMenuVisible: (b:boolean) => void }){
   const viewer = props.viewer
   const [section, setSection] = useState(false)
   const [measuring, setMeasuring] = useState(false)

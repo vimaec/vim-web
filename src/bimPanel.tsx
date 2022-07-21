@@ -14,6 +14,19 @@ export function BimPanel(props: { viewer: VIM.Viewer })
   const viewer = props.viewer
   const [filter, setFilter] = useState("")
   const [object, setObject] = useState<VIM.Object>()
+  const [ortho, setOrtho] = useState<boolean>(props.viewer.camera.orthographic)
+  const [orbit, setOrbit] = useState<boolean>(props.viewer.camera.orbitMode)
+
+  const updateOrtho =(b: boolean) => {
+    setOrtho(b)
+    props.viewer.camera.orthographic = b
+  }
+
+  const updateOrbit =(b: boolean) => {
+    setOrtho(b)
+    props.viewer.camera.orbitMode = b
+  }
+
 
   const updateFilter = (value: string) => {
     setFilter(value)
