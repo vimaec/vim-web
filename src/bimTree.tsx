@@ -66,7 +66,7 @@ export function BimTree(props: {viewer: VIM.Viewer, object:VIM.Object, filter: s
 
   console.log('Render BimTree Done')
   return (
-    <div className="vim-bim-tree" ref={div} tabIndex={0} onFocus={onFocus} onBlur={onBlur}>
+    <div className="vim-bim-tree mb-6" ref={div} tabIndex={0} onFocus={onFocus} onBlur={onBlur}>
       <ControlledTreeEnvironment
         items={tree.nodes}
         getItemTitle={item => (item as VimTreeNode).title}

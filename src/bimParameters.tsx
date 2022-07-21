@@ -14,34 +14,31 @@ export function BimParameters(props: { object: VIM.Object}){
     toParameterData(props.object).then(p => setParameters(p))
   }
 
-
   if(!parameters){
     console.log("Render BimParameters Loading")
     return <div className="vim-inspector-properties"> Loading . . .</div>
   }
 
   console.log("Render BimParameters Done")
-  return <div className="vim-inspector-properties">
+  return <div className="vim-inspector-properties overflow-y-auto">
     {Array.from(parameters, (v,k) => parameterTable(v[0], v[1]))}
   </div>
 }
 
 function parameterTable(key: string,  parameters: Parameter[]){
-  return <div key={key} className={"parameters"}>
-    <table>
-      <thead>
-        <tr><th>{key}</th></tr>
-      </thead>
-      <tbody>
-        {parameters.map((p,i) => {
-          const id =key + p.name +i
-          return <tr key={'parameters-tr-' + id }>
-            <th key={'parameters-th-' + id}>{p.name}</th>
-            <td key={'parameters-td-' + id}>{p.value}</td>
-          </tr>
-        })}
-      </tbody>
-    </table>
+  return <div className={"parameters"}>
+    <ul className="">
+      <li>
+        <h3 className="text-xs font-bold uppercase bg-gray-light px-2 py-2 rounded-t">{key}</h3>
+      </li>
+      {parameters.map((p,i) => {
+        const id =key + p.name +i
+        return <li className="odd:bg-white p-2 flex" key={'parameters-tr-' + id }>
+          <span className="w-1/2" key={'parameters-th-' + id}>{p.name}</span>
+          <span className="w-1/2 text-gray-medium" key={'parameters-td-' + id}>{p.value}</span>
+        </li>
+      })}
+    </ul>
   </div>
 }
 

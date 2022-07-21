@@ -2,9 +2,9 @@ import React from "react"
 import { useEffect, useState } from "react"
 import * as VIM from 'vim-webgl-viewer/'
 
-import {BimTree, BimTreeData, toTreeData} from './bimTree'
-import {BimParameters, Parameter, toParameterData} from './bimParameters'
-import {BimInspector, InspectorInfo, toInspectorData} from './bimInspector'
+import {BimTree,} from './bimTree'
+import {BimParameters} from './bimParameters'
+import {BimInspector} from './bimInspector'
 import {BimSearch} from './bimSearch'
 
 
@@ -30,20 +30,17 @@ export function BimPanel(props: { viewer: VIM.Viewer })
   if(!object) return null
   
   return(
-    <div className="vim-bim-panel">
-      <h1>Project Inspector</h1>
+    <div className="vim-bim-panel w-4/12 fixed left-0 top-0 bg-gray-lightest p-6 text-gray-darker h-full">
+      <h2 className="text-xs font-bold uppercase mb-6">Project Inspector</h2>
       <BimSearch viewer={viewer} filter={filter} setFilter={updateFilter}/>
-      <hr />
       <BimTree viewer={viewer} object={object} filter={filter}/>
-      <h1>Bim Inspector</h1>
+      <h2 className="text-xs font-bold uppercase mb-6">Bim Inspector</h2>
       <BimInspector object={object}/>
-      <h1>Instance Properties</h1>
+      <h2 className="text-xs font-bold uppercase text-gray-medium p-2 rounded-t border border-gray-light w-auto inline-flex -mb-1">Instance Properties</h2>
       <BimParameters object={object}/>
     </div>
   )
 }
-
-
 
 
 
