@@ -56,7 +56,7 @@ export function MenuTools(props: {viewer: VIM.Viewer }){
     {(measurement) ? txtMeasure : ''}
     <div className='mx-1'>{btnSection}</div>
     <div className='mx-1'>{btnMeasure}</div>
-    <div className='mx-1'>{btnHome}</div>
+    {/* <div className='mx-1'>{btnHome}</div> */}
     <div className='mx-1'>{btnMore}</div>
   </div>
 }
