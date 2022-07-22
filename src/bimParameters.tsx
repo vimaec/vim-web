@@ -30,7 +30,7 @@ export function BimParameters(props: { object: VIM.Object}){
   }
 
   console.log("Render BimParameters Done")
-  return <div className="vim-inspector-properties overflow-y-auto">
+  return <div className="vim-inspector-properties">
     {Array.from(parameters, (v,k) => parameterTable(v[0] , v[1], open.get(v[0]), b => updateOpen(v[0],b)))}
   </div>
 }
