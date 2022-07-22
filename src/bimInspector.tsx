@@ -5,7 +5,7 @@ export type InspectorInfo = [string, string][]
 
 const set = new Set(["Type", "Name", "FamilyName", "Id"])
 export function BimInspector(props: { object: VIM.Object}){
-  console.log("Render BimInspector Init")
+  //console.log("Render BimInspector Init")
   const [object, setObject] = useState<VIM.Object>()
   const [data, setData] = useState<InspectorInfo>()
 
@@ -15,13 +15,13 @@ export function BimInspector(props: { object: VIM.Object}){
   }
   
   if(!data){
-    console.log("Render BimInspector Loading")
+    //console.log("Render BimInspector Loading")
     return <div className="vim-bim-inspector">
       Loading . . .
     </div>
   }
   
-  console.log("Render BimInspector Done")
+  //console.log("Render BimInspector Done")
   const mains = data.map((pair, index) => {
     return <li className="flex w-full" key={'main-tr' + index} >
       <span className="text-gray-medium w-3/12 py-1" key={'main-th' + index}>{pair[0]}</span>

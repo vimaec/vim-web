@@ -11,7 +11,7 @@ type VimTreeNode = TreeItem<ElementInfo> & {
 } 
 
 export function BimTree(props: {viewer: VIM.Viewer, object:VIM.Object, filter: string}){
-  console.log('Render BimTree Init')
+  //console.log('Render BimTree Init')
 
   const [object, setObject] = useState<VIM.Object>()
   const [vim, setVim] = useState<VIM.Vim>();
@@ -38,7 +38,7 @@ export function BimTree(props: {viewer: VIM.Viewer, object:VIM.Object, filter: s
 
   // Display loading until tree is ready.
   if(!tree) {
-    console.log('Render BimTree Loading')
+    //console.log('Render BimTree Loading')
     return <div className="vim-bim-tree" ref={div}>
       Loading . . .
     </div>
@@ -56,15 +56,13 @@ export function BimTree(props: {viewer: VIM.Viewer, object:VIM.Object, filter: s
 
   const onFocus = () => {
     props.viewer.inputs.unregisterKeyboard()
-    console.log('focus ON')
   }
 
   const onBlur = () => {
-    console.log('focus OFF')
     props.viewer.inputs.registerKeyboard()
   }
 
-  console.log('Render BimTree Done')
+  //console.log('Render BimTree Done')
   return (
     <div className="vim-bim-tree mb-6" ref={div} tabIndex={0} onFocus={onFocus} onBlur={onBlur}>
       <ControlledTreeEnvironment
@@ -79,7 +77,6 @@ export function BimTree(props: {viewer: VIM.Viewer, object:VIM.Object, filter: s
           },
         }}
         onFocusItem={(item ) => {
-          console.log('Focus' + item?.index ?? -1)
           const index = item.index as number
           if(index !== selectedItems?.[0]){
             selectElementInViewer(tree, props.viewer, index)
@@ -139,7 +136,6 @@ export async function toTreeData(document: VIM.Document, filter: string) {
   if(!document) return
   
   const summary = await document.getElementsSummary()
-  console.log(summary)
   const filterLower = filter.toLocaleLowerCase()
   const filtered = summary.filter(s =>
     s.id.toString().toLocaleLowerCase().includes(filterLower) ||

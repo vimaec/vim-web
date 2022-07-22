@@ -6,14 +6,13 @@ import * as Icons from './icons'
 export type Parameter = {name: string, value: string, group: string}
 
 export function BimParameters(props: { object: VIM.Object}){
-  console.log("Render BimParameters Init")
+  //console.log("Render BimParameters Init")
   const [object, setObject] = useState<VIM.Object>()
   const [parameters, setParameters] = useState<Map<string, Parameter[]>>()
   const [open, setOpen] = useState<Map<string, boolean>>()
   const updateOpen = (group: string, value: boolean) => {
     const next = new Map(open.entries()).set(group, value)
     setOpen(next)
-    console.log(open)
   }
 
   if(props.object !== object){
@@ -25,11 +24,11 @@ export function BimParameters(props: { object: VIM.Object}){
   }
 
   if(!parameters){
-    console.log("Render BimParameters Loading")
+    //console.log("Render BimParameters Loading")
     return <div className="vim-inspector-properties"> Loading . . .</div>
   }
 
-  console.log("Render BimParameters Done")
+  //console.log("Render BimParameters Done")
   return <div className="vim-inspector-properties">
     {Array.from(parameters, (v,k) => parameterTable(v[0] , v[1], open.get(v[0]), b => updateOpen(v[0],b)))}
   </div>

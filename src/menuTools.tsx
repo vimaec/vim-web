@@ -27,7 +27,6 @@ export function MenuTools(props: {viewer: VIM.Viewer, moreMenuVisible:boolean, s
   const loopMeasure = () => {
     
     const onMouseMove = () =>{
-      console.log(props.viewer.gizmoMeasure.measurement)
       setMeasurement(props.viewer.gizmoMeasure.measurement)
     } 
 
