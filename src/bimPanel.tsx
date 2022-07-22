@@ -26,11 +26,14 @@ export function BimPanel(props: { viewer: VIM.Viewer })
       setObject(viewer.selection.object)
     }
   })
+  props.viewer.viewport.canvas.className = viewer.viewport.canvas.className.replace(' bim-panel-open', '')
 
   if(!object) return null
+
+  viewer.viewport.canvas.className += ' bim-panel-open'
   
   return(
-    <div className="vim-bim-panel w-4/12 fixed left-0 top-0 bg-gray-lightest p-6 text-gray-darker h-full overflow-y-auto">
+    <div className="vim-bim-panel w-3/12 fixed left-0 top-0 bg-gray-lightest p-6 text-gray-darker h-full overflow-y-auto">
       <h2 className="text-xs font-bold uppercase mb-6">Project Inspector</h2>
       <BimSearch viewer={viewer} filter={filter} setFilter={updateFilter}/>
       <BimTree viewer={viewer} object={object} filter={filter}/>
