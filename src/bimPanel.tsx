@@ -49,7 +49,7 @@ export function BimPanel(props: { viewer: VIM.Viewer })
       <BimTree viewer={viewer} object={object} filter={filter}/>
       <h2 className="text-xs font-bold uppercase mb-6">Bim Inspector</h2>
       <BimInspector object={object}/>
-      <h2 className="text-xs font-bold uppercase text-gray-medium p-2 rounded-t border border-gray-light w-auto inline-flex -mb-1">Instance Properties</h2>
+      <h2 className="text-xs font-bold uppercase text-gray-medium p-2 rounded-t border-t border-l border-r border-gray-light w-auto inline-flex">Instance Properties</h2>
       <BimParameters object={object}/>
     </div>
   )

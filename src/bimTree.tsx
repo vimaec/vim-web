@@ -139,6 +139,7 @@ export async function toTreeData(document: VIM.Document, filter: string) {
   if(!document) return
   
   const summary = await document.getElementsSummary()
+  console.log(summary)
   const filterLower = filter.toLocaleLowerCase()
   const filtered = summary.filter(s =>
     s.id.toString().toLocaleLowerCase().includes(filterLower) ||

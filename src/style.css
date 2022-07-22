@@ -177,7 +177,7 @@ body {
   width: 20px;
   height: 17px;
 }
-.rct-tree-items-container {
+.rct-tree-root > div > .rct-tree-items-container {
   max-height: 380px;
   overflow-y: auto;
 }
@@ -185,9 +185,18 @@ body {
   padding-top: .25rem;
   padding-bottom: .25rem;
 }
-.rct-tree-items-container li:nth-child(odd) {
+.rct-tree-items-container>li:nth-child(odd) {
   background-color: var(--c-white);
+}
+.rct-tree-items-container>li:nth-child(even) {
+  background-color: var(--c-lightest-gray);
 }
 .vim-inspector-properties {
   max-height: 500px;
+}
+.rct-tree-root-focus {
+  outline: none;
+}
+.rct-tree-root.rct-tree-root-focus .rct-tree-item-title-container-focused {
+  border: none;
 }

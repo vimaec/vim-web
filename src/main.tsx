@@ -7,8 +7,8 @@ import { createContainer, VimComponent} from './component'
 const params = new URLSearchParams(window.location.search)
 let url = params.has('vim')
   ? params.get('vim')
-  // : 'https://vim.azureedge.net/samples/residence.vim'
-  : '/src/assets/residence.vim'
+  : 'https://vim.azureedge.net/samples/residence.vim'
+  // : '/src/assets/residence.vim'
   //: '/src/assets/skanska.nozip.vim'
 
 const viewer = new VIM.Viewer()
