@@ -180,3 +180,8 @@ body {
 .rct-tree-root.rct-tree-root-focus .rct-tree-item-title-container-focused {
   border: none;
 }
+.bim-panel-open {
+  margin-left: 25%;
+  max-width: 75%;
+  object-fit: cover;
+}
