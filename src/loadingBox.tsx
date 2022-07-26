@@ -5,7 +5,6 @@ import * as VIM from 'vim-webgl-viewer/'
 type Progress = 'processing'| number | string
 
 export function LoadingBox (props: { viewer: VIM.Viewer }) {
-  console.log('LoadingBox') 
   const [progress, setProgress] = useState<Progress>()
 
   // Patch load
