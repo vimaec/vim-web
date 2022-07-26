@@ -10,7 +10,7 @@ import {BimSearch} from './bimSearch'
 
 export function BimPanel(props: { viewer: VIM.Viewer })
 {
-  console.log('Render Panel Init')
+  //console.log('Render Panel Init')
   const viewer = props.viewer
   const [filter, setFilter] = useState("")
   const [object, setObject] = useState<VIM.Object>()
