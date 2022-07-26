@@ -3,7 +3,7 @@ import { ControlledTreeEnvironment, InteractionMode, Tree, TreeItem } from "reac
 import 'react-complex-tree/lib/style.css';
 import * as VIM from 'vim-webgl-viewer/'
 import { ElementInfo } from "vim-webgl-viewer/";
-import {MapTree, toMapTree, } from './data'
+import {MapTree, sort, toMapTree, } from './data'
 
 type VimTreeNode = TreeItem<ElementInfo> & {
   title: string,
@@ -149,6 +149,8 @@ export async function toTreeData(document: VIM.Document, filter: string) {
     e => e.familyName,
     e => e.familyTypeName
   ])
+  sort(tree)
+  
   const result = new BimTreeData(tree)
   return result
 }
@@ -160,6 +162,7 @@ export class BimTreeData{
   constructor(map: MapTree<string, ElementInfo>){
     this.nodes = {}
     this.elemenToNode = new Map<number, number>()
+    
     this.flatten(map)
   }
   
