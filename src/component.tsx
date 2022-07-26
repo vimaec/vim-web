@@ -58,24 +58,28 @@ export function VimComponent (props: {
   const [orbit, setOrbit] = useState<boolean>(props.viewer.camera.orbitMode)
   
 
-  const updateOrtho =(b: boolean) => {
+  const updateOrtho = (b: boolean) => {
     setOrtho(b)
     props.viewer.camera.orthographic = b
   }
 
-  const updateOrbit =(b: boolean) => {
+  const updateOrbit = (b: boolean) => {
     setOrbit(b)
     props.viewer.camera.orbitMode = b
+  }
+
+  const synchOrbit = () => {
+    setOrbit(props.viewer.camera.orbitMode)
   }
 
   useEffect(() => {
     props.onMount()
     props.viewer.viewport.canvas.tabIndex =0
     props.viewer.gizmoSection.clip = true
+    document.addEventListener('keyup',() => setTimeout(synchOrbit))
   }, [])
 
   const [moreMenuVisible, setMoreMenuVisible] = useState(false)
-  console.log('render component')
   return (
     <>
       {useLogo ? <Logo /> : null}
