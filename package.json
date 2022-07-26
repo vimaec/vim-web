@@ -1,6 +1,6 @@
 {
   "name": "vim-webgl-component",
-  "version": "0.1.2",
+  "version": "0.1.3-dev.1",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "files": [
     "dist"
@@ -55,7 +55,8 @@
   "dependencies": {
     "jsx": "^0.9.89",
     "react": "^18.1.0",
-    "vim-webgl-viewer": "1.2.30"
+    "react-complex-tree": "^1.1.9",
+    "vim-webgl-viewer": "1.2.33-dev.17"
   },
   "keywords": [
     "3d",

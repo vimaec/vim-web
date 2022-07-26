@@ -7,14 +7,20 @@ import { createContainer, VimComponent} from './component'
 const params = new URLSearchParams(window.location.search)
 let url = params.has('vim')
   ? params.get('vim')
-  // : 'https://vim.azureedge.net/samples/residence.vim'
-  : '/src/assets/residence.vim'
+  : 'https://vim.azureedge.net/samples/residence.vim'
+  // : '/src/assets/residence.vim'
+  //: '/src/assets/skanska.nozip.vim'
 
 const viewer = new VIM.Viewer()
-const root = createRoot(createContainer(viewer))
+const div = createContainer(viewer)
+const root = createRoot(div)
 root.render(<VimComponent viewer = {viewer} onMount ={loadVim}/>)
 
+
+
+
 function loadVim(){
+  const canvas = viewer.viewport.canvas
   viewer.loadVim(
     url,
     {
