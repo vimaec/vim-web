@@ -3,13 +3,14 @@ import React, { useEffect, useState } from 'react'
 import logo from './assets/logo.png'
 
 import * as VIM from 'vim-webgl-viewer/'
-import './style.css'
 
 import {MenuTop} from './menuTop'
 import {MenuTools} from './menuTools'
 import {LoadingBox} from './loadingBox'
 import {BimPanel} from './bimPanel'
 import {MenuMore} from './menuMore'
+
+import './style.css'
 
 export function createContainer(viewer: VIM.Viewer){
   const root = document.createElement('div')

@@ -41,10 +41,12 @@
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-family: 'Roboto', sans-serif;
 }
 .gizmo-axis-canvas {
   top: 18px !important;
   right: 26px !important;
+  z-index: 9;
 }
 .vim-loading-box {
   width: fit-content;
@@ -157,6 +159,9 @@ body {
   width: 20px;
   height: 17px;
 }
+.rct-tree-root {
+  font-family: inherit;
+}
 .rct-tree-root > div > .rct-tree-items-container {
   max-height: 380px;
   overflow-y: auto;
@@ -180,8 +185,17 @@ body {
 .rct-tree-root.rct-tree-root-focus .rct-tree-item-title-container-focused {
   border: none;
 }
+.vim-bim-panel {
+  width: 480px;
+}
 .bim-panel-open {
-  margin-left: 25%;
-  max-width: 75%;
+  margin-left: 480px;
+  max-width: calc(100% - 480px);
   object-fit: cover;
+}
+.rct-tree-item-li {
+  font-size: 1rem;
+}
+.rct-tree-item-arrow svg {
+  width: 12px;
 }
