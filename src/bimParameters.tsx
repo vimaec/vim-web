@@ -5,21 +5,38 @@ import * as Icons from './icons'
 
 export type Parameter = {name: string, value: string, group: string}
 
-export function BimParameters(props: { object: VIM.Object}){
+const rejectedParameters = [
+  "Coarse Scale Fill Pattern",
+  "Coarse Scale Fill Color",
+  "Image",
+  "Type Image",
+  'Moves with nearby Element',
+  'Location Line',
+  'Show family pre-cut in plan views'
+]
+
+function acceptParameter(parameter: Parameter){
+  let result = true
+  rejectedParameters.forEach(p => {
+    if(p === parameter.name){
+      result = false
+      return
+    }
+  })
+  return result
+}
+
+
+export function BimParameters(props: { object: VIM.Object, getOpen: (s: string)=> boolean, setOpen: (s:string, b: boolean) => void, initOpen: (s:string[]) => void}){
   //console.log("Render BimParameters Init")
   const [object, setObject] = useState<VIM.Object>()
   const [parameters, setParameters] = useState<Map<string, Parameter[]>>()
-  const [open, setOpen] = useState<Map<string, boolean>>()
-  const updateOpen = (group: string, value: boolean) => {
-    const next = new Map(open.entries()).set(group, value)
-    setOpen(next)
-  }
 
   if(props.object !== object){
     setObject(props.object)
     toParameterData(props.object).then(p => {
       setParameters(p)
-      setOpen(new Map(Array.from(p.keys()).map(s => [s, true])))
+      props.initOpen(Array.from(p.keys()))
     })
   }
 
@@ -30,7 +47,7 @@ export function BimParameters(props: { object: VIM.Object}){
 
   //console.log("Render BimParameters Done")
   return <div className="vim-inspector-properties">
-    {Array.from(parameters, (v,k) => parameterTable(v[0] , v[1], open.get(v[0]), b => updateOpen(v[0],b)))}
+    {Array.from(parameters, (v,k) => parameterTable(v[0] , v[1], props.getOpen(v[0]), b => props.setOpen(v[0],b)))}
   </div>
 }
 
@@ -54,9 +71,10 @@ function parameterTable(key: string,  parameters: Parameter[], open: boolean, se
   </div>
 }
 
-export async function toParameterData(object: VIM.Object){
-  const parameters = await object?.getBimParameters()
-  parameters.sort((a, b) => a.group.localeCompare(b.group))
+export async function toParameterData(object: VIM.Object): Promise<Map<string, Parameter[]>>{
+  let parameters = await object?.getBimParameters()
+  parameters = parameters.filter(acceptParameter)
+  parameters = parameters.sort((a, b) => a.group.localeCompare(b.group))
   const groups = groupBy(parameters, p => p.group)
   return groups
 }

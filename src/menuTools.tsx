@@ -19,9 +19,18 @@ export function MenuTools(props: {viewer: VIM.Viewer, moreMenuVisible:boolean, s
   }
   
   const onSectionButton = function (){
-    viewer.gizmoSection.interactive = !section
-    viewer.gizmoSection.visible = !section
-    setSection(!section)
+    if(measuring){
+      onMeasureBtn()
+    }
+
+    const next = !section
+    viewer.gizmoSection.interactive = next
+    viewer.gizmoSection.visible = next
+    if(next){
+      viewer.camera.frame(viewer.renderer.section.box.getBoundingSphere(new VIM.THREE.Sphere()))
+    }
+    
+    setSection(next)
   }
   
   const loopMeasure = () => {
@@ -47,6 +56,10 @@ export function MenuTools(props: {viewer: VIM.Viewer, moreMenuVisible:boolean, s
   }
 
   const onMeasureBtn = () => {
+    if(section){
+      onSectionButton()
+    }
+
     if(measuring){
       viewer.gizmoMeasure.abort()
       setMeasuring(false)

@@ -18,8 +18,6 @@ export function createContainer(viewer: VIM.Viewer){
   root.style.height = '100%'
   document.body.append(root)
 
-  
-
   // container for canvases
   const gfx = document.createElement('div')
   gfx.className = 'vim-gfx'
@@ -34,8 +32,6 @@ export function createContainer(viewer: VIM.Viewer){
   ui.className = 'vim-ui'
   ui.style.height = '100%'
   root.append(ui)
-
- 
 
   return ui
 }

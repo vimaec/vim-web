@@ -10,11 +10,11 @@ type VimTreeNode = TreeItem<ElementInfo> & {
   parent: number
 } 
 
-export function BimTree(props: {viewer: VIM.Viewer, object:VIM.Object, filter: string}){
+export function BimTree(props: {viewer: VIM.Viewer, elements:VIM.ElementInfo[], filter: string, object: VIM.Object}){
   //console.log('Render BimTree Init')
-
+  
   const [object, setObject] = useState<VIM.Object>()
-  const [vim, setVim] = useState<VIM.Vim>();
+  const [elements, setElements] = useState<VIM.ElementInfo[]>()
   const [filter, setFilter] = useState<string>();
   const [tree, setTree] = useState<BimTreeData>()
 
@@ -29,10 +29,10 @@ export function BimTree(props: {viewer: VIM.Viewer, object:VIM.Object, filter: s
   }, [object])
     
   // Generate or regenerate tree as needed.
-  if(props.object.vim !== vim || props.filter !== filter){
-    setVim(props.object.vim)
+  if(props.elements !== elements || props.filter !== filter){
     setFilter(props.filter)
-    toTreeData(props.object.vim.document, props.filter).then(t => 
+    setElements(props.elements)
+    toTreeData(props.elements, props.filter).then(t => 
       setTree(t))
   }
 
@@ -132,12 +132,11 @@ function scrollToSelection(div: HTMLDivElement ){
   }
 }
 
-export async function toTreeData(document: VIM.Document, filter: string) {
+export async function toTreeData(elements: VIM.ElementInfo[], filter: string) {
   if(!document) return
   
-  const summary = await document.getElementsSummary()
   const filterLower = filter.toLocaleLowerCase()
-  const filtered = summary.filter(s =>
+  const filtered = elements.filter(s =>
     s.id.toString().toLocaleLowerCase().includes(filterLower) ||
     s.name.toLocaleLowerCase().includes(filterLower) ||
     s.categoryName.toLocaleLowerCase().includes(filterLower) ||
