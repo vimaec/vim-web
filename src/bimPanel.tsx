@@ -48,7 +48,10 @@ export function BimPanel(props: { viewer: VIM.Viewer })
       setObject(obj)
       if(obj && obj.vim !== vim){
         setVim(obj.vim)
-        obj.vim.document.getElementsSummary().then(s => setElements(s))
+        obj.vim.document.getElementsSummary().then(s => {
+          const filtered = s.filter(s => obj.vim.getObjectFromElement(s.element).hasMesh)
+          setElements(filtered)
+        })
       }
     }
   })
@@ -66,7 +69,6 @@ export function BimPanel(props: { viewer: VIM.Viewer })
       <BimTree viewer={viewer} elements={elements}  filter={filter} object={object}/>
       <h2 className="text-xs font-bold uppercase mb-6">Bim Inspector</h2>
       <BimInspector elements={elements} object={object} />
-      <h2 className="text-xs font-bold uppercase text-gray-medium p-2 rounded-t border-t border-l border-r border-gray-light w-auto inline-flex">Instance Properties</h2>
       <BimParameters object={object} getOpen={getOpen} setOpen={updateOpen} initOpen={initOpen} />
     </div>
   )

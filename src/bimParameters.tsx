@@ -26,18 +26,20 @@ function acceptParameter(parameter: Parameter){
   return result
 }
 
-
 export function BimParameters(props: { object: VIM.Object, getOpen: (s: string)=> boolean, setOpen: (s:string, b: boolean) => void, initOpen: (s:string[]) => void}){
   //console.log("Render BimParameters Init")
   const [object, setObject] = useState<VIM.Object>()
-  const [parameters, setParameters] = useState<Map<string, Parameter[]>>()
+  const [parameters, setParameters] = useState<ParameterData>()
 
   if(props.object !== object){
     setObject(props.object)
-    toParameterData(props.object).then(p => {
-      setParameters(p)
-      props.initOpen(Array.from(p.keys()))
+    toParameterData(props.object).then(data => {
+      setParameters(data)
+      props.initOpen([...data.instance.keys(), ...data.type.keys()])
     })
+  }
+  const createTitle = (value: string) => {
+    return <h2 key={`title-${value}`} className="text-xs font-bold uppercase text-gray-medium p-2 rounded-t border-t border-l border-r border-gray-light w-auto inline-flex">{value}</h2>
   }
 
   if(!parameters){
@@ -47,7 +49,11 @@ export function BimParameters(props: { object: VIM.Object, getOpen: (s: string)=
 
   //console.log("Render BimParameters Done")
   return <div className="vim-inspector-properties">
-    {Array.from(parameters, (v,k) => parameterTable(v[0] , v[1], props.getOpen(v[0]), b => props.setOpen(v[0],b)))}
+    {parameters.instance ? createTitle('Instance Properties') : null}
+    {Array.from(parameters.instance, (v,k) => parameterTable(v[0] , v[1], props.getOpen(v[0]), b => props.setOpen(v[0],b)))}
+    <br/>
+    {parameters.type ? createTitle('Type Properties') : null}
+    {Array.from(parameters.type, (v,k) => parameterTable(v[0] , v[1], props.getOpen(v[0]), b => props.setOpen(v[0],b)))}
   </div>
 }
 
@@ -71,10 +77,16 @@ function parameterTable(key: string,  parameters: Parameter[], open: boolean, se
   </div>
 }
 
-export async function toParameterData(object: VIM.Object): Promise<Map<string, Parameter[]>>{
+type ParameterData = {
+  instance: Map<string, Parameter[]>
+  type: Map<string, Parameter[]>
+}
+
+export async function toParameterData(object: VIM.Object): Promise<ParameterData>{
   let parameters = await object?.getBimParameters()
   parameters = parameters.filter(acceptParameter)
   parameters = parameters.sort((a, b) => a.group.localeCompare(b.group))
-  const groups = groupBy(parameters, p => p.group)
-  return groups
+  const instance = groupBy(parameters.filter(p => p.isInstance), p => p.group)
+  const type = groupBy(parameters.filter(p => !p.isInstance), p => p.group)
+  return {instance, type}
 }
