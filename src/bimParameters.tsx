@@ -5,27 +5,6 @@ import * as Icons from './icons'
 
 export type Parameter = {name: string, value: string, group: string}
 
-const rejectedParameters = [
-  "Coarse Scale Fill Pattern",
-  "Coarse Scale Fill Color",
-  "Image",
-  "Type Image",
-  'Moves with nearby Element',
-  'Location Line',
-  'Show family pre-cut in plan views'
-]
-
-function acceptParameter(parameter: Parameter){
-  let result = true
-  rejectedParameters.forEach(p => {
-    if(p === parameter.name){
-      result = false
-      return
-    }
-  })
-  return result
-}
-
 export function BimParameters(props: { object: VIM.Object, getOpen: (s: string)=> boolean, setOpen: (s:string, b: boolean) => void, initOpen: (s:string[]) => void}){
   //console.log("Render BimParameters Init")
   const [object, setObject] = useState<VIM.Object>()
@@ -82,11 +61,97 @@ type ParameterData = {
   type: Map<string, Parameter[]>
 }
 
+
 export async function toParameterData(object: VIM.Object): Promise<ParameterData>{
   let parameters = await object?.getBimParameters()
   parameters = parameters.filter(acceptParameter)
-  parameters = parameters.sort((a, b) => a.group.localeCompare(b.group))
+  parameters = parameters.sort((a, b) => compare(a.group, b.group))
   const instance = groupBy(parameters.filter(p => p.isInstance), p => p.group)
   const type = groupBy(parameters.filter(p => !p.isInstance), p => p.group)
   return {instance, type}
+}
+
+// Custom rejected parameters provided by Sam
+const rejectedParameters = [
+  "Coarse Scale Fill Pattern",
+  "Coarse Scale Fill Color",
+  "Image",
+  "Type Image",
+  'Moves with nearby Element',
+  'Location Line',
+  'Show family pre-cut in plan views'
+]
+
+// Revit custom ordering provided by Sam
+const ordering = [
+  'Analysis Results',
+  'Analytical Alignment',
+  'Analytical Model',
+  'Constraints',
+  'Construction',
+  'Data',
+  'Dimension',
+  'Dimensions',
+  'Division Geometry',
+  'Electrical',
+  'Electrical – Circuiting',
+  'Electrical – Lighting',
+  'Electrical – Loads',
+  'Electrical Analysis',
+  'Electrical Engineering',
+  'Energy Analysis',
+  'Fire Protection',
+  'Forces',
+  'General',
+  'Graphics',
+  'Green Building Properties',
+  'Identity Data',
+  'IFC Parameters',
+  'Layers',
+  'Materials and Finishes',
+  'Mechanical',
+  'Mechanical – Flow',
+  'Mechanical – Loads',
+  'Model Properties',
+  'Moments',
+  'Other',
+  'Overall Legend',
+  'Phasing',
+  'Photometrics',
+  'Plumbing',
+  'Primary End',
+  'Rebar Set',
+  'Releases / Member Forces',
+  'Secondary End',
+  'Segments and Fittings',
+  'Set',
+  'Slab Shape Edit',
+  'Structural',
+  'Structural Analysis',
+  'Text',
+  'Title Text',
+  'Visibility'
+  ]
+const orderMap = new Map(ordering.map((s,i) => [s,i]))
+
+function compare(s1: string, s2: string){
+  const has1 = orderMap.has(s1)
+  const has2 = orderMap.has(s2)
+  if(has1 && !has2) return -1
+  if(!has1 && has2) return 1
+  if(!has1 && !has2) return s1.localeCompare(s2)
+  const eq = orderMap.get(s2) - orderMap.get(s2)
+  if(eq === 0) return s1.localeCompare(s2)
+  return eq
+}
+
+function acceptParameter(parameter: Parameter){
+  let result = true
+  rejectedParameters.forEach(p => {
+    if(p === parameter.name){
+      result = false
+      return
+    }
+  })
+  return result
 }
