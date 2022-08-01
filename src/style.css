@@ -28,7 +28,7 @@
   --c-secondary-royal: #103381;
   --c-secondary-purple: #33004d;
 
-  --c-lightest-blue: #D9EDF9;
+  --c-lightest-blue: #d9edf9;
   --c-light-blue: #40a6de;
   --c-light-green: #82de40;
 
@@ -42,12 +42,12 @@
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
 }
 .gizmo-axis-canvas {
-  top: 18px !important;
-  right: 26px !important;
-  z-index: 9;
+  top: 24px !important;
+  right: 24px !important;
+  margin: 8px 16px 8px 16px;
 }
 .vim-loading-box {
   width: fit-content;
@@ -209,7 +209,9 @@ body {
 .parameters:first-child > ul > li h3 {
   border-top-right-radius: 4px;
 }
-.rct-tree-root:not(.rct-tree-root-focus) .rct-tree-item-title-container-selected, .rct-tree-root.rct-tree-root-focus .rct-tree-item-title-container-selected {
+.rct-tree-root:not(.rct-tree-root-focus)
+  .rct-tree-item-title-container-selected,
+.rct-tree-root.rct-tree-root-focus .rct-tree-item-title-container-selected {
   background-color: var(--c-lightest-blue);
 }
 .rct-tree-item-title-container:hover {
