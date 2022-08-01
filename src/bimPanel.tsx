@@ -67,6 +67,7 @@ export function BimPanel(props: { viewer: VIM.Viewer })
       <h2 className="text-xs font-bold uppercase mb-6">Project Inspector</h2>
       <BimSearch viewer={viewer} filter={filter} setFilter={updateFilter}/>
       <BimTree viewer={viewer} elements={elements}  filter={filter} object={object}/>
+      <hr className="border-gray-divider mb-5 -mx-6" />
       <h2 className="text-xs font-bold uppercase mb-6">Bim Inspector</h2>
       <BimInspector elements={elements} object={object} />
       <BimParameters object={object} getOpen={getOpen} setOpen={updateOpen} initOpen={initOpen} />
