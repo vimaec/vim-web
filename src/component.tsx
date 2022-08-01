@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react'
+import React, { RefObject, useEffect, useRef, useState } from 'react'
 import logo from './assets/logo.png'
 
 import * as VIM from 'vim-webgl-viewer/'
@@ -53,7 +53,9 @@ export function VimComponent (props: {
 
   const [ortho, setOrtho] = useState<boolean>(props.viewer.camera.orthographic)
   const [orbit, setOrbit] = useState<boolean>(props.viewer.camera.orbitMode)
+  const [moreMenuVisible, setMoreMenuVisible] = useState(false)
   
+  let moreMenuRef = useRef<HTMLUListElement>();
 
   const updateOrtho = (b: boolean) => {
     setOrtho(b)
@@ -74,9 +76,18 @@ export function VimComponent (props: {
     props.viewer.viewport.canvas.tabIndex =0
     props.viewer.gizmoSection.clip = true
     document.addEventListener('keyup',() => setTimeout(synchOrbit))
+
+    
+    addEventListener('focusin', () =>{
+      if(!moreMenuRef.current) return
+      if(!moreMenuRef.current.contains(document.activeElement)){
+        setMoreMenuVisible(false)
+      }
+    })
+    
   }, [])
 
-  const [moreMenuVisible, setMoreMenuVisible] = useState(false)
+
   return (
     <>
       {useLogo ? <Logo /> : null}
@@ -84,7 +95,7 @@ export function VimComponent (props: {
       {useInspector ? <BimPanel viewer={props.viewer}/> : null}
       {useMenu ? <MenuTools viewer={props.viewer} moreMenuVisible={moreMenuVisible} setMoreMenuVisible = {setMoreMenuVisible}/> : null}
       {useMenuTop ? <MenuTop viewer={props.viewer} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho}/> : null}
-      {moreMenuVisible ?  <MenuMore viewer={props.viewer} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho}/> : null}
+      {moreMenuVisible ? <MenuMore ref={moreMenuRef} viewer={props.viewer} hide={() => setMoreMenuVisible(false)} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho}/> : null}
     </>
   )
 }

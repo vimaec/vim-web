@@ -28,7 +28,7 @@ export function BimInspector(props: { elements: VIM.ElementInfo[], object: VIM.O
   
   //console.log("Render BimInspector Done")
   const pairs = [
-    ["Document", element.document],
+    ["Document", element.documentTitle],
     ["Workset", element.workset],
     ["Category", element.categoryName],
     ["Family Name", element.familyName],

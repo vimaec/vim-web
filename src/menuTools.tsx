@@ -13,11 +13,7 @@ export function MenuTools(props: {viewer: VIM.Viewer, moreMenuVisible:boolean, s
   // Need a ref to get the up to date value in callback.
   const measuringRef = useRef<boolean>()
   measuringRef.current = measuring
-  
-  const onHomeButton = function(){
-    viewer.camera.frame('all', true, viewer.camera.defaultLerpDuration)
-  }
-  
+
   const onSectionButton = function (){
     if(measuring){
       onMeasureBtn()
@@ -71,10 +67,16 @@ export function MenuTools(props: {viewer: VIM.Viewer, moreMenuVisible:boolean, s
   }
 
   const onMoreBtn = () =>{
+    // End other activities on menu button.
+    if(measuring){
+      onMeasureBtn()
+    }
+    if(section){
+      onSectionButton()
+    }
     props.setMoreMenuVisible(!props.moreMenuVisible)
   }
 
-  const btnHome = <button onClick={onHomeButton} className={`rounded-full text-white h-12 w-12 flex items-center justify-center transition-all hover:scale-110 hover:bg-hover-t40 disabled:opacity-50`} type="button"><Icons.Home height="32" width="32" fill="currentColor" /></button>
   const btnSection = <button onClick={onSectionButton} className={`rounded-full text-white h-12 w-12 flex items-center justify-center transition-all hover:scale-110 hover:bg-hover-t40 ${section ? 'bg-primary-royal hover:bg-primary-royal' : ''}`} type="button"><Icons.Box height="32" width="32" fill="currentColor" /></button>
   const btnMeasure = <button onClick={onMeasureBtn} className={`rounded-full text-white h-12 w-12 flex items-center justify-center transition-all hover:scale-110 hover:bg-hover-t40 ${measuring ? 'bg-primary-royal hover:bg-primary-royal' : ''}`} type="button"><Icons.Measure height="32" width="32" fill="currentColor" /></button>
   const btnMore = <button onClick={onMoreBtn} className={`rounded-full text-white h-12 w-12 flex items-center justify-center transition-all hover:scale-110 hover:bg-hover-t40 ${props.moreMenuVisible ? 'bg-primary-royal hover:bg-primary-royal' : ''}`} type="button"><Icons.More height="32" width="32" fill="currentColor" /></button>
@@ -91,7 +93,6 @@ export function MenuTools(props: {viewer: VIM.Viewer, moreMenuVisible:boolean, s
     {measuring ? txtMeasure : ''}
     <div className='mx-1'>{btnSection}</div>
     <div className='mx-1'>{btnMeasure}</div>
-    {/* <div className='mx-1'>{btnHome}</div> */}
     <div className='mx-1'>{btnMore}</div>
   </div>
 }
