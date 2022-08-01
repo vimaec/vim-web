@@ -28,6 +28,7 @@
   --c-secondary-royal: #103381;
   --c-secondary-purple: #33004d;
 
+  --c-lightest-blue: #D9EDF9;
   --c-light-blue: #40a6de;
   --c-light-green: #82de40;
 
@@ -169,6 +170,8 @@ body {
 .rct-tree-items-container li .rct-tree-item-title-container {
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
+  min-height: 2.5rem;
+  border: none;
 }
 .rct-tree-items-container > li:nth-child(odd) {
   background-color: var(--c-white);
@@ -178,6 +181,7 @@ body {
 }
 .vim-inspector-properties {
   max-height: 500px;
+  overflow-y: auto;
 }
 .rct-tree-root-focus {
   outline: none;
@@ -196,6 +200,18 @@ body {
 .rct-tree-item-li {
   font-size: 1rem;
 }
+.rct-tree-item-arrow {
+  width: 20px;
+}
 .rct-tree-item-arrow svg {
   width: 12px;
+}
+.parameters:first-child > ul > li h3 {
+  border-top-right-radius: 4px;
+}
+.rct-tree-root:not(.rct-tree-root-focus) .rct-tree-item-title-container-selected, .rct-tree-root.rct-tree-root-focus .rct-tree-item-title-container-selected {
+  background-color: var(--c-lightest-blue);
+}
+.rct-tree-item-title-container:hover {
+  background-color: var(--c-list-hover);
 }

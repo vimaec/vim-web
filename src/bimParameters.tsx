@@ -38,7 +38,7 @@ function parameterTable(key: string,  parameters: Parameter[], open: boolean, se
   return <div key={"parameters-" + key} className={"parameters"}>
     <ul className="">
       <li key={"title-"+key}>
-        <h3 className="text-xs font-bold uppercase bg-gray-light px-2 py-2 rounded-t flex justify-between">
+        <h3 className="text-xs font-bold uppercase bg-gray-light px-2 py-2 flex justify-between">
           <span className="w-1/2">{key}</span>
           <button onClick={() => setOpen(!open)}> {open ?<Icons.collapseIco className="transition-all rotate-180" height="15" width="15" fill="currentColor" /> : <Icons.collapseIco className="transition-all rotate-0" height="15" width="15" fill="currentColor" />}</button>
         </h3>
@@ -46,8 +46,8 @@ function parameterTable(key: string,  parameters: Parameter[], open: boolean, se
       {open ? parameters.map((p,i) => {
         const id =key + p.name +i
         return <li className="odd:bg-white flex" key={'parameters-tr-' + id }>
-          <span className="w-1/2 border-r border-gray-light p-2" key={'parameters-th-' + id}>{p.name}</span>
-          <span className="w-1/2 text-gray-medium p-2" key={'parameters-td-' + id}>{p.value}</span>
+          <span className="w-1/2 border-r border-gray-light p-2 truncate" title={p.name} key={'parameters-th-' + id}>{p.name}</span>
+          <span className="w-1/2 text-gray-medium p-2 truncate"  title={p.value} key={'parameters-td-' + id}>{p.value}</span>
         </li>
       }) : null}
     </ul>
