@@ -13,17 +13,23 @@ type VimTreeNode = TreeItem<ElementInfo> & {
 export function BimTree(props: {viewer: VIM.Viewer, elements:VIM.ElementInfo[], filter: string, object: VIM.Object}){
   //console.log('Render BimTree Init')
   
+  // Data state
   const [object, setObject] = useState<VIM.Object>()
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
   const [filter, setFilter] = useState<string>();
   const [tree, setTree] = useState<BimTreeData>()
 
+  // Tree state
   const [focusedItem, setFocusedItem] = useState<number>();
   const [expandedItems, setExpandedItems] = useState<number[]>([]);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
-  const div = useRef<HTMLDivElement>()
-  
+
+  // Double click state
+  const [lastClickIndex, setLastClickIndex] = useState<number>()
+  const [lastClickTime, setLastClickTime] = useState<number>()
+
   // Scroll view so that element is visible, if needed.
+  const div = useRef<HTMLDivElement>()
   useEffect(()=>{
     scrollToSelection(div.current)
   }, [object])
@@ -76,13 +82,27 @@ export function BimTree(props: {viewer: VIM.Viewer, elements:VIM.ElementInfo[], 
             selectedItems,
           },
         }}
+        // Select on focus 
         onFocusItem={(item ) => {
           const index = item.index as number
           if(index !== selectedItems?.[0]){
             selectElementInViewer(tree, props.viewer, index)
           }
         }}
-        
+        // Frame on double click
+        onPrimaryAction = {(item, tree) => {
+          const click = item.index as number
+          const time = new Date().getTime()
+          if(lastClickIndex === click && time - lastClickTime < 200){
+            console.log("ZOOM")
+            props.viewer.camera.frame(props.viewer.selection.object, true, props.viewer.camera.defaultLerpDuration)
+            setLastClickIndex(-1)
+          }
+          else{
+            setLastClickIndex(item.index as number)
+            setLastClickTime(new Date().getTime())
+          }
+        }}
         //Default behavior
         onExpandItem={item => setExpandedItems([...expandedItems, item.index  as number])}
         //Default behavior
