@@ -63,14 +63,18 @@ export function BimPanel(props: { viewer: VIM.Viewer })
   if(!object) return null
   
   return(
-    <div className="vim-bim-panel fixed left-0 top-0 bg-gray-lightest p-6 text-gray-darker h-full overflow-y-auto">
-      <h2 className="text-xs font-bold uppercase mb-6">Project Inspector</h2>
-      <BimSearch viewer={viewer} filter={filter} setFilter={updateFilter}/>
-      <BimTree viewer={viewer} elements={elements}  filter={filter} object={object}/>
+    <div className="vim-bim-panel fixed left-0 top-0 bg-gray-lightest p-6 text-gray-darker h-full">
+      <div className="vim-bim-upper h-1/2">
+        <h2 className="text-xs font-bold uppercase mb-6">Project Inspector</h2>
+        <BimSearch viewer={viewer} filter={filter} setFilter={updateFilter}/>
+        <BimTree viewer={viewer} elements={elements}  filter={filter} object={object}/>
+      </div>
       <hr className="border-gray-divider mb-5 -mx-6" />
       <h2 className="text-xs font-bold uppercase mb-6">Bim Inspector</h2>
-      <BimInspector elements={elements} object={object} />
-      <BimParameters object={object} getOpen={getOpen} setOpen={updateOpen} initOpen={initOpen} />
+      <div className="vim-bim-lower h-1/2 overflow-y-auto">
+        <BimInspector elements={elements} object={object} />
+        <BimParameters object={object} getOpen={getOpen} setOpen={updateOpen} initOpen={initOpen} />
+      </div>
     </div>
   )
 }
