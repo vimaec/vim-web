@@ -23,7 +23,7 @@ export function MenuTools(props: {viewer: VIM.Viewer, moreMenuVisible:boolean, s
     viewer.gizmoSection.interactive = next
     viewer.gizmoSection.visible = next
     if(next){
-      viewer.camera.frame(viewer.renderer.section.box.getBoundingSphere(new VIM.THREE.Sphere()))
+      viewer.camera.frame(viewer.renderer.section.box.getBoundingSphere(new VIM.THREE.Sphere()), true, viewer.camera.defaultLerpDuration)
     }
     
     setSection(next)
