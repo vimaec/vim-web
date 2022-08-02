@@ -98,10 +98,10 @@ export function VimComponent (props: {
       {useLogo ? <Logo /> : null}
       {helpControlsVisible ? <HelpControls/> : null}
       {useLoading ? <LoadingBox viewer={props.viewer}/> : null}
-      {useInspector ? <BimPanel viewer={props.viewer}/> : null}
       {useMenu ? <MenuTools viewer={props.viewer} moreMenuVisible={moreMenuVisible} setMoreMenuVisible = {setMoreMenuVisible}/> : null}
       {useMenuTop ? <MenuTop viewer={props.viewer} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho}/> : null}
       {moreMenuVisible ? <MenuMore ref={moreMenuRef} viewer={props.viewer} hide={() => setMoreMenuVisible(false)} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho} helpVisible={helpControlsVisible} setHelpVisible={setHelpControlsVisible}/> : null}
+      {useInspector ? <BimPanel viewer={props.viewer}/> : null}
       <ReactTooltip delayShow={200}/>
     </>
   )
