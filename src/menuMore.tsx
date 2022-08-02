@@ -1,14 +1,18 @@
 import React, { useEffect, useRef } from "react";
 import { useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
+const urlSupport = 'https://support.vimaec.com'
 
 export const MenuMore = React.forwardRef((
   props:{  viewer: VIM.Viewer
+    hide: () => void, 
     ortho: boolean,
     setOrtho:  (b:boolean) => void,
     orbit: boolean,
-    setOrbit : (b:boolean) => void
-    hide: () => void }
+    setOrbit : (b:boolean) => void,
+    helpVisible: boolean,
+    setHelpVisible: (b:boolean) => void
+    }
   , ref : React.Ref<HTMLUListElement>) => 
  {
 
@@ -53,11 +57,11 @@ export const MenuMore = React.forwardRef((
         <button onClick={closeAnd(onSectionResetBtn)}>Reset Section Box</button>
       </li>
       <li><hr className="border-gray-lighter my-2" /></li>
-      <li className="py-2 px-12 hover:bg-gray-lightest" key={'vim-menu-more-controls'}>
-        <button onClick={closeAnd(() => console.log('Show Controls'))}>Show Controls</button>
+      <li className={`py-2 px-12 hover:bg-gray-lightest ${props.helpVisible ? 'text-primary submenu-item-active' : ''}`} key={'vim-menu-more-controls'}>
+        <button onClick={closeAnd(() => props.setHelpVisible(!props.helpVisible))}>Show Controls</button>
       </li>
       <li className="py-2 px-12 hover:bg-gray-lightest" key={'vim-menu-more-support'}>
-        <button onClick={closeAnd(() => console.log('Support Center'))}>Support Center</button>
+        <button onClick={closeAnd(() => window.open(urlSupport))}>Support Center</button>
       </li>
     </ul>
 </div>

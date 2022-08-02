@@ -1,6 +1,7 @@
 
 import React, { RefObject, useEffect, useRef, useState } from 'react'
 import logo from './assets/logo.png'
+import imageHelpControls from './assets/help_controls.png'
 
 import * as VIM from 'vim-webgl-viewer/'
 
@@ -54,6 +55,9 @@ export function VimComponent (props: {
   const [ortho, setOrtho] = useState<boolean>(props.viewer.camera.orthographic)
   const [orbit, setOrbit] = useState<boolean>(props.viewer.camera.orbitMode)
   const [moreMenuVisible, setMoreMenuVisible] = useState(false)
+  const [helpControlsVisible, setHelpControlsVisible] = useState(false)
+
+  const toggleHelpControls = () => setHelpControlsVisible(!helpControlsVisible)
   
   let moreMenuRef = useRef<HTMLUListElement>();
 
@@ -91,11 +95,13 @@ export function VimComponent (props: {
   return (
     <>
       {useLogo ? <Logo /> : null}
+      {helpControlsVisible ? <HelpControls/> : null}
       {useLoading ? <LoadingBox viewer={props.viewer}/> : null}
       {useInspector ? <BimPanel viewer={props.viewer}/> : null}
       {useMenu ? <MenuTools viewer={props.viewer} moreMenuVisible={moreMenuVisible} setMoreMenuVisible = {setMoreMenuVisible}/> : null}
       {useMenuTop ? <MenuTop viewer={props.viewer} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho}/> : null}
-      {moreMenuVisible ? <MenuMore ref={moreMenuRef} viewer={props.viewer} hide={() => setMoreMenuVisible(false)} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho}/> : null}
+      {moreMenuVisible ? <MenuMore ref={moreMenuRef} viewer={props.viewer} hide={() => setMoreMenuVisible(false)} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho} helpVisible={helpControlsVisible} setHelpVisible={setHelpControlsVisible}/> : null}
+      
     </>
   )
 }
@@ -106,6 +112,14 @@ function Logo () {
       <a href="https://vimaec.com">
         <img src={logo}></img>
       </a>
+    </div>
+  )
+}
+
+function HelpControls () {
+  return (
+    <div className="vim-help-controls">
+      <img className='m-auto' src={imageHelpControls}></img>
     </div>
   )
 }

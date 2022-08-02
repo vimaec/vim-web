@@ -144,6 +144,13 @@ body {
   transform: scale(1);
 }
 
+.vim-help-controls {
+  position: fixed;
+  bottom: 64px;
+  width: 100%;
+  pointer-events: none;
+}
+
 /* BIM Explorer - Main*/
 
 .submenu-item-active {
