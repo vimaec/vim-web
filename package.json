@@ -56,6 +56,7 @@
     "jsx": "^0.9.89",
     "react": "^18.1.0",
     "react-complex-tree": "^1.1.9",
+    "react-tooltip": "^4.2.21",
     "vim-webgl-viewer": "1.2.33-dev.28"
   },
   "keywords": [

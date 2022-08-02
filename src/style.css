@@ -151,6 +151,10 @@ body {
   pointer-events: none;
 }
 
+.__react_component_tooltip {
+  transition: opacity 0.1s ease-out !important;
+}
+
 /* BIM Explorer - Main*/
 
 .submenu-item-active {

@@ -1,5 +1,6 @@
 
 import React, { RefObject, useEffect, useRef, useState } from 'react'
+import ReactTooltip from 'react-tooltip';
 import logo from './assets/logo.png'
 import imageHelpControls from './assets/help_controls.png'
 
@@ -101,7 +102,7 @@ export function VimComponent (props: {
       {useMenu ? <MenuTools viewer={props.viewer} moreMenuVisible={moreMenuVisible} setMoreMenuVisible = {setMoreMenuVisible}/> : null}
       {useMenuTop ? <MenuTop viewer={props.viewer} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho}/> : null}
       {moreMenuVisible ? <MenuMore ref={moreMenuRef} viewer={props.viewer} hide={() => setMoreMenuVisible(false)} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho} helpVisible={helpControlsVisible} setHelpVisible={setHelpControlsVisible}/> : null}
-      
+      <ReactTooltip delayShow={200}/>
     </>
   )
 }
