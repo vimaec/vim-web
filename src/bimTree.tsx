@@ -35,7 +35,7 @@ export function BimTree(props: {viewer: VIM.Viewer, elements:VIM.ElementInfo[], 
   }, [object])
     
   // Generate or regenerate tree as needed.
-  if(props.elements !== elements || props.filter !== filter){
+  if(props.elements && (props.elements !== elements || props.filter !== filter)){
     setFilter(props.filter)
     setElements(props.elements)
     toTreeData(props.elements, props.filter).then(t => 
@@ -51,7 +51,7 @@ export function BimTree(props: {viewer: VIM.Viewer, elements:VIM.ElementInfo[], 
   }
 
   // Update tree state
-  if(props.object !== object){  
+  if(props.object && props.object !== object){  
     setObject(props.object)
     const node = tree.getNode(props.object.element)
     const parents = node ? tree.getParents(node) : undefined
