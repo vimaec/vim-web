@@ -44,4 +44,19 @@
     }
   }
 
+  /**
+   * Takes a N-deep Map tree and reinsert all element in sorted order.
+   */
+  export function sort<K,V> (map: MapTree<K, V>){
+    for (const [k, v] of map.entries()) {
+      if (v instanceof Map) {
+        sort(v)
+      } else {
+        map.set(k, v.sort())
+      }
+    }
+    const array = Array.from(map).sort()
+    map.clear()
+    array.forEach(e => map.set(e[0], e[1]))
+  }
  

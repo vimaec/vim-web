@@ -3,15 +3,9 @@ import * as VIM from 'vim-webgl-viewer'
 
 
 export function BimSearch(props: { viewer: VIM.Viewer, filter: string, setFilter :(s:string) => void }){
-  console.log('Render BimSearch Init')
-
-  const onSubmit = (e: React.FormEvent<HTMLInputElement>) => {
-    console.log('Done')
-    console.log(e.currentTarget.value)
-  }
+  //console.log('Render BimSearch Init')
 
   const onChange = (e: React.FormEvent<HTMLInputElement>) => {
-    console.log(e.currentTarget.value)
     props.setFilter(e.currentTarget.value)
   }
 
@@ -22,6 +16,7 @@ export function BimSearch(props: { viewer: VIM.Viewer, filter: string, setFilter
   const onBlur = () => {
     props.viewer.inputs.registerKeyboard()
   }
+
 
   console.log('Render BimSearch Done')
   return <div className="vim-bim-search mb-4 flex">
@@ -36,7 +31,6 @@ export function BimSearch(props: { viewer: VIM.Viewer, filter: string, setFilter
       onFocus = {onFocus}
       onBlur = {onBlur}
       onChange = {onChange}
-      onSubmit = {onSubmit}
     />
   </div>
 }

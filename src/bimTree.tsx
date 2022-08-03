@@ -3,36 +3,42 @@ import { ControlledTreeEnvironment, InteractionMode, Tree, TreeItem } from "reac
 import 'react-complex-tree/lib/style.css';
 import * as VIM from 'vim-webgl-viewer/'
 import { ElementInfo } from "vim-webgl-viewer/";
-import {MapTree, toMapTree, } from './data'
+import {MapTree, sort, toMapTree, } from './data'
 
 type VimTreeNode = TreeItem<ElementInfo> & {
   title: string,
   parent: number
 } 
 
-export function BimTree(props: {viewer: VIM.Viewer, object:VIM.Object, filter: string}){
+export function BimTree(props: {viewer: VIM.Viewer, elements:VIM.ElementInfo[], filter: string, object: VIM.Object}){
   //console.log('Render BimTree Init')
-
+  
+  // Data state
   const [object, setObject] = useState<VIM.Object>()
-  const [vim, setVim] = useState<VIM.Vim>();
+  const [elements, setElements] = useState<VIM.ElementInfo[]>()
   const [filter, setFilter] = useState<string>();
   const [tree, setTree] = useState<BimTreeData>()
 
+  // Tree state
   const [focusedItem, setFocusedItem] = useState<number>();
   const [expandedItems, setExpandedItems] = useState<number[]>([]);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
-  const div = useRef<HTMLDivElement>()
-  
+
+  // Double click state
+  const [lastClickIndex, setLastClickIndex] = useState<number>()
+  const [lastClickTime, setLastClickTime] = useState<number>()
+
   // Scroll view so that element is visible, if needed.
+  const div = useRef<HTMLDivElement>()
   useEffect(()=>{
     scrollToSelection(div.current)
   }, [object])
     
   // Generate or regenerate tree as needed.
-  if(props.object.vim !== vim || props.filter !== filter){
-    setVim(props.object.vim)
+  if(props.elements !== elements || props.filter !== filter){
     setFilter(props.filter)
-    toTreeData(props.object.vim.document, props.filter).then(t => 
+    setElements(props.elements)
+    toTreeData(props.elements, props.filter).then(t => 
       setTree(t))
   }
 
@@ -76,13 +82,27 @@ export function BimTree(props: {viewer: VIM.Viewer, object:VIM.Object, filter: s
             selectedItems,
           },
         }}
+        // Select on focus 
         onFocusItem={(item ) => {
           const index = item.index as number
           if(index !== selectedItems?.[0]){
             selectElementInViewer(tree, props.viewer, index)
           }
         }}
-        
+        // Frame on double click
+        onPrimaryAction = {(item, tree) => {
+          const click = item.index as number
+          const time = new Date().getTime()
+          if(lastClickIndex === click && time - lastClickTime < 200){
+            console.log("ZOOM")
+            props.viewer.camera.frame(props.viewer.selection.object, true, props.viewer.camera.defaultLerpDuration)
+            setLastClickIndex(-1)
+          }
+          else{
+            setLastClickIndex(item.index as number)
+            setLastClickTime(new Date().getTime())
+          }
+        }}
         //Default behavior
         onExpandItem={item => setExpandedItems([...expandedItems, item.index  as number])}
         //Default behavior
@@ -132,12 +152,11 @@ function scrollToSelection(div: HTMLDivElement ){
   }
 }
 
-export async function toTreeData(document: VIM.Document, filter: string) {
+export async function toTreeData(elements: VIM.ElementInfo[], filter: string) {
   if(!document) return
   
-  const summary = await document.getElementsSummary()
   const filterLower = filter.toLocaleLowerCase()
-  const filtered = summary.filter(s =>
+  const filtered = elements.filter(s =>
     s.id.toString().toLocaleLowerCase().includes(filterLower) ||
     s.name.toLocaleLowerCase().includes(filterLower) ||
     s.categoryName.toLocaleLowerCase().includes(filterLower) ||
@@ -149,6 +168,8 @@ export async function toTreeData(document: VIM.Document, filter: string) {
     e => e.familyName,
     e => e.familyTypeName
   ])
+  sort(tree)
+  
   const result = new BimTreeData(tree)
   return result
 }
@@ -160,6 +181,7 @@ export class BimTreeData{
   constructor(map: MapTree<string, ElementInfo>){
     this.nodes = {}
     this.elemenToNode = new Map<number, number>()
+    
     this.flatten(map)
   }
   
