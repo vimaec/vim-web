@@ -61,10 +61,10 @@ export function MenuTools(props: {viewer: VIM.Viewer, moreMenuVisible:boolean, s
     props.setMoreMenuVisible(!props.moreMenuVisible)
   }
 
-  const btnHome = <button onClick={onHomeButton} className={`rounded-full text-white h-12 w-12 flex items-center justify-center transition-all hover:scale-110 hover:bg-hover-t40 disabled:opacity-50`} type="button"><Icons.Home height="32" width="32" fill="currentColor" /></button>
-  const btnSection = <button onClick={onSectionButton} className={`rounded-full text-white h-12 w-12 flex items-center justify-center transition-all hover:scale-110 hover:bg-hover-t40 ${section ? 'bg-primary-royal hover:bg-primary-royal' : ''}`} type="button"><Icons.Box height="32" width="32" fill="currentColor" /></button>
-  const btnMeasure = <button onClick={onMeasureBtn} className={`rounded-full text-white h-12 w-12 flex items-center justify-center transition-all hover:scale-110 hover:bg-hover-t40 ${measuring ? 'bg-primary-royal hover:bg-primary-royal' : ''}`} type="button"><Icons.Measure height="32" width="32" fill="currentColor" /></button>
-  const btnMore = <button onClick={onMoreBtn} className={`rounded-full text-white h-12 w-12 flex items-center justify-center transition-all hover:scale-110 hover:bg-hover-t40 ${props.moreMenuVisible ? 'bg-primary-royal hover:bg-primary-royal' : ''}`} type="button"><Icons.More height="32" width="32" fill="currentColor" /></button>
+  const btnHome = <button onClick={onHomeButton} className={`rounded-full text-white h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:bg-hover-t40 disabled:opacity-50`} type="button"><Icons.Home height="24" width="24" fill="currentColor" /></button>
+  const btnSection = <button onClick={onSectionButton} className={`rounded-full text-white h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:bg-hover-t40 ${section ? 'bg-primary-royal hover:bg-primary-royal' : ''}`} type="button"><Icons.Box height="24" width="24" fill="currentColor" /></button>
+  const btnMeasure = <button onClick={onMeasureBtn} className={`rounded-full text-white h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:bg-hover-t40 ${measuring ? 'bg-primary-royal hover:bg-primary-royal' : ''}`} type="button"><Icons.Measure height="24" width="24" fill="currentColor" /></button>
+  const btnMore = <button onClick={onMoreBtn} className={`rounded-full text-white h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:bg-hover-t40 ${props.moreMenuVisible ? 'bg-primary-royal hover:bg-primary-royal' : ''}`} type="button"><Icons.More height="24" width="24" fill="currentColor" /></button>
 
 
   const txtMeasure = <ul className='flex text-white mr-auto'>

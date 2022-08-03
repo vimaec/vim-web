@@ -168,10 +168,12 @@ body {
   overflow-y: auto;
 }
 .rct-tree-items-container li .rct-tree-item-title-container {
+  border: none;
+}
+.rct-tree-items-container li .rct-tree-item-title-container .rct-tree-item-button {
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
   min-height: 2.5rem;
-  border: none;
 }
 .rct-tree-items-container > li:nth-child(odd) {
   background-color: var(--c-white);

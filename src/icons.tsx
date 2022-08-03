@@ -39,8 +39,8 @@ export const Home = ({ height, width, fill }) => (
   </svg>
 )
 
-export const Camera = ({ height, width, fill }) => (
-  <svg height={height} width={width} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+export const Camera = ({ height, width, className, fill }) => (
+  <svg height={height} width={width} className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
     <path fill={fill} d="M213.788,28a1.8,1.8,0,1,0,1.805,1.8A1.8,1.8,0,0,0,213.788,28Zm-1.041,4.124a5.191,5.191,0,0,0-4.008,2.3,6.031,6.031,0,0,0-.577,3.262.705.705,0,1,0,1.411,0,4.967,4.967,0,0,1,.375-2.531,3.936,3.936,0,0,1,1.461-1.225c-.251,1.161-.481,2.324-.716,3.481l3.35,7.958a1.008,1.008,0,1,0,1.857-.782l-2.695-6.4.343-1.432.251-1.049c.72,1.308,2.393,1.662,3.537,1.934a.705.705,0,1,0,.323-1.373,4.968,4.968,0,0,1-2.375-.952,2.5,2.5,0,0,1-.6-.972c-.165-.46-.242-.967-.389-1.421v0h0c-.308-.794-.863-.79-1.551-.792Zm-2.274,6.339-.683,3.387-1.563,2.612a1.008,1.008,0,1,0,1.729,1.035l1.7-2.842a1.007,1.007,0,0,0,.143-.5l0-.532-1.33-3.161Z" transform="translate(-208.076 -28)" />
   </svg>
 )
@@ -53,11 +53,8 @@ export const Measure = ({ height, width, fill }) => (
 )
 
 export const More = ({ height, width, fill }) => (
-  <svg height={height} width={width} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
-    <path fill={fill} d="M32 160c-17.644 0-32-14.356-32-32s14.356-32 32-32 32 14.356 32 32-14.356 32-32 32ZM128 160c-17.644 0-32-14.356-32-32s14.356-32 32-32 32 14.356 32 32-14.356 32-32 32ZM224 160c-17.644 0-32-14.356-32-32s14.356-32 32-32 32 14.356 32 32-14.356 32-32 32Z"/>
-  </svg>
+  <svg height={height} width={width} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path fill={fill} d="M48,156c-15.438,0-28-12.562-28-28s12.562-28,28-28,28,12.562,28,28-12.562,28-28,28Z"/><path fill={fill} d="M128,156c-15.438,0-28-12.562-28-28s12.562-28,28-28,28,12.562,28,28-12.562,28-28,28Z"/><path fill={fill} d="M208,156c-15.438,0-28-12.562-28-28s12.562-28,28-28,28,12.562,28,28-12.562,28-28,28Z"/></svg>
 )
-
 
 export const collapseIco = ({ height, width, fill, className }) => (
   <svg height={height} width={width} className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">

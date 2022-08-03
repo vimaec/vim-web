@@ -22,8 +22,8 @@ export function MenuTop(props: {
   },[])
 
   const btnOrbit = <button onClick={() => props.setOrbit(!props.orbit)} className={"rounded-full text-white h-8 w-8 flex items-center justify-center transition-all opacity-80 hover:opacity-100"} type="button">{props.orbit ? <Icons.Orbit height="20" width="20" fill="currentColor" /> : <Icons.FirstPerson height="20" width="20" fill="currentColor" />}</button>
-  const btnOrtho = <button onClick={() => props.setOrtho(!props.ortho)} className={"rounded-full text-white h-8 w-8 flex items-center justify-center transition-all  opacity-80 hover:opacity-100"} type="button">{props.ortho ? <Icons.Orthographic height="20" width="20" fill="currentColor" /> : <Icons.Perspective height="20" width="20" fill="currentColor" />}</button>
-  const btnCamera = <div className={"rounded-full text-white text-sm h-8 w-8 flex items-center justify-center transition-all opacity-75"} type="button"><Icons.Camera height="20" width="20" fill="currentColor" />{speed}</div>
+  const btnOrtho = <button onClick={() => props.setOrtho(!props.ortho)} className={"rounded-full text-white h-8 w-8 flex items-center justify-center transition-all  opacity-80 hover:opacity-100"} type="button">{props.ortho ? <Icons.Orthographic height="20" width="20" fill="currentColor" /> : <Icons.Perspective height="20" width="16" fill="currentColor" />}</button>
+  const btnCamera = <div className={"rounded-full text-white text-sm h-8 w-8 flex items-center justify-start transition-all opacity-75"}><Icons.Camera className={"shrink-0"} height="20" width="20" fill="currentColor" />{speed}</div>
   
   return <div className='flex flex-col mx-2 my-0 fixed right-0 top-2 w-auto'>
     <div className='border border-hover-t40 h-28 w-full rounded-t-md'> </div>
