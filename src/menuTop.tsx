@@ -24,7 +24,7 @@ export function MenuTop(props: {
 
   const btnOrbit = <button data-tip={props.orbit ? "Orbit" : "Free"} onClick={() => props.setOrbit(!props.orbit)} className={"rounded-full text-white h-8 w-8 flex items-center justify-center transition-all opacity-80 hover:opacity-100"} type="button">{props.orbit ? <Icons.Orbit height="20" width="20" fill="currentColor" /> : <Icons.FirstPerson height="20" width="20" fill="currentColor" />}</button>
   const btnOrtho = <button data-tip={props.ortho ? "Orthographic" : "Perspective"}  onClick={() => props.setOrtho(!props.ortho)} className={"rounded-full text-white h-8 w-8 flex items-center justify-center transition-all opacity-80 hover:opacity-100"} type="button">{props.ortho ? <Icons.Orthographic height="20" width="20" fill="currentColor" /> : <Icons.Perspective height="20" width="20" fill="currentColor" />}</button>
-  const btnCamera = <div data-tip="Speed" className={"rounded-full text-white text-sm h-8 w-8 flex items-center justify-center transition-all opacity-75"}><Icons.Camera className={"shrink-0"} height="20" width="20" fill="currentColor" />{speed}</div>
+  const btnCamera = <div data-tip="Speed" className={"rounded-full text-white text-sm h-8 w-8 flex items-center justify-start transition-all opacity-75"}><Icons.Camera className={"shrink-0"} height="20" width="20" fill="currentColor" />{speed}</div>
   
   return <div className='vim-top flex flex-col fixed right-6 top-6 w-auto pointer-events-none'>
     <div className='border border-hover-t40 h-28 w-full rounded-t-md pointer-events-none' > </div>

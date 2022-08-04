@@ -187,7 +187,7 @@ body {
   font-family: inherit;
 }
 .rct-tree-root > div > .rct-tree-items-container {
-  max-height: 35vh;
+  max-height: calc(50vh - 9rem);
   overflow-y: auto;
 }
 .rct-tree-items-container li .rct-tree-item-title-container {
