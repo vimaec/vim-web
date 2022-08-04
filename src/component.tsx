@@ -2,7 +2,7 @@
 import React, { RefObject, useEffect, useRef, useState } from 'react'
 import ReactTooltip from 'react-tooltip';
 import logo from './assets/logo.png'
-import imageHelpControls from './assets/help_controls.png'
+// import imageHelpControls from './assets/help_controls.png'
 
 import * as VIM from 'vim-webgl-viewer/'
 
