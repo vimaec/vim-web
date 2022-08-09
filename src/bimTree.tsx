@@ -61,11 +61,11 @@ export function BimTree(props: {viewer: VIM.Viewer, elements:VIM.ElementInfo[], 
   }
 
   const onFocus = () => {
-    props.viewer.inputs.unregisterKeyboard()
+    props.viewer.inputs.keyboard.unregister()
   }
 
   const onBlur = () => {
-    props.viewer.inputs.registerKeyboard()
+    props.viewer.inputs.keyboard.register()
   }
 
   //console.log('Render BimTree Done')

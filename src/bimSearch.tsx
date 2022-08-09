@@ -10,11 +10,11 @@ export function BimSearch(props: { viewer: VIM.Viewer, filter: string, setFilter
   }
 
   const onFocus = () => {
-    props.viewer.inputs.unregisterKeyboard()
+    props.viewer.inputs.keyboard.unregister()
   }
 
   const onBlur = () => {
-    props.viewer.inputs.registerKeyboard()
+    props.viewer.inputs.keyboard.register()
   }
 
 
