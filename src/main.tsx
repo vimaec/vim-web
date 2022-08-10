@@ -17,8 +17,6 @@ const root = createRoot(div)
 root.render(<VimComponent viewer = {viewer} onMount ={loadVim}/>)
 
 
-
-
 function loadVim(){
   const canvas = viewer.viewport.canvas
   viewer.loadVim(

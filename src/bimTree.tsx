@@ -95,7 +95,7 @@ export function BimTree(props: {viewer: VIM.Viewer, elements:VIM.ElementInfo[], 
           const time = new Date().getTime()
           if(lastClickIndex === click && time - lastClickTime < 200){
             console.log("ZOOM")
-            props.viewer.camera.frame(props.viewer.selection.object, true, props.viewer.camera.defaultLerpDuration)
+            props.viewer.camera.frame(props.viewer.selection.object,'center', props.viewer.camera.defaultLerpDuration)
             setLastClickIndex(-1)
           }
           else{
