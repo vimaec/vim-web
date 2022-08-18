@@ -66,6 +66,26 @@ body {
   transform: translate(-50%, -50%);
 }
 
+.react-contextmenu {
+  background-color: white;
+  border-radius: 5px;
+  padding: 5px;
+}
+.react-contextmenu-item {
+  cursor: pointer;
+}
+.react-contextmenu-item--selected {
+  background-color: cyan;
+}
+
+.react-contextmenu-item--selected {
+  background-color: cyan;
+}
+
+.checked {
+  font-weight: bold;
+}
+
 .vim-logo {
   position: fixed;
   top: 16px;
@@ -193,7 +213,10 @@ body {
 .rct-tree-items-container li .rct-tree-item-title-container {
   border: none;
 }
-.rct-tree-items-container li .rct-tree-item-title-container .rct-tree-item-button {
+.rct-tree-items-container
+  li
+  .rct-tree-item-title-container
+  .rct-tree-item-button {
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
   min-height: 2.5rem;

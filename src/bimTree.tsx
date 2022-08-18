@@ -10,11 +10,11 @@ type VimTreeNode = TreeItem<ElementInfo> & {
   parent: number
 } 
 
-export function BimTree(props: {viewer: VIM.Viewer, elements:VIM.ElementInfo[], filter: string, object: VIM.Object}){
+export function BimTree(props: {viewer: VIM.Viewer, elements:VIM.ElementInfo[], filter: string, objects: VIM.Object[]}){
   //console.log('Render BimTree Init')
   
   // Data state
-  const [object, setObject] = useState<VIM.Object>()
+  const [objects, setObjects] = useState<VIM.Object[]>([])
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
   const [filter, setFilter] = useState<string>();
   const [tree, setTree] = useState<BimTreeData>()
@@ -32,7 +32,7 @@ export function BimTree(props: {viewer: VIM.Viewer, elements:VIM.ElementInfo[], 
   const div = useRef<HTMLDivElement>()
   useEffect(()=>{
     scrollToSelection(div.current)
-  }, [object])
+  }, [objects])
     
   // Generate or regenerate tree as needed.
   if(props.elements && (props.elements !== elements || props.filter !== filter)){
@@ -50,14 +50,22 @@ export function BimTree(props: {viewer: VIM.Viewer, elements:VIM.ElementInfo[], 
     </div>
   }
 
+  const same = props.objects.length === objects.length && props.objects.every((v,i) => v === objects[i])
   // Update tree state
-  if(props.object && props.object !== object){  
-    setObject(props.object)
-    const node = tree.getNode(props.object.element)
-    const parents = node ? tree.getParents(node) : undefined
-    setFocusedItem(node)
-    setExpandedItems(parents)
-    setSelectedItems([node])
+  if(!same){  
+    setObjects(props.objects)
+    const nodes = props.objects.map(o => tree.getNode(o.element))
+
+    // updated expanded items
+    const parents = nodes.flatMap(n => tree.getParents(n))
+    const set = new Set(expandedItems)
+    const missing = parents.filter(p => !set.has(p))
+    const expanded = expandedItems.concat(missing)
+    setExpandedItems(expanded)
+
+    setFocusedItem(nodes[0])
+    setSelectedItems(nodes)
+    
   }
 
   const onFocus = () => {
@@ -83,19 +91,26 @@ export function BimTree(props: {viewer: VIM.Viewer, elements:VIM.ElementInfo[], 
           },
         }}
         // Select on focus 
+        
         onFocusItem={(item ) => {
+          
           const index = item.index as number
+          setFocusedItem(index)
+          /*
           if(index !== selectedItems?.[0]){
             selectElementInViewer(tree, props.viewer, index)
           }
+          */
         }}
+        
         // Frame on double click
         onPrimaryAction = {(item, tree) => {
           const click = item.index as number
           const time = new Date().getTime()
           if(lastClickIndex === click && time - lastClickTime < 200){
-            console.log("ZOOM")
-            props.viewer.camera.frame(props.viewer.selection.object,'center', props.viewer.camera.defaultLerpDuration)
+            
+            const sphere = props.viewer.selection.getBoundingBox().getBoundingSphere(new VIM.THREE.Sphere())
+            props.viewer.camera.frame(sphere,'center', props.viewer.camera.defaultLerpDuration)
             setLastClickIndex(-1)
           }
           else{
@@ -110,8 +125,9 @@ export function BimTree(props: {viewer: VIM.Viewer, elements:VIM.ElementInfo[], 
           setExpandedItems(expandedItems.filter(expandedItemIndex => expandedItemIndex !== item.index))
         }
         onSelectItems={(items :number[]) => {
-          if(items[0] !== selectedItems[0]){
-            selectElementInViewer(tree, props.viewer, items[0])
+          console.log("Selected: " + JSON.stringify(items))
+          if(items){
+            selectElementsInViewer(tree, props.viewer, items)
           }
         }}
       >
@@ -123,13 +139,18 @@ export function BimTree(props: {viewer: VIM.Viewer, elements:VIM.ElementInfo[], 
 }
 
 
-function selectElementInViewer(tree: BimTreeData, viewer: VIM.Viewer, node : number ){
-  const item = tree.nodes[node]
-  if(!item.data) return
-  const element = item.data.element
-  
-  const obj = viewer.vims[0].getObjectFromElement(element)
-  viewer.selection.select(obj)
+function selectElementsInViewer(tree: BimTreeData, viewer: VIM.Viewer, nodes : number[] ){
+  const objects : VIM.Object[] = []
+  nodes.forEach(n => {
+    const item = tree.nodes[n]
+    if(!item.data) return
+    const element = item.data.element
+    
+    const obj = viewer.vims[0].getObjectFromElement(element)
+    objects.push(obj)
+    
+  })
+  viewer.selection.select(...objects)
 }
 
 function scrollToSelection(div: HTMLDivElement ){

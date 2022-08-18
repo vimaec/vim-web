@@ -14,7 +14,7 @@ export function BimPanel(props: { viewer: VIM.Viewer })
   //console.log('Render Panel Init')
   const viewer = props.viewer
   const [filter, setFilter] = useState("")
-  const [object, setObject] = useState<VIM.Object>()
+  const [objects, setObjects] = useState<VIM.Object[]>([])
   const [vim, setVim] = useState<VIM.Vim>()
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
   const [open, setOpen] = useState<Map<string, boolean>>()
@@ -42,38 +42,46 @@ export function BimPanel(props: { viewer: VIM.Viewer })
 
   // Register to selection
   useEffect(() => {
+    const old = viewer.selection.onValueChanged
     viewer.selection.onValueChanged = 
     () => {
-      const obj = viewer.selection.object
-      setObject(obj)
-      if(obj && obj.vim !== vim){
-        setVim(obj.vim)
-        obj.vim.document.getElementsSummary().then(s => {
-          const filtered = s.filter(s => obj.vim.getObjectFromElement(s.element).hasMesh)
+      old?.()
+      
+      console.log("Bim " +JSON.stringify(viewer.selection.objects))
+      setObjects([...viewer.selection.objects])
+      
+      const nextVim = viewer.selection.vim
+      if(nextVim && vim !== nextVim){
+        setVim(nextVim)
+        nextVim.document.getElementsSummary().then(s => {
+          const filtered = s.filter(s => nextVim.getObjectFromElement(s.element).hasMesh)
           setElements(filtered)
         })
       }
     }
   })
+  
 
   // Resize canvas when panel opens/closes.
-  resizeCanvas(props.viewer, !!object)
-  
-  
-  if(!object) return null
+  const hasSelection = objects.length === 0
+  resizeCanvas(props.viewer, !hasSelection)
+  if(hasSelection){
+    props.viewer.viewport.canvas.focus()
+    return null
+  } 
   
   return(
     <div className="vim-bim-panel fixed left-0 top-0 bg-gray-lightest p-6 text-gray-darker h-full">
       <div className="vim-bim-upper h-1/2">
         <h2 className="text-xs font-bold uppercase mb-6">Project Inspector</h2>
         <BimSearch viewer={viewer} filter={filter} setFilter={updateFilter}/>
-        <BimTree viewer={viewer} elements={elements}  filter={filter} object={object}/>
+        <BimTree viewer={viewer} elements={elements}  filter={filter} objects={objects}/>
       </div>
       <hr className="border-gray-divider mb-5 -mx-6" />
       <h2 className="text-xs font-bold uppercase mb-6">Bim Inspector</h2>
       <div className="vim-bim-lower h-1/2 overflow-y-auto">
-        <BimInspector elements={elements} object={object} />
-        <BimParameters object={object} getOpen={getOpen} setOpen={updateOpen} initOpen={initOpen} />
+        <BimInspector elements={elements} objects={objects} />
+        <BimParameters objects={objects} getOpen={getOpen} setOpen={updateOpen} initOpen={initOpen} />
       </div>
     </div>
   )
