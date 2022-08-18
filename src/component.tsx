@@ -227,10 +227,6 @@ function TestMenu(props :{viewer: VIM.Viewer }){
   }
 
   const hasSelection = objects.length > 0
-  console.log(hasSelection)
-
-
-  
 
   return <div className='test'>
     <ContextMenu id='TEST'>
