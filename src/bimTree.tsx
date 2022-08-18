@@ -150,7 +150,7 @@ function selectElementsInViewer(tree: BimTreeData, viewer: VIM.Viewer, nodes : n
     objects.push(obj)
     
   })
-  viewer.selection.select(...objects)
+  viewer.selection.select(objects)
 }
 
 function scrollToSelection(div: HTMLDivElement ){
