@@ -66,6 +66,7 @@ body {
   transform: translate(-50%, -50%);
 }
 
+/* Context Menu */
 .react-contextmenu {
   background-color: white;
   border-radius: 5px;
@@ -78,13 +79,15 @@ body {
   background-color: cyan;
 }
 
-.react-contextmenu-item--selected {
-  background-color: cyan;
-}
-
 .checked {
   font-weight: bold;
 }
+
+.react-contextmenu-item--divider {
+  border-top: 1px solid black;
+}
+
+/* Logo */
 
 .vim-logo {
   position: fixed;

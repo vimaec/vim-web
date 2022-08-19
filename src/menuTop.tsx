@@ -22,16 +22,18 @@ export function MenuTop(props: {
     document.addEventListener('keyup',() => setTimeout(synchSpeed))
   },[])
 
-  const btnOrbit = <button data-tip={props.orbit ? "Orbit" : "Free"} onClick={() => props.setOrbit(!props.orbit)} className={"rounded-full text-white h-8 w-8 flex items-center justify-center transition-all opacity-80 hover:opacity-100"} type="button">{props.orbit ? <Icons.Orbit height="20" width="20" fill="currentColor" /> : <Icons.FirstPerson height="20" width="20" fill="currentColor" />}</button>
-  const btnOrtho = <button data-tip={props.ortho ? "Orthographic" : "Perspective"}  onClick={() => props.setOrtho(!props.ortho)} className={"rounded-full text-white h-8 w-8 flex items-center justify-center transition-all opacity-80 hover:opacity-100"} type="button">{props.ortho ? <Icons.Orthographic height="20" width="20" fill="currentColor" /> : <Icons.Perspective height="20" width="20" fill="currentColor" />}</button>
-  const btnCamera = <div data-tip="Speed" className={"rounded-full text-white text-sm h-8 w-8 flex items-center justify-start transition-all opacity-75"}><Icons.Camera className={"shrink-0"} height="20" width="20" fill="currentColor" />{speed}</div>
+  const onHomeBtn = () => {
+    props.viewer.camera.frame(props.viewer.renderer.getBoundingSphere(), 45, props.viewer.camera.defaultLerpDuration)
+  }
+
+  const btnHome = <button data-tip="Reset Camera" onClick={onHomeBtn } className={"rounded-full text-black h-8 w-8 flex items-center justify-center transition-all opacity-80 hover:opacity-100"} type="button"><Icons.Home height="20" width="20" fill="currentColor" /> </button>
+  const btnOrtho = <button data-tip={props.ortho ? "Orthographic" : "Perspective"}  onClick={() => props.setOrtho(!props.ortho)} className={"rounded-full text-black h-8 w-8 flex items-center justify-center transition-all opacity-80 hover:opacity-100"} type="button">{props.ortho ? <Icons.Orthographic height="20" width="20" fill="currentColor" /> : <Icons.Perspective height="20" width="20" fill="currentColor" />}</button>
   
-  return <div className='vim-top flex flex-col fixed right-6 top-6 w-auto pointer-events-none'>
-    <div className='border border-hover-t40 h-28 w-full rounded-t-md pointer-events-none' > </div>
-    <div className="flex bg-hover-t40 p-1 rounded-b-md pointer-events-auto">
-      <div className='mx-1'>{btnOrbit}</div>
+  return <div className='vim-top flex flex-col fixed right-6 top-6 w-32 pointer-events-none'>
+    <div className='border border-hover-t40 h-28 w-full rounded-t-md pointer-events-none bg-white opacity-20' > </div>
+    <div className="flex p-1 rounded-b-md pointer-events-auto justify-center bg-white opacity-20">
       <div className='mx-1'>{btnOrtho}</div>
-      <div className='mx-1'>{btnCamera}</div>
+      <div className='mx-1'>{btnHome}</div>
     </div>
   </div>
 }
