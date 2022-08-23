@@ -23,7 +23,7 @@ export function MenuTop(props: {
   },[])
 
   const onHomeBtn = () => {
-    props.viewer.camera.frame(props.viewer.renderer.getBoundingSphere(), 45, props.viewer.camera.defaultLerpDuration)
+    props.viewer.camera.frame(props.viewer.renderer.getBoundingBox(), 45, props.viewer.camera.defaultLerpDuration)
   }
 
   const btnHome = <button data-tip="Reset Camera" onClick={onHomeBtn } className={"rounded-full text-black h-8 w-8 flex items-center justify-center transition-all opacity-80 hover:opacity-100"} type="button"><Icons.Home height="20" width="20" fill="currentColor" /> </button>

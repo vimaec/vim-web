@@ -39,8 +39,7 @@ export function VimContextMenu(props :{viewer: VIM.Viewer }){
   ,[])
 
   const onFrameBtn = () => {
-    const sphere = viewer.selection.getBoundingBox().getBoundingSphere(new VIM.THREE.Sphere())
-    viewer.camera.frame(sphere, 'center', viewer.camera.defaultLerpDuration)
+    viewer.camera.frame(viewer.selection.getBoundingBox(), 'center', viewer.camera.defaultLerpDuration)
   }
 
   const onHideBtn = () => {
@@ -73,7 +72,7 @@ export function VimContextMenu(props :{viewer: VIM.Viewer }){
   }
 
   const onResetBtn = () => {
-    viewer.camera.frame(viewer.renderer.getBoundingSphere(), 45, viewer.camera.defaultLerpDuration)
+    viewer.camera.frame(viewer.renderer.getBoundingBox(), 45, viewer.camera.defaultLerpDuration)
   }
 
   const onGhostBtn = () => {

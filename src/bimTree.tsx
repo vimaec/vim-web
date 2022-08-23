@@ -109,8 +109,7 @@ export function BimTree(props: {viewer: VIM.Viewer, elements:VIM.ElementInfo[], 
           const time = new Date().getTime()
           if(lastClickIndex === click && time - lastClickTime < 200){
             
-            const sphere = props.viewer.selection.getBoundingBox().getBoundingSphere(new VIM.THREE.Sphere())
-            props.viewer.camera.frame(sphere,'center', props.viewer.camera.defaultLerpDuration)
+            props.viewer.camera.frame(props.viewer.selection.getBoundingBox(),'center', props.viewer.camera.defaultLerpDuration)
             setLastClickIndex(-1)
           }
           else{
