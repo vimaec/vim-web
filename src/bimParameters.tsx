@@ -43,7 +43,7 @@ function parameterTable(key: string,  parameters: Parameter[], open: boolean, se
       <li key={"title-"+key}>
         <h3 className="text-xs font-bold uppercase bg-gray-light px-2 py-2 flex justify-between">
           <span className="w-1/2">{key}</span>
-          <button onClick={() => setOpen(!open)}> {open ?<Icons.collapseIco className="transition-all rotate-180" height="15" width="15" fill="currentColor" /> : <Icons.collapseIco className="transition-all rotate-0" height="15" width="15" fill="currentColor" />}</button>
+          <button onClick={() => setOpen(!open)}> {open ?<Icons.collapse className="transition-all rotate-180" height="15" width="15" fill="currentColor" /> : <Icons.collapse className="transition-all rotate-0" height="15" width="15" fill="currentColor" />}</button>
         </h3>
       </li>
       {open ? parameters.map((p,i) => {

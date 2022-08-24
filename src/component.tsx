@@ -13,6 +13,7 @@ import {LoadingBox} from './loadingBox'
 import {BimPanel} from './bimPanel'
 import {MenuMore} from './menuMore'
 import { VimContextMenu, VIM_CONTEXT_MENU_ID } from './contextMenu'
+import {MenuHelp} from './menuHelp'
 
 import './style.css'
 
@@ -58,9 +59,10 @@ export function VimComponent (props: {
   const [ortho, setOrtho] = useState<boolean>(props.viewer.camera.orthographic)
   const [orbit, setOrbit] = useState<boolean>(props.viewer.camera.orbitMode)
   const [moreMenuVisible, setMoreMenuVisible] = useState(false)
-  const [helpControlsVisible, setHelpControlsVisible] = useState(false)
+  const [helpVisible, setHelpVisible] = useState(false)
+  const [bimPanelVisible, setBimPanelVisible] = useState(false)
 
-  const toggleHelpControls = () => setHelpControlsVisible(!helpControlsVisible)
+  const toggleHelpControls = () => setHelpVisible(!helpVisible)
   
   let moreMenuRef = useRef<HTMLUListElement>();
 
@@ -109,13 +111,13 @@ export function VimComponent (props: {
 
   return (
     <>
+      {helpVisible ? <MenuHelp closeHelp={() => setHelpVisible(false)}/> : null}
       {useLogo ? <Logo /> : null}
-      {helpControlsVisible ? <HelpControls/> : null}
       {useLoading ? <LoadingBox viewer={props.viewer}/> : null}
-      {useMenu ? <MenuTools viewer={props.viewer} moreMenuVisible={moreMenuVisible} setMoreMenuVisible = {setMoreMenuVisible}/> : null}
+      {useMenu ? <MenuTools viewer={props.viewer} openHelp = {() => setHelpVisible(true) } bimPanelVisible={bimPanelVisible} setBimPanelVisible = {setBimPanelVisible}/> : null}
       {useMenuTop ? <MenuTop viewer={props.viewer} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho}/> : null}
-      {moreMenuVisible ? <MenuMore ref={moreMenuRef} viewer={props.viewer} hide={() => setMoreMenuVisible(false)} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho} helpVisible={helpControlsVisible} setHelpVisible={setHelpControlsVisible}/> : null}
-      {useInspector ? <BimPanel viewer={props.viewer}/> : null}
+      {moreMenuVisible ? <MenuMore ref={moreMenuRef} viewer={props.viewer} hide={() => setMoreMenuVisible(false)} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho} helpVisible={helpVisible} setHelpVisible={setHelpVisible}/> : null}
+      {useInspector ? <BimPanel viewer={props.viewer} visible={bimPanelVisible}/> : null}
       <ReactTooltip delayShow={200}/>
       <VimContextMenu viewer={props.viewer}/>
     </>
@@ -128,14 +130,6 @@ function Logo () {
       <a href="https://vimaec.com">
         <img src={logo}></img>
       </a>
-    </div>
-  )
-}
-
-function HelpControls () {
-  return (
-    <div className="vim-help-controls">
-      <img className='m-auto' src={imageHelpControls}></img>
     </div>
   )
 }

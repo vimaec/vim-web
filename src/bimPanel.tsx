@@ -9,7 +9,7 @@ import {BimSearch} from './bimSearch'
 import { Vim } from "vim-webgl-viewer/"
 
 
-export function BimPanel(props: { viewer: VIM.Viewer })
+export function BimPanel(props: { viewer: VIM.Viewer, visible:boolean })
 {
   //console.log('Render Panel Init')
   const viewer = props.viewer
@@ -18,6 +18,7 @@ export function BimPanel(props: { viewer: VIM.Viewer })
   const [vim, setVim] = useState<VIM.Vim>()
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
   const [open, setOpen] = useState<Map<string, boolean>>()
+
 
   // Open state is kept here to persist between panel open/close
   const updateOpen = (group: string, value: boolean) => {
@@ -40,35 +41,45 @@ export function BimPanel(props: { viewer: VIM.Viewer })
     setFilter(value)
   }
 
+
+  const updateVim = () => {
+    const nextVim = viewer.selection.vim ?? viewer.vims[0]
+    if(nextVim && vim !== nextVim){
+      setVim(nextVim)
+      nextVim.document.getElementsSummary().then(s => {
+        const filtered = s.filter(s => nextVim.getObjectFromElement(s.element).hasMesh)
+        setElements(filtered)
+      })
+    }
+  }
+
+  if(viewer.selection.count ===0){
+    updateVim()
+  }
+
+
   // Register to selection
   useEffect(() => {
     const old = viewer.selection.onValueChanged
     viewer.selection.onValueChanged = 
     () => {
       old?.()
-      
+      updateVim()
       console.log("Bim " +JSON.stringify(viewer.selection.objects))
       setObjects([...viewer.selection.objects])
       
-      const nextVim = viewer.selection.vim
-      if(nextVim && vim !== nextVim){
-        setVim(nextVim)
-        nextVim.document.getElementsSummary().then(s => {
-          const filtered = s.filter(s => nextVim.getObjectFromElement(s.element).hasMesh)
-          setElements(filtered)
-        })
-      }
+
     }
   })
   
 
   // Resize canvas when panel opens/closes.
-  const hasSelection = objects.length === 0
-  resizeCanvas(props.viewer, !hasSelection)
-  if(hasSelection){
+  resizeCanvas(props.viewer, props.visible)
+  if(!props.visible) {
     props.viewer.viewport.canvas.focus()
     return null
-  } 
+  }
+  
   
   return(
     <div className="vim-bim-panel fixed left-0 top-0 bg-gray-lightest p-6 text-gray-darker h-full">
