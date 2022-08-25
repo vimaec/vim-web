@@ -9,7 +9,7 @@ import {BimSearch} from './bimSearch'
 import { Vim } from "vim-webgl-viewer/"
 
 
-export function BimPanel(props: { viewer: VIM.Viewer, visible:boolean })
+export function BimPanel(props: { viewer: VIM.Viewer })
 {
   //console.log('Render Panel Init')
   const viewer = props.viewer
@@ -18,7 +18,6 @@ export function BimPanel(props: { viewer: VIM.Viewer, visible:boolean })
   const [vim, setVim] = useState<VIM.Vim>()
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
   const [open, setOpen] = useState<Map<string, boolean>>()
-
 
   // Open state is kept here to persist between panel open/close
   const updateOpen = (group: string, value: boolean) => {
@@ -40,7 +39,6 @@ export function BimPanel(props: { viewer: VIM.Viewer, visible:boolean })
   const updateFilter = (value: string) => {
     setFilter(value)
   }
-
 
   const updateVim = () => {
     const nextVim = viewer.selection.vim ?? viewer.vims[0]
@@ -67,22 +65,11 @@ export function BimPanel(props: { viewer: VIM.Viewer, visible:boolean })
       updateVim()
       console.log("Bim " +JSON.stringify(viewer.selection.objects))
       setObjects([...viewer.selection.objects])
-      
-
     }
   })
   
-
-  // Resize canvas when panel opens/closes.
-  resizeCanvas(props.viewer, props.visible)
-  if(!props.visible) {
-    props.viewer.viewport.canvas.focus()
-    return null
-  }
-  
-  
   return(
-    <div className="vim-bim-panel fixed left-0 top-0 bg-gray-lightest p-6 text-gray-darker h-full">
+    <>
       <div className="vim-bim-upper h-1/2">
         <h2 className="text-xs font-bold uppercase mb-6">Project Inspector</h2>
         <BimSearch viewer={viewer} filter={filter} setFilter={updateFilter}/>
@@ -94,16 +81,8 @@ export function BimPanel(props: { viewer: VIM.Viewer, visible:boolean })
         <BimInspector elements={elements} objects={objects} />
         <BimParameters objects={objects} getOpen={getOpen} setOpen={updateOpen} initOpen={initOpen} />
       </div>
-    </div>
+    </>
   )
 }
 
-function resizeCanvas(viewer: VIM.Viewer, open: boolean){
-  const parent = viewer.viewport.canvas.parentElement
-  const previous = parent.className 
-  parent.className = parent.className.replace(' bim-panel-open', '')
-  parent.className += open ? ' bim-panel-open' : ''
-  if(previous !== parent.className){
-    viewer.viewport.ResizeToParent()
-  }
-}
+

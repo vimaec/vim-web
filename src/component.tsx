@@ -8,14 +8,17 @@ import { showMenu} from "@firefox-devtools/react-contextmenu";
 import * as VIM from 'vim-webgl-viewer/'
 
 import {MenuTop} from './menuTop'
-import {MenuTools} from './menuTools'
+import {ControlBar} from './controlBar'
 import {LoadingBox} from './loadingBox'
 import {BimPanel} from './bimPanel'
 import {MenuMore} from './menuMore'
 import { VimContextMenu, VIM_CONTEXT_MENU_ID } from './contextMenu'
 import {MenuHelp} from './menuHelp'
+import {SidePanel} from './menuSide'
+import {MenuSettings} from './menuSettings'
 
 import './style.css'
+export type SideContent = 'none' | 'bim' |'settings'
 
 export function createContainer(viewer: VIM.Viewer){
   const root = document.createElement('div')
@@ -60,10 +63,8 @@ export function VimComponent (props: {
   const [orbit, setOrbit] = useState<boolean>(props.viewer.camera.orbitMode)
   const [moreMenuVisible, setMoreMenuVisible] = useState(false)
   const [helpVisible, setHelpVisible] = useState(false)
-  const [bimPanelVisible, setBimPanelVisible] = useState(false)
+  const [sideContent, setSideContent] = useState<SideContent>('none')
 
-  const toggleHelpControls = () => setHelpVisible(!helpVisible)
-  
   let moreMenuRef = useRef<HTMLUListElement>();
 
   const updateOrtho = (b: boolean) => {
@@ -108,16 +109,23 @@ export function VimComponent (props: {
     
   }, [])
 
+  const getSidePanelContent =() => {
+    switch(sideContent){
+      case 'bim': return useInspector ? <BimPanel viewer={props.viewer}/> : null 
+      case 'settings' : return <MenuSettings viewer={props.viewer}/>
+      default: return null
+    }
+  }
 
   return (
     <>
       {helpVisible ? <MenuHelp closeHelp={() => setHelpVisible(false)}/> : null}
       {useLogo ? <Logo /> : null}
       {useLoading ? <LoadingBox viewer={props.viewer}/> : null}
-      {useMenu ? <MenuTools viewer={props.viewer} openHelp = {() => setHelpVisible(true) } bimPanelVisible={bimPanelVisible} setBimPanelVisible = {setBimPanelVisible}/> : null}
+      {useMenu ? <ControlBar viewer={props.viewer} openHelp = {() => setHelpVisible(true) } sideContent ={sideContent} setSideContent = {setSideContent}/> : null}
       {useMenuTop ? <MenuTop viewer={props.viewer} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho}/> : null}
       {moreMenuVisible ? <MenuMore ref={moreMenuRef} viewer={props.viewer} hide={() => setMoreMenuVisible(false)} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho} helpVisible={helpVisible} setHelpVisible={setHelpVisible}/> : null}
-      {useInspector ? <BimPanel viewer={props.viewer} visible={bimPanelVisible}/> : null}
+      <SidePanel viewer={props.viewer} content={getSidePanelContent} />
       <ReactTooltip delayShow={200}/>
       <VimContextMenu viewer={props.viewer}/>
     </>
