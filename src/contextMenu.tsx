@@ -1,12 +1,12 @@
 import { ContextMenu, MenuItem } from "@firefox-devtools/react-contextmenu"
 import React, { useEffect, useState } from "react"
 import * as VIM from 'vim-webgl-viewer/'
+import { Settings } from "./component"
 
 export const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
 
-export function VimContextMenu(props :{viewer: VIM.Viewer }){
+export function VimContextMenu(props :{viewer: VIM.Viewer, settings: Settings }){
   const viewer = props.viewer
-
 
   const someHidden = () => {
     for(const vim of viewer.vims){
@@ -21,7 +21,6 @@ export function VimContextMenu(props :{viewer: VIM.Viewer }){
 
   const [objects, setObject] = useState<VIM.Object[]>([])
   const [hidden, setHidden] = useState<boolean>(someHidden())
-  const [ghost, setGhost] = useState<boolean>(true)
   const [section, setSection] = useState<boolean>(false)
 
   useEffect( () => {
@@ -43,8 +42,13 @@ export function VimContextMenu(props :{viewer: VIM.Viewer }){
   }
 
   const onHideBtn = () => {
+    if(objects.length ===0) return
     for (const obj of objects) {
       obj.visible = false
+
+      obj.vim.scene.material = props.settings.useIsolationMaterial
+      ? viewer.renderer.materials.isolation
+      : undefined
     }
     viewer.selection.clear()
     setHidden(true)
@@ -57,7 +61,11 @@ export function VimContextMenu(props :{viewer: VIM.Viewer }){
       obj.visible = set.has(obj)
       if(obj.visible) console.log(obj)
     }
-    vim.scene.material = ghost ? viewer.renderer.materials.isolation : undefined
+
+    vim.scene.material = props.settings.useIsolationMaterial
+      ? viewer.renderer.materials.isolation
+      : undefined
+
     setHidden(true)
   }
 
@@ -73,15 +81,6 @@ export function VimContextMenu(props :{viewer: VIM.Viewer }){
 
   const onResetBtn = () => {
     viewer.camera.frame(viewer.renderer.getBoundingBox(), 45, viewer.camera.defaultLerpDuration)
-  }
-
-  const onGhostBtn = () => {
-    const next = !ghost
-    const mat = next ? viewer.renderer.materials.isolation : undefined
-    viewer.vims.forEach(v => {
-      v.scene.material = mat
-    })
-    setGhost(next)
   }
 
   const onResetSectionBtn = () => {
@@ -146,9 +145,6 @@ export function VimContextMenu(props :{viewer: VIM.Viewer }){
           <MenuItem divider />
           <MenuItem data={{foo: 'bar'}} onClick={onShowAllBtn} >
             Show All
-          </MenuItem>
-          <MenuItem className={ghost ?'checked':''} data={{foo: 'bar'}} onClick={onGhostBtn} >
-            Display Ghosts
           </MenuItem>
         </>
         : null

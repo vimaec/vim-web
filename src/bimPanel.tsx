@@ -35,7 +35,6 @@ export function BimPanel(props: { viewer: VIM.Viewer })
 
   const getOpen = (s: string) => open.get(s)
 
-
   const updateFilter = (value: string) => {
     setFilter(value)
   }
@@ -51,11 +50,6 @@ export function BimPanel(props: { viewer: VIM.Viewer })
     }
   }
 
-  if(viewer.selection.count ===0){
-    updateVim()
-  }
-
-
   // Register to selection
   useEffect(() => {
     const old = viewer.selection.onValueChanged
@@ -63,10 +57,11 @@ export function BimPanel(props: { viewer: VIM.Viewer })
     () => {
       old?.()
       updateVim()
-      console.log("Bim " +JSON.stringify(viewer.selection.objects))
       setObjects([...viewer.selection.objects])
     }
-  })
+    updateVim()
+    setObjects([...viewer.selection.objects])
+  },[])
   
   return(
     <>

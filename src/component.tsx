@@ -20,6 +20,16 @@ import {MenuSettings} from './menuSettings'
 import './style.css'
 export type SideContent = 'none' | 'bim' |'settings'
 
+export class Settings {
+  useIsolationMaterial: boolean = true
+  showInspectorOnSelect: boolean  = true
+  showGroundPlane: boolean = false
+
+  clone(){
+     return Object.assign(new Settings(), this) as Settings
+  }
+}
+
 export function createContainer(viewer: VIM.Viewer){
   const root = document.createElement('div')
   root.className = 'vim-component'
@@ -64,8 +74,10 @@ export function VimComponent (props: {
   const [moreMenuVisible, setMoreMenuVisible] = useState(false)
   const [helpVisible, setHelpVisible] = useState(false)
   const [sideContent, setSideContent] = useState<SideContent>('none')
+  const [settings, setSettings] = useState(new Settings())
 
-  let moreMenuRef = useRef<HTMLUListElement>();
+  let sideContentRef = useRef(sideContent)
+  let settingsRef = useRef(settings)
 
   const updateOrtho = (b: boolean) => {
     setOrtho(b)
@@ -90,7 +102,24 @@ export function VimComponent (props: {
 
     showMenu(showMenuConfig)
   }
+  useEffect(() =>{
+    applySettings(props.viewer, settings)
+    settingsRef.current = settings
+  },[settings])
+  useEffect(() =>{
+    sideContentRef.current = sideContent
+  },[sideContent])
 
+
+  const updateSide = () => {
+    const showBim =
+      props.viewer.selection.count > 0 &&
+      sideContentRef.current === 'none' &&
+      settingsRef.current.showInspectorOnSelect
+    if(showBim){
+      setSideContent('bim')
+    }
+  }
 
   useEffect(() => {
     props.onMount()
@@ -99,20 +128,19 @@ export function VimComponent (props: {
     document.addEventListener('keyup',() => setTimeout(synchOrbit))
     props.viewer.viewport.canvas.addEventListener('contextmenu', onContextMenu)
 
-    
-    addEventListener('focusin', () =>{
-      if(!moreMenuRef.current) return
-      if(!moreMenuRef.current.contains(document.activeElement)){
-        setMoreMenuVisible(false)
-      }
-    })
-    
-  }, [])
+    const old = props.viewer.selection.onValueChanged
+    props.viewer.selection.onValueChanged = 
+    () => {
+      old?.()
+      updateSide()
+    }
+  },[])
+
 
   const getSidePanelContent =() => {
     switch(sideContent){
-      case 'bim': return useInspector ? <BimPanel viewer={props.viewer}/> : null 
-      case 'settings' : return <MenuSettings viewer={props.viewer}/>
+      case 'bim': return <BimPanel viewer={props.viewer}/>
+      case 'settings' : return <MenuSettings viewer={props.viewer} settings ={settings} setSettings={setSettings} />
       default: return null
     }
   }
@@ -124,10 +152,9 @@ export function VimComponent (props: {
       {useLoading ? <LoadingBox viewer={props.viewer}/> : null}
       {useMenu ? <ControlBar viewer={props.viewer} openHelp = {() => setHelpVisible(true) } sideContent ={sideContent} setSideContent = {setSideContent}/> : null}
       {useMenuTop ? <MenuTop viewer={props.viewer} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho}/> : null}
-      {moreMenuVisible ? <MenuMore ref={moreMenuRef} viewer={props.viewer} hide={() => setMoreMenuVisible(false)} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho} helpVisible={helpVisible} setHelpVisible={setHelpVisible}/> : null}
       <SidePanel viewer={props.viewer} content={getSidePanelContent} />
       <ReactTooltip delayShow={200}/>
-      <VimContextMenu viewer={props.viewer}/>
+      <VimContextMenu viewer={props.viewer} settings={settings}/>
     </>
   )
 }
@@ -140,4 +167,27 @@ function Logo () {
       </a>
     </div>
   )
+}
+
+function applySettings(viewer: VIM.Viewer, settings: Settings){
+  viewer.environment.groundPlane.visible = settings.showGroundPlane
+
+  // Isolation material
+  viewer.vims.forEach(v => {
+    if(!settings.useIsolationMaterial)
+    {
+      v.scene.material = undefined
+      return
+    }
+
+    let hidden = false
+    for (const obj of v.getAllObjects()){
+      if(!obj.visible){
+        hidden = true
+        break
+      }
+    }
+    if(hidden)
+      v.scene.material = viewer.renderer.materials.isolation
+  })
 }
