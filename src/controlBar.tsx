@@ -40,30 +40,24 @@ function TabCamera(viewer : VIM.Viewer){
   },[])
 
   const onModeBtn = (target: VIM.PointerMode) => {
-    const next = mode === target ? 'normal' : target
+    const next = mode === target ? viewer.inputs.altPointerMode : target
     viewer.inputs.pointerMode = next
     setMode(next)
   }
 
-  const onOrbitBtn =  () => { onModeBtn('orbit')}
-  const onLookBtn = () => { onModeBtn('look')}
-  const onPanBtn = () => { onModeBtn('pan')}
-  const onZoomBtn = () => { onModeBtn('dolly')}
-  const onFrameRectBtn = () => { onModeBtn('zone')}
-  
   const onFrameBtn = () => {
     const target = viewer.selection.count > 0
      ? viewer.selection
      : viewer.renderer
-    viewer.camera.frame(target.getBoundingBox(), 'center', viewer.camera.defaultLerpDuration)
+    viewer.camera.frame(target.getBoundingBox(), 'none', viewer.camera.defaultLerpDuration)
   }
 
   //Camera
-  const btnOrbit = toggleButton('Orbit', onOrbitBtn, Icons.orbit, () => mode === 'orbit')
-  const btnLook = toggleButton('Look', onLookBtn, Icons.look, () => mode === 'orbit')
-  const btnPan = toggleButton('Pan', onPanBtn, Icons.pan, () => mode === 'pan')
-  const btnZoom = toggleButton('Zoom', onZoomBtn, Icons.zoom, () => mode === 'dolly')
-  const btnFrameRect = toggleButton('Frame Rectangle', onFrameRectBtn, Icons.frameRect, () => mode === 'zone')
+  const btnOrbit = toggleButton('Orbit', () => onModeBtn('orbit'), Icons.orbit, () => mode === 'orbit')
+  const btnLook = toggleButton('Look', () => onModeBtn('look'), Icons.look, () => mode === 'look')
+  const btnPan = toggleButton('Pan', () => onModeBtn('pan'), Icons.pan, () => mode === 'pan')
+  const btnZoom = toggleButton('Zoom', () => onModeBtn('dolly'), Icons.zoom, () => mode === 'dolly')
+  const btnFrameRect = toggleButton('Frame Rectangle', () => onModeBtn('zone'), Icons.frameRect, () => mode === 'zone')
   const btnFrame = actionButton('Frame Selection', onFrameBtn, Icons.frameSelection)
   const btnFullScreen = actionButton('Full Screen', () => console.log('Full Screen'), Icons.fullsScreen)
 
@@ -135,8 +129,8 @@ function TabTools(viewer: VIM.Viewer){
     viewer.gizmoMeasure.abort()
   }
 
-  const btnSection = actionButton('Section Box', onSectionBtn, Icons.box)
-  const btnMystery = actionButton('Mystery', () => console.log("Mystery"), Icons.box)
+  const btnSection = actionButton('Section Box', onSectionBtn, Icons.sectionBox)
+  const btnMystery = actionButton('Mystery', () => console.log("Mystery"), Icons.sectionBox)
   const btnMeasure =  actionButton("Measuring Tool", onMeasureBtn, Icons.measure)
   const toolsTab = <>
     <div className='mx-1'>{btnSection}</div>

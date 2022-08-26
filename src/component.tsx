@@ -23,7 +23,7 @@ export type SideContent = 'none' | 'bim' |'settings'
 export class Settings {
   useIsolationMaterial: boolean = true
   showInspectorOnSelect: boolean  = true
-  showGroundPlane: boolean = false
+  showGroundPlane: boolean = true
 
   clone(){
      return Object.assign(new Settings(), this) as Settings
@@ -123,6 +123,7 @@ export function VimComponent (props: {
 
   useEffect(() => {
     props.onMount()
+    props.viewer.camera.rotate(new VIM.THREE.Vector2(-0.25, 0))
     props.viewer.viewport.canvas.tabIndex =0
     props.viewer.gizmoSection.clip = true
     document.addEventListener('keyup',() => setTimeout(synchOrbit))

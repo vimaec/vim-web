@@ -11,14 +11,21 @@ let url = params.has('vim')
   : '/src/assets/residence.vim'
   // : '/src/assets/skanska.nozip.vim'
 
-const viewer = new VIM.Viewer()
+const viewer = new VIM.Viewer({
+  groundPlane: {
+    visible: true,
+    texture:
+      'https://vimdevelopment01storage.blob.core.windows.net/textures/vim-floor-soft.png',
+    opacity: 1,
+    size: 5
+  }
+})
 const div = createContainer(viewer)
 const root = createRoot(div)
 root.render(<VimComponent viewer = {viewer} onMount ={loadVim}/>)
 
 
 function loadVim(){
-  const canvas = viewer.viewport.canvas
   viewer.loadVim(
     url,
     {
