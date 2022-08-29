@@ -2,6 +2,7 @@ import { ContextMenu, MenuItem } from "@firefox-devtools/react-contextmenu"
 import React, { useEffect, useState } from "react"
 import * as VIM from 'vim-webgl-viewer/'
 import { Settings } from "./component"
+import {getVisibleBoundingBox} from "./component"
 
 export const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
 
@@ -38,34 +39,39 @@ export function VimContextMenu(props :{viewer: VIM.Viewer, settings: Settings })
   ,[])
 
   const onFrameBtn = () => {
-    viewer.camera.frame(viewer.selection.getBoundingBox(), 'center', viewer.camera.defaultLerpDuration)
+    viewer.camera.frame(getVisibleBoundingBox(viewer), 'none', viewer.camera.defaultLerpDuration)
   }
 
   const onHideBtn = () => {
     if(objects.length ===0) return
     for (const obj of objects) {
       obj.visible = false
-
-      obj.vim.scene.material = props.settings.useIsolationMaterial
-      ? viewer.renderer.materials.isolation
-      : undefined
     }
+
+    const vim = viewer.selection.vim
+    vim.scene.material = props.settings.useIsolationMaterial
+    ? viewer.renderer.materials.isolation
+    : undefined
+
+    props.viewer.environment.groundPlane.visible = false
     viewer.selection.clear()
+    viewer.camera.frame(getVisibleBoundingBox(vim), 'none', viewer.camera.defaultLerpDuration)
     setHidden(true)
   }
   
   const onIsolateBtn = () => {
+    if(objects.length === 0) return
     const set = new Set(objects)
     const vim = viewer.selection.vim
     for (const obj of vim.getAllObjects()) {
       obj.visible = set.has(obj)
-      if(obj.visible) console.log(obj)
     }
 
     vim.scene.material = props.settings.useIsolationMaterial
       ? viewer.renderer.materials.isolation
       : undefined
-
+    viewer.environment.groundPlane.visible = false
+    viewer.camera.frame(getVisibleBoundingBox(vim), 'none', viewer.camera.defaultLerpDuration)
     setHidden(true)
   }
 
@@ -76,6 +82,8 @@ export function VimContextMenu(props :{viewer: VIM.Viewer, settings: Settings })
       }
       v.scene.material = undefined
     })
+    viewer.environment.groundPlane.visible = props.settings.showGroundPlane
+    viewer.camera.frame(viewer.renderer.getBoundingBox())
     setHidden(false)
   }
 
@@ -153,3 +161,4 @@ export function VimContextMenu(props :{viewer: VIM.Viewer, settings: Settings })
     </ContextMenu>
   </div>
 }
+

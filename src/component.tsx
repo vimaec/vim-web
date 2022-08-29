@@ -18,6 +18,8 @@ import {SidePanel} from './menuSide'
 import {MenuSettings} from './menuSettings'
 
 import './style.css'
+import pathGround from './assets/vim-floor-soft.png'
+
 export type SideContent = 'none' | 'bim' |'settings'
 
 export class Settings {
@@ -79,6 +81,7 @@ export function VimComponent (props: {
   let sideContentRef = useRef(sideContent)
   let settingsRef = useRef(settings)
 
+  const viewer= props.viewer
   const updateOrtho = (b: boolean) => {
     setOrtho(b)
     props.viewer.camera.orthographic = b
@@ -103,6 +106,7 @@ export function VimComponent (props: {
     showMenu(showMenuConfig)
   }
   useEffect(() =>{
+    props.viewer.environment.loadGroundTexture(pathGround)
     applySettings(props.viewer, settings)
     settingsRef.current = settings
   },[settings])
@@ -135,6 +139,21 @@ export function VimComponent (props: {
       old?.()
       updateSide()
     }
+
+    // Override F button
+    const oldKey = props.viewer.inputs.onKeyAction
+    props.viewer.inputs.onKeyAction = (key) => {
+      if(key === 70){
+        const box = viewer.selection.count > 0
+          ? getVisibleBoundingBox(viewer.selection.vim)
+          : getVisibleBoundingBox(viewer)
+          
+          viewer.camera.frame(box, 'none', viewer.camera.defaultLerpDuration)
+        return true
+      }
+      return oldKey(key)
+    }
+
   },[])
 
 
@@ -171,7 +190,7 @@ function Logo () {
 }
 
 function applySettings(viewer: VIM.Viewer, settings: Settings){
-  viewer.environment.groundPlane.visible = settings.showGroundPlane
+  
 
   // Isolation material
   viewer.vims.forEach(v => {
@@ -188,7 +207,36 @@ function applySettings(viewer: VIM.Viewer, settings: Settings){
         break
       }
     }
-    if(hidden)
+    if(hidden){
       v.scene.material = viewer.renderer.materials.isolation
+    }
+
+    // Don't show ground plane when isolation is on.
+    viewer.environment.groundPlane.visible = settings.showGroundPlane && !hidden
+      
   })
+}
+
+
+// Utils
+export function getVisibleBoundingBox(source: VIM.Viewer | VIM.Vim ){
+  let box : THREE.Box3
+
+  const vimBoxUnion = (vim : VIM.Vim) => {
+    for (const obj of vim.getAllObjects()) {
+      if(!obj.visible) continue
+      const b = obj.getBoundingBox()
+      box = box ? box.union(b) : b.clone()
+    }
+  }
+  if(source instanceof VIM.Viewer){
+    for (const vim of source.vims) {
+      vimBoxUnion(vim)
+    }
+  }
+  else{
+    vimBoxUnion(source)
+  }
+
+  return box ?? new VIM.THREE.Box3() 
 }

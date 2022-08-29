@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { SideContent } from './component'
+import { getVisibleBoundingBox, SideContent } from './component'
 import * as Icons from './icons'
 
 
@@ -49,7 +49,8 @@ function TabCamera(viewer : VIM.Viewer){
     const target = viewer.selection.count > 0
      ? viewer.selection
      : viewer.renderer
-    viewer.camera.frame(target.getBoundingBox(), 'none', viewer.camera.defaultLerpDuration)
+
+    viewer.camera.frame(getVisibleBoundingBox(viewer), 'none', viewer.camera.defaultLerpDuration)
   }
 
   //Camera

@@ -3,6 +3,7 @@ import React from 'react'
 import {createRoot} from 'react-dom/client'
 import { createContainer, VimComponent} from './component'
 
+
 // Parse URL
 const params = new URLSearchParams(window.location.search)
 let url = params.has('vim')
@@ -35,3 +36,4 @@ function loadVim(){
 }
 
 globalThis.viewer = viewer
+globalThis.VIM = VIM
