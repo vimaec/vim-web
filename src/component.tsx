@@ -170,7 +170,7 @@ export function VimComponent (props: {
       {helpVisible ? <MenuHelp closeHelp={() => setHelpVisible(false)}/> : null}
       {useLogo ? <Logo /> : null}
       {useLoading ? <LoadingBox viewer={props.viewer}/> : null}
-      {useMenu ? <ControlBar viewer={props.viewer} openHelp = {() => setHelpVisible(true) } sideContent ={sideContent} setSideContent = {setSideContent}/> : null}
+      {useMenu ? <ControlBar viewer={props.viewer} helpVisible = {helpVisible} setHelpVisible = {setHelpVisible} sideContent ={sideContent} setSideContent = {setSideContent}/> : null}
       {useMenuTop ? <MenuTop viewer={props.viewer} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho}/> : null}
       <SidePanel viewer={props.viewer} content={getSidePanelContent} />
       <ReactTooltip delayShow={200}/>

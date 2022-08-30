@@ -30,8 +30,8 @@ export function MenuTop(props: {
   const btnOrtho = <button data-tip={props.ortho ? "Orthographic" : "Perspective"}  onClick={() => props.setOrtho(!props.ortho)} className={"rounded-full text-black h-8 w-8 flex items-center justify-center transition-all opacity-80 hover:opacity-100"} type="button">{props.ortho ? <Icons.orthographic height="20" width="20" fill="currentColor" /> : <Icons.perspective height="20" width="20" fill="currentColor" />}</button>
   
   return <div className='vim-top flex flex-col fixed right-6 top-6 w-32 pointer-events-none'>
-    <div className='border border-hover-t40 h-28 w-full rounded-t-md pointer-events-none bg-white opacity-20' > </div>
-    <div className="flex p-1 rounded-b-md pointer-events-auto justify-center bg-white opacity-20">
+    <div className='vim-top-background border border-hover-t40 h-28 w-full rounded-t-md pointer-events-none bg-white opacity-20 z-0' > </div>
+    <div className="vim-top-buttons flex p-1 rounded-b-md pointer-events-auto justify-center bg-white opacity-20">
       <div className='mx-1'>{btnOrtho}</div>
       <div className='mx-1'>{btnHome}</div>
     </div>

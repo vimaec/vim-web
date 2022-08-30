@@ -16,7 +16,14 @@ const actionButton = (tip: string, action : () => void, icon: ({height,width,fil
 }
 
 // Main Control bar
-export function ControlBar(props: {viewer: VIM.Viewer, openHelp: () => void, sideContent: SideContent, setSideContent : (value: SideContent) => void}){
+export function ControlBar(
+  props: {
+    viewer: VIM.Viewer,
+    helpVisible: boolean,
+    setHelpVisible: (value:boolean) => void,
+    sideContent: SideContent,
+    setSideContent : (value: SideContent) => void
+  }){
 
   return <div className='vim-menu flex items-center justify-center w-full fixed px-2 bottom-0 py-2 divide-x-2 bg-white'>
     <div className ='vim-menu-section flex items-center'>
@@ -28,7 +35,7 @@ export function ControlBar(props: {viewer: VIM.Viewer, openHelp: () => void, sid
     </div>
     <div className='divider'/>
     <div className='vim-menu-section flex items-center'>
-      {TabSettins(props)}
+      {TabSettings(props)}
     </div>
   </div>
 }
@@ -161,9 +168,15 @@ function TabTools(viewer: VIM.Viewer){
   : toolsTab
 }
 
-function TabSettins(props: {openHelp : () => void, sideContent: SideContent, setSideContent: (value: SideContent) => void}){
+function TabSettings(
+  props: {
+    helpVisible: boolean,
+    setHelpVisible: (value:boolean) => void
+    sideContent: SideContent,
+    setSideContent: (value: SideContent) => void
+  }){
   const onHelpBtn = () => {
-    props.openHelp()
+    props.setHelpVisible(!props.helpVisible)
   }
 
   const onTreeViewBtn = () => {
@@ -174,9 +187,9 @@ function TabSettins(props: {openHelp : () => void, sideContent: SideContent, set
     props.setSideContent(props.sideContent === 'settings' ? 'none' : 'settings')
   }
 
-  const btnTreeView = toggleButton("Tree View",onTreeViewBtn, Icons.treeView, ()=> props.sideContent === 'bim')
+  const btnTreeView = toggleButton("Tree View", onTreeViewBtn, Icons.treeView, ()=> props.sideContent === 'bim')
   const btnSettings = toggleButton("Settings", onSettingsBtn, Icons.settings,  ()=> props.sideContent === 'settings')
-  const btnHelp = actionButton("Help", onHelpBtn, Icons.help)
+  const btnHelp = toggleButton("Help", onHelpBtn, Icons.help, () => props.helpVisible) 
 
   return <>
     <div className='mx-1'>{btnTreeView}</div>
