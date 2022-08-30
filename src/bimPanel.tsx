@@ -3,10 +3,9 @@ import { useEffect, useState } from "react"
 import * as VIM from 'vim-webgl-viewer/'
 
 import {BimTree,} from './bimTree'
-import {BimParameters, Parameter} from './bimParameters'
+import {BimParameters} from './bimParameters'
 import {BimInspector} from './bimInspector'
 import {BimSearch} from './bimSearch'
-import { Vim } from "vim-webgl-viewer/"
 
 
 export function BimPanel(props: { viewer: VIM.Viewer })
@@ -63,6 +62,7 @@ export function BimPanel(props: { viewer: VIM.Viewer })
     setObjects([...viewer.selection.objects])
   },[])
   
+  const last = objects[objects.length-1]
   return(
     <>
       <div className="vim-bim-upper h-1/2">
@@ -73,8 +73,8 @@ export function BimPanel(props: { viewer: VIM.Viewer })
       <hr className="border-gray-divider mb-5 -mx-6" />
       <h2 className="text-xs font-bold uppercase mb-6">Bim Inspector</h2>
       <div className="vim-bim-lower h-1/2 overflow-y-auto">
-        <BimInspector elements={elements} objects={objects} />
-        <BimParameters objects={objects} getOpen={getOpen} setOpen={updateOpen} initOpen={initOpen} />
+        <BimInspector elements={elements} object={last} />
+        <BimParameters object={last} getOpen={getOpen} setOpen={updateOpen} initOpen={initOpen} />
       </div>
     </>
   )

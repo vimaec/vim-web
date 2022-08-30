@@ -1,10 +1,9 @@
-import React, { useState } from "react"
+import React from "react"
 import * as VIM from 'vim-webgl-viewer/'
 
-export function BimInspector(props: { elements: VIM.ElementInfo[], objects: VIM.Object[]}){
-  const object = props.objects[0]
+export function BimInspector(props: { elements: VIM.ElementInfo[], object: VIM.Object}){
 
-  if(!props.elements || !object){
+  if(!props.elements || !props.object){
     return <div className="vim-bim-inspector">
       Loading . . .
     </div>
@@ -12,7 +11,7 @@ export function BimInspector(props: { elements: VIM.ElementInfo[], objects: VIM.
   
   let element : VIM.ElementInfo
   for (const e of props.elements) {
-    if(object.element === e.element){
+    if(props.object.element === e.element){
       element = e
     }
   }

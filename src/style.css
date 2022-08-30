@@ -45,6 +45,17 @@ body {
   font-family: "Roboto", sans-serif;
 }
 
+/* Toast Notification */
+.vim-menu-toast {
+  position: absolute;
+  width: 100px;
+  top: 10%;
+  left: calc(50% - 50px);
+  opacity: 0.75;
+  background-color: #050c1a;
+  border-radius: 5px;
+}
+
 /* Axes Gizmo*/
 .gizmo-axis-canvas {
   z-index: 1;

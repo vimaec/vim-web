@@ -77,6 +77,10 @@ export function VimComponent (props: {
   const [helpVisible, setHelpVisible] = useState(false)
   const [sideContent, setSideContent] = useState<SideContent>('none')
   const [settings, setSettings] = useState(new Settings())
+  const [toast, setToast] = useState<ToastConfig>()
+  const toastTimeout = useRef(0)
+  const toastSpeed = useRef(0)
+
 
   let sideContentRef = useRef(sideContent)
   let settingsRef = useRef(settings)
@@ -96,9 +100,9 @@ export function VimComponent (props: {
     setOrbit(props.viewer.camera.orbitMode)
   }
 
-  const onContextMenu = (click: MouseEvent) => {
+  const onContextMenu = (position: VIM.THREE.Vector2) => {
     let showMenuConfig = {
-      position: { x:click.clientX, y:click.clientY },
+      position: { x:position.x, y:position.y },
       target: window,
       id: VIM_CONTEXT_MENU_ID
     }
@@ -131,7 +135,18 @@ export function VimComponent (props: {
     props.viewer.viewport.canvas.tabIndex =0
     props.viewer.gizmoSection.clip = true
     document.addEventListener('keyup',() => setTimeout(synchOrbit))
-    props.viewer.viewport.canvas.addEventListener('contextmenu', onContextMenu)
+    props.viewer.inputs.onContextMenu = onContextMenu
+
+    // Camera speed toast
+    props.viewer.camera.onChanged = () => {
+      console.log(`viewer: ${props.viewer.camera.speed}, ref: ${toastSpeed.current}`)
+      if(props.viewer.camera.speed !== toastSpeed.current){
+        toastSpeed.current = props.viewer.camera.speed
+        setToast({speed: props.viewer.camera.speed})
+        clearTimeout(toastTimeout.current)
+        toastTimeout.current = setTimeout(() => setToast(undefined), 1000)
+      }
+    }
 
     const old = props.viewer.selection.onValueChanged
     props.viewer.selection.onValueChanged = 
@@ -174,7 +189,8 @@ export function VimComponent (props: {
       {useMenuTop ? <MenuTop viewer={props.viewer} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho}/> : null}
       <SidePanel viewer={props.viewer} content={getSidePanelContent} />
       <ReactTooltip delayShow={200}/>
-      <VimContextMenu viewer={props.viewer} settings={settings}/>
+      <VimContextMenu viewer={props.viewer} settings={settings} helpVisible = {helpVisible} setHelpVisible = {setHelpVisible} />
+      <MenuToast config={toast}></MenuToast>
     </>
   )
 }
@@ -215,6 +231,22 @@ function applySettings(viewer: VIM.Viewer, settings: Settings){
     viewer.environment.groundPlane.visible = settings.showGroundPlane && !hidden
       
   })
+}
+
+type ToastConfigSpeed = {
+  speed: number
+}
+
+type ToastConfig = ToastConfigSpeed | undefined
+
+function MenuToast(props: {config: ToastConfig}){
+  console.log('MenuToast :' + props.config)
+  if(!props.config)
+    return null
+
+  return <div className='vim-menu-toast'>
+    <h1 className='text-lg font-bold text-white mx-2'>Speed: {props.config.speed +25}</h1>
+  </div>
 }
 
 

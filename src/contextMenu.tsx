@@ -5,8 +5,15 @@ import { Settings } from "./component"
 import {getVisibleBoundingBox} from "./component"
 
 export const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
+type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
 
-export function VimContextMenu(props :{viewer: VIM.Viewer, settings: Settings }){
+export function VimContextMenu(
+  props :{
+    viewer: VIM.Viewer,
+    settings: Settings,
+    helpVisible: boolean,
+    setHelpVisible: (value: boolean) => void
+  }){
   const viewer = props.viewer
 
   const someHidden = () => {
@@ -38,11 +45,12 @@ export function VimContextMenu(props :{viewer: VIM.Viewer, settings: Settings })
   }
   ,[])
 
-  const onFrameBtn = () => {
+  const onFrameBtn = (e: ClickCallback) => {
     viewer.camera.frame(getVisibleBoundingBox(viewer), 'none', viewer.camera.defaultLerpDuration)
+    e.stopPropagation()
   }
 
-  const onHideBtn = () => {
+  const onHideBtn = (e: ClickCallback) => {
     if(objects.length ===0) return
     for (const obj of objects) {
       obj.visible = false
@@ -57,9 +65,10 @@ export function VimContextMenu(props :{viewer: VIM.Viewer, settings: Settings })
     viewer.selection.clear()
     viewer.camera.frame(getVisibleBoundingBox(vim), 'none', viewer.camera.defaultLerpDuration)
     setHidden(true)
+    e.stopPropagation()
   }
   
-  const onIsolateBtn = () => {
+  const onIsolateBtn = (e: ClickCallback) => {
     if(objects.length === 0) return
     const set = new Set(objects)
     const vim = viewer.selection.vim
@@ -73,9 +82,10 @@ export function VimContextMenu(props :{viewer: VIM.Viewer, settings: Settings })
     viewer.environment.groundPlane.visible = false
     viewer.camera.frame(getVisibleBoundingBox(vim), 'none', viewer.camera.defaultLerpDuration)
     setHidden(true)
+    e.stopPropagation()
   }
 
-  const onShowAllBtn = () => {
+  const onShowAllBtn = (e: ClickCallback) => {
     viewer.vims.forEach((v) => {
       for (const obj of v.getAllObjects()) {
         obj.visible = true
@@ -85,27 +95,35 @@ export function VimContextMenu(props :{viewer: VIM.Viewer, settings: Settings })
     viewer.environment.groundPlane.visible = props.settings.showGroundPlane
     viewer.camera.frame(viewer.renderer.getBoundingBox())
     setHidden(false)
+    e.stopPropagation()
   }
 
-  const onResetBtn = () => {
+  const onResetBtn = (e: ClickCallback) => {
     viewer.camera.frame(viewer.renderer.getBoundingBox(), 45, viewer.camera.defaultLerpDuration)
+    e.stopPropagation()
   }
 
-  const onResetSectionBtn = () => {
+  const onResetSectionBtn = (e: ClickCallback) => {
     viewer.gizmoSection.fitBox(viewer.renderer.getBoundingBox())
+    e.stopPropagation()
   }
 
-  const onClearSelectionBtn = () => {
+  const onClearSelectionBtn = (e: ClickCallback) => {
     viewer.selection.clear()
+    e.stopPropagation()
   }
 
-  const onShowControls = () => {
-    console.log('Show Controls')
+  const onShowControls = ( e: ClickCallback) => {
+    props.setHelpVisible(!props.helpVisible)
+    e.stopPropagation()
   }
 
   const hasSelection = objects.length > 0
 
-  return <div className='vim-context-menu'>
+  return <div className='vim-context-menu' onContextMenu={(e) =>{
+    console.log('No menu')
+    e.preventDefault()
+  }}>
     <ContextMenu id={VIM_CONTEXT_MENU_ID}>
       <MenuItem onClick={onShowControls} >
           Show Controls

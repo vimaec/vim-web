@@ -5,15 +5,14 @@ import * as Icons from './icons'
 
 export type Parameter = {name: string, value: string, group: string}
 
-export function BimParameters(props: { objects: VIM.Object[], getOpen: (s: string)=> boolean, setOpen: (s:string, b: boolean) => void, initOpen: (s:string[]) => void}){
+export function BimParameters(props: { object: VIM.Object, getOpen: (s: string)=> boolean, setOpen: (s:string, b: boolean) => void, initOpen: (s:string[]) => void}){
   //console.log("Render BimParameters Init")
   const [object, setObject] = useState<VIM.Object>()
   const [parameters, setParameters] = useState<ParameterData>()
 
-  const obj = props.objects[0]
-  if(obj !== object){
-    setObject(obj)
-    toParameterData(obj).then(data => {
+  if(props.object !== object){
+    setObject(props.object)
+    toParameterData(props.object).then(data => {
       setParameters(data)
       props.initOpen([...data.instance.keys(), ...data.type.keys()])
     })

@@ -8,7 +8,8 @@ import * as Icons from './icons'
 // Shared Buttons style
 const btnStyle = 'rounded-full text-black h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:bg-hover-t40'
 const toggleButton = (tip: string, action : () => void, icon: ({height,width,fill}) => JSX.Element, isOn : ()=> boolean) => {
-  return <button data-tip={tip} onClick={action} className={`${btnStyle} ${isOn() ? 'bg-primary-royal hover:bg-primary-royal' : ''}`} type="button">{icon({height:"24", width:"24", fill:"currentColor"})}</button>
+  const fillColor = isOn() ? "blue" : "black"
+  return <button data-tip={tip} onClick={action} className={btnStyle} type="button">{icon({height:"24", width:"24", fill:fillColor})}</button>
 }
 
 const actionButton = (tip: string, action : () => void, icon: ({height,width,fill}) => JSX.Element) => {
@@ -62,12 +63,12 @@ function TabCamera(viewer : VIM.Viewer){
 
   //Camera
   const btnOrbit = toggleButton('Orbit', () => onModeBtn('orbit'), Icons.orbit, () => mode === 'orbit')
-  const btnLook = toggleButton('Look', () => onModeBtn('look'), Icons.look, () => mode === 'look')
+  const btnLook = toggleButton('Look Around', () => onModeBtn('look'), Icons.look, () => mode === 'look')
   const btnPan = toggleButton('Pan', () => onModeBtn('pan'), Icons.pan, () => mode === 'pan')
   const btnZoom = toggleButton('Zoom', () => onModeBtn('dolly'), Icons.zoom, () => mode === 'dolly')
-  const btnFrameRect = toggleButton('Frame Rectangle', () => onModeBtn('zone'), Icons.frameRect, () => mode === 'zone')
-  const btnFrame = actionButton('Frame Selection', onFrameBtn, Icons.frameSelection)
-  const btnFullScreen = actionButton('Full Screen', () => console.log('Full Screen'), Icons.fullsScreen)
+  const btnFrameRect = toggleButton('Zoom Window', () => onModeBtn('zone'), Icons.frameRect, () => mode === 'zone')
+  const btnFrame = actionButton('Zoom to Fit', onFrameBtn, Icons.frameSelection)
+  const btnFullScreen = actionButton('Fullscreen', () => console.log('Full Screen'), Icons.fullsScreen)
 
   return <>
     <div className='mx-1'>{btnOrbit}</div>
@@ -137,15 +138,15 @@ function TabTools(viewer: VIM.Viewer){
     viewer.gizmoMeasure.abort()
   }
 
-  const btnSection = actionButton('Section Box', onSectionBtn, Icons.sectionBox)
-  const btnMystery = actionButton('Mystery', () => console.log("Mystery"), Icons.sectionBox)
-  const btnMeasure =  actionButton("Measuring Tool", onMeasureBtn, Icons.measure)
+  const btnSection = actionButton('Sectioning Mode', onSectionBtn, Icons.sectionBox)
+  const btnIsolation = actionButton('Toggle Isolation', () => console.log("Toggle Isolation"), Icons.sectionBox)
+  const btnMeasure =  actionButton("Measuring Mode", onMeasureBtn, Icons.measure)
   const toolsTab = <>
     <div className='mx-1'>{btnSection}</div>
     <div className='mx-1'>{btnMeasure}</div>
   </> 
 
-  const btnMeasureDelete = actionButton('Clear', onMeasureDeleteBtn, Icons.trash)
+  const btnMeasureDelete = actionButton('Delete', onMeasureDeleteBtn, Icons.trash)
   const btnMeasureUndo = actionButton('Undo', onMeasureUndoBtn, Icons.undo)
   const btnMeasureConfirm = actionButton('Done', onMeasureBtn, Icons.checkmark)
   const measureTab = <>
@@ -154,7 +155,7 @@ function TabTools(viewer: VIM.Viewer){
     <div className='mx-1'>{btnMeasureConfirm}</div>
   </>
 
-  const btnSectionDelete = actionButton('Clear', onSectionDeleteBtn, Icons.trash)
+  const btnSectionDelete = actionButton('Delete', onSectionDeleteBtn, Icons.trash)
   const btnSectionUndo = actionButton('Undo', onSectionUndoBtn, Icons.undo)
   const btnSectionConfirm = actionButton('Done', onSectionBtn, Icons.checkmark)
   const sectionTab = <>
@@ -187,7 +188,7 @@ function TabSettings(
     props.setSideContent(props.sideContent === 'settings' ? 'none' : 'settings')
   }
 
-  const btnTreeView = toggleButton("Tree View", onTreeViewBtn, Icons.treeView, ()=> props.sideContent === 'bim')
+  const btnTreeView = toggleButton("Project Inspector", onTreeViewBtn, Icons.treeView, ()=> props.sideContent === 'bim')
   const btnSettings = toggleButton("Settings", onSettingsBtn, Icons.settings,  ()=> props.sideContent === 'settings')
   const btnHelp = toggleButton("Help", onHelpBtn, Icons.help, () => props.helpVisible) 
 
