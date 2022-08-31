@@ -19,6 +19,7 @@ import {MenuSettings} from './menuSettings'
 
 import './style.css'
 import pathGround from './assets/vim-floor-soft.png'
+import { Vim } from 'vim-webgl-viewer/';
 
 export type SideContent = 'none' | 'bim' |'settings'
 
@@ -53,6 +54,10 @@ export function createContainer(viewer: VIM.Viewer){
   ui.style.height = '100%'
   root.append(ui)
 
+  viewer.camera.rotate(new VIM.THREE.Vector2(-0.25, 0))
+  viewer.viewport.canvas.tabIndex =0
+  viewer.gizmoSection.clip = true
+
   return ui
 }
 
@@ -65,27 +70,27 @@ export function VimComponent (props: {
   menuTop?: boolean,
   loading?: boolean
 }) {
+  const viewer= props.viewer
   const useLogo = props.logo === undefined ? true: props.logo
   const useInspector = props.bimPanel === undefined ? true: props.bimPanel
   const useMenu = props.menu === undefined ? true: props.menu
   const useMenuTop = props.menuTop === undefined ? true: props.menuTop
   const useLoading = props.loading === undefined ? true: props.loading
 
-  const [ortho, setOrtho] = useState<boolean>(props.viewer.camera.orthographic)
-  const [orbit, setOrbit] = useState<boolean>(props.viewer.camera.orbitMode)
-  const [moreMenuVisible, setMoreMenuVisible] = useState(false)
+  const [ortho, setOrtho] = useState<boolean>(viewer.camera.orthographic)
+  const [orbit, setOrbit] = useState<boolean>(viewer.camera.orbitMode)
   const [helpVisible, setHelpVisible] = useState(false)
   const [sideContent, setSideContent] = useState<SideContent>('none')
   const [settings, setSettings] = useState(new Settings())
   const [toast, setToast] = useState<ToastConfig>()
+  const [isolation, setIsolation] = useState<VIM.Object[]>()
+  const [hidden, setHidden] = useState(!getAllVisible(viewer))
+  
   const toastTimeout = useRef(0)
   const toastSpeed = useRef(0)
-
-
   let sideContentRef = useRef(sideContent)
   let settingsRef = useRef(settings)
-
-  const viewer= props.viewer
+  
   const updateOrtho = (b: boolean) => {
     setOrtho(b)
     props.viewer.camera.orthographic = b
@@ -99,6 +104,31 @@ export function VimComponent (props: {
   const synchOrbit = () => {
     setOrbit(props.viewer.camera.orbitMode)
   }
+
+  const resetIsolation = () =>{
+    setIsolation(undefined)
+  }
+
+  const toggleIsolation = () =>{
+    if(!isolation){
+      if(getAllVisible(viewer)){
+        toGhost(viewer)
+      }
+      else{
+        setIsolation(getVisibleObjects(viewer))
+        showAll(viewer)
+      }
+    }
+    else{
+      toGhost(viewer)
+      isolation.forEach((o) => {
+        o.visible = true
+      })
+      resetIsolation()
+    }
+    setHidden(!getAllVisible(viewer))
+  }
+
 
   const onContextMenu = (position: VIM.THREE.Vector2) => {
     let showMenuConfig = {
@@ -131,9 +161,6 @@ export function VimComponent (props: {
 
   useEffect(() => {
     props.onMount()
-    props.viewer.camera.rotate(new VIM.THREE.Vector2(-0.25, 0))
-    props.viewer.viewport.canvas.tabIndex =0
-    props.viewer.gizmoSection.clip = true
     document.addEventListener('keyup',() => setTimeout(synchOrbit))
     props.viewer.inputs.onContextMenu = onContextMenu
 
@@ -185,11 +212,11 @@ export function VimComponent (props: {
       {helpVisible ? <MenuHelp closeHelp={() => setHelpVisible(false)}/> : null}
       {useLogo ? <Logo /> : null}
       {useLoading ? <LoadingBox viewer={props.viewer}/> : null}
-      {useMenu ? <ControlBar viewer={props.viewer} helpVisible = {helpVisible} setHelpVisible = {setHelpVisible} sideContent ={sideContent} setSideContent = {setSideContent}/> : null}
+      {useMenu ? <ControlBar viewer={props.viewer} helpVisible = {helpVisible} setHelpVisible = {setHelpVisible} sideContent ={sideContent} setSideContent = {setSideContent} toggleIsolation={toggleIsolation}  /> : null}
       {useMenuTop ? <MenuTop viewer={props.viewer} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho}/> : null}
       <SidePanel viewer={props.viewer} content={getSidePanelContent} />
       <ReactTooltip delayShow={200}/>
-      <VimContextMenu viewer={props.viewer} settings={settings} helpVisible = {helpVisible} setHelpVisible = {setHelpVisible} />
+      <VimContextMenu viewer={props.viewer} settings={settings} helpVisible = {helpVisible} setHelpVisible = {setHelpVisible} resetIsolation={resetIsolation} hidden = {hidden} setHidden={setHidden}/>
       <MenuToast config={toast}></MenuToast>
     </>
   )
@@ -249,6 +276,100 @@ function MenuToast(props: {config: ToastConfig}){
   </div>
 }
 
+
+export function toGhost(source: VIM.Viewer | VIM.Vim ){
+  const vimToGhost = (vim: VIM.Vim) => {
+    for (const obj of vim.getAllObjects()) {
+      obj.visible = false
+    }
+    vim.scene.material = vim.scene.builder.meshBuilder.materials.isolation
+  }
+  if(source instanceof VIM.Viewer){
+    for (const vim of source.vims) {
+      vimToGhost(vim)
+    }
+  }
+  else{
+    vimToGhost(source)
+  }
+}
+
+
+export function showAll(source: VIM.Viewer | VIM.Vim ){
+  const vimShowAll = (vim: VIM.Vim) => {
+    for (const obj of vim.getAllObjects()) {
+      obj.visible = true
+    }
+    vim.scene.material = undefined
+  }
+  if(source instanceof VIM.Viewer){
+    for (const vim of source.vims) {
+      vimShowAll(vim)
+    }
+  }
+  else{
+    vimShowAll(source)
+  }
+}
+
+
+export function getVisibleObjects(source: VIM.Viewer | VIM.Vim ){
+  const all : VIM.Object[] = []
+  const vimAllObjects = (vim: VIM.Vim) => {
+    for (const obj of vim.getAllObjects()) {
+      if(obj.visible){
+        all.push(obj)
+      }
+    }
+  }
+  if(source instanceof VIM.Viewer){
+    for (const vim of source.vims) {
+      vimAllObjects(vim)
+    }
+  }
+  else{
+    vimAllObjects(source)
+  }
+  return all
+}
+
+
+export function getObjects(source: VIM.Viewer | VIM.Vim ){
+  const all : VIM.Object[] = []
+  const vimAllObjects = (vim: VIM.Vim) => {
+    for (const obj of vim.getAllObjects()) {
+      all.push(obj)
+    }
+  }
+  if(source instanceof VIM.Viewer){
+    for (const vim of source.vims) {
+      vimAllObjects(vim)
+    }
+  }
+  else{
+    vimAllObjects(source)
+  }
+  return all
+}
+
+
+export function getAllVisible(source: VIM.Viewer | VIM.Vim ){
+  const vimAllVisible = (vim: VIM.Vim) => {
+    for (const obj of vim.getAllObjects()) {
+      if(!obj.visible) return false
+    }
+    return true
+  }
+  if(source instanceof VIM.Viewer){
+    for (const vim of source.vims) {
+      if(!vimAllVisible(vim)) return false
+    }
+    return true
+  }
+  else{
+    return vimAllVisible(source)
+  }
+}
 
 // Utils
 export function getVisibleBoundingBox(source: VIM.Viewer | VIM.Vim ){

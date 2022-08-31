@@ -12,25 +12,15 @@ export function VimContextMenu(
     viewer: VIM.Viewer,
     settings: Settings,
     helpVisible: boolean,
-    setHelpVisible: (value: boolean) => void
+    setHelpVisible: (value: boolean) => void,
+    resetIsolation: () => void
+    hidden: boolean,
+    setHidden: (value: boolean) => void 
   }){
   const viewer = props.viewer
-
-  const someHidden = () => {
-    for(const vim of viewer.vims){
-      for (const obj of vim.getAllObjects()) {
-        if(!obj.visible){
-          return true
-        }
-      }
-    }
-    return false
-  }
-
   const [objects, setObject] = useState<VIM.Object[]>([])
-  const [hidden, setHidden] = useState<boolean>(someHidden())
   const [section, setSection] = useState<boolean>(false)
-
+  console.log("VimContextMenu hidden: " + props.hidden)
   useEffect( () => {
     const old = viewer.selection.onValueChanged
     viewer.selection.onValueChanged = () => {
@@ -52,6 +42,7 @@ export function VimContextMenu(
 
   const onHideBtn = (e: ClickCallback) => {
     if(objects.length ===0) return
+    props.resetIsolation()
     for (const obj of objects) {
       obj.visible = false
     }
@@ -64,24 +55,25 @@ export function VimContextMenu(
     props.viewer.environment.groundPlane.visible = false
     viewer.selection.clear()
     viewer.camera.frame(getVisibleBoundingBox(vim), 'none', viewer.camera.defaultLerpDuration)
-    setHidden(true)
+    props.setHidden(true)
     e.stopPropagation()
   }
   
   const onIsolateBtn = (e: ClickCallback) => {
     if(objects.length === 0) return
+    props.resetIsolation()
     const set = new Set(objects)
     const vim = viewer.selection.vim
     for (const obj of vim.getAllObjects()) {
       obj.visible = set.has(obj)
     }
-
+    
     vim.scene.material = props.settings.useIsolationMaterial
       ? viewer.renderer.materials.isolation
       : undefined
     viewer.environment.groundPlane.visible = false
     viewer.camera.frame(getVisibleBoundingBox(vim), 'none', viewer.camera.defaultLerpDuration)
-    setHidden(true)
+    props.setHidden(true)
     e.stopPropagation()
   }
 
@@ -94,7 +86,7 @@ export function VimContextMenu(
     })
     viewer.environment.groundPlane.visible = props.settings.showGroundPlane
     viewer.camera.frame(viewer.renderer.getBoundingBox())
-    setHidden(false)
+    props.setHidden(false)
     e.stopPropagation()
   }
 
@@ -166,7 +158,7 @@ export function VimContextMenu(
         </>
       : null
       }
-      { hidden ?
+      { props.hidden ?
         <>
           <MenuItem divider />
           <MenuItem data={{foo: 'bar'}} onClick={onShowAllBtn} >

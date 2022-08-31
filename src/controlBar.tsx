@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { useState } from 'react'
+import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
 import { getVisibleBoundingBox, SideContent } from './component'
 import * as Icons from './icons'
@@ -23,18 +24,17 @@ export function ControlBar(
     helpVisible: boolean,
     setHelpVisible: (value:boolean) => void,
     sideContent: SideContent,
-    setSideContent : (value: SideContent) => void
+    setSideContent : (value: SideContent) => void,
+    toggleIsolation: () => void
   }){
 
   return <div className='vim-menu flex items-center justify-center w-full fixed px-2 bottom-0 py-2 divide-x-2 bg-white'>
     <div className ='vim-menu-section flex items-center'>
       {TabCamera(props.viewer)}
     </div>
-    <div className='divider'/>
     <div className='vim-menu-section flex items-center' >
-      {TabTools(props.viewer)}
+      {TabTools(props.viewer, props.toggleIsolation)}
     </div>
-    <div className='divider'/>
     <div className='vim-menu-section flex items-center'>
       {TabSettings(props)}
     </div>
@@ -81,15 +81,19 @@ function TabCamera(viewer : VIM.Viewer){
   </>
 }
 
-function TabTools(viewer: VIM.Viewer){
+/* TAB TOOLS */
+function TabTools(viewer: VIM.Viewer, toggleIsolation: () => void){
   // Need a ref to get the up to date value in callback.
   const [measuring, setMeasuring] = useState(false)
   const [measurement, setMeasurement] = useState<VIM.THREE.Vector3>()
   const [section, setSection] = useState(false)
+  const [clip, setClip] = useState(viewer.gizmoSection.clip)
+  
   const measuringRef = useRef<boolean>()
   measuringRef.current = measuring
 
   const onSectionBtn = () => {
+    ReactTooltip.hide()
     if(measuring){
       onMeasureBtn()
     }
@@ -105,6 +109,7 @@ function TabTools(viewer: VIM.Viewer){
   }
 
   const onMeasureBtn = () => {
+    ReactTooltip.hide()
     if(section){
       onSectionBtn()
     }
@@ -119,50 +124,58 @@ function TabTools(viewer: VIM.Viewer){
     }
   }
 
-  const onSectionDeleteBtn = () => {
+  const onResetSectionBtn = () => {
     viewer.gizmoSection.fitBox(viewer.renderer.getBoundingBox())
-    onSectionBtn()
   }
 
-
-
-  const onSectionUndoBtn = () => {
-    viewer.gizmoSection.fitBox(viewer.renderer.getBoundingBox())
+  const onSectionClip = () => {
+    viewer.gizmoSection.clip = true
+    setClip(true)
+  }
+  const onSectionNoClip = () => {
+    viewer.gizmoSection.clip = false
+    setClip(false)
   }
 
   const onMeasureDeleteBtn = () => {
+    ReactTooltip.hide()
     viewer.gizmoMeasure.abort()
     onMeasureBtn()
   }
-  const onMeasureUndoBtn = () => {
-    viewer.gizmoMeasure.abort()
+
+  const onToggleIsolationBtn = () => {
+    toggleIsolation()
+    //viewer.camera.frame(getVisibleBoundingBox(viewer), 'none', viewer.camera.defaultLerpDuration)
   }
 
   const btnSection = actionButton('Sectioning Mode', onSectionBtn, Icons.sectionBox)
-  const btnIsolation = actionButton('Toggle Isolation', () => console.log("Toggle Isolation"), Icons.sectionBox)
+  const btnIsolation = actionButton('Toggle Isolation', onToggleIsolationBtn, Icons.toggleIsolation)
   const btnMeasure =  actionButton("Measuring Mode", onMeasureBtn, Icons.measure)
   const toolsTab = <>
     <div className='mx-1'>{btnSection}</div>
+    <div className='mx-1'>{btnIsolation}</div>
     <div className='mx-1'>{btnMeasure}</div>
   </> 
 
   const btnMeasureDelete = actionButton('Delete', onMeasureDeleteBtn, Icons.trash)
-  const btnMeasureUndo = actionButton('Undo', onMeasureUndoBtn, Icons.undo)
   const btnMeasureConfirm = actionButton('Done', onMeasureBtn, Icons.checkmark)
   const measureTab = <>
     <div className='mx-1'>{btnMeasureDelete}</div>
-    <div className='mx-1'>{btnMeasureUndo}</div>
     <div className='mx-1'>{btnMeasureConfirm}</div>
   </>
 
-  const btnSectionDelete = actionButton('Delete', onSectionDeleteBtn, Icons.trash)
-  const btnSectionUndo = actionButton('Undo', onSectionUndoBtn, Icons.undo)
+  const btnSectionDelete = actionButton('Reset Section Box', onResetSectionBtn, Icons.sectionBoxReset)
+  const btnSectionClip = actionButton('Hide Section', onSectionClip, Icons.sectionBoxClip)
+  const btnSectionNoClip = actionButton('Show Section', onSectionNoClip, Icons.sectionBoxNoClip)
   const btnSectionConfirm = actionButton('Done', onSectionBtn, Icons.checkmark)
   const sectionTab = <>
   <div className='mx-1'>{btnSectionDelete}</div>
-  <div className='mx-1'>{btnSectionUndo}</div>
+  <div className='mx-1'>{clip ? btnSectionNoClip : btnSectionClip}</div>
   <div className='mx-1'>{btnSectionConfirm}</div>
 </>
+
+  // There is a weird bug with tooltips not working properly
+  // if measureTab or sectionTab do not have the same number of buttons as toolstab
 
   return measuring ? measureTab
   : section ? sectionTab
