@@ -1,17 +1,16 @@
 
-import React, { RefObject, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import ReactTooltip from 'react-tooltip';
 import logo from './assets/logo.png'
-import imageHelpControls from './assets/help_controls.png'
 import { showMenu} from "@firefox-devtools/react-contextmenu";
 
 import * as VIM from 'vim-webgl-viewer/'
+export * as VIM from 'vim-webgl-viewer/'
 
 import {MenuTop} from './menuTop'
 import {ControlBar} from './controlBar'
 import {LoadingBox} from './loadingBox'
 import {BimPanel} from './bimPanel'
-import {MenuMore} from './menuMore'
 import { VimContextMenu, VIM_CONTEXT_MENU_ID } from './contextMenu'
 import {MenuHelp} from './menuHelp'
 import {SidePanel} from './menuSide'
@@ -19,7 +18,7 @@ import {MenuSettings} from './menuSettings'
 
 import './style.css'
 import pathGround from './assets/vim-floor-soft.png'
-import { Vim } from 'vim-webgl-viewer/';
+
 
 export type SideContent = 'none' | 'bim' |'settings'
 
