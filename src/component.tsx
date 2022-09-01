@@ -276,6 +276,8 @@ function MenuToast(props: {config: ToastConfig}){
 }
 
 
+/* Utils */
+
 export function toGhost(source: VIM.Viewer | VIM.Vim ){
   const vimToGhost = (vim: VIM.Vim) => {
     for (const obj of vim.getAllObjects()) {
@@ -293,7 +295,6 @@ export function toGhost(source: VIM.Viewer | VIM.Vim ){
   }
 }
 
-
 export function showAll(source: VIM.Viewer | VIM.Vim ){
   const vimShowAll = (vim: VIM.Vim) => {
     for (const obj of vim.getAllObjects()) {
@@ -310,7 +311,6 @@ export function showAll(source: VIM.Viewer | VIM.Vim ){
     vimShowAll(source)
   }
 }
-
 
 export function getVisibleObjects(source: VIM.Viewer | VIM.Vim ){
   const all : VIM.Object[] = []
@@ -332,7 +332,6 @@ export function getVisibleObjects(source: VIM.Viewer | VIM.Vim ){
   return all
 }
 
-
 export function getObjects(source: VIM.Viewer | VIM.Vim ){
   const all : VIM.Object[] = []
   const vimAllObjects = (vim: VIM.Vim) => {
@@ -350,7 +349,6 @@ export function getObjects(source: VIM.Viewer | VIM.Vim ){
   }
   return all
 }
-
 
 export function getAllVisible(source: VIM.Viewer | VIM.Vim ){
   const vimAllVisible = (vim: VIM.Vim) => {
@@ -370,7 +368,6 @@ export function getAllVisible(source: VIM.Viewer | VIM.Vim ){
   }
 }
 
-// Utils
 export function getVisibleBoundingBox(source: VIM.Viewer | VIM.Vim ){
   let box : THREE.Box3
 
@@ -390,5 +387,5 @@ export function getVisibleBoundingBox(source: VIM.Viewer | VIM.Vim ){
     vimBoxUnion(source)
   }
 
-  return box ?? new VIM.THREE.Box3() 
+  return box
 }

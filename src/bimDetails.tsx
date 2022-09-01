@@ -1,4 +1,5 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
+import ReactTooltip from "react-tooltip"
 import * as VIM from 'vim-webgl-viewer/'
 import {groupBy} from './data'
 import * as Icons from './icons'
@@ -17,6 +18,10 @@ export function BimDetails<T>(input: T, toData: (v:T) => Promise<BimDetails>, ge
   //console.log("Render BimParameters Init")
   const [object, setObject] = useState<T>()
   const [details, setDetails] = useState<BimDetails>()
+
+  useEffect(() => {
+    ReactTooltip.rebuild()
+  })
 
   if(input !== object){
     setObject(input)
@@ -66,8 +71,8 @@ function createTable(key: string,  entries: TableEntry[], open: boolean, setOpen
       {open ? entries.map((p,i) => {
         const id =key + p.name +i
         return <li className="odd:bg-white flex" key={'parameters-tr-' + id }>
-          <span className="w-1/2 border-r border-gray-light p-2 truncate" title={p.name} key={'parameters-th-' + id}>{p.name}</span>
-          <span className="w-1/2 text-gray-medium p-2 truncate"  title={p.value} key={'parameters-td-' + id}>{p.value}</span>
+          <span data-tip={p.value} className="w-1/2 border-r border-gray-light p-2 truncate" title={p.name} key={'parameters-th-' + id}>{p.name}</span>
+          <span data-tip={p.value} className="w-1/2 text-gray-medium p-2 truncate"  title={p.value} key={'parameters-td-' + id}>{p.value}</span>
         </li>
       }) : null}
     </ul>

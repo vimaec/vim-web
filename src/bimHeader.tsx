@@ -1,5 +1,6 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import * as VIM from 'vim-webgl-viewer/'
+import ReactTooltip from 'react-tooltip';
 
 type BimHeader = BimHeaderEntry[][]
 type BimHeaderEntry = [key:string, value: (string | number)]
@@ -24,6 +25,10 @@ export function BimObjectHeader(props: { elements: VIM.ElementInfo[], object: VI
       Could not find element.
     </div>
   }
+
+  useEffect(() => {
+    ReactTooltip.rebuild()
+  })
   
   return createHeader(getElementBimHeader(element))
 }
@@ -40,16 +45,17 @@ export function BimDocumentHeader(props: {vim : VIM.Vim}){
   return createHeader(header)
 }
 
-function createHeader(header: BimHeader){
 
-  const mains = header.map((row, index) => {
+function createHeader(header: BimHeader){
+  
+  const rows = header.map((row, index) => {
     if(!row) return <br/>
     return <tr key={'main-tr' + index}>
     {
       row.map(pair => {
         return <td>
-          <span className="text-gray-medium w-3/12 py-1" key={'main-th' + index}>{pair[0]}</span>
-          <span className="py-1" key={'main-td' + index}>{pair[1]}</span>
+          <span data-tip={pair[1]} className="text-gray-medium w-3/12 py-1" key={'main-th' + index}>{pair[0]}</span>
+          <span data-tip={pair[1]} className="py-1" key={'main-td' + index}>{pair[1]}</span>
         </td>
       })}
     </tr>
@@ -57,7 +63,7 @@ function createHeader(header: BimHeader){
 
   return <div className="vim-bim-inspector mb-6">
     <table >
-      {mains}
+      {rows}
     </table>
   </div>
 }

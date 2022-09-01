@@ -3,7 +3,7 @@ import { useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 
 export function SidePanel(props:{viewer:VIM.Viewer, content:() => JSX.Element}){
-
+  
   const content = props.content()
   const visible = (content !== null)
 
@@ -14,6 +14,7 @@ export function SidePanel(props:{viewer:VIM.Viewer, content:() => JSX.Element}){
     return null
   }
   
+
   return <div className="vim-bim-panel fixed left-0 top-0 bg-gray-lightest p-6 text-gray-darker h-full">
     {props.content()}
   </div>
