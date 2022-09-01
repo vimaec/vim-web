@@ -3,40 +3,58 @@ import * as VIM from 'vim-webgl-viewer/'
 import {groupBy} from './data'
 import * as Icons from './icons'
 
-export type Parameter = {name: string, value: string, group: string}
+export type TableEntry = {name: string, value: string, group: string}
 
-export function BimParameters(props: { object: VIM.Object, getOpen: (s: string)=> boolean, setOpen: (s:string, b: boolean) => void, initOpen: (s:string[]) => void}){
+export function BimObjectDetails(props: { object: VIM.Object, getOpen: (s: string)=> boolean, setOpen: (s:string, b: boolean) => void, initOpen: (s:string[]) => void}){
+  return BimDetails(props.object, getObjectParameterDetails, props.getOpen, props.setOpen, props.initOpen)
+}
+
+export function BimDocumentDetails(props: { vim: VIM.Vim, getOpen: (s: string)=> boolean, setOpen: (s:string, b: boolean) => void, initOpen: (s:string[]) => void}){
+  return BimDetails(props.vim, getVimDocumentDetails, props.getOpen, props.setOpen, props.initOpen)
+}
+
+export function BimDetails<T>(input: T, toData: (v:T) => Promise<BimDetails>, getOpen: (s: string)=> boolean, setOpen: (s:string, b: boolean) => void, initOpen: (s:string[]) => void){
   //console.log("Render BimParameters Init")
-  const [object, setObject] = useState<VIM.Object>()
-  const [parameters, setParameters] = useState<ParameterData>()
+  const [object, setObject] = useState<T>()
+  const [details, setDetails] = useState<BimDetails>()
 
-  if(props.object !== object){
-    setObject(props.object)
-    toParameterData(props.object).then(data => {
-      setParameters(data)
-      props.initOpen([...data.instance.keys(), ...data.type.keys()])
+  if(input !== object){
+    setObject(input)
+    toData(input).then(data => {
+      setDetails(data)
+      initOpen(data.flatMap(d => [...d.content.keys()]))
     })
   }
-  const createTitle = (value: string) => {
-    return <h2 key={`title-${value}`} className="text-xs font-bold uppercase text-gray-medium p-2 rounded-t border-t border-l border-r border-gray-light w-auto inline-flex">{value}</h2>
-  }
 
-  if(!parameters){
+  if(!details){
     //console.log("Render BimParameters Loading")
     return <div className="vim-inspector-properties"> Loading . . .</div>
   }
 
   //console.log("Render BimParameters Done")
   return <div className="vim-inspector-properties">
-    {parameters.instance ? createTitle('Instance Properties') : null}
-    {Array.from(parameters.instance, (v,k) => parameterTable(v[0] , v[1], props.getOpen(v[0]), b => props.setOpen(v[0],b)))}
-    <br/>
-    {parameters.type ? createTitle('Type Properties') : null}
-    {Array.from(parameters.type, (v,k) => parameterTable(v[0] , v[1], props.getOpen(v[0]), b => props.setOpen(v[0],b)))}
+  {
+    details.map(d => {
+      return <>
+        {createTables(d.section, d.content, getOpen, setOpen)}
+        <br/>
+      </>
+    })
+  }
   </div>
 }
 
-function parameterTable(key: string,  parameters: Parameter[], open: boolean, setOpen: (b:boolean) => void){
+function createTables(title: string, entries: Map<string, TableEntry[]>, getOpen: (key:string) => boolean, setOpen: (key:string, value: boolean) => void){
+  const createTitle = (value: string) => {
+    return <h2 key={`title-${value}`} className="text-xs font-bold uppercase text-gray-medium p-2 rounded-t border-t border-l border-r border-gray-light w-auto inline-flex">{value}</h2>
+  }
+  return <>
+    {title ? createTitle(title) : null}
+    {Array.from(entries, (v,k) => createTable(v[0] , v[1], getOpen(v[0]), b => setOpen(v[0],b)))}
+  </>
+}
+
+function createTable(key: string,  entries: TableEntry[], open: boolean, setOpen: (b:boolean) => void){
   return <div key={"parameters-" + key} className={"parameters"}>
     <ul className="">
       <li key={"title-"+key}>
@@ -45,7 +63,7 @@ function parameterTable(key: string,  parameters: Parameter[], open: boolean, se
           <button onClick={() => setOpen(!open)}> {open ?<Icons.collapse className="transition-all rotate-180" height="15" width="15" fill="currentColor" /> : <Icons.collapse className="transition-all rotate-0" height="15" width="15" fill="currentColor" />}</button>
         </h3>
       </li>
-      {open ? parameters.map((p,i) => {
+      {open ? entries.map((p,i) => {
         const id =key + p.name +i
         return <li className="odd:bg-white flex" key={'parameters-tr-' + id }>
           <span className="w-1/2 border-r border-gray-light p-2 truncate" title={p.name} key={'parameters-th-' + id}>{p.name}</span>
@@ -56,19 +74,35 @@ function parameterTable(key: string,  parameters: Parameter[], open: boolean, se
   </div>
 }
 
-type ParameterData = {
-  instance: Map<string, Parameter[]>
-  type: Map<string, Parameter[]>
+
+type BimDetails = {section: string, content: Map<string, TableEntry[]>}[]
+  
+
+async function getVimDocumentDetails(vim: VIM.Vim): Promise<BimDetails>{
+  
+  let documents = await vim?.document.getBimDocumentSummary()
+  documents = documents.sort((a, b) => compare(a.title, b.title))
+  const data = new Map<string, TableEntry[]>(documents.map(d => 
+    [d.title, 
+    [
+      {name: 'Revit Version', value: d.version, group:d.title},
+      {name: 'Revit Author(s)', value: d.author, group:d.title},
+      {name: 'Last Modified', value: d.date, group:d.title}
+    ]])
+  )
+  return [{section: 'Source Files', content:data}]
 }
 
-
-export async function toParameterData(object: VIM.Object): Promise<ParameterData>{
+async function getObjectParameterDetails(object: VIM.Object): Promise<BimDetails>{
   let parameters = await object?.getBimParameters()
   parameters = parameters.filter(acceptParameter)
   parameters = parameters.sort((a, b) => compare(a.group, b.group))
   const instance = groupBy(parameters.filter(p => p.isInstance), p => p.group)
   const type = groupBy(parameters.filter(p => !p.isInstance), p => p.group)
-  return {instance, type}
+  return [
+    {section: 'Instance Properties', content:instance},
+    {section: 'Type Properties', content:type}
+  ]
 }
 
 // Custom rejected parameters provided by Sam
@@ -145,7 +179,7 @@ function compare(s1: string, s2: string){
   return eq
 }
 
-function acceptParameter(parameter: Parameter){
+function acceptParameter(parameter: TableEntry){
   let result = true
   rejectedParameters.forEach(p => {
     if(p === parameter.name){
