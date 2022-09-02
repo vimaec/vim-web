@@ -26,12 +26,12 @@ export function MenuTop(props: {
     props.viewer.camera.frame(props.viewer.renderer.getBoundingBox(), 45, props.viewer.camera.defaultLerpDuration)
   }
 
-  const btnHome = <button data-tip="Reset Camera" onClick={onHomeBtn } className={"rounded-full text-black h-8 w-8 flex items-center justify-center transition-all opacity-80 hover:opacity-100"} type="button"><Icons.home height="20" width="20" fill="currentColor" /> </button>
-  const btnOrtho = <button data-tip={props.ortho ? "Orthographic" : "Perspective"}  onClick={() => props.setOrtho(!props.ortho)} className={"rounded-full text-black h-8 w-8 flex items-center justify-center transition-all opacity-80 hover:opacity-100"} type="button">{props.ortho ? <Icons.orthographic height="20" width="20" fill="currentColor" /> : <Icons.perspective height="20" width="20" fill="currentColor" />}</button>
+  const btnHome = <button data-tip="Reset Camera" onClick={onHomeBtn } className={"rounded-full text-gray-medium h-8 w-8 flex items-center justify-center transition-all hover:text-primary-royal"} type="button"><Icons.home height="20" width="20" fill="currentColor" /> </button>
+  const btnOrtho = <button data-tip={props.ortho ? "Orthographic" : "Perspective"}  onClick={() => props.setOrtho(!props.ortho)} className={"rounded-full text-gray-medium h-8 w-8 flex items-center justify-center transition-all hover:text-primary-royal"} type="button">{props.ortho ? <Icons.orthographic height="20" width="20" fill="currentColor" /> : <Icons.perspective height="20" width="20" fill="currentColor" />}</button>
   
-  return <div className='vim-top flex flex-col fixed right-6 top-6 w-32 pointer-events-none'>
-    <div className='vim-top-background border border-hover-t40 h-28 w-full rounded-t-md pointer-events-none bg-white opacity-20 z-0' > </div>
-    <div className="vim-top-buttons flex p-1 rounded-b-md pointer-events-auto justify-center bg-white opacity-20">
+  return <div className='vim-top flex flex-col fixed right-6 top-6 w-32 pointer-events-none shadow-lg'>
+    <div className='vim-top-background border border-white-t50 h-28 w-full rounded-t-xl pointer-events-none z-0' > </div>
+    <div className="vim-top-buttons flex p-1 rounded-b-xl pointer-events-auto justify-center bg-white-t50">
       <div className='mx-1'>{btnOrtho}</div>
       <div className='mx-1'>{btnHome}</div>
     </div>

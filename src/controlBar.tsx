@@ -7,10 +7,10 @@ import * as Icons from './icons'
 
 
 // Shared Buttons style
-const btnStyle = 'rounded-full text-black h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:bg-hover-t40'
+const btnStyle = 'rounded-full text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal'
 const toggleButton = (tip: string, action : () => void, icon: ({height,width,fill}) => JSX.Element, isOn : ()=> boolean) => {
-  const fillColor = isOn() ? "blue" : "black"
-  return <button data-tip={tip} onClick={action} className={btnStyle} type="button">{icon({height:"24", width:"24", fill:fillColor})}</button>
+  const fillColor = isOn() ? "rounded-full text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-primary" : "rounded-full text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-gray-medium"
+  return <button data-tip={tip} onClick={action} className={ fillColor} type="button">{icon({height:"24", width:"24", fill:'currentColor'})}</button>
 }
 
 const actionButton = (tip: string, action : () => void, icon: ({height,width,fill}) => JSX.Element) => {
@@ -28,14 +28,14 @@ export function ControlBar(
     toggleIsolation: () => void
   }){
 
-  return <div className='vim-menu flex items-center justify-center w-full fixed px-2 bottom-0 py-2 divide-x-2 bg-white'>
-    <div className ='vim-menu-section flex items-center'>
+  return <div className='vim-menu flex items-center justify-center w-full fixed px-2 bottom-0 py-2 mb-9'>
+    <div className ='vim-menu-section flex items-center bg-white rounded-full px-2 shadow-md'>
       {TabCamera(props.viewer)}
     </div>
-    <div className='vim-menu-section flex items-center' >
+    <div className='vim-menu-section flex items-center bg-white rounded-full px-2 mx-4 shadow-md' >
       {TabTools(props.viewer, props.toggleIsolation)}
     </div>
-    <div className='vim-menu-section flex items-center'>
+    <div className='vim-menu-section flex items-center bg-white rounded-full px-2 shadow-md'>
       {TabSettings(props)}
     </div>
   </div>

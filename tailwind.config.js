@@ -44,7 +44,8 @@ module.exports = {
       list: {
         DEFAULT: 'var(--c-list-hover)'
       },
-      'hover-t40': 'var(--c-hover-t40)'
+      'hover-t40': 'var(--c-hover-t40)',
+      'white-t50': 'var(--c-white-t50)'
     },
     extend: {},
   },
