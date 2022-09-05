@@ -8,13 +8,14 @@ import * as Icons from './icons'
 
 // Shared Buttons style
 const btnStyle = 'rounded-full text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal'
+const btnStyleActive = 'rounded-full text-white h-10 w-10 flex items-center justify-center transition-all hover:scale-110 opacity-60 hover:opacity-100'
 const toggleButton = (tip: string, action : () => void, icon: ({height,width,fill}) => JSX.Element, isOn : ()=> boolean) => {
   const fillColor = isOn() ? "rounded-full text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-primary" : "rounded-full text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-gray-medium"
-  return <button data-tip={tip} onClick={action} className={ fillColor} type="button">{icon({height:"24", width:"24", fill:'currentColor'})}</button>
+  return <button data-tip={tip} onClick={action} className={ fillColor} type="button">{icon({height:"20", width:"20", fill:'currentColor'})}</button>
 }
 
-const actionButton = (tip: string, action : () => void, icon: ({height,width,fill}) => JSX.Element) => {
-  return <button data-tip={tip} onClick={action} className={btnStyle} type="button">{icon({height:"24", width:"24", fill:"currentColor"})}</button>
+const actionButton = (tip: string, action : () => void, icon: ({height,width,fill}) => JSX.Element, state: boolean) => {
+  return <button data-tip={tip} onClick={action} className={state ? btnStyleActive : btnStyle} type="button">{icon({height:"20", width:"20", fill:"currentColor"})}</button>
 }
 
 // Main Control bar
@@ -32,9 +33,9 @@ export function ControlBar(
     <div className ='vim-menu-section flex items-center bg-white rounded-full px-2 shadow-md'>
       {TabCamera(props.viewer)}
     </div>
-    <div className='vim-menu-section flex items-center bg-white rounded-full px-2 mx-4 shadow-md' >
+    <>
       {TabTools(props.viewer, props.toggleIsolation)}
-    </div>
+    </>
     <div className='vim-menu-section flex items-center bg-white rounded-full px-2 shadow-md'>
       {TabSettings(props)}
     </div>
@@ -67,8 +68,8 @@ function TabCamera(viewer : VIM.Viewer){
   const btnPan = toggleButton('Pan', () => onModeBtn('pan'), Icons.pan, () => mode === 'pan')
   const btnZoom = toggleButton('Zoom', () => onModeBtn('dolly'), Icons.zoom, () => mode === 'dolly')
   const btnFrameRect = toggleButton('Zoom Window', () => onModeBtn('zone'), Icons.frameRect, () => mode === 'zone')
-  const btnFrame = actionButton('Zoom to Fit', onFrameBtn, Icons.frameSelection)
-  const btnFullScreen = actionButton('Fullscreen', () => console.log('Full Screen'), Icons.fullsScreen)
+  const btnFrame = actionButton('Zoom to Fit', onFrameBtn, Icons.frameSelection, false)
+  const btnFullScreen = actionButton('Fullscreen', () => console.log('Full Screen'), Icons.fullsScreen, false)
 
   return <>
     <div className='mx-1'>{btnOrbit}</div>
@@ -148,31 +149,31 @@ function TabTools(viewer: VIM.Viewer, toggleIsolation: () => void){
     //viewer.camera.frame(getVisibleBoundingBox(viewer), 'none', viewer.camera.defaultLerpDuration)
   }
 
-  const btnSection = actionButton('Sectioning Mode', onSectionBtn, Icons.sectionBox)
-  const btnIsolation = actionButton('Toggle Isolation', onToggleIsolationBtn, Icons.toggleIsolation)
-  const btnMeasure =  actionButton("Measuring Mode", onMeasureBtn, Icons.measure)
-  const toolsTab = <>
+  const btnSection = actionButton('Sectioning Mode', onSectionBtn, Icons.sectionBox, false)
+  const btnIsolation = actionButton('Toggle Isolation', onToggleIsolationBtn, Icons.toggleIsolation, false)
+  const btnMeasure =  actionButton("Measuring Mode", onMeasureBtn, Icons.measure, false)
+  const toolsTab = <div className='vim-menu-section flex items-center bg-white rounded-full px-2 mx-4 shadow-md'>
     <div className='mx-1'>{btnSection}</div>
     <div className='mx-1'>{btnIsolation}</div>
     <div className='mx-1'>{btnMeasure}</div>
-  </> 
+  </div> 
 
-  const btnMeasureDelete = actionButton('Delete', onMeasureDeleteBtn, Icons.trash)
-  const btnMeasureConfirm = actionButton('Done', onMeasureBtn, Icons.checkmark)
-  const measureTab = <>
+  const btnMeasureDelete = actionButton('Delete', onMeasureDeleteBtn, Icons.trash, (measuring ? true : false))
+  const btnMeasureConfirm = actionButton('Done', onMeasureBtn, Icons.checkmark, (measuring ? true : false))
+  const measureTab = <div className='vim-menu-section flex items-center bg-primary rounded-full px-2 mx-4 shadow-md'>
     <div className='mx-1'>{btnMeasureDelete}</div>
     <div className='mx-1'>{btnMeasureConfirm}</div>
-  </>
+  </div>
 
-  const btnSectionDelete = actionButton('Reset Section Box', onResetSectionBtn, Icons.sectionBoxReset)
-  const btnSectionClip = actionButton('Hide Section', onSectionClip, Icons.sectionBoxClip)
-  const btnSectionNoClip = actionButton('Show Section', onSectionNoClip, Icons.sectionBoxNoClip)
-  const btnSectionConfirm = actionButton('Done', onSectionBtn, Icons.checkmark)
-  const sectionTab = <>
+  const btnSectionDelete = actionButton('Reset Section Box', onResetSectionBtn, Icons.sectionBoxReset, (section ? true : false))
+  const btnSectionClip = actionButton('Hide Section', onSectionClip, Icons.sectionBoxClip, (section ? true : false))
+  const btnSectionNoClip = actionButton('Show Section', onSectionNoClip, Icons.sectionBoxNoClip, (section ? true : false))
+  const btnSectionConfirm = actionButton('Done', onSectionBtn, Icons.checkmark, (section ? true : false))
+  const sectionTab = <div className='vim-menu-section flex items-center bg-primary rounded-full px-2 mx-4 shadow-md'>
   <div className='mx-1'>{btnSectionDelete}</div>
   <div className='mx-1'>{clip ? btnSectionNoClip : btnSectionClip}</div>
   <div className='mx-1'>{btnSectionConfirm}</div>
-</>
+</div>
 
   // There is a weird bug with tooltips not working properly
   // if measureTab or sectionTab do not have the same number of buttons as toolstab
