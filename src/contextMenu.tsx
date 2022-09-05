@@ -85,7 +85,7 @@ export function VimContextMenu(
       v.scene.material = undefined
     })
     viewer.environment.groundPlane.visible = props.settings.showGroundPlane
-    viewer.camera.frame(viewer.renderer.getBoundingBox())
+    viewer.camera.frame(viewer.renderer.getBoundingBox(), 'none', viewer.camera.defaultLerpDuration)
     props.setHidden(false)
     e.stopPropagation()
   }
