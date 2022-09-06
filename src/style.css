@@ -37,6 +37,7 @@
   --c-hover-t40: rgba(5, 12, 26, 0.4);
 
   --c-white: #ffffff;
+  --c-white-t50: rgba(255, 255, 255, 0.5);
 }
 
 body {
@@ -63,12 +64,12 @@ body {
   right: 24px !important;
   margin: 8px 16px 8px 16px;
   filter: saturate(0%);
-  transition: all 0.2s ease;
+  transition: all 0.5s ease;
 }
 
 .gizmo-axis-canvas:hover {
   filter: saturate(100%);
-  transition: all 0.2s ease;
+  transition: all 0.5s ease;
 }
 
 .vim-loading-box {
