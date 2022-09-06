@@ -22,11 +22,9 @@ export function VimContextMenu(
 
   useEffect( () => {
     // Register to selection
-    const old = viewer.selection.onValueChanged
-    viewer.selection.onValueChanged = () => {
-      old?.()
+    viewer.selection.onValueChanged.subscribe(() => {
       setObject([...viewer.selection.objects])
-      }
+    })
     
     // Register to section box
     viewer.gizmoSection.onBoxConfirm = () => {

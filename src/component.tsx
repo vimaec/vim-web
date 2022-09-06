@@ -164,7 +164,7 @@ export function VimComponent (props: {
     props.viewer.inputs.onContextMenu = onContextMenu
 
     // Camera speed toast
-    props.viewer.camera.onChanged = () => {
+    props.viewer.camera.onChanged.subscribe(() => {
       console.log(`viewer: ${props.viewer.camera.speed}, ref: ${toastSpeed.current}`)
       if(props.viewer.camera.speed !== toastSpeed.current){
         toastSpeed.current = props.viewer.camera.speed
@@ -172,14 +172,9 @@ export function VimComponent (props: {
         clearTimeout(toastTimeout.current)
         toastTimeout.current = setTimeout(() => setToast(undefined), 1000)
       }
-    }
+    })
 
-    const old = props.viewer.selection.onValueChanged
-    props.viewer.selection.onValueChanged = 
-    () => {
-      old?.()
-      updateSide()
-    }
+    props.viewer.selection.onValueChanged.subscribe(() => updateSide())
 
     // Override F button
     const oldKey = props.viewer.inputs.onKeyAction
