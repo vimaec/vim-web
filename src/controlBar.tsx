@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { useState } from 'react'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
-import { getVisibleBoundingBox, SideContent } from './component'
+import { frameContext, getVisibleBoundingBox, SideContent } from './component'
 import * as Icons from './icons'
 
 
@@ -48,7 +48,7 @@ export function ControlBar(
 function TabCamera(viewer : VIM.Viewer){
   const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerMode)
   useEffect(() => {
-    viewer.inputs.onPointerModeChanged = () => setMode(viewer.inputs.pointerMode)
+    viewer.inputs.onPointerModeChanged.subscribe(() => setMode(viewer.inputs.pointerMode))
   },[])
 
   const onModeBtn = (target: VIM.PointerMode) => {
@@ -58,11 +58,7 @@ function TabCamera(viewer : VIM.Viewer){
   }
 
   const onFrameBtn = () => {
-    const target = viewer.selection.count > 0
-     ? viewer.selection
-     : viewer.renderer
-
-    viewer.camera.frame(getVisibleBoundingBox(viewer), 'none', viewer.camera.defaultLerpDuration)
+    frameContext(viewer)
   }
 
   //Camera
