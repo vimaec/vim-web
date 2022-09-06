@@ -1,8 +1,7 @@
 import { ContextMenu, MenuItem } from "@firefox-devtools/react-contextmenu"
 import React, { useEffect, useState } from "react"
 import * as VIM from 'vim-webgl-viewer/'
-import { Settings } from "./component"
-import {getVisibleBoundingBox} from "./component"
+import { frameContext, hideSelection, isolateSelection, Settings, showAll } from "./component"
 
 export const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
 type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -20,14 +19,16 @@ export function VimContextMenu(
   const viewer = props.viewer
   const [objects, setObject] = useState<VIM.Object[]>([])
   const [section, setSection] = useState<boolean>(false)
-  console.log("VimContextMenu hidden: " + props.hidden)
+
   useEffect( () => {
+    // Register to selection
     const old = viewer.selection.onValueChanged
     viewer.selection.onValueChanged = () => {
       old?.()
       setObject([...viewer.selection.objects])
       }
     
+    // Register to section box
     viewer.gizmoSection.onBoxConfirm = () => {
       const clipping = !viewer.gizmoSection.box.containsBox(viewer.renderer.getBoundingBox())
       setSection(clipping)
@@ -35,139 +36,103 @@ export function VimContextMenu(
   }
   ,[])
 
-  const onFrameBtn = (e: ClickCallback) => {
-    viewer.camera.frame(getVisibleBoundingBox(viewer), 'none', viewer.camera.defaultLerpDuration)
-    e.stopPropagation()
-  }
-
-  const onHideBtn = (e: ClickCallback) => {
-    if(objects.length ===0) return
-    props.resetIsolation()
-    for (const obj of objects) {
-      obj.visible = false
-    }
-
-    const vim = viewer.selection.vim
-    vim.scene.material = props.settings.useIsolationMaterial
-    ? viewer.renderer.materials.isolation
-    : undefined
-
-    props.viewer.environment.groundPlane.visible = false
-    viewer.selection.clear()
-    viewer.camera.frame(getVisibleBoundingBox(vim), 'none', viewer.camera.defaultLerpDuration)
-    props.setHidden(true)
-    e.stopPropagation()
-  }
-  
-  const onIsolateBtn = (e: ClickCallback) => {
-    if(objects.length === 0) return
-    props.resetIsolation()
-    const set = new Set(objects)
-    const vim = viewer.selection.vim
-    for (const obj of vim.getAllObjects()) {
-      obj.visible = set.has(obj)
-    }
-    
-    vim.scene.material = props.settings.useIsolationMaterial
-      ? viewer.renderer.materials.isolation
-      : undefined
-    viewer.environment.groundPlane.visible = false
-    viewer.camera.frame(getVisibleBoundingBox(vim), 'none', viewer.camera.defaultLerpDuration)
-    props.setHidden(true)
-    e.stopPropagation()
-  }
-
-  const onShowAllBtn = (e: ClickCallback) => {
-    viewer.vims.forEach((v) => {
-      for (const obj of v.getAllObjects()) {
-        obj.visible = true
-      }
-      v.scene.material = undefined
-    })
-    viewer.environment.groundPlane.visible = props.settings.showGroundPlane
-    viewer.camera.frame(viewer.renderer.getBoundingBox(), 'none', viewer.camera.defaultLerpDuration)
-    props.setHidden(false)
-    e.stopPropagation()
-  }
-
-  const onResetBtn = (e: ClickCallback) => {
-    viewer.camera.frame(viewer.renderer.getBoundingBox(), 45, viewer.camera.defaultLerpDuration)
-    e.stopPropagation()
-  }
-
-  const onResetSectionBtn = (e: ClickCallback) => {
-    viewer.gizmoSection.fitBox(viewer.renderer.getBoundingBox())
-    e.stopPropagation()
-  }
-
-  const onClearSelectionBtn = (e: ClickCallback) => {
-    viewer.selection.clear()
-    e.stopPropagation()
-  }
-
-  const onShowControls = ( e: ClickCallback) => {
+  const onShowControlsBtn = ( e: ClickCallback) => {
     props.setHelpVisible(!props.helpVisible)
     e.stopPropagation()
   }
 
-  const hasSelection = objects.length > 0
+  const onCameraResetBtn = (e: ClickCallback) => {
+    viewer.camera.frame(viewer.renderer.getBoundingBox(), 45, viewer.camera.defaultLerpDuration)
+    e.stopPropagation()
+  }
+
+  const onCameraFrameBtn = (e: ClickCallback) => {
+    frameContext(viewer)
+    e.stopPropagation()
+  }
+  
+  const onSelectionIsolateBtn = (e: ClickCallback) => {
+    if(objects.length === 0) return
+    props.resetIsolation()
+    isolateSelection(viewer, props.settings)
+    props.setHidden(true)
+    e.stopPropagation()
+  }
+
+  const onSelectionHideBtn = (e: ClickCallback) => {
+    if(objects.length ===0) return
+    props.resetIsolation()
+    hideSelection(viewer, props.settings)
+    props.setHidden(true)
+    e.stopPropagation()
+  }
+
+  const onSelectionClearBtn = (e: ClickCallback) => {
+    viewer.selection.clear()
+    e.stopPropagation()
+  }
+
+  const onShowAllBtn = (e: ClickCallback) => {
+    showAll(viewer, props.settings)
+    props.setHidden(false)
+    e.stopPropagation()
+  }
+
+  const onSectionIgnoreBtn = ( e: ClickCallback) => {
+    viewer.gizmoMeasure.abort()
+  }
+
+  const onSectionResetBtn = (e: ClickCallback) => {
+    viewer.gizmoSection.fitBox(viewer.renderer.getBoundingBox())
+    e.stopPropagation()
+  }
+
+  const onMeasureDeleteBtn = ( e: ClickCallback) => {
+    viewer.gizmoMeasure.abort()
+  }
+
+  const createButton = (label: string, action:(e:ClickCallback) => void, condition: boolean = true) =>{
+    if(!condition) return null
+    return <MenuItem onClick={action} >
+      {label}
+    </MenuItem>
+  }
+  const createDivider = (condition : boolean = true)=>{
+    return condition ? <MenuItem divider /> : null
+  }
+  
+  const hasSelection = objects?.length > 0
+  const measuring = viewer.gizmoMeasure.startPoint?.length() > 0
 
   return <div className='vim-context-menu' onContextMenu={(e) =>{
     console.log('No menu')
     e.preventDefault()
   }}>
     <ContextMenu id={VIM_CONTEXT_MENU_ID}>
-      <MenuItem onClick={onShowControls} >
-          Show Controls
-      </MenuItem>
-      <MenuItem divider />
 
-      <MenuItem data={{foo: 'bar'}} onClick={onResetBtn} >
-        Reset Camera
-      </MenuItem>
-      <MenuItem data={{foo: 'bar'}} onClick={onFrameBtn} >
-        Zoom to Fit
-      </MenuItem>
+      {createButton('Show Controls', onShowControlsBtn)}
       
-      {
-        section ?
-        <>
-          <MenuItem divider />
-          <MenuItem data={{foo: 'bar'}} onClick={onResetSectionBtn} >
-            Reset Section Box
-          </MenuItem>
-        </>
-        : null
-      }
+      {/*Camera*/}
+      {createDivider()}
+      {createButton('Reset Camera', onCameraResetBtn)}
+      {createButton('Zoom to Fit', onCameraFrameBtn, hasSelection)}
+      
+      {/*Selection*/}
+      {createDivider(hasSelection || props.hidden)}
+      {createButton('Isolate Object', onSelectionIsolateBtn, hasSelection)}
+      {createButton('Hide Object', onSelectionHideBtn, hasSelection)}
+      {createButton('Clear Selection', onSelectionClearBtn, hasSelection)}
+      {createButton('Show All', onShowAllBtn,props.hidden)}
 
+      {/*Measure*/}     
+      {createDivider(measuring)} 
+      {createButton('Delete Measurement', onMeasureDeleteBtn, measuring)}
 
-      {
-        hasSelection ?
-        <>
-          <MenuItem divider />
-          <MenuItem data={{foo: 'bar'}} onClick={onIsolateBtn} >
-            Isolate Object
-          </MenuItem>
-          <MenuItem data={{foo: 'bar'}} onClick={onHideBtn}  >
-            Hide Object
-          </MenuItem>
-          <MenuItem data={{foo: 'bar'}} onClick={onClearSelectionBtn} >
-            Clear Selection
-          </MenuItem>
-          
-        </>
-      : null
-      }
-      { props.hidden ?
-        <>
-          <MenuItem divider />
-          <MenuItem data={{foo: 'bar'}} onClick={onShowAllBtn} >
-            Show All
-          </MenuItem>
-        </>
-        : null
-      }
-
+      {/*Section*/}
+      {createDivider(section)} 
+      {createButton('Ignore Section Box', onSectionIgnoreBtn, section)}
+      {createButton('Reset Section Box', onSectionResetBtn, section)}
+      
     </ContextMenu>
   </div>
 }
