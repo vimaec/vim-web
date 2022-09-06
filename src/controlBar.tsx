@@ -49,7 +49,7 @@ export function ControlBar(
 function TabCamera(viewer : VIM.Viewer){
   const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerMode)
   useEffect(() => {
-    viewer.inputs.onPointerModeChanged = () => setMode(viewer.inputs.pointerMode)
+    viewer.inputs.onPointerModeChanged.subscribe(() => setMode(viewer.inputs.pointerMode))
   },[])
 
   const onModeBtn = (target: VIM.PointerMode) => {
