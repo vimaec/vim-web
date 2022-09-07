@@ -116,25 +116,25 @@ export function VimContextMenu(
     console.log('No menu')
     e.preventDefault()
   }}>
-    <ContextMenu id={VIM_CONTEXT_MENU_ID}>
-      <MenuItem onClick={onShowControls} >
-          Show Controls
+    <ContextMenu className="text-gray-darker bg-white py-1 w-[240px] rounded shadow-lg" id={VIM_CONTEXT_MENU_ID}>
+      <MenuItem className="hover:bg-gray-lightest px-5 py-2 flex items-center justify-between" onClick={onShowControls} >
+        <span>Show Controls</span><span className="text-gray-medium">F1</span>
       </MenuItem>
-      <MenuItem divider />
+      <MenuItem className="border-b border-gray-lighter my-1" divider />
 
-      <MenuItem data={{foo: 'bar'}} onClick={onResetBtn} >
-        Reset Camera
+      <MenuItem className="hover:bg-gray-lightest px-5 py-2 flex items-center justify-between" data={{foo: 'bar'}} onClick={onResetBtn} >
+        <span>Reset Camera</span><span className="text-gray-medium">HOME</span>  
       </MenuItem>
-      <MenuItem data={{foo: 'bar'}} onClick={onFrameBtn} >
-        Zoom to Fit
+      <MenuItem className="hover:bg-gray-lightest px-5 py-2 flex items-center justify-between" data={{foo: 'bar'}} onClick={onFrameBtn} >
+        <span>Zoom to Fit</span><span className="text-gray-medium">F</span> 
       </MenuItem>
       
       {
         section ?
         <>
-          <MenuItem divider />
-          <MenuItem data={{foo: 'bar'}} onClick={onResetSectionBtn} >
-            Reset Section Box
+          <MenuItem className="border-b border-gray-lighter my-1" divider />
+          <MenuItem className="hover:bg-gray-lightest px-5 py-2 flex items-center justify-between" data={{foo: 'bar'}} onClick={onResetSectionBtn} >
+            <span>Reset Section Box</span><span className="text-gray-medium"></span>
           </MenuItem>
         </>
         : null
@@ -144,15 +144,15 @@ export function VimContextMenu(
       {
         hasSelection ?
         <>
-          <MenuItem divider />
-          <MenuItem data={{foo: 'bar'}} onClick={onIsolateBtn} >
-            Isolate Object
+          <MenuItem className="border-b border-gray-lighter my-1" divider />
+          <MenuItem className="hover:bg-gray-lightest px-5 py-2 flex items-center justify-between" data={{foo: 'bar'}} onClick={onIsolateBtn} >
+            <span>Isolate Object</span><span className="text-gray-medium">I</span>
           </MenuItem>
-          <MenuItem data={{foo: 'bar'}} onClick={onHideBtn}  >
-            Hide Object
+          <MenuItem className="hover:bg-gray-lightest px-5 py-2 flex items-center justify-between" data={{foo: 'bar'}} onClick={onHideBtn}  >
+            <span>Hide Object</span><span className="text-gray-medium"></span>
           </MenuItem>
-          <MenuItem data={{foo: 'bar'}} onClick={onClearSelectionBtn} >
-            Clear Selection
+          <MenuItem className="hover:bg-gray-lightest px-5 py-2 flex items-center justify-between" data={{foo: 'bar'}} onClick={onClearSelectionBtn} >
+            <span>Clear Selection</span><span className="text-gray-medium">Esc</span>
           </MenuItem>
           
         </>
@@ -160,9 +160,9 @@ export function VimContextMenu(
       }
       { props.hidden ?
         <>
-          <MenuItem divider />
-          <MenuItem data={{foo: 'bar'}} onClick={onShowAllBtn} >
-            Show All
+          <MenuItem className="border-b border-gray-lighter my-1" divider />
+          <MenuItem className="hover:bg-gray-lightest px-5 py-2 flex items-center justify-between" data={{foo: 'bar'}} onClick={onShowAllBtn} >
+            <span>Show All</span><span className="text-gray-medium"></span>
           </MenuItem>
         </>
         : null

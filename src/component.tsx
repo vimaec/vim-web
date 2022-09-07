@@ -270,8 +270,8 @@ function MenuToast(props: {config: ToastConfig}){
   if(!props.config)
     return null
 
-  return <div className='vim-menu-toast'>
-    <h1 className='text-lg font-bold text-white mx-2'>Speed: {props.config.speed +25}</h1>
+  return <div className='vim-menu-toast rounded shadow-lg py-2 px-5 flex items-center justify-between'>
+    <span className='text-sm uppercase font-semibold text-gray-light'>Speed:</span><span className='font-bold text-lg text-white ml-1'>{props.config.speed +25}</span>
   </div>
 }
 

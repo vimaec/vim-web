@@ -7,10 +7,7 @@ import { Settings } from "./component";
 export function MenuSettings(props: { viewer: VIM.Viewer, settings: Settings, setSettings: (value: Settings) => void})
 {
   const toggleElement = (label: string, state: boolean, action: () => void) =>{
-    return <span className="vim-settings-line block">
-      <input type="checkbox" checked={state} onChange={action}></input>
-      <span className="text-gray-medium m-1 w-max py-1">{label} </span>
-    </span>
+    return <label className="text-gray-warm m-1 w-max py-1 flex items-center"><input type="checkbox" checked={state} onChange={action} className="w-[18px] h-[18px] rounded border border-gray-medium checked:bg-primary-royal mr-2"></input> {label}</label>
   }
 
   const next = props.settings.clone()
