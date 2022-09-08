@@ -37,7 +37,7 @@ class ComponentInputStrategy implements VIM.InputStrategy{
     this._default.onMainAction(hit)
   }
   onIdleAction(hit: InputAction): void {
-    this._default.onMainAction(hit)
+    this._default.onIdleAction(hit)
   }
   onKeyAction(key: number): boolean {
     // F
@@ -197,7 +197,6 @@ export function VimComponent (props: {
 
     // Camera speed toast
     props.viewer.camera.onChanged.subscribe(() => {
-      console.log(`viewer: ${props.viewer.camera.speed}, ref: ${toastSpeed.current}`)
       if(props.viewer.camera.speed !== toastSpeed.current){
         toastSpeed.current = props.viewer.camera.speed
         setToast({speed: props.viewer.camera.speed})
