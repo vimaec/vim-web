@@ -49,22 +49,22 @@ export function BimDocumentHeader(props: {vim : VIM.Vim}){
 function createHeader(header: BimHeader){
   
   const rows = header.map((row, index) => {
-    if(!row) return <br/>
-    return <tr key={'main-tr' + index}>
+    if(!row) return 
+    return <>
     {
       row.map(pair => {
-        return <td>
-          <span data-tip={pair[1]} className="text-gray-medium w-3/12 py-1" key={'main-th' + index}>{pair[0]}</span>
-          <span data-tip={pair[1]} className="py-1" key={'main-td' + index}>{pair[1]}</span>
-        </td>
+        return <>
+          <dt data-tip={pair[1]} className="text-gray-medium w-4/12 py-1 truncate" key={'main-th' + index}>{pair[0]}</dt>
+          <dd data-tip={pair[1]} className="py-1 w-8/12 truncate" key={'main-td' + index}>{pair[1]}</dd>
+        </>
       })}
-    </tr>
+    </> 
   })
 
   return <div className="vim-bim-inspector mb-6">
-    <table >
+    <dl className="flex flex-wrap">
       {rows}
-    </table>
+    </dl>
   </div>
 }
 

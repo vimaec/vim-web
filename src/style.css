@@ -49,12 +49,9 @@ body {
 /* Toast Notification */
 .vim-menu-toast {
   position: absolute;
-  width: 100px;
   top: 10%;
   left: calc(50% - 50px);
-  opacity: 0.75;
-  background-color: #050c1a;
-  border-radius: 5px;
+  background-color: rgba(0,0,0,.6);
 }
 
 /* Axes Gizmo*/
@@ -90,25 +87,11 @@ body {
 }
 
 /* Context Menu */
-.react-contextmenu {
-  background-color: white;
-  border-radius: 5px;
-  padding: 5px;
-}
-.react-contextmenu-item {
-  cursor: pointer;
-}
-.react-contextmenu-item--selected {
-  background-color: cyan;
-}
-
+.
 .checked {
   font-weight: bold;
 }
 
-.react-contextmenu-item--divider {
-  border-top: 1px solid black;
-}
 
 /* Logo */
 
