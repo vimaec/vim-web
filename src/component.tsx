@@ -115,7 +115,7 @@ export function VimComponent (props: {
       }
       else{
         setIsolation(getVisibleObjects(viewer))
-        showAll(viewer)
+        setAllVisible(viewer)
       }
     }
     else{
@@ -164,7 +164,7 @@ export function VimComponent (props: {
     props.viewer.inputs.onContextMenu = onContextMenu
 
     // Camera speed toast
-    props.viewer.camera.onChanged = () => {
+    props.viewer.camera.onChanged.subscribe(() => {
       console.log(`viewer: ${props.viewer.camera.speed}, ref: ${toastSpeed.current}`)
       if(props.viewer.camera.speed !== toastSpeed.current){
         toastSpeed.current = props.viewer.camera.speed
@@ -172,14 +172,9 @@ export function VimComponent (props: {
         clearTimeout(toastTimeout.current)
         toastTimeout.current = setTimeout(() => setToast(undefined), 1000)
       }
-    }
+    })
 
-    const old = props.viewer.selection.onValueChanged
-    props.viewer.selection.onValueChanged = 
-    () => {
-      old?.()
-      updateSide()
-    }
+    props.viewer.selection.onValueChanged.subscribe(() => updateSide())
 
     // Override F button
     const oldKey = props.viewer.inputs.onKeyAction
@@ -278,6 +273,56 @@ function MenuToast(props: {config: ToastConfig}){
 
 /* Utils */
 
+export function frameContext(viewer: VIM.Viewer){
+  const box = viewer.selection.count > 0
+  ? viewer.selection.getBoundingBox()
+  : getVisibleBoundingBox(viewer)
+
+ viewer.camera.frame(box, 'none', viewer.camera.defaultLerpDuration)
+
+}
+
+export function isolateSelection(viewer: VIM.Viewer, settings: Settings){
+  const set = new Set(viewer.selection.objects)
+  const vim = viewer.selection.vim
+  for (const obj of vim.getAllObjects()) {
+    obj.visible = set.has(obj)
+  }
+  
+  vim.scene.material = settings.useIsolationMaterial
+    ? viewer.renderer.materials.isolation
+    : undefined
+  viewer.environment.groundPlane.visible = false
+  viewer.camera.frame(getVisibleBoundingBox(vim), 'none', viewer.camera.defaultLerpDuration)
+}
+
+export function hideSelection(viewer: VIM.Viewer, settings: Settings){
+  for (const obj of viewer.selection.objects) {
+    obj.visible = false
+  }
+
+  const vim = viewer.selection.vim
+  vim.scene.material = settings.useIsolationMaterial
+  ? viewer.renderer.materials.isolation
+  : undefined
+
+  viewer.environment.groundPlane.visible = false
+  viewer.selection.clear()
+  viewer.camera.frame(getVisibleBoundingBox(vim), 'none', viewer.camera.defaultLerpDuration)
+}
+
+export function showAll(viewer: VIM.Viewer, settings: Settings){
+  viewer.vims.forEach((v) => {
+    for (const obj of v.getAllObjects()) {
+      obj.visible = true
+    }
+    v.scene.material = undefined
+  })
+  viewer.environment.groundPlane.visible = settings.showGroundPlane
+  viewer.camera.frame(viewer.renderer.getBoundingBox(), 'none', viewer.camera.defaultLerpDuration)
+}
+
+
 export function toGhost(source: VIM.Viewer | VIM.Vim ){
   const vimToGhost = (vim: VIM.Vim) => {
     for (const obj of vim.getAllObjects()) {
@@ -295,7 +340,7 @@ export function toGhost(source: VIM.Viewer | VIM.Vim ){
   }
 }
 
-export function showAll(source: VIM.Viewer | VIM.Vim ){
+export function setAllVisible(source: VIM.Viewer | VIM.Vim ){
   const vimShowAll = (vim: VIM.Vim) => {
     for (const obj of vim.getAllObjects()) {
       obj.visible = true
