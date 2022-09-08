@@ -77,7 +77,7 @@ export function VimContextMenu(
   }
 
   const onSectionIgnoreBtn = ( e: ClickCallback) => {
-    viewer.gizmoMeasure.abort()
+    viewer.gizmoSection.clip = false
   }
 
   const onSectionResetBtn = (e: ClickCallback) => {
@@ -86,7 +86,7 @@ export function VimContextMenu(
   }
 
   const onMeasureDeleteBtn = ( e: ClickCallback) => {
-    viewer.gizmoMeasure.abort()
+    viewer.measure.abort()
   }
 
   const createButton = (label: string, action:(e:ClickCallback) => void, condition: boolean = true) =>{
@@ -100,7 +100,7 @@ export function VimContextMenu(
   }
   
   const hasSelection = objects?.length > 0
-  const measuring = viewer.gizmoMeasure.startPoint?.length() > 0
+  const measuring = !!viewer.measure.stage
 
   return <div className='vim-context-menu' onContextMenu={(e) =>{
     console.log('No menu')

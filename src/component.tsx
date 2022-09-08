@@ -5,7 +5,6 @@ import logo from './assets/logo.png'
 import { showMenu} from "@firefox-devtools/react-contextmenu";
 
 import * as VIM from 'vim-webgl-viewer/'
-export * as VIM from 'vim-webgl-viewer/'
 
 import {MenuTop} from './menuTop'
 import {ControlBar} from './controlBar'
@@ -18,9 +17,42 @@ import {MenuSettings} from './menuSettings'
 
 import './style.css'
 import pathGround from './assets/vim-floor-soft.png'
+import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycaster';
 
 
 export type SideContent = 'none' | 'bim' |'settings'
+
+
+
+class ComponentInputStrategy implements VIM.InputStrategy{
+  private _viewer : VIM.Viewer
+  private _default: VIM.InputStrategy
+
+  constructor(viewer:VIM.Viewer){
+    this._viewer = viewer
+    this._default = new VIM.DefaultInputStrategy(viewer)
+  }
+
+  onMainAction(hit: InputAction): void {
+    this._default.onMainAction(hit)
+  }
+  onIdleAction(hit: InputAction): void {
+    this._default.onMainAction(hit)
+  }
+  onKeyAction(key: number): boolean {
+    // F
+    if(key === 70) {
+      const box = this._viewer.selection.count > 0
+        ? getVisibleBoundingBox(this._viewer.selection.vim)
+        : getVisibleBoundingBox(this._viewer)
+        
+        this._viewer.camera.frame(box, 'none', this._viewer.camera.defaultLerpDuration)
+      return true
+    }
+    return this._default.onKeyAction(key)
+  }
+
+}
 
 export class Settings {
   useIsolationMaterial: boolean = true
@@ -175,22 +207,11 @@ export function VimComponent (props: {
     })
 
     props.viewer.selection.onValueChanged.subscribe(() => updateSide())
-
-    // Override F button
-    const oldKey = props.viewer.inputs.onKeyAction
-    props.viewer.inputs.onKeyAction = (key) => {
-      if(key === 70){
-        const box = viewer.selection.count > 0
-          ? getVisibleBoundingBox(viewer.selection.vim)
-          : getVisibleBoundingBox(viewer)
-          
-          viewer.camera.frame(box, 'none', viewer.camera.defaultLerpDuration)
-        return true
-      }
-      return oldKey(key)
-    }
+    props.viewer.inputs.strategy = new ComponentInputStrategy(props.viewer)
 
   },[])
+
+
 
 
   const getSidePanelContent =() => {
