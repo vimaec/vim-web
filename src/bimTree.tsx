@@ -240,7 +240,7 @@ export class BimTreeData{
         const self = i
         // Add the leaves
         v.forEach((e) => {
-          this.nodes[++i] = {index: i, parent: self, title: k, hasChildren:false, data: e, children: [] }
+          this.nodes[++i] = {index: i, parent: self, title: `${e.name} [${e.id}]`, hasChildren:false, data: e, children: [] }
           this.elemenToNode.set(e.element, i)
         })
       }

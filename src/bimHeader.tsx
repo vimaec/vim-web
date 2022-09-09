@@ -41,6 +41,10 @@ export function BimDocumentHeader(props: {vim : VIM.Vim}){
     setVim(props.vim)
     // Get revit file count here.
   }
+  if(!props.vim){
+    return <>Loading...</>
+  }
+  
   const header = getVimBimHeader(props.vim)
   return createHeader(header)
 }

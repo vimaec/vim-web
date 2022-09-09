@@ -51,6 +51,7 @@ export function BimPanel(props: { viewer: VIM.Viewer })
 
   // Register to selection
   useEffect(() => {
+    viewer.onVimLoaded.subscribe(updateVim)
     viewer.selection.onValueChanged.subscribe( 
     () => {
       updateVim()

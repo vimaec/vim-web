@@ -85,7 +85,7 @@ export function createContainer(viewer: VIM.Viewer){
   ui.style.height = '100%'
   root.append(ui)
 
-  viewer.camera.rotate(new VIM.THREE.Vector2(-0.25, 0))
+  // Initial viewer settings
   viewer.viewport.canvas.tabIndex =0
   viewer.gizmoSection.clip = true
 
@@ -108,10 +108,8 @@ export function VimComponent (props: {
   const useMenuTop = props.menuTop === undefined ? true: props.menuTop
   const useLoading = props.loading === undefined ? true: props.loading
 
-  const [ortho, setOrtho] = useState<boolean>(viewer.camera.orthographic)
-  const [orbit, setOrbit] = useState<boolean>(viewer.camera.orbitMode)
   const [helpVisible, setHelpVisible] = useState(false)
-  const [sideContent, setSideContent] = useState<SideContent>('none')
+  const [sideContent, setSideContent] = useState<SideContent>('bim')
   const [settings, setSettings] = useState(new Settings())
   const [toast, setToast] = useState<ToastConfig>()
   const [isolation, setIsolation] = useState<VIM.Object[]>()
@@ -122,19 +120,6 @@ export function VimComponent (props: {
   let sideContentRef = useRef(sideContent)
   let settingsRef = useRef(settings)
   
-  const updateOrtho = (b: boolean) => {
-    setOrtho(b)
-    props.viewer.camera.orthographic = b
-  }
-
-  const updateOrbit = (b: boolean) => {
-    setOrbit(b)
-    props.viewer.camera.orbitMode = b
-  }
-
-  const synchOrbit = () => {
-    setOrbit(props.viewer.camera.orbitMode)
-  }
 
   const resetIsolation = () =>{
     setIsolation(undefined)
@@ -192,8 +177,10 @@ export function VimComponent (props: {
 
   useEffect(() => {
     props.onMount()
-    document.addEventListener('keyup',() => setTimeout(synchOrbit))
     props.viewer.inputs.onContextMenu = onContextMenu
+    viewer.onVimLoaded.subscribe(() =>{
+      viewer.camera.frame('all', 45)
+    })
 
     // Camera speed toast
     props.viewer.camera.onChanged.subscribe(() => {
@@ -227,7 +214,7 @@ export function VimComponent (props: {
       {useLogo ? <Logo /> : null}
       {useLoading ? <LoadingBox viewer={props.viewer}/> : null}
       {useMenu ? <ControlBar viewer={props.viewer} helpVisible = {helpVisible} setHelpVisible = {setHelpVisible} sideContent ={sideContent} setSideContent = {setSideContent} toggleIsolation={toggleIsolation}  /> : null}
-      {useMenuTop ? <MenuTop viewer={props.viewer} orbit ={orbit} setOrbit = {updateOrbit} ortho = {ortho} setOrtho = {updateOrtho}/> : null}
+      {useMenuTop ? <MenuTop viewer={props.viewer}/> : null}
       <SidePanel viewer={props.viewer} content={getSidePanelContent} />
       <ReactTooltip delayShow={200}/>
       <VimContextMenu viewer={props.viewer} settings={settings} helpVisible = {helpVisible} setHelpVisible = {setHelpVisible} resetIsolation={resetIsolation} hidden = {hidden} setHidden={setHidden}/>
@@ -290,8 +277,12 @@ function MenuToast(props: {config: ToastConfig}){
   </div>
 }
 
-
 /* Utils */
+
+export function resetCamera(viewer: VIM.Viewer){
+  viewer.camera.reset()
+  viewer.camera.frame('all', 45)
+}
 
 export function frameContext(viewer: VIM.Viewer){
   const box = viewer.selection.count > 0
