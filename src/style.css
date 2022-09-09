@@ -142,8 +142,9 @@ body {
   width: 64px;
 }
 
-.vim-menu button:focus {
+.vim-menu button:focus, .vim-bim-search input[type='search']:focus {
   outline: 0;
+  box-shadow: none;
 }
 
 .vim-menu .iconButton {

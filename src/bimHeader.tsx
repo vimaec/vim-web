@@ -70,20 +70,20 @@ function createHeader(header: BimHeader){
 
 function getElementBimHeader(info: VIM.ElementInfo) : BimHeader {
   return [
-    [["Document", info.documentTitle, 'w-4/12', 'w-8/12']],
-    [["Workset", info.workset, 'w-4/12', 'w-8/12']],
-    [["Category", info.categoryName, 'w-4/12', 'w-8/12']],
-    [["Family Name", info.familyName, 'w-4/12', 'w-8/12']],
-    [["Family Type", info.familyTypeName, 'w-4/12', 'w-8/12']],
-    [["Element Id", info.id, 'w-4/12', 'w-8/12']]
+    [["Document", info.documentTitle, 'w-3/12', 'w-9/12']],
+    [["Workset", info.workset, 'w-3/12', 'w-9/12']],
+    [["Category", info.categoryName, 'w-3/12', 'w-9/12']],
+    [["Family Name", info.familyName, 'w-3/12', 'w-9/12']],
+    [["Family Type", info.familyTypeName, 'w-3/12', 'w-9/12']],
+    [["Element Id", info.id, 'w-3/12', 'w-9/12']]
   ]
 }
 
 function getVimBimHeader(vim : VIM.Vim) : BimHeader {
   return [
-    [["Document", vim.source, 'w-4/12', 'w-8/12']],
-    [["Created on", vim.document.header.created, 'w-4/12', 'w-8/12']],
-    [["Created by", vim.document.header.generator, 'w-4/12', 'w-8/12']],
+    [["Document", vim.source, 'w-3/12', 'w-8/12']],
+    [["Created on", vim.document.header.created, 'w-3/12', 'w-9/12']],
+    [["Created by", vim.document.header.generator, 'w-3/12', 'w-9/12']],
     undefined,
     [
       ["BIM Count", [...vim.document.getAllElements()].length, 'w-3/12 mt-5', 'w-3/12 mt-5'],
