@@ -81,7 +81,7 @@ function getElementBimHeader(info: VIM.ElementInfo) : BimHeader {
 
 function getVimBimHeader(vim : VIM.Vim) : BimHeader {
   return [
-    [["Document", vim.source, 'w-3/12', 'w-8/12']],
+    [["Document", vim.source, 'w-3/12', 'w-9/12']],
     [["Created on", vim.document.header.created, 'w-3/12', 'w-9/12']],
     [["Created by", vim.document.header.generator, 'w-3/12', 'w-9/12']],
     undefined,
