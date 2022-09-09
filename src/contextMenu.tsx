@@ -96,7 +96,7 @@ export function VimContextMenu(
     </MenuItem>
   }
   const createDivider = (condition : boolean = true)=>{
-    return condition ? <MenuItem divider /> : null
+    return condition ? <MenuItem className="border-t border-gray-lighter my-1" divider /> : null
   }
   
   const hasSelection = objects?.length > 0

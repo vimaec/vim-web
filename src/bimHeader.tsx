@@ -3,7 +3,7 @@ import * as VIM from 'vim-webgl-viewer/'
 import ReactTooltip from 'react-tooltip';
 
 type BimHeader = BimHeaderEntry[][]
-type BimHeaderEntry = [key:string, value: (string | number)]
+type BimHeaderEntry = [key:string, value: (string | number), class1: string,  class2: string]
 
 export function BimObjectHeader(props: { elements: VIM.ElementInfo[], object: VIM.Object}){
 
@@ -54,8 +54,8 @@ function createHeader(header: BimHeader){
     {
       row.map(pair => {
         return <>
-          <dt data-tip={pair[1]} className="text-gray-medium w-4/12 py-1 truncate" key={'main-th' + index}>{pair[0]}</dt>
-          <dd data-tip={pair[1]} className="py-1 w-8/12 truncate" key={'main-td' + index}>{pair[1]}</dd>
+          <dt data-tip={pair[1]} className={'text-gray-medium py-1 truncate ' + pair[2]} key={'main-th' + index}>{pair[0]}</dt>
+          <dd data-tip={pair[1]} className={'py-1 truncate ' + pair[3]} key={'main-td' + index}>{pair[1]}</dd>
         </>
       })}
     </> 
@@ -70,28 +70,28 @@ function createHeader(header: BimHeader){
 
 function getElementBimHeader(info: VIM.ElementInfo) : BimHeader {
   return [
-    [["Document", info.documentTitle]],
-    [["Workset", info.workset]],
-    [["Category", info.categoryName]],
-    [["Family Name", info.familyName]],
-    [["Family Type", info.familyTypeName]],
-    [["Element Id", info.id]]
+    [["Document", info.documentTitle, 'w-4/12', 'w-8/12']],
+    [["Workset", info.workset, 'w-4/12', 'w-8/12']],
+    [["Category", info.categoryName, 'w-4/12', 'w-8/12']],
+    [["Family Name", info.familyName, 'w-4/12', 'w-8/12']],
+    [["Family Type", info.familyTypeName, 'w-4/12', 'w-8/12']],
+    [["Element Id", info.id, 'w-4/12', 'w-8/12']]
   ]
 }
 
 function getVimBimHeader(vim : VIM.Vim) : BimHeader {
   return [
-    [["Document", vim.source]],
-    [["Created on", vim.document.header.created]],
-    [["Created by", vim.document.header.generator]],
+    [["Document", vim.source, 'w-4/12', 'w-8/12']],
+    [["Created on", vim.document.header.created, 'w-4/12', 'w-8/12']],
+    [["Created by", vim.document.header.generator, 'w-4/12', 'w-8/12']],
     undefined,
     [
-      ["BIM Count", [...vim.document.getAllElements()].length],
-      ["Node Count", vim.document.g3d.getInstanceCount()]
+      ["BIM Count", [...vim.document.getAllElements()].length, 'w-3/12 mt-5', 'w-3/12 mt-5'],
+      ["Node Count", vim.document.g3d.getInstanceCount(), 'w-3/12 mt-5', 'w-3/12 mt-5']
     ],
     [
-      ["Mesh Count", vim.document.g3d.getMeshCount()],
-      ["Revit Files",/* revit >= 0 ? revit :*/ 'N/A' ]
+      ["Mesh Count", vim.document.g3d.getMeshCount(), 'w-3/12', 'w-3/12'],
+      ["Revit Files",/* revit >= 0 ? revit :*/ 'N/A', 'w-3/12', 'w-3/12' ]
     ]
   ]
 }
