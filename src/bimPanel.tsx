@@ -51,13 +51,11 @@ export function BimPanel(props: { viewer: VIM.Viewer })
 
   // Register to selection
   useEffect(() => {
-    const old = viewer.selection.onValueChanged
-    viewer.selection.onValueChanged = 
+    viewer.selection.onValueChanged.subscribe( 
     () => {
-      old?.()
       updateVim()
       setObjects([...viewer.selection.objects])
-    }
+    })
     updateVim()
     setObjects([...viewer.selection.objects])
   },[])

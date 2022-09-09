@@ -5,7 +5,6 @@ import logo from './assets/logo.png'
 import { showMenu} from "@firefox-devtools/react-contextmenu";
 
 import * as VIM from 'vim-webgl-viewer/'
-export * as VIM from 'vim-webgl-viewer/'
 
 import {MenuTop} from './menuTop'
 import {ControlBar} from './controlBar'
@@ -18,9 +17,42 @@ import {MenuSettings} from './menuSettings'
 
 import './style.css'
 import pathGround from './assets/vim-floor-soft.png'
+import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycaster';
 
-
+export * as VIM from 'vim-webgl-viewer/'
 export type SideContent = 'none' | 'bim' |'settings'
+
+
+
+class ComponentInputStrategy implements VIM.InputStrategy{
+  private _viewer : VIM.Viewer
+  private _default: VIM.InputStrategy
+
+  constructor(viewer:VIM.Viewer){
+    this._viewer = viewer
+    this._default = new VIM.DefaultInputStrategy(viewer)
+  }
+
+  onMainAction(hit: InputAction): void {
+    this._default.onMainAction(hit)
+  }
+  onIdleAction(hit: InputAction): void {
+    this._default.onIdleAction(hit)
+  }
+  onKeyAction(key: number): boolean {
+    // F
+    if(key === 70) {
+      const box = this._viewer.selection.count > 0
+        ? getVisibleBoundingBox(this._viewer.selection.vim)
+        : getVisibleBoundingBox(this._viewer)
+        
+        this._viewer.camera.frame(box, 'none', this._viewer.camera.defaultLerpDuration)
+      return true
+    }
+    return this._default.onKeyAction(key)
+  }
+
+}
 
 export class Settings {
   useIsolationMaterial: boolean = true
@@ -164,38 +196,21 @@ export function VimComponent (props: {
     props.viewer.inputs.onContextMenu = onContextMenu
 
     // Camera speed toast
-    props.viewer.camera.onChanged = () => {
-      console.log(`viewer: ${props.viewer.camera.speed}, ref: ${toastSpeed.current}`)
+    props.viewer.camera.onChanged.subscribe(() => {
       if(props.viewer.camera.speed !== toastSpeed.current){
         toastSpeed.current = props.viewer.camera.speed
         setToast({speed: props.viewer.camera.speed})
         clearTimeout(toastTimeout.current)
         toastTimeout.current = setTimeout(() => setToast(undefined), 1000)
       }
-    }
+    })
 
-    const old = props.viewer.selection.onValueChanged
-    props.viewer.selection.onValueChanged = 
-    () => {
-      old?.()
-      updateSide()
-    }
-
-    // Override F button
-    const oldKey = props.viewer.inputs.onKeyAction
-    props.viewer.inputs.onKeyAction = (key) => {
-      if(key === 70){
-        const box = viewer.selection.count > 0
-          ? getVisibleBoundingBox(viewer.selection.vim)
-          : getVisibleBoundingBox(viewer)
-          
-          viewer.camera.frame(box, 'none', viewer.camera.defaultLerpDuration)
-        return true
-      }
-      return oldKey(key)
-    }
+    props.viewer.selection.onValueChanged.subscribe(() => updateSide())
+    props.viewer.inputs.strategy = new ComponentInputStrategy(props.viewer)
 
   },[])
+
+
 
 
   const getSidePanelContent =() => {
@@ -270,8 +285,8 @@ function MenuToast(props: {config: ToastConfig}){
   if(!props.config)
     return null
 
-  return <div className='vim-menu-toast'>
-    <h1 className='text-lg font-bold text-white mx-2'>Speed: {props.config.speed +25}</h1>
+  return <div className='vim-menu-toast rounded shadow-lg py-2 px-5 flex items-center justify-between'>
+    <span className='text-sm uppercase font-semibold text-gray-light'>Speed:</span><span className='font-bold text-lg text-white ml-1'>{props.config.speed +25}</span>
   </div>
 }
 

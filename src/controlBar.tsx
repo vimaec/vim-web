@@ -116,7 +116,7 @@ function TabTools(viewer: VIM.Viewer, toggleIsolation: () => void){
     }
 
     if(measuring){
-      viewer.gizmoMeasure.abort()
+      viewer.measure.abort()
       setMeasuring(false)
     }
     else{
@@ -140,7 +140,7 @@ function TabTools(viewer: VIM.Viewer, toggleIsolation: () => void){
 
   const onMeasureDeleteBtn = () => {
     ReactTooltip.hide()
-    viewer.gizmoMeasure.abort()
+    viewer.measure.abort()
     onMeasureBtn()
   }
 
@@ -220,13 +220,13 @@ function TabSettings(
 function loopMeasure(viewer: VIM.Viewer, getMeasuring:() => boolean, setMeasure: (value:VIM.THREE.Vector3) => void ) {
   
   const onMouseMove = () =>{
-    setMeasure(viewer.gizmoMeasure.measurement)
+    setMeasure(viewer.measure.measurement)
   } 
 
   viewer.viewport.canvas.addEventListener('mousemove', onMouseMove)
-  viewer.gizmoMeasure.measure()
+  viewer.measure.start()
   .then(() => {
-    setMeasure(viewer.gizmoMeasure.measurement)
+    setMeasure(viewer.measure.measurement)
   })
   .catch(() => {
     setMeasure(undefined)
@@ -235,6 +235,9 @@ function loopMeasure(viewer: VIM.Viewer, getMeasuring:() => boolean, setMeasure:
     viewer.viewport.canvas.removeEventListener('mousemove', onMouseMove)
     if(getMeasuring()) {
       loopMeasure(viewer, getMeasuring, setMeasure)
+    }
+    else{
+      viewer.measure.clear()
     }
   })
 }

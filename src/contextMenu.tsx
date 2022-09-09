@@ -22,11 +22,9 @@ export function VimContextMenu(
 
   useEffect( () => {
     // Register to selection
-    const old = viewer.selection.onValueChanged
-    viewer.selection.onValueChanged = () => {
-      old?.()
+    viewer.selection.onValueChanged.subscribe(() => {
       setObject([...viewer.selection.objects])
-      }
+    })
     
     // Register to section box
     viewer.gizmoSection.onBoxConfirm = () => {
@@ -79,7 +77,7 @@ export function VimContextMenu(
   }
 
   const onSectionIgnoreBtn = ( e: ClickCallback) => {
-    viewer.gizmoMeasure.abort()
+    viewer.gizmoSection.clip = false
   }
 
   const onSectionResetBtn = (e: ClickCallback) => {
@@ -88,50 +86,50 @@ export function VimContextMenu(
   }
 
   const onMeasureDeleteBtn = ( e: ClickCallback) => {
-    viewer.gizmoMeasure.abort()
+    viewer.measure.abort()
   }
 
-  const createButton = (label: string, action:(e:ClickCallback) => void, condition: boolean = true) =>{
+  const createButton = (label: string, keyboard: string, action:(e:ClickCallback) => void, condition: boolean = true) =>{
     if(!condition) return null
-    return <MenuItem onClick={action} >
-      {label}
+    return <MenuItem className="hover:bg-gray-lightest px-5 py-2 flex items-center justify-between" onClick={action} >
+      <span>{label}</span><span className="text-gray-medium">{keyboard}</span>
     </MenuItem>
   }
   const createDivider = (condition : boolean = true)=>{
-    return condition ? <MenuItem divider /> : null
+    return condition ? <MenuItem className="border-t border-gray-lighter my-1" divider /> : null
   }
   
   const hasSelection = objects?.length > 0
-  const measuring = viewer.gizmoMeasure.startPoint?.length() > 0
+  const measuring = !!viewer.measure.stage
 
   return <div className='vim-context-menu' onContextMenu={(e) =>{
     console.log('No menu')
     e.preventDefault()
   }}>
-    <ContextMenu id={VIM_CONTEXT_MENU_ID}>
+    <ContextMenu className="text-gray-darker bg-white py-1 w-[240px] rounded shadow-lg" id={VIM_CONTEXT_MENU_ID}>
 
-      {createButton('Show Controls', onShowControlsBtn)}
+      {createButton('Show Controls', 'F1', onShowControlsBtn)}
       
       {/*Camera*/}
       {createDivider()}
-      {createButton('Reset Camera', onCameraResetBtn)}
-      {createButton('Zoom to Fit', onCameraFrameBtn, hasSelection)}
+      {createButton('Reset Camera', 'HOME', onCameraResetBtn)}
+      {createButton('Zoom to Fit', 'F', onCameraFrameBtn, hasSelection)}
       
       {/*Selection*/}
       {createDivider(hasSelection || props.hidden)}
-      {createButton('Isolate Object', onSelectionIsolateBtn, hasSelection)}
-      {createButton('Hide Object', onSelectionHideBtn, hasSelection)}
-      {createButton('Clear Selection', onSelectionClearBtn, hasSelection)}
-      {createButton('Show All', onShowAllBtn,props.hidden)}
+      {createButton('Isolate Object', 'I', onSelectionIsolateBtn, hasSelection)}
+      {createButton('Hide Object', '', onSelectionHideBtn, hasSelection)}
+      {createButton('Clear Selection', 'Esc', onSelectionClearBtn, hasSelection)}
+      {createButton('Show All', '', onShowAllBtn,props.hidden)}
 
       {/*Measure*/}     
       {createDivider(measuring)} 
-      {createButton('Delete Measurement', onMeasureDeleteBtn, measuring)}
+      {createButton('Delete Measurement', '', onMeasureDeleteBtn, measuring)}
 
       {/*Section*/}
       {createDivider(section)} 
-      {createButton('Ignore Section Box', onSectionIgnoreBtn, section)}
-      {createButton('Reset Section Box', onSectionResetBtn, section)}
+      {createButton('Ignore Section Box', '', onSectionIgnoreBtn, section)}
+      {createButton('Reset Section Box', '', onSectionResetBtn, section)}
       
     </ContextMenu>
   </div>
