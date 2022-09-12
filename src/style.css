@@ -198,7 +198,13 @@ body {
   max-width: calc(100% - 480px);
   object-fit: cover;
 }
-
+.vim-gfx.bim-panel-open + .vim-ui .vim-menu, .vim-gfx.bim-panel-open + .vim-ui .menu-help-controls, .vim-gfx.bim-panel-open + .vim-ui .menu-help-overlay h2  {
+  margin-left: 480px;
+  max-width: calc(100% - 480px);
+}
+.vim-gfx.bim-panel-open + .vim-ui .vim-menu-toast  {
+  left: calc(50% + 190px);
+}
 .submenu-item-active {
   position: relative;
 }
@@ -227,9 +233,14 @@ body {
   li
   .rct-tree-item-title-container
   .rct-tree-item-button {
+    display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
   min-height: 2.5rem;
+
 }
 .rct-tree-items-container > li:nth-child(odd) {
   background-color: var(--c-white);
