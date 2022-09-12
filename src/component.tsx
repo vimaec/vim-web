@@ -22,8 +22,6 @@ import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycas
 export * as VIM from 'vim-webgl-viewer/'
 export type SideContent = 'none' | 'bim' |'settings'
 
-
-
 class ComponentInputStrategy implements VIM.InputStrategy{
   private _viewer : VIM.Viewer
   private _default: VIM.InputStrategy
@@ -51,7 +49,6 @@ class ComponentInputStrategy implements VIM.InputStrategy{
     }
     return this._default.onKeyAction(key)
   }
-
 }
 
 export class Settings {
@@ -145,7 +142,6 @@ export function VimComponent (props: {
     setHidden(!getAllVisible(viewer))
   }
 
-
   const onContextMenu = (position: VIM.THREE.Vector2) => {
     let showMenuConfig = {
       position: { x:position.x, y:position.y },
@@ -197,9 +193,6 @@ export function VimComponent (props: {
 
   },[])
 
-
-
-
   const getSidePanelContent =() => {
     switch(sideContent){
       case 'bim': return <BimPanel viewer={props.viewer}/>
@@ -235,7 +228,6 @@ function Logo () {
 
 function applySettings(viewer: VIM.Viewer, settings: Settings){
   
-
   // Isolation material
   viewer.vims.forEach(v => {
     if(!settings.useIsolationMaterial)
