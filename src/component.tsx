@@ -41,9 +41,9 @@ class ComponentInputStrategy implements VIM.InputStrategy{
   }
   onKeyAction(key: number): boolean {
     // F
-    if(key === 70) {
+    if(key === VIM.KEYS.KEY_F) {
       const box = this._viewer.selection.count > 0
-        ? getVisibleBoundingBox(this._viewer.selection.vim)
+        ? this._viewer.selection.getBoundingBox()
         : getVisibleBoundingBox(this._viewer)
         
         this._viewer.camera.frame(box, 'none', this._viewer.camera.defaultLerpDuration)
