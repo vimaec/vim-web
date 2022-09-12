@@ -198,7 +198,13 @@ body {
   max-width: calc(100% - 480px);
   object-fit: cover;
 }
-
+.vim-gfx.bim-panel-open + .vim-ui .vim-menu, .vim-gfx.bim-panel-open + .vim-ui .menu-help-controls, .vim-gfx.bim-panel-open + .vim-ui .menu-help-overlay h2  {
+  margin-left: 480px;
+  max-width: calc(100% - 480px);
+}
+.vim-gfx.bim-panel-open + .vim-ui .vim-menu-toast  {
+  left: calc(50% + 190px);
+}
 .submenu-item-active {
   position: relative;
 }
