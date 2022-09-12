@@ -286,7 +286,7 @@ function applySettings (viewer: VIM.Viewer, settings: Settings) {
     }
 
     // Don't show ground plane when isolation is on.
-    viewer.environment.groundPlane.visible = settings.showGroundPlane && !hidden
+    viewer.environment.groundPlane.visible = settings.showGroundPlane
   })
 }
 
@@ -332,7 +332,6 @@ export function isolateSelection (viewer: VIM.Viewer, settings: Settings) {
   vim.scene.material = settings.useIsolationMaterial
     ? viewer.renderer.materials.isolation
     : undefined
-  viewer.environment.groundPlane.visible = false
   viewer.camera.frame(
     getVisibleBoundingBox(vim),
     'none',
@@ -350,7 +349,6 @@ export function hideSelection (viewer: VIM.Viewer, settings: Settings) {
     ? viewer.renderer.materials.isolation
     : undefined
 
-  viewer.environment.groundPlane.visible = false
   viewer.selection.clear()
   viewer.camera.frame(
     getVisibleBoundingBox(vim),
@@ -366,7 +364,6 @@ export function showAll (viewer: VIM.Viewer, settings: Settings) {
     }
     v.scene.material = undefined
   })
-  viewer.environment.groundPlane.visible = settings.showGroundPlane
   viewer.camera.frame(
     viewer.renderer.getBoundingBox(),
     'none',
