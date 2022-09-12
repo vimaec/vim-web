@@ -1,5 +1,4 @@
-import React, { useEffect, useRef } from "react";
-import { useState } from 'react'
+import React from "react";
 import * as VIM from 'vim-webgl-viewer/'
 import { Settings } from "./component";
 
@@ -15,10 +14,6 @@ export function MenuSettings(props: { viewer: VIM.Viewer, settings: Settings, se
     next.useIsolationMaterial = !next.useIsolationMaterial
     props.setSettings(next)
   }
-  const onInspectorTgl = () => {
-    next.showInspectorOnSelect = !next.showInspectorOnSelect
-    props.setSettings(next)
-  }
 
   const onGroundPlaneTgl = () => {
     next.showGroundPlane = !next.showGroundPlane
@@ -30,7 +25,6 @@ export function MenuSettings(props: { viewer: VIM.Viewer, settings: Settings, se
   return <>
     <h2 className="text-xs font-bold uppercase mb-6">Display Settings</h2>
     {toggleElement("Show hidden object with ghost effect", props.settings.useIsolationMaterial, onGhostTgl)}
-    {toggleElement("Show inspector pane by default", props.settings.showInspectorOnSelect, onInspectorTgl)}
     {toggleElement("Show ground plane", props.settings.showGroundPlane, onGroundPlaneTgl)}
   </>
 }

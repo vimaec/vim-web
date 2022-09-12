@@ -20,7 +20,7 @@ const onHelpBtn = () =>{
 }
 
 return <>
-  <div className="menu-help-overlay absolute inset-0 bg-black/80 w-full h-full flex items-center justify-center" onClick={onCloseBtn}>
+  <div className="menu-help-overlay z-10 absolute inset-0 bg-black/80 w-full h-full flex items-center justify-center" onClick={onCloseBtn}>
     <div className="flex flex-col py-5" onClick={(e) =>{e.stopPropagation()}}>
       <div className="flex justify-between mb-8">
         <h2 className="text-white font-bold text-sm uppercase">Key navigation controls</h2>
