@@ -233,9 +233,14 @@ body {
   li
   .rct-tree-item-title-container
   .rct-tree-item-button {
+    display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
   min-height: 2.5rem;
+
 }
 .rct-tree-items-container > li:nth-child(odd) {
   background-color: var(--c-white);
