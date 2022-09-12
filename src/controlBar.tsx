@@ -66,8 +66,8 @@ function TabCamera(viewer : VIM.Viewer){
   const btnOrbit = toggleButton('Orbit', () => onModeBtn('orbit'), Icons.orbit, () => mode === 'orbit')
   const btnLook = toggleButton('Look Around', () => onModeBtn('look'), Icons.look, () => mode === 'look')
   const btnPan = toggleButton('Pan', () => onModeBtn('pan'), Icons.pan, () => mode === 'pan')
-  const btnZoom = toggleButton('Zoom', () => onModeBtn('dolly'), Icons.zoom, () => mode === 'dolly')
-  const btnFrameRect = toggleButton('Zoom Window', () => onModeBtn('zone'), Icons.frameRect, () => mode === 'zone')
+  const btnZoom = toggleButton('Zoom', () => onModeBtn('zoom'), Icons.zoom, () => mode === 'zoom')
+  const btnFrameRect = toggleButton('Zoom Window', () => onModeBtn('rect'), Icons.frameRect, () => mode === 'rect')
   const btnFrame = actionButton('Zoom to Fit', onFrameBtn, Icons.frameSelection, false)
   const btnFullScreen = actionButton('Fullscreen', () => console.log('Full Screen'), Icons.fullsScreen, false)
 
