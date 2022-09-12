@@ -43,7 +43,7 @@
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: "Roboto", sans-serif;
+  font-family: 'Roboto', sans-serif;
 }
 
 /* Toast Notification */
@@ -51,7 +51,7 @@ body {
   position: absolute;
   top: 10%;
   left: calc(50% - 50px);
-  background-color: rgba(0,0,0,.6);
+  background-color: rgba(0, 0, 0, 0.6);
 }
 
 /* Axes Gizmo*/
@@ -77,7 +77,7 @@ body {
   border-radius: 3px;
   background-color: #f6f6f6;
 
-  font-family: "Roboto", sans-serif;
+  font-family: 'Roboto', sans-serif;
 
   /*Centers the box*/
   position: absolute;
@@ -87,11 +87,9 @@ body {
 }
 
 /* Context Menu */
-.
 .checked {
   font-weight: bold;
 }
-
 
 /* Logo */
 
@@ -142,7 +140,8 @@ body {
   width: 64px;
 }
 
-.vim-menu button:focus, .vim-bim-search input[type='search']:focus {
+.vim-menu button:focus,
+.vim-bim-search input[type='search']:focus {
   outline: 0;
   box-shadow: none;
 }
@@ -198,18 +197,20 @@ body {
   max-width: calc(100% - 480px);
   object-fit: cover;
 }
-.vim-gfx.bim-panel-open + .vim-ui .vim-menu, .vim-gfx.bim-panel-open + .vim-ui .menu-help-controls, .vim-gfx.bim-panel-open + .vim-ui .menu-help-overlay h2  {
+.vim-gfx.bim-panel-open + .vim-ui .vim-menu,
+.vim-gfx.bim-panel-open + .vim-ui .menu-help-controls,
+.vim-gfx.bim-panel-open + .vim-ui .menu-help-overlay h2 {
   margin-left: 480px;
   max-width: calc(100% - 480px);
 }
-.vim-gfx.bim-panel-open + .vim-ui .vim-menu-toast  {
+.vim-gfx.bim-panel-open + .vim-ui .vim-menu-toast {
   left: calc(50% + 190px);
 }
 .submenu-item-active {
   position: relative;
 }
 .submenu-item-active::before {
-  content: "";
+  content: '';
   display: block;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%230590cc' d='M228.693 61.741c5.379-7.011 4.057-17.055-2.954-22.434-7.01-5.379-17.054-4.057-22.434 2.954l-.008.011L99.864 177.069l-39.607-47.203c-5.68-6.769-15.772-7.652-22.542-1.972s-7.652 15.772-1.972 22.542l52.416 62.467.006.007c.018.021.038.039.056.06.214.252.448.492.681.733.153.159.3.326.458.478s.331.291.497.437c.251.222.5.445.763.648l.062.053c.108.083.225.151.334.231.304.221.608.44.924.638.166.104.335.192.503.289.284.164.567.328.859.473.221.11.447.204.671.303.245.107.487.219.736.313.268.103.54.188.812.275.214.069.428.142.645.202.293.081.588.144.884.208.206.044.411.093.619.129.294.051.589.085.884.12.219.026.437.055.656.071.275.021.55.026.825.033.245.006.489.015.735.009.246-.005.491-.024.736-.042.274-.018.548-.036.821-.068.22-.026.437-.065.654-.101.293-.047.585-.094.876-.158.207-.045.41-.103.615-.157.292-.076.584-.152.873-.245.215-.069.425-.152.637-.23.267-.099.535-.196.798-.31.245-.105.483-.228.723-.346.219-.108.44-.211.656-.331.286-.158.562-.334.839-.511.163-.104.328-.199.488-.31.307-.211.603-.444.896-.678.106-.085.219-.157.324-.245.021-.018.039-.038.06-.056.253-.215.492-.449.733-.681.159-.153.326-.301.478-.458.152-.159.292-.332.438-.498.221-.25.444-.5.647-.761.017-.022.037-.041.054-.063L228.693 61.741Z'/%3E%3C/svg%3E");
   background-size: contain;
@@ -233,14 +234,13 @@ body {
   li
   .rct-tree-item-title-container
   .rct-tree-item-button {
-    display: block;
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
   min-height: 2.5rem;
-
 }
 .rct-tree-items-container > li:nth-child(odd) {
   background-color: var(--c-white);

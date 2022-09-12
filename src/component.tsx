@@ -1,50 +1,61 @@
-
 import React, { useEffect, useRef, useState } from 'react'
-import ReactTooltip from 'react-tooltip';
+import ReactTooltip from 'react-tooltip'
 import logo from './assets/logo.png'
-import { showMenu} from "@firefox-devtools/react-contextmenu";
+import { showMenu } from '@firefox-devtools/react-contextmenu'
 
 import * as VIM from 'vim-webgl-viewer/'
 
-import {MenuTop} from './menuTop'
-import {ControlBar} from './controlBar'
-import {LoadingBox} from './loadingBox'
-import {BimPanel} from './bimPanel'
+import { MenuTop } from './menuTop'
+import { ControlBar } from './controlBar'
+import { LoadingBox } from './loadingBox'
+import { BimPanel } from './bimPanel'
 import { VimContextMenu, VIM_CONTEXT_MENU_ID } from './contextMenu'
-import {MenuHelp} from './menuHelp'
-import {SidePanel} from './menuSide'
-import {MenuSettings} from './menuSettings'
+import { MenuHelp } from './menuHelp'
+import { SidePanel } from './menuSide'
+import { MenuSettings } from './menuSettings'
 
 import './style.css'
 import pathGround from './assets/vim-floor-soft.png'
-import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycaster';
+import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycaster'
 
 export * as VIM from 'vim-webgl-viewer/'
-export type SideContent = 'none' | 'bim' |'settings'
+export type SideContent = 'none' | 'bim' | 'settings'
 
-class ComponentInputStrategy implements VIM.InputStrategy{
-  private _viewer : VIM.Viewer
+type ToastConfigSpeed = {
+  speed: number
+}
+type ToastConfig = ToastConfigSpeed | undefined
+
+class ComponentInputStrategy implements VIM.InputStrategy {
+  private _viewer: VIM.Viewer
   private _default: VIM.InputStrategy
 
-  constructor(viewer:VIM.Viewer){
+  constructor (viewer: VIM.Viewer) {
     this._viewer = viewer
     this._default = new VIM.DefaultInputStrategy(viewer)
   }
 
-  onMainAction(hit: InputAction): void {
+  onMainAction (hit: InputAction): void {
     this._default.onMainAction(hit)
   }
-  onIdleAction(hit: InputAction): void {
+
+  onIdleAction (hit: InputAction): void {
     this._default.onIdleAction(hit)
   }
-  onKeyAction(key: number): boolean {
+
+  onKeyAction (key: number): boolean {
     // F
-    if(key === VIM.KEYS.KEY_F) {
-      const box = this._viewer.selection.count > 0
-        ? this._viewer.selection.getBoundingBox()
-        : getVisibleBoundingBox(this._viewer)
-        
-        this._viewer.camera.frame(box, 'none', this._viewer.camera.defaultLerpDuration)
+    if (key === VIM.KEYS.KEY_F) {
+      const box =
+        this._viewer.selection.count > 0
+          ? this._viewer.selection.getBoundingBox()
+          : getVisibleBoundingBox(this._viewer)
+
+      this._viewer.camera.frame(
+        box,
+        'none',
+        this._viewer.camera.defaultLerpDuration
+      )
       return true
     }
     return this._default.onKeyAction(key)
@@ -53,15 +64,16 @@ class ComponentInputStrategy implements VIM.InputStrategy{
 
 export class Settings {
   useIsolationMaterial: boolean = true
-  showInspectorOnSelect: boolean  = true
+  showInspectorOnSelect: boolean = true
+
   showGroundPlane: boolean = true
 
-  clone(){
-     return Object.assign(new Settings(), this) as Settings
+  clone () {
+    return Object.assign(new Settings(), this) as Settings
   }
 }
 
-export function createContainer(viewer: VIM.Viewer){
+export function createContainer (viewer: VIM.Viewer) {
   const root = document.createElement('div')
   root.className = 'vim-component'
   root.style.height = '100%'
@@ -83,27 +95,28 @@ export function createContainer(viewer: VIM.Viewer){
   root.append(ui)
 
   // Initial viewer settings
-  viewer.viewport.canvas.tabIndex =0
+  viewer.viewport.canvas.tabIndex = 0
   viewer.gizmoSection.clip = true
 
   return ui
 }
 
 export function VimComponent (props: {
-  viewer: VIM.Viewer,
-  onMount: () => void,
-  logo?: boolean,
-  bimPanel?: boolean,
-  menu?: boolean,
-  menuTop?: boolean,
+  viewer: VIM.Viewer
+  onMount: () => void
+  logo?: boolean
+  bimPanel?: boolean
+  menu?: boolean
+  menuTop?: boolean
   loading?: boolean
 }) {
-  const viewer= props.viewer
-  const useLogo = props.logo === undefined ? true: props.logo
-  const useInspector = props.bimPanel === undefined ? true: props.bimPanel
-  const useMenu = props.menu === undefined ? true: props.menu
-  const useMenuTop = props.menuTop === undefined ? true: props.menuTop
-  const useLoading = props.loading === undefined ? true: props.loading
+  const viewer = props.viewer
+  const useLogo = props.logo === undefined ? true : props.logo
+  // eslint-disable-next-line no-unused-vars
+  const useInspector = props.bimPanel === undefined ? true : props.bimPanel
+  const useMenu = props.menu === undefined ? true : props.menu
+  const useMenuTop = props.menuTop === undefined ? true : props.menuTop
+  const useLoading = props.loading === undefined ? true : props.loading
 
   const [helpVisible, setHelpVisible] = useState(false)
   const [sideContent, setSideContent] = useState<SideContent>('bim')
@@ -111,28 +124,25 @@ export function VimComponent (props: {
   const [toast, setToast] = useState<ToastConfig>()
   const [isolation, setIsolation] = useState<VIM.Object[]>()
   const [hidden, setHidden] = useState(!getAllVisible(viewer))
-  
+
   const toastTimeout = useRef(0)
   const toastSpeed = useRef(0)
-  let sideContentRef = useRef(sideContent)
-  let settingsRef = useRef(settings)
-  
+  const sideContentRef = useRef(sideContent)
+  const settingsRef = useRef(settings)
 
-  const resetIsolation = () =>{
+  const resetIsolation = () => {
     setIsolation(undefined)
   }
 
-  const toggleIsolation = () =>{
-    if(!isolation){
-      if(getAllVisible(viewer)){
+  const toggleIsolation = () => {
+    if (!isolation) {
+      if (getAllVisible(viewer)) {
         toGhost(viewer)
-      }
-      else{
+      } else {
         setIsolation(getVisibleObjects(viewer))
         setAllVisible(viewer)
       }
-    }
-    else{
+    } else {
       toGhost(viewer)
       isolation.forEach((o) => {
         o.visible = true
@@ -143,30 +153,29 @@ export function VimComponent (props: {
   }
 
   const onContextMenu = (position: VIM.THREE.Vector2) => {
-    let showMenuConfig = {
-      position: { x:position.x, y:position.y },
+    const showMenuConfig = {
+      position: { x: position.x, y: position.y },
       target: window,
       id: VIM_CONTEXT_MENU_ID
     }
 
     showMenu(showMenuConfig)
   }
-  useEffect(() =>{
+  useEffect(() => {
     props.viewer.environment.loadGroundTexture(pathGround)
     applySettings(props.viewer, settings)
     settingsRef.current = settings
-  },[settings])
-  useEffect(() =>{
+  }, [settings])
+  useEffect(() => {
     sideContentRef.current = sideContent
-  },[sideContent])
-
+  }, [sideContent])
 
   const updateSide = () => {
     const showBim =
       props.viewer.selection.count > 0 &&
       sideContentRef.current === 'none' &&
       settingsRef.current.showInspectorOnSelect
-    if(showBim){
+    if (showBim) {
       setSideContent('bim')
     }
   }
@@ -174,15 +183,15 @@ export function VimComponent (props: {
   useEffect(() => {
     props.onMount()
     props.viewer.inputs.onContextMenu = onContextMenu
-    viewer.onVimLoaded.subscribe(() =>{
+    viewer.onVimLoaded.subscribe(() => {
       viewer.camera.frame('all', 45)
     })
 
     // Camera speed toast
     props.viewer.camera.onChanged.subscribe(() => {
-      if(props.viewer.camera.speed !== toastSpeed.current){
+      if (props.viewer.camera.speed !== toastSpeed.current) {
         toastSpeed.current = props.viewer.camera.speed
-        setToast({speed: props.viewer.camera.speed})
+        setToast({ speed: props.viewer.camera.speed })
         clearTimeout(toastTimeout.current)
         toastTimeout.current = setTimeout(() => setToast(undefined), 1000)
       }
@@ -190,27 +199,58 @@ export function VimComponent (props: {
 
     props.viewer.selection.onValueChanged.subscribe(() => updateSide())
     props.viewer.inputs.strategy = new ComponentInputStrategy(props.viewer)
+  }, [])
 
-  },[])
-
-  const getSidePanelContent =() => {
-    switch(sideContent){
-      case 'bim': return <BimPanel viewer={props.viewer}/>
-      case 'settings' : return <MenuSettings viewer={props.viewer} settings ={settings} setSettings={setSettings} />
-      default: return null
+  const getSidePanelContent = () => {
+    switch (sideContent) {
+      case 'bim':
+        return <BimPanel viewer={props.viewer} />
+      case 'settings':
+        return (
+          <MenuSettings
+            viewer={props.viewer}
+            settings={settings}
+            setSettings={setSettings}
+          />
+        )
+      default:
+        return null
     }
   }
 
   return (
     <>
-      {helpVisible ? <MenuHelp closeHelp={() => setHelpVisible(false)}/> : null}
+      {helpVisible
+        ? (
+        <MenuHelp closeHelp={() => setHelpVisible(false)} />
+          )
+        : null}
       {useLogo ? <Logo /> : null}
-      {useLoading ? <LoadingBox viewer={props.viewer}/> : null}
-      {useMenu ? <ControlBar viewer={props.viewer} helpVisible = {helpVisible} setHelpVisible = {setHelpVisible} sideContent ={sideContent} setSideContent = {setSideContent} toggleIsolation={toggleIsolation}  /> : null}
-      {useMenuTop ? <MenuTop viewer={props.viewer}/> : null}
+      {useLoading ? <LoadingBox viewer={props.viewer} /> : null}
+      {useMenu
+        ? (
+        <ControlBar
+          viewer={props.viewer}
+          helpVisible={helpVisible}
+          setHelpVisible={setHelpVisible}
+          sideContent={sideContent}
+          setSideContent={setSideContent}
+          toggleIsolation={toggleIsolation}
+        />
+          )
+        : null}
+      {useMenuTop ? <MenuTop viewer={props.viewer} /> : null}
       <SidePanel viewer={props.viewer} content={getSidePanelContent} />
-      <ReactTooltip delayShow={200}/>
-      <VimContextMenu viewer={props.viewer} settings={settings} helpVisible = {helpVisible} setHelpVisible = {setHelpVisible} resetIsolation={resetIsolation} hidden = {hidden} setHidden={setHidden}/>
+      <ReactTooltip delayShow={200} />
+      <VimContextMenu
+        viewer={props.viewer}
+        settings={settings}
+        helpVisible={helpVisible}
+        setHelpVisible={setHelpVisible}
+        resetIsolation={resetIsolation}
+        hidden={hidden}
+        setHidden={setHidden}
+      />
       <MenuToast config={toast}></MenuToast>
     </>
   )
@@ -226,95 +266,100 @@ function Logo () {
   )
 }
 
-function applySettings(viewer: VIM.Viewer, settings: Settings){
-  
+function applySettings (viewer: VIM.Viewer, settings: Settings) {
   // Isolation material
-  viewer.vims.forEach(v => {
-    if(!settings.useIsolationMaterial)
-    {
+  viewer.vims.forEach((v) => {
+    if (!settings.useIsolationMaterial) {
       v.scene.material = undefined
       return
     }
 
     let hidden = false
-    for (const obj of v.getAllObjects()){
-      if(!obj.visible){
+    for (const obj of v.getAllObjects()) {
+      if (!obj.visible) {
         hidden = true
         break
       }
     }
-    if(hidden){
+    if (hidden) {
       v.scene.material = viewer.renderer.materials.isolation
     }
 
     // Don't show ground plane when isolation is on.
     viewer.environment.groundPlane.visible = settings.showGroundPlane && !hidden
-      
   })
 }
 
-type ToastConfigSpeed = {
-  speed: number
-}
-
-type ToastConfig = ToastConfigSpeed | undefined
-
-function MenuToast(props: {config: ToastConfig}){
+function MenuToast (props: { config: ToastConfig }) {
   console.log('MenuToast :' + props.config)
-  if(!props.config)
-    return null
+  if (!props.config) return null
 
-  return <div className='vim-menu-toast rounded shadow-lg py-2 px-5 flex items-center justify-between'>
-    <span className='text-sm uppercase font-semibold text-gray-light'>Speed:</span><span className='font-bold text-lg text-white ml-1'>{props.config.speed +25}</span>
-  </div>
+  return (
+    <div className="vim-menu-toast rounded shadow-lg py-2 px-5 flex items-center justify-between">
+      <span className="text-sm uppercase font-semibold text-gray-light">
+        Speed:
+      </span>
+      <span className="font-bold text-lg text-white ml-1">
+        {props.config.speed + 25}
+      </span>
+    </div>
+  )
 }
 
 /* Utils */
 
-export function resetCamera(viewer: VIM.Viewer){
+export function resetCamera (viewer: VIM.Viewer) {
   viewer.camera.reset()
   viewer.camera.frame('all', 45)
 }
 
-export function frameContext(viewer: VIM.Viewer){
-  const box = viewer.selection.count > 0
-  ? viewer.selection.getBoundingBox()
-  : getVisibleBoundingBox(viewer)
+export function frameContext (viewer: VIM.Viewer) {
+  const box =
+    viewer.selection.count > 0
+      ? viewer.selection.getBoundingBox()
+      : getVisibleBoundingBox(viewer)
 
- viewer.camera.frame(box, 'none', viewer.camera.defaultLerpDuration)
-
+  viewer.camera.frame(box, 'none', viewer.camera.defaultLerpDuration)
 }
 
-export function isolateSelection(viewer: VIM.Viewer, settings: Settings){
+export function isolateSelection (viewer: VIM.Viewer, settings: Settings) {
   const set = new Set(viewer.selection.objects)
   const vim = viewer.selection.vim
   for (const obj of vim.getAllObjects()) {
     obj.visible = set.has(obj)
   }
-  
+
   vim.scene.material = settings.useIsolationMaterial
     ? viewer.renderer.materials.isolation
     : undefined
   viewer.environment.groundPlane.visible = false
-  viewer.camera.frame(getVisibleBoundingBox(vim), 'none', viewer.camera.defaultLerpDuration)
+  viewer.camera.frame(
+    getVisibleBoundingBox(vim),
+    'none',
+    viewer.camera.defaultLerpDuration
+  )
 }
 
-export function hideSelection(viewer: VIM.Viewer, settings: Settings){
+export function hideSelection (viewer: VIM.Viewer, settings: Settings) {
   for (const obj of viewer.selection.objects) {
     obj.visible = false
   }
 
   const vim = viewer.selection.vim
   vim.scene.material = settings.useIsolationMaterial
-  ? viewer.renderer.materials.isolation
-  : undefined
+    ? viewer.renderer.materials.isolation
+    : undefined
 
   viewer.environment.groundPlane.visible = false
   viewer.selection.clear()
-  viewer.camera.frame(getVisibleBoundingBox(vim), 'none', viewer.camera.defaultLerpDuration)
+  viewer.camera.frame(
+    getVisibleBoundingBox(vim),
+    'none',
+    viewer.camera.defaultLerpDuration
+  )
 }
 
-export function showAll(viewer: VIM.Viewer, settings: Settings){
+export function showAll (viewer: VIM.Viewer, settings: Settings) {
   viewer.vims.forEach((v) => {
     for (const obj of v.getAllObjects()) {
       obj.visible = true
@@ -322,116 +367,113 @@ export function showAll(viewer: VIM.Viewer, settings: Settings){
     v.scene.material = undefined
   })
   viewer.environment.groundPlane.visible = settings.showGroundPlane
-  viewer.camera.frame(viewer.renderer.getBoundingBox(), 'none', viewer.camera.defaultLerpDuration)
+  viewer.camera.frame(
+    viewer.renderer.getBoundingBox(),
+    'none',
+    viewer.camera.defaultLerpDuration
+  )
 }
 
-
-export function toGhost(source: VIM.Viewer | VIM.Vim ){
+export function toGhost (source: VIM.Viewer | VIM.Vim) {
   const vimToGhost = (vim: VIM.Vim) => {
     for (const obj of vim.getAllObjects()) {
       obj.visible = false
     }
     vim.scene.material = vim.scene.builder.meshBuilder.materials.isolation
   }
-  if(source instanceof VIM.Viewer){
+  if (source instanceof VIM.Viewer) {
     for (const vim of source.vims) {
       vimToGhost(vim)
     }
-  }
-  else{
+  } else {
     vimToGhost(source)
   }
 }
 
-export function setAllVisible(source: VIM.Viewer | VIM.Vim ){
+export function setAllVisible (source: VIM.Viewer | VIM.Vim) {
   const vimShowAll = (vim: VIM.Vim) => {
     for (const obj of vim.getAllObjects()) {
       obj.visible = true
     }
     vim.scene.material = undefined
   }
-  if(source instanceof VIM.Viewer){
+  if (source instanceof VIM.Viewer) {
     for (const vim of source.vims) {
       vimShowAll(vim)
     }
-  }
-  else{
+  } else {
     vimShowAll(source)
   }
 }
 
-export function getVisibleObjects(source: VIM.Viewer | VIM.Vim ){
-  const all : VIM.Object[] = []
+export function getVisibleObjects (source: VIM.Viewer | VIM.Vim) {
+  const all: VIM.Object[] = []
   const vimAllObjects = (vim: VIM.Vim) => {
     for (const obj of vim.getAllObjects()) {
-      if(obj.visible){
+      if (obj.visible) {
         all.push(obj)
       }
     }
   }
-  if(source instanceof VIM.Viewer){
+  if (source instanceof VIM.Viewer) {
     for (const vim of source.vims) {
       vimAllObjects(vim)
     }
-  }
-  else{
+  } else {
     vimAllObjects(source)
   }
   return all
 }
 
-export function getObjects(source: VIM.Viewer | VIM.Vim ){
-  const all : VIM.Object[] = []
+export function getObjects (source: VIM.Viewer | VIM.Vim) {
+  const all: VIM.Object[] = []
   const vimAllObjects = (vim: VIM.Vim) => {
     for (const obj of vim.getAllObjects()) {
       all.push(obj)
     }
   }
-  if(source instanceof VIM.Viewer){
+  if (source instanceof VIM.Viewer) {
     for (const vim of source.vims) {
       vimAllObjects(vim)
     }
-  }
-  else{
+  } else {
     vimAllObjects(source)
   }
   return all
 }
 
-export function getAllVisible(source: VIM.Viewer | VIM.Vim ){
+export function getAllVisible (source: VIM.Viewer | VIM.Vim) {
   const vimAllVisible = (vim: VIM.Vim) => {
     for (const obj of vim.getAllObjects()) {
-      if(!obj.visible) return false
+      if (!obj.visible) return false
     }
     return true
   }
-  if(source instanceof VIM.Viewer){
+  if (source instanceof VIM.Viewer) {
     for (const vim of source.vims) {
-      if(!vimAllVisible(vim)) return false
+      if (!vimAllVisible(vim)) return false
     }
     return true
-  }
-  else{
+  } else {
     return vimAllVisible(source)
   }
 }
 
-export function getVisibleBoundingBox(source: VIM.Viewer | VIM.Vim ){
-  let box : THREE.Box3
+export function getVisibleBoundingBox (source: VIM.Viewer | VIM.Vim) {
+  let box: VIM.THREE.Box3
 
-  const vimBoxUnion = (vim : VIM.Vim) => {
+  const vimBoxUnion = (vim: VIM.Vim) => {
     for (const obj of vim.getAllObjects()) {
-      if(!obj.visible) continue
+      if (!obj.visible) continue
       const b = obj.getBoundingBox()
       box = box ? box.union(b) : b.clone()
     }
   }
-  if(source instanceof VIM.Viewer){
+  if (source instanceof VIM.Viewer) {
     for (const vim of source.vims) {
       vimBoxUnion(vim)
     }
-  }
-  else{
+  } else {
     vimBoxUnion(source)
   }
 

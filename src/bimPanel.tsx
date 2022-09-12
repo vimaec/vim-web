@@ -1,18 +1,15 @@
-import React from "react"
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 
-import {BimTree,} from './bimTree'
-import {BimDocumentDetails, BimObjectDetails } from './bimDetails'
-import {BimDocumentHeader, BimObjectHeader} from './bimHeader'
-import {BimSearch} from './bimSearch'
+import { BimTree } from './bimTree'
+import { BimDocumentDetails, BimObjectDetails } from './bimDetails'
+import { BimDocumentHeader, BimObjectHeader } from './bimHeader'
+import { BimSearch } from './bimSearch'
 
-
-export function BimPanel(props: { viewer: VIM.Viewer })
-{
-  //console.log('Render Panel Init')
+export function BimPanel (props: { viewer: VIM.Viewer }) {
+  // console.log('Render Panel Init')
   const viewer = props.viewer
-  const [filter, setFilter] = useState("")
+  const [filter, setFilter] = useState('')
   const [objects, setObjects] = useState<VIM.Object[]>([])
   const [vim, setVim] = useState<VIM.Vim>()
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
@@ -26,8 +23,8 @@ export function BimPanel(props: { viewer: VIM.Viewer })
 
   const initOpen = (keys: string[]) => {
     const map = new Map(open?.entries() ?? [])
-    keys.forEach(k => {
-      if(!map.has(k)) map.set(k, true)
+    keys.forEach((k) => {
+      if (!map.has(k)) map.set(k, true)
     })
     setOpen(map)
   }
@@ -40,10 +37,12 @@ export function BimPanel(props: { viewer: VIM.Viewer })
 
   const updateVim = () => {
     const nextVim = viewer.selection.vim ?? viewer.vims[0]
-    if(nextVim && vim !== nextVim){
+    if (nextVim && vim !== nextVim) {
       setVim(nextVim)
-      nextVim.document.getElementsSummary().then(s => {
-        const filtered = s.filter(s => nextVim.getObjectFromElement(s.element).hasMesh)
+      nextVim.document.getElementsSummary().then((s) => {
+        const filtered = s.filter(
+          (s) => nextVim.getObjectFromElement(s.element).hasMesh
+        )
         setElements(filtered)
       })
     }
@@ -52,39 +51,55 @@ export function BimPanel(props: { viewer: VIM.Viewer })
   // Register to selection
   useEffect(() => {
     viewer.onVimLoaded.subscribe(updateVim)
-    viewer.selection.onValueChanged.subscribe( 
-    () => {
+    viewer.selection.onValueChanged.subscribe(() => {
       updateVim()
       setObjects([...viewer.selection.objects])
     })
     updateVim()
     setObjects([...viewer.selection.objects])
-  },[])
-  
-  const last = objects[objects.length-1]
-  
-  return(
+  }, [])
+
+  const last = objects[objects.length - 1]
+
+  return (
     <>
       <div className="vim-bim-upper h-1/2">
         <h2 className="text-xs font-bold uppercase mb-6">Project Inspector</h2>
-        <BimSearch viewer={viewer} filter={filter} setFilter={updateFilter}/>
-        <BimTree viewer={viewer} elements={elements}  filter={filter} objects={objects}/>
+        <BimSearch viewer={viewer} filter={filter} setFilter={updateFilter} />
+        <BimTree
+          viewer={viewer}
+          elements={elements}
+          filter={filter}
+          objects={objects}
+        />
       </div>
       <hr className="border-gray-divider mb-5 -mx-6" />
       <h2 className="text-xs font-bold uppercase mb-6">Bim Inspector</h2>
       <div className="vim-bim-lower h-1/2 overflow-y-auto">
-        {last ? 
-        <>
-          <BimObjectHeader elements={elements} object={last}/>
-          <BimObjectDetails object={last} getOpen={getOpen} setOpen={updateOpen} initOpen={initOpen} />
-        </> :
-        <>
-          <BimDocumentHeader vim={viewer.vims[0]}/>
-          <BimDocumentDetails vim={vim} getOpen={getOpen} setOpen={updateOpen} initOpen={initOpen} />
-        </>
-         }
+        {last
+          ? (
+          <>
+            <BimObjectHeader elements={elements} object={last} />
+            <BimObjectDetails
+              object={last}
+              getOpen={getOpen}
+              setOpen={updateOpen}
+              initOpen={initOpen}
+            />
+          </>
+            )
+          : (
+          <>
+            <BimDocumentHeader vim={viewer.vims[0]} />
+            <BimDocumentDetails
+              vim={vim}
+              getOpen={getOpen}
+              setOpen={updateOpen}
+              initOpen={initOpen}
+            />
+          </>
+            )}
       </div>
     </>
   )
 }
-
