@@ -57,7 +57,7 @@ body {
 /* Axes Gizmo*/
 .gizmo-axis-canvas {
   display: block;
-  position: static!important;
+  position: static !important;
   order: 1;
   padding: 8px 16px 8px 16px;
   /* filter: saturate(0%); */
@@ -69,7 +69,7 @@ body {
   transition: all 0.5s ease;
 }
 .vim-top {
-  opacity: .5;
+  opacity: 0.5;
 }
 .vim-top:hover {
   opacity: 1;
@@ -202,7 +202,7 @@ body {
   max-width: calc(100% - 480px);
   object-fit: cover;
 }
-.vim-gfx.bim-panel-open + .vim-ui .vim-menu,
+.vim-gfx.bim-panel-open + .vim-ui .vim-control-bar,
 .vim-gfx.bim-panel-open + .vim-ui .menu-help-controls,
 .vim-gfx.bim-panel-open + .vim-ui .menu-help-overlay h2 {
   margin-left: 480px;
@@ -287,7 +287,8 @@ body {
 .rct-tree-item-title-container:hover {
   background-color: var(--c-list-hover);
 }
-[type='checkbox']:focus, [type='radio']:focus {
+[type='checkbox']:focus,
+[type='radio']:focus {
   outline: none;
   box-shadow: none;
 }
