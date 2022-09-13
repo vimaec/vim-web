@@ -54,12 +54,9 @@ export function MenuTop (props: { viewer: VIM.Viewer }) {
   return (
     <div
       ref={ui}
-      className="vim-top flex flex-col fixed right-6 top-6 w-32 pointer-events-none  rounded-xl shadow-lg opacity-50 hover:opacity-100"
+      className="vim-top border border-white-t50 flex flex-col fixed right-6 top-6 w-32 rounded-xl shadow-lg"
     >
-      <div className="vim-top-background border border-white-t50 h-28 w-full rounded-t-xl pointer-events-none z-0">
-        {' '}
-      </div>
-      <div className="vim-top-buttons flex p-1 rounded-b-xl pointer-events-auto justify-center bg-white-t50">
+      <div className="vim-top-buttons order-2 flex p-1 rounded-b-xl pointer-events-auto justify-center bg-white-t50">
         <div className="mx-1">{btnOrtho}</div>
         <div className="mx-1">{btnHome}</div>
       </div>

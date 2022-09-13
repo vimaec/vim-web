@@ -108,7 +108,7 @@ export function VimContextMenu (props: {
     if (!condition) return null
     return (
       <MenuItem
-        className="hover:bg-gray-lightest px-5 py-2 flex items-center justify-between"
+        className="hover:bg-gray-lightest px-5 py-2 flex items-center justify-between cursor-pointer select-none"
         onClick={action}
       >
         <span>{label}</span>
