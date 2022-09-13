@@ -26,6 +26,32 @@ type ToastConfigSpeed = {
 }
 type ToastConfig = ToastConfigSpeed | undefined
 
+export type Cursor =
+  | 'cursor-regular'
+  | 'cursor-orbit'
+  | 'cursor-look'
+  | 'cursor-pan'
+  | 'cursor-zoom'
+  | 'cursor-rect'
+  | 'cursor-measure'
+
+export function pointerToCursor (pointer: VIM.PointerMode): Cursor {
+  switch (pointer) {
+    case 'orbit':
+      return 'cursor-orbit'
+    case 'look':
+      return 'cursor-look'
+    case 'pan':
+      return 'cursor-pan'
+    case 'zoom':
+      return 'cursor-zoom'
+    case 'rect':
+      return 'cursor-rect'
+    default:
+      return 'cursor-regular'
+  }
+}
+
 class ComponentInputStrategy implements VIM.InputStrategy {
   private _viewer: VIM.Viewer
   private _default: VIM.InputStrategy
@@ -125,10 +151,11 @@ export function VimComponent (props: {
   const [isolation, setIsolation] = useState<VIM.Object[]>()
   const [hidden, setHidden] = useState(!getAllVisible(viewer))
 
-  const toastTimeout = useRef(0)
+  const toastTimeout = useRef<ReturnType<typeof setTimeout>>()
   const toastSpeed = useRef(0)
   const sideContentRef = useRef(sideContent)
   const settingsRef = useRef(settings)
+  const cursor = useRef<Cursor>()
 
   const resetIsolation = () => {
     setIsolation(undefined)
@@ -161,6 +188,8 @@ export function VimComponent (props: {
 
     showMenu(showMenuConfig)
   }
+
+  // On side content change
   useEffect(() => {
     props.viewer.environment.loadGroundTexture(pathGround)
     applySettings(props.viewer, settings)
@@ -180,15 +209,32 @@ export function VimComponent (props: {
     }
   }
 
+  const setCursor = (value: Cursor) => {
+    if (!cursor.current) {
+      viewer.viewport.canvas.classList.add(value)
+    } else {
+      viewer.viewport.canvas.classList.replace(cursor.current, value)
+    }
+    cursor.current = value
+  }
+
+  // On first render
   useEffect(() => {
     props.onMount()
+
+    // Update and Register cursor for pointers
+    setCursor(pointerToCursor(props.viewer.inputs.pointerMode))
+    props.viewer.inputs.onPointerModeChanged.subscribe(() =>
+      setCursor(pointerToCursor(props.viewer.inputs.pointerMode))
+    )
+
     props.viewer.inputs.onContextMenu = onContextMenu
     viewer.onVimLoaded.subscribe(() => {
       viewer.camera.frame('all', 45)
     })
 
     // Camera speed toast
-    props.viewer.camera.onChanged.subscribe(() => {
+    props.viewer.camera.onValueChanged.subscribe(() => {
       if (props.viewer.camera.speed !== toastSpeed.current) {
         toastSpeed.current = props.viewer.camera.speed
         setToast({ speed: props.viewer.camera.speed })
@@ -236,6 +282,7 @@ export function VimComponent (props: {
           sideContent={sideContent}
           setSideContent={setSideContent}
           toggleIsolation={toggleIsolation}
+          setCursor={setCursor}
         />
           )
         : null}

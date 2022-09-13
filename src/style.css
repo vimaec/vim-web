@@ -128,47 +128,47 @@ body {
 
 /* MENU */
 
-.vim-menu td {
+.vim-control-bar td {
   pointer-events: all;
 }
 
-.vim-menu td.empty {
+.vim-control-bar td.empty {
   pointer-events: none;
 }
 
-.vim-menu table {
+.vim-control-bar table {
   width: 64px;
 }
 
-.vim-menu button:focus,
+.vim-control-bar button:focus,
 .vim-bim-search input[type='search']:focus {
   outline: 0;
   box-shadow: none;
 }
 
-.vim-menu .iconButton {
+.vim-control-bar .iconButton {
   color: var(--c-white);
   border: none;
   background-color: transparent;
 }
-.vim-menu .iconButton.active {
+.vim-control-bar .iconButton.active {
   background-color: var(--c-primary-royal);
 }
-.vim-menu .iconButton img {
+.vim-control-bar .iconButton img {
   width: 42px;
   height: 42px;
 }
 
-.vim-menu .iconButton:hover img {
+.vim-control-bar .iconButton:hover img {
   transform: scale(1.1);
 }
 
-.vim-menu .iconButton:active img {
+.vim-control-bar .iconButton:active img {
   transform: scale(1.1);
   filter: brightness(1.5);
 }
 
-.vim-menu .iconButton:disabled img {
+.vim-control-bar .iconButton:disabled img {
   filter: brightness(0.5);
   transform: scale(1);
 }

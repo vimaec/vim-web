@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
-import { frameContext, SideContent } from './component'
+import { Cursor, frameContext, pointerToCursor, SideContent } from './component'
 import * as Icons from './icons'
 
 // Shared Buttons style
@@ -51,25 +51,44 @@ export function ControlBar (props: {
   sideContent: SideContent
   setSideContent: (value: SideContent) => void
   toggleIsolation: () => void
+  setCursor: (cursor: Cursor) => void
 }) {
+  const [show, setShow] = useState(true)
+  const barTimeout = useRef<ReturnType<typeof setTimeout>>()
+
+  // On Each Render
   useEffect(() => {
     ReactTooltip.rebuild()
   })
 
+  // On First Render
+  useEffect(() => {
+    // Hide bar for a couple ms
+    props.viewer.camera.onMoved.subscribe(() => {
+      setShow(false)
+      clearTimeout(barTimeout.current)
+      barTimeout.current = setTimeout(() => setShow(true), 200)
+    })
+  }, [])
+
   return (
-    <div className="vim-menu flex items-center justify-center w-full fixed px-2 bottom-0 py-2 mb-9">
-      <div className="vim-menu-section flex items-center bg-white rounded-full px-2 shadow-md">
-        {TabCamera(props.viewer)}
+    <div
+      className={`vim-control-bar flex items-center justify-center w-full fixed px-2 bottom-0 py-2 mb-9 transition-opacity ${
+        show ? 'opacity-100' : 'opacity-0'
+      }`}
+    >
+      <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md">
+        {TabCamera(props.viewer, props.setCursor)}
       </div>
       <>{TabTools(props.viewer, props.toggleIsolation)}</>
-      <div className="vim-menu-section flex items-center bg-white rounded-full px-2 shadow-md">
+      <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md">
         {TabSettings(props)}
       </div>
     </div>
   )
 }
 
-function TabCamera (viewer: VIM.Viewer) {
+function TabCamera (viewer: VIM.Viewer, setCursor: (cursor: Cursor) => void) {
   const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerMode)
   useEffect(() => {
     viewer.inputs.onPointerModeChanged.subscribe(() =>
@@ -81,6 +100,7 @@ function TabCamera (viewer: VIM.Viewer) {
     const next = mode === target ? viewer.inputs.altPointerMode : target
     viewer.inputs.pointerMode = next
     setMode(next)
+    setCursor(pointerToCursor(next))
   }
 
   const onFrameBtn = () => {

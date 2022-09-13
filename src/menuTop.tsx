@@ -9,7 +9,7 @@ export function MenuTop (props: { viewer: VIM.Viewer }) {
   const ui = useRef<HTMLDivElement>()
 
   useEffect(() => {
-    props.viewer.camera.onChanged.subscribe(() =>
+    props.viewer.camera.onValueChanged.subscribe(() =>
       setOrtho(props.viewer.camera.orthographic)
     )
     const axes = document.getElementsByClassName('gizmo-axis-canvas')[0]
