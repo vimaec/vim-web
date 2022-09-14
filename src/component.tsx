@@ -15,7 +15,6 @@ import { SidePanel } from './menuSide'
 import { MenuSettings } from './menuSettings'
 
 import './style.css'
-import pathGround from './assets/vim-floor-soft.png'
 import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycaster'
 
 export * as VIM from 'vim-webgl-viewer/'
@@ -192,7 +191,6 @@ export function VimComponent (props: {
 
   // On side content change
   useEffect(() => {
-    props.viewer.environment.loadGroundTexture(pathGround)
     applySettings(props.viewer, settings)
     settingsRef.current = settings
   }, [settings])
