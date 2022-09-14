@@ -297,13 +297,13 @@ function TabTools (
   const btnSectionClip = actionButton(
     'Hide Section',
     onSectionClip,
-    Icons.sectionBoxClip,
+    Icons.sectionBoxNoClip,
     !!section
   )
   const btnSectionNoClip = actionButton(
     'Show Section',
     onSectionNoClip,
-    Icons.sectionBoxNoClip,
+    Icons.sectionBoxClip,
     !!section
   )
   const btnSectionConfirm = actionButton(
