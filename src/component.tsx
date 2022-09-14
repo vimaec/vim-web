@@ -18,10 +18,6 @@ import './style.css'
 import pathGround from './assets/vim-floor-soft.png'
 import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycaster'
 
-// eslint-disable-next-line no-unused-vars
-import IconOrbit from './assets/cursor-orbit.svg'
-export { IconOrbit }
-
 export * as VIM from 'vim-webgl-viewer/'
 export type SideContent = 'none' | 'bim' | 'settings'
 
