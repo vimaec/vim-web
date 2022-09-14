@@ -21,6 +21,7 @@ export * as VIM from 'vim-webgl-viewer/'
 export type SideContent = 'none' | 'bim' | 'settings'
 
 type ToastConfigSpeed = {
+  visible: boolean
   speed: number
 }
 type ToastConfig = ToastConfigSpeed | undefined
@@ -244,9 +245,12 @@ export function VimComponent (props: {
     props.viewer.camera.onValueChanged.subscribe(() => {
       if (props.viewer.camera.speed !== toastSpeed.current) {
         toastSpeed.current = props.viewer.camera.speed
-        setToast({ speed: props.viewer.camera.speed })
+        setToast({ visible: true, speed: props.viewer.camera.speed })
         clearTimeout(toastTimeout.current)
-        toastTimeout.current = setTimeout(() => setToast(undefined), 1000)
+        toastTimeout.current = setTimeout(
+          () => setToast({ visible: false, speed: props.viewer.camera.speed }),
+          1000
+        )
       }
     })
 
@@ -355,11 +359,14 @@ function applySettings (viewer: VIM.Viewer, settings: Settings) {
 }
 
 function MenuToast (props: { config: ToastConfig }) {
-  console.log('MenuToast :' + props.config)
   if (!props.config) return null
 
   return (
-    <div className="vim-menu-toast rounded shadow-lg py-2 px-5 flex items-center justify-between">
+    <div
+      className={`vim-menu-toast rounded shadow-lg py-2 px-5 flex items-center justify-between transition-all ${
+        props.config.visible ? 'opacity-100' : 'opacity-0'
+      }`}
+    >
       <span className="text-sm uppercase font-semibold text-gray-light">
         Speed:
       </span>
