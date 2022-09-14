@@ -73,7 +73,7 @@ export function ControlBar (props: {
 
   return (
     <div
-      className={`vim-control-bar flex items-center justify-center w-full fixed px-2 bottom-0 py-2 mb-9 transition-opacity ${
+      className={`vim-control-bar flex items-center justify-center w-full fixed px-2 bottom-0 py-2 mb-9 transition-opacity transition-all ${
         show ? 'opacity-100' : 'opacity-0'
       }`}
     >
