@@ -91,6 +91,17 @@ export function BimTree (props: {
     props.viewer.inputs.keyboard.register()
   }
 
+  const OnDoubleClick = () => {
+    const box = props.viewer.selection.getBoundingBox()
+    if (props.viewer.sectionBox.box.containsBox(box)) {
+      props.viewer.camera.frame(
+        props.viewer.selection.getBoundingBox(),
+        'center',
+        props.viewer.camera.defaultLerpDuration
+      )
+    }
+  }
+
   // console.log('Render BimTree Done')
   return (
     <div
@@ -127,11 +138,7 @@ export function BimTree (props: {
           const click = item.index as number
           const time = new Date().getTime()
           if (lastClickIndex === click && time - lastClickTime < 200) {
-            props.viewer.camera.frame(
-              props.viewer.selection.getBoundingBox(),
-              'center',
-              props.viewer.camera.defaultLerpDuration
-            )
+            OnDoubleClick()
             setLastClickIndex(-1)
           } else {
             setLastClickIndex(item.index as number)
