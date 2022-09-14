@@ -32,12 +32,12 @@ export function VimContextMenu (props: {
     })
 
     // Register to section box
-    viewer.gizmoSection.onBoxConfirm = () => {
-      const clipping = !viewer.gizmoSection.box.containsBox(
+    viewer.sectionBox.onBoxConfirm.subscribe(() => {
+      const clipping = !viewer.sectionBox.box.containsBox(
         viewer.renderer.getBoundingBox()
       )
       setSection(clipping)
-    }
+    })
   }, [])
 
   const onShowControlsBtn = (e: ClickCallback) => {
@@ -87,11 +87,11 @@ export function VimContextMenu (props: {
   }
 
   const onSectionIgnoreBtn = (e: ClickCallback) => {
-    viewer.gizmoSection.clip = false
+    viewer.sectionBox.clip = false
   }
 
   const onSectionResetBtn = (e: ClickCallback) => {
-    viewer.gizmoSection.fitBox(viewer.renderer.getBoundingBox())
+    viewer.sectionBox.fitBox(viewer.renderer.getBoundingBox())
     e.stopPropagation()
   }
 

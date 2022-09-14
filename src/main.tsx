@@ -20,8 +20,8 @@ const viewer = new VIM.Viewer({
     size: 5
   }
 })
-const div = createContainer(viewer)
-const root = createRoot(div)
+const container = createContainer(viewer)
+const root = createRoot(container.root)
 root.render(<VimComponent viewer={viewer} onMount={loadVim} />)
 
 function loadVim () {

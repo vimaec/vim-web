@@ -34,6 +34,7 @@ export type Cursor =
   | 'cursor-zoom'
   | 'cursor-rect'
   | 'cursor-measure'
+  | 'cursor-section-box'
 
 export function pointerToCursor (pointer: VIM.PointerMode): Cursor {
   switch (pointer) {
@@ -122,9 +123,9 @@ export function createContainer (viewer: VIM.Viewer) {
 
   // Initial viewer settings
   viewer.viewport.canvas.tabIndex = 0
-  viewer.gizmoSection.clip = true
+  viewer.sectionBox.clip = true
 
-  return ui
+  return { root, ui, gfx }
 }
 
 export function VimComponent (props: {
@@ -210,6 +211,7 @@ export function VimComponent (props: {
   }
 
   const setCursor = (value: Cursor) => {
+    if (value === cursor.current) return
     if (!cursor.current) {
       viewer.viewport.canvas.classList.add(value)
     } else {
@@ -221,6 +223,16 @@ export function VimComponent (props: {
   // On first render
   useEffect(() => {
     props.onMount()
+
+    props.viewer.sectionBox.onHover.subscribe((hover) => {
+      const next = hover
+        ? 'cursor-section-box'
+        : cursor.current === 'cursor-section-box'
+          ? pointerToCursor(props.viewer.inputs.pointerMode)
+          : cursor.current
+
+      setCursor(next)
+    })
 
     // Update and Register cursor for pointers
     setCursor(pointerToCursor(props.viewer.inputs.pointerMode))

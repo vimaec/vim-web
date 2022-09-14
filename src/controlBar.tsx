@@ -78,9 +78,9 @@ export function ControlBar (props: {
       }`}
     >
       <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md">
-        {TabCamera(props.viewer, props.setCursor)}
+        {TabCamera(props.viewer)}
       </div>
-      <>{TabTools(props.viewer, props.toggleIsolation)}</>
+      <>{TabTools(props.viewer, props.toggleIsolation, props.setCursor)}</>
       <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md">
         {TabSettings(props)}
       </div>
@@ -88,7 +88,7 @@ export function ControlBar (props: {
   )
 }
 
-function TabCamera (viewer: VIM.Viewer, setCursor: (cursor: Cursor) => void) {
+function TabCamera (viewer: VIM.Viewer) {
   const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerMode)
   useEffect(() => {
     viewer.inputs.onPointerModeChanged.subscribe(() =>
@@ -100,7 +100,6 @@ function TabCamera (viewer: VIM.Viewer, setCursor: (cursor: Cursor) => void) {
     const next = mode === target ? viewer.inputs.altPointerMode : target
     viewer.inputs.pointerMode = next
     setMode(next)
-    setCursor(pointerToCursor(next))
   }
 
   const onFrameBtn = () => {
@@ -165,13 +164,17 @@ function TabCamera (viewer: VIM.Viewer, setCursor: (cursor: Cursor) => void) {
 }
 
 /* TAB TOOLS */
-function TabTools (viewer: VIM.Viewer, toggleIsolation: () => void) {
+function TabTools (
+  viewer: VIM.Viewer,
+  toggleIsolation: () => void,
+  setCursor: (cursor: Cursor) => void
+) {
   // Need a ref to get the up to date value in callback.
   const [measuring, setMeasuring] = useState(false)
   // eslint-disable-next-line no-unused-vars
   const [measurement, setMeasurement] = useState<VIM.THREE.Vector3>()
   const [section, setSection] = useState(false)
-  const [clip, setClip] = useState(viewer.gizmoSection.clip)
+  const [clip, setClip] = useState(viewer.sectionBox.clip)
 
   const measuringRef = useRef<boolean>()
   measuringRef.current = measuring
@@ -183,8 +186,8 @@ function TabTools (viewer: VIM.Viewer, toggleIsolation: () => void) {
     }
 
     const next = !section
-    viewer.gizmoSection.interactive = next
-    viewer.gizmoSection.visible = next
+    viewer.sectionBox.interactive = next
+    viewer.sectionBox.visible = next
     if (next) {
       viewer.camera.frame(
         viewer.renderer.section.box,
@@ -210,21 +213,22 @@ function TabTools (viewer: VIM.Viewer, toggleIsolation: () => void) {
       loopMeasure(
         viewer,
         () => measuringRef.current,
-        (m) => setMeasurement(m)
+        (m) => setMeasurement(m),
+        setCursor
       )
     }
   }
 
   const onResetSectionBtn = () => {
-    viewer.gizmoSection.fitBox(viewer.renderer.getBoundingBox())
+    viewer.sectionBox.fitBox(viewer.renderer.getBoundingBox())
   }
 
   const onSectionClip = () => {
-    viewer.gizmoSection.clip = true
+    viewer.sectionBox.clip = true
     setClip(true)
   }
   const onSectionNoClip = () => {
-    viewer.gizmoSection.clip = false
+    viewer.sectionBox.clip = false
     setClip(false)
   }
 
@@ -374,12 +378,13 @@ function TabSettings (props: {
 function loopMeasure (
   viewer: VIM.Viewer,
   getMeasuring: () => boolean,
-  setMeasure: (value: VIM.THREE.Vector3) => void
+  setMeasure: (value: VIM.THREE.Vector3) => void,
+  setCursor: (cursor: Cursor) => void
 ) {
   const onMouseMove = () => {
     setMeasure(viewer.measure.measurement)
   }
-
+  setCursor('cursor-measure')
   viewer.viewport.canvas.addEventListener('mousemove', onMouseMove)
   viewer.measure
     .start()
@@ -390,9 +395,10 @@ function loopMeasure (
       setMeasure(undefined)
     })
     .finally(() => {
+      setCursor(pointerToCursor(viewer.inputs.pointerMode))
       viewer.viewport.canvas.removeEventListener('mousemove', onMouseMove)
       if (getMeasuring()) {
-        loopMeasure(viewer, getMeasuring, setMeasure)
+        loopMeasure(viewer, getMeasuring, setMeasure, setCursor)
       } else {
         viewer.measure.clear()
       }
