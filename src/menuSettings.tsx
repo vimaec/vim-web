@@ -20,41 +20,36 @@ export function MenuSettings (props: {
       </label>
     )
   }
-
   const next = props.settings.clone()
-  const onGhostTgl = () => {
-    next.useIsolationMaterial = !next.useIsolationMaterial
-    props.setSettings(next)
-  }
 
-  const onGroundPlaneTgl = () => {
-    next.showGroundPlane = !next.showGroundPlane
-    props.setSettings(next)
+  const settingsToggle = (
+    label: string,
+    getter: (settings: Settings) => boolean,
+    setter: (settings: Settings, b: boolean) => void
+  ) => {
+    return toggleElement(label, getter(props.settings), () => {
+      setter(next, !getter(next))
+      props.setSettings(next)
+    })
   }
-
-  const onPerformanceTgl = () => {
-    next.showPerformance = !next.showPerformance
-    props.setSettings(next)
-  }
-
   // {toggleElement("Hide action menu while moving camera")}
   return (
     <>
       <h2 className="text-xs font-bold uppercase mb-6">Display Settings</h2>
-      {toggleElement(
+      {settingsToggle(
         'Show hidden object with ghost effect',
-        props.settings.useIsolationMaterial,
-        onGhostTgl
+        (settings) => settings.useIsolationMaterial,
+        (settings, value) => (settings.useIsolationMaterial = value)
       )}
-      {toggleElement(
+      {settingsToggle(
         'Show ground plane',
-        props.settings.showGroundPlane,
-        onGroundPlaneTgl
+        (settings) => settings.showGroundPlane,
+        (settings, value) => (settings.showGroundPlane = value)
       )}
-      {toggleElement(
+      {settingsToggle(
         'Show performance',
-        props.settings.showPerformance,
-        onPerformanceTgl
+        (settings) => settings.showPerformance,
+        (settings, value) => (settings.showPerformance = value)
       )}
     </>
   )
