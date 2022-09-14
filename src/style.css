@@ -292,3 +292,21 @@ body {
   outline: none;
   box-shadow: none;
 }
+.cursor-orbit:hover {
+  cursor: url('src/assets/cursor-orbit.svg'), auto;	
+}
+.cursor-look:hover {
+  cursor: url('src/assets/cursor-look-around.svg'), auto;	
+}
+.cursor-pan:hover {
+  cursor: url('src/assets/cursor-pan.svg'), auto;	
+}
+.cursor-pan:active {
+  cursor: url('src/assets/cursor-pan-grab.svg'), auto;	
+}
+.cursor-zoom:hover {
+  cursor: url('src/assets/cursor-zoom.svg'), auto;	
+}
+.cursor-rect:hover {
+  cursor: url('src/assets/cursor-zoom-window.svg'), auto;	
+}
