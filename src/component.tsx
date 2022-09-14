@@ -407,11 +407,6 @@ export function hideSelection (viewer: VIM.Viewer, settings: Settings) {
     : undefined
 
   viewer.selection.clear()
-  viewer.camera.frame(
-    getVisibleBoundingBox(vim),
-    'none',
-    viewer.camera.defaultLerpDuration
-  )
 }
 
 export function showAll (viewer: VIM.Viewer, settings: Settings) {
@@ -421,11 +416,6 @@ export function showAll (viewer: VIM.Viewer, settings: Settings) {
     }
     v.scene.material = undefined
   })
-  viewer.camera.frame(
-    viewer.renderer.getBoundingBox(),
-    'none',
-    viewer.camera.defaultLerpDuration
-  )
 }
 
 export function toGhost (source: VIM.Viewer | VIM.Vim) {
