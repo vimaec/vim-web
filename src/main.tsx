@@ -21,7 +21,7 @@ const viewer = new VIM.Viewer({
   }
 })
 const container = createContainer(viewer)
-const root = createRoot(container.root)
+const root = createRoot(container.ui)
 root.render(<VimComponent viewer={viewer} onMount={loadVim} />)
 
 function loadVim () {
