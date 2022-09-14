@@ -90,9 +90,8 @@ class ComponentInputStrategy implements VIM.InputStrategy {
 
 export class Settings {
   useIsolationMaterial: boolean = true
-  showInspectorOnSelect: boolean = true
-
   showGroundPlane: boolean = true
+  showPerformance: boolean = true
 
   clone () {
     return Object.assign(new Settings(), this) as Settings
@@ -200,9 +199,7 @@ export function VimComponent (props: {
 
   const updateSide = () => {
     const showBim =
-      props.viewer.selection.count > 0 &&
-      sideContentRef.current === 'none' &&
-      settingsRef.current.showInspectorOnSelect
+      props.viewer.selection.count > 0 && sideContentRef.current === 'none'
     if (showBim) {
       setSideContent('bim')
     }
@@ -324,6 +321,16 @@ function Logo () {
 }
 
 function applySettings (viewer: VIM.Viewer, settings: Settings) {
+  // Show/Hide performance gizmo
+  const performance = document.getElementsByClassName('vim-performance')[0]
+  if (performance) {
+    if (settings.showPerformance) {
+      performance.classList.remove('hidden')
+    } else {
+      performance.classList.add('hidden')
+    }
+  }
+
   // Isolation material
   viewer.vims.forEach((v) => {
     if (!settings.useIsolationMaterial) {

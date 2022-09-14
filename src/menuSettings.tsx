@@ -32,6 +32,11 @@ export function MenuSettings (props: {
     props.setSettings(next)
   }
 
+  const onPerformanceTgl = () => {
+    next.showPerformance = !next.showPerformance
+    props.setSettings(next)
+  }
+
   // {toggleElement("Hide action menu while moving camera")}
   return (
     <>
@@ -45,6 +50,11 @@ export function MenuSettings (props: {
         'Show ground plane',
         props.settings.showGroundPlane,
         onGroundPlaneTgl
+      )}
+      {toggleElement(
+        'Show performance',
+        props.settings.showPerformance,
+        onPerformanceTgl
       )}
     </>
   )
