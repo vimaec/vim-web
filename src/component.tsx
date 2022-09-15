@@ -127,6 +127,16 @@ export function createContainer (viewer: VIM.Viewer) {
   return { root, ui, gfx }
 }
 
+export function showContextMenu (position: { x: number; y: number }) {
+  const showMenuConfig = {
+    position: { x: position.x, y: position.y },
+    target: window,
+    id: VIM_CONTEXT_MENU_ID
+  }
+
+  showMenu(showMenuConfig)
+}
+
 export function VimComponent (props: {
   viewer: VIM.Viewer
   onMount: () => void
@@ -179,16 +189,6 @@ export function VimComponent (props: {
     setHidden(!getAllVisible(viewer))
   }
 
-  const onContextMenu = (position: VIM.THREE.Vector2) => {
-    const showMenuConfig = {
-      position: { x: position.x, y: position.y },
-      target: window,
-      id: VIM_CONTEXT_MENU_ID
-    }
-
-    showMenu(showMenuConfig)
-  }
-
   // On side content change
   useEffect(() => {
     applySettings(props.viewer, settings)
@@ -236,7 +236,7 @@ export function VimComponent (props: {
       setCursor(pointerToCursor(props.viewer.inputs.pointerMode))
     )
 
-    props.viewer.inputs.onContextMenu = onContextMenu
+    props.viewer.inputs.onContextMenu = showContextMenu
     viewer.onVimLoaded.subscribe(() => {
       viewer.camera.frame('all', 45)
     })

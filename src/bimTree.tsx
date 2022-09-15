@@ -6,8 +6,10 @@ import {
   TreeItem
 } from 'react-complex-tree'
 import 'react-complex-tree/lib/style.css'
+import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
 import { ElementInfo } from 'vim-webgl-viewer/'
+import { frameContext, showContextMenu } from './component'
 import { MapTree, sort, toMapTree } from './data'
 
 type VimTreeNode = TreeItem<ElementInfo> & {
@@ -46,6 +48,10 @@ export function BimTree (props: {
     time: 0,
     index: -1
   })
+
+  useEffect(() => {
+    ReactTooltip.rebuild()
+  }, [expandedItems, tree])
 
   // Generate or regenerate tree as needed.
   if (
@@ -135,6 +141,10 @@ export function BimTree (props: {
             selectedItems
           }
         }}
+        renderItemTitle={({ title }) => <span data-tip={title}>{title}</span>}
+        canRename={false}
+        canSearchByStartingTyping={false}
+        canSearch={false}
         defaultInteractionMode={{
           mode: 'custom',
           extends: InteractionMode.ClickArrowToExpand,
@@ -144,6 +154,19 @@ export function BimTree (props: {
             actions,
             renderFlags
           ) => ({
+            onKeyUp: (e) => {
+              if (e.key === 'f') {
+                frameContext(props.viewer)
+              }
+              if (e.key === 'Escape') {
+                props.viewer.selection.clear()
+              }
+            },
+            onContextMenu: (e) => {
+              showContextMenu({ x: e.clientX, y: e.clientY })
+              e.preventDefault()
+              e.stopPropagation()
+            },
             onClick: (e) => {
               if (e.shiftKey) {
                 const range = tree.getRange(focus.current, item.index as number)
