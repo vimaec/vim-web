@@ -179,6 +179,12 @@ function TabTools (
   const measuringRef = useRef<boolean>()
   measuringRef.current = measuring
 
+  useEffect(() => {
+    viewer.sectionBox.onStateChanged.subscribe(() =>
+      setClip(viewer.sectionBox.clip)
+    )
+  }, [])
+
   const onSectionBtn = () => {
     ReactTooltip.hide()
     if (measuring) {
@@ -225,11 +231,9 @@ function TabTools (
 
   const onSectionClip = () => {
     viewer.sectionBox.clip = true
-    setClip(true)
   }
   const onSectionNoClip = () => {
     viewer.sectionBox.clip = false
-    setClip(false)
   }
 
   const onMeasureDeleteBtn = () => {
@@ -295,13 +299,13 @@ function TabTools (
     !!section
   )
   const btnSectionClip = actionButton(
-    'Hide Section',
+    'Apply Section Box',
     onSectionClip,
     Icons.sectionBoxNoClip,
     !!section
   )
   const btnSectionNoClip = actionButton(
-    'Show Section',
+    'Ignore Section Box',
     onSectionNoClip,
     Icons.sectionBoxClip,
     !!section

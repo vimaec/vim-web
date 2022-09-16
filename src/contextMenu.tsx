@@ -5,6 +5,7 @@ import {
   frameContext,
   hideSelection,
   isolateSelection,
+  resetCamera,
   Settings,
   showAll
 } from './component'
@@ -23,7 +24,17 @@ export function VimContextMenu (props: {
 }) {
   const viewer = props.viewer
   const [objects, setObject] = useState<VIM.Object[]>([])
-  const [section, setSection] = useState<boolean>(false)
+  const [section, setSection] = useState<{
+    visible: boolean
+    clip: boolean
+  }>({
+    visible: props.viewer.sectionBox.visible,
+    clip: props.viewer.sectionBox.clip
+  })
+  const isClipping = () => {
+    return !viewer.sectionBox.box.containsBox(viewer.renderer.getBoundingBox())
+  }
+  const [clipping, setClipping] = useState<boolean>(isClipping())
 
   useEffect(() => {
     // Register to selection
@@ -31,13 +42,15 @@ export function VimContextMenu (props: {
       setObject([...viewer.selection.objects])
     })
 
-    // Register to section box
-    viewer.sectionBox.onBoxConfirm.subscribe(() => {
-      const clipping = !viewer.sectionBox.box.containsBox(
-        viewer.renderer.getBoundingBox()
-      )
-      setSection(clipping)
+    viewer.sectionBox.onStateChanged.subscribe(() => {
+      setSection({
+        visible: viewer.sectionBox.visible,
+        clip: viewer.sectionBox.clip
+      })
     })
+
+    // Register to section box
+    viewer.sectionBox.onBoxConfirm.subscribe(() => setClipping(isClipping()))
   }, [])
 
   const onShowControlsBtn = (e: ClickCallback) => {
@@ -46,11 +59,7 @@ export function VimContextMenu (props: {
   }
 
   const onCameraResetBtn = (e: ClickCallback) => {
-    viewer.camera.frame(
-      viewer.renderer.getBoundingBox(),
-      45,
-      viewer.camera.defaultLerpDuration
-    )
+    resetCamera(viewer)
     e.stopPropagation()
   }
 
@@ -86,8 +95,8 @@ export function VimContextMenu (props: {
     e.stopPropagation()
   }
 
-  const onSectionIgnoreBtn = (e: ClickCallback) => {
-    viewer.sectionBox.clip = false
+  const onSectionToggleBtn = (e: ClickCallback) => {
+    viewer.sectionBox.clip = !viewer.sectionBox.clip
   }
 
   const onSectionResetBtn = (e: ClickCallback) => {
@@ -144,7 +153,7 @@ export function VimContextMenu (props: {
         {/* Camera */}
         {createDivider()}
         {createButton('Reset Camera', 'HOME', onCameraResetBtn)}
-        {createButton('Zoom to Fit', 'F', onCameraFrameBtn, hasSelection)}
+        {createButton('Zoom to Fit', 'F', onCameraFrameBtn)}
 
         {/* Selection */}
         {createDivider(hasSelection || props.hidden)}
@@ -168,9 +177,19 @@ export function VimContextMenu (props: {
         {createButton('Delete Measurement', '', onMeasureDeleteBtn, measuring)}
 
         {/* Section */}
-        {createDivider(section)}
-        {createButton('Ignore Section Box', '', onSectionIgnoreBtn, section)}
-        {createButton('Reset Section Box', '', onSectionResetBtn, section)}
+        {createDivider(clipping || section.visible)}
+        {createButton(
+          section.clip ? 'Ignore Section Box' : 'Apply Section Box',
+          '',
+          onSectionToggleBtn,
+          clipping
+        )}
+        {createButton(
+          'Reset Section Box',
+          '',
+          onSectionResetBtn,
+          section.visible
+        )}
       </ContextMenu>
     </div>
   )
