@@ -112,6 +112,7 @@ export function createContainer (viewer: VIM.Viewer) {
   root.append(gfx)
 
   gfx.append(viewer.viewport.canvas)
+  gfx.append(viewer.viewport.text)
   gfx.append(viewer.axesCanvas)
 
   // container for ui
