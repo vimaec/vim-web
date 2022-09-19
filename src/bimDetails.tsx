@@ -144,7 +144,7 @@ function createTable (
           ? entries.map((p, i) => {
             const id = key + p.name + i
             return (
-                <li className="odd:bg-white flex" key={'parameters-tr-' + id}>
+                <li className="even:bg-white flex" key={'parameters-tr-' + id}>
                   <span
                     data-tip={p.value}
                     className="w-1/2 border-r border-gray-light p-2 truncate"

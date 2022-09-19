@@ -16,8 +16,8 @@ const toggleButton = (
   isOn: () => boolean
 ) => {
   const fillColor = isOn()
-    ? 'rounded-full text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-primary'
-    : 'rounded-full text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-gray-medium'
+    ? 'rounded-full h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-primary'
+    : 'rounded-full h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-gray-medium'
   return (
     <button data-tip={tip} onClick={action} className={fillColor} type="button">
       {icon({ height: '20', width: '20', fill: 'currentColor' })}
