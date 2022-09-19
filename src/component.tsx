@@ -166,6 +166,7 @@ export function VimComponent (props: {
   const sideContentRef = useRef(sideContent)
   const settingsRef = useRef(settings)
   const cursor = useRef<Cursor>()
+  const boxHover = useRef<boolean>()
 
   const resetIsolation = () => {
     setIsolation(undefined)
@@ -216,25 +217,27 @@ export function VimComponent (props: {
     cursor.current = value
   }
 
+  const updateCursor = () => {
+    const cursor = props.viewer.inputs.pointerOverride
+      ? pointerToCursor(props.viewer.inputs.pointerOverride)
+      : boxHover.current
+        ? 'cursor-section-box'
+        : pointerToCursor(props.viewer.inputs.pointerMode)
+    setCursor(cursor)
+  }
+
   // On first render
   useEffect(() => {
     props.onMount()
 
-    props.viewer.sectionBox.onHover.subscribe((hover) => {
-      const next = hover
-        ? 'cursor-section-box'
-        : cursor.current === 'cursor-section-box'
-          ? pointerToCursor(props.viewer.inputs.pointerMode)
-          : cursor.current
-
-      setCursor(next)
-    })
-
     // Update and Register cursor for pointers
     setCursor(pointerToCursor(props.viewer.inputs.pointerMode))
-    props.viewer.inputs.onPointerModeChanged.subscribe(() =>
-      setCursor(pointerToCursor(props.viewer.inputs.pointerMode))
-    )
+    props.viewer.inputs.onPointerModeChanged.subscribe(updateCursor)
+    props.viewer.inputs.onPointerOverrideChanged.subscribe(updateCursor)
+    props.viewer.sectionBox.onHover.subscribe((hover) => {
+      boxHover.current = hover
+      updateCursor()
+    })
 
     props.viewer.inputs.onContextMenu = showContextMenu
     viewer.onVimLoaded.subscribe(() => {
@@ -378,7 +381,6 @@ function MenuToast (props: { config: ToastConfig }) {
 }
 
 /* Utils */
-
 export function resetCamera (viewer: VIM.Viewer) {
   viewer.camera.reset()
   viewer.camera.frame('all', 45)
