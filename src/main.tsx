@@ -1,5 +1,5 @@
 import * as VIM from 'vim-webgl-viewer/'
-import 'vim-webgl-viewer/dist/style.css'
+
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { createContainer, VimComponent } from './component'

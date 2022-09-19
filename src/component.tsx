@@ -15,6 +15,7 @@ import { SidePanel } from './menuSide'
 import { MenuSettings } from './menuSettings'
 
 import './style.css'
+import 'vim-webgl-viewer/dist/style.css'
 import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycaster'
 
 export * as VIM from 'vim-webgl-viewer/'
