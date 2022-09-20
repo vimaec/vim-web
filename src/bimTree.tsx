@@ -9,7 +9,8 @@ import 'react-complex-tree/lib/style.css'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
 import { ElementInfo } from 'vim-webgl-viewer/'
-import { frameContext, showContextMenu } from './component'
+import { showContextMenu } from './component'
+import { frameContext } from './viewerUtils'
 import { MapTree, sort, toMapTree } from './data'
 
 type VimTreeNode = TreeItem<ElementInfo> & {

@@ -1,11 +1,11 @@
 import React from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { Settings } from './component'
+import { ComponentSettings } from './component'
 
 export function MenuSettings (props: {
   viewer: VIM.Viewer
-  settings: Settings
-  setSettings: (value: Settings) => void
+  settings: ComponentSettings
+  setSettings: (value: ComponentSettings) => void
 }) {
   const toggleElement = (label: string, state: boolean, action: () => void) => {
     return (
@@ -24,8 +24,8 @@ export function MenuSettings (props: {
 
   const settingsToggle = (
     label: string,
-    getter: (settings: Settings) => boolean,
-    setter: (settings: Settings, b: boolean) => void
+    getter: (settings: ComponentSettings) => boolean,
+    setter: (settings: ComponentSettings, b: boolean) => void
   ) => {
     return toggleElement(label, getter(props.settings), () => {
       setter(next, !getter(next))
