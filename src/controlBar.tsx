@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
-import { Cursor, frameContext, pointerToCursor, SideContent } from './component'
+import { Cursor, pointerToCursor, SideContent } from './component'
+import { frameContext } from './viewerUtils'
 import * as Icons from './icons'
 
 // Shared Buttons style
@@ -133,7 +134,11 @@ function TabCamera (viewer: VIM.Viewer) {
   )
   const btnFrameRect = toggleButton(
     'Zoom Window',
-    () => onModeBtn('rect'),
+    () => {
+      onModeBtn('rect')
+      viewer.sectionBox.visible = false
+      viewer.sectionBox.interactive = false
+    },
     Icons.frameRect,
     () => mode === 'rect'
   )
@@ -173,43 +178,46 @@ function TabTools (
   const [measuring, setMeasuring] = useState(false)
   // eslint-disable-next-line no-unused-vars
   const [measurement, setMeasurement] = useState<VIM.THREE.Vector3>()
-  const [section, setSection] = useState(false)
-  const [clip, setClip] = useState(viewer.sectionBox.clip)
+  const [section, setSection] = useState<{ clip: boolean; active: boolean }>({
+    clip: viewer.sectionBox.clip,
+    active: viewer.sectionBox.visible && viewer.sectionBox.interactive
+  })
 
   const measuringRef = useRef<boolean>()
   measuringRef.current = measuring
 
   useEffect(() => {
     viewer.sectionBox.onStateChanged.subscribe(() =>
-      setClip(viewer.sectionBox.clip)
+      setSection({
+        clip: viewer.sectionBox.clip,
+        active: viewer.sectionBox.visible && viewer.sectionBox.interactive
+      })
     )
   }, [])
 
   const onSectionBtn = () => {
     ReactTooltip.hide()
-    if (measuring) {
-      onMeasureBtn()
+    if (viewer.inputs.pointerMode === 'rect') {
+      viewer.inputs.pointerMode = viewer.inputs.altPointerMode
     }
 
-    const next = !section
+    const next = !(viewer.sectionBox.visible && viewer.sectionBox.interactive)
     viewer.sectionBox.interactive = next
     viewer.sectionBox.visible = next
-    if (next) {
+    if (
+      next &&
+      viewer.sectionBox.box.containsPoint(viewer.camera.camera.position)
+    ) {
       viewer.camera.frame(
         viewer.renderer.section.box,
-        'none',
+        'center',
         viewer.camera.defaultLerpDuration
       )
     }
-
-    setSection(next)
   }
 
   const onMeasureBtn = () => {
     ReactTooltip.hide()
-    if (section) {
-      onSectionBtn()
-    }
 
     if (measuring) {
       viewer.measure.abort()
@@ -296,30 +304,32 @@ function TabTools (
     'Reset Section Box',
     onResetSectionBtn,
     Icons.sectionBoxReset,
-    !!section
+    section.active
   )
   const btnSectionClip = actionButton(
     'Apply Section Box',
     onSectionClip,
     Icons.sectionBoxNoClip,
-    !!section
+    section.active
   )
   const btnSectionNoClip = actionButton(
     'Ignore Section Box',
     onSectionNoClip,
     Icons.sectionBoxClip,
-    !!section
+    section.active
   )
   const btnSectionConfirm = actionButton(
     'Done',
     onSectionBtn,
     Icons.checkmark,
-    !!section
+    section.active
   )
   const sectionTab = (
     <div className="vim-menu-section flex items-center bg-primary rounded-full px-2 mx-4 shadow-md">
       <div className="mx-1">{btnSectionDelete}</div>
-      <div className="mx-1">{clip ? btnSectionNoClip : btnSectionClip}</div>
+      <div className="mx-1">
+        {section.clip ? btnSectionNoClip : btnSectionClip}
+      </div>
       <div className="mx-1">{btnSectionConfirm}</div>
     </div>
   )
@@ -327,7 +337,7 @@ function TabTools (
   // There is a weird bug with tooltips not working properly
   // if measureTab or sectionTab do not have the same number of buttons as toolstab
 
-  return measuring ? measureTab : section ? sectionTab : toolsTab
+  return measuring ? measureTab : section.active ? sectionTab : toolsTab
 }
 
 function TabSettings (props: {
