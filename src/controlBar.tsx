@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
-import { Cursor, pointerToCursor, SideContent } from './component'
+import { SideContent } from './component'
+import { Cursor, pointerToCursor } from './cursor'
 import { frameContext } from './viewerUtils'
 import * as Icons from './icons'
 

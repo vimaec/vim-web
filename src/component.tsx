@@ -13,47 +13,22 @@ import { VimContextMenu, VIM_CONTEXT_MENU_ID } from './contextMenu'
 import { MenuHelp } from './menuHelp'
 import { SidePanel } from './menuSide'
 import { MenuSettings } from './menuSettings'
+import { MenuToast, ToastConfig } from './menuToast'
 
 import './style.css'
 import 'vim-webgl-viewer/dist/style.css'
 import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycaster'
-import { getAllVisible, getVisibleBoundingBox, getVisibleObjects, setAllVisible, toGhost } from './viewerUtils'
+import {
+  getAllVisible,
+  getVisibleBoundingBox,
+  getVisibleObjects,
+  setAllVisible,
+  toGhost
+} from './viewerUtils'
+import { CursorManager } from './cursor'
 
 export * as VIM from 'vim-webgl-viewer/'
 export type SideContent = 'none' | 'bim' | 'settings'
-
-type ToastConfigSpeed = {
-  visible: boolean
-  speed: number
-}
-type ToastConfig = ToastConfigSpeed | undefined
-
-export type Cursor =
-  | 'cursor-regular'
-  | 'cursor-orbit'
-  | 'cursor-look'
-  | 'cursor-pan'
-  | 'cursor-zoom'
-  | 'cursor-rect'
-  | 'cursor-measure'
-  | 'cursor-section-box'
-
-export function pointerToCursor (pointer: VIM.PointerMode): Cursor {
-  switch (pointer) {
-    case 'orbit':
-      return 'cursor-orbit'
-    case 'look':
-      return 'cursor-look'
-    case 'pan':
-      return 'cursor-pan'
-    case 'zoom':
-      return 'cursor-zoom'
-    case 'rect':
-      return 'cursor-rect'
-    default:
-      return 'cursor-regular'
-  }
-}
 
 class ComponentInputStrategy implements VIM.InputStrategy {
   private _viewer: VIM.Viewer
@@ -168,8 +143,7 @@ export function VimComponent (props: {
   const toastSpeed = useRef(0)
   const sideContentRef = useRef(sideContent)
   const settingsRef = useRef(settings)
-  const cursor = useRef<Cursor>()
-  const boxHover = useRef<boolean>()
+  const [cursorManager] = useState(new CursorManager(props.viewer))
 
   const resetIsolation = () => {
     setIsolation(undefined)
@@ -210,37 +184,11 @@ export function VimComponent (props: {
     }
   }
 
-  const setCursor = (value: Cursor) => {
-    if (value === cursor.current) return
-    if (!cursor.current) {
-      viewer.viewport.canvas.classList.add(value)
-    } else {
-      viewer.viewport.canvas.classList.replace(cursor.current, value)
-    }
-    cursor.current = value
-  }
-
-  const updateCursor = () => {
-    const cursor = props.viewer.inputs.pointerOverride
-      ? pointerToCursor(props.viewer.inputs.pointerOverride)
-      : boxHover.current
-        ? 'cursor-section-box'
-        : pointerToCursor(props.viewer.inputs.pointerMode)
-    setCursor(cursor)
-  }
-
   // On first render
   useEffect(() => {
     props.onMount()
-
+    cursorManager.register()
     // Update and Register cursor for pointers
-    setCursor(pointerToCursor(props.viewer.inputs.pointerMode))
-    props.viewer.inputs.onPointerModeChanged.subscribe(updateCursor)
-    props.viewer.inputs.onPointerOverrideChanged.subscribe(updateCursor)
-    props.viewer.sectionBox.onHover.subscribe((hover) => {
-      boxHover.current = hover
-      updateCursor()
-    })
 
     props.viewer.inputs.onContextMenu = showContextMenu
     viewer.onVimLoaded.subscribe(() => {
@@ -299,7 +247,7 @@ export function VimComponent (props: {
           sideContent={sideContent}
           setSideContent={setSideContent}
           toggleIsolation={toggleIsolation}
-          setCursor={setCursor}
+          setCursor={cursorManager.setCursor}
         />
           )
         : null}
@@ -362,23 +310,4 @@ function applySettings (viewer: VIM.Viewer, settings: ComponentSettings) {
     // Don't show ground plane when isolation is on.
     viewer.environment.groundPlane.visible = settings.showGroundPlane
   })
-}
-
-function MenuToast (props: { config: ToastConfig }) {
-  if (!props.config) return null
-
-  return (
-    <div
-      className={`vim-menu-toast rounded shadow-lg py-2 px-5 flex items-center justify-between transition-all ${
-        props.config.visible ? 'opacity-100' : 'opacity-0'
-      }`}
-    >
-      <span className="text-sm uppercase font-semibold text-gray-light">
-        Speed:
-      </span>
-      <span className="font-bold text-lg text-white ml-1">
-        {props.config.speed + 25}
-      </span>
-    </div>
-  )
 }
