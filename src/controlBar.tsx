@@ -288,6 +288,7 @@ function TabTools (
   const measureTab = (
     <div className="vim-menu-section flex items-center bg-primary rounded-full px-2 mx-4 shadow-md">
       <div className="mx-1">{btnMeasureDelete}</div>
+      <div className='mx-1 py-1 bg-white/[.5] h-5 w-px'></div>
       <div className="mx-1">{btnMeasureConfirm}</div>
     </div>
   )
@@ -320,6 +321,7 @@ function TabTools (
     <div className="vim-menu-section flex items-center bg-primary rounded-full px-2 mx-4 shadow-md">
       <div className="mx-1">{btnSectionDelete}</div>
       <div className="mx-1">{clip ? btnSectionNoClip : btnSectionClip}</div>
+      <div className='mx-1 py-1 bg-white/[.5] h-5 w-px'></div>
       <div className="mx-1">{btnSectionConfirm}</div>
     </div>
   )

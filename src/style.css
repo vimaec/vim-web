@@ -17,6 +17,7 @@
   --c-medium-gray: #8a8d95;
   --c-gray: #b6b9bf;
   --c-gray-divider: #e3e3e3;
+  --c-gray-zebra: #fafafa;
   --c-light-gray: #d1d3d8;
   --c-lighter-gray: #f0efee;
   --c-lightest-gray: #f6f6f6;
@@ -61,13 +62,13 @@ body {
   order: 1;
   margin: auto auto 0 auto;
   width: 75px;
-  /* filter: saturate(0%); */
-  transition: all 0.5s ease;
+  filter: saturate(0%);
+  
 }
 
 .vim-top:hover .gizmo-axis-canvas {
   filter: saturate(100%);
-  transition: all 0.5s ease;
+ 
 }
 .vim-top {
   opacity: 0.5;
@@ -255,7 +256,7 @@ body {
   background-color: var(--c-white);
 }
 .rct-tree-items-container > li:nth-child(even) {
-  background-color: var(--c-lightest-gray);
+  background-color: var(--c-gray-zebra);
 }
 
 .vim-inspector-properties {
@@ -276,6 +277,9 @@ body {
 }
 .rct-tree-item-arrow svg {
   width: 12px;
+}
+.rct-tree-item-arrow-path {
+  fill: var(--c-medium-gray);
 }
 .parameters:first-child > ul > li h3 {
   border-top-right-radius: 4px;
