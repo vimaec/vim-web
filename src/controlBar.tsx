@@ -50,8 +50,8 @@ export function ControlBar (props: {
   viewer: VIM.Viewer
   helpVisible: boolean
   setHelpVisible: (value: boolean) => void
-  sideContent: SideContent
-  setSideContent: (value: SideContent) => void
+  side: SideContent
+  toggleSide: (value: SideContent) => void
   toggleIsolation: () => void
   setCursor: (cursor: Cursor) => void
 }) {
@@ -344,32 +344,32 @@ function TabTools (
 function TabSettings (props: {
   helpVisible: boolean
   setHelpVisible: (value: boolean) => void
-  sideContent: SideContent
-  setSideContent: (value: SideContent) => void
+  side: SideContent
+  toggleSide: (value: SideContent) => void
 }) {
   const onHelpBtn = () => {
     props.setHelpVisible(!props.helpVisible)
   }
 
   const onTreeViewBtn = () => {
-    props.setSideContent(props.sideContent === 'bim' ? 'none' : 'bim')
+    props.toggleSide('bim')
   }
 
   const onSettingsBtn = () => {
-    props.setSideContent(props.sideContent === 'settings' ? 'none' : 'settings')
+    props.toggleSide('settings')
   }
 
   const btnTreeView = toggleButton(
     'Project Inspector',
     onTreeViewBtn,
     Icons.treeView,
-    () => props.sideContent === 'bim'
+    () => props.side === 'bim'
   )
   const btnSettings = toggleButton(
     'Settings',
     onSettingsBtn,
     Icons.settings,
-    () => props.sideContent === 'settings'
+    () => props.side === 'settings'
   )
   const btnHelp = toggleButton(
     'Help',

@@ -133,7 +133,7 @@ export function VimComponent (props: {
   const useLoading = props.loading === undefined ? true : props.loading
 
   const [helpVisible, setHelpVisible] = useState(false)
-  const [sideContent, setSideContent] = useState<SideContent>('bim')
+
   const [settings, setSettings] = useState(new ComponentSettings())
   const [toast, setToast] = useState<ToastConfig>()
   const [isolation, setIsolation] = useState<VIM.Object[]>()
@@ -141,7 +141,29 @@ export function VimComponent (props: {
 
   const toastTimeout = useRef<ReturnType<typeof setTimeout>>()
   const toastSpeed = useRef(0)
+
+  const [sideContent, setSideContent] = useState<SideContent[]>(['bim'])
   const sideContentRef = useRef(sideContent)
+
+  const toggleSide = (content: SideContent) => {
+    let r
+    const [A, B] = sideContentRef.current
+    if (!A && !B) r = [content]
+    else if (A === content && !B) r = []
+    else if (A !== content && !B) r = [A, content]
+    else if (A && B === content) r = [A]
+    else if (A && B !== content) r = [content]
+    sideContentRef.current = r
+    setSideContent(r)
+  }
+  const popSide = () => {
+    sideContentRef.current.pop()
+    setSideContent([...sideContentRef.current])
+  }
+  const getSideNav = () => {
+    return sideContentRef.current.length > 1 ? 'back' : 'close'
+  }
+
   const settingsRef = useRef(settings)
   const [cursorManager] = useState(new CursorManager(props.viewer))
 
@@ -176,14 +198,6 @@ export function VimComponent (props: {
     sideContentRef.current = sideContent
   }, [sideContent])
 
-  const updateSide = () => {
-    const showBim =
-      props.viewer.selection.count > 0 && sideContentRef.current === 'none'
-    if (showBim) {
-      setSideContent('bim')
-    }
-  }
-
   // On first render
   useEffect(() => {
     props.onMount()
@@ -208,12 +222,20 @@ export function VimComponent (props: {
       }
     })
 
-    props.viewer.selection.onValueChanged.subscribe(() => updateSide())
+    props.viewer.selection.onValueChanged.subscribe(() => {
+      const last = sideContentRef.current[sideContentRef.current.length - 1]
+      if (props.viewer.selection.count > 0 && last !== 'bim') {
+        sideContentRef.current = ['bim']
+        setSideContent(['bim'])
+      }
+    })
+
     props.viewer.inputs.strategy = new ComponentInputStrategy(props.viewer)
   }, [])
 
   const getSidePanelContent = () => {
-    switch (sideContent) {
+    const last = sideContent[sideContent.length - 1]
+    switch (last) {
       case 'bim':
         return <BimPanel viewer={props.viewer} />
       case 'settings':
@@ -244,15 +266,20 @@ export function VimComponent (props: {
           viewer={props.viewer}
           helpVisible={helpVisible}
           setHelpVisible={setHelpVisible}
-          sideContent={sideContent}
-          setSideContent={setSideContent}
+          side={sideContent[sideContent.length - 1]}
+          toggleSide={toggleSide}
           toggleIsolation={toggleIsolation}
           setCursor={cursorManager.setCursor}
         />
           )
         : null}
       {useMenuTop ? <MenuTop viewer={props.viewer} /> : null}
-      <SidePanel viewer={props.viewer} content={getSidePanelContent} />
+      <SidePanel
+        viewer={props.viewer}
+        content={getSidePanelContent}
+        popSide={popSide}
+        getSideNav={getSideNav}
+      />
       <ReactTooltip delayShow={200} />
       <VimContextMenu
         viewer={props.viewer}

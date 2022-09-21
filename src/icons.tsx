@@ -128,6 +128,18 @@ export const collapse = ({ height, width, fill, className }) => (
   </svg>
 )
 
+export const arrowLeft = ({ height, width, fill }) => (
+  <svg height={height} width={width} viewBox="0 0 256 256">
+    <path fill="none" d="M0 0h256v256H0z" />
+    <circle cx="128" cy="32" r="16" />
+    <circle cx="128" cy="224" r="16" />
+    <path
+      fill={fill}
+      d="M224 112H70.627l68.686-68.686c6.249-6.248 6.249-16.379 0-22.627-6.248-6.248-16.379-6.248-22.627 0l-95.999 95.999C17.791 119.582 16 123.582 16 128s1.791 8.418 4.687 11.314l96 96c6.248 6.248 16.379 6.248 22.627 0 6.249-6.248 6.249-16.379 0-22.627l-68.686-68.686H224c8.836 0 16-7.164 16-16s-7.164-16-16-16Z"
+    />
+  </svg>
+)
+
 // Camera
 export const orbit = ({ height, width, fill }) => (
   <svg height={height} width={width} viewBox="0 0 256 256">

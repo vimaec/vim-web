@@ -94,7 +94,7 @@ function getElementBimHeader (info: VIM.ElementInfo): BimHeader {
 
 function getVimBimHeader (vim: VIM.Vim): BimHeader {
   return [
-    [['Document', vim.source, 'w-3/12', 'w-9/12']],
+    [['Document', formatSource(vim.source), 'w-3/12', 'w-9/12']],
     [['Created on', vim.document.header.created, 'w-3/12', 'w-9/12']],
     [['Created by', vim.document.header.generator, 'w-3/12', 'w-9/12']],
     undefined,
@@ -117,4 +117,10 @@ function getVimBimHeader (vim: VIM.Vim): BimHeader {
       ['Revit Files', /* revit >= 0 ? revit : */ 'N/A', 'w-3/12', 'w-3/12']
     ]
   ]
+}
+
+function formatSource (source: string) {
+  console.log(source)
+  const parts = source.split('/')
+  return parts[parts.length - 1]
 }

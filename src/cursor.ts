@@ -44,6 +44,12 @@ export class CursorManager {
     this._viewer.inputs.onPointerOverrideChanged.subscribe(() =>
       this.updateCursor()
     )
+    this._viewer.sectionBox.onStateChanged.subscribe(() => {
+      if (!this._viewer.sectionBox.visible) {
+        this._boxHover = false
+        this.updateCursor()
+      }
+    })
     this._viewer.sectionBox.onHover.subscribe((hover) => {
       this._boxHover = hover
       this.updateCursor()
