@@ -1,20 +1,21 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 
 export function SidePanel (props: {
   viewer: VIM.Viewer
   content: () => JSX.Element
 }) {
+  const [visible, setVisible] = useState(false)
   const content = props.content()
-  const visible = content !== null
+  if (!!content !== visible) setVisible(!!content)
 
   // Resize canvas when panel opens/closes.
-  resizeCanvas(props.viewer, visible)
-  if (!visible) {
+  useEffect(() => {
     props.viewer.viewport.canvas.focus()
-    return null
-  }
+    resizeCanvas(props.viewer, visible)
+  }, [visible])
 
+  if (!visible) return null
   return (
     <div className="vim-bim-panel fixed left-0 top-0 bg-gray-lightest p-6 text-gray-darker h-full">
       {props.content()}
