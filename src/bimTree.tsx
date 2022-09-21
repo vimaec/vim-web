@@ -29,13 +29,11 @@ export const isControlKey = (e: React.MouseEvent<any, any>) => {
 export function BimTree (props: {
   viewer: VIM.Viewer
   elements: VIM.ElementInfo[]
-  filter: string
   objects: VIM.Object[]
 }) {
   // Data state
   const [objects, setObjects] = useState<VIM.Object[]>([])
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
-  const [filter, setFilter] = useState<string>()
   const [tree, setTree] = useState<BimTreeData>()
   const treeRef = useRef(tree)
 
@@ -71,13 +69,9 @@ export function BimTree (props: {
   }, [tree, objects])
 
   // Generate or regenerate tree as needed.
-  if (
-    props.elements &&
-    (props.elements !== elements || props.filter !== filter)
-  ) {
-    setFilter(props.filter)
+  if (props.elements && props.elements !== elements) {
     setElements(props.elements)
-    toTreeData(props.elements, props.filter).then((t) => setTree(t))
+    toTreeData(props.elements).then((t) => setTree(t))
   }
 
   // Display loading until tree is ready.
@@ -300,20 +294,10 @@ function ArrayIsSame<T> (first: T[], second: T[]) {
   )
 }
 
-export async function toTreeData (elements: VIM.ElementInfo[], filter: string) {
+export async function toTreeData (elements: VIM.ElementInfo[]) {
   if (!document) return
 
-  const filterLower = filter.toLocaleLowerCase()
-  const filtered = elements.filter(
-    (s) =>
-      s.id.toString().toLocaleLowerCase().includes(filterLower) ||
-      s.name.toLocaleLowerCase().includes(filterLower) ||
-      s.categoryName.toLocaleLowerCase().includes(filterLower) ||
-      s.familyName.toLocaleLowerCase().includes(filterLower) ||
-      s.familyTypeName.toLocaleLowerCase().includes(filterLower)
-  )
-
-  const tree = toMapTree(filtered, [
+  const tree = toMapTree(elements, [
     (e) => e.categoryName,
     (e) => e.familyName,
     (e) => e.familyTypeName

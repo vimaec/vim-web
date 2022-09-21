@@ -131,6 +131,13 @@ export const collapse = ({ height, width, fill, className }) => (
 export const arrowLeft = ({ height, width, fill }) => (
   <svg height={height} width={width} viewBox="0 0 256 256">
     <path fill="none" d="M0 0h256v256H0z" />
+    <path d="m161.905 202.207.019-.017c6.547-5.937 7.04-16.057 1.102-22.602L118.457 128l44.569-51.588c5.938-6.546 5.444-16.666-1.102-22.602l-.019-.017c-6.545-5.935-16.662-5.442-22.599 1.102l-54.33 62.348c-5.536 6.103-5.536 15.411 0 21.514l54.33 62.348c5.936 6.544 16.054 7.038 22.599 1.102Z" />
+  </svg>
+)
+
+export const fullArrowLeft = ({ height, width, fill }) => (
+  <svg height={height} width={width} viewBox="0 0 256 256">
+    <path fill="none" d="M0 0h256v256H0z" />
     <circle cx="128" cy="32" r="16" />
     <circle cx="128" cy="224" r="16" />
     <path

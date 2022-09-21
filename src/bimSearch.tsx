@@ -5,6 +5,7 @@ export function BimSearch (props: {
   viewer: VIM.Viewer
   filter: string
   setFilter: (s: string) => void
+  count: number
 }) {
   // console.log('Render BimSearch Init')
 
@@ -45,6 +46,13 @@ export function BimSearch (props: {
         onBlur={onBlur}
         onChange={onChange}
       />
+      {props.count !== undefined && props.filter
+        ? (
+        <span className="vim-bim-search-count rounded-full bg-light-blue px-2">
+          {props.count}
+        </span>
+          )
+        : null}
     </div>
   )
 }
