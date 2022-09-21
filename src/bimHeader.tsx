@@ -52,32 +52,26 @@ export function BimDocumentHeader (props: { vim: VIM.Vim }) {
 }
 
 function createHeader (header: BimHeader) {
-  const rows = header.map((row, index) => {
-    if (!row) return undefined
-    return (
-      <>
-        {row.map((pair) => {
-          return (
-            <>
-              <dt
-                data-tip={pair[1]}
-                className={'text-gray-medium py-1 truncate ' + pair[2]}
-                key={'main-th' + index}
-              >
-                {pair[0]}
-              </dt>
-              <dd
-                data-tip={pair[1]}
-                className={'py-1 truncate ' + pair[3]}
-                key={'main-td' + index}
-              >
-                {pair[1]}
-              </dd>
-            </>
-          )
-        })}
-      </>
-    )
+  const rows = header.map((row, rowIndex) => {
+    if (!row) return null
+    return row.map((pair, columnIndex) => {
+      return [
+        <dt
+          data-tip={pair[1]}
+          className={'text-gray-medium py-1 truncate ' + pair[2]}
+          key={`dt-${rowIndex}-${columnIndex}`}
+        >
+          {pair[0]}
+        </dt>,
+        <dd
+          data-tip={pair[1]}
+          className={'py-1 truncate ' + pair[3]}
+          key={`dd-${rowIndex}-${columnIndex}`}
+        >
+          {pair[1]}
+        </dd>
+      ]
+    })
   })
 
   return (
