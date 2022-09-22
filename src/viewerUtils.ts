@@ -16,6 +16,15 @@ export function frameContext (viewer: VIM.Viewer) {
   if (box) viewer.camera.frame(box, 'none', viewer.camera.defaultLerpDuration)
 }
 
+export function frameSelection (viewer: VIM.Viewer) {
+  if (viewer.selection.count === 0) return
+  const box = viewer.selection.getBoundingBox()
+
+  if (box && viewer.sectionBox.box.intersectsBox(box)) {
+    viewer.camera.frame(box, 'none', viewer.camera.defaultLerpDuration)
+  }
+}
+
 export function isolateSelection (
   viewer: VIM.Viewer,
   settings: ComponentSettings

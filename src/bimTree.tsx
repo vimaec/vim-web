@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ControlledTreeEnvironment,
   InteractionMode,
@@ -10,20 +10,12 @@ import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
 import { ElementInfo } from 'vim-webgl-viewer/'
 import { showContextMenu } from './contextMenu'
-import { frameContext } from './viewerUtils'
+import { frameContext, frameSelection } from './viewerUtils'
 import { MapTree, sort, toMapTree } from './data'
 
 type VimTreeNode = TreeItem<ElementInfo> & {
   title: string
   parent: number
-}
-
-// Taken from https://github.com/lukasbach/react-complex-tree/blob/main/packages/core/src/isControlKey.ts
-export const isControlKey = (e: React.MouseEvent<any, any>) => {
-  return (
-    e.ctrlKey ||
-    (navigator.platform.toUpperCase().indexOf('MAC') >= 0 && e.metaKey)
-  )
 }
 
 export function BimTree (props: {
@@ -34,44 +26,32 @@ export function BimTree (props: {
   // Data state
   const [objects, setObjects] = useState<VIM.Object[]>([])
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
-  const [tree, setTree] = useState<BimTreeData>()
-  const treeRef = useRef(tree)
+  const tree = useMemo(() => toTreeData(props.elements), [elements])
 
   // Tree state
   const [expandedItems, setExpandedItems] = useState<number[]>([])
   const [selectedItems, setSelectedItems] = useState<number[]>([])
   const [focusedItem, setFocusedItem] = useState<number>()
+  const [doubleClick] = useState(new DoubleClickManager())
   const focus = useRef<number>(0)
   const div = useRef<HTMLDivElement>()
 
-  // Double click state
-  const [lastClick, setLastClick] = useState<{ time: number; index: number }>({
-    time: 0,
-    index: -1
-  })
-
-  // Keep tree ref for closures
-  useEffect(() => {
-    treeRef.current = tree
-  }, [tree])
-
   useEffect(() => {
     ReactTooltip.rebuild()
-  }, [expandedItems, tree])
+  }, [expandedItems, elements])
 
   // Scroll view so that element is visible, if needed.
   useEffect(() => {
-    if (tree && objects.length === 1) {
+    if (elements && objects.length === 1) {
       scrollToSelection(div.current)
       const [first] = props.viewer.selection.objects
       focus.current = tree.getNode(first.element)
     }
-  }, [tree, objects])
+  }, [elements, objects])
 
   // Generate or regenerate tree as needed.
   if (props.elements && props.elements !== elements) {
     setElements(props.elements)
-    toTreeData(props.elements).then((t) => setTree(t))
   }
 
   // Display loading until tree is ready.
@@ -95,42 +75,13 @@ export function BimTree (props: {
     setSelectedItems(selection)
   }
 
-  const onFocus = () => {
-    props.viewer.inputs.keyboard.unregister()
-  }
-
-  const onBlur = () => {
-    props.viewer.inputs.keyboard.register()
-  }
-
-  const checkForDoubleClick = (node: number) => {
-    const time = new Date().getTime()
-    if (lastClick.index === node && time - lastClick.time < 200) {
-      OnDoubleClick()
-      setLastClick({ time: 0, index: -1 })
-    } else {
-      setLastClick({ time: new Date().getTime(), index: node as number })
-    }
-  }
-
-  const OnDoubleClick = () => {
-    const box = props.viewer.selection.getBoundingBox()
-    if (props.viewer.sectionBox.box.containsBox(box)) {
-      props.viewer.camera.frame(
-        props.viewer.selection.getBoundingBox(),
-        'none',
-        props.viewer.camera.defaultLerpDuration
-      )
-    }
-  }
-
   return (
     <div
       className="vim-bim-tree mb-5"
       ref={div}
       tabIndex={0}
-      onFocus={onFocus}
-      onBlur={onBlur}
+      onFocus={() => props.viewer.inputs.keyboard.unregister()}
+      onBlur={() => props.viewer.inputs.keyboard.register()}
     >
       <ControlledTreeEnvironment
         items={tree.nodes}
@@ -170,38 +121,20 @@ export function BimTree (props: {
             },
             onClick: (e) => {
               if (e.shiftKey) {
-                const range = treeRef.current.getRange(
-                  focus.current,
-                  item.index as number
-                )
-                updateViewerSelection(
-                  treeRef.current,
-                  props.viewer,
-                  range,
-                  'set'
-                )
+                const range = tree.getRange(focus.current, item.index as number)
+                updateViewerSelection(tree, props.viewer, range, 'set')
               } else if (isControlKey(e)) {
                 if (renderFlags.isSelected) {
-                  const leafs = treeRef.current.getLeafs(item.index as number)
-                  updateViewerSelection(
-                    treeRef.current,
-                    props.viewer,
-                    leafs,
-                    'remove'
-                  )
+                  const leafs = tree.getLeafs(item.index as number)
+                  updateViewerSelection(tree, props.viewer, leafs, 'remove')
                   focus.current = item.index as number
                 } else {
-                  const leafs = treeRef.current.getLeafs(item.index as number)
-                  updateViewerSelection(
-                    treeRef.current,
-                    props.viewer,
-                    leafs,
-                    'add'
-                  )
+                  const leafs = tree.getLeafs(item.index as number)
+                  updateViewerSelection(tree, props.viewer, leafs, 'add')
                   focus.current = item.index as number
                 }
               } else {
-                const leafs = treeRef.current.getLeafs(item.index as number)
+                const leafs = tree.getLeafs(item.index as number)
                 updateViewerSelection(tree, props.viewer, leafs, 'set')
                 focus.current = item.index as number
               }
@@ -212,7 +145,9 @@ export function BimTree (props: {
         }}
         // Impement double click
         onPrimaryAction={(item, _) => {
-          checkForDoubleClick(item.index as number)
+          if (doubleClick.isDoubleClick(item.index as number)) {
+            frameSelection(props.viewer)
+          }
         }}
         // Default behavior
         onFocusItem={(item) => {
@@ -294,8 +229,8 @@ function ArrayIsSame<T> (first: T[], second: T[]) {
   )
 }
 
-export async function toTreeData (elements: VIM.ElementInfo[]) {
-  if (!document) return
+export function toTreeData (elements: VIM.ElementInfo[]) {
+  if (!elements) return
 
   const tree = toMapTree(elements, [
     (e) => e.categoryName,
@@ -456,6 +391,32 @@ export class BimTreeData {
   }
 }
 
+// Taken from https://github.com/lukasbach/react-complex-tree/blob/main/packages/core/src/isControlKey.ts
+export const isControlKey = (e: React.MouseEvent<any, any>) => {
+  return (
+    e.ctrlKey ||
+    (navigator.platform.toUpperCase().indexOf('MAC') >= 0 && e.metaKey)
+  )
+}
+
 function range (size: number, startAt = 0) {
   return [...Array(size).keys()].map((i) => i + startAt)
+}
+
+class DoubleClickManager {
+  private _lastTime: number
+  private _lastTarget: number
+
+  isDoubleClick = (target: number) => {
+    const time = new Date().getTime()
+    if (this._lastTarget === target && time - this._lastTime < 200) {
+      this._lastTarget = -1
+      this._lastTime = 0
+      return true
+    } else {
+      this._lastTarget = target
+      this._lastTime = new Date().getTime()
+      return false
+    }
+  }
 }
