@@ -41,7 +41,7 @@ export function BimPanel (props: { viewer: VIM.Viewer }) {
     if (nextVim && vim !== nextVim) {
       setVim(nextVim)
       nextVim.document.getElementsSummary().then((elements) => {
-        setElements(filterElements(nextVim, elements, filter))
+        setElements(elements)
       })
     }
   }
