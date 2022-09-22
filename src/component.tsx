@@ -24,7 +24,7 @@ import {
   getVisibleObjects,
   setAllVisible,
   toGhost
-} from './assets/utils/viewerUtils'
+} from './utils/viewerUtils'
 
 export * as VIM from 'vim-webgl-viewer/'
 export type SideContent = 'none' | 'bim' | 'settings'

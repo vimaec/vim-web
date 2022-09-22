@@ -3,7 +3,7 @@ import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
 import { SideContent } from './component'
 import { Cursor, pointerToCursor } from './helpers/cursor'
-import { frameContext } from './assets/utils/viewerUtils'
+import { frameContext } from './utils/viewerUtils'
 import * as Icons from './icons'
 
 // Shared Buttons style

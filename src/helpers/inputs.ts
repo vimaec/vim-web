@@ -1,6 +1,6 @@
 import * as VIM from 'vim-webgl-viewer/'
 import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycaster'
-import { getVisibleBoundingBox } from '../assets/utils/viewerUtils'
+import { getVisibleBoundingBox } from '../utils/viewerUtils'
 
 export class ComponentInputs implements VIM.InputStrategy {
   private _viewer: VIM.Viewer

@@ -1,5 +1,5 @@
 import * as VIM from 'vim-webgl-viewer/'
-import { ComponentSettings } from '../../component'
+import { Settings } from '../helpers/settings'
 
 /* Utils */
 export function resetCamera (viewer: VIM.Viewer) {
@@ -25,10 +25,7 @@ export function frameSelection (viewer: VIM.Viewer) {
   }
 }
 
-export function isolateSelection (
-  viewer: VIM.Viewer,
-  settings: ComponentSettings
-) {
+export function isolateSelection (viewer: VIM.Viewer, settings: Settings) {
   const set = new Set(viewer.selection.objects)
   const vim = viewer.selection.vim
   for (const obj of vim.getAllObjects()) {
@@ -45,7 +42,7 @@ export function isolateSelection (
   )
 }
 
-export function hideSelection (viewer: VIM.Viewer, settings: ComponentSettings) {
+export function hideSelection (viewer: VIM.Viewer, settings: Settings) {
   for (const obj of viewer.selection.objects) {
     obj.visible = false
   }
@@ -58,7 +55,7 @@ export function hideSelection (viewer: VIM.Viewer, settings: ComponentSettings) 
   viewer.selection.clear()
 }
 
-export function showAll (viewer: VIM.Viewer, settings: ComponentSettings) {
+export function showAll (viewer: VIM.Viewer, settings: Settings) {
   viewer.vims.forEach((v) => {
     for (const obj of v.getAllObjects()) {
       obj.visible = true

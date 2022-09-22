@@ -12,7 +12,7 @@ import {
   isolateSelection,
   resetCamera,
   showAll
-} from './assets/utils/viewerUtils'
+} from './utils/viewerUtils'
 
 export const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
 type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
