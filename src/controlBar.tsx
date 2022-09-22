@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
 import { SideContent } from './component'
-import { Cursor, pointerToCursor } from './cursor'
-import { frameContext } from './viewerUtils'
+import { Cursor, pointerToCursor } from './helpers/cursor'
+import { frameContext } from './assets/utils/viewerUtils'
 import * as Icons from './icons'
 
 // Shared Buttons style

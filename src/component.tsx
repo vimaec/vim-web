@@ -16,15 +16,15 @@ import { SidePanel } from './menuSide'
 import { MenuSettings } from './menuSettings'
 import { MenuToast } from './menuToast'
 
-import { ComponentInputs } from './inputs'
-import { CursorManager } from './cursor'
-import { Settings } from './settings'
+import { ComponentInputs } from './helpers/inputs'
+import { CursorManager } from './helpers/cursor'
+import { Settings } from './helpers/settings'
 import {
   getAllVisible,
   getVisibleObjects,
   setAllVisible,
   toGhost
-} from './viewerUtils'
+} from './assets/utils/viewerUtils'
 
 export * as VIM from 'vim-webgl-viewer/'
 export type SideContent = 'none' | 'bim' | 'settings'

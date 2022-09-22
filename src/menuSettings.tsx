@@ -1,6 +1,6 @@
 import React from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { Settings } from './settings'
+import { Settings } from './helpers/settings'
 
 export function MenuSettings (props: {
   viewer: VIM.Viewer

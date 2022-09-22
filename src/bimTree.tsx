@@ -10,8 +10,8 @@ import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
 import { ElementInfo } from 'vim-webgl-viewer/'
 import { showContextMenu } from './contextMenu'
-import { frameContext, frameSelection } from './viewerUtils'
-import { MapTree, sort, toMapTree } from './data'
+import { frameContext, frameSelection } from './assets/utils/viewerUtils'
+import { MapTree, sort, toMapTree } from './assets/utils/dataUtils'
 
 type VimTreeNode = TreeItem<ElementInfo> & {
   title: string

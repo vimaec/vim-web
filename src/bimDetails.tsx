@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
-import { groupBy } from './data'
+import { groupBy } from './assets/utils/dataUtils'
 import * as Icons from './icons'
 
 export type TableEntry = { name: string; value: string; group: string }

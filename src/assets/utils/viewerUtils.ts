@@ -1,5 +1,5 @@
 import * as VIM from 'vim-webgl-viewer/'
-import { ComponentSettings } from './component'
+import { ComponentSettings } from '../../component'
 
 /* Utils */
 export function resetCamera (viewer: VIM.Viewer) {
