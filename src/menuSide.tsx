@@ -1,28 +1,24 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import * as Icons from './icons'
 
 export function SidePanel (props: {
   viewer: VIM.Viewer
-  content: () => JSX.Element
+  content: JSX.Element
   popSide: () => void
   getSideNav: () => 'back' | 'close'
 }) {
-  const [visible, setVisible] = useState(false)
-  const content = props.content()
-  if (!!content !== visible) setVisible(!!content)
-
   // Resize canvas when panel opens/closes.
   useEffect(() => {
     props.viewer.viewport.canvas.focus()
-    resizeCanvas(props.viewer, visible)
-  }, [visible])
+    resizeCanvas(props.viewer, !!props.content)
+  })
 
   const onNavBtn = () => {
     props.popSide()
   }
 
-  if (!visible) return null
+  if (!props.content) return null
   const iconOptions = { height: '20', width: '20', fill: 'currentColor' }
   return (
     <div className="vim-side-panel fixed left-0 top-0 bg-gray-lightest p-6 text-gray-darker h-full">
@@ -34,7 +30,7 @@ export function SidePanel (props: {
           ? Icons.arrowLeft(iconOptions)
           : Icons.close(iconOptions)}
       </button>
-      {props.content()}
+      {props.content}
     </div>
   )
 }

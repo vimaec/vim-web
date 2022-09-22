@@ -17,11 +17,11 @@ const toggleButton = (
   icon: ({ height, width, fill }) => JSX.Element,
   isOn: () => boolean
 ) => {
-  const style = isOn()
+  const fillColor = isOn()
     ? 'rounded-full text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-primary'
     : 'rounded-full text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-gray-medium'
   return (
-    <button data-tip={tip} onClick={action} className={style} type="button">
+    <button data-tip={tip} onClick={action} className={fillColor} type="button">
       {icon({ height: '20', width: '20', fill: 'currentColor' })}
     </button>
   )

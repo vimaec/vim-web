@@ -1,11 +1,11 @@
 import React from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { ComponentSettings } from './component'
+import { Settings } from './settings'
 
 export function MenuSettings (props: {
   viewer: VIM.Viewer
-  settings: ComponentSettings
-  setSettings: (value: ComponentSettings) => void
+  settings: Settings
+  setSettings: (value: Settings) => void
 }) {
   const toggleElement = (label: string, state: boolean, action: () => void) => {
     return (
@@ -24,8 +24,8 @@ export function MenuSettings (props: {
 
   const settingsToggle = (
     label: string,
-    getter: (settings: ComponentSettings) => boolean,
-    setter: (settings: ComponentSettings, b: boolean) => void
+    getter: (settings: Settings) => boolean,
+    setter: (settings: Settings, b: boolean) => void
   ) => {
     return toggleElement(label, getter(props.settings), () => {
       setter(next, !getter(next))
@@ -53,4 +53,38 @@ export function MenuSettings (props: {
       )}
     </>
   )
+}
+
+export function applySettings (viewer: VIM.Viewer, settings: Settings) {
+  // Show/Hide performance gizmo
+  const performance = document.getElementsByClassName('vim-performance')[0]
+  if (performance) {
+    if (settings.showPerformance) {
+      performance.classList.remove('hidden')
+    } else {
+      performance.classList.add('hidden')
+    }
+  }
+
+  // Isolation material
+  viewer.vims.forEach((v) => {
+    if (!settings.useIsolationMaterial) {
+      v.scene.material = undefined
+      return
+    }
+
+    let hidden = false
+    for (const obj of v.getAllObjects()) {
+      if (!obj.visible) {
+        hidden = true
+        break
+      }
+    }
+    if (hidden) {
+      v.scene.material = viewer.renderer.materials.isolation
+    }
+
+    // Don't show ground plane when isolation is on.
+    viewer.environment.groundPlane.visible = settings.showGroundPlane
+  })
 }

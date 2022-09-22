@@ -7,8 +7,6 @@ export function BimSearch (props: {
   setFilter: (s: string) => void
   count: number
 }) {
-  // console.log('Render BimSearch Init')
-
   const onChange = (e: React.FormEvent<HTMLInputElement>) => {
     props.setFilter(e.currentTarget.value)
   }
@@ -21,7 +19,6 @@ export function BimSearch (props: {
     props.viewer.inputs.keyboard.register()
   }
 
-  console.log('Render BimSearch Done')
   return (
     <div className="vim-bim-search mb-4 flex">
       <svg

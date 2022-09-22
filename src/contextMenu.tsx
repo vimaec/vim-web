@@ -1,7 +1,7 @@
-import { ContextMenu, MenuItem } from '@firefox-devtools/react-contextmenu'
+import { ContextMenu, MenuItem, showMenu } from '@firefox-devtools/react-contextmenu'
 import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { ComponentSettings } from './component'
+import { Settings } from './settings'
 import {
   frameContext,
   hideSelection,
@@ -13,9 +13,19 @@ import {
 export const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
 type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
 
+export function showContextMenu (position: { x: number; y: number }) {
+  const showMenuConfig = {
+    position: { x: position.x, y: position.y },
+    target: window,
+    id: VIM_CONTEXT_MENU_ID
+  }
+
+  showMenu(showMenuConfig)
+}
+
 export function VimContextMenu (props: {
   viewer: VIM.Viewer
-  settings: ComponentSettings
+  settings: Settings
   helpVisible: boolean
   setHelpVisible: (value: boolean) => void
   resetIsolation: () => void
