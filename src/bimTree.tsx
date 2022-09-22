@@ -11,7 +11,7 @@ import * as VIM from 'vim-webgl-viewer/'
 import { ElementInfo } from 'vim-webgl-viewer/'
 import { showContextMenu } from './contextMenu'
 import { frameContext, frameSelection } from './utils/viewerUtils'
-import { MapTree, sort, toMapTree } from './/utils/dataUtils'
+import { MapTree, sort, toMapTree } from './utils/dataUtils'
 
 type VimTreeNode = TreeItem<ElementInfo> & {
   title: string

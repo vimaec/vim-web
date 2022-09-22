@@ -14,6 +14,10 @@ export function BimObjectHeader (props: {
   elements: VIM.ElementInfo[]
   object: VIM.Object
 }) {
+  useEffect(() => {
+    ReactTooltip.rebuild()
+  })
+
   if (!props.elements || !props.object) {
     return <div className="vim-bim-inspector">Loading . . .</div>
   }
@@ -28,10 +32,6 @@ export function BimObjectHeader (props: {
   if (!element) {
     return <div className="vim-bim-inspector">Could not find element.</div>
   }
-
-  useEffect(() => {
-    ReactTooltip.rebuild()
-  })
 
   return createHeader(getElementBimHeader(element))
 }
@@ -122,7 +122,6 @@ async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
 }
 
 function formatSource (source: string) {
-  console.log(source)
   const parts = source.split('/')
   return parts[parts.length - 1]
 }

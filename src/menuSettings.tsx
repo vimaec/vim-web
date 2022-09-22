@@ -3,10 +3,12 @@ import * as VIM from 'vim-webgl-viewer/'
 import { Settings } from './helpers/settings'
 
 export function MenuSettings (props: {
+  visible: boolean
   viewer: VIM.Viewer
   settings: Settings
   setSettings: (value: Settings) => void
 }) {
+  if (!props.visible) return null
   const toggleElement = (label: string, state: boolean, action: () => void) => {
     return (
       <label className="text-gray-warm m-1 w-max py-1 flex items-center select-none">

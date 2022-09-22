@@ -87,35 +87,37 @@ export function VimComponent (props: {
     cursorManager.register()
 
     props.viewer.inputs.onContextMenu = showContextMenu
-    viewer.onVimLoaded.subscribe(() => {
+    const sub1 = viewer.onVimLoaded.subscribe(() => {
       viewer.camera.frame('all', 45)
     })
 
-    props.viewer.selection.onValueChanged.subscribe(() => {
-      if (props.viewer.selection.count > 0 && side.getCurrent() !== 'bim') {
-        side.setSide(['bim'])
+    const sub2 = props.viewer.selection.onValueChanged.subscribe(() => {
+      if (props.viewer.selection.count > 0) {
+        side.set('bim')
       }
     })
 
     props.viewer.inputs.strategy = new ComponentInputs(props.viewer)
+
+    // dispose
+    return () => {
+      cursorManager.unregister()
+      sub1()
+      sub2()
+    }
   }, [])
 
-  // Select content of side panel
-  const last = side.getCurrent()
-  const sidePanel =
-    last === 'bim'
-      ? (
-      <BimPanel viewer={props.viewer} />
-        )
-      : last === 'settings'
-        ? (
+  const sidePanel = (
+    <>
+      <BimPanel viewer={props.viewer} visible={side.getCurrent() === 'bim'} />
       <MenuSettings
+        visible={side.getCurrent() === 'settings'}
         viewer={props.viewer}
         settings={settings}
         setSettings={setSettings}
       />
-          )
-        : null
+    </>
+  )
 
   return (
     <>
@@ -141,6 +143,7 @@ export function VimComponent (props: {
         : null}
       {useMenuTop ? <MenuTop viewer={props.viewer} /> : null}
       <SidePanel
+        visible={side.getCurrent() !== 'none'}
         viewer={props.viewer}
         content={sidePanel}
         popSide={side.pop}
@@ -175,11 +178,6 @@ function createSideState () {
   const [side, setSide] = useState<SideContent[]>(['bim'])
   const sideRef = useRef(side)
 
-  // On side content change
-  useEffect(() => {
-    sideRef.current = side
-  }, [side])
-
   const toggleSide = (content: SideContent) => {
     let r
     const [A, B] = sideRef.current
@@ -200,10 +198,15 @@ function createSideState () {
   }
 
   const getCurrent = () => {
-    return sideRef.current[sideRef.current.length - 1]
+    return sideRef.current[sideRef.current.length - 1] ?? 'none'
   }
 
-  return { getCurrent, setSide, toggleSide, pop, getNav }
+  const set = (value: SideContent) => {
+    sideRef.current = [value]
+    setSide([value])
+  }
+
+  return { set, getCurrent, toggleSide, pop, getNav }
 }
 
 function createIsolationState (viewer: VIM.Viewer) {

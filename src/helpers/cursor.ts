@@ -31,6 +31,7 @@ export class CursorManager {
   private _viewer: VIM.Viewer
   private cursor: Cursor
   private _boxHover: boolean
+  private _subscriptions: (() => void)[]
   constructor (viewer: VIM.Viewer) {
     this._viewer = viewer
   }
@@ -38,22 +39,28 @@ export class CursorManager {
   register () {
     // Update and Register cursor for pointers
     this.setCursor(pointerToCursor(this._viewer.inputs.pointerMode))
-    this._viewer.inputs.onPointerModeChanged.subscribe(() =>
+    const sub1 = this._viewer.inputs.onPointerModeChanged.subscribe(() =>
       this.updateCursor()
     )
-    this._viewer.inputs.onPointerOverrideChanged.subscribe(() =>
+    const sub2 = this._viewer.inputs.onPointerOverrideChanged.subscribe(() =>
       this.updateCursor()
     )
-    this._viewer.sectionBox.onStateChanged.subscribe(() => {
+    const sub3 = this._viewer.sectionBox.onStateChanged.subscribe(() => {
       if (!this._viewer.sectionBox.visible) {
         this._boxHover = false
         this.updateCursor()
       }
     })
-    this._viewer.sectionBox.onHover.subscribe((hover) => {
+    const sub4 = this._viewer.sectionBox.onHover.subscribe((hover) => {
       this._boxHover = hover
       this.updateCursor()
     })
+    this._subscriptions = [sub1, sub2, sub3, sub4]
+  }
+
+  unregister () {
+    this._subscriptions?.forEach((s) => s())
+    this._subscriptions = null
   }
 
   setCursor = (value: Cursor) => {

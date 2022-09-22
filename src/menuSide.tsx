@@ -3,6 +3,7 @@ import * as VIM from 'vim-webgl-viewer/'
 import * as Icons from './icons'
 
 export function SidePanel (props: {
+  visible: boolean
   viewer: VIM.Viewer
   content: JSX.Element
   popSide: () => void
@@ -11,17 +12,20 @@ export function SidePanel (props: {
   // Resize canvas when panel opens/closes.
   useEffect(() => {
     props.viewer.viewport.canvas.focus()
-    resizeCanvas(props.viewer, !!props.content)
+    resizeCanvas(props.viewer, props.visible)
   })
 
   const onNavBtn = () => {
     props.popSide()
   }
 
-  if (!props.content) return null
   const iconOptions = { height: '20', width: '20', fill: 'currentColor' }
   return (
-    <div className="vim-side-panel fixed left-0 top-0 bg-gray-lightest p-6 text-gray-darker h-full">
+    <div
+      className={`vim-side-panel fixed left-0 top-0 bg-gray-lightest p-6 text-gray-darker h-full ${
+        props.visible ? '' : 'hidden'
+      }`}
+    >
       <button
         className="vim-side-panel-nav absolute right-2 top-2"
         onClick={onNavBtn}
