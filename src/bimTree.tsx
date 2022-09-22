@@ -9,7 +9,8 @@ import 'react-complex-tree/lib/style.css'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
 import { ElementInfo } from 'vim-webgl-viewer/'
-import { frameContext, showContextMenu } from './component'
+import { showContextMenu } from './component'
+import { frameContext } from './viewerUtils'
 import { MapTree, sort, toMapTree } from './data'
 
 type VimTreeNode = TreeItem<ElementInfo> & {
@@ -28,20 +29,20 @@ export const isControlKey = (e: React.MouseEvent<any, any>) => {
 export function BimTree (props: {
   viewer: VIM.Viewer
   elements: VIM.ElementInfo[]
-  filter: string
   objects: VIM.Object[]
 }) {
   // Data state
   const [objects, setObjects] = useState<VIM.Object[]>([])
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
-  const [filter, setFilter] = useState<string>()
   const [tree, setTree] = useState<BimTreeData>()
+  const treeRef = useRef(tree)
 
   // Tree state
   const [expandedItems, setExpandedItems] = useState<number[]>([])
   const [selectedItems, setSelectedItems] = useState<number[]>([])
   const [focusedItem, setFocusedItem] = useState<number>()
   const focus = useRef<number>(0)
+  const div = useRef<HTMLDivElement>()
 
   // Double click state
   const [lastClick, setLastClick] = useState<{ time: number; index: number }>({
@@ -49,29 +50,29 @@ export function BimTree (props: {
     index: -1
   })
 
+  // Keep tree ref for closures
+  useEffect(() => {
+    treeRef.current = tree
+  }, [tree])
+
   useEffect(() => {
     ReactTooltip.rebuild()
   }, [expandedItems, tree])
 
-  // Generate or regenerate tree as needed.
-  if (
-    props.elements &&
-    (props.elements !== elements || props.filter !== filter)
-  ) {
-    setFilter(props.filter)
-    setElements(props.elements)
-    toTreeData(props.elements, props.filter).then((t) => setTree(t))
-  }
-
   // Scroll view so that element is visible, if needed.
-  const div = useRef<HTMLDivElement>()
   useEffect(() => {
-    if (props.viewer.selection.count === 1) {
+    if (tree && objects.length === 1) {
       scrollToSelection(div.current)
       const [first] = props.viewer.selection.objects
       focus.current = tree.getNode(first.element)
     }
-  }, [objects])
+  }, [tree, objects])
+
+  // Generate or regenerate tree as needed.
+  if (props.elements && props.elements !== elements) {
+    setElements(props.elements)
+    toTreeData(props.elements).then((t) => setTree(t))
+  }
 
   // Display loading until tree is ready.
   if (!tree) {
@@ -169,20 +170,38 @@ export function BimTree (props: {
             },
             onClick: (e) => {
               if (e.shiftKey) {
-                const range = tree.getRange(focus.current, item.index as number)
-                updateViewerSelection(tree, props.viewer, range, 'set')
+                const range = treeRef.current.getRange(
+                  focus.current,
+                  item.index as number
+                )
+                updateViewerSelection(
+                  treeRef.current,
+                  props.viewer,
+                  range,
+                  'set'
+                )
               } else if (isControlKey(e)) {
                 if (renderFlags.isSelected) {
-                  const leafs = tree.getLeafs(item.index as number)
-                  updateViewerSelection(tree, props.viewer, leafs, 'remove')
+                  const leafs = treeRef.current.getLeafs(item.index as number)
+                  updateViewerSelection(
+                    treeRef.current,
+                    props.viewer,
+                    leafs,
+                    'remove'
+                  )
                   focus.current = item.index as number
                 } else {
-                  const leafs = tree.getLeafs(item.index as number)
-                  updateViewerSelection(tree, props.viewer, leafs, 'add')
+                  const leafs = treeRef.current.getLeafs(item.index as number)
+                  updateViewerSelection(
+                    treeRef.current,
+                    props.viewer,
+                    leafs,
+                    'add'
+                  )
                   focus.current = item.index as number
                 }
               } else {
-                const leafs = tree.getLeafs(item.index as number)
+                const leafs = treeRef.current.getLeafs(item.index as number)
                 updateViewerSelection(tree, props.viewer, leafs, 'set')
                 focus.current = item.index as number
               }
@@ -275,19 +294,10 @@ function ArrayIsSame<T> (first: T[], second: T[]) {
   )
 }
 
-export async function toTreeData (elements: VIM.ElementInfo[], filter: string) {
+export async function toTreeData (elements: VIM.ElementInfo[]) {
   if (!document) return
 
-  const filterLower = filter.toLocaleLowerCase()
-  const filtered = elements.filter(
-    (s) =>
-      s.id.toString().toLocaleLowerCase().includes(filterLower) ||
-      s.name.toLocaleLowerCase().includes(filterLower) ||
-      s.categoryName.toLocaleLowerCase().includes(filterLower) ||
-      s.familyName.toLocaleLowerCase().includes(filterLower) ||
-      s.familyTypeName.toLocaleLowerCase().includes(filterLower)
-  )
-  const tree = toMapTree(filtered, [
+  const tree = toMapTree(elements, [
     (e) => e.categoryName,
     (e) => e.familyName,
     (e) => e.familyTypeName
@@ -387,11 +397,11 @@ export class BimTreeData {
   getAncestors (node: number) {
     const result: number[] = []
     let n = node
-    while (true) {
-      const current = this.nodes[n]
+    let current = this.nodes[n]
+    while (current) {
       result.push(n)
-      n = current.parent
-      if (!n) break
+      n = n = current.parent
+      current = this.nodes[n]
     }
     return result
   }

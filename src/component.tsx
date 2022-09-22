@@ -13,45 +13,22 @@ import { VimContextMenu, VIM_CONTEXT_MENU_ID } from './contextMenu'
 import { MenuHelp } from './menuHelp'
 import { SidePanel } from './menuSide'
 import { MenuSettings } from './menuSettings'
+import { MenuToast, ToastConfig } from './menuToast'
 
 import './style.css'
+import 'vim-webgl-viewer/dist/style.css'
 import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycaster'
+import {
+  getAllVisible,
+  getVisibleBoundingBox,
+  getVisibleObjects,
+  setAllVisible,
+  toGhost
+} from './viewerUtils'
+import { CursorManager } from './cursor'
 
 export * as VIM from 'vim-webgl-viewer/'
 export type SideContent = 'none' | 'bim' | 'settings'
-
-type ToastConfigSpeed = {
-  visible: boolean
-  speed: number
-}
-type ToastConfig = ToastConfigSpeed | undefined
-
-export type Cursor =
-  | 'cursor-regular'
-  | 'cursor-orbit'
-  | 'cursor-look'
-  | 'cursor-pan'
-  | 'cursor-zoom'
-  | 'cursor-rect'
-  | 'cursor-measure'
-  | 'cursor-section-box'
-
-export function pointerToCursor (pointer: VIM.PointerMode): Cursor {
-  switch (pointer) {
-    case 'orbit':
-      return 'cursor-orbit'
-    case 'look':
-      return 'cursor-look'
-    case 'pan':
-      return 'cursor-pan'
-    case 'zoom':
-      return 'cursor-zoom'
-    case 'rect':
-      return 'cursor-rect'
-    default:
-      return 'cursor-regular'
-  }
-}
 
 class ComponentInputStrategy implements VIM.InputStrategy {
   private _viewer: VIM.Viewer
@@ -89,13 +66,13 @@ class ComponentInputStrategy implements VIM.InputStrategy {
   }
 }
 
-export class Settings {
+export class ComponentSettings {
   useIsolationMaterial: boolean = true
   showGroundPlane: boolean = true
   showPerformance: boolean = true
 
   clone () {
-    return Object.assign(new Settings(), this) as Settings
+    return Object.assign(new ComponentSettings(), this) as ComponentSettings
   }
 }
 
@@ -112,6 +89,7 @@ export function createContainer (viewer: VIM.Viewer) {
   root.append(gfx)
 
   gfx.append(viewer.viewport.canvas)
+  gfx.append(viewer.viewport.text)
   gfx.append(viewer.axesCanvas)
 
   // container for ui
@@ -155,18 +133,39 @@ export function VimComponent (props: {
   const useLoading = props.loading === undefined ? true : props.loading
 
   const [helpVisible, setHelpVisible] = useState(false)
-  const [sideContent, setSideContent] = useState<SideContent>('bim')
-  const [settings, setSettings] = useState(new Settings())
+
+  const [settings, setSettings] = useState(new ComponentSettings())
   const [toast, setToast] = useState<ToastConfig>()
   const [isolation, setIsolation] = useState<VIM.Object[]>()
   const [hidden, setHidden] = useState(!getAllVisible(viewer))
 
   const toastTimeout = useRef<ReturnType<typeof setTimeout>>()
   const toastSpeed = useRef(0)
+
+  const [sideContent, setSideContent] = useState<SideContent[]>(['bim'])
   const sideContentRef = useRef(sideContent)
+
+  const toggleSide = (content: SideContent) => {
+    let r
+    const [A, B] = sideContentRef.current
+    if (!A && !B) r = [content]
+    else if (A === content && !B) r = []
+    else if (A !== content && !B) r = [A, content]
+    else if (A && B === content) r = [A]
+    else if (A && B !== content) r = [content]
+    sideContentRef.current = r
+    setSideContent(r)
+  }
+  const popSide = () => {
+    sideContentRef.current.pop()
+    setSideContent([...sideContentRef.current])
+  }
+  const getSideNav = () => {
+    return sideContentRef.current.length > 1 ? 'back' : 'close'
+  }
+
   const settingsRef = useRef(settings)
-  const cursor = useRef<Cursor>()
-  const boxHover = useRef<boolean>()
+  const [cursorManager] = useState(new CursorManager(props.viewer))
 
   const resetIsolation = () => {
     setIsolation(undefined)
@@ -199,45 +198,11 @@ export function VimComponent (props: {
     sideContentRef.current = sideContent
   }, [sideContent])
 
-  const updateSide = () => {
-    const showBim =
-      props.viewer.selection.count > 0 && sideContentRef.current === 'none'
-    if (showBim) {
-      setSideContent('bim')
-    }
-  }
-
-  const setCursor = (value: Cursor) => {
-    if (value === cursor.current) return
-    if (!cursor.current) {
-      viewer.viewport.canvas.classList.add(value)
-    } else {
-      viewer.viewport.canvas.classList.replace(cursor.current, value)
-    }
-    cursor.current = value
-  }
-
-  const updateCursor = () => {
-    const cursor = props.viewer.inputs.pointerOverride
-      ? pointerToCursor(props.viewer.inputs.pointerOverride)
-      : boxHover.current
-        ? 'cursor-section-box'
-        : pointerToCursor(props.viewer.inputs.pointerMode)
-    setCursor(cursor)
-  }
-
   // On first render
   useEffect(() => {
     props.onMount()
-
+    cursorManager.register()
     // Update and Register cursor for pointers
-    setCursor(pointerToCursor(props.viewer.inputs.pointerMode))
-    props.viewer.inputs.onPointerModeChanged.subscribe(updateCursor)
-    props.viewer.inputs.onPointerOverrideChanged.subscribe(updateCursor)
-    props.viewer.sectionBox.onHover.subscribe((hover) => {
-      boxHover.current = hover
-      updateCursor()
-    })
 
     props.viewer.inputs.onContextMenu = showContextMenu
     viewer.onVimLoaded.subscribe(() => {
@@ -257,12 +222,20 @@ export function VimComponent (props: {
       }
     })
 
-    props.viewer.selection.onValueChanged.subscribe(() => updateSide())
+    props.viewer.selection.onValueChanged.subscribe(() => {
+      const last = sideContentRef.current[sideContentRef.current.length - 1]
+      if (props.viewer.selection.count > 0 && last !== 'bim') {
+        sideContentRef.current = ['bim']
+        setSideContent(['bim'])
+      }
+    })
+
     props.viewer.inputs.strategy = new ComponentInputStrategy(props.viewer)
   }, [])
 
   const getSidePanelContent = () => {
-    switch (sideContent) {
+    const last = sideContent[sideContent.length - 1]
+    switch (last) {
       case 'bim':
         return <BimPanel viewer={props.viewer} />
       case 'settings':
@@ -293,15 +266,20 @@ export function VimComponent (props: {
           viewer={props.viewer}
           helpVisible={helpVisible}
           setHelpVisible={setHelpVisible}
-          sideContent={sideContent}
-          setSideContent={setSideContent}
+          side={sideContent[sideContent.length - 1]}
+          toggleSide={toggleSide}
           toggleIsolation={toggleIsolation}
-          setCursor={setCursor}
+          setCursor={cursorManager.setCursor}
         />
           )
         : null}
       {useMenuTop ? <MenuTop viewer={props.viewer} /> : null}
-      <SidePanel viewer={props.viewer} content={getSidePanelContent} />
+      <SidePanel
+        viewer={props.viewer}
+        content={getSidePanelContent}
+        popSide={popSide}
+        getSideNav={getSideNav}
+      />
       <ReactTooltip delayShow={200} />
       <VimContextMenu
         viewer={props.viewer}
@@ -327,7 +305,7 @@ function Logo () {
   )
 }
 
-function applySettings (viewer: VIM.Viewer, settings: Settings) {
+function applySettings (viewer: VIM.Viewer, settings: ComponentSettings) {
   // Show/Hide performance gizmo
   const performance = document.getElementsByClassName('vim-performance')[0]
   if (performance) {
@@ -359,183 +337,4 @@ function applySettings (viewer: VIM.Viewer, settings: Settings) {
     // Don't show ground plane when isolation is on.
     viewer.environment.groundPlane.visible = settings.showGroundPlane
   })
-}
-
-function MenuToast (props: { config: ToastConfig }) {
-  if (!props.config) return null
-
-  return (
-    <div
-      className={`vim-menu-toast rounded shadow-lg py-2 px-5 flex items-center justify-between transition-all ${
-        props.config.visible ? 'opacity-100' : 'opacity-0'
-      }`}
-    >
-      <span className="text-sm uppercase font-semibold text-gray-light">
-        Speed:
-      </span>
-      <span className="font-bold text-lg text-white ml-1">
-        {props.config.speed + 25}
-      </span>
-    </div>
-  )
-}
-
-/* Utils */
-export function resetCamera (viewer: VIM.Viewer) {
-  viewer.camera.reset()
-  viewer.camera.frame('all', 45)
-}
-
-export function frameContext (viewer: VIM.Viewer) {
-  const box =
-    viewer.selection.count > 0
-      ? viewer.selection.getBoundingBox()
-      : getVisibleBoundingBox(viewer)
-
-  viewer.camera.frame(box, 'none', viewer.camera.defaultLerpDuration)
-}
-
-export function isolateSelection (viewer: VIM.Viewer, settings: Settings) {
-  const set = new Set(viewer.selection.objects)
-  const vim = viewer.selection.vim
-  for (const obj of vim.getAllObjects()) {
-    obj.visible = set.has(obj)
-  }
-
-  vim.scene.material = settings.useIsolationMaterial
-    ? viewer.renderer.materials.isolation
-    : undefined
-  viewer.camera.frame(
-    getVisibleBoundingBox(vim),
-    'none',
-    viewer.camera.defaultLerpDuration
-  )
-}
-
-export function hideSelection (viewer: VIM.Viewer, settings: Settings) {
-  for (const obj of viewer.selection.objects) {
-    obj.visible = false
-  }
-
-  const vim = viewer.selection.vim
-  vim.scene.material = settings.useIsolationMaterial
-    ? viewer.renderer.materials.isolation
-    : undefined
-
-  viewer.selection.clear()
-}
-
-export function showAll (viewer: VIM.Viewer, settings: Settings) {
-  viewer.vims.forEach((v) => {
-    for (const obj of v.getAllObjects()) {
-      obj.visible = true
-    }
-    v.scene.material = undefined
-  })
-}
-
-export function toGhost (source: VIM.Viewer | VIM.Vim) {
-  const vimToGhost = (vim: VIM.Vim) => {
-    for (const obj of vim.getAllObjects()) {
-      obj.visible = false
-    }
-    vim.scene.material = vim.scene.builder.meshBuilder.materials.isolation
-  }
-  if (source instanceof VIM.Viewer) {
-    for (const vim of source.vims) {
-      vimToGhost(vim)
-    }
-  } else {
-    vimToGhost(source)
-  }
-}
-
-export function setAllVisible (source: VIM.Viewer | VIM.Vim) {
-  const vimShowAll = (vim: VIM.Vim) => {
-    for (const obj of vim.getAllObjects()) {
-      obj.visible = true
-    }
-    vim.scene.material = undefined
-  }
-  if (source instanceof VIM.Viewer) {
-    for (const vim of source.vims) {
-      vimShowAll(vim)
-    }
-  } else {
-    vimShowAll(source)
-  }
-}
-
-export function getVisibleObjects (source: VIM.Viewer | VIM.Vim) {
-  const all: VIM.Object[] = []
-  const vimAllObjects = (vim: VIM.Vim) => {
-    for (const obj of vim.getAllObjects()) {
-      if (obj.visible) {
-        all.push(obj)
-      }
-    }
-  }
-  if (source instanceof VIM.Viewer) {
-    for (const vim of source.vims) {
-      vimAllObjects(vim)
-    }
-  } else {
-    vimAllObjects(source)
-  }
-  return all
-}
-
-export function getObjects (source: VIM.Viewer | VIM.Vim) {
-  const all: VIM.Object[] = []
-  const vimAllObjects = (vim: VIM.Vim) => {
-    for (const obj of vim.getAllObjects()) {
-      all.push(obj)
-    }
-  }
-  if (source instanceof VIM.Viewer) {
-    for (const vim of source.vims) {
-      vimAllObjects(vim)
-    }
-  } else {
-    vimAllObjects(source)
-  }
-  return all
-}
-
-export function getAllVisible (source: VIM.Viewer | VIM.Vim) {
-  const vimAllVisible = (vim: VIM.Vim) => {
-    for (const obj of vim.getAllObjects()) {
-      if (!obj.visible) return false
-    }
-    return true
-  }
-  if (source instanceof VIM.Viewer) {
-    for (const vim of source.vims) {
-      if (!vimAllVisible(vim)) return false
-    }
-    return true
-  } else {
-    return vimAllVisible(source)
-  }
-}
-
-export function getVisibleBoundingBox (source: VIM.Viewer | VIM.Vim) {
-  let box: VIM.THREE.Box3
-
-  const vimBoxUnion = (vim: VIM.Vim) => {
-    for (const obj of vim.getAllObjects()) {
-      if (!obj.visible) continue
-      const b = obj.getBoundingBox()
-      box = box ? box.union(b) : b.clone()
-    }
-  }
-  if (source instanceof VIM.Viewer) {
-    for (const vim of source.vims) {
-      vimBoxUnion(vim)
-    }
-  } else {
-    vimBoxUnion(source)
-  }
-
-  return box
 }

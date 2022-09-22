@@ -39,6 +39,11 @@
 
   --c-white: #ffffff;
   --c-white-t50: rgba(255, 255, 255, 0.5);
+
+  --c-axe-x: #FD0202;
+  --c-axe-y: #11A936;
+  --c-axe-z: #0000F5;
+
 }
 
 body {
@@ -195,7 +200,7 @@ body {
 
 /* Bim Panel */
 
-.vim-bim-panel {
+.vim-side-panel {
   height: 100%;
   width: 480px;
 }
@@ -271,12 +276,29 @@ body {
 
 .rct-tree-item-li {
   font-size: 1rem;
+  position: relative;
 }
 .rct-tree-item-arrow {
   width: 20px;
 }
-.rct-tree-item-arrow svg {
-  width: 12px;
+.rct-tree-item-arrow:has(svg) svg path {
+  opacity: 0;
+  
+}
+.rct-tree-item-arrow:has(svg):before {
+  content: '';
+  background-image: url("data:image/svg+xml,%3Csvg id='Arrow' xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Crect id='frame' width='20' height='20' fill='%238a8d95' opacity='0'/%3E%3Cpath id='icon' d='M100.072,70.536l-3.987,3.987a.938.938,0,0,1-1.6-.663V65.886a.938.938,0,0,1,1.6-.663l3.987,3.987A.937.937,0,0,1,100.072,70.536Z' transform='translate(-87.104 -59.873)' fill='%238a8d95'/%3E%3C/svg%3E%0A");
+  height: 20px;
+  width: 20px;
+  position: relative;
+  display: block;
+  top: 8px;
+  left: -4px;
+  transition: .3s;
+}
+.rct-tree-item-title-container-expanded > .rct-tree-item-arrow::before {
+  transform: rotate(90deg);
+  transition: .3s;
 }
 .rct-tree-item-arrow-path {
   fill: var(--c-medium-gray);
@@ -292,6 +314,14 @@ body {
 .rct-tree-item-title-container:hover {
   background-color: var(--c-list-hover);
 }
+/* .rct-tree-item-li-expanded ul li > div::before {
+  content: '';
+  display: block;
+  position: absolute;
+  height: 100%;
+  width: 1px;
+  border-left: 1px solid var(--c-dark-gray-warm);
+} */
 [type='checkbox']:focus,
 [type='radio']:focus {
   outline: none;
@@ -322,4 +352,39 @@ body {
 }
 .cursor-section-box:hover {
   cursor: url('src/assets/cursors/cursor-section-box.svg'), auto;	
+}
+input[type=search]::-webkit-search-cancel-button{
+  -webkit-appearance: none;
+  height: 1rem;
+  width: 1rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16.25' height='16.25' viewBox='0 0 16.25 16.25'%3E%3Cpath id='icon' d='M32.125,24a8.125,8.125,0,1,0,8.125,8.125A8.125,8.125,0,0,0,32.125,24ZM35.6,34.275A.937.937,0,0,1,34.275,35.6l-2.15-2.15-2.15,2.15a.937.937,0,0,1-1.326-1.326l2.15-2.15-2.15-2.15a.937.937,0,0,1,1.326-1.326l2.15,2.15,2.15-2.15A.937.937,0,1,1,35.6,29.975l-2.15,2.15Z' transform='translate(-24 -24)' fill='%238a8d95'/%3E%3C/svg%3E%0A");
+}
+
+.vim-text-renderer .vim-measure {
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  border-radius: 2px;
+}
+.vim-text-renderer .vim-measure table tr {
+  border: none;
+}
+.vim-text-renderer .vim-measure-label-x {
+  background-color: var(--c-axe-x);
+  padding: .25rem .75rem;
+}
+.vim-text-renderer .vim-measure-label-y {
+  background-color: var(--c-axe-y);
+  padding: .25rem .75rem;
+}
+.vim-text-renderer .vim-measure-label-z {
+  background-color: var(--c-axe-z);
+  padding: .25rem .75rem;
+}
+.vim-text-renderer .vim-measure-label-d {
+  background-color: var(--c-darkest-gray);
+  padding: .25rem .75rem;
+}
+.vim-text-renderer .vim-measure:nth-of-type(5) table tr {
+  border: 1px solid var(--c-darkest-gray);
 }

@@ -13,6 +13,7 @@ export function BimPanel (props: { viewer: VIM.Viewer }) {
   const [objects, setObjects] = useState<VIM.Object[]>([])
   const [vim, setVim] = useState<VIM.Vim>()
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
+  const [filteredElements, setFilteredElements] = useState<VIM.ElementInfo[]>()
   const [open, setOpen] = useState<Map<string, boolean>>()
 
   // Open state is kept here to persist between panel open/close
@@ -39,14 +40,17 @@ export function BimPanel (props: { viewer: VIM.Viewer }) {
     const nextVim = viewer.selection.vim ?? viewer.vims[0]
     if (nextVim && vim !== nextVim) {
       setVim(nextVim)
-      nextVim.document.getElementsSummary().then((s) => {
-        const filtered = s.filter(
-          (s) => nextVim.getObjectFromElement(s.element).hasMesh
-        )
-        setElements(filtered)
+      nextVim.document.getElementsSummary().then((elements) => {
+        setElements(filterElements(nextVim, elements, filter))
       })
     }
   }
+
+  useEffect(() => {
+    if (vim && elements) {
+      setFilteredElements(filterElements(vim, elements, filter))
+    }
+  }, [filter, elements])
 
   // Register to selection
   useEffect(() => {
@@ -65,11 +69,15 @@ export function BimPanel (props: { viewer: VIM.Viewer }) {
     <>
       <div className="vim-bim-upper h-1/2">
         <h2 className="text-xs font-bold uppercase mb-6">Project Inspector</h2>
-        <BimSearch viewer={viewer} filter={filter} setFilter={updateFilter} />
+        <BimSearch
+          viewer={viewer}
+          filter={filter}
+          setFilter={updateFilter}
+          count={filteredElements?.length}
+        />
         <BimTree
           viewer={viewer}
-          elements={elements}
-          filter={filter}
+          elements={filteredElements}
           objects={objects}
         />
       </div>
@@ -79,7 +87,7 @@ export function BimPanel (props: { viewer: VIM.Viewer }) {
         {last
           ? (
           <>
-            <BimObjectHeader elements={elements} object={last} />
+            <BimObjectHeader elements={filteredElements} object={last} />
             <BimObjectDetails
               object={last}
               getOpen={getOpen}
@@ -102,4 +110,22 @@ export function BimPanel (props: { viewer: VIM.Viewer }) {
       </div>
     </>
   )
+}
+
+function filterElements (
+  vim: VIM.Vim,
+  elements: VIM.ElementInfo[],
+  filter: string
+) {
+  const filterLower = filter.toLocaleLowerCase()
+  const filtered = elements.filter(
+    (e) =>
+      vim.getObjectFromElement(e.element).hasMesh &&
+      (e.id.toString().toLocaleLowerCase().includes(filterLower) ||
+        e.name.toLocaleLowerCase().includes(filterLower) ||
+        e.categoryName.toLocaleLowerCase().includes(filterLower) ||
+        e.familyName.toLocaleLowerCase().includes(filterLower) ||
+        e.familyTypeName.toLocaleLowerCase().includes(filterLower))
+  )
+  return filtered
 }

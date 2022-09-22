@@ -68,14 +68,10 @@ export function BimDetails<T> (
   // console.log("Render BimParameters Done")
   return (
     <div className="vim-inspector-properties">
-      {details.map((d) => {
-        return (
-          <>
-            {createTables(d.section, d.content, getOpen, setOpen)}
-            <br />
-          </>
-        )
-      })}
+      {details.map((d, i) => [
+        createTables(d.section, d.content, getOpen, setOpen),
+        <br key={`br-${i}`} />
+      ])}
     </div>
   )
 }
@@ -96,14 +92,13 @@ function createTables (
       </h2>
     )
   }
-  return (
-    <>
-      {title ? createTitle(title) : null}
-      {Array.from(entries, (v, k) =>
-        createTable(v[0], v[1], getOpen(v[0]), (b) => setOpen(v[0], b))
-      )}
-    </>
-  )
+
+  return [
+    title ? createTitle(title) : null,
+    Array.from(entries, (v, k) =>
+      createTable(v[0], v[1], getOpen(v[0]), (b) => setOpen(v[0], b))
+    )
+  ]
 }
 
 function createTable (
