@@ -113,7 +113,7 @@ function createTable (
         <li key={'title-' + key}>
           <h3 className="text-xs font-bold uppercase bg-gray-light px-2 py-2 flex justify-between">
             <span className="w-1/2">{key}</span>
-            <button onClick={() => setOpen(!open)}>
+            <button className='text-gray-medium' onClick={() => setOpen(!open)}>
               {' '}
               {open
                 ? (
@@ -139,7 +139,7 @@ function createTable (
           ? entries.map((p, i) => {
             const id = key + p.name + i
             return (
-                <li className="odd:bg-white flex" key={'parameters-tr-' + id}>
+                <li className="even:bg-white odd:bg-gray-zebra flex" key={'parameters-tr-' + id}>
                   <span
                     data-tip={p.value}
                     className="w-1/2 border-r border-gray-light p-2 truncate"

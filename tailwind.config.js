@@ -25,6 +25,7 @@ module.exports = {
         cool: 'var(--c-dark-gray-cool)',
         medium: 'var(--c-medium-gray)',
         divider: 'var(--c-gray-divider)',
+        zebra: 'var(--c-gray-zebra)',
         light: 'var(--c-light-gray)',
         lighter: 'var(--c-lighter-gray)',
         lightest: 'var(--c-lightest-gray)'

@@ -20,7 +20,7 @@ export function BimSearch (props: {
   }
 
   return (
-    <div className="vim-bim-search mb-4 flex">
+    <div className="vim-bim-search mb-4 flex items-center">
       <svg
         className="text-gray-light -mr-4"
         xmlns="http://www.w3.org/2000/svg"
@@ -34,7 +34,7 @@ export function BimSearch (props: {
         />
       </svg>
       <input
-        className="w-full bg-transparent border-b border-t-0 border-l-0 border-r-0 border-gray-light outline-none focus:outline-none focus-within:outline-none focus-within:border-b-primary-royal placeholder-text-gray-medium py-1 px-6"
+        className="w-full bg-transparent border-b border-t-0 border-l-0 border-r-0 border-gray-light outline-none focus:outline-none focus-within:outline-none focus-within:border-b-primary-royal active:text-primary-royal focus-within:text-primary-royal placeholder-text-gray-medium py-1 pl-6"
         type="search"
         name="name"
         placeholder="Type here to search"
@@ -45,9 +45,9 @@ export function BimSearch (props: {
       />
       {props.count !== undefined && props.filter
         ? (
-        <span className="vim-bim-search-count rounded-full bg-light-blue px-2">
+        <div className="vim-bim-search-count rounded-full bg-primary-royal text-white text-xs font-bold py-1 px-2 absolute right-16">
           {props.count}
-        </span>
+        </div>
           )
         : null}
     </div>

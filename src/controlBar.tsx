@@ -17,11 +17,11 @@ const toggleButton = (
   icon: ({ height, width, fill }) => JSX.Element,
   isOn: () => boolean
 ) => {
-  const fillColor = isOn()
-    ? 'rounded-full text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-primary'
-    : 'rounded-full text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-gray-medium'
+  const style = isOn()
+    ? 'rounded-full h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-primary'
+    : 'rounded-full h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-gray-medium'
   return (
-    <button data-tip={tip} onClick={action} className={fillColor} type="button">
+    <button data-tip={tip} onClick={action} className={style} type="button">
       {icon({ height: '20', width: '20', fill: 'currentColor' })}
     </button>
   )
@@ -297,6 +297,7 @@ function TabTools (
   const measureTab = (
     <div className="vim-menu-section flex items-center bg-primary rounded-full px-2 mx-4 shadow-md">
       <div className="mx-1">{btnMeasureDelete}</div>
+      <div className="mx-1 py-1 bg-white/[.5] h-5 w-px"></div>
       <div className="mx-1">{btnMeasureConfirm}</div>
     </div>
   )
@@ -331,6 +332,7 @@ function TabTools (
       <div className="mx-1">
         {section.clip ? btnSectionNoClip : btnSectionClip}
       </div>
+      <div className="mx-1 py-1 bg-white/[.5] h-5 w-px"></div>
       <div className="mx-1">{btnSectionConfirm}</div>
     </div>
   )
