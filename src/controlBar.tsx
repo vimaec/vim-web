@@ -75,19 +75,21 @@ export function ControlBar (props: {
         show ? 'opacity-100' : 'opacity-0'
       }`}
     >
-      <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md">
+      <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md mx-2">
         {TabCamera(props.viewer)}
       </div>
-      <>{TabTools(props.viewer, props.toggleIsolation, props.setCursor)}</>
-      <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md">
+      <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md mx-2">
+        {TabActions(props.viewer, props.toggleIsolation)}
+      </div>
+      {TabTools(props.viewer, props.setCursor)}
+      <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md mx-2">
         {TabSettings(props)}
       </div>
     </div>
   )
 }
 
-function TabCamera (viewer: VIM.Viewer) {
-  const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerMode)
+function TabActions (viewer: VIM.Viewer, toggleIsolation: () => void) {
   const [fullScreen, setFullScreen] = useState<boolean>(
     !!document.fullscreenElement
   )
@@ -99,6 +101,52 @@ function TabCamera (viewer: VIM.Viewer) {
       setFullScreen(!!document.fullscreenElement)
     }
     refreshFullScreen()
+  }, [])
+
+  const onFrameBtn = () => {
+    frameContext(viewer)
+  }
+
+  const btnFrame = actionButton(
+    'Zoom to Fit',
+    onFrameBtn,
+    Icons.frameSelection,
+    false
+  )
+
+  const btnFullScreen = toggleButton(
+    'Fullscreen',
+    () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen()
+      } else {
+        document.body.requestFullscreen()
+      }
+    },
+    Icons.fullsScreen,
+    () => fullScreen
+  )
+
+  const btnIsolation = actionButton(
+    'Toggle Isolation',
+    toggleIsolation,
+    Icons.toggleIsolation,
+    false
+  )
+
+  return (
+    <>
+      <div className="mx-1">{btnFrame}</div>
+      <div className="mx-1">{btnFullScreen}</div>
+      <div className="mx-1">{btnIsolation}</div>
+    </>
+  )
+}
+
+function TabCamera (viewer: VIM.Viewer) {
+  const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerMode)
+
+  useEffect(() => {
     viewer.inputs.onPointerModeChanged.subscribe(() =>
       setMode(viewer.inputs.pointerMode)
     )
@@ -108,10 +156,6 @@ function TabCamera (viewer: VIM.Viewer) {
     const next = mode === target ? viewer.inputs.altPointerMode : target
     viewer.inputs.pointerMode = next
     setMode(next)
-  }
-
-  const onFrameBtn = () => {
-    frameContext(viewer)
   }
 
   // Camera
@@ -149,24 +193,6 @@ function TabCamera (viewer: VIM.Viewer) {
     Icons.frameRect,
     () => mode === 'rect'
   )
-  const btnFrame = actionButton(
-    'Zoom to Fit',
-    onFrameBtn,
-    Icons.frameSelection,
-    false
-  )
-  const btnFullScreen = toggleButton(
-    'Fullscreen',
-    () => {
-      if (document.fullscreenElement) {
-        document.exitFullscreen()
-      } else {
-        document.body.requestFullscreen()
-      }
-    },
-    Icons.fullsScreen,
-    () => fullScreen
-  )
 
   return (
     <>
@@ -175,18 +201,12 @@ function TabCamera (viewer: VIM.Viewer) {
       <div className="mx-1">{btnPan}</div>
       <div className="mx-1">{btnZoom}</div>
       <div className="mx-1">{btnFrameRect}</div>
-      <div className="mx-1">{btnFrame}</div>
-      <div className="mx-1">{btnFullScreen}</div>
     </>
   )
 }
 
 /* TAB TOOLS */
-function TabTools (
-  viewer: VIM.Viewer,
-  toggleIsolation: () => void,
-  setCursor: (cursor: Cursor) => void
-) {
+function TabTools (viewer: VIM.Viewer, setCursor: (cursor: Cursor) => void) {
   // Need a ref to get the up to date value in callback.
   const [measuring, setMeasuring] = useState(false)
   // eslint-disable-next-line no-unused-vars
@@ -263,23 +283,13 @@ function TabTools (
     onMeasureBtn()
   }
 
-  const onToggleIsolationBtn = () => {
-    toggleIsolation()
-    // viewer.camera.frame(getVisibleBoundingBox(viewer), 'none', viewer.camera.defaultLerpDuration)
-  }
-
   const btnSection = actionButton(
     'Sectioning Mode',
     onSectionBtn,
     Icons.sectionBox,
     false
   )
-  const btnIsolation = actionButton(
-    'Toggle Isolation',
-    onToggleIsolationBtn,
-    Icons.toggleIsolation,
-    false
-  )
+
   const btnMeasure = actionButton(
     'Measuring Mode',
     onMeasureBtn,
@@ -287,9 +297,9 @@ function TabTools (
     false
   )
   const toolsTab = (
-    <div className="vim-menu-section flex items-center bg-white rounded-full px-2 mx-4 shadow-md">
+    <div className="vim-menu-section flex items-center bg-white rounded-full px-2 mx-2 shadow-md">
       <div className="mx-1">{btnSection}</div>
-      <div className="mx-1">{btnIsolation}</div>
+
       <div className="mx-1">{btnMeasure}</div>
     </div>
   )
@@ -307,7 +317,7 @@ function TabTools (
     !!measuring
   )
   const measureTab = (
-    <div className="vim-menu-section flex items-center bg-primary rounded-full px-2 mx-4 shadow-md">
+    <div className="vim-menu-section flex items-center bg-primary rounded-full px-2 mx-2 shadow-md">
       <div className="mx-1">{btnMeasureDelete}</div>
       <div className="mx-1 py-1 bg-white/[.5] h-5 w-px"></div>
       <div className="mx-1">{btnMeasureConfirm}</div>
@@ -339,7 +349,7 @@ function TabTools (
     section.active
   )
   const sectionTab = (
-    <div className="vim-menu-section flex items-center bg-primary rounded-full px-2 mx-4 shadow-md">
+    <div className="vim-menu-section flex items-center bg-primary rounded-full px-2 mx-2 shadow-md">
       <div className="mx-1">{btnSectionDelete}</div>
       <div className="mx-1">
         {section.clip ? btnSectionNoClip : btnSectionClip}

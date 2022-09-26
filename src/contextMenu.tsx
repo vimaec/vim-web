@@ -122,6 +122,10 @@ export function VimContextMenu (props: {
     viewer.measure.abort()
   }
 
+  const onFitSectionToSelectionBtn = (e: ClickCallback) => {
+    viewer.sectionBox.fitBox(viewer.selection.getBoundingBox())
+  }
+
   const createButton = (
     label: string,
     keyboard: string,
@@ -202,6 +206,12 @@ export function VimContextMenu (props: {
           '',
           onSectionResetBtn,
           section.visible
+        )}
+        {createButton(
+          'Fit section box to selection',
+          '',
+          onFitSectionToSelectionBtn,
+          section.visible && hasSelection
         )}
       </ContextMenu>
     </div>

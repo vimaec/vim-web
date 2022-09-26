@@ -93,6 +93,16 @@ export function VimComponent (props: {
     applySettings(viewer, settings)
   }, [settings])
 
+  useEffect(() => {
+    const component = document.getElementsByClassName('vim-component')[0]
+    const behind = component.classList.contains('behind')
+    if (helpVisible && !behind) {
+      component.classList.add('behind')
+    } else if (!helpVisible && behind) {
+      component.classList.remove('behind')
+    }
+  }, [helpVisible])
+
   // On first render
   useEffect(() => {
     props.onMount()
