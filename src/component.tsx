@@ -23,6 +23,7 @@ import {
   getAllVisible,
   getVisibleObjects,
   setAllVisible,
+  setBehind,
   toGhost
 } from './utils/viewerUtils'
 
@@ -94,13 +95,7 @@ export function VimComponent (props: {
   }, [settings])
 
   useEffect(() => {
-    const component = document.getElementsByClassName('vim-component')[0]
-    const behind = component.classList.contains('behind')
-    if (helpVisible && !behind) {
-      component.classList.add('behind')
-    } else if (!helpVisible && behind) {
-      component.classList.remove('behind')
-    }
+    setBehind(helpVisible)
   }, [helpVisible])
 
   // On first render

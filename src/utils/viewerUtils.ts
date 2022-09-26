@@ -1,7 +1,16 @@
 import * as VIM from 'vim-webgl-viewer/'
 import { Settings } from '../helpers/settings'
 
-/* Utils */
+export function setBehind (value: boolean) {
+  const component = document.getElementsByClassName('vim-component')[0]
+  const behind = component.classList.contains('behind')
+  if (value && !behind) {
+    component.classList.add('behind')
+  } else if (!value && behind) {
+    component.classList.remove('behind')
+  }
+}
+
 export function resetCamera (viewer: VIM.Viewer) {
   viewer.camera.reset()
   viewer.camera.frame('all', 45)
