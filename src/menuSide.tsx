@@ -30,9 +30,7 @@ export function SidePanel (props: {
         className="vim-side-panel-nav absolute right-2 top-2"
         onClick={onNavBtn}
       >
-        {props.getSideNav() === 'back'
-          ? Icons.arrowLeft(iconOptions)
-          : Icons.close(iconOptions)}
+        {Icons.close(iconOptions)}
       </button>
       {props.content}
     </div>

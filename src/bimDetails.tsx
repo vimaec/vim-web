@@ -9,42 +9,21 @@ type BimDetailsInfo = { section: string; content: Map<string, TableEntry[]> }[]
 
 export function BimObjectDetails (props: {
   object: VIM.Object
-  getOpen: (s: string) => boolean
-  setOpen: (s: string, b: boolean) => void
-  initOpen: (s: string[]) => void
+  visible: boolean
 }) {
-  return BimDetails(
-    props.object,
-    getObjectParameterDetails,
-    props.getOpen,
-    props.setOpen,
-    props.initOpen
-  )
+  return BimDetails(props.object, getObjectParameterDetails, props.visible)
 }
 
-export function BimDocumentDetails (props: {
-  vim: VIM.Vim
-  getOpen: (s: string) => boolean
-  setOpen: (s: string, b: boolean) => void
-  initOpen: (s: string[]) => void
-}) {
-  return BimDetails(
-    props.vim,
-    getVimDocumentDetails,
-    props.getOpen,
-    props.setOpen,
-    props.initOpen
-  )
+export function BimDocumentDetails (props: { vim: VIM.Vim; visible: boolean }) {
+  return BimDetails(props.vim, getVimDocumentDetails, props.visible)
 }
 
 export function BimDetails<T> (
   input: T,
   toData: (v: T) => Promise<BimDetailsInfo>,
-  getOpen: (s: string) => boolean,
-  setOpen: (s: string, b: boolean) => void,
-  initOpen: (s: string[]) => void
+  visible: boolean
 ) {
-  // console.log("Render BimParameters Init")
+  const open = createOpenState()
   const [object, setObject] = useState<T>()
   const [details, setDetails] = useState<BimDetailsInfo>()
 
@@ -52,24 +31,24 @@ export function BimDetails<T> (
     ReactTooltip.rebuild()
   })
 
+  if (!visible) return null
+
   if (input !== object) {
     setObject(input)
     toData(input).then((data) => {
       setDetails(data)
-      initOpen(data.flatMap((d) => [...d.content.keys()]))
+      open.init(data.flatMap((d) => [...d.content.keys()]))
     })
   }
 
   if (!details) {
-    // console.log("Render BimParameters Loading")
     return <div className="vim-inspector-properties"> Loading . . .</div>
   }
 
-  // console.log("Render BimParameters Done")
   return (
     <div className="vim-inspector-properties">
       {details.map((d, i) => [
-        createTables(d.section, d.content, getOpen, setOpen),
+        createTables(d.section, d.content, open.get, open.set),
         <br key={`br-${i}`} />
       ])}
     </div>
@@ -202,6 +181,28 @@ async function getObjectParameterDetails (
     { section: 'Instance Properties', content: instance },
     { section: 'Type Properties', content: type }
   ]
+}
+
+function createOpenState () {
+  const [open, setOpen] = useState<Map<string, boolean>>()
+
+  // Open state is kept here to persist between panel open/close
+  const update = (group: string, value: boolean) => {
+    const next = new Map(open.entries()).set(group, value)
+    setOpen(next)
+  }
+
+  const init = (keys: string[]) => {
+    const map = new Map(open?.entries() ?? [])
+    keys.forEach((k) => {
+      if (!map.has(k)) map.set(k, true)
+    })
+    setOpen(map)
+  }
+
+  const get = (s: string) => open.get(s)
+
+  return { init, get, set: update }
 }
 
 // Custom rejected parameters provided by Sam

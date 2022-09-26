@@ -154,7 +154,6 @@ export function VimContextMenu (props: {
     <div
       className="vim-context-menu"
       onContextMenu={(e) => {
-        console.log('No menu')
         e.preventDefault()
       }}
     >

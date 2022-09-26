@@ -13,10 +13,13 @@ type BimHeader = BimHeaderEntry[][]
 export function BimObjectHeader (props: {
   elements: VIM.ElementInfo[]
   object: VIM.Object
+  visible: boolean
 }) {
   useEffect(() => {
     ReactTooltip.rebuild()
   })
+
+  if (!props.visible) return null
 
   if (!props.elements || !props.object) {
     return <div className="vim-bim-inspector">Loading . . .</div>
@@ -36,7 +39,7 @@ export function BimObjectHeader (props: {
   return createHeader(getElementBimHeader(element))
 }
 
-export function BimDocumentHeader (props: { vim: VIM.Vim }) {
+export function BimDocumentHeader (props: { vim: VIM.Vim; visible: boolean }) {
   const [vim, setVim] = useState<VIM.Vim>()
   const [header, setHeader] = useState<BimHeader>()
 
@@ -44,6 +47,9 @@ export function BimDocumentHeader (props: { vim: VIM.Vim }) {
     setVim(props.vim)
     getVimBimHeader(props.vim).then((h) => setHeader(h))
   }
+
+  if (!props.visible) return null
+
   if (!header) {
     return <>Loading...</>
   }

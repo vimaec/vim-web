@@ -26,7 +26,11 @@ export function BimTree (props: {
   // Data state
   const [objects, setObjects] = useState<VIM.Object[]>([])
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
-  const tree = useMemo(() => toTreeData(props.elements), [elements])
+  const treeRef = useRef<BimTreeData>()
+  const tree = useMemo(
+    () => (treeRef.current = toTreeData(props.elements)),
+    [elements]
+  )
 
   // Tree state
   const [expandedItems, setExpandedItems] = useState<number[]>([])
@@ -45,7 +49,7 @@ export function BimTree (props: {
     if (elements && objects.length === 1) {
       scrollToSelection(div.current)
       const [first] = props.viewer.selection.objects
-      focus.current = tree.getNode(first.element)
+      focus.current = treeRef.current.getNode(first.element)
     }
   }, [elements, objects])
 
@@ -121,21 +125,44 @@ export function BimTree (props: {
             },
             onClick: (e) => {
               if (e.shiftKey) {
-                const range = tree.getRange(focus.current, item.index as number)
-                updateViewerSelection(tree, props.viewer, range, 'set')
+                const range = treeRef.current.getRange(
+                  focus.current,
+                  item.index as number
+                )
+                updateViewerSelection(
+                  treeRef.current,
+                  props.viewer,
+                  range,
+                  'set'
+                )
               } else if (isControlKey(e)) {
                 if (renderFlags.isSelected) {
-                  const leafs = tree.getLeafs(item.index as number)
-                  updateViewerSelection(tree, props.viewer, leafs, 'remove')
+                  const leafs = treeRef.current.getLeafs(item.index as number)
+                  updateViewerSelection(
+                    treeRef.current,
+                    props.viewer,
+                    leafs,
+                    'remove'
+                  )
                   focus.current = item.index as number
                 } else {
-                  const leafs = tree.getLeafs(item.index as number)
-                  updateViewerSelection(tree, props.viewer, leafs, 'add')
+                  const leafs = treeRef.current.getLeafs(item.index as number)
+                  updateViewerSelection(
+                    treeRef.current,
+                    props.viewer,
+                    leafs,
+                    'add'
+                  )
                   focus.current = item.index as number
                 }
               } else {
-                const leafs = tree.getLeafs(item.index as number)
-                updateViewerSelection(tree, props.viewer, leafs, 'set')
+                const leafs = treeRef.current.getLeafs(item.index as number)
+                updateViewerSelection(
+                  treeRef.current,
+                  props.viewer,
+                  leafs,
+                  'set'
+                )
                 focus.current = item.index as number
               }
               actions.primaryAction()

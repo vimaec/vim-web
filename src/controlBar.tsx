@@ -7,10 +7,7 @@ import { frameContext } from './utils/viewerUtils'
 import * as Icons from './icons'
 
 // Shared Buttons style
-const btnStyle =
-  'rounded-full text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal'
-const btnStyleActive =
-  'rounded-full text-white h-10 w-10 flex items-center justify-center transition-all hover:scale-110 opacity-60 hover:opacity-100'
+
 const toggleButton = (
   tip: string,
   action: () => void,
@@ -33,13 +30,12 @@ const actionButton = (
   icon: ({ height, width, fill }) => JSX.Element,
   state: boolean
 ) => {
+  const style = state
+    ? 'rounded-full text-white h-10 w-10 flex items-center justify-center transition-all hover:scale-110 opacity-60 hover:opacity-100'
+    : 'rounded-full text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal'
+
   return (
-    <button
-      data-tip={tip}
-      onClick={action}
-      className={state ? btnStyleActive : btnStyle}
-      type="button"
-    >
+    <button data-tip={tip} onClick={action} className={style} type="button">
       {icon({ height: '20', width: '20', fill: 'currentColor' })}
     </button>
   )
@@ -92,7 +88,17 @@ export function ControlBar (props: {
 
 function TabCamera (viewer: VIM.Viewer) {
   const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerMode)
+  const [fullScreen, setFullScreen] = useState<boolean>(
+    !!document.fullscreenElement
+  )
+
   useEffect(() => {
+    // F11 doesn't properly register fullscreen changes so we resorot to polling
+    const refreshFullScreen = () => {
+      setTimeout(refreshFullScreen, 250)
+      setFullScreen(!!document.fullscreenElement)
+    }
+    refreshFullScreen()
     viewer.inputs.onPointerModeChanged.subscribe(() =>
       setMode(viewer.inputs.pointerMode)
     )
@@ -149,11 +155,17 @@ function TabCamera (viewer: VIM.Viewer) {
     Icons.frameSelection,
     false
   )
-  const btnFullScreen = actionButton(
+  const btnFullScreen = toggleButton(
     'Fullscreen',
-    () => console.log('Full Screen'),
+    () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen()
+      } else {
+        document.body.requestFullscreen()
+      }
+    },
     Icons.fullsScreen,
-    false
+    () => fullScreen
   )
 
   return (

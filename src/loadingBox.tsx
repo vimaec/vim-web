@@ -3,7 +3,8 @@ import * as VIM from 'vim-webgl-viewer/'
 
 type Progress = 'processing' | number | string
 
-export function LoadingBox (props: { viewer: VIM.Viewer }) {
+export const LoadingBox = React.memo(_LoadingBox)
+function _LoadingBox (props: { viewer: VIM.Viewer }) {
   const [progress, setProgress] = useState<Progress>()
 
   // Patch load
