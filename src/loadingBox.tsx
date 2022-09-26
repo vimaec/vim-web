@@ -23,7 +23,7 @@ function _LoadingBox (props: { viewer: VIM.Viewer }) {
   }, [])
 
   useEffect(() => {
-    setBehind(progress)
+    setBehind(progress !== undefined)
   }, [progress])
 
   const msg =
