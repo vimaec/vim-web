@@ -145,7 +145,7 @@ function createTable (
                 >
                   <span
                     data-tip={p.value}
-                    className="w-1/2 border-r border-gray-light p-2 truncate"
+                    className="w-1/2 border-r border-gray-light p-2 truncate select-none"
                     title={p.name}
                     key={'parameters-th-' + id}
                   >

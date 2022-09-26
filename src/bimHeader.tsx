@@ -14,10 +14,6 @@ export function BimObjectHeader (props: {
   elements: VIM.ElementInfo[]
   object: VIM.Object
 }) {
-  useEffect(() => {
-    ReactTooltip.rebuild()
-  })
-
   if (!props.elements || !props.object) {
     return <div className="vim-bim-inspector">Loading . . .</div>
   }
@@ -33,45 +29,55 @@ export function BimObjectHeader (props: {
     return <div className="vim-bim-inspector">Could not find element.</div>
   }
 
+  useEffect(() => {
+    ReactTooltip.rebuild()
+  })
+
   return createHeader(getElementBimHeader(element))
 }
 
 export function BimDocumentHeader (props: { vim: VIM.Vim }) {
   const [vim, setVim] = useState<VIM.Vim>()
-  const [header, setHeader] = useState<BimHeader>()
 
   if (vim !== props.vim) {
     setVim(props.vim)
-    getVimBimHeader(props.vim).then((h) => setHeader(h))
+    // Get revit file count here.
   }
-  if (!header) {
+  if (!props.vim) {
     return <>Loading...</>
   }
 
+  const header = getVimBimHeader(props.vim)
   return createHeader(header)
 }
 
 function createHeader (header: BimHeader) {
-  const rows = header.map((row, rowIndex) => {
-    if (!row) return null
-    return row.map((pair, columnIndex) => {
-      return [
-        <dt
-          data-tip={pair[1]}
-          className={'text-gray-medium py-1 truncate ' + pair[2]}
-          key={`dt-${rowIndex}-${columnIndex}`}
-        >
-          {pair[0]}
-        </dt>,
-        <dd
-          data-tip={pair[1]}
-          className={'py-1 truncate ' + pair[3]}
-          key={`dd-${rowIndex}-${columnIndex}`}
-        >
-          {pair[1]}
-        </dd>
-      ]
-    })
+  const rows = header.map((row, index) => {
+    if (!row) return undefined
+    return (
+      <>
+        {row.map((pair) => {
+          return (
+            <>
+              <dt
+                data-tip={pair[1]}
+                className={'text-gray-medium py-1 truncate select-none ' + pair[2]}
+                key={'main-th' + index}
+              >
+                {pair[0]}
+              </dt>
+              <dd
+                data-tip={pair[1]}
+                className={'py-1 truncate ' + pair[3]}
+                key={'main-td' + index}
+              >
+                {pair[1]}
+              </dd>
+            </>
+          )
+        })}
+      </>
+    )
   })
 
   return (
@@ -92,13 +98,11 @@ function getElementBimHeader (info: VIM.ElementInfo): BimHeader {
   ]
 }
 
-async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
-  const documents = await vim.document.getBimDocumentSummary()
+function getVimBimHeader (vim: VIM.Vim): BimHeader {
   return [
-    [['Document', formatSource(vim.source), 'w-3/12', 'w-9/12']],
+    [['Document', vim.source, 'w-3/12', 'w-9/12']],
     [['Created on', vim.document.header.created, 'w-3/12', 'w-9/12']],
-    // Enable back when the data is relevent in the header
-    // [['Created by', vim.document.header.generator, 'w-3/12', 'w-9/12']],
+    [['Created by', vim.document.header.generator, 'w-3/12', 'w-9/12']],
     undefined,
     [
       [
@@ -116,12 +120,7 @@ async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
     ],
     [
       ['Mesh Count', vim.document.g3d.getMeshCount(), 'w-3/12', 'w-3/12'],
-      ['Revit Files', documents?.length, 'w-3/12', 'w-3/12']
+      ['Revit Files', /* revit >= 0 ? revit : */ 'N/A', 'w-3/12', 'w-3/12']
     ]
   ]
-}
-
-function formatSource (source: string) {
-  const parts = source.split('/')
-  return parts[parts.length - 1]
 }

@@ -271,7 +271,7 @@ body {
   border: none;
 }
 
-.rct-tree-item-li {
+.rct-tree-items-container .rct-tree-item-li {
   font-size: 1rem;
   position: relative;
 }
@@ -384,4 +384,12 @@ input[type='search']::-webkit-search-cancel-button {
 }
 .vim-text-renderer .vim-measure:nth-of-type(5) table tr {
   border: 1px solid var(--c-darkest-gray);
+}
+@-moz-document url-prefix() { 
+  .vim-bim-search-count {
+     right: 1.5rem
+  }
+}
+.bim-panel-open canvas {
+  
 }

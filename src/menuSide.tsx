@@ -27,7 +27,7 @@ export function SidePanel (props: {
       }`}
     >
       <button
-        className="vim-side-panel-nav absolute right-2 top-2"
+        className="vim-side-panel-nav text-gray-medium absolute right-6 top-6"
         onClick={onNavBtn}
       >
         {props.getSideNav() === 'back'
