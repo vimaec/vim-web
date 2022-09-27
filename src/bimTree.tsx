@@ -11,7 +11,12 @@ import * as VIM from 'vim-webgl-viewer/'
 import { ElementInfo } from 'vim-webgl-viewer/'
 import { showContextMenu } from './contextMenu'
 import { frameContext, frameSelection } from './utils/viewerUtils'
-import { MapTree, sort, toMapTree } from './utils/dataUtils'
+import {
+  ArrayEquals,
+  MapTree,
+  sort,
+  toMapTree
+} from './utils/dataUtils'
 
 type VimTreeNode = TreeItem<ElementInfo> & {
   title: string
@@ -68,7 +73,7 @@ export function BimTree (props: {
   }
 
   // Update tree state
-  if (!ArrayIsSame(props.objects, objects)) {
+  if (!ArrayEquals(props.objects, objects)) {
     setObjects(props.objects)
     const nodes = props.objects.map((o) => tree.getNode(o.element))
 
@@ -263,12 +268,6 @@ function scrollToSelection (div: HTMLDivElement) {
   if (rectElem.top < rectContainer.top || rectElem.top < 0) {
     selection.scrollIntoView()
   }
-}
-
-function ArrayIsSame<T> (first: T[], second: T[]) {
-  return (
-    first.length === second.length && first.every((v, i) => v === second[i])
-  )
 }
 
 export function toTreeData (elements: VIM.ElementInfo[]) {

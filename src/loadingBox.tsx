@@ -28,17 +28,26 @@ function _LoadingBox (props: { viewer: VIM.Viewer }) {
 
   const msg =
     progress === 'processing'
-      ? 'Processing'
+      ? (
+          'Processing'
+        )
       : typeof progress === 'number'
-        ? <div className='flex justify-between w-full'><span>Loading...</span><span>{Math.round(progress / 1000000)} MB</span></div>
+        ? (
+      <div className="flex justify-between w-full">
+        <span>Loading...</span>
+        <span>{Math.round(progress / 1000000)} MB</span>
+      </div>
+          )
         : typeof progress === 'string'
-          ? `Error: ${progress}`
+          ? (
+      `Error: ${progress}`
+            )
           : undefined
 
   if (!msg) return null
   return (
     <div className="vim-loading-box w-[320px] text-gray-medium bg-white px-5 py-4 rounded shadow-lg">
-      <h1 className='w-full mb-2'> {msg} </h1>
+      <h1 className="w-full mb-2"> {msg} </h1>
       <span className="loader"></span>
     </div>
   )

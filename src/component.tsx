@@ -16,16 +16,18 @@ import { SidePanel } from './menuSide'
 import { MenuSettings } from './menuSettings'
 import { MenuToast } from './menuToast'
 
-import { ComponentInputs } from './helpers/inputs'
+import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
 import { applySettings, Settings } from './helpers/settings'
 import {
   getAllVisible,
-  getVisibleObjects,
+  isolate,
+  isolateSelection,
   setAllVisible,
-  setBehind,
-  toGhost
+  setBehind
 } from './utils/viewerUtils'
+
+import { ArrayEquals } from './utils/dataUtils'
 
 export * as VIM from 'vim-webgl-viewer/'
 export type SideContent = 'none' | 'bim' | 'settings'
@@ -81,7 +83,7 @@ export function VimComponent (props: {
   const [helpVisible, setHelpVisible] = useState(false)
   const [settings, setSettings] = useState(new Settings())
   const side = createSideState()
-  const isolation = createIsolationState(viewer)
+  const isolation = createIsolationState(viewer, settings)
   const [cursorManager] = useState(new CursorManager(props.viewer))
 
   const getVim = () => viewer.selection.vim ?? viewer.vims[0]
@@ -114,14 +116,14 @@ export function VimComponent (props: {
       }
     })
 
-    props.viewer.inputs.onContextMenu = showContextMenu
+    props.viewer.inputs.onContextMenu.subscribe(showContextMenu)
 
     // Frame on vim loaded
     const subLoad = viewer.onVimLoaded.subscribe(() => {
       viewer.camera.frame('all', 45)
     })
 
-    props.viewer.inputs.strategy = new ComponentInputs(
+    props.viewer.inputs.scheme = new ComponentInputScheme(
       props.viewer,
       () => settings,
       highlight
@@ -246,32 +248,62 @@ function createSideState () {
   return { set, getCurrent, toggleSide, pop, getNav }
 }
 
-function createIsolationState (viewer: VIM.Viewer) {
+function createIsolationState (viewer: VIM.Viewer, settings: Settings) {
   const [isolation, setIsolation] = useState<VIM.Object[]>()
+  const lastIsolation = useRef<VIM.Object[]>()
   const [hidden, setHidden] = useState(!getAllVisible(viewer))
+
+  useEffect(() => {
+    viewer.renderer.onVisibilityChanged.subscribe((vim) => {
+      const all = getAllVisible(vim)
+      setHidden(!all)
+      if (all) setIsolation(undefined)
+    })
+  }, [])
 
   const reset = () => {
     setIsolation(undefined)
   }
 
+  useEffect(() => {
+    viewer.renderer.onVisibilityChanged.subscribe((vim) => {
+      const all = getAllVisible(vim)
+      setHidden(!all)
+      if (all) setIsolation(undefined)
+    })
+  }, [])
+
+  useEffect(() => {
+    if (isolation !== undefined) {
+      lastIsolation.current = isolation
+    }
+  }, [isolation])
+
   const toggle = () => {
-    if (!isolation) {
-      if (getAllVisible(viewer)) {
-        toGhost(viewer)
-      } else {
-        setIsolation(getVisibleObjects(viewer))
+    const selection = [...viewer.selection.objects]
+    if (isolation) {
+      if (selection.length === 0 || ArrayEquals(isolation, selection)) {
+        // Cancel isolation
         setAllVisible(viewer)
+        setIsolation(undefined)
+      } else {
+        // Replace Isolation
+        isolateSelection(viewer, settings)
+        setIsolation(selection)
       }
     } else {
-      toGhost(viewer)
-      isolation.forEach((o) => {
-        o.visible = true
-      })
-      reset()
+      if (selection.length > 0) {
+        // Set new Isolation
+        isolateSelection(viewer, settings)
+        setIsolation(selection)
+      } else if (lastIsolation.current) {
+        // Restore last isolation
+        isolate(viewer, settings, lastIsolation.current)
+        setIsolation([...lastIsolation.current])
+      }
     }
-    setHidden(!getAllVisible(viewer))
   }
-  return { hidden, setHidden, toggle, reset }
+  return { hidden, toggle, reset }
 }
 
 export class Highlighter {

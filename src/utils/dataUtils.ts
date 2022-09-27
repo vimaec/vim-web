@@ -1,5 +1,11 @@
 export type MapTree<K, V> = Map<K, V[] | MapTree<K, V>>
 
+export function ArrayEquals<T> (first: T[], second: T[]) {
+  return (
+    first.length === second.length && first.every((v, i) => v === second[i])
+  )
+}
+
 /**
  * Creates N-level grouping of items using given grouping selector in the order provided.
  * @param items array of items to groups

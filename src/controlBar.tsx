@@ -78,10 +78,8 @@ export function ControlBar (props: {
       <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md mx-2">
         {TabCamera(props.viewer)}
       </div>
-      <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md mx-2">
-        {TabActions(props.viewer, props.toggleIsolation)}
-      </div>
-      {TabTools(props.viewer, props.setCursor)}
+
+      {TabTools(props.viewer, props.setCursor, props.toggleIsolation)}
       <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md mx-2">
         {TabSettings(props)}
       </div>
@@ -89,72 +87,18 @@ export function ControlBar (props: {
   )
 }
 
-function TabActions (viewer: VIM.Viewer, toggleIsolation: () => void) {
-  const [fullScreen, setFullScreen] = useState<boolean>(
-    !!document.fullscreenElement
-  )
-
-  useEffect(() => {
-    // F11 doesn't properly register fullscreen changes so we resorot to polling
-    const refreshFullScreen = () => {
-      setTimeout(refreshFullScreen, 250)
-      setFullScreen(!!document.fullscreenElement)
-    }
-    refreshFullScreen()
-  }, [])
-
-  const onFrameBtn = () => {
-    frameContext(viewer)
-  }
-
-  const btnFrame = actionButton(
-    'Zoom to Fit',
-    onFrameBtn,
-    Icons.frameSelection,
-    false
-  )
-
-  const btnFullScreen = toggleButton(
-    'Fullscreen',
-    () => {
-      if (document.fullscreenElement) {
-        document.exitFullscreen()
-      } else {
-        document.body.requestFullscreen()
-      }
-    },
-    Icons.fullsScreen,
-    () => fullScreen
-  )
-
-  const btnIsolation = actionButton(
-    'Toggle Isolation',
-    toggleIsolation,
-    Icons.toggleIsolation,
-    false
-  )
-
-  return (
-    <>
-      <div className="mx-1">{btnFrame}</div>
-      <div className="mx-1">{btnFullScreen}</div>
-      <div className="mx-1">{btnIsolation}</div>
-    </>
-  )
-}
-
 function TabCamera (viewer: VIM.Viewer) {
-  const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerMode)
+  const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerActive)
 
   useEffect(() => {
     viewer.inputs.onPointerModeChanged.subscribe(() =>
-      setMode(viewer.inputs.pointerMode)
+      setMode(viewer.inputs.pointerActive)
     )
   }, [])
 
   const onModeBtn = (target: VIM.PointerMode) => {
-    const next = mode === target ? viewer.inputs.altPointerMode : target
-    viewer.inputs.pointerMode = next
+    const next = mode === target ? viewer.inputs.pointerFallback : target
+    viewer.inputs.pointerActive = next
     setMode(next)
   }
 
@@ -194,6 +138,13 @@ function TabCamera (viewer: VIM.Viewer) {
     () => mode === 'rect'
   )
 
+  const btnFrame = actionButton(
+    'Zoom to Fit',
+    () => frameContext(viewer),
+    Icons.frameSelection,
+    false
+  )
+
   return (
     <>
       <div className="mx-1">{btnOrbit}</div>
@@ -201,12 +152,17 @@ function TabCamera (viewer: VIM.Viewer) {
       <div className="mx-1">{btnPan}</div>
       <div className="mx-1">{btnZoom}</div>
       <div className="mx-1">{btnFrameRect}</div>
+      <div className="mx-1">{btnFrame}</div>
     </>
   )
 }
 
 /* TAB TOOLS */
-function TabTools (viewer: VIM.Viewer, setCursor: (cursor: Cursor) => void) {
+function TabTools (
+  viewer: VIM.Viewer,
+  setCursor: (cursor: Cursor) => void,
+  toggleIsolation: () => void
+) {
   // Need a ref to get the up to date value in callback.
   const [measuring, setMeasuring] = useState(false)
   // eslint-disable-next-line no-unused-vars
@@ -230,8 +186,8 @@ function TabTools (viewer: VIM.Viewer, setCursor: (cursor: Cursor) => void) {
 
   const onSectionBtn = () => {
     ReactTooltip.hide()
-    if (viewer.inputs.pointerMode === 'rect') {
-      viewer.inputs.pointerMode = viewer.inputs.altPointerMode
+    if (viewer.inputs.pointerActive === 'rect') {
+      viewer.inputs.pointerActive = viewer.inputs.pointerFallback
     }
 
     const next = !(viewer.sectionBox.visible && viewer.sectionBox.interactive)
@@ -296,11 +252,19 @@ function TabTools (viewer: VIM.Viewer, setCursor: (cursor: Cursor) => void) {
     Icons.measure,
     false
   )
+
+  const btnIsolation = actionButton(
+    'Toggle Isolation',
+    toggleIsolation,
+    Icons.toggleIsolation,
+    false
+  )
+
   const toolsTab = (
     <div className="vim-menu-section flex items-center bg-white rounded-full px-2 mx-2 shadow-md">
       <div className="mx-1">{btnSection}</div>
-
       <div className="mx-1">{btnMeasure}</div>
+      <div className="mx-1">{btnIsolation}</div>
     </div>
   )
 
@@ -324,12 +288,19 @@ function TabTools (viewer: VIM.Viewer, setCursor: (cursor: Cursor) => void) {
     </div>
   )
 
-  const btnSectionDelete = actionButton(
+  const btnSectionReset = actionButton(
     'Reset Section Box',
     onResetSectionBtn,
     Icons.sectionBoxReset,
     section.active
   )
+  const btnSectionShrink = actionButton(
+    'Shrink to Selection',
+    () => viewer.sectionBox.fitBox(viewer.selection.getBoundingBox()),
+    Icons.sectionBoxShrink,
+    section.active
+  )
+
   const btnSectionClip = actionButton(
     'Apply Section Box',
     onSectionClip,
@@ -350,7 +321,8 @@ function TabTools (viewer: VIM.Viewer, setCursor: (cursor: Cursor) => void) {
   )
   const sectionTab = (
     <div className="vim-menu-section flex items-center bg-primary rounded-full px-2 mx-2 shadow-md">
-      <div className="mx-1">{btnSectionDelete}</div>
+      <div className="mx-1">{btnSectionReset}</div>
+      <div className="mx-1">{btnSectionShrink}</div>
       <div className="mx-1">
         {section.clip ? btnSectionNoClip : btnSectionClip}
       </div>
@@ -371,6 +343,19 @@ function TabSettings (props: {
   side: SideContent
   toggleSide: (value: SideContent) => void
 }) {
+  const [fullScreen, setFullScreen] = useState<boolean>(
+    !!document.fullscreenElement
+  )
+
+  useEffect(() => {
+    // F11 doesn't properly register fullscreen changes so we resorot to polling
+    const refreshFullScreen = () => {
+      setTimeout(refreshFullScreen, 250)
+      setFullScreen(!!document.fullscreenElement)
+    }
+    refreshFullScreen()
+  }, [])
+
   const onHelpBtn = () => {
     props.setHelpVisible(!props.helpVisible)
   }
@@ -402,11 +387,25 @@ function TabSettings (props: {
     () => props.helpVisible
   )
 
+  const btnFullScreen = actionButton(
+    document.fullscreenElement ? 'Fullscreen' : 'Minimize',
+    () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen()
+      } else {
+        document.body.requestFullscreen()
+      }
+    },
+    document.fullscreenElement ? Icons.minimize : Icons.fullsScreen,
+    false
+  )
+
   return (
     <>
       <div className="mx-1">{btnTreeView}</div>
       <div className="mx-1">{btnSettings}</div>
       <div className="mx-1">{btnHelp}</div>
+      <div className="mx-1">{btnFullScreen}</div>
     </>
   )
 }
@@ -434,7 +433,7 @@ function loopMeasure (
       setMeasure(undefined)
     })
     .finally(() => {
-      setCursor(pointerToCursor(viewer.inputs.pointerMode))
+      setCursor(pointerToCursor(viewer.inputs.pointerActive))
       viewer.viewport.canvas.removeEventListener('mousemove', onMouseMove)
       if (getMeasuring()) {
         loopMeasure(viewer, getMeasuring, setMeasure, setCursor)

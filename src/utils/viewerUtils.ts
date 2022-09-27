@@ -34,7 +34,31 @@ export function frameSelection (viewer: VIM.Viewer) {
   }
 }
 
+export function isolate (
+  viewer: VIM.Viewer,
+  settings: Settings,
+  objects: VIM.Object[]
+) {
+  const set = new Set(objects)
+
+  viewer.vims.forEach((vim) => {
+    for (const obj of vim.getAllObjects()) {
+      obj.visible = set.has(obj)
+    }
+    vim.scene.material = settings.useIsolationMaterial
+      ? viewer.renderer.materials.isolation
+      : undefined
+  })
+
+  viewer.camera.frame(
+    getVisibleBoundingBox(viewer),
+    'none',
+    viewer.camera.defaultLerpDuration
+  )
+}
+
 export function isolateSelection (viewer: VIM.Viewer, settings: Settings) {
+  isolate(viewer, settings, [...viewer.selection.objects])
   const set = new Set(viewer.selection.objects)
   const vim = viewer.selection.vim
   for (const obj of vim.getAllObjects()) {
