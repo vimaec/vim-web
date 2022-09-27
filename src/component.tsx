@@ -193,7 +193,6 @@ export function VimComponent (props: {
         setHelpVisible={setHelpVisible}
         resetIsolation={isolation.reset}
         hidden={isolation.hidden}
-        setHidden={isolation.setHidden}
       />
       {useMemo(
         () => (

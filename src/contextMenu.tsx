@@ -34,7 +34,6 @@ export function VimContextMenu (props: {
   setHelpVisible: (value: boolean) => void
   resetIsolation: () => void
   hidden: boolean
-  setHidden: (value: boolean) => void
 }) {
   const viewer = props.viewer
   const [objects, setObject] = useState<VIM.Object[]>([])
@@ -86,7 +85,6 @@ export function VimContextMenu (props: {
     if (objects.length === 0) return
     props.resetIsolation()
     isolateSelection(viewer, props.settings)
-    props.setHidden(true)
     e.stopPropagation()
   }
 
@@ -94,7 +92,6 @@ export function VimContextMenu (props: {
     if (objects.length === 0) return
     props.resetIsolation()
     hideSelection(viewer, props.settings)
-    props.setHidden(true)
     e.stopPropagation()
   }
 
@@ -105,7 +102,6 @@ export function VimContextMenu (props: {
 
   const onShowAllBtn = (e: ClickCallback) => {
     showAll(viewer, props.settings)
-    props.setHidden(false)
     e.stopPropagation()
   }
 
