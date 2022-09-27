@@ -5,6 +5,7 @@ import { BimTree } from './bimTree'
 import { BimDocumentDetails, BimObjectDetails } from './bimDetails'
 import { BimDocumentHeader, BimObjectHeader } from './bimHeader'
 import { BimSearch } from './bimSearch'
+import { ElementInfo } from 'vim-webgl-viewer/'
 
 export function BimPanel (props: {
   viewer: VIM.Viewer
@@ -37,7 +38,9 @@ export function BimPanel (props: {
   // on filter or elements update, update filteredElements
   useEffect(() => {
     if (vim && elements) {
-      setFilteredElements(filterElements(vim, elements, filter))
+      const result = filterElements(vim, elements, filter)
+      setFilteredElements(result)
+      setVisible(vim, result)
     }
   }, [filter, elements])
 
@@ -95,4 +98,12 @@ function filterElements (
         e.familyTypeName.toLocaleLowerCase().includes(filterLower))
   )
   return filtered
+}
+
+export function setVisible (vim: VIM.Vim, elements: ElementInfo[]) {
+  const set = new Set(elements.map((e) => e.id))
+
+  for (const obj of vim.getAllObjects()) {
+    obj.visible = set.has(obj.elementId)
+  }
 }

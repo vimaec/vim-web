@@ -123,6 +123,9 @@ export function BimTree (props: {
               e.preventDefault()
               e.stopPropagation()
             },
+            onPointerEnter: (e) => {
+              actions.focusItem()
+            },
             onClick: (e) => {
               if (e.shiftKey) {
                 const range = treeRef.current.getRange(
@@ -178,7 +181,9 @@ export function BimTree (props: {
         }}
         // Default behavior
         onFocusItem={(item) => {
-          setFocusedItem(item.index as number)
+          const index = item.index as number
+          setFocusedItem(index)
+          // updateViewerFocus(props.viewer, treeRef.current, index)
         }}
         // Default behavior
         onExpandItem={(item) => {
@@ -197,6 +202,16 @@ export function BimTree (props: {
       </ControlledTreeEnvironment>
     </div>
   )
+}
+
+function updateViewerFocus (
+  viewer: VIM.Viewer,
+  tree: BimTreeData,
+  index: number
+) {
+  const node = tree.nodes[tree.getNode(index)]
+  const obj = viewer.vims[0].getObjectFromElement(node.data.element)
+  viewer.selection.focus(obj)
 }
 
 function updateViewerSelection (

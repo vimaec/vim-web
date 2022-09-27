@@ -89,6 +89,7 @@ export function VimComponent (props: {
     ...viewer.selection.objects
   ])
   const [vim, setVim] = useState<VIM.Vim>(getVim())
+  const [highlight] = useState<Highlighter>(new Highlighter(props.viewer))
 
   useEffect(() => {
     applySettings(viewer, settings)
@@ -122,7 +123,8 @@ export function VimComponent (props: {
 
     props.viewer.inputs.strategy = new ComponentInputs(
       props.viewer,
-      () => settings
+      () => settings,
+      highlight
     )
 
     // dispose
@@ -270,4 +272,32 @@ function createIsolationState (viewer: VIM.Viewer) {
     setHidden(!getAllVisible(viewer))
   }
   return { hidden, setHidden, toggle, reset }
+}
+
+export class Highlighter {
+  private _viewer: VIM.Viewer
+  private _highlight: VIM.THREE.Mesh
+  private _material: VIM.THREE.Material
+  constructor (viewer: VIM.Viewer) {
+    this._viewer = viewer
+
+    this._material = new VIM.THREE.MeshBasicMaterial({
+      depthTest: false,
+      opacity: 0.2,
+      color: new VIM.THREE.Color(1, 1, 1),
+      transparent: true
+    })
+  }
+
+  highlight (object: VIM.Object) {
+    if (this._highlight) {
+      this._highlight?.geometry.dispose()
+      this._viewer.renderer.remove(this._highlight)
+    }
+    if (!object) return
+    const geometry = object.createGeometry()
+    const mesh = new VIM.THREE.Mesh(geometry, this._material)
+    this._viewer.renderer.add(mesh)
+    this._highlight = mesh
+  }
 }

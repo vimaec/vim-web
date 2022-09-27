@@ -1,5 +1,6 @@
 import * as VIM from 'vim-webgl-viewer/'
 import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycaster'
+import { Highlighter } from '../component'
 import {
   getVisibleBoundingBox,
   isolateSelection,
@@ -11,11 +12,18 @@ export class ComponentInputs implements VIM.InputStrategy {
   private _viewer: VIM.Viewer
   private _default: VIM.InputStrategy
   private _getSettings: () => Settings
+  private _highlighter: Highlighter
+  private _material: VIM.THREE.Material
 
-  constructor (viewer: VIM.Viewer, getSettings: () => Settings) {
+  constructor (
+    viewer: VIM.Viewer,
+    getSettings: () => Settings,
+    highlight: Highlighter
+  ) {
     this._viewer = viewer
     this._default = new VIM.DefaultInputStrategy(viewer)
     this._getSettings = getSettings
+    this._highlighter = highlight
   }
 
   onMainAction (hit: InputAction): void {
