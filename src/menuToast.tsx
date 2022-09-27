@@ -6,7 +6,8 @@ export type ToastConfigSpeed = {
   speed: number
 }
 
-export function MenuToast (props: { viewer: VIM.Viewer }) {
+export const MenuToast = React.memo(_MenuToast)
+function _MenuToast (props: { viewer: VIM.Viewer }) {
   const [visible, setVisible] = useState<boolean>()
   const [speed, setSpeed] = useState<number>(-1)
   const speedRef = useRef<number>(speed)

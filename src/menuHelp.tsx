@@ -6,9 +6,9 @@ const urlSupport = 'https://support.vimaec.com'
 const urlControls =
   'https://support.vimaec.com/en/articles/5872168-navigation-and-controls'
 
-export function MenuHelp (props: { closeHelp: () => void }) {
+export const MenuHelp = React.memo(_MenuHelp)
+function _MenuHelp (props: { closeHelp: () => void }) {
   const onCloseBtn = () => {
-    console.log('close')
     props.closeHelp()
   }
   const onControlsBtn = () => {
@@ -44,7 +44,7 @@ export function MenuHelp (props: { closeHelp: () => void }) {
           </div>
           <div className="">
             <img
-              className="menu-help-controls mb-8 mx-auto"
+              className="menu-help-controls mb-8 mx-auto 2xl:w-[50vw]"
               src={helpImage}
             ></img>
           </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
 import logo from './assets/logo.png'
 import './style.css'
@@ -18,11 +18,12 @@ import { MenuToast } from './menuToast'
 
 import { ComponentInputs } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
-import { Settings } from './helpers/settings'
+import { applySettings, Settings } from './helpers/settings'
 import {
   getAllVisible,
   getVisibleObjects,
   setAllVisible,
+  setBehind,
   toGhost
 } from './utils/viewerUtils'
 
@@ -59,6 +60,7 @@ export function createContainer (viewer: VIM.Viewer) {
 }
 
 export function VimComponent (props: {
+  root: HTMLDivElement
   viewer: VIM.Viewer
   onMount: () => void
   logo?: boolean
@@ -70,6 +72,7 @@ export function VimComponent (props: {
   const viewer = props.viewer
   const useLogo = props.logo === undefined ? true : props.logo
   // eslint-disable-next-line no-unused-vars
+
   const useInspector = props.bimPanel === undefined ? true : props.bimPanel
   const useMenu = props.menu === undefined ? true : props.menu
   const useMenuTop = props.menuTop === undefined ? true : props.menuTop
@@ -81,35 +84,64 @@ export function VimComponent (props: {
   const isolation = createIsolationState(viewer)
   const [cursorManager] = useState(new CursorManager(props.viewer))
 
+  const getVim = () => viewer.selection.vim ?? viewer.vims[0]
+  const [selection, setSelection] = useState<VIM.Object[]>([
+    ...viewer.selection.objects
+  ])
+  const [vim, setVim] = useState<VIM.Vim>(getVim())
+
+  useEffect(() => {
+    applySettings(viewer, settings)
+  }, [settings])
+
+  useEffect(() => {
+    setBehind(helpVisible)
+  }, [helpVisible])
+
   // On first render
   useEffect(() => {
     props.onMount()
     cursorManager.register()
 
-    props.viewer.inputs.onContextMenu = showContextMenu
-    const sub1 = viewer.onVimLoaded.subscribe(() => {
-      viewer.camera.frame('all', 45)
-    })
-
-    const sub2 = props.viewer.selection.onValueChanged.subscribe(() => {
-      if (props.viewer.selection.count > 0) {
+    // register to viewer state changes
+    const subVim = viewer.onVimLoaded.subscribe(() => setVim(getVim()))
+    const subSel = viewer.selection.onValueChanged.subscribe(() => {
+      setVim(getVim())
+      setSelection([...viewer.selection.objects])
+      if (viewer.selection.count > 0) {
         side.set('bim')
       }
     })
 
-    props.viewer.inputs.strategy = new ComponentInputs(props.viewer)
+    props.viewer.inputs.onContextMenu = showContextMenu
+
+    // Frame on vim loaded
+    const subLoad = viewer.onVimLoaded.subscribe(() => {
+      viewer.camera.frame('all', 45)
+    })
+
+    props.viewer.inputs.strategy = new ComponentInputs(
+      props.viewer,
+      () => settings
+    )
 
     // dispose
     return () => {
       cursorManager.unregister()
-      sub1()
-      sub2()
+      subLoad()
+      subVim()
+      subSel()
     }
   }, [])
 
   const sidePanel = (
     <>
-      <BimPanel viewer={props.viewer} visible={side.getCurrent() === 'bim'} />
+      <BimPanel
+        viewer={props.viewer}
+        vim={vim}
+        selection={selection}
+        visible={side.getCurrent() === 'bim'}
+      />
       <MenuSettings
         visible={side.getCurrent() === 'settings'}
         viewer={props.viewer}
@@ -159,20 +191,23 @@ export function VimComponent (props: {
         hidden={isolation.hidden}
         setHidden={isolation.setHidden}
       />
-      <MenuToast viewer={props.viewer}></MenuToast>
+      {useMemo(
+        () => (
+          <MenuToast viewer={props.viewer}></MenuToast>
+        ),
+        []
+      )}
     </>
   )
 }
 
-function Logo () {
-  return (
-    <div className="vim-logo">
-      <a href="https://vimaec.com">
-        <img src={logo}></img>
-      </a>
-    </div>
-  )
-}
+const Logo = React.memo(() => (
+  <div className="vim-logo">
+    <a href="https://vimaec.com">
+      <img src={logo}></img>
+    </a>
+  </div>
+))
 
 function createSideState () {
   const [side, setSide] = useState<SideContent[]>(['bim'])

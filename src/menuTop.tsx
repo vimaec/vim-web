@@ -3,7 +3,8 @@ import * as VIM from 'vim-webgl-viewer/'
 import * as Icons from './icons'
 import { resetCamera } from './utils/viewerUtils'
 
-export function MenuTop (props: { viewer: VIM.Viewer }) {
+export const MenuTop = React.memo(_MenuTop)
+function _MenuTop (props: { viewer: VIM.Viewer }) {
   const [ortho, setOrtho] = useState<boolean>(props.viewer.camera.orthographic)
 
   const ui = useRef<HTMLDivElement>()

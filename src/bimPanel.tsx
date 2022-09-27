@@ -6,34 +6,23 @@ import { BimDocumentDetails, BimObjectDetails } from './bimDetails'
 import { BimDocumentHeader, BimObjectHeader } from './bimHeader'
 import { BimSearch } from './bimSearch'
 
-export function BimPanel (props: { viewer: VIM.Viewer; visible: boolean }) {
+export function BimPanel (props: {
+  viewer: VIM.Viewer
+  vim: VIM.Vim
+  selection: VIM.Object[]
+  visible: boolean
+}) {
   const viewer = props.viewer
 
-  const getVim = () => viewer.selection.vim ?? viewer.vims[0]
   const [filter, setFilter] = useState('')
-  const [selection, setSelection] = useState<VIM.Object[]>([
-    ...viewer.selection.objects
-  ])
-  const [vim, setVim] = useState<VIM.Vim>(getVim())
+
+  const [vim, setVim] = useState<VIM.Vim>()
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
   const [filteredElements, setFilteredElements] = useState<VIM.ElementInfo[]>()
-  const open = createOpenState()
 
-  useEffect(() => {
-    // register to viewer state changes
-    const subVim = viewer.onVimLoaded.subscribe(() => setVim(getVim()))
-    const subSel = viewer.selection.onValueChanged.subscribe(() => {
-      setVim(getVim())
-      setSelection([...viewer.selection.objects])
-    })
-
-    // unregister from viewer
-    return () => {
-      subVim()
-      subSel()
-    }
-  }, [])
-
+  if (props.vim !== vim) {
+    setVim(props.vim)
+  }
   // on vim update, update elements
   useEffect(() => {
     if (vim) {
@@ -56,7 +45,7 @@ export function BimPanel (props: { viewer: VIM.Viewer; visible: boolean }) {
     setFilter(value)
   }
 
-  const last = selection[selection.length - 1]
+  const last = props.selection[props.selection.length - 1]
 
   return (
     <div className={`vim-bim-panel ${props.visible ? '' : 'hidden'}`}>
@@ -71,35 +60,20 @@ export function BimPanel (props: { viewer: VIM.Viewer; visible: boolean }) {
         <BimTree
           viewer={viewer}
           elements={filteredElements}
-          objects={selection}
+          objects={props.selection}
         />
       </div>
       <hr className="border-gray-divider mb-5 -mx-6" />
       <h2 className="text-xs font-bold uppercase mb-4">Bim Inspector</h2>
       <div className="vim-bim-lower h-1/2 overflow-y-auto">
-        {last
-          ? (
-          <>
-            <BimObjectHeader elements={filteredElements} object={last} />
-            <BimObjectDetails
-              object={last}
-              getOpen={open.get}
-              setOpen={open.update}
-              initOpen={open.init}
-            />
-          </>
-            )
-          : (
-          <>
-            <BimDocumentHeader vim={viewer.vims[0]} />
-            <BimDocumentDetails
-              vim={vim}
-              getOpen={open.get}
-              setOpen={open.update}
-              initOpen={open.init}
-            />
-          </>
-            )}
+        <BimObjectHeader
+          elements={filteredElements}
+          object={last}
+          visible={last !== undefined}
+        />
+        <BimObjectDetails object={last} visible={last !== undefined} />
+        <BimDocumentHeader vim={viewer.vims[0]} visible={last === undefined} />
+        <BimDocumentDetails vim={vim} visible={last === undefined} />
       </div>
     </div>
   )
@@ -121,26 +95,4 @@ function filterElements (
         e.familyTypeName.toLocaleLowerCase().includes(filterLower))
   )
   return filtered
-}
-
-function createOpenState () {
-  const [open, setOpen] = useState<Map<string, boolean>>()
-
-  // Open state is kept here to persist between panel open/close
-  const update = (group: string, value: boolean) => {
-    const next = new Map(open.entries()).set(group, value)
-    setOpen(next)
-  }
-
-  const init = (keys: string[]) => {
-    const map = new Map(open?.entries() ?? [])
-    keys.forEach((k) => {
-      if (!map.has(k)) map.set(k, true)
-    })
-    setOpen(map)
-  }
-
-  const get = (s: string) => open.get(s)
-
-  return { init, get, update }
 }

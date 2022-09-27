@@ -78,22 +78,7 @@ body {
 .vim-top:hover {
   opacity: 1;
 }
-.vim-loading-box {
-  width: fit-content;
-  height: fit-content;
-  padding: 10px;
-  border: 1px solid #e3e3e3;
-  border-radius: 3px;
-  background-color: #f6f6f6;
 
-  font-family: 'Roboto', sans-serif;
-
-  /*Centers the box*/
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
 
 /* Context Menu */
 .checked {
@@ -216,7 +201,12 @@ body {
   left: calc(50% + 190px);
 }
 .vim-gfx.bim-panel-open + .vim-ui .vim-loading-box {
-  left: calc(50% + 190px);
+  margin: auto;
+  align-self: center;
+  position: absolute;
+  top: calc(50% - 37px);
+  left: calc(50% - 160px);
+  z-index: 999;
 }
 .submenu-item-active {
   position: relative;
@@ -253,6 +243,9 @@ body {
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
   min-height: 2.5rem;
+  webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
 }
 .rct-tree-items-container > li:nth-child(odd) {
   background-color: var(--c-white);
@@ -390,6 +383,39 @@ input[type='search']::-webkit-search-cancel-button {
      right: 1.5rem
   }
 }
-.bim-panel-open canvas {
-  
+.behind canvas, .behind .vim-logo, .behind .vim-logo, .behind .vim-control-bar, .behind .vim-logo, .behind .vim-top, .behind .vim-side-panel, .behind .vim-logo {
+  filter: blur(10px);
 }
+.loader {
+  width: 100%;
+  height: 10px;
+  border-radius: 5px;
+  display: inline-block;
+  position: relative;
+  background: var(--c-lighter-gray);
+  overflow: hidden;
+}
+.loader::after {
+  content: '';
+  width: 130px;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--c-primary);
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  animation: animloader 2s linear infinite;
+}
+
+@keyframes animloader {
+  0% {
+    left: 0;
+    transform: translateX(-100%);
+  }
+  100% {
+    left: 100%;
+    transform: translateX(0%);
+  }
+}
+    
