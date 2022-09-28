@@ -82,7 +82,7 @@ export function VimComponent (props: {
 
   const [helpVisible, setHelpVisible] = useState(false)
   const [settings, setSettings] = useState(new Settings())
-  const side = createSideState()
+  const side = createSideState(useInspector)
   const isolation = createIsolationState(viewer, settings)
   const [cursorManager] = useState(new CursorManager(props.viewer))
 
@@ -91,7 +91,6 @@ export function VimComponent (props: {
     ...viewer.selection.objects
   ])
   const [vim, setVim] = useState<VIM.Vim>(getVim())
-  const [highlight] = useState<Highlighter>(new Highlighter(props.viewer))
 
   useEffect(() => {
     applySettings(viewer, settings)
@@ -125,8 +124,7 @@ export function VimComponent (props: {
 
     props.viewer.inputs.scheme = new ComponentInputScheme(
       props.viewer,
-      () => settings,
-      highlight
+      isolation.toggle
     )
 
     // dispose
@@ -191,8 +189,7 @@ export function VimComponent (props: {
         settings={settings}
         helpVisible={helpVisible}
         setHelpVisible={setHelpVisible}
-        resetIsolation={isolation.reset}
-        hidden={isolation.hidden}
+        isolation={isolation}
       />
       {useMemo(
         () => (
@@ -212,7 +209,7 @@ const Logo = React.memo(() => (
   </div>
 ))
 
-function createSideState () {
+function createSideState (useInspector: boolean) {
   const [side, setSide] = useState<SideContent[]>(['bim'])
   const sideRef = useRef(side)
 
@@ -236,7 +233,9 @@ function createSideState () {
   }
 
   const getCurrent = () => {
-    return sideRef.current[sideRef.current.length - 1] ?? 'none'
+    const result = sideRef.current[sideRef.current.length - 1] ?? 'none'
+    if (result && !useInspector) return 'none'
+    return result
   }
 
   const set = (value: SideContent) => {
@@ -247,88 +246,68 @@ function createSideState () {
   return { set, getCurrent, toggleSide, pop, getNav }
 }
 
-function createIsolationState (viewer: VIM.Viewer, settings: Settings) {
-  const [isolation, setIsolation] = useState<VIM.Object[]>()
+export type Isolation = {
+  current: () => VIM.Object[]
+  toggle: () => void
+  hide: (objects: VIM.Object[]) => void
+}
+function createIsolationState (
+  viewer: VIM.Viewer,
+  settings: Settings
+): Isolation {
+  const isolationRef = useRef<VIM.Object[]>()
   const lastIsolation = useRef<VIM.Object[]>()
-  const [hidden, setHidden] = useState(!getAllVisible(viewer))
 
   useEffect(() => {
     viewer.renderer.onVisibilityChanged.subscribe((vim) => {
-      const all = getAllVisible(vim)
-      setHidden(!all)
-      if (all) setIsolation(undefined)
+      if (getAllVisible(viewer)) {
+        isolationRef.current = undefined
+      }
     })
   }, [])
 
-  const reset = () => {
-    setIsolation(undefined)
+  const current = () => {
+    return isolationRef.current
   }
 
-  useEffect(() => {
-    viewer.renderer.onVisibilityChanged.subscribe((vim) => {
-      const all = getAllVisible(vim)
-      setHidden(!all)
-      if (all) setIsolation(undefined)
-    })
-  }, [])
-
-  useEffect(() => {
-    if (isolation !== undefined) {
-      lastIsolation.current = isolation
-    }
-  }, [isolation])
-
   const toggle = () => {
+    if (isolationRef.current) {
+      lastIsolation.current = isolationRef.current
+    }
     const selection = [...viewer.selection.objects]
-    if (isolation) {
-      if (selection.length === 0 || ArrayEquals(isolation, selection)) {
+    if (isolationRef.current) {
+      if (
+        selection.length === 0 ||
+        ArrayEquals(isolationRef.current, selection)
+      ) {
         // Cancel isolation
         setAllVisible(viewer)
-        setIsolation(undefined)
+        isolationRef.current = undefined
       } else {
         // Replace Isolation
         isolateSelection(viewer, settings)
-        setIsolation(selection)
+        isolationRef.current = selection
       }
     } else {
       if (selection.length > 0) {
         // Set new Isolation
         isolateSelection(viewer, settings)
-        setIsolation(selection)
+        isolationRef.current = selection
       } else if (lastIsolation.current) {
         // Restore last isolation
         isolate(viewer, settings, lastIsolation.current)
-        setIsolation([...lastIsolation.current])
+        isolationRef.current = [...lastIsolation.current]
       }
     }
   }
-  return { hidden, toggle, reset }
-}
 
-export class Highlighter {
-  private _viewer: VIM.Viewer
-  private _highlight: VIM.THREE.Mesh
-  private _material: VIM.THREE.Material
-  constructor (viewer: VIM.Viewer) {
-    this._viewer = viewer
-
-    this._material = new VIM.THREE.MeshBasicMaterial({
-      depthTest: false,
-      opacity: 0.2,
-      color: new VIM.THREE.Color(1, 1, 1),
-      transparent: true
-    })
-  }
-
-  highlight (object: VIM.Object) {
-    if (this._highlight) {
-      this._highlight?.geometry.dispose()
-      this._viewer.renderer.remove(this._highlight)
+  const hide = (objects: VIM.Object[]) => {
+    if (isolationRef.current) {
+      const set = new Set(objects)
+      isolationRef.current = isolationRef.current.filter((o) => !set.has(o))
     }
-    if (!object) return
-    const geometry = object.createGeometry()
-    const mesh = new VIM.THREE.Mesh(geometry, this._material)
-    this._viewer.renderer.add(mesh)
-    this._highlight = mesh
+    objects.forEach((o) => (o.visible = false))
+    viewer.selection.clear()
   }
+  return { toggle, hide, current }
 }

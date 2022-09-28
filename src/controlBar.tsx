@@ -343,9 +343,7 @@ function TabSettings (props: {
   side: SideContent
   toggleSide: (value: SideContent) => void
 }) {
-  const [fullScreen, setFullScreen] = useState<boolean>(
-    !!document.fullscreenElement
-  )
+  const [, setFullScreen] = useState<boolean>(!!document.fullscreenElement)
 
   useEffect(() => {
     // F11 doesn't properly register fullscreen changes so we resorot to polling

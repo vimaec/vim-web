@@ -1,6 +1,9 @@
 export type MapTree<K, V> = Map<K, V[] | MapTree<K, V>>
 
 export function ArrayEquals<T> (first: T[], second: T[]) {
+  if (!first && !second) return true
+  if (!first) return false
+  if (!second) return false
   return (
     first.length === second.length && first.every((v, i) => v === second[i])
   )

@@ -5,11 +5,12 @@ import {
 } from '@firefox-devtools/react-contextmenu'
 import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
+import { Isolation } from './component'
 import { Settings } from './helpers/settings'
+import { ArrayEquals } from './utils/dataUtils'
 import {
   frameContext,
-  hideSelection,
-  isolateSelection,
+  getAllVisible,
   resetCamera,
   showAll
 } from './utils/viewerUtils'
@@ -32,11 +33,10 @@ export function VimContextMenu (props: {
   settings: Settings
   helpVisible: boolean
   setHelpVisible: (value: boolean) => void
-  resetIsolation: () => void
-  hidden: boolean
+  isolation: Isolation
 }) {
   const viewer = props.viewer
-  const [objects, setObject] = useState<VIM.Object[]>([])
+  const [selection, setSelection] = useState<VIM.Object[]>([])
   const [section, setSection] = useState<{
     visible: boolean
     clip: boolean
@@ -48,11 +48,12 @@ export function VimContextMenu (props: {
     return !viewer.sectionBox.box.containsBox(viewer.renderer.getBoundingBox())
   }
   const [clipping, setClipping] = useState<boolean>(isClipping())
+  const [hidden, setHidden] = useState(!getAllVisible(viewer))
 
   useEffect(() => {
     // Register to selection
     viewer.selection.onValueChanged.subscribe(() => {
-      setObject([...viewer.selection.objects])
+      setSelection([...viewer.selection.objects])
     })
 
     viewer.sectionBox.onStateChanged.subscribe(() => {
@@ -61,7 +62,10 @@ export function VimContextMenu (props: {
         clip: viewer.sectionBox.clip
       })
     })
-
+    viewer.renderer.onVisibilityChanged.subscribe((vim) => {
+      setHidden(!getAllVisible(vim))
+      setSelection([...viewer.selection.objects]) // to force rerender
+    })
     // Register to section box
     viewer.sectionBox.onBoxConfirm.subscribe(() => setClipping(isClipping()))
   }, [])
@@ -82,16 +86,14 @@ export function VimContextMenu (props: {
   }
 
   const onSelectionIsolateBtn = (e: ClickCallback) => {
-    if (objects.length === 0) return
-    props.resetIsolation()
-    isolateSelection(viewer, props.settings)
+    if (selection.length === 0) return
+    props.isolation.toggle()
     e.stopPropagation()
   }
 
   const onSelectionHideBtn = (e: ClickCallback) => {
-    if (objects.length === 0) return
-    props.resetIsolation()
-    hideSelection(viewer, props.settings)
+    if (selection.length === 0) return
+    props.isolation.hide([...viewer.selection.objects])
     e.stopPropagation()
   }
 
@@ -147,9 +149,10 @@ export function VimContextMenu (props: {
       : null
   }
 
-  const hasSelection = objects?.length > 0
+  const hasSelection = selection?.length > 0
   const measuring = !!viewer.measure.stage
-
+  const isolated = ArrayEquals(selection, props.isolation.current())
+  console.log('Isolated ' + isolated)
   return (
     <div
       className="vim-context-menu"
@@ -169,12 +172,12 @@ export function VimContextMenu (props: {
         {createButton('Zoom to Fit', 'F', onCameraFrameBtn)}
 
         {/* Selection */}
-        {createDivider(hasSelection || props.hidden)}
+        {createDivider(hasSelection || hidden)}
         {createButton(
           'Isolate Object',
           'I',
           onSelectionIsolateBtn,
-          hasSelection
+          hasSelection && !isolated
         )}
         {createButton('Hide Object', '', onSelectionHideBtn, hasSelection)}
         {createButton(
@@ -183,7 +186,7 @@ export function VimContextMenu (props: {
           onSelectionClearBtn,
           hasSelection
         )}
-        {createButton('Show All', '', onShowAllBtn, props.hidden)}
+        {createButton('Show All', '', onShowAllBtn, hidden)}
 
         {/* Measure */}
         {createDivider(measuring)}

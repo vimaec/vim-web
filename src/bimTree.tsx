@@ -11,12 +11,7 @@ import * as VIM from 'vim-webgl-viewer/'
 import { ElementInfo } from 'vim-webgl-viewer/'
 import { showContextMenu } from './contextMenu'
 import { frameContext, frameSelection } from './utils/viewerUtils'
-import {
-  ArrayEquals,
-  MapTree,
-  sort,
-  toMapTree
-} from './utils/dataUtils'
+import { ArrayEquals, MapTree, sort, toMapTree } from './utils/dataUtils'
 
 type VimTreeNode = TreeItem<ElementInfo> & {
   title: string
@@ -188,7 +183,7 @@ export function BimTree (props: {
         onFocusItem={(item) => {
           const index = item.index as number
           setFocusedItem(index)
-          // updateViewerFocus(props.viewer, treeRef.current, index)
+          updateViewerFocus(props.viewer, treeRef.current, index)
         }}
         // Default behavior
         onExpandItem={(item) => {
@@ -214,8 +209,9 @@ function updateViewerFocus (
   tree: BimTreeData,
   index: number
 ) {
-  const node = tree.nodes[tree.getNode(index)]
-  const obj = viewer.vims[0].getObjectFromElement(node.data.element)
+  console.log(index)
+  const node = tree.nodes[index]
+  const obj = viewer.vims[0].getObjectFromElement(node.data?.element)
   viewer.selection.focus(obj)
 }
 
