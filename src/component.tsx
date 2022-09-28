@@ -142,6 +142,7 @@ export function VimComponent (props: {
         vim={vim}
         selection={selection}
         visible={side.getCurrent() === 'bim'}
+        isolation={isolation}
       />
       <MenuSettings
         visible={side.getCurrent() === 'settings'}
@@ -169,7 +170,7 @@ export function VimComponent (props: {
           setHelpVisible={setHelpVisible}
           side={side.getCurrent()}
           toggleSide={side.toggleSide}
-          toggleIsolation={isolation.toggle}
+          isolation={isolation}
           setCursor={cursorManager.setCursor}
         />
           )
@@ -246,9 +247,12 @@ function createSideState (useInspector: boolean) {
 }
 
 export type Isolation = {
+  set: (objects: VIM.Object[]) => void
   current: () => VIM.Object[]
   toggle: () => void
   hide: () => void
+  clear: () => void
+  onChange: (action: () => void) => void
 }
 function createIsolationState (
   viewer: VIM.Viewer,
@@ -256,6 +260,7 @@ function createIsolationState (
 ): Isolation {
   const isolationRef = useRef<VIM.Object[]>()
   const lastIsolation = useRef<VIM.Object[]>()
+  const changed = useRef<() => void>()
 
   useEffect(() => {
     viewer.renderer.onVisibilityChanged.subscribe((vim) => {
@@ -265,15 +270,29 @@ function createIsolationState (
     })
   }, [])
 
+  const onChange = (action: () => void) => {
+    changed.current = action
+  }
+
   const current = () => {
     return isolationRef.current
   }
 
-  const toggle = () => {
+  const search = (objects: VIM.Object[]) => {
     if (isolationRef.current) {
       lastIsolation.current = isolationRef.current
     }
+
+    isolate(viewer, settings, objects)
+    isolationRef.current = objects
+  }
+
+  const toggle = () => {
     const selection = [...viewer.selection.objects]
+
+    if (isolationRef.current) {
+      lastIsolation.current = isolationRef.current
+    }
     if (isolationRef.current) {
       if (
         selection.length === 0 ||
@@ -298,6 +317,7 @@ function createIsolationState (
         isolationRef.current = [...lastIsolation.current]
       }
     }
+    changed.current()
   }
 
   const hide = () => {
@@ -309,6 +329,13 @@ function createIsolationState (
     }
     isolate(viewer, settings, result)
     isolationRef.current = result
+    changed.current()
   }
-  return { toggle, hide, current }
+
+  const clear = () => {
+    setAllVisible(viewer)
+    isolationRef.current = undefined
+    changed.current()
+  }
+  return { set: search, toggle, hide, clear, current, onChange }
 }

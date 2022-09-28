@@ -5,12 +5,13 @@ import { BimTree } from './bimTree'
 import { BimDocumentDetails, BimObjectDetails } from './bimDetails'
 import { BimDocumentHeader, BimObjectHeader } from './bimHeader'
 import { BimSearch } from './bimSearch'
-import { ElementInfo } from 'vim-webgl-viewer/'
+import { Isolation } from './component'
 
 export function BimPanel (props: {
   viewer: VIM.Viewer
   vim: VIM.Vim
   selection: VIM.Object[]
+  isolation: Isolation
   visible: boolean
 }) {
   const viewer = props.viewer
@@ -24,6 +25,11 @@ export function BimPanel (props: {
   if (props.vim !== vim) {
     setVim(props.vim)
   }
+
+  useEffect(() => {
+    props.isolation.onChange(() => setFilter(''))
+  }, [])
+
   // on vim update, update elements
   useEffect(() => {
     if (vim) {
@@ -38,9 +44,17 @@ export function BimPanel (props: {
   // on filter or elements update, update filteredElements
   useEffect(() => {
     if (vim && elements) {
-      const result = filterElements(vim, elements, filter)
+      const meshElements = elements.filter(
+        (e) => vim.getObjectFromElement(e.element).hasMesh
+      )
+      const result = filterElements(vim, meshElements, filter)
       setFilteredElements(result)
-      setVisible(vim, result)
+      if (filter !== '') {
+        const objects = result.map((e) => vim.getObjectFromElement(e.element))
+        props.isolation.set(objects)
+      } else {
+        props.isolation.clear()
+      }
     }
   }, [filter, elements])
 
@@ -90,20 +104,11 @@ function filterElements (
   const filterLower = filter.toLocaleLowerCase()
   const filtered = elements.filter(
     (e) =>
-      vim.getObjectFromElement(e.element).hasMesh &&
-      (e.id.toString().toLocaleLowerCase().includes(filterLower) ||
-        e.name.toLocaleLowerCase().includes(filterLower) ||
-        e.categoryName.toLocaleLowerCase().includes(filterLower) ||
-        e.familyName.toLocaleLowerCase().includes(filterLower) ||
-        e.familyTypeName.toLocaleLowerCase().includes(filterLower))
+      e.id.toString().toLocaleLowerCase().includes(filterLower) ||
+      e.name.toLocaleLowerCase().includes(filterLower) ||
+      e.categoryName.toLocaleLowerCase().includes(filterLower) ||
+      e.familyName.toLocaleLowerCase().includes(filterLower) ||
+      e.familyTypeName.toLocaleLowerCase().includes(filterLower)
   )
   return filtered
-}
-
-export function setVisible (vim: VIM.Vim, elements: ElementInfo[]) {
-  const set = new Set(elements.map((e) => e.id))
-
-  for (const obj of vim.getAllObjects()) {
-    obj.visible = set.has(obj.elementId)
-  }
 }

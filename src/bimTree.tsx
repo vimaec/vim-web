@@ -209,7 +209,6 @@ function updateViewerFocus (
   tree: BimTreeData,
   index: number
 ) {
-  console.log(index)
   const node = tree.nodes[index]
   const obj = viewer.vims[0].getObjectFromElement(node.data?.element)
   viewer.selection.focus(obj)

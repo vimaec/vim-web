@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
-import { SideContent } from './component'
+import { Isolation, SideContent } from './component'
 import { Cursor, pointerToCursor } from './helpers/cursor'
 import { frameContext } from './utils/viewerUtils'
 import * as Icons from './icons'
@@ -48,7 +48,7 @@ export function ControlBar (props: {
   setHelpVisible: (value: boolean) => void
   side: SideContent
   toggleSide: (value: SideContent) => void
-  toggleIsolation: () => void
+  isolation: Isolation
   setCursor: (cursor: Cursor) => void
 }) {
   const [show, setShow] = useState(true)
@@ -79,7 +79,7 @@ export function ControlBar (props: {
         {TabCamera(props.viewer)}
       </div>
 
-      {TabTools(props.viewer, props.setCursor, props.toggleIsolation)}
+      {TabTools(props.viewer, props.setCursor, props.isolation)}
       <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md mx-2">
         {TabSettings(props)}
       </div>
@@ -161,7 +161,7 @@ function TabCamera (viewer: VIM.Viewer) {
 function TabTools (
   viewer: VIM.Viewer,
   setCursor: (cursor: Cursor) => void,
-  toggleIsolation: () => void
+  isolation: Isolation
 ) {
   // Need a ref to get the up to date value in callback.
   const [measuring, setMeasuring] = useState(false)
@@ -255,7 +255,7 @@ function TabTools (
 
   const btnIsolation = actionButton(
     'Toggle Isolation',
-    toggleIsolation,
+    isolation.toggle,
     Icons.toggleIsolation,
     false
   )

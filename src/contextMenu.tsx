@@ -8,12 +8,7 @@ import * as VIM from 'vim-webgl-viewer/'
 import { Isolation } from './component'
 import { Settings } from './helpers/settings'
 import { ArrayEquals } from './utils/dataUtils'
-import {
-  frameContext,
-  getAllVisible,
-  resetCamera,
-  showAll
-} from './utils/viewerUtils'
+import { frameContext, getAllVisible, resetCamera } from './utils/viewerUtils'
 
 export const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
 type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -101,7 +96,7 @@ export function VimContextMenu (props: {
   }
 
   const onShowAllBtn = (e: ClickCallback) => {
-    showAll(viewer, props.settings)
+    props.isolation.clear()
     e.stopPropagation()
   }
 
@@ -150,7 +145,6 @@ export function VimContextMenu (props: {
   const hasSelection = selection?.length > 0
   const measuring = !!viewer.measure.stage
   const isolated = ArrayEquals(selection, props.isolation.current())
-  console.log('Isolated ' + isolated)
   return (
     <div
       className="vim-context-menu"
