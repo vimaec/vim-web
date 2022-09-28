@@ -2,14 +2,14 @@ import * as VIM from 'vim-webgl-viewer/'
 import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycaster'
 import { getVisibleBoundingBox } from '../utils/viewerUtils'
 
-export class ComponentInputs implements VIM.InputStrategy {
+export class ComponentInputs implements VIM.InputScheme {
   private _viewer: VIM.Viewer
-  private _default: VIM.InputStrategy
+  private _default: VIM.InputScheme
   private _toggleIsolation: () => void
 
   constructor (viewer: VIM.Viewer, toggleIsolation: () => void) {
     this._viewer = viewer
-    this._default = new VIM.DefaultInputStrategy(viewer)
+    this._default = new VIM.DefaultInputScheme(viewer)
     this._toggleIsolation = toggleIsolation
   }
 
