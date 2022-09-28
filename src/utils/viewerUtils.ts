@@ -55,24 +55,7 @@ export function isolate (
     'none',
     viewer.camera.defaultLerpDuration
   )
-}
-
-export function isolateSelection (viewer: VIM.Viewer, settings: Settings) {
-  isolate(viewer, settings, [...viewer.selection.objects])
-  const set = new Set(viewer.selection.objects)
-  const vim = viewer.selection.vim
-  for (const obj of vim.getAllObjects()) {
-    obj.visible = set.has(obj)
-  }
-
-  vim.scene.material = settings.useIsolationMaterial
-    ? viewer.renderer.materials.isolation
-    : undefined
-  viewer.camera.frame(
-    getVisibleBoundingBox(vim),
-    'none',
-    viewer.camera.defaultLerpDuration
-  )
+  viewer.selection.clear()
 }
 
 export function hideSelection (viewer: VIM.Viewer, settings: Settings) {

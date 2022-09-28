@@ -22,7 +22,6 @@ import { applySettings, Settings } from './helpers/settings'
 import {
   getAllVisible,
   isolate,
-  isolateSelection,
   setAllVisible,
   setBehind
 } from './utils/viewerUtils'
@@ -249,7 +248,7 @@ function createSideState (useInspector: boolean) {
 export type Isolation = {
   current: () => VIM.Object[]
   toggle: () => void
-  hide: (objects: VIM.Object[]) => void
+  hide: () => void
 }
 function createIsolationState (
   viewer: VIM.Viewer,
@@ -285,13 +284,13 @@ function createIsolationState (
         isolationRef.current = undefined
       } else {
         // Replace Isolation
-        isolateSelection(viewer, settings)
+        isolate(viewer, settings, selection)
         isolationRef.current = selection
       }
     } else {
       if (selection.length > 0) {
         // Set new Isolation
-        isolateSelection(viewer, settings)
+        isolate(viewer, settings, selection)
         isolationRef.current = selection
       } else if (lastIsolation.current) {
         // Restore last isolation
@@ -301,13 +300,15 @@ function createIsolationState (
     }
   }
 
-  const hide = (objects: VIM.Object[]) => {
-    if (isolationRef.current) {
-      const set = new Set(objects)
-      isolationRef.current = isolationRef.current.filter((o) => !set.has(o))
+  const hide = () => {
+    const selection = new Set(viewer.selection.objects)
+    const initial = isolationRef.current ?? viewer.vims[0].getAllObjects()
+    const result: VIM.Object[] = []
+    for (const obj of initial) {
+      if (!selection.has(obj)) result.push(obj)
     }
-    objects.forEach((o) => (o.visible = false))
-    viewer.selection.clear()
+    isolate(viewer, settings, result)
+    isolationRef.current = result
   }
   return { toggle, hide, current }
 }

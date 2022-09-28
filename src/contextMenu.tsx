@@ -86,14 +86,12 @@ export function VimContextMenu (props: {
   }
 
   const onSelectionIsolateBtn = (e: ClickCallback) => {
-    if (selection.length === 0) return
     props.isolation.toggle()
     e.stopPropagation()
   }
 
   const onSelectionHideBtn = (e: ClickCallback) => {
-    if (selection.length === 0) return
-    props.isolation.hide([...viewer.selection.objects])
+    props.isolation.hide()
     e.stopPropagation()
   }
 
