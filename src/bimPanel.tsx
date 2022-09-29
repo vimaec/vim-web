@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 
 import { BimTree } from './bimTree'
@@ -21,7 +21,7 @@ export function BimPanel (props: {
   const [vim, setVim] = useState<VIM.Vim>()
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
   const [filteredElements, setFilteredElements] = useState<VIM.ElementInfo[]>()
-  const [searching, setSearching] = useState<boolean>(false)
+  const searching = useRef<boolean>(false)
 
   if (props.vim !== vim) {
     setVim(props.vim)
@@ -77,7 +77,7 @@ export function BimPanel (props: {
           filter={filter}
           setFilter={updateFilter}
           count={filteredElements?.length}
-          setSearching={setSearching}
+          setSearching={(value: boolean) => (searching.current = value)}
         />
         <BimTree
           viewer={viewer}
