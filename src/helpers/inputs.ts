@@ -39,7 +39,7 @@ export class ComponentInputs implements VIM.InputScheme {
         return true
       }
       case VIM.KEYS.KEY_I: {
-        this._isolation.toggleContextual()
+        this._isolation.toggleContextual('keyboard')
         break
       }
     }
