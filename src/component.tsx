@@ -123,7 +123,7 @@ export function VimComponent (props: {
 
     props.viewer.inputs.scheme = new ComponentInputScheme(
       props.viewer,
-      isolation.toggle
+      isolation
     )
 
     // dispose
@@ -247,12 +247,14 @@ function createSideState (useInspector: boolean) {
 }
 
 export type Isolation = {
-  search: (objects: VIM.Object[]) => void
+  search: (objects: VIM.Object[], source: string) => void
   current: () => VIM.Object[]
-  toggle: () => void
-  hide: () => void
-  clear: () => void
-  onChange: (action: () => void) => void
+  show: (objects: VIM.Object[], source: string) => void
+  hide: (objects: VIM.Object[], source: string) => void
+  toggleContextual: (source: string) => void
+  hideSelection: (source: string) => void
+  clear: (source: string) => void
+  onChange: (action: (source: string) => void) => void
 }
 function createIsolationState (
   viewer: VIM.Viewer,
@@ -260,7 +262,7 @@ function createIsolationState (
 ): Isolation {
   const isolationRef = useRef<VIM.Object[]>()
   const lastIsolation = useRef<VIM.Object[]>()
-  const changed = useRef<() => void>()
+  const changed = useRef<(source: string) => void>()
 
   useEffect(() => {
     viewer.renderer.onVisibilityChanged.subscribe((vim) => {
@@ -270,7 +272,7 @@ function createIsolationState (
     })
   }, [])
 
-  const onChange = (action: () => void) => {
+  const onChange = (action: (source: string) => void) => {
     changed.current = action
   }
 
@@ -278,16 +280,17 @@ function createIsolationState (
     return isolationRef.current
   }
 
-  const search = (objects: VIM.Object[]) => {
+  const search = (objects: VIM.Object[], source: string) => {
     if (isolationRef.current) {
       lastIsolation.current = isolationRef.current
     }
 
     isolate(viewer, settings, objects)
     isolationRef.current = objects
+    changed.current(source)
   }
 
-  const toggle = () => {
+  const toggleContextual = (source: string) => {
     const selection = [...viewer.selection.objects]
 
     if (isolationRef.current) {
@@ -317,11 +320,15 @@ function createIsolationState (
         isolationRef.current = [...lastIsolation.current]
       }
     }
-    changed.current()
+    changed.current(source)
   }
 
-  const hide = () => {
-    const selection = new Set(viewer.selection.objects)
+  const hideSelection = (source: string) => {
+    hide([...viewer.selection.objects], source)
+  }
+
+  const hide = (objects: VIM.Object[], source: string) => {
+    const selection = new Set(objects)
     const initial = isolationRef.current ?? viewer.vims[0].getAllObjects()
     const result: VIM.Object[] = []
     for (const obj of initial) {
@@ -329,13 +336,30 @@ function createIsolationState (
     }
     isolate(viewer, settings, result)
     isolationRef.current = result
-    changed.current()
+    changed.current(source)
   }
 
-  const clear = () => {
+  const show = (objects: VIM.Object[], source: string) => {
+    objects.forEach((o) => isolationRef.current.push(o))
+    const result = [...new Set(isolationRef.current)]
+    isolate(viewer, settings, result)
+    isolationRef.current = result
+    changed.current(source)
+  }
+
+  const clear = (source: string) => {
     setAllVisible(viewer)
     isolationRef.current = undefined
-    changed.current()
+    changed.current(source)
   }
-  return { search, toggle, hide, clear, current, onChange }
+  return {
+    search,
+    show,
+    hide,
+    toggleContextual,
+    hideSelection,
+    clear,
+    current,
+    onChange
+  }
 }

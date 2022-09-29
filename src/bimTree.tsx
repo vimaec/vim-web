@@ -12,6 +12,7 @@ import { ElementInfo } from 'vim-webgl-viewer/'
 import { showContextMenu } from './contextMenu'
 import { frameContext, frameSelection } from './utils/viewerUtils'
 import { ArrayEquals, MapTree, sort, toMapTree } from './utils/dataUtils'
+import { Isolation } from './component'
 
 type VimTreeNode = TreeItem<ElementInfo> & {
   title: string
@@ -22,6 +23,7 @@ export function BimTree (props: {
   viewer: VIM.Viewer
   elements: VIM.ElementInfo[]
   objects: VIM.Object[]
+  isolation: Isolation
 }) {
   // Data state
   const [objects, setObjects] = useState<VIM.Object[]>([])
@@ -53,6 +55,12 @@ export function BimTree (props: {
     }
   }, [elements, objects])
 
+  useEffect(() => {
+    props.viewer.renderer.onVisibilityChanged.subscribe(() => {
+      setElements(elements)
+    })
+  }, [])
+
   // Generate or regenerate tree as needed.
   if (props.elements && props.elements !== elements) {
     setElements(props.elements)
@@ -79,6 +87,32 @@ export function BimTree (props: {
     setSelectedItems(selection)
   }
 
+  const onCheckmark = (index: number, value: boolean) => {
+    const node = treeRef.current.nodes[index]
+    if (node.data) {
+      const obj = props.viewer.vims[0].getObjectFromElement(node.data?.element)
+      if (obj) {
+        if (value) {
+          props.isolation.show([obj], 'tree')
+        } else {
+          props.isolation.hide([obj], 'tree')
+        }
+      }
+    } else {
+      const leafs = treeRef.current.getLeafs(index)
+      const objs = leafs.map((n) =>
+        props.viewer.vims[0].getObjectFromElement(
+          treeRef.current.nodes[n]?.data.element
+        )
+      )
+      if (value) {
+        props.isolation.show(objs, 'tree')
+      } else {
+        props.isolation.hide(objs, 'tree')
+      }
+    }
+  }
+
   return (
     <div
       className="vim-bim-tree mb-5"
@@ -97,7 +131,26 @@ export function BimTree (props: {
             selectedItems
           }
         }}
-        renderItemTitle={({ title }) => <span data-tip={title}>{title}</span>}
+        renderItemTitle={({ title, item }) => (
+          <div>
+            <span className="rct-tree-item-title" data-tip={title}>
+              {title}
+            </span>
+            <input
+              className="rct-tree-item-checkbox"
+              type="checkbox"
+              checked={getObjectVisibility(
+                props.viewer,
+                treeRef.current,
+                item.index as number
+              )}
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) => {
+                onCheckmark(item.index as number, e.target.checked)
+              }}
+            />
+          </div>
+        )}
         canRename={false}
         canSearchByStartingTyping={false}
         canSearch={false}
@@ -202,6 +255,24 @@ export function BimTree (props: {
       </ControlledTreeEnvironment>
     </div>
   )
+}
+
+function getObjectVisibility (
+  viewer: VIM.Viewer,
+  tree: BimTreeData,
+  index: number
+) {
+  const node = tree.nodes[index]
+  if (node.data) {
+    const obj = viewer.vims[0].getObjectFromElement(node.data?.element)
+    return obj?.visible ?? false
+  }
+  const result = tree.hasSomePredicate(index, (n) => {
+    const leaf = tree.nodes[n]
+    const obj = viewer.vims[0].getObjectFromElement(leaf.data?.element)
+    return obj?.visible ?? false
+  })
+  return result
 }
 
 function updateViewerFocus (
@@ -342,12 +413,20 @@ export class BimTreeData {
     return true
   }
 
+  hasSomePredicate (node, predicate: (c: number) => boolean) {
+    const leafs = this.getLeafs(node)
+    for (const n of leafs) {
+      if (predicate(n)) return true
+    }
+    return false
+  }
+
   hasSome (node, set: Set<number>) {
     const children = this.getLeafs(node)
     for (const c of children) {
       if (set.has(c)) return true
     }
-    return true
+    return false
   }
 
   getChildren (node: number, recusive = false, result: number[] = []) {

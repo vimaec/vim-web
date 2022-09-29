@@ -1,16 +1,17 @@
 import * as VIM from 'vim-webgl-viewer/'
 import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycaster'
+import { Isolation } from '../component'
 import { getVisibleBoundingBox } from '../utils/viewerUtils'
 
 export class ComponentInputs implements VIM.InputScheme {
   private _viewer: VIM.Viewer
   private _default: VIM.InputScheme
-  private _toggleIsolation: () => void
+  private _isolation: Isolation
 
-  constructor (viewer: VIM.Viewer, toggleIsolation: () => void) {
+  constructor (viewer: VIM.Viewer, isolation: Isolation) {
     this._viewer = viewer
     this._default = new VIM.DefaultInputScheme(viewer)
-    this._toggleIsolation = toggleIsolation
+    this._isolation = isolation
   }
 
   onMainAction (hit: InputAction): void {
@@ -38,7 +39,7 @@ export class ComponentInputs implements VIM.InputScheme {
         return true
       }
       case VIM.KEYS.KEY_I: {
-        this._toggleIsolation()
+        this._isolation.toggleContextual()
         break
       }
     }

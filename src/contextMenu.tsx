@@ -81,12 +81,12 @@ export function VimContextMenu (props: {
   }
 
   const onSelectionIsolateBtn = (e: ClickCallback) => {
-    props.isolation.toggle()
+    props.isolation.toggleContextual('contextMenu')
     e.stopPropagation()
   }
 
   const onSelectionHideBtn = (e: ClickCallback) => {
-    props.isolation.hide()
+    props.isolation.hideSelection('contextMenu')
     e.stopPropagation()
   }
 
@@ -96,7 +96,7 @@ export function VimContextMenu (props: {
   }
 
   const onShowAllBtn = (e: ClickCallback) => {
-    props.isolation.clear()
+    props.isolation.clear('contextMenu')
     e.stopPropagation()
   }
 

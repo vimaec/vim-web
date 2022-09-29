@@ -28,7 +28,9 @@ export function BimPanel (props: {
   }
 
   useEffect(() => {
-    props.isolation.onChange(() => setFilter(''))
+    props.isolation.onChange((source: string) => {
+      if (source !== 'tree' && source !== 'search') setFilter('')
+    })
   }, [])
 
   // on vim update, update elements
@@ -54,9 +56,9 @@ export function BimPanel (props: {
       if (searching.current) {
         if (filter !== '') {
           const objects = result.map((e) => vim.getObjectFromElement(e.element))
-          props.isolation.search(objects)
+          props.isolation.search(objects, 'search')
         } else {
-          props.isolation.search(undefined)
+          props.isolation.search(undefined, 'search')
         }
       }
     }
@@ -83,6 +85,7 @@ export function BimPanel (props: {
           viewer={viewer}
           elements={filteredElements}
           objects={props.selection}
+          isolation={props.isolation}
         />
       </div>
       <hr className="border-gray-divider mb-5 -mx-6" />

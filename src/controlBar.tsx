@@ -255,7 +255,7 @@ function TabTools (
 
   const btnIsolation = actionButton(
     'Toggle Isolation',
-    isolation.toggle,
+    () => isolation.toggleContextual('controlBar'),
     Icons.toggleIsolation,
     false
   )
