@@ -24,6 +24,7 @@
     "bump-dev": "npm version prerelease --preid=dev",
     "publish-dev": "npm publish --tag=dev",
     "serve-dev": "http-server ./docs -o ./dev",
+    "release-minor": "npm version minor && git push && npm publish",
     "release-patch": "npm version patch && git push && npm publish",
     "release-dev": "npm run build && npm run bump-dev && git push && npm run publish-dev",
     "declarations": "tsc --declaration --emitDeclarationOnly --outdir ./dist/types",
