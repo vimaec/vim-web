@@ -1,36 +1,66 @@
-import React, { useEffect } from 'react'
-import { useState } from 'react'
-import { clamp } from 'three/src/math/MathUtils'
+import React, { useEffect, useRef, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import * as Icons from './icons'
+import { resetCamera } from './utils/viewerUtils'
 
-export function MenuTop(props: {
-  viewer: VIM.Viewer,
-  ortho: boolean,
-  setOrtho:  (b:boolean) => void,
-  orbit: boolean,
-  setOrbit : (b:boolean) => void  }
-){
-  const [speed, setSpeed] = useState<number>() 
-  const synchSpeed = () => {setSpeed(clamp(props.viewer.camera.speed + 25, 0, 50))}
-  
-  
+export const MenuTop = React.memo(_MenuTop)
+function _MenuTop (props: { viewer: VIM.Viewer }) {
+  const [ortho, setOrtho] = useState<boolean>(props.viewer.camera.orthographic)
+
+  const ui = useRef<HTMLDivElement>()
+
   useEffect(() => {
-    synchSpeed()
-    props.viewer.viewport.canvas.addEventListener('wheel',() => setTimeout(synchSpeed))
-    document.addEventListener('keyup',() => setTimeout(synchSpeed))
-  },[])
+    props.viewer.camera.onValueChanged.subscribe(() =>
+      setOrtho(props.viewer.camera.orthographic)
+    )
+    const axes = document.getElementsByClassName('gizmo-axis-canvas')[0]
+    ui.current.appendChild(axes)
+  }, [])
 
-  const btnOrbit = <button onClick={() => props.setOrbit(!props.orbit)} className={"rounded-full text-white h-8 w-8 flex items-center justify-center transition-all hover:scale-110 hover:bg-hover-t40"} type="button">{props.orbit ? <Icons.Orbit height="20" width="20" fill="currentColor" /> : <Icons.FirstPerson height="20" width="20" fill="currentColor" />}</button>
-  const btnOrtho = <button onClick={() => props.setOrtho(!props.ortho)} className={"rounded-full text-white h-8 w-8 flex items-center justify-center transition-all hover:scale-110 hover:bg-hover-t40"} type="button">{props.ortho ? <Icons.Orthographic height="20" width="20" fill="currentColor" /> : <Icons.Perspective height="20" width="20" fill="currentColor" />}</button>
-  const btnCamera = <div className={"rounded-full text-white text-sm h-8 w-8 flex items-center justify-center transition-all opacity-75"} type="button"><Icons.Camera height="20" width="20" fill="currentColor" />{speed}</div>
-  
-  return <div className='flex flex-col mx-2 my-0 fixed right-0 top-2 w-auto'>
-    <div className='border border-hover-t40 h-28 w-full rounded-t-md'> </div>
-    <div className="vim-menu flex bg-hover-t40 p-1 rounded-b-md">
-      <div className='mx-1'>{btnOrbit}</div>
-      <div className='mx-1'>{btnOrtho}</div>
-      <div className='mx-1'>{btnCamera}</div>
+  const onHomeBtn = () => {
+    resetCamera(props.viewer)
+  }
+
+  const btnHome = (
+    <button
+      data-tip="Reset Camera"
+      onClick={onHomeBtn}
+      className={
+        'rounded-full text-gray-medium h-8 w-8 flex items-center justify-center transition-all hover:text-primary-royal'
+      }
+      type="button"
+    >
+      <Icons.home height="20" width="20" fill="currentColor" />{' '}
+    </button>
+  )
+  const btnOrtho = (
+    <button
+      data-tip={ortho ? 'Orthographic' : 'Perspective'}
+      onClick={() => (props.viewer.camera.orthographic = !ortho)}
+      className={
+        'rounded-full text-gray-medium h-8 w-8 flex items-center justify-center transition-all hover:text-primary-royal'
+      }
+      type="button"
+    >
+      {ortho
+        ? (
+        <Icons.orthographic height="20" width="20" fill="currentColor" />
+          )
+        : (
+        <Icons.perspective height="20" width="20" fill="currentColor" />
+          )}
+    </button>
+  )
+
+  return (
+    <div
+      ref={ui}
+      className="vim-top border border-white flex flex-col fixed right-6 top-6 w-[100px] h-[145px] rounded-2xl shadow-lg transition-all"
+    >
+      <div className="vim-top-buttons order-2 flex p-1 rounded-b-xl pointer-events-auto justify-center bg-white mb-0 mt-auto">
+        <div className="mx-1">{btnOrtho}</div>
+        <div className="mx-1">{btnHome}</div>
+      </div>
     </div>
-  </div>
+  )
 }

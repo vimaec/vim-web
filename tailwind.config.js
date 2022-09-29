@@ -25,6 +25,7 @@ module.exports = {
         cool: 'var(--c-dark-gray-cool)',
         medium: 'var(--c-medium-gray)',
         divider: 'var(--c-gray-divider)',
+        zebra: 'var(--c-gray-zebra)',
         light: 'var(--c-light-gray)',
         lighter: 'var(--c-lighter-gray)',
         lightest: 'var(--c-lightest-gray)'
@@ -44,9 +45,12 @@ module.exports = {
       list: {
         DEFAULT: 'var(--c-list-hover)'
       },
-      'hover-t40': 'var(--c-hover-t40)'
+      'hover-t40': 'var(--c-hover-t40)',
+      'white-t50': 'var(--c-white-t50)'
     },
     extend: {},
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/forms'),
+  ],
 }
