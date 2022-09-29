@@ -6,6 +6,7 @@ export function BimSearch (props: {
   filter: string
   setFilter: (s: string) => void
   count: number
+  setSearching: (value: boolean) => void
 }) {
   const onChange = (e: React.FormEvent<HTMLInputElement>) => {
     props.setFilter(e.currentTarget.value)
@@ -13,10 +14,12 @@ export function BimSearch (props: {
 
   const onFocus = () => {
     props.viewer.inputs.keyboard.unregister()
+    props.setSearching(true)
   }
 
   const onBlur = () => {
     props.viewer.inputs.keyboard.register()
+    props.setSearching(false)
   }
 
   return (

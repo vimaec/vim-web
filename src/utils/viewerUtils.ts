@@ -39,16 +39,20 @@ export function isolate (
   settings: Settings,
   objects: VIM.Object[]
 ) {
-  const set = new Set(objects)
+  if (!objects) {
+    showAll(viewer, settings)
+  } else {
+    const set = new Set(objects)
 
-  viewer.vims.forEach((vim) => {
-    for (const obj of vim.getAllObjects()) {
-      obj.visible = set.has(obj)
-    }
-    vim.scene.material = settings.useIsolationMaterial
-      ? viewer.renderer.materials.isolation
-      : undefined
-  })
+    viewer.vims.forEach((vim) => {
+      for (const obj of vim.getAllObjects()) {
+        obj.visible = set.has(obj)
+      }
+      vim.scene.material = settings.useIsolationMaterial
+        ? viewer.renderer.materials.isolation
+        : undefined
+    })
+  }
 
   viewer.camera.frame(
     getVisibleBoundingBox(viewer),

@@ -247,7 +247,7 @@ function createSideState (useInspector: boolean) {
 }
 
 export type Isolation = {
-  set: (objects: VIM.Object[]) => void
+  search: (objects: VIM.Object[]) => void
   current: () => VIM.Object[]
   toggle: () => void
   hide: () => void
@@ -337,5 +337,5 @@ function createIsolationState (
     isolationRef.current = undefined
     changed.current()
   }
-  return { set: search, toggle, hide, clear, current, onChange }
+  return { search, toggle, hide, clear, current, onChange }
 }

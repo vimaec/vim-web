@@ -21,6 +21,7 @@ export function BimPanel (props: {
   const [vim, setVim] = useState<VIM.Vim>()
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
   const [filteredElements, setFilteredElements] = useState<VIM.ElementInfo[]>()
+  const [searching, setSearching] = useState<boolean>(false)
 
   if (props.vim !== vim) {
     setVim(props.vim)
@@ -49,11 +50,14 @@ export function BimPanel (props: {
       )
       const result = filterElements(vim, meshElements, filter)
       setFilteredElements(result)
-      if (filter !== '') {
-        const objects = result.map((e) => vim.getObjectFromElement(e.element))
-        props.isolation.set(objects)
-      } else {
-        props.isolation.clear()
+
+      if (searching) {
+        if (filter !== '') {
+          const objects = result.map((e) => vim.getObjectFromElement(e.element))
+          props.isolation.search(objects)
+        } else {
+          props.isolation.search(undefined)
+        }
       }
     }
   }, [filter, elements])
@@ -73,6 +77,7 @@ export function BimPanel (props: {
           filter={filter}
           setFilter={updateFilter}
           count={filteredElements?.length}
+          setSearching={setSearching}
         />
         <BimTree
           viewer={viewer}
