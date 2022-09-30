@@ -12,12 +12,15 @@ import { ElementInfo } from 'vim-webgl-viewer/'
 import { showContextMenu } from './contextMenu'
 import { frameContext, frameSelection } from './utils/viewerUtils'
 import { ArrayEquals, MapTree, sort, toMapTree } from './utils/dataUtils'
+import * as Icons from './icons'
 import { Isolation } from './component'
 
 type VimTreeNode = TreeItem<ElementInfo> & {
   title: string
   parent: number
 }
+
+type BoxState = 'vim-visible' | 'vim-undefined' | 'vim-hidden'
 
 export function BimTree (props: {
   viewer: VIM.Viewer
@@ -51,7 +54,7 @@ export function BimTree (props: {
     if (elements && objects.length === 1) {
       scrollToSelection(div.current)
       const [first] = props.viewer.selection.objects
-      focus.current = treeRef.current.getNode(first.element)
+      focus.current = treeRef.current.getNodeFromElement(first.element)
     }
   }, [elements, objects])
 
@@ -78,7 +81,7 @@ export function BimTree (props: {
   // Update tree state
   if (!ArrayEquals(props.objects, objects)) {
     setObjects(props.objects)
-    const nodes = props.objects.map((o) => tree.getNode(o.element))
+    const nodes = props.objects.map((o) => tree.getNodeFromElement(o.element))
 
     // updated expanded items
     const parents = nodes.flatMap((n) => tree.getAncestors(n))
@@ -87,29 +90,20 @@ export function BimTree (props: {
     setSelectedItems(selection)
   }
 
-  const onCheckmark = (index: number, value: boolean) => {
-    const node = treeRef.current.nodes[index]
-    if (node.data) {
-      const obj = props.viewer.vims[0].getObjectFromElement(node.data?.element)
-      if (obj) {
-        if (value) {
-          props.isolation.show([obj], 'tree')
-        } else {
-          props.isolation.hide([obj], 'tree')
-        }
-      }
-    } else {
-      const leafs = treeRef.current.getLeafs(index)
-      const objs = leafs.map((n) =>
+  const onCheckmark = (index: number) => {
+    const visibility = getObjectVisibility(props.viewer, treeRef.current, index)
+
+    const objs = treeRef.current
+      .getLeafs(index)
+      .map((n) =>
         props.viewer.vims[0].getObjectFromElement(
           treeRef.current.nodes[n]?.data.element
         )
       )
-      if (value) {
-        props.isolation.show(objs, 'tree')
-      } else {
-        props.isolation.hide(objs, 'tree')
-      }
+    if (visibility !== 'vim-visible') {
+      props.isolation.show(objs, 'tree')
+    } else {
+      props.isolation.hide(objs, 'tree')
     }
   }
 
@@ -131,24 +125,32 @@ export function BimTree (props: {
             selectedItems
           }
         }}
-        renderItemTitle={({ title, item }) => (
-          <div>
+        renderItemTitle={({ title, item, context }) => (
+          <div
+            className={`rct-tree-item ${context.isSelected ? 'selected' : ''}`}
+          >
             <span className="rct-tree-item-title" data-tip={title}>
               {title}
             </span>
-            <input
-              className="rct-tree-item-checkbox"
-              type="checkbox"
-              checked={getObjectVisibility(
-                props.viewer,
-                treeRef.current,
-                item.index as number
-              )}
-              onClick={(e) => e.stopPropagation()}
-              onChange={(e) => {
-                onCheckmark(item.index as number, e.target.checked)
-              }}
-            />
+            {
+              <div
+                className={`rct-tree-item-icon ${getObjectVisibility(
+                  props.viewer,
+                  treeRef.current,
+                  item.index as number
+                )}`}
+                onClick={(e) => {
+                  onCheckmark(item.index as number)
+                  e.stopPropagation()
+                }}
+              >
+                {Icons.hidden({
+                  width: 16,
+                  height: 16,
+                  fill: 'currentColor'
+                })}
+              </div>
+            }
           </div>
         )}
         canRename={false}
@@ -261,18 +263,22 @@ function getObjectVisibility (
   viewer: VIM.Viewer,
   tree: BimTreeData,
   index: number
-) {
+): BoxState {
   const node = tree.nodes[index]
   if (node.data) {
     const obj = viewer.vims[0].getObjectFromElement(node.data?.element)
-    return obj?.visible ?? false
+    return obj?.visible ? 'vim-visible' : 'vim-hidden'
   }
-  const result = tree.hasSomePredicate(index, (n) => {
+  const result = tree.countPredicate(index, (n) => {
     const leaf = tree.nodes[n]
     const obj = viewer.vims[0].getObjectFromElement(leaf.data?.element)
     return obj?.visible ?? false
   })
-  return result
+  return result === 'all'
+    ? 'vim-visible'
+    : result === 'some'
+      ? 'vim-undefined'
+      : 'vim-hidden'
 }
 
 function updateViewerFocus (
@@ -372,7 +378,7 @@ export class BimTreeData {
     return result
   }
 
-  getNode (element: number) {
+  getNodeFromElement (element: number) {
     return this.elementToNode.get(element)
   }
 
@@ -386,47 +392,24 @@ export class BimTreeData {
     return result
   }
 
-  //  Mode where only full nodes are selected
-  getSelection2 (elements: number[]) {
-    const nodes = elements.map((e) => this.elementToNode.get(e))
-    const result = [...nodes]
-    const set = new Set(nodes)
-    const parents = [...new Set(nodes.flatMap((n) => this.getAncestors(n)))]
-    parents.forEach((p) => {
-      if (this.isFull(p, set)) {
-        result.push(p)
-      }
-    })
-    return result
-  }
-
   getSelection (elements: number[]) {
     const nodes = elements.map((e) => this.elementToNode.get(e))
     return [...new Set(nodes.flatMap((n) => this.getAncestors(n)))]
   }
 
-  isFull (node: number, set: Set<number>) {
-    const children = this.getLeafs(node)
-    for (const c of children) {
-      if (!set.has(c)) return false
-    }
-    return true
-  }
-
-  hasSomePredicate (node, predicate: (c: number) => boolean) {
+  countPredicate (node, predicate: (c: number) => boolean) {
+    let all = true
+    let none = true
     const leafs = this.getLeafs(node)
     for (const n of leafs) {
-      if (predicate(n)) return true
+      if (predicate(n)) {
+        none = false
+      } else {
+        all = false
+      }
     }
-    return false
-  }
-
-  hasSome (node, set: Set<number>) {
-    const children = this.getLeafs(node)
-    for (const c of children) {
-      if (set.has(c)) return true
-    }
-    return false
+    // No items -> none
+    return none ? 'none' : all ? 'all' : 'some'
   }
 
   getChildren (node: number, recusive = false, result: number[] = []) {

@@ -340,8 +340,9 @@ function createIsolationState (
   }
 
   const show = (objects: VIM.Object[], source: string) => {
-    objects.forEach((o) => isolationRef.current.push(o))
-    const result = [...new Set(isolationRef.current)]
+    const isolation = isolationRef.current ?? []
+    objects.forEach((o) => isolation.push(o))
+    const result = [...new Set(isolation)]
     isolate(viewer, settings, result)
     isolationRef.current = result
     changed.current(source)

@@ -309,9 +309,30 @@ body {
 .rct-tree-item-title {
   margin: 0px;
 }
-.rct-tree-item-checkbox {
+
+.rct-tree-item-icon {
   position: absolute;
   right: 10px;
+  top: 10px;
+}
+
+.rct-tree-item-icon.vim-hidden {
+  color: black;
+  opacity: 0.75;
+}
+.rct-tree-item-icon.vim-visible {
+  color: black;
+  opacity: 0;
+}
+
+.rct-tree-item:hover .rct-tree-item-icon.vim-visible {
+  color: black;
+  opacity: 0.25;
+}
+
+.rct-tree-item:hover .rct-tree-item-icon:hover {
+  opacity: 0.75;
+  color: #0000f5;
 }
 
 [type='checkbox']:focus,
