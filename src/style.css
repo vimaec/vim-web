@@ -294,9 +294,11 @@ body {
 .parameters:first-child > ul > li h3 {
   border-top-right-radius: 4px;
 }
-.rct-tree-root:not(.rct-tree-root-focus)
-  .rct-tree-item-title-container-selected,
-.rct-tree-root.rct-tree-root-focus .rct-tree-item-title-container-selected {
+.vim-bim-lower {
+  max-height:44vh;
+}
+.vim-bim-tree .rct-tree-root:not(.rct-tree-root-focus) .rct-tree-item-title-container-selected,
+.vim-bim-tree .rct-tree-root.rct-tree-root-focus .rct-tree-item-title-container-selected {
   background-color: var(--c-lightest-blue);
 }
 .rct-tree-item-title-container:hover {
