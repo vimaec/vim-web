@@ -176,7 +176,8 @@ export function getVisibleBoundingBox (source: VIM.Viewer | VIM.Vim) {
     for (const obj of vim.getAllObjects()) {
       if (!obj.visible) continue
       const b = obj.getBoundingBox()
-      box = box ? box.union(b) : b.clone()
+      if (!b) continue
+      box = box ? box.union(b) : b?.clone()
     }
   }
   if (source instanceof VIM.Viewer) {

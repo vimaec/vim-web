@@ -59,7 +59,7 @@
     "react": "^18.1.0",
     "react-complex-tree": "^1.1.9",
     "react-tooltip": "^4.2.21",
-    "vim-webgl-viewer": "1.4.2"
+    "vim-webgl-viewer": "1.4.3-dev.0"
   },
   "keywords": [
     "3d",

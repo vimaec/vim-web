@@ -52,6 +52,7 @@ export function ControlBar (props: {
   setCursor: (cursor: Cursor) => void
 }) {
   const [show, setShow] = useState(true)
+  const showRef = useRef(show)
   const barTimeout = useRef<ReturnType<typeof setTimeout>>()
 
   // On Each Render
@@ -63,9 +64,18 @@ export function ControlBar (props: {
   useEffect(() => {
     // Hide bar for a couple ms
     props.viewer.camera.onMoved.subscribe(() => {
-      setShow(false)
+      if (showRef.current) {
+        showRef.current = false
+        setShow(false)
+      }
+
       clearTimeout(barTimeout.current)
-      barTimeout.current = setTimeout(() => setShow(true), 200)
+      barTimeout.current = setTimeout(() => {
+        if (!showRef.current) {
+          showRef.current = true
+          setShow(true)
+        }
+      }, 200)
     })
   }, [])
 
@@ -81,7 +91,7 @@ export function ControlBar (props: {
 
       {TabTools(props.viewer, props.setCursor, props.isolation)}
       <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md mx-2">
-        {TabSettings(props)}
+        <TabSettings {...props} />
       </div>
     </div>
   )
@@ -91,9 +101,10 @@ function TabCamera (viewer: VIM.Viewer) {
   const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerActive)
 
   useEffect(() => {
-    viewer.inputs.onPointerModeChanged.subscribe(() =>
+    viewer.inputs.onPointerModeChanged.subscribe(() => {
+      console.log('MODE')
       setMode(viewer.inputs.pointerActive)
-    )
+    })
   }, [])
 
   const onModeBtn = (target: VIM.PointerMode) => {
@@ -343,13 +354,20 @@ function TabSettings (props: {
   side: SideContent
   toggleSide: (value: SideContent) => void
 }) {
-  const [, setFullScreen] = useState<boolean>(!!document.fullscreenElement)
+  const [fullScreen, setFullScreen] = useState<boolean>(
+    !!document.fullscreenElement
+  )
+  const fullScreenRef = useRef<boolean>(fullScreen)
 
   useEffect(() => {
     // F11 doesn't properly register fullscreen changes so we resorot to polling
     const refreshFullScreen = () => {
       setTimeout(refreshFullScreen, 250)
-      setFullScreen(!!document.fullscreenElement)
+      const next = !!document.fullscreenElement
+      if (fullScreenRef.current !== next) {
+        fullScreenRef.current = next
+        setFullScreen(next)
+      }
     }
     refreshFullScreen()
   }, [])
