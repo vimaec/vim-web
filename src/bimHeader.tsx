@@ -64,7 +64,7 @@ function createHeader (header: BimHeader) {
       return [
         <dt
           data-tip={pair[1]}
-          className={'text-gray-medium py-1 truncate ' + pair[2]}
+          className={'text-gray-medium py-1 truncate select-none ' + pair[2]}
           key={`dt-${rowIndex}-${columnIndex}`}
         >
           {pair[0]}
