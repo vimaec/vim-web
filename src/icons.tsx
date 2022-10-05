@@ -157,8 +157,13 @@ export const fullArrowLeft = ({ height, width, fill }) => (
   </svg>
 )
 
-export const visible = ({ height, width, fill }) => (
-  <svg height={height} width={width} viewBox="0 0 256 256">
+export const visible = ({ height, width, fill, className }) => (
+  <svg
+    className={className}
+    height={height}
+    width={width}
+    viewBox="0 0 256 256"
+  >
     <path fill="none" d="M0 0h256v256H0z" />
     <path
       fill={fill}
@@ -167,8 +172,13 @@ export const visible = ({ height, width, fill }) => (
   </svg>
 )
 
-export const hidden = ({ height, width, fill }) => (
-  <svg height={height} width={width} viewBox="0 0 256 256">
+export const hidden = ({ height, width, fill, className = '' }) => (
+  <svg
+    className={className}
+    height={height}
+    width={width}
+    viewBox="0 0 256 256"
+  >
     <path fill="none" d="M0 0h256v256H0z" />
     <path
       fill={fill}
@@ -182,7 +192,7 @@ export const hidden = ({ height, width, fill }) => (
 )
 
 // Camera
-export const orbit = ({ height, width, fill }) => (
+export const orbit = ({ height, width, fill = '' }) => (
   <svg height={height} width={width} viewBox="0 0 256 256">
     <path fill="none" d="M0 0h256v256H0z" />
     <path

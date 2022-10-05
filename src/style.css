@@ -44,7 +44,7 @@
   --c-axe-y: #11a936;
   --c-axe-z: #0000f5;
 
-  --c-overflow: rgba(5, 12, 26, .80)
+  --c-overflow: rgba(5, 12, 26, 0.8);
 }
 
 body {
@@ -297,10 +297,14 @@ body {
   border-top-right-radius: 4px;
 }
 .vim-bim-lower {
-  max-height:44vh;
+  max-height: 44vh;
 }
-.vim-bim-tree .rct-tree-root:not(.rct-tree-root-focus) .rct-tree-item-title-container-selected,
-.vim-bim-tree .rct-tree-root.rct-tree-root-focus .rct-tree-item-title-container-selected {
+.vim-bim-tree
+  .rct-tree-root:not(.rct-tree-root-focus)
+  .rct-tree-item-title-container-selected,
+.vim-bim-tree
+  .rct-tree-root.rct-tree-root-focus
+  .rct-tree-item-title-container-selected {
   background-color: var(--c-lightest-blue);
 }
 .rct-tree-item-title-container:hover {
@@ -312,33 +316,84 @@ body {
 
 .rct-tree-item-title {
   margin: 0px;
+  /*
+  Doesnt work
+  text-overflow: ellipsis;
+  margin-right: 40px;
+  */
 }
 
-.rct-tree-item-icon {
+/* Tree Visibilty Icons */
+.rct-tree-item-icons {
   position: absolute;
-  right: 10px;
-  top: 10px;
+  right: 0px;
+  top: 0px;
+}
+
+.rct-tree-item-icon-visible,
+.rct-tree-item-icon-hidden {
+  width: 32px;
+  height: 32px;
+  padding: 8px;
+}
+
+.rct-tree-item-icons.vim-visible .rct-tree-item-icon-visible {
+  display: block;
+  opacity: 0;
+}
+.rct-tree-item-icons.vim-visible .rct-tree-item-icon-hidden {
+  display: none;
+}
+.rct-tree-item-icons.vim-hidden .rct-tree-item-icon-visible {
+  display: none;
+}
+.rct-tree-item-icons.vim-hidden .rct-tree-item-icon-hidden {
+  display: block;
 }
 
 .rct-tree-item-icon.vim-hidden {
   color: black;
   opacity: 0.75;
 }
-.rct-tree-item-icon.vim-visible {
-  color: black;
-  opacity: 0;
-}
 
-.rct-tree-item:hover .rct-tree-item-icon.vim-visible {
+/*Line hover*/
+.rct-tree-item:hover
+  .rct-tree-item-icons.vim-visible
+  .rct-tree-item-icon-visible {
   color: black;
   opacity: 0.25;
 }
 
-.rct-tree-item:hover .rct-tree-item-icon:hover {
+/* Hover Visible Object*/
+.rct-tree-item:hover
+  .rct-tree-item-icons.vim-visible:hover
+  .rct-tree-item-icon-hidden {
+  display: block;
   opacity: 0.75;
   color: #0000f5;
 }
 
+.rct-tree-item:hover
+  .rct-tree-item-icons.vim-visible:hover
+  .rct-tree-item-icon-visible {
+  display: none;
+}
+
+/* Hover Hidden Object*/
+.rct-tree-item:hover
+  .rct-tree-item-icons.vim-hidden:hover
+  .rct-tree-item-icon-visible {
+  display: block;
+  opacity: 0.75;
+  color: #0000f5;
+}
+.rct-tree-item:hover
+  .rct-tree-item-icons.vim-hidden:hover
+  .rct-tree-item-icon-hidden {
+  display: none;
+}
+
+/*Others*/
 [type='checkbox']:focus,
 [type='radio']:focus {
   outline: none;

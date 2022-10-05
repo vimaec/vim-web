@@ -115,7 +115,7 @@ export function BimTree (props: {
             </span>
             {
               <div
-                className={`rct-tree-item-icon ${
+                className={`rct-tree-item-icons ${
                   treeRef.current.nodes[item.index as number].visible
                 }`}
                 onClick={(e) => {
@@ -131,7 +131,14 @@ export function BimTree (props: {
                 {Icons.hidden({
                   width: 16,
                   height: 16,
-                  fill: 'currentColor'
+                  fill: 'currentColor',
+                  className: 'rct-tree-item-icon-hidden'
+                })}
+                {Icons.visible({
+                  width: 16,
+                  height: 16,
+                  fill: 'currentColor',
+                  className: 'rct-tree-item-icon-visible'
                 })}
               </div>
             }
