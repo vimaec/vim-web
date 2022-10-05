@@ -43,6 +43,8 @@
   --c-axe-x: #fd0202;
   --c-axe-y: #11a936;
   --c-axe-z: #0000f5;
+
+  --c-overflow: rgba(5, 12, 26, .80)
 }
 
 body {
@@ -416,7 +418,7 @@ input[type='search']::-webkit-search-cancel-button {
     right: 1.5rem;
   }
 }
-.behind canvas,
+/* .behind canvas,
 .behind .vim-logo,
 .behind .vim-logo,
 .behind .vim-control-bar,
@@ -425,7 +427,7 @@ input[type='search']::-webkit-search-cancel-button {
 .behind .vim-side-panel,
 .behind .vim-logo {
   filter: blur(10px);
-}
+} */
 .loader {
   width: 100%;
   height: 10px;
