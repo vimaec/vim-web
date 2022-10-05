@@ -43,14 +43,18 @@ export function isolate (
     showAll(viewer, settings)
   } else {
     const set = new Set(objects)
-
+    let allVisible = true
     viewer.vims.forEach((vim) => {
       for (const obj of vim.getAllObjects()) {
-        obj.visible = set.has(obj)
+        const has = set.has(obj)
+        obj.visible = has
+        if (!has) allVisible = false
       }
-      vim.scene.material = settings.useIsolationMaterial
-        ? viewer.renderer.materials.isolation
-        : undefined
+
+      vim.scene.material =
+        !allVisible && settings.useIsolationMaterial
+          ? viewer.renderer.materials.isolation
+          : undefined
     })
   }
 
