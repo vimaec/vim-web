@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 
-import { BimTree } from './bimTree'
+import { BimTree } from './treeview/bimTree'
 import { BimDocumentDetails, BimObjectDetails } from './bimDetails'
 import { BimDocumentHeader, BimObjectHeader } from './bimHeader'
 import { BimSearch } from './bimSearch'
@@ -36,6 +36,7 @@ export function BimPanel (props: {
   // on vim update, update elements
   useEffect(() => {
     if (vim) {
+      console.log('VIM Update')
       vim.document.getElementsSummary().then((elements) => {
         setElements(elements)
       })
@@ -52,6 +53,7 @@ export function BimPanel (props: {
       )
       const result = filterElements(vim, meshElements, filter)
       setFilteredElements(result)
+      console.log('setFilteredElements')
 
       if (searching.current) {
         if (filter !== '') {
