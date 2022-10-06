@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
 import logo from './assets/logo.png'
 import './style.css'
@@ -132,12 +132,7 @@ export function VimComponent (props: {
       <SidePanel viewer={props.viewer} side={side} content={sidePanel} />
       <ReactTooltip delayShow={200} />
       <VimContextMenu viewer={viewer} help={help} isolation={isolation} />
-      {useMemo(
-        () => (
-          <MenuToast viewer={props.viewer}></MenuToast>
-        ),
-        []
-      )}
+      <MenuToast viewer={props.viewer}></MenuToast>
     </>
   )
 }

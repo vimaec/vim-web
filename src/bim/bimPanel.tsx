@@ -37,7 +37,6 @@ export function BimPanel (props: {
   // on vim update, update elements
   useEffect(() => {
     if (vim) {
-      console.log('VIM Update')
       vim.document.getElementsSummary().then((elements) => {
         setElements(elements)
       })
@@ -54,7 +53,6 @@ export function BimPanel (props: {
       )
       const result = filterElements(vim, meshElements, filter)
       setFilteredElements(result)
-      console.log('setFilteredElements')
 
       if (searching.current) {
         if (filter !== '') {

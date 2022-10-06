@@ -51,7 +51,6 @@ export function ControlBar (props: {
   isolation: Isolation
   cursor: CursorManager
 }) {
-  console.log('ControlBar')
   const [show, setShow] = useState(true)
   const showRef = useRef(show)
   const barTimeout = useRef<ReturnType<typeof setTimeout>>()

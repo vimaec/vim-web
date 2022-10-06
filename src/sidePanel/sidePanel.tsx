@@ -3,7 +3,8 @@ import * as VIM from 'vim-webgl-viewer/'
 import * as Icons from '../icons'
 import { SideState } from './sideState'
 
-export function SidePanel (props: {
+export const SidePanel = React.memo(_SidePanel)
+export function _SidePanel (props: {
   side: SideState
   viewer: VIM.Viewer
   content: JSX.Element

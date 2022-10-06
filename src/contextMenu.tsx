@@ -23,7 +23,8 @@ export function showContextMenu (position: { x: number; y: number }) {
   showMenu(showMenuConfig)
 }
 
-export function VimContextMenu (props: {
+export const VimContextMenu = React.memo(_VimContextMenu)
+export function _VimContextMenu (props: {
   viewer: ViewerWrapper
   help: HelpState
   isolation: Isolation
