@@ -1,16 +1,16 @@
 import * as VIM from 'vim-webgl-viewer/'
 import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycaster'
-import { Isolation } from '../component'
-import { getVisibleBoundingBox } from '../utils/viewerUtils'
+import { Isolation } from './isolation'
+import { ViewerWrapper } from './viewer'
 
 export class ComponentInputs implements VIM.InputScheme {
-  private _viewer: VIM.Viewer
+  private _viewer: ViewerWrapper
   private _default: VIM.InputScheme
   private _isolation: Isolation
 
-  constructor (viewer: VIM.Viewer, isolation: Isolation) {
+  constructor (viewer: ViewerWrapper, isolation: Isolation) {
     this._viewer = viewer
-    this._default = new VIM.DefaultInputScheme(viewer)
+    this._default = new VIM.DefaultInputScheme(viewer.base)
     this._isolation = isolation
   }
 
@@ -26,16 +26,7 @@ export class ComponentInputs implements VIM.InputScheme {
     // F
     switch (key) {
       case VIM.KEYS.KEY_F: {
-        const box =
-          this._viewer.selection.count > 0
-            ? this._viewer.selection.getBoundingBox()
-            : getVisibleBoundingBox(this._viewer)
-
-        this._viewer.camera.frame(
-          box,
-          'none',
-          this._viewer.camera.defaultLerpDuration
-        )
+        this._viewer.frameVisibleObjects()
         return true
       }
       case VIM.KEYS.KEY_I: {

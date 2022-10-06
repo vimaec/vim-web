@@ -1,14 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 
-import { BimTree } from './treeview/bimTree'
+import { BimTree } from './bimTree'
 import { BimDocumentDetails, BimObjectDetails } from './bimDetails'
 import { BimDocumentHeader, BimObjectHeader } from './bimHeader'
 import { BimSearch } from './bimSearch'
-import { Isolation } from './component'
+import { Isolation } from '../helpers/isolation'
+import { ViewerWrapper } from '../helpers/viewer'
 
 export function BimPanel (props: {
-  viewer: VIM.Viewer
+  viewer: ViewerWrapper
   vim: VIM.Vim
   selection: VIM.Object[]
   isolation: Isolation
@@ -99,7 +100,10 @@ export function BimPanel (props: {
           visible={last !== undefined}
         />
         <BimObjectDetails object={last} visible={last !== undefined} />
-        <BimDocumentHeader vim={viewer.vims[0]} visible={last === undefined} />
+        <BimDocumentHeader
+          vim={viewer.base.vims[0]}
+          visible={last === undefined}
+        />
         <BimDocumentDetails vim={vim} visible={last === undefined} />
       </div>
     </div>

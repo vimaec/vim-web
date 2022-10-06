@@ -1,7 +1,7 @@
 import { TreeItem } from 'react-complex-tree'
 import { ElementInfo } from 'vim-webgl-viewer'
 import { VIM } from '../component'
-import { MapTree, sort, toMapTree } from '../utils/dataUtils'
+import { MapTree, sort, toMapTree } from '../helpers/data'
 
 // These names are used by css to format visibilty toggles
 export type NodeVisibility = 'vim-visible' | 'vim-undefined' | 'vim-hidden'

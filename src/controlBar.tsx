@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
-import { Isolation, SideContent } from './component'
-import { Cursor, pointerToCursor } from './helpers/cursor'
-import { frameContext } from './utils/viewerUtils'
+import { SideState } from './sidePanel/sideState'
+import { Isolation } from './helpers/isolation'
+import { Cursor, CursorManager, pointerToCursor } from './helpers/cursor'
+import { ViewerWrapper } from './helpers/viewer'
 import * as Icons from './icons'
+import { HelpState } from './help'
 
 // Shared Buttons style
 
@@ -43,13 +45,11 @@ const actionButton = (
 
 // Main Control bar
 export function ControlBar (props: {
-  viewer: VIM.Viewer
-  helpVisible: boolean
-  setHelpVisible: (value: boolean) => void
-  side: SideContent
-  toggleSide: (value: SideContent) => void
+  viewer: ViewerWrapper
+  help: HelpState
+  side: SideState
   isolation: Isolation
-  setCursor: (cursor: Cursor) => void
+  cursor: CursorManager
 }) {
   const [show, setShow] = useState(true)
   const showRef = useRef(show)
@@ -63,7 +63,7 @@ export function ControlBar (props: {
   // On First Render
   useEffect(() => {
     // Hide bar for a couple ms
-    props.viewer.camera.onMoved.subscribe(() => {
+    props.viewer.base.camera.onMoved.subscribe(() => {
       if (showRef.current) {
         showRef.current = false
         setShow(false)
@@ -89,7 +89,7 @@ export function ControlBar (props: {
         {TabCamera(props.viewer)}
       </div>
 
-      {TabTools(props.viewer, props.setCursor, props.isolation)}
+      {TabTools(props.viewer.base, props.cursor.setCursor, props.isolation)}
       <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md mx-2">
         <TabSettings {...props} />
       </div>
@@ -97,19 +97,21 @@ export function ControlBar (props: {
   )
 }
 
-function TabCamera (viewer: VIM.Viewer) {
-  const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerActive)
+function TabCamera (viewer: ViewerWrapper) {
+  const [mode, setMode] = useState<VIM.PointerMode>(
+    viewer.base.inputs.pointerActive
+  )
 
   useEffect(() => {
-    viewer.inputs.onPointerModeChanged.subscribe(() => {
+    viewer.base.inputs.onPointerModeChanged.subscribe(() => {
       console.log('MODE')
-      setMode(viewer.inputs.pointerActive)
+      setMode(viewer.base.inputs.pointerActive)
     })
   }, [])
 
   const onModeBtn = (target: VIM.PointerMode) => {
-    const next = mode === target ? viewer.inputs.pointerFallback : target
-    viewer.inputs.pointerActive = next
+    const next = mode === target ? viewer.base.inputs.pointerFallback : target
+    viewer.base.inputs.pointerActive = next
     setMode(next)
   }
 
@@ -142,8 +144,8 @@ function TabCamera (viewer: VIM.Viewer) {
     'Zoom Window',
     () => {
       onModeBtn('rect')
-      viewer.sectionBox.visible = false
-      viewer.sectionBox.interactive = false
+      viewer.base.sectionBox.visible = false
+      viewer.base.sectionBox.interactive = false
     },
     Icons.frameRect,
     () => mode === 'rect'
@@ -151,7 +153,7 @@ function TabCamera (viewer: VIM.Viewer) {
 
   const btnFrame = actionButton(
     'Zoom to Fit',
-    () => frameContext(viewer),
+    () => viewer.frameContext(),
     Icons.frameSelection,
     false
   )
@@ -348,12 +350,7 @@ function TabTools (
   return measuring ? measureTab : section.active ? sectionTab : toolsTab
 }
 
-function TabSettings (props: {
-  helpVisible: boolean
-  setHelpVisible: (value: boolean) => void
-  side: SideContent
-  toggleSide: (value: SideContent) => void
-}) {
+function TabSettings (props: { help: HelpState; side: SideState }) {
   const [fullScreen, setFullScreen] = useState<boolean>(
     !!document.fullscreenElement
   )
@@ -373,34 +370,34 @@ function TabSettings (props: {
   }, [])
 
   const onHelpBtn = () => {
-    props.setHelpVisible(!props.helpVisible)
+    props.help.setVisible(!props.help.visible)
   }
 
   const onTreeViewBtn = () => {
-    props.toggleSide('bim')
+    props.side.toggle('bim')
   }
 
   const onSettingsBtn = () => {
-    props.toggleSide('settings')
+    props.side.toggle('settings')
   }
 
   const btnTreeView = toggleButton(
     'Project Inspector',
     onTreeViewBtn,
     Icons.treeView,
-    () => props.side === 'bim'
+    () => props.side.get() === 'bim'
   )
   const btnSettings = toggleButton(
     'Settings',
     onSettingsBtn,
     Icons.settings,
-    () => props.side === 'settings'
+    () => props.side.get() === 'settings'
   )
   const btnHelp = toggleButton(
     'Help',
     onHelpBtn,
     Icons.help,
-    () => props.helpVisible
+    () => props.help.visible
   )
 
   const btnFullScreen = actionButton(

@@ -1,24 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react'
-import * as VIM from 'vim-webgl-viewer/'
 import * as Icons from './icons'
-import { resetCamera } from './utils/viewerUtils'
+import { ViewerWrapper } from './helpers/viewer'
 
 export const MenuTop = React.memo(_MenuTop)
-function _MenuTop (props: { viewer: VIM.Viewer }) {
-  const [ortho, setOrtho] = useState<boolean>(props.viewer.camera.orthographic)
+function _MenuTop (props: { viewer: ViewerWrapper }) {
+  const viewer = props.viewer.base
+  const helper = props.viewer
+
+  const [ortho, setOrtho] = useState<boolean>(viewer.camera.orthographic)
 
   const ui = useRef<HTMLDivElement>()
 
   useEffect(() => {
-    props.viewer.camera.onValueChanged.subscribe(() =>
-      setOrtho(props.viewer.camera.orthographic)
+    viewer.camera.onValueChanged.subscribe(() =>
+      setOrtho(viewer.camera.orthographic)
     )
     const axes = document.getElementsByClassName('gizmo-axis-canvas')[0]
     ui.current.appendChild(axes)
   }, [])
 
   const onHomeBtn = () => {
-    resetCamera(props.viewer)
+    helper.resetCamera()
   }
 
   const btnHome = (
@@ -36,7 +38,7 @@ function _MenuTop (props: { viewer: VIM.Viewer }) {
   const btnOrtho = (
     <button
       data-tip={ortho ? 'Orthographic' : 'Perspective'}
-      onClick={() => (props.viewer.camera.orthographic = !ortho)}
+      onClick={() => (props.viewer.base.camera.orthographic = !ortho)}
       className={
         'rounded-full text-gray-medium h-8 w-8 flex items-center justify-center transition-all hover:text-primary-royal'
       }
