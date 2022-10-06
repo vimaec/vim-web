@@ -65,8 +65,6 @@ export function VimComponent (props: {
   loading?: boolean
 }) {
   const useLogo = props.logo === undefined ? true : props.logo
-  // eslint-disable-next-line no-unused-vars
-
   const useInspector = props.bimPanel === undefined ? true : props.bimPanel
   const useMenu = props.menu === undefined ? true : props.menu
   const useMenuTop = props.menuTop === undefined ? true : props.menuTop

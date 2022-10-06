@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import helpImage from './assets/quick-controls.svg'
 import * as Icons from './icons'
 import { setComponentBehind } from './helpers/html'
@@ -14,17 +14,19 @@ export type HelpState = {
 
 export function useHelp (): HelpState {
   const [visible, setVisible] = useState(false)
+  const ref = useRef({ visible, setVisible }).current
 
   // Blur when help is visible
   useEffect(() => {
     setComponentBehind(visible)
   }, [visible])
 
-  return { visible, setVisible }
+  return ref
 }
 
 export const MenuHelp = React.memo(_MenuHelp)
 function _MenuHelp (props: { help: HelpState }) {
+  console.log('_MenuHelp')
   if (!props.help.visible) return null
 
   const onCloseBtn = () => {

@@ -51,6 +51,7 @@ export function ControlBar (props: {
   isolation: Isolation
   cursor: CursorManager
 }) {
+  console.log('ControlBar')
   const [show, setShow] = useState(true)
   const showRef = useRef(show)
   const barTimeout = useRef<ReturnType<typeof setTimeout>>()
@@ -86,10 +87,9 @@ export function ControlBar (props: {
       }`}
     >
       <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md mx-2">
-        {TabCamera(props.viewer)}
+        <TabCamera {...props} />
       </div>
-
-      {TabTools(props.viewer.base, props.cursor.setCursor, props.isolation)}
+      <TabTools {...props} />
       <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md mx-2">
         <TabSettings {...props} />
       </div>
@@ -97,21 +97,20 @@ export function ControlBar (props: {
   )
 }
 
-function TabCamera (viewer: ViewerWrapper) {
-  const [mode, setMode] = useState<VIM.PointerMode>(
-    viewer.base.inputs.pointerActive
-  )
+function TabCamera (props: { viewer: ViewerWrapper }) {
+  const viewer = props.viewer.base
+  const helper = props.viewer
+  const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerActive)
 
   useEffect(() => {
-    viewer.base.inputs.onPointerModeChanged.subscribe(() => {
-      console.log('MODE')
-      setMode(viewer.base.inputs.pointerActive)
+    viewer.inputs.onPointerModeChanged.subscribe(() => {
+      setMode(viewer.inputs.pointerActive)
     })
   }, [])
 
   const onModeBtn = (target: VIM.PointerMode) => {
-    const next = mode === target ? viewer.base.inputs.pointerFallback : target
-    viewer.base.inputs.pointerActive = next
+    const next = mode === target ? viewer.inputs.pointerFallback : target
+    viewer.inputs.pointerActive = next
     setMode(next)
   }
 
@@ -144,8 +143,8 @@ function TabCamera (viewer: ViewerWrapper) {
     'Zoom Window',
     () => {
       onModeBtn('rect')
-      viewer.base.sectionBox.visible = false
-      viewer.base.sectionBox.interactive = false
+      viewer.sectionBox.visible = false
+      viewer.sectionBox.interactive = false
     },
     Icons.frameRect,
     () => mode === 'rect'
@@ -153,7 +152,7 @@ function TabCamera (viewer: ViewerWrapper) {
 
   const btnFrame = actionButton(
     'Zoom to Fit',
-    () => viewer.frameContext(),
+    () => helper.frameContext(),
     Icons.frameSelection,
     false
   )
@@ -171,11 +170,12 @@ function TabCamera (viewer: ViewerWrapper) {
 }
 
 /* TAB TOOLS */
-function TabTools (
-  viewer: VIM.Viewer,
-  setCursor: (cursor: Cursor) => void,
+function TabTools (props: {
+  viewer: ViewerWrapper
+  cursor: CursorManager
   isolation: Isolation
-) {
+}) {
+  const viewer = props.viewer.base
   // Need a ref to get the up to date value in callback.
   const [measuring, setMeasuring] = useState(false)
   // eslint-disable-next-line no-unused-vars
@@ -230,7 +230,7 @@ function TabTools (
         viewer,
         () => measuringRef.current,
         (m) => setMeasurement(m),
-        setCursor
+        props.cursor.setCursor
       )
     }
   }
@@ -268,7 +268,7 @@ function TabTools (
 
   const btnIsolation = actionButton(
     'Toggle Isolation',
-    () => isolation.toggleContextual('controlBar'),
+    () => props.isolation.toggleContextual('controlBar'),
     Icons.toggleIsolation,
     false
   )
