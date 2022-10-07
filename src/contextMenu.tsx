@@ -5,10 +5,10 @@ import {
 } from '@firefox-devtools/react-contextmenu'
 import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { Isolation } from './component'
-import { Settings } from './helpers/settings'
-import { ArrayEquals } from './utils/dataUtils'
-import { frameContext, getAllVisible, resetCamera } from './utils/viewerUtils'
+import { Isolation } from './helpers/isolation'
+import { ArrayEquals } from './helpers/data'
+import { ViewerWrapper } from './helpers/viewer'
+import { HelpState } from './help'
 
 export const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
 type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -23,27 +23,27 @@ export function showContextMenu (position: { x: number; y: number }) {
   showMenu(showMenuConfig)
 }
 
-export function VimContextMenu (props: {
-  viewer: VIM.Viewer
-  settings: Settings
-  helpVisible: boolean
-  setHelpVisible: (value: boolean) => void
+export const VimContextMenu = React.memo(_VimContextMenu)
+export function _VimContextMenu (props: {
+  viewer: ViewerWrapper
+  help: HelpState
   isolation: Isolation
 }) {
-  const viewer = props.viewer
+  const viewer = props.viewer.base
+  const helper = props.viewer
   const [selection, setSelection] = useState<VIM.Object[]>([])
   const [section, setSection] = useState<{
     visible: boolean
     clip: boolean
   }>({
-    visible: props.viewer.sectionBox.visible,
-    clip: props.viewer.sectionBox.clip
+    visible: viewer.sectionBox.visible,
+    clip: viewer.sectionBox.clip
   })
   const isClipping = () => {
     return !viewer.sectionBox.box.containsBox(viewer.renderer.getBoundingBox())
   }
   const [clipping, setClipping] = useState<boolean>(isClipping())
-  const [hidden, setHidden] = useState(!getAllVisible(viewer))
+  const [hidden, setHidden] = useState(!helper.areAllObjectsVisible())
 
   useEffect(() => {
     // Register to selection
@@ -58,7 +58,7 @@ export function VimContextMenu (props: {
       })
     })
     viewer.renderer.onVisibilityChanged.subscribe((vim) => {
-      setHidden(!getAllVisible(vim))
+      setHidden(!helper.areAllObjectsVisible(vim))
       setSelection([...viewer.selection.objects]) // to force rerender
     })
     // Register to section box
@@ -66,17 +66,17 @@ export function VimContextMenu (props: {
   }, [])
 
   const onShowControlsBtn = (e: ClickCallback) => {
-    props.setHelpVisible(!props.helpVisible)
+    props.help.setVisible(true)
     e.stopPropagation()
   }
 
   const onCameraResetBtn = (e: ClickCallback) => {
-    resetCamera(viewer)
+    helper.resetCamera()
     e.stopPropagation()
   }
 
   const onCameraFrameBtn = (e: ClickCallback) => {
-    frameContext(viewer)
+    helper.frameContext()
     e.stopPropagation()
   }
 

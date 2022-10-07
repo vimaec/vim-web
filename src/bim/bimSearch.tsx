@@ -1,8 +1,8 @@
 import React from 'react'
-import * as VIM from 'vim-webgl-viewer'
+import { ViewerWrapper } from '../helpers/viewer'
 
 export function BimSearch (props: {
-  viewer: VIM.Viewer
+  viewer: ViewerWrapper
   filter: string
   setFilter: (s: string) => void
   count: number
@@ -13,12 +13,12 @@ export function BimSearch (props: {
   }
 
   const onFocus = () => {
-    props.viewer.inputs.keyboard.unregister()
+    props.viewer.base.inputs.keyboard.unregister()
     props.setSearching(true)
   }
 
   const onBlur = () => {
-    props.viewer.inputs.keyboard.register()
+    props.viewer.base.inputs.keyboard.register()
     props.setSearching(false)
   }
 

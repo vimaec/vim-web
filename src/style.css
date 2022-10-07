@@ -44,7 +44,7 @@
   --c-axe-y: #11a936;
   --c-axe-z: #0000f5;
 
-  --c-overflow: rgba(5, 12, 26, .80)
+  --c-overflow: rgba(5, 12, 26, 0.8);
 }
 
 body {
@@ -304,10 +304,14 @@ body {
   border-top-right-radius: 4px;
 }
 .vim-bim-lower {
-  max-height:44vh;
+  max-height: 44vh;
 }
-.vim-bim-tree .rct-tree-root:not(.rct-tree-root-focus) .rct-tree-item-title-container-selected,
-.vim-bim-tree .rct-tree-root.rct-tree-root-focus .rct-tree-item-title-container-selected {
+.vim-bim-tree
+  .rct-tree-root:not(.rct-tree-root-focus)
+  .rct-tree-item-title-container-selected,
+.vim-bim-tree
+  .rct-tree-root.rct-tree-root-focus
+  .rct-tree-item-title-container-selected {
   background-color: var(--c-lightest-blue);
 }
 .rct-tree-item-title-container:hover {
@@ -328,16 +332,20 @@ body {
   padding-right: 2.5rem;
 }
 
-.rct-tree-item-icon {
+/* Tree Visibilty Icons */
+.rct-tree-item-icons {
   position: absolute;
+
   right: 1rem;
   top: 11px;
   color: var(--c-darkest-gray);
+
 }
 
 .rct-tree-item-icon.vim-hidden {
   opacity: 1;
 }
+
 .rct-tree-item-icon.vim-visible {
   opacity: 0;
 }
@@ -351,7 +359,7 @@ body {
   opacity: 1;
 }
 
-
+/*Others*/
 [type='checkbox']:focus,
 [type='radio']:focus {
   outline: none;

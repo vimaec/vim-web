@@ -2,48 +2,43 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ControlledTreeEnvironment,
   InteractionMode,
-  Tree,
-  TreeItem
+  Tree
 } from 'react-complex-tree'
 import 'react-complex-tree/lib/style.css'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
-import { ElementInfo } from 'vim-webgl-viewer/'
-import { showContextMenu } from './contextMenu'
-import { frameContext, frameSelection } from './utils/viewerUtils'
-import { ArrayEquals, MapTree, sort, toMapTree } from './utils/dataUtils'
-import * as Icons from './icons'
-import { Isolation } from './component'
-
-type VimTreeNode = TreeItem<ElementInfo> & {
-  title: string
-  parent: number
-}
-
-type BoxState = 'vim-visible' | 'vim-undefined' | 'vim-hidden'
+import { showContextMenu } from '../contextMenu'
+import { ViewerWrapper } from '../helpers/viewer'
+import { ArrayEquals } from '../helpers/data'
+import * as Icons from '../icons'
+import { Isolation } from '../helpers/isolation'
+import { BimTreeData, toTreeData, VimTreeNode } from './bimTreeData'
 
 export function BimTree (props: {
-  viewer: VIM.Viewer
+  viewer: ViewerWrapper
   elements: VIM.ElementInfo[]
   objects: VIM.Object[]
   isolation: Isolation
 }) {
+  const viewer = props.viewer.base
+  const helper = props.viewer
   // Data state
   const [objects, setObjects] = useState<VIM.Object[]>([])
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
   const treeRef = useRef<BimTreeData>()
-  const tree = useMemo(
-    () => (treeRef.current = toTreeData(props.elements)),
-    [elements]
-  )
 
   // Tree state
   const [expandedItems, setExpandedItems] = useState<number[]>([])
   const [selectedItems, setSelectedItems] = useState<number[]>([])
   const [focusedItem, setFocusedItem] = useState<number>()
   const [doubleClick] = useState(new DoubleClickManager())
+  const [, setVersion] = useState(0)
   const focus = useRef<number>(0)
   const div = useRef<HTMLDivElement>()
+
+  useMemo(() => {
+    return (treeRef.current = toTreeData(props.viewer.base, elements))
+  }, [elements])
 
   useEffect(() => {
     ReactTooltip.rebuild()
@@ -53,14 +48,15 @@ export function BimTree (props: {
   useEffect(() => {
     if (elements && objects.length === 1) {
       scrollToSelection(div.current)
-      const [first] = props.viewer.selection.objects
+      const [first] = viewer.selection.objects
       focus.current = treeRef.current.getNodeFromElement(first.element)
     }
   }, [elements, objects])
 
   useEffect(() => {
-    props.viewer.renderer.onVisibilityChanged.subscribe(() => {
-      setElements(elements)
+    viewer.renderer.onVisibilityChanged.subscribe(() => {
+      treeRef.current.updateVisibility(viewer)
+      setVersion((v) => v + 1)
     })
   }, [])
 
@@ -69,8 +65,8 @@ export function BimTree (props: {
     setElements(props.elements)
   }
 
-  // Display loading until tree is ready.
-  if (!tree) {
+  // Display loading if no elements
+  if (!elements) {
     return (
       <div className="vim-bim-tree" ref={div}>
         Loading . . .
@@ -81,30 +77,17 @@ export function BimTree (props: {
   // Update tree state
   if (!ArrayEquals(props.objects, objects)) {
     setObjects(props.objects)
-    const nodes = props.objects.map((o) => tree.getNodeFromElement(o.element))
+    const nodes = props.objects.map((o) =>
+      treeRef.current.getNodeFromElement(o.element)
+    )
 
     // updated expanded items
-    const parents = nodes.flatMap((n) => tree.getAncestors(n))
-    const selection = tree.getSelection(props.objects.map((o) => o.element))
+    const parents = nodes.flatMap((n) => treeRef.current.getAncestors(n))
+    const selection = treeRef.current.getSelection(
+      props.objects.map((o) => o.element)
+    )
     setExpandedItems([...new Set(expandedItems.concat(parents))])
     setSelectedItems(selection)
-  }
-
-  const onCheckmark = (index: number) => {
-    const visibility = getObjectVisibility(props.viewer, treeRef.current, index)
-
-    const objs = treeRef.current
-      .getLeafs(index)
-      .map((n) =>
-        props.viewer.vims[0].getObjectFromElement(
-          treeRef.current.nodes[n]?.data.element
-        )
-      )
-    if (visibility !== 'vim-visible') {
-      props.isolation.show(objs, 'tree')
-    } else {
-      props.isolation.hide(objs, 'tree')
-    }
   }
 
   return (
@@ -112,11 +95,11 @@ export function BimTree (props: {
       className="vim-bim-tree mb-5"
       ref={div}
       tabIndex={0}
-      onFocus={() => props.viewer.inputs.keyboard.unregister()}
-      onBlur={() => props.viewer.inputs.keyboard.register()}
+      onFocus={() => viewer.inputs.keyboard.unregister()}
+      onBlur={() => viewer.inputs.keyboard.register()}
     >
       <ControlledTreeEnvironment
-        items={tree.nodes}
+        items={treeRef.current.nodes}
         getItemTitle={(item) => (item as VimTreeNode).title}
         viewState={{
           'tree-bim': {
@@ -134,20 +117,30 @@ export function BimTree (props: {
             </span>
             {
               <div
-                className={`rct-tree-item-icon ${getObjectVisibility(
-                  props.viewer,
-                  treeRef.current,
-                  item.index as number
-                )}`}
+                className={`rct-tree-item-icons ${
+                  treeRef.current.nodes[item.index as number].visible
+                }`}
                 onClick={(e) => {
-                  onCheckmark(item.index as number)
+                  toggleVisibility(
+                    viewer,
+                    props.isolation,
+                    treeRef.current,
+                    item.index as number
+                  )
                   e.stopPropagation()
                 }}
               >
                 {Icons.hidden({
                   width: 16,
                   height: 16,
-                  fill: 'currentColor'
+                  fill: 'currentColor',
+                  className: 'rct-tree-item-icon-hidden'
+                })}
+                {Icons.visible({
+                  width: 16,
+                  height: 16,
+                  fill: 'currentColor',
+                  className: 'rct-tree-item-icon-visible'
                 })}
               </div>
             }
@@ -167,10 +160,10 @@ export function BimTree (props: {
           ) => ({
             onKeyUp: (e) => {
               if (e.key === 'f') {
-                frameContext(props.viewer)
+                helper.frameContext()
               }
               if (e.key === 'Escape') {
-                props.viewer.selection.clear()
+                viewer.selection.clear()
               }
             },
             onContextMenu: (e) => {
@@ -187,40 +180,25 @@ export function BimTree (props: {
                   focus.current,
                   item.index as number
                 )
-                updateViewerSelection(
-                  treeRef.current,
-                  props.viewer,
-                  range,
-                  'set'
-                )
+                updateViewerSelection(treeRef.current, viewer, range, 'set')
               } else if (isControlKey(e)) {
                 if (renderFlags.isSelected) {
                   const leafs = treeRef.current.getLeafs(item.index as number)
                   updateViewerSelection(
                     treeRef.current,
-                    props.viewer,
+                    viewer,
                     leafs,
                     'remove'
                   )
                   focus.current = item.index as number
                 } else {
                   const leafs = treeRef.current.getLeafs(item.index as number)
-                  updateViewerSelection(
-                    treeRef.current,
-                    props.viewer,
-                    leafs,
-                    'add'
-                  )
+                  updateViewerSelection(treeRef.current, viewer, leafs, 'add')
                   focus.current = item.index as number
                 }
               } else {
                 const leafs = treeRef.current.getLeafs(item.index as number)
-                updateViewerSelection(
-                  treeRef.current,
-                  props.viewer,
-                  leafs,
-                  'set'
-                )
+                updateViewerSelection(treeRef.current, viewer, leafs, 'set')
                 focus.current = item.index as number
               }
               actions.primaryAction()
@@ -231,14 +209,14 @@ export function BimTree (props: {
         // Impement double click
         onPrimaryAction={(item, _) => {
           if (doubleClick.isDoubleClick(item.index as number)) {
-            frameSelection(props.viewer)
+            helper.frameSelection()
           }
         }}
         // Default behavior
         onFocusItem={(item) => {
           const index = item.index as number
           setFocusedItem(index)
-          updateViewerFocus(props.viewer, treeRef.current, index)
+          updateViewerFocus(viewer, treeRef.current, index)
         }}
         // Default behavior
         onExpandItem={(item) => {
@@ -259,26 +237,24 @@ export function BimTree (props: {
   )
 }
 
-function getObjectVisibility (
+function toggleVisibility (
   viewer: VIM.Viewer,
+  isolation: Isolation,
   tree: BimTreeData,
   index: number
-): BoxState {
-  const node = tree.nodes[index]
-  if (node.data) {
-    const obj = viewer.vims[0].getObjectFromElement(node.data?.element)
-    return obj?.visible ? 'vim-visible' : 'vim-hidden'
+) {
+  const objs = tree
+    .getLeafs(index)
+    .map((n) =>
+      viewer.vims[0].getObjectFromElement(tree.nodes[n]?.data.element)
+    )
+
+  const visibility = tree.nodes[index].visible
+  if (visibility !== 'vim-visible') {
+    isolation.show(objs, 'tree')
+  } else {
+    isolation.hide(objs, 'tree')
   }
-  const result = tree.countPredicate(index, (n) => {
-    const leaf = tree.nodes[n]
-    const obj = viewer.vims[0].getObjectFromElement(leaf.data?.element)
-    return obj?.visible ?? false
-  })
-  return result === 'all'
-    ? 'vim-visible'
-    : result === 'some'
-      ? 'vim-undefined'
-      : 'vim-hidden'
 }
 
 function updateViewerFocus (
@@ -342,163 +318,12 @@ function scrollToSelection (div: HTMLDivElement) {
   }
 }
 
-export function toTreeData (elements: VIM.ElementInfo[]) {
-  if (!elements) return
-
-  const tree = toMapTree(elements, [
-    (e) => e.categoryName,
-    (e) => e.familyName,
-    (e) => e.familyTypeName
-  ])
-  sort(tree)
-
-  const result = new BimTreeData(tree)
-  return result
-}
-
-export class BimTreeData {
-  nodes: Record<number, VimTreeNode>
-  elementToNode: Map<number, number>
-
-  constructor (map: MapTree<string, ElementInfo>) {
-    this.nodes = {}
-    this.elementToNode = new Map<number, number>()
-
-    this.flatten(map)
-  }
-
-  getRange (start: number, end: number) {
-    const min = Math.min(start, end)
-    const max = Math.max(start, end)
-    const result: number[] = []
-    for (const node of Object.values(this.nodes)) {
-      const index = node.index as number
-      if (index >= min && index <= max) result.push(index)
-    }
-    return result
-  }
-
-  getNodeFromElement (element: number) {
-    return this.elementToNode.get(element)
-  }
-
-  getLeafs (node: number, result: number[] = []) {
-    const current = this.nodes[node]
-    if (current.hasChildren) {
-      current.children.forEach((c) => this.getLeafs(c as number, result))
-    } else {
-      result.push(current.index as number)
-    }
-    return result
-  }
-
-  getSelection (elements: number[]) {
-    const nodes = elements.map((e) => this.elementToNode.get(e))
-    return [...new Set(nodes.flatMap((n) => this.getAncestors(n)))]
-  }
-
-  countPredicate (node, predicate: (c: number) => boolean) {
-    let all = true
-    let none = true
-    const leafs = this.getLeafs(node)
-    for (const n of leafs) {
-      if (predicate(n)) {
-        none = false
-      } else {
-        all = false
-      }
-    }
-    // No items -> none
-    return none ? 'none' : all ? 'all' : 'some'
-  }
-
-  getChildren (node: number, recusive = false, result: number[] = []) {
-    result.push(node)
-    const current = this.nodes[node]
-    if (current.hasChildren) {
-      if (recusive) {
-        current.children.forEach((c) =>
-          this.getChildren(c as number, recusive, result)
-        )
-      } else {
-        current.children.forEach((c) => result.push(c as number))
-      }
-    }
-    return result
-  }
-
-  getAncestors (node: number) {
-    const result: number[] = []
-    let n = node
-    let current = this.nodes[n]
-    while (current) {
-      result.push(n)
-      n = n = current.parent
-      current = this.nodes[n]
-    }
-    return result
-  }
-
-  private flatten (
-    map: MapTree<string, ElementInfo>,
-    i = -1
-  ): [number, number[]] {
-    const keys: number[] = []
-    const parent = i
-    for (const [k, v] of map.entries()) {
-      keys.push(++i)
-      if (v instanceof Map) {
-        // Recurse down the tree
-        const [next, children] = this.flatten(v, i)
-        this.nodes[i] = {
-          index: i,
-          parent,
-          title: k,
-          hasChildren: children.length > 0,
-          data: undefined,
-          children
-        }
-        i = next
-      } else {
-        // Add last parent
-        this.nodes[i] = {
-          index: i,
-          parent,
-          title: k,
-          hasChildren: v.length > 0,
-          data: undefined,
-          children: range(v.length, i + 1)
-        }
-        const self = i
-        // Add the leaves
-        v.forEach((e) => {
-          this.nodes[++i] = {
-            index: i,
-            parent: self,
-            title: `${e.name} [${e.id}]`,
-            hasChildren: false,
-            data: e,
-            children: []
-          }
-          this.elementToNode.set(e.element, i)
-        })
-      }
-    }
-    // return last used index and sibbling indices at this level.
-    return [i, keys]
-  }
-}
-
 // Taken from https://github.com/lukasbach/react-complex-tree/blob/main/packages/core/src/isControlKey.ts
 export const isControlKey = (e: React.MouseEvent<any, any>) => {
   return (
     e.ctrlKey ||
     (navigator.platform.toUpperCase().indexOf('MAC') >= 0 && e.metaKey)
   )
-}
-
-function range (size: number, startAt = 0) {
-  return [...Array(size).keys()].map((i) => i + startAt)
 }
 
 class DoubleClickManager {

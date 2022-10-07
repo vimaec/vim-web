@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
 import logo from './assets/logo.png'
 import './style.css'
@@ -6,30 +6,24 @@ import 'vim-webgl-viewer/dist/style.css'
 
 import * as VIM from 'vim-webgl-viewer/'
 
-import { MenuTop } from './menuTop'
+import { MenuTop } from './axesPanel'
 import { ControlBar } from './controlBar'
-import { LoadingBox } from './loadingBox'
-import { BimPanel } from './bimPanel'
+import { LoadingBox } from './loading'
+import { BimPanel } from './bim/bimPanel'
 import { showContextMenu, VimContextMenu } from './contextMenu'
-import { MenuHelp } from './menuHelp'
-import { SidePanel } from './menuSide'
-import { MenuSettings } from './menuSettings'
-import { MenuToast } from './menuToast'
+import { MenuHelp, useHelp } from './help'
+import { SidePanel } from './sidePanel/sidePanel'
+import { useSideState } from './sidePanel/sideState'
+import { MenuSettings } from './settings/menuSettings'
+import { MenuToast } from './toast'
 
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
-import { applySettings, Settings } from './helpers/settings'
-import {
-  getAllVisible,
-  isolate,
-  setAllVisible,
-  setBehind
-} from './utils/viewerUtils'
-
-import { ArrayEquals } from './utils/dataUtils'
+import { useSettings } from './settings/settings'
+import { useIsolation } from './helpers/isolation'
+import { ViewerWrapper } from './helpers/viewer'
 
 export * as VIM from 'vim-webgl-viewer/'
-export type SideContent = 'none' | 'bim' | 'settings'
 
 export function createContainer (viewer: VIM.Viewer) {
   const root = document.createElement('div')
@@ -70,133 +64,75 @@ export function VimComponent (props: {
   menuTop?: boolean
   loading?: boolean
 }) {
-  const viewer = props.viewer
   const useLogo = props.logo === undefined ? true : props.logo
-  // eslint-disable-next-line no-unused-vars
-
   const useInspector = props.bimPanel === undefined ? true : props.bimPanel
   const useMenu = props.menu === undefined ? true : props.menu
   const useMenuTop = props.menuTop === undefined ? true : props.menuTop
   const useLoading = props.loading === undefined ? true : props.loading
 
-  const [helpVisible, setHelpVisible] = useState(false)
-  const [settings, setSettings] = useState(new Settings())
-  const side = createSideState(useInspector)
-  const isolation = createIsolationState(viewer, settings)
-  const [cursorManager] = useState(new CursorManager(props.viewer))
-
-  const getVim = () => viewer.selection.vim ?? viewer.vims[0]
-  const [selection, setSelection] = useState<VIM.Object[]>([
-    ...viewer.selection.objects
-  ])
-  const [vim, setVim] = useState<VIM.Vim>(getVim())
-
-  useEffect(() => {
-    applySettings(viewer, settings)
-  }, [settings])
-
-  useEffect(() => {
-    setBehind(helpVisible)
-  }, [helpVisible])
+  const cursor = useRef(new CursorManager(props.viewer)).current
+  const viewer = useRef(new ViewerWrapper(props.viewer)).current
+  const settings = useSettings(props.viewer)
+  const isolation = useIsolation(viewer, settings.get)
+  const side = useSideState(useInspector)
+  const help = useHelp()
+  const [vim, selection] = useViewerState(props.viewer)
 
   // On first render
   useEffect(() => {
     props.onMount()
-    cursorManager.register()
-
-    // register to viewer state changes
-    const subVim = viewer.onVimLoaded.subscribe(() => setVim(getVim()))
-    const subSel = viewer.selection.onValueChanged.subscribe(() => {
-      setVim(getVim())
-      setSelection([...viewer.selection.objects])
-      if (viewer.selection.count > 0) {
-        side.set('bim')
-      }
-    })
-
-    props.viewer.inputs.onContextMenu.subscribe(showContextMenu)
+    cursor.register()
 
     // Frame on vim loaded
-    const subLoad = viewer.onVimLoaded.subscribe(() => {
-      viewer.camera.frame('all', 45)
+    props.viewer.onVimLoaded.subscribe(() => {
+      props.viewer.camera.frame('all', 45)
     })
 
-    props.viewer.inputs.scheme = new ComponentInputScheme(
-      props.viewer,
-      isolation
-    )
+    // Setup custom input scheme
+    props.viewer.inputs.scheme = new ComponentInputScheme(viewer, isolation)
 
-    // dispose
-    return () => {
-      cursorManager.unregister()
-      subLoad()
-      subVim()
-      subSel()
-    }
+    // Register context menu
+    props.viewer.inputs.onContextMenu.subscribe(showContextMenu)
   }, [])
 
   const sidePanel = (
     <>
       <BimPanel
-        viewer={props.viewer}
+        viewer={viewer}
         vim={vim}
         selection={selection}
-        visible={side.getCurrent() === 'bim'}
+        visible={side.get() === 'bim'}
         isolation={isolation}
       />
       <MenuSettings
-        visible={side.getCurrent() === 'settings'}
+        visible={side.get() === 'settings'}
         viewer={props.viewer}
         settings={settings}
-        setSettings={setSettings}
       />
     </>
   )
 
   return (
     <>
-      {helpVisible
-        ? (
-        <MenuHelp closeHelp={() => setHelpVisible(false)} />
-          )
-        : null}
+      <MenuHelp help={help} />
       {useLogo ? <Logo /> : null}
       {useLoading ? <LoadingBox viewer={props.viewer} /> : null}
       {useMenu
         ? (
         <ControlBar
-          viewer={props.viewer}
-          helpVisible={helpVisible}
-          setHelpVisible={setHelpVisible}
-          side={side.getCurrent()}
-          toggleSide={side.toggleSide}
+          viewer={viewer}
+          help={help}
+          side={side}
           isolation={isolation}
-          setCursor={cursorManager.setCursor}
+          cursor={cursor}
         />
           )
         : null}
-      {useMenuTop ? <MenuTop viewer={props.viewer} /> : null}
-      <SidePanel
-        visible={side.getCurrent() !== 'none'}
-        viewer={props.viewer}
-        content={sidePanel}
-        popSide={side.pop}
-        getSideNav={side.getNav}
-      />
+      {useMenuTop ? <MenuTop viewer={viewer} /> : null}
+      <SidePanel viewer={props.viewer} side={side} content={sidePanel} />
       <ReactTooltip delayShow={200} />
-      <VimContextMenu
-        viewer={props.viewer}
-        settings={settings}
-        helpVisible={helpVisible}
-        setHelpVisible={setHelpVisible}
-        isolation={isolation}
-      />
-      {useMemo(
-        () => (
-          <MenuToast viewer={props.viewer}></MenuToast>
-        ),
-        []
-      )}
+      <VimContextMenu viewer={viewer} help={help} isolation={isolation} />
+      <MenuToast viewer={props.viewer}></MenuToast>
     </>
   )
 }
@@ -209,158 +145,22 @@ const Logo = React.memo(() => (
   </div>
 ))
 
-function createSideState (useInspector: boolean) {
-  const [side, setSide] = useState<SideContent[]>(['bim'])
-  const sideRef = useRef(side)
+function useViewerState (viewer: VIM.Viewer) {
+  const getVim = () => viewer.selection.vim ?? viewer.vims[0]
 
-  const toggleSide = (content: SideContent) => {
-    let r
-    const [A, B] = sideRef.current
-    if (!A && !B) r = [content]
-    else if (A === content && !B) r = []
-    else if (A !== content && !B) r = [A, content]
-    else if (A && B === content) r = [A]
-    else if (A && B !== content) r = [content]
-    sideRef.current = r
-    setSide(r)
-  }
-  const pop = () => {
-    sideRef.current.pop()
-    setSide([...sideRef.current])
-  }
-  const getNav = () => {
-    return sideRef.current.length > 1 ? 'back' : 'close'
-  }
-
-  const getCurrent = () => {
-    const result = sideRef.current[sideRef.current.length - 1] ?? 'none'
-    if (result && !useInspector) return 'none'
-    return result
-  }
-
-  const set = (value: SideContent) => {
-    sideRef.current = [value]
-    setSide([value])
-  }
-
-  return { set, getCurrent, toggleSide, pop, getNav }
-}
-
-export type Isolation = {
-  search: (objects: VIM.Object[], source: string) => void
-  current: () => VIM.Object[]
-  show: (objects: VIM.Object[], source: string) => void
-  hide: (objects: VIM.Object[], source: string) => void
-  toggleContextual: (source: string) => void
-  hideSelection: (source: string) => void
-  clear: (source: string) => void
-  onChange: (action: (source: string) => void) => void
-}
-function createIsolationState (
-  viewer: VIM.Viewer,
-  settings: Settings
-): Isolation {
-  const isolationRef = useRef<VIM.Object[]>()
-  const lastIsolation = useRef<VIM.Object[]>()
-  const changed = useRef<(source: string) => void>()
+  const [vim, setVim] = useState<VIM.Vim>(getVim())
+  const [selection, setSelection] = useState<VIM.Object[]>([
+    ...viewer.selection.objects
+  ])
 
   useEffect(() => {
-    viewer.renderer.onVisibilityChanged.subscribe((vim) => {
-      if (getAllVisible(viewer)) {
-        isolationRef.current = undefined
-      }
+    // register to viewer state changes
+    viewer.onVimLoaded.subscribe(() => setVim(getVim()))
+    viewer.selection.onValueChanged.subscribe(() => {
+      setVim(getVim())
+      setSelection([...viewer.selection.objects])
     })
   }, [])
 
-  const onChange = (action: (source: string) => void) => {
-    changed.current = action
-  }
-
-  const current = () => {
-    return isolationRef.current
-  }
-
-  const search = (objects: VIM.Object[], source: string) => {
-    if (isolationRef.current) {
-      lastIsolation.current = isolationRef.current
-    }
-
-    isolate(viewer, settings, objects)
-    isolationRef.current = objects
-    changed.current(source)
-  }
-
-  const toggleContextual = (source: string) => {
-    const selection = [...viewer.selection.objects]
-
-    if (isolationRef.current) {
-      lastIsolation.current = isolationRef.current
-    }
-    if (isolationRef.current) {
-      if (
-        selection.length === 0 ||
-        ArrayEquals(isolationRef.current, selection)
-      ) {
-        // Cancel isolation
-        setAllVisible(viewer)
-        isolationRef.current = undefined
-      } else {
-        // Replace Isolation
-        isolate(viewer, settings, selection)
-        isolationRef.current = selection
-      }
-    } else {
-      if (selection.length > 0) {
-        // Set new Isolation
-        isolate(viewer, settings, selection)
-        isolationRef.current = selection
-      } else if (lastIsolation.current) {
-        // Restore last isolation
-        isolate(viewer, settings, lastIsolation.current)
-        isolationRef.current = [...lastIsolation.current]
-      }
-    }
-    changed.current(source)
-  }
-
-  const hideSelection = (source: string) => {
-    hide([...viewer.selection.objects], source)
-  }
-
-  const hide = (objects: VIM.Object[], source: string) => {
-    const selection = new Set(objects)
-    const initial = isolationRef.current ?? viewer.vims[0].getAllObjects()
-    const result: VIM.Object[] = []
-    for (const obj of initial) {
-      if (!selection.has(obj)) result.push(obj)
-    }
-    isolate(viewer, settings, result)
-    isolationRef.current = result
-    changed.current(source)
-  }
-
-  const show = (objects: VIM.Object[], source: string) => {
-    const isolation = isolationRef.current ?? []
-    objects.forEach((o) => isolation.push(o))
-    const result = [...new Set(isolation)]
-    isolate(viewer, settings, result)
-    isolationRef.current = result
-    changed.current(source)
-  }
-
-  const clear = (source: string) => {
-    setAllVisible(viewer)
-    isolationRef.current = undefined
-    changed.current(source)
-  }
-  return {
-    search,
-    show,
-    hide,
-    toggleContextual,
-    hideSelection,
-    clear,
-    current,
-    onChange
-  }
+  return [vim, selection] as [VIM.Vim, VIM.Object[]]
 }

@@ -1,15 +1,34 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import helpImage from './assets/quick-controls.svg'
 import * as Icons from './icons'
+import { setComponentBehind } from './helpers/html'
 
 const urlSupport = 'https://support.vimaec.com'
 const urlControls =
   'https://support.vimaec.com/en/articles/5872168-navigation-and-controls'
 
+export type HelpState = {
+  visible: boolean
+  setVisible: (value: boolean) => void
+}
+
+export function useHelp (): HelpState {
+  const [visible, setVisible] = useState(false)
+
+  // Blur when help is visible
+  useEffect(() => {
+    setComponentBehind(visible)
+  }, [visible])
+
+  return { visible, setVisible }
+}
+
 export const MenuHelp = React.memo(_MenuHelp)
-function _MenuHelp (props: { closeHelp: () => void }) {
+function _MenuHelp (props: { help: HelpState }) {
+  if (!props.help.visible) return null
+
   const onCloseBtn = () => {
-    props.closeHelp()
+    props.help.setVisible(false)
   }
   const onControlsBtn = () => {
     window.open(urlControls)

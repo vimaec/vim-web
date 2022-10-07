@@ -1,12 +1,11 @@
 import React from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { Settings } from './helpers/settings'
+import { Settings, SettingsState } from './settings'
 
 export function MenuSettings (props: {
   visible: boolean
   viewer: VIM.Viewer
-  settings: Settings
-  setSettings: (value: Settings) => void
+  settings: SettingsState
 }) {
   if (!props.visible) return null
   const toggleElement = (label: string, state: boolean, action: () => void) => {
@@ -22,16 +21,16 @@ export function MenuSettings (props: {
       </label>
     )
   }
-  const next = props.settings.clone()
+  const next = props.settings.get.clone()
 
   const settingsToggle = (
     label: string,
     getter: (settings: Settings) => boolean,
     setter: (settings: Settings, b: boolean) => void
   ) => {
-    return toggleElement(label, getter(props.settings), () => {
+    return toggleElement(label, getter(props.settings.get), () => {
       setter(next, !getter(next))
-      props.setSettings(next)
+      props.settings.set(next)
     })
   }
   // {toggleElement("Hide action menu while moving camera")}

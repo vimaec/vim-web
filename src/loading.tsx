@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { setBehind } from './utils/viewerUtils'
+import { setComponentBehind } from './helpers/html'
 
 type Progress = 'processing' | number | string
 
@@ -23,7 +23,7 @@ function _LoadingBox (props: { viewer: VIM.Viewer }) {
   }, [])
 
   useEffect(() => {
-    setBehind(progress !== undefined)
+    setComponentBehind(progress !== undefined)
   }, [progress])
 
   const msg =

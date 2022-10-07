@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
-import { groupBy } from './utils/dataUtils'
-import * as Icons from './icons'
+import { groupBy } from '../helpers/data'
+import * as Icons from '../icons'
 
 export type TableEntry = { name: string; value: string; group: string }
 type BimDetailsInfo = { section: string; content: Map<string, TableEntry[]> }[]
