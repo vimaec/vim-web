@@ -178,16 +178,9 @@ body {
 
 /* Tooltips */
 .__react_component_tooltip {
-  background-color: var(--c-white)!important;
-  color: var(--c-darkest-gray)!important;
-  font-size: 12.65px;
   transition: opacity 0.1s ease-out !important;
-  border: 1px solid var(--c-medium-gray)!important;
-  box-shadow: 2px 6px 15px #00000033;
 }
-.__react_component_tooltip:before, .__react_component_tooltip:after {
-  content: none!important;
-}
+
 /* Bim Panel */
 
 .vim-side-panel {
@@ -320,43 +313,84 @@ body {
 .rct-tree-items-:hover {
   background-color: var(--c-list-hover);
 }
-.vim-bim-tree .rct-tree-item:hover .rct-tree-item-icon:hover {
-  opacity: 1;
-  color: var(--c-primary-royal);
-}
+
 .rct-tree-item-title {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
   margin: 0px;
-  padding-right: 2.5rem;
+  /*
+  Doesnt work
+  text-overflow: ellipsis;
+  margin-right: 40px;
+  */
 }
 
 /* Tree Visibilty Icons */
 .rct-tree-item-icons {
   position: absolute;
+  right: 0px;
+  top: 0px;
+}
 
-  right: 1rem;
-  top: 11px;
-  color: var(--c-darkest-gray);
+.rct-tree-item-icon-visible,
+.rct-tree-item-icon-hidden {
+  width: 32px;
+  height: 32px;
+  padding: 8px;
+}
 
+.rct-tree-item-icons.vim-visible .rct-tree-item-icon-visible {
+  display: block;
+  opacity: 0;
+}
+.rct-tree-item-icons.vim-visible .rct-tree-item-icon-hidden {
+  display: none;
+}
+.rct-tree-item-icons.vim-hidden .rct-tree-item-icon-visible {
+  display: none;
+}
+.rct-tree-item-icons.vim-hidden .rct-tree-item-icon-hidden {
+  display: block;
 }
 
 .rct-tree-item-icon.vim-hidden {
-  opacity: 1;
+  color: black;
+  opacity: 0.75;
 }
 
-.rct-tree-item-icon.vim-visible {
-  opacity: 0;
+/*Line hover*/
+.rct-tree-item:hover
+  .rct-tree-item-icons.vim-visible
+  .rct-tree-item-icon-visible {
+  color: black;
+  opacity: 0.25;
 }
-.rct-tree-item-title-container:hover .rct-tree-item-icon.vim-hidden, .rct-tree-item-title-container:hover .rct-tree-item-icon.vim-visible {
-  color: var(--c-gray);
+
+/* Hover Visible Object*/
+.rct-tree-item:hover
+  .rct-tree-item-icons.vim-visible:hover
+  .rct-tree-item-icon-hidden {
+  display: block;
+  opacity: 0.75;
+  color: #0000f5;
 }
-.vim-bim-tree .rct-tree-root.rct-tree-root-focus .rct-tree-item-title-container-selected:hover .rct-tree-item-icon.vim-visible {
-  color: #9CB5D5;
+
+.rct-tree-item:hover
+  .rct-tree-item-icons.vim-visible:hover
+  .rct-tree-item-icon-visible {
+  display: none;
 }
-.rct-tree-item:hover .rct-tree-item-icon.vim-visible {
-  opacity: 1;
+
+/* Hover Hidden Object*/
+.rct-tree-item:hover
+  .rct-tree-item-icons.vim-hidden:hover
+  .rct-tree-item-icon-visible {
+  display: block;
+  opacity: 0.75;
+  color: #0000f5;
+}
+.rct-tree-item:hover
+  .rct-tree-item-icons.vim-hidden:hover
+  .rct-tree-item-icon-hidden {
+  display: none;
 }
 
 /*Others*/
