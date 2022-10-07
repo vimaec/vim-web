@@ -26,7 +26,7 @@ export class ComponentInputs implements VIM.InputScheme {
     // F
     switch (key) {
       case VIM.KEYS.KEY_F: {
-        this._viewer.frameVisibleObjects()
+        this._viewer.frameContext()
         return true
       }
       case VIM.KEYS.KEY_I: {
