@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 export type SideContent = 'none' | 'bim' | 'settings'
 
@@ -44,5 +44,14 @@ export function useSideState (useInspector: boolean): SideState {
     setSide([value])
   }
 
-  return { set, get, toggle, pop, getNav }
+  return useMemo(
+    () => ({
+      set,
+      get,
+      toggle,
+      pop,
+      getNav
+    }),
+    [side]
+  )
 }

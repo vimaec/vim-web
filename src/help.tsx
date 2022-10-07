@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import helpImage from './assets/quick-controls.svg'
 import * as Icons from './icons'
 import { setComponentBehind } from './helpers/html'
@@ -20,7 +20,7 @@ export function useHelp (): HelpState {
     setComponentBehind(visible)
   }, [visible])
 
-  return { visible, setVisible }
+  return useMemo(() => ({ visible, setVisible }), [visible, setVisible])
 }
 
 export const MenuHelp = React.memo(_MenuHelp)

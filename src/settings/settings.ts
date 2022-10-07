@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 
 export class Settings {
@@ -20,7 +20,7 @@ export function useSettings (viewer: VIM.Viewer): SettingsState {
     applySettings(viewer, settings)
   }, [settings])
 
-  return { get: settings, set: setSettings }
+  return useMemo(() => ({ get: settings, set: setSettings }), [settings])
 }
 
 export function applySettings (viewer: VIM.Viewer, settings: Settings) {
