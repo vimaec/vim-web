@@ -1,7 +1,5 @@
-import { useEffect, useRef } from 'react'
-
+import { useRef } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-
 import { Settings } from '../settings/settings'
 import { ViewerWrapper } from './viewer'
 
@@ -15,13 +13,14 @@ type IsolationSource =
   | 'controlBar'
 
 export type Isolation = {
-  search: (objects: VIM.Object[], source: IsolationSource) => void
+  set: (objects: VIM.Object[], source: IsolationSource) => void
   current: () => VIM.Object[]
   show: (objects: VIM.Object[], source: IsolationSource) => void
   hide: (objects: VIM.Object[], source: IsolationSource) => void
   toggleContextual: (source: IsolationSource) => void
   hideSelection: (source: IsolationSource) => void
   clear: (source: IsolationSource) => void
+  any: () => boolean
   onChange: (action: (source: IsolationSource) => void) => void
 }
 export function useIsolation (
@@ -34,13 +33,7 @@ export function useIsolation (
   const lastIsolation = useRef<VIM.Object[]>()
   const changed = useRef<(source: string) => void>()
 
-  useEffect(() => {
-    viewer.renderer.onVisibilityChanged.subscribe((vim) => {
-      if (helper.areAllObjectsVisible()) {
-        isolationRef.current = undefined
-      }
-    })
-  }, [])
+  const any = () => !!isolationRef.current
 
   const showAll = () => {
     viewer.vims.forEach((v) => {
@@ -57,11 +50,11 @@ export function useIsolation (
     objects: VIM.Object[],
     frame: boolean = true
   ) => {
+    let allVisible = true
     if (!objects) {
       showAll()
     } else {
       const set = new Set(objects)
-      let allVisible = true
       viewer.vims.forEach((vim) => {
         for (const obj of vim.getAllObjects()) {
           const has = set.has(obj)
@@ -81,6 +74,7 @@ export function useIsolation (
     }
 
     viewer.selection.clear()
+    return !allVisible
   }
 
   const onChange = (action: (source: IsolationSource) => void) => {
@@ -91,7 +85,7 @@ export function useIsolation (
     return isolationRef.current
   }
 
-  const search = (objects: VIM.Object[], source: string) => {
+  const set = (objects: VIM.Object[], source: string) => {
     if (isolationRef.current) {
       lastIsolation.current = isolationRef.current
     }
@@ -154,8 +148,8 @@ export function useIsolation (
     const isolation = isolationRef.current ?? []
     objects.forEach((o) => isolation.push(o))
     const result = [...new Set(isolation)]
-    isolate(viewer, settings, result)
-    isolationRef.current = result
+    const isolated = isolate(viewer, settings, result)
+    isolationRef.current = isolated ? result : undefined
     changed.current(source)
   }
 
@@ -166,7 +160,8 @@ export function useIsolation (
   }
 
   return {
-    search,
+    any,
+    set,
     show,
     hide,
     toggleContextual,

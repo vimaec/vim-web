@@ -131,7 +131,12 @@ export function VimComponent (props: {
       {useMenuTop ? <MenuTop viewer={viewer} /> : null}
       <SidePanel viewer={props.viewer} side={side} content={sidePanel} />
       <ReactTooltip delayShow={200} />
-      <VimContextMenu viewer={viewer} help={help} isolation={isolation} />
+      <VimContextMenu
+        viewer={viewer}
+        help={help}
+        isolation={isolation}
+        selection={selection}
+      />
       <MenuToast viewer={props.viewer}></MenuToast>
     </>
   )

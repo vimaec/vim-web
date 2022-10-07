@@ -57,9 +57,9 @@ export function BimPanel (props: {
       if (searching.current) {
         if (filter !== '') {
           const objects = result.map((e) => vim.getObjectFromElement(e.element))
-          props.isolation.search(objects, 'search')
+          props.isolation.set(objects, 'search')
         } else {
-          props.isolation.search(undefined, 'search')
+          props.isolation.set(undefined, 'search')
         }
       }
     }

@@ -28,10 +28,10 @@ export function _VimContextMenu (props: {
   viewer: ViewerWrapper
   help: HelpState
   isolation: Isolation
+  selection: VIM.Object[]
 }) {
   const viewer = props.viewer.base
   const helper = props.viewer
-  const [selection, setSelection] = useState<VIM.Object[]>([])
   const [section, setSection] = useState<{
     visible: boolean
     clip: boolean
@@ -43,24 +43,17 @@ export function _VimContextMenu (props: {
     return !viewer.sectionBox.box.containsBox(viewer.renderer.getBoundingBox())
   }
   const [clipping, setClipping] = useState<boolean>(isClipping())
-  const [hidden, setHidden] = useState(!helper.areAllObjectsVisible())
+  const hidden = props.isolation.any()
 
   useEffect(() => {
     // Register to selection
-    viewer.selection.onValueChanged.subscribe(() => {
-      setSelection([...viewer.selection.objects])
-    })
-
     viewer.sectionBox.onStateChanged.subscribe(() => {
       setSection({
         visible: viewer.sectionBox.visible,
         clip: viewer.sectionBox.clip
       })
     })
-    viewer.renderer.onVisibilityChanged.subscribe((vim) => {
-      setHidden(!helper.areAllObjectsVisible(vim))
-      setSelection([...viewer.selection.objects]) // to force rerender
-    })
+
     // Register to section box
     viewer.sectionBox.onBoxConfirm.subscribe(() => setClipping(isClipping()))
   }, [])
@@ -142,9 +135,9 @@ export function _VimContextMenu (props: {
       : null
   }
 
-  const hasSelection = selection?.length > 0
+  const hasSelection = props.selection?.length > 0
   const measuring = !!viewer.measure.stage
-  const isolated = ArrayEquals(selection, props.isolation.current())
+  const isolated = ArrayEquals(props.selection, props.isolation.current())
   return (
     <div
       className="vim-context-menu"

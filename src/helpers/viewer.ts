@@ -52,27 +52,6 @@ export class ViewerWrapper {
   }
 
   /**
-   * Returns true if all objects are visible
-   * @param source if defined will only look at object in given vim, otherwise in all vims.
-   */
-  areAllObjectsVisible (source?: VIM.Vim) {
-    const vimAllVisible = (vim: VIM.Vim) => {
-      for (const obj of vim.getAllObjects()) {
-        if (!obj.visible) return false
-      }
-      return true
-    }
-    if (source) {
-      return vimAllVisible(source)
-    } else {
-      for (const vim of this.base.vims) {
-        if (!vimAllVisible(vim)) return false
-      }
-      return true
-    }
-  }
-
-  /**
    * Returns the bounding box of all visible objects
    */
   getVisibleBoundingBox (source?: VIM.Vim) {
