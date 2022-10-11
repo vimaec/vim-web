@@ -12,11 +12,16 @@ function _MenuTop (props: { viewer: ViewerWrapper }) {
   const ui = useRef<HTMLDivElement>()
 
   useEffect(() => {
-    viewer.camera.onValueChanged.subscribe(() =>
+    const subCam = viewer.camera.onValueChanged.subscribe(() =>
       setOrtho(viewer.camera.orthographic)
     )
     const axes = document.getElementsByClassName('gizmo-axis-canvas')[0]
     ui.current.appendChild(axes)
+
+    // Clean up
+    return () => {
+      subCam()
+    }
   }, [])
 
   const onHomeBtn = () => {

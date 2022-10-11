@@ -32,6 +32,11 @@ export function BimPanel (props: {
     props.isolation.onChange((source: string) => {
       if (source !== 'tree' && source !== 'search') setFilter('')
     })
+
+    // Clean up
+    return () => {
+      props.isolation.onChange(undefined)
+    }
   }, [])
 
   // on vim update, update elements

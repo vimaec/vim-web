@@ -20,6 +20,11 @@ function _LoadingBox (props: { viewer: VIM.Viewer }) {
         setProgress(p.loaded)
       }).then((_) => setProgress(undefined))
     }
+
+    // Clean up
+    return () => {
+      props.viewer.loadVim = props.viewer.loadVim.bind(props.viewer)
+    }
   }, [])
 
   useEffect(() => {

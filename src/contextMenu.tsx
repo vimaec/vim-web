@@ -47,7 +47,7 @@ export function _VimContextMenu (props: {
 
   useEffect(() => {
     // Register to selection
-    viewer.sectionBox.onStateChanged.subscribe(() => {
+    const subState = viewer.sectionBox.onStateChanged.subscribe(() => {
       setSection({
         visible: viewer.sectionBox.visible,
         clip: viewer.sectionBox.clip
@@ -55,7 +55,14 @@ export function _VimContextMenu (props: {
     })
 
     // Register to section box
-    viewer.sectionBox.onBoxConfirm.subscribe(() => setClipping(isClipping()))
+    const subConfirm = viewer.sectionBox.onBoxConfirm.subscribe(() =>
+      setClipping(isClipping())
+    )
+
+    return () => {
+      subState()
+      subConfirm()
+    }
   }, [])
 
   const onShowControlsBtn = (e: ClickCallback) => {

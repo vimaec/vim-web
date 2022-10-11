@@ -84,7 +84,7 @@ export function VimComponent (props: {
     cursor.register()
 
     // Frame on vim loaded
-    props.viewer.onVimLoaded.subscribe(() => {
+    const subLoad = props.viewer.onVimLoaded.subscribe(() => {
       props.viewer.camera.frame('all', 45)
     })
 
@@ -92,7 +92,15 @@ export function VimComponent (props: {
     props.viewer.inputs.scheme = new ComponentInputScheme(viewer, isolation)
 
     // Register context menu
-    props.viewer.inputs.onContextMenu.subscribe(showContextMenu)
+    const subContext =
+      props.viewer.inputs.onContextMenu.subscribe(showContextMenu)
+
+    // Clean up
+    return () => {
+      subLoad()
+      subContext()
+      cursor.register()
+    }
   }, [])
 
   const sidePanel = (
@@ -160,11 +168,17 @@ function useViewerState (viewer: VIM.Viewer) {
 
   useEffect(() => {
     // register to viewer state changes
-    viewer.onVimLoaded.subscribe(() => setVim(getVim()))
-    viewer.selection.onValueChanged.subscribe(() => {
+    const subLoad = viewer.onVimLoaded.subscribe(() => setVim(getVim()))
+    const subSelect = viewer.selection.onValueChanged.subscribe(() => {
       setVim(getVim())
       setSelection([...viewer.selection.objects])
     })
+
+    // Clean up
+    return () => {
+      subLoad()
+      subSelect()
+    }
   }, [])
 
   return [vim, selection] as [VIM.Vim, VIM.Object[]]

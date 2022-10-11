@@ -63,7 +63,7 @@ export function ControlBar (props: {
   // On First Render
   useEffect(() => {
     // Hide bar for a couple ms
-    props.viewer.base.camera.onMoved.subscribe(() => {
+    const subCam = props.viewer.base.camera.onMoved.subscribe(() => {
       if (showRef.current) {
         showRef.current = false
         setShow(false)
@@ -77,6 +77,12 @@ export function ControlBar (props: {
         }
       }, 200)
     })
+
+    // Clean up
+    return () => {
+      subCam()
+      clearTimeout(barTimeout.current)
+    }
   }, [])
 
   return (
@@ -102,9 +108,14 @@ function TabCamera (props: { viewer: ViewerWrapper }) {
   const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerActive)
 
   useEffect(() => {
-    viewer.inputs.onPointerModeChanged.subscribe(() => {
+    const subPointer = viewer.inputs.onPointerModeChanged.subscribe(() => {
       setMode(viewer.inputs.pointerActive)
     })
+
+    // Clean up
+    return () => {
+      subPointer()
+    }
   }, [])
 
   const onModeBtn = (target: VIM.PointerMode) => {
@@ -188,12 +199,17 @@ function TabTools (props: {
   measuringRef.current = measuring
 
   useEffect(() => {
-    viewer.sectionBox.onStateChanged.subscribe(() =>
+    const subSection = viewer.sectionBox.onStateChanged.subscribe(() =>
       setSection({
         clip: viewer.sectionBox.clip,
         active: viewer.sectionBox.visible && viewer.sectionBox.interactive
       })
     )
+
+    // Clean up
+    return () => {
+      subSection()
+    }
   }, [])
 
   const onSectionBtn = () => {
@@ -357,8 +373,9 @@ function TabSettings (props: { help: HelpState; side: SideState }) {
 
   useEffect(() => {
     // F11 doesn't properly register fullscreen changes so we resorot to polling
+    let time: ReturnType<typeof setTimeout>
     const refreshFullScreen = () => {
-      setTimeout(refreshFullScreen, 250)
+      time = setTimeout(refreshFullScreen, 250)
       const next = !!document.fullscreenElement
       if (fullScreenRef.current !== next) {
         fullScreenRef.current = next
@@ -366,6 +383,10 @@ function TabSettings (props: { help: HelpState; side: SideState }) {
       }
     }
     refreshFullScreen()
+
+    return () => {
+      clearTimeout(time)
+    }
   }, [])
 
   const onHelpBtn = () => {

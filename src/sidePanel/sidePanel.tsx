@@ -38,11 +38,13 @@ export function _SidePanel (props: {
 }
 
 function resizeCanvas (viewer: VIM.Viewer, open: boolean) {
+  const tag = 'bim-panel-open'
   const parent = viewer.viewport.canvas.parentElement
-  const previous = parent.className
-  parent.className = parent.className.replace(' bim-panel-open', '')
-  parent.className += open ? ' bim-panel-open' : ''
-  if (previous !== parent.className) {
+  if (parent) {
+    const has = parent.classList.contains(tag)
+    if (open === has) return
+    if (open && !has) parent.classList.add(tag)
+    if (!open && has) parent.classList.remove(tag)
     viewer.viewport.ResizeToParent()
   }
 }
