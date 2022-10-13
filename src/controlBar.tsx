@@ -289,7 +289,7 @@ function TabTools (props: {
   )
 
   const toolsTab = (
-    <div className="vim-menu-section flex items-center bg-white rounded-full px-2 mx-2 shadow-md">
+    <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 mx-2 shadow-md">
       <div className="mx-1">{btnSection}</div>
       <div className="mx-1">{btnMeasure}</div>
       <div className="mx-1">{btnIsolation}</div>
@@ -309,7 +309,7 @@ function TabTools (props: {
     !!measuring
   )
   const measureTab = (
-    <div className="vim-menu-section flex items-center bg-primary rounded-full px-2 mx-2 shadow-md">
+    <div className="vim-control-bar-section flex items-center bg-primary rounded-full px-2 mx-2 shadow-md">
       <div className="mx-1">{btnMeasureDelete}</div>
       <div className="mx-1 py-1 bg-white/[.5] h-5 w-px"></div>
       <div className="mx-1">{btnMeasureConfirm}</div>
@@ -348,7 +348,7 @@ function TabTools (props: {
     section.active
   )
   const sectionTab = (
-    <div className="vim-menu-section flex items-center bg-primary rounded-full px-2 mx-2 shadow-md">
+    <div className="vim-control-bar-section flex items-center bg-primary rounded-full px-2 mx-2 shadow-md">
       <div className="mx-1">{btnSectionReset}</div>
       <div className="mx-1">{btnSectionShrink}</div>
       <div className="mx-1">
