@@ -17,8 +17,8 @@ const toggleButton = (
   isOn: () => boolean
 ) => {
   const style = isOn()
-    ? 'rounded-full mx-1 h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-primary'
-    : 'rounded-full mx-1 h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-gray-medium'
+    ? 'control-bar-button rounded-full mx-1 h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-primary'
+    : 'control-bar-button rounded-full mx-1 h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-gray-medium'
   return (
     <button data-tip={tip} onClick={action} className={style} type="button">
       {icon({ height: '20', width: '20', fill: 'currentColor' })}
@@ -33,8 +33,8 @@ const actionButton = (
   state: boolean
 ) => {
   const style = state
-    ? 'rounded-full mx-1 text-white h-10 w-10 flex items-center justify-center transition-all hover:scale-110 opacity-60 hover:opacity-100'
-    : 'rounded-full mx-1 text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal'
+    ? 'control-bar-button rounded-full mx-1 text-white h-10 w-10 flex items-center justify-center transition-all hover:scale-110 opacity-60 hover:opacity-100'
+    : 'control-bar-button rounded-full mx-1 text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal'
 
   return (
     <button data-tip={tip} onClick={action} className={style} type="button">
