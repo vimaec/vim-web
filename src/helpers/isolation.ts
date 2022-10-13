@@ -155,6 +155,7 @@ export function useIsolation (
 
   const clear = (source: string) => {
     showAll()
+    lastIsolation.current = isolationRef.current
     isolationRef.current = undefined
     changed.current(source)
   }
