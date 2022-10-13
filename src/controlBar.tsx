@@ -17,8 +17,8 @@ const toggleButton = (
   isOn: () => boolean
 ) => {
   const style = isOn()
-    ? 'rounded-full h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-primary'
-    : 'rounded-full h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-gray-medium'
+    ? 'rounded-full mx-1 h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-primary'
+    : 'rounded-full mx-1 h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-gray-medium'
   return (
     <button data-tip={tip} onClick={action} className={style} type="button">
       {icon({ height: '20', width: '20', fill: 'currentColor' })}
@@ -33,8 +33,8 @@ const actionButton = (
   state: boolean
 ) => {
   const style = state
-    ? 'rounded-full text-white h-10 w-10 flex items-center justify-center transition-all hover:scale-110 opacity-60 hover:opacity-100'
-    : 'rounded-full text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal'
+    ? 'rounded-full mx-1 text-white h-10 w-10 flex items-center justify-center transition-all hover:scale-110 opacity-60 hover:opacity-100'
+    : 'rounded-full mx-1 text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal'
 
   return (
     <button data-tip={tip} onClick={action} className={style} type="button">
@@ -169,12 +169,12 @@ function TabCamera (props: { viewer: ViewerWrapper }) {
 
   return (
     <>
-      <div className="mx-1">{btnOrbit}</div>
-      <div className="mx-1">{btnLook}</div>
-      <div className="mx-1">{btnPan}</div>
-      <div className="mx-1">{btnZoom}</div>
-      <div className="mx-1">{btnFrameRect}</div>
-      <div className="mx-1">{btnFrame}</div>
+      {btnOrbit}
+      {btnLook}
+      {btnPan}
+      {btnZoom}
+      {btnFrameRect}
+      {btnFrame}
     </>
   )
 }
@@ -290,9 +290,9 @@ function TabTools (props: {
 
   const toolsTab = (
     <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 mx-2 shadow-md">
-      <div className="mx-1">{btnSection}</div>
-      <div className="mx-1">{btnMeasure}</div>
-      <div className="mx-1">{btnIsolation}</div>
+      {btnSection}
+      {btnMeasure}
+      {btnIsolation}
     </div>
   )
 
@@ -349,13 +349,11 @@ function TabTools (props: {
   )
   const sectionTab = (
     <div className="vim-control-bar-section flex items-center bg-primary rounded-full px-2 mx-2 shadow-md">
-      <div className="mx-1">{btnSectionReset}</div>
-      <div className="mx-1">{btnSectionShrink}</div>
-      <div className="mx-1">
-        {section.clip ? btnSectionNoClip : btnSectionClip}
-      </div>
+      {btnSectionReset}
+      {btnSectionShrink}
+      {section.clip ? btnSectionNoClip : btnSectionClip}
       <div className="mx-1 py-1 bg-white/[.5] h-5 w-px"></div>
-      <div className="mx-1">{btnSectionConfirm}</div>
+      {btnSectionConfirm}
     </div>
   )
 
@@ -435,10 +433,10 @@ function TabSettings (props: { help: HelpState; side: SideState }) {
 
   return (
     <>
-      <div className="mx-1">{btnTreeView}</div>
-      <div className="mx-1">{btnSettings}</div>
-      <div className="mx-1">{btnHelp}</div>
-      <div className="mx-1">{btnFullScreen}</div>
+      {btnTreeView}
+      {btnSettings}
+      {btnHelp}
+      {btnFullScreen}
     </>
   )
 }
