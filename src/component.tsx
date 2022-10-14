@@ -77,7 +77,7 @@ export function VimComponent (props: {
   const side = useSideState(useInspector)
   const help = useHelp()
   const [vim, selection] = useViewerState(props.viewer)
-  const [inside, setInside] = useState(false)
+  const overlay = useRef<HTMLDivElement>()
 
   // On first render
   useEffect(() => {
@@ -96,12 +96,36 @@ export function VimComponent (props: {
     const subContext =
       props.viewer.inputs.onContextMenu.subscribe(showContextMenu)
 
-    props.viewer.viewport.canvas.addEventListener('mouseleave', () =>
-      setInside(false)
-    )
-    props.viewer.viewport.canvas.addEventListener('mouseenter', () =>
-      setInside(true)
-    )
+    overlay.current.addEventListener('mousedown', (e) => {
+      props.viewer.viewport.canvas.dispatchEvent(new MouseEvent('mousedown', e))
+      e.stopImmediatePropagation()
+    })
+
+    overlay.current.addEventListener('mouseup', (e) => {
+      props.viewer.viewport.canvas.dispatchEvent(
+        new MouseEvent('mouseup', new MouseEvent('mousedown', e))
+      )
+      e.stopImmediatePropagation()
+      e.preventDefault()
+    })
+
+    overlay.current.addEventListener('mousemove', (e) => {
+      props.viewer.viewport.canvas.dispatchEvent(new MouseEvent('mousemove', e))
+      e.stopImmediatePropagation()
+      e.preventDefault()
+    })
+
+    overlay.current.addEventListener('wheel', (e) => {
+      props.viewer.viewport.canvas.dispatchEvent(new WheelEvent('wheel', e))
+      e.stopImmediatePropagation()
+      e.preventDefault()
+    })
+
+    overlay.current.addEventListener('dblclick', (e) => {
+      props.viewer.viewport.canvas.dispatchEvent(new MouseEvent('dblclick', e))
+      e.stopImmediatePropagation()
+      e.preventDefault()
+    })
 
     // Clean up
     return () => {
@@ -130,7 +154,10 @@ export function VimComponent (props: {
 
   return (
     <>
-      {inside ? <div className="overlay"></div> : null}
+      <div
+        ref={overlay}
+        className={`overlay ${side.get() !== 'none' ? 'bim-panel-open' : ''}`}
+      ></div>
       <MenuHelp help={help} />
       {useLogo ? <Logo /> : null}
       {useLoading ? <LoadingBox viewer={props.viewer} /> : null}

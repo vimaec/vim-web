@@ -54,12 +54,11 @@ body {
 }
 
 .overlay {
-  z-index: 100;
-  width: 480px;
+  z-index: 20;
+  width: 100%;
   height: 100%;
   position: absolute;
   top: 0;
-  left: 0;
   pointer-events: all;
 }
 
@@ -131,6 +130,10 @@ body {
 }
 
 /* MENU */
+
+.vim-control-bar {
+  z-index: 30;
+}
 
 .vim-control-bar td {
   pointer-events: all;
@@ -247,6 +250,7 @@ body {
 .rct-tree-root > div > .rct-tree-items-container {
   max-height: calc(50vh - 9rem);
   overflow-y: auto;
+  content-visibility: auto;
 }
 .rct-tree-items-container li .rct-tree-item-title-container {
   border: none;
