@@ -53,6 +53,16 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+.overlay {
+  z-index: 100;
+  width: 480px;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: all;
+}
+
 /* Toast Notification */
 .vim-menu-toast {
   position: absolute;

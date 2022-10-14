@@ -77,6 +77,7 @@ export function VimComponent (props: {
   const side = useSideState(useInspector)
   const help = useHelp()
   const [vim, selection] = useViewerState(props.viewer)
+  const [inside, setInside] = useState(false)
 
   // On first render
   useEffect(() => {
@@ -94,6 +95,13 @@ export function VimComponent (props: {
     // Register context menu
     const subContext =
       props.viewer.inputs.onContextMenu.subscribe(showContextMenu)
+
+    props.viewer.viewport.canvas.addEventListener('mouseleave', () =>
+      setInside(false)
+    )
+    props.viewer.viewport.canvas.addEventListener('mouseenter', () =>
+      setInside(true)
+    )
 
     // Clean up
     return () => {
@@ -122,6 +130,7 @@ export function VimComponent (props: {
 
   return (
     <>
+      {inside ? <div className="overlay"></div> : null}
       <MenuHelp help={help} />
       {useLogo ? <Logo /> : null}
       {useLoading ? <LoadingBox viewer={props.viewer} /> : null}
