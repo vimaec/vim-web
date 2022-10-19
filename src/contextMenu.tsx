@@ -153,7 +153,8 @@ export function _VimContextMenu (props: {
       }}
     >
       <ContextMenu
-        className="text-gray-darker bg-white py-1 w-[240px] rounded shadow-lg"
+        preventHideOnContextMenu={true}
+        className="text-gray-darker bg-white py-1 w-[240px] rounded shadow-lg z-50"
         id={VIM_CONTEXT_MENU_ID}
       >
         {createButton('Show Controls', 'F1', onShowControlsBtn)}

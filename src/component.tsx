@@ -156,6 +156,7 @@ export function VimComponent (props: {
     <>
       <div
         ref={overlay}
+        onContextMenu={(e) => e.preventDefault()}
         className={`overlay ${side.get() !== 'none' ? 'bim-panel-open' : ''}`}
       ></div>
       <MenuHelp help={help} />
