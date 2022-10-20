@@ -10,42 +10,35 @@ export function Overlay (props: { viewer: VIM.Viewer; side: SideState }) {
   const overlay = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    overlay.current?.addEventListener('mousedown', (e) => {
-      props.viewer.viewport.canvas.dispatchEvent(new MouseEvent('mousedown', e))
-      e.stopImmediatePropagation()
-    })
+    const relay = (
+      evnt: string,
+      construct: (s: string, e: Event) => Event,
+      preventDefault: boolean = true
+    ) => {
+      overlay.current?.addEventListener(evnt, (e) => {
+        props.viewer.viewport.canvas.dispatchEvent(construct(evnt, e))
+        e.stopImmediatePropagation()
+        if (preventDefault) {
+          e.preventDefault()
+        }
+      })
+    }
 
-    overlay.current?.addEventListener('mouseup', (e) => {
-      props.viewer.viewport.canvas.dispatchEvent(
-        new MouseEvent('mouseup', new MouseEvent('mousedown', e))
-      )
-      e.stopImmediatePropagation()
-      e.preventDefault()
-    })
+    relay('mousedown', (s, e) => new MouseEvent(s, e))
+    relay('mousemove', (s, e) => new MouseEvent(s, e))
+    relay('mouseup', (s, e) => new MouseEvent(s, e))
 
-    overlay.current?.addEventListener('mousemove', (e) => {
-      props.viewer.viewport.canvas.dispatchEvent(new MouseEvent('mousemove', e))
-      e.stopImmediatePropagation()
-      e.preventDefault()
-    })
+    relay('dblclick', (s, e) => new MouseEvent(s, e))
+    relay('mouseout', (s, e) => new MouseEvent(s, e))
+    relay('wheel', (s, e) => new WheelEvent(s, e))
 
-    overlay.current?.addEventListener('wheel', (e) => {
-      props.viewer.viewport.canvas.dispatchEvent(new WheelEvent('wheel', e))
-      e.stopImmediatePropagation()
-      e.preventDefault()
-    })
+    relay('pointerdown', (s, e) => new PointerEvent(s, e), false)
+    relay('pointermove', (s, e) => new PointerEvent(s, e), false)
+    relay('pointerup', (s, e) => new PointerEvent(s, e), false)
 
-    overlay.current?.addEventListener('dblclick', (e) => {
-      props.viewer.viewport.canvas.dispatchEvent(new MouseEvent('dblclick', e))
-      e.stopImmediatePropagation()
-      e.preventDefault()
-    })
-
-    overlay.current?.addEventListener('mouseout', (e) => {
-      props.viewer.viewport.canvas.dispatchEvent(new MouseEvent('mouseout', e))
-      e.stopImmediatePropagation()
-      e.preventDefault()
-    })
+    relay('touchstart', (s, e) => new TouchEvent(s, e), false)
+    relay('touchend', (s, e) => new TouchEvent(s, e), false)
+    relay('touchmove', (s, e) => new TouchEvent(s, e), false)
   }, [])
 
   return (
