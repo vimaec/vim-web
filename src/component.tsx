@@ -16,6 +16,7 @@ import { SidePanel } from './sidePanel/sidePanel'
 import { useSideState } from './sidePanel/sideState'
 import { MenuSettings } from './settings/menuSettings'
 import { MenuToast } from './toast'
+import { Overlay } from './overlay'
 
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
@@ -77,7 +78,6 @@ export function VimComponent (props: {
   const side = useSideState(useInspector)
   const help = useHelp()
   const [vim, selection] = useViewerState(props.viewer)
-  const overlay = useRef<HTMLDivElement>()
 
   // On first render
   useEffect(() => {
@@ -95,37 +95,6 @@ export function VimComponent (props: {
     // Register context menu
     const subContext =
       props.viewer.inputs.onContextMenu.subscribe(showContextMenu)
-
-    overlay.current.addEventListener('mousedown', (e) => {
-      props.viewer.viewport.canvas.dispatchEvent(new MouseEvent('mousedown', e))
-      e.stopImmediatePropagation()
-    })
-
-    overlay.current.addEventListener('mouseup', (e) => {
-      props.viewer.viewport.canvas.dispatchEvent(
-        new MouseEvent('mouseup', new MouseEvent('mousedown', e))
-      )
-      e.stopImmediatePropagation()
-      e.preventDefault()
-    })
-
-    overlay.current.addEventListener('mousemove', (e) => {
-      props.viewer.viewport.canvas.dispatchEvent(new MouseEvent('mousemove', e))
-      e.stopImmediatePropagation()
-      e.preventDefault()
-    })
-
-    overlay.current.addEventListener('wheel', (e) => {
-      props.viewer.viewport.canvas.dispatchEvent(new WheelEvent('wheel', e))
-      e.stopImmediatePropagation()
-      e.preventDefault()
-    })
-
-    overlay.current.addEventListener('dblclick', (e) => {
-      props.viewer.viewport.canvas.dispatchEvent(new MouseEvent('dblclick', e))
-      e.stopImmediatePropagation()
-      e.preventDefault()
-    })
 
     // Clean up
     return () => {
@@ -154,11 +123,7 @@ export function VimComponent (props: {
 
   return (
     <>
-      <div
-        ref={overlay}
-        onContextMenu={(e) => e.preventDefault()}
-        className={`overlay ${side.get() !== 'none' ? 'bim-panel-open' : ''}`}
-      ></div>
+      <Overlay viewer={viewer.base} side={side}></Overlay>
       <MenuHelp help={help} />
       {useLogo ? <Logo /> : null}
       {useLoading ? <LoadingBox viewer={props.viewer} /> : null}

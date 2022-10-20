@@ -10,7 +10,6 @@ import * as VIM from 'vim-webgl-viewer/'
 import { showContextMenu } from '../contextMenu'
 import { ViewerWrapper } from '../helpers/viewer'
 import { ArrayEquals } from '../helpers/data'
-import * as Icons from '../icons'
 import { Isolation } from '../helpers/isolation'
 import { BimTreeData, toTreeData, VimTreeNode } from './bimTreeData'
 
@@ -112,43 +111,27 @@ export function BimTree (props: {
             selectedItems
           }
         }}
+        // Custom Rendering of items to add visibility toggles
         renderItemTitle={({ title, item, context }) => (
-          <div
-            className={`rct-tree-item ${context.isSelected ? 'selected' : ''}`}
-          >
+          <>
             <span className="rct-tree-item-title" data-tip={title}>
               {title}
             </span>
-            {
-              <div
-                className={`rct-tree-item-icons ${
-                  treeRef.current.nodes[item.index as number].visible
-                }`}
-                onClick={(e) => {
-                  toggleVisibility(
-                    viewer,
-                    props.isolation,
-                    treeRef.current,
-                    item.index as number
-                  )
-                  e.stopPropagation()
-                }}
-              >
-                {Icons.hidden({
-                  width: 16,
-                  height: 16,
-                  fill: 'currentColor',
-                  className: 'rct-tree-item-icon-hidden'
-                })}
-                {Icons.visible({
-                  width: 16,
-                  height: 16,
-                  fill: 'currentColor',
-                  className: 'rct-tree-item-icon-visible'
-                })}
-              </div>
-            }
-          </div>
+            <div
+              className={`rct-tree-item-visibility ${
+                treeRef.current.nodes[item.index as number].visible
+              }`}
+              onClick={(e) => {
+                toggleVisibility(
+                  viewer,
+                  props.isolation,
+                  treeRef.current,
+                  item.index as number
+                )
+                e.stopPropagation()
+              }}
+            ></div>
+          </>
         )}
         canRename={false}
         canSearchByStartingTyping={false}
