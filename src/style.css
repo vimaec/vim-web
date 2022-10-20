@@ -353,6 +353,7 @@ body {
 .rct-tree-item-visibility {
   width: 16px;
   height: 16px;
+  background-repeat: no-repeat;
 }
 
 /*default state*/
