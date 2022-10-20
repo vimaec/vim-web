@@ -63,15 +63,6 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
-.overlay {
-  z-index: 20;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  pointer-events: all;
-}
-
 /* Toast Notification */
 .vim-menu-toast {
   position: absolute;
@@ -140,10 +131,6 @@ body {
 }
 
 /* MENU */
-
-.vim-control-bar {
-  z-index: 30;
-}
 
 .vim-control-bar td {
   pointer-events: all;

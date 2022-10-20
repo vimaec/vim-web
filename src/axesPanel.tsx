@@ -62,7 +62,7 @@ function _MenuTop (props: { viewer: ViewerWrapper }) {
   return (
     <div
       ref={ui}
-      className="vim-top border border-white flex flex-col fixed right-6 top-6 w-[100px] h-[145px] rounded-2xl shadow-lg transition-all"
+      className="vim-top border z-20 border-white flex flex-col fixed right-6 top-6 w-[100px] h-[145px] rounded-2xl shadow-lg transition-all"
     >
       <div className="vim-top-buttons order-2 flex p-1 rounded-b-xl pointer-events-auto justify-center bg-white mb-0 mt-auto">
         <div className="mx-1">{btnOrtho}</div>
