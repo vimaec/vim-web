@@ -5,10 +5,11 @@ import { BimTree } from './bimTree'
 import { BimDocumentDetails, BimObjectDetails } from './bimDetails'
 import { BimDocumentHeader, BimObjectHeader } from './bimHeader'
 import { BimSearch } from './bimSearch'
-import { Isolation } from './component'
+import { Isolation } from '../helpers/isolation'
+import { ViewerWrapper } from '../helpers/viewer'
 
 export function BimPanel (props: {
-  viewer: VIM.Viewer
+  viewer: ViewerWrapper
   vim: VIM.Vim
   selection: VIM.Object[]
   isolation: Isolation
@@ -28,7 +29,14 @@ export function BimPanel (props: {
   }
 
   useEffect(() => {
-    props.isolation.onChange(() => setFilter(''))
+    props.isolation.onChange((source: string) => {
+      if (source !== 'tree' && source !== 'search') setFilter('')
+    })
+
+    // Clean up
+    return () => {
+      props.isolation.onChange(undefined)
+    }
   }, [])
 
   // on vim update, update elements
@@ -54,9 +62,9 @@ export function BimPanel (props: {
       if (searching.current) {
         if (filter !== '') {
           const objects = result.map((e) => vim.getObjectFromElement(e.element))
-          props.isolation.search(objects)
+          props.isolation.set(objects, 'search')
         } else {
-          props.isolation.search(undefined)
+          props.isolation.set(undefined, 'search')
         }
       }
     }
@@ -83,6 +91,7 @@ export function BimPanel (props: {
           viewer={viewer}
           elements={filteredElements}
           objects={props.selection}
+          isolation={props.isolation}
         />
       </div>
       <hr className="border-gray-divider mb-5 -mx-6" />
@@ -94,7 +103,10 @@ export function BimPanel (props: {
           visible={last !== undefined}
         />
         <BimObjectDetails object={last} visible={last !== undefined} />
-        <BimDocumentHeader vim={viewer.vims[0]} visible={last === undefined} />
+        <BimDocumentHeader
+          vim={viewer.base.vims[0]}
+          visible={last === undefined}
+        />
         <BimDocumentDetails vim={vim} visible={last === undefined} />
       </div>
     </div>

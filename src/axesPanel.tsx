@@ -1,24 +1,31 @@
 import React, { useEffect, useRef, useState } from 'react'
-import * as VIM from 'vim-webgl-viewer/'
 import * as Icons from './icons'
-import { resetCamera } from './utils/viewerUtils'
+import { ViewerWrapper } from './helpers/viewer'
 
 export const MenuTop = React.memo(_MenuTop)
-function _MenuTop (props: { viewer: VIM.Viewer }) {
-  const [ortho, setOrtho] = useState<boolean>(props.viewer.camera.orthographic)
+function _MenuTop (props: { viewer: ViewerWrapper }) {
+  const viewer = props.viewer.base
+  const helper = props.viewer
+
+  const [ortho, setOrtho] = useState<boolean>(viewer.camera.orthographic)
 
   const ui = useRef<HTMLDivElement>()
 
   useEffect(() => {
-    props.viewer.camera.onValueChanged.subscribe(() =>
-      setOrtho(props.viewer.camera.orthographic)
+    const subCam = viewer.camera.onValueChanged.subscribe(() =>
+      setOrtho(viewer.camera.orthographic)
     )
     const axes = document.getElementsByClassName('gizmo-axis-canvas')[0]
     ui.current.appendChild(axes)
+
+    // Clean up
+    return () => {
+      subCam()
+    }
   }, [])
 
   const onHomeBtn = () => {
-    resetCamera(props.viewer)
+    helper.resetCamera()
   }
 
   const btnHome = (
@@ -36,7 +43,7 @@ function _MenuTop (props: { viewer: VIM.Viewer }) {
   const btnOrtho = (
     <button
       data-tip={ortho ? 'Orthographic' : 'Perspective'}
-      onClick={() => (props.viewer.camera.orthographic = !ortho)}
+      onClick={() => (props.viewer.base.camera.orthographic = !ortho)}
       className={
         'rounded-full text-gray-medium h-8 w-8 flex items-center justify-center transition-all hover:text-primary-royal'
       }
@@ -55,7 +62,7 @@ function _MenuTop (props: { viewer: VIM.Viewer }) {
   return (
     <div
       ref={ui}
-      className="vim-top border border-white flex flex-col fixed right-6 top-6 w-[100px] h-[145px] rounded-2xl shadow-lg transition-all"
+      className="vim-top border z-20 border-white flex flex-col fixed right-6 top-6 w-[100px] h-[145px] rounded-2xl shadow-lg transition-all"
     >
       <div className="vim-top-buttons order-2 flex p-1 rounded-b-xl pointer-events-auto justify-center bg-white mb-0 mt-auto">
         <div className="mx-1">{btnOrtho}</div>

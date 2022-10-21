@@ -1,15 +1,34 @@
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import helpImage from './assets/quick-controls.svg'
 import * as Icons from './icons'
+import { setComponentBehind } from './helpers/html'
 
 const urlSupport = 'https://support.vimaec.com'
 const urlControls =
   'https://support.vimaec.com/en/articles/5872168-navigation-and-controls'
 
+export type HelpState = {
+  visible: boolean
+  setVisible: (value: boolean) => void
+}
+
+export function useHelp (): HelpState {
+  const [visible, setVisible] = useState(false)
+
+  // Blur when help is visible
+  useEffect(() => {
+    setComponentBehind(visible)
+  }, [visible])
+
+  return useMemo(() => ({ visible, setVisible }), [visible, setVisible])
+}
+
 export const MenuHelp = React.memo(_MenuHelp)
-function _MenuHelp (props: { closeHelp: () => void }) {
+function _MenuHelp (props: { help: HelpState }) {
+  if (!props.help.visible) return null
+
   const onCloseBtn = () => {
-    props.closeHelp()
+    props.help.setVisible(false)
   }
   const onControlsBtn = () => {
     window.open(urlControls)
@@ -21,8 +40,11 @@ function _MenuHelp (props: { closeHelp: () => void }) {
   return (
     <>
       <div
-        className="menu-help-overlay z-10 absolute inset-0 bg-black/80 w-full h-full flex items-center justify-center"
+        className="menu-help-overlay z-30 absolute inset-0 bg-black/80 w-full h-full flex items-center justify-center"
         onClick={onCloseBtn}
+        onContextMenu={(event) => {
+          event.preventDefault()
+        }}
       >
         <div
           className="flex flex-col py-5"

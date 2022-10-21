@@ -39,6 +39,7 @@ export class CursorManager {
   register () {
     // Update and Register cursor for pointers
     this.setCursor(pointerToCursor(this._viewer.inputs.pointerActive))
+
     const sub1 = this._viewer.inputs.onPointerModeChanged.subscribe(() =>
       this.updateCursor()
     )

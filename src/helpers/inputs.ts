@@ -1,16 +1,17 @@
 import * as VIM from 'vim-webgl-viewer/'
 import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycaster'
-import { getVisibleBoundingBox } from '../utils/viewerUtils'
+import { Isolation } from './isolation'
+import { ViewerWrapper } from './viewer'
 
 export class ComponentInputs implements VIM.InputScheme {
-  private _viewer: VIM.Viewer
+  private _viewer: ViewerWrapper
   private _default: VIM.InputScheme
-  private _toggleIsolation: () => void
+  private _isolation: Isolation
 
-  constructor (viewer: VIM.Viewer, toggleIsolation: () => void) {
+  constructor (viewer: ViewerWrapper, isolation: Isolation) {
     this._viewer = viewer
-    this._default = new VIM.DefaultInputScheme(viewer)
-    this._toggleIsolation = toggleIsolation
+    this._default = new VIM.DefaultInputScheme(viewer.base)
+    this._isolation = isolation
   }
 
   onMainAction (hit: InputAction): void {
@@ -25,21 +26,23 @@ export class ComponentInputs implements VIM.InputScheme {
     // F
     switch (key) {
       case VIM.KEYS.KEY_F: {
-        const box =
-          this._viewer.selection.count > 0
-            ? this._viewer.selection.getBoundingBox()
-            : getVisibleBoundingBox(this._viewer)
-
-        this._viewer.camera.frame(
-          box,
-          'none',
-          this._viewer.camera.defaultLerpDuration
-        )
+        this._viewer.frameContext()
         return true
       }
       case VIM.KEYS.KEY_I: {
-        this._toggleIsolation()
-        break
+        this._isolation.toggleContextual('keyboard')
+        return true
+      }
+
+      case VIM.KEYS.KEY_ESCAPE: {
+        if (this._viewer.base.selection.count > 0) {
+          this._viewer.base.selection.clear()
+          return true
+        }
+        if (this._isolation.any()) {
+          this._isolation.clear('keyboard')
+          return true
+        }
       }
     }
 

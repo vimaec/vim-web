@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
-import { Isolation, SideContent } from './component'
-import { Cursor, pointerToCursor } from './helpers/cursor'
-import { frameContext } from './utils/viewerUtils'
+import { SideState } from './sidePanel/sideState'
+import { Isolation } from './helpers/isolation'
+import { Cursor, CursorManager, pointerToCursor } from './helpers/cursor'
+import { ViewerWrapper } from './helpers/viewer'
 import * as Icons from './icons'
+import { HelpState } from './help'
 
 // Shared Buttons style
 
@@ -15,8 +17,8 @@ const toggleButton = (
   isOn: () => boolean
 ) => {
   const style = isOn()
-    ? 'rounded-full h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-primary'
-    : 'rounded-full h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-gray-medium'
+    ? 'control-bar-button rounded-full mx-1 h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-primary'
+    : 'control-bar-button rounded-full mx-1 h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-gray-medium'
   return (
     <button data-tip={tip} onClick={action} className={style} type="button">
       {icon({ height: '20', width: '20', fill: 'currentColor' })}
@@ -31,8 +33,8 @@ const actionButton = (
   state: boolean
 ) => {
   const style = state
-    ? 'rounded-full text-white h-10 w-10 flex items-center justify-center transition-all hover:scale-110 opacity-60 hover:opacity-100'
-    : 'rounded-full text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal'
+    ? 'control-bar-button rounded-full mx-1 text-white h-10 w-10 flex items-center justify-center transition-all hover:scale-110 opacity-60 hover:opacity-100'
+    : 'control-bar-button rounded-full mx-1 text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal'
 
   return (
     <button data-tip={tip} onClick={action} className={style} type="button">
@@ -43,15 +45,14 @@ const actionButton = (
 
 // Main Control bar
 export function ControlBar (props: {
-  viewer: VIM.Viewer
-  helpVisible: boolean
-  setHelpVisible: (value: boolean) => void
-  side: SideContent
-  toggleSide: (value: SideContent) => void
+  viewer: ViewerWrapper
+  help: HelpState
+  side: SideState
   isolation: Isolation
-  setCursor: (cursor: Cursor) => void
+  cursor: CursorManager
 }) {
   const [show, setShow] = useState(true)
+  const showRef = useRef(show)
   const barTimeout = useRef<ReturnType<typeof setTimeout>>()
 
   // On Each Render
@@ -62,38 +63,59 @@ export function ControlBar (props: {
   // On First Render
   useEffect(() => {
     // Hide bar for a couple ms
-    props.viewer.camera.onMoved.subscribe(() => {
-      setShow(false)
+    const subCam = props.viewer.base.camera.onMoved.subscribe(() => {
+      if (showRef.current) {
+        showRef.current = false
+        setShow(false)
+      }
+
       clearTimeout(barTimeout.current)
-      barTimeout.current = setTimeout(() => setShow(true), 200)
+      barTimeout.current = setTimeout(() => {
+        if (!showRef.current) {
+          showRef.current = true
+          setShow(true)
+        }
+      }, 200)
     })
+
+    // Clean up
+    return () => {
+      subCam()
+      clearTimeout(barTimeout.current)
+    }
   }, [])
 
   return (
     <div
-      className={`vim-control-bar flex items-center justify-center w-full fixed px-2 bottom-0 py-2 mb-9 transition-opacity transition-all ${
-        show ? 'opacity-100' : 'opacity-0'
+      className={`vim-control-bar flex z-20 items-center justify-center w-full fixed px-2 bottom-0 py-2 mb-9 transition-opacity transition-all ${
+        show ? 'opacity-100 ' : 'opacity-0 pointer-events-none'
       }`}
     >
       <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md mx-2">
-        {TabCamera(props.viewer)}
+        <TabCamera {...props} />
       </div>
-
-      {TabTools(props.viewer, props.setCursor, props.isolation)}
+      <TabTools {...props} />
       <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md mx-2">
-        {TabSettings(props)}
+        <TabSettings {...props} />
       </div>
     </div>
   )
 }
 
-function TabCamera (viewer: VIM.Viewer) {
+function TabCamera (props: { viewer: ViewerWrapper }) {
+  const viewer = props.viewer.base
+  const helper = props.viewer
   const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerActive)
 
   useEffect(() => {
-    viewer.inputs.onPointerModeChanged.subscribe(() =>
+    const subPointer = viewer.inputs.onPointerModeChanged.subscribe(() => {
       setMode(viewer.inputs.pointerActive)
-    )
+    })
+
+    // Clean up
+    return () => {
+      subPointer()
+    }
   }, [])
 
   const onModeBtn = (target: VIM.PointerMode) => {
@@ -140,29 +162,30 @@ function TabCamera (viewer: VIM.Viewer) {
 
   const btnFrame = actionButton(
     'Zoom to Fit',
-    () => frameContext(viewer),
+    () => helper.frameContext(),
     Icons.frameSelection,
     false
   )
 
   return (
     <>
-      <div className="mx-1">{btnOrbit}</div>
-      <div className="mx-1">{btnLook}</div>
-      <div className="mx-1">{btnPan}</div>
-      <div className="mx-1">{btnZoom}</div>
-      <div className="mx-1">{btnFrameRect}</div>
-      <div className="mx-1">{btnFrame}</div>
+      {btnOrbit}
+      {btnLook}
+      {btnPan}
+      {btnZoom}
+      {btnFrameRect}
+      {btnFrame}
     </>
   )
 }
 
 /* TAB TOOLS */
-function TabTools (
-  viewer: VIM.Viewer,
-  setCursor: (cursor: Cursor) => void,
+function TabTools (props: {
+  viewer: ViewerWrapper
+  cursor: CursorManager
   isolation: Isolation
-) {
+}) {
+  const viewer = props.viewer.base
   // Need a ref to get the up to date value in callback.
   const [measuring, setMeasuring] = useState(false)
   // eslint-disable-next-line no-unused-vars
@@ -176,12 +199,17 @@ function TabTools (
   measuringRef.current = measuring
 
   useEffect(() => {
-    viewer.sectionBox.onStateChanged.subscribe(() =>
+    const subSection = viewer.sectionBox.onStateChanged.subscribe(() =>
       setSection({
         clip: viewer.sectionBox.clip,
         active: viewer.sectionBox.visible && viewer.sectionBox.interactive
       })
     )
+
+    // Clean up
+    return () => {
+      subSection()
+    }
   }, [])
 
   const onSectionBtn = () => {
@@ -217,7 +245,7 @@ function TabTools (
         viewer,
         () => measuringRef.current,
         (m) => setMeasurement(m),
-        setCursor
+        props.cursor.setCursor
       )
     }
   }
@@ -255,16 +283,16 @@ function TabTools (
 
   const btnIsolation = actionButton(
     'Toggle Isolation',
-    isolation.toggle,
+    () => props.isolation.toggleContextual('controlBar'),
     Icons.toggleIsolation,
     false
   )
 
   const toolsTab = (
-    <div className="vim-menu-section flex items-center bg-white rounded-full px-2 mx-2 shadow-md">
-      <div className="mx-1">{btnSection}</div>
-      <div className="mx-1">{btnMeasure}</div>
-      <div className="mx-1">{btnIsolation}</div>
+    <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 mx-2 shadow-md">
+      {btnSection}
+      {btnMeasure}
+      {btnIsolation}
     </div>
   )
 
@@ -281,7 +309,7 @@ function TabTools (
     !!measuring
   )
   const measureTab = (
-    <div className="vim-menu-section flex items-center bg-primary rounded-full px-2 mx-2 shadow-md">
+    <div className="vim-control-bar-section flex items-center bg-primary rounded-full px-2 mx-2 shadow-md">
       <div className="mx-1">{btnMeasureDelete}</div>
       <div className="mx-1 py-1 bg-white/[.5] h-5 w-px"></div>
       <div className="mx-1">{btnMeasureConfirm}</div>
@@ -320,14 +348,12 @@ function TabTools (
     section.active
   )
   const sectionTab = (
-    <div className="vim-menu-section flex items-center bg-primary rounded-full px-2 mx-2 shadow-md">
-      <div className="mx-1">{btnSectionReset}</div>
-      <div className="mx-1">{btnSectionShrink}</div>
-      <div className="mx-1">
-        {section.clip ? btnSectionNoClip : btnSectionClip}
-      </div>
+    <div className="vim-control-bar-section flex items-center bg-primary rounded-full px-2 mx-2 shadow-md">
+      {btnSectionReset}
+      {btnSectionShrink}
+      {section.clip ? btnSectionNoClip : btnSectionClip}
       <div className="mx-1 py-1 bg-white/[.5] h-5 w-px"></div>
-      <div className="mx-1">{btnSectionConfirm}</div>
+      {btnSectionConfirm}
     </div>
   )
 
@@ -337,52 +363,59 @@ function TabTools (
   return measuring ? measureTab : section.active ? sectionTab : toolsTab
 }
 
-function TabSettings (props: {
-  helpVisible: boolean
-  setHelpVisible: (value: boolean) => void
-  side: SideContent
-  toggleSide: (value: SideContent) => void
-}) {
-  const [, setFullScreen] = useState<boolean>(!!document.fullscreenElement)
+function TabSettings (props: { help: HelpState; side: SideState }) {
+  const [fullScreen, setFullScreen] = useState<boolean>(
+    !!document.fullscreenElement
+  )
+  const fullScreenRef = useRef<boolean>(fullScreen)
 
   useEffect(() => {
     // F11 doesn't properly register fullscreen changes so we resorot to polling
+    let time: ReturnType<typeof setTimeout>
     const refreshFullScreen = () => {
-      setTimeout(refreshFullScreen, 250)
-      setFullScreen(!!document.fullscreenElement)
+      time = setTimeout(refreshFullScreen, 250)
+      const next = !!document.fullscreenElement
+      if (fullScreenRef.current !== next) {
+        fullScreenRef.current = next
+        setFullScreen(next)
+      }
     }
     refreshFullScreen()
+
+    return () => {
+      clearTimeout(time)
+    }
   }, [])
 
   const onHelpBtn = () => {
-    props.setHelpVisible(!props.helpVisible)
+    props.help.setVisible(!props.help.visible)
   }
 
   const onTreeViewBtn = () => {
-    props.toggleSide('bim')
+    props.side.toggle('bim')
   }
 
   const onSettingsBtn = () => {
-    props.toggleSide('settings')
+    props.side.toggle('settings')
   }
 
   const btnTreeView = toggleButton(
     'Project Inspector',
     onTreeViewBtn,
     Icons.treeView,
-    () => props.side === 'bim'
+    () => props.side.get() === 'bim'
   )
   const btnSettings = toggleButton(
     'Settings',
     onSettingsBtn,
     Icons.settings,
-    () => props.side === 'settings'
+    () => props.side.get() === 'settings'
   )
   const btnHelp = toggleButton(
     'Help',
     onHelpBtn,
     Icons.help,
-    () => props.helpVisible
+    () => props.help.visible
   )
 
   const btnFullScreen = actionButton(
@@ -400,10 +433,10 @@ function TabSettings (props: {
 
   return (
     <>
-      <div className="mx-1">{btnTreeView}</div>
-      <div className="mx-1">{btnSettings}</div>
-      <div className="mx-1">{btnHelp}</div>
-      <div className="mx-1">{btnFullScreen}</div>
+      {btnTreeView}
+      {btnSettings}
+      {btnHelp}
+      {btnFullScreen}
     </>
   )
 }

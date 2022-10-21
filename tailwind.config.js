@@ -46,7 +46,10 @@ module.exports = {
         DEFAULT: 'var(--c-list-hover)'
       },
       'hover-t40': 'var(--c-hover-t40)',
-      'white-t50': 'var(--c-white-t50)'
+      'white-t50': 'var(--c-white-t50)',
+      overflow: {
+        DEFAULT: 'var(--c-overflow)'
+      },
     },
     extend: {},
   },

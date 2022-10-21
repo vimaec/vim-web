@@ -14,7 +14,8 @@ function _MenuToast (props: { viewer: VIM.Viewer }) {
   const toastTimeout = useRef<ReturnType<typeof setTimeout>>()
 
   useEffect(() => {
-    props.viewer.camera.onValueChanged.subscribe(() => {
+    speedRef.current = props.viewer.camera.speed
+    const subCam = props.viewer.camera.onValueChanged.subscribe(() => {
       if (props.viewer.camera.speed !== speedRef.current) {
         clearTimeout(toastTimeout.current)
         toastTimeout.current = setTimeout(() => setVisible(false), 1000)
@@ -24,6 +25,11 @@ function _MenuToast (props: { viewer: VIM.Viewer }) {
         setVisible(true)
       }
     })
+
+    return () => {
+      subCam()
+      clearTimeout(toastTimeout.current)
+    }
   }, [])
 
   return (

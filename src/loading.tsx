@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { setBehind } from './utils/viewerUtils'
+import { setComponentBehind } from './helpers/html'
 
 type Progress = 'processing' | number | string
 
@@ -20,10 +20,15 @@ function _LoadingBox (props: { viewer: VIM.Viewer }) {
         setProgress(p.loaded)
       }).then((_) => setProgress(undefined))
     }
+
+    // Clean up
+    return () => {
+      props.viewer.loadVim = props.viewer.loadVim.bind(props.viewer)
+    }
   }, [])
 
   useEffect(() => {
-    setBehind(progress !== undefined)
+    setComponentBehind(progress !== undefined)
   }, [progress])
 
   const msg =
@@ -46,9 +51,14 @@ function _LoadingBox (props: { viewer: VIM.Viewer }) {
 
   if (!msg) return null
   return (
-    <div className="vim-loading-box w-[320px] text-gray-medium bg-white px-5 py-4 rounded shadow-lg">
-      <h1 className="w-full mb-2"> {msg} </h1>
-      <span className="loader"></span>
+    <div
+      className="loading-wrapper backdrop-blur fixed items-center justify-center top-0 left-0 w-full h-full z-30 bg-overflow"
+      onContextMenu={(event) => event.preventDefault()}
+    >
+      <div className="vim-loading-box w-[320px] text-gray-medium bg-white px-5 py-4 rounded shadow-lg z-20">
+        <h1 className="w-full mb-2"> {msg} </h1>
+        <span className="loader"></span>
+      </div>
     </div>
   )
 }
