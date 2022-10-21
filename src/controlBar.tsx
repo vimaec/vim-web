@@ -88,7 +88,7 @@ export function ControlBar (props: {
   return (
     <div
       className={`vim-control-bar flex z-20 items-center justify-center w-full fixed px-2 bottom-0 py-2 mb-9 transition-opacity transition-all ${
-        show ? 'opacity-100' : 'opacity-0'
+        show ? 'opacity-100 ' : 'opacity-0 pointer-events-none'
       }`}
     >
       <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md mx-2">
