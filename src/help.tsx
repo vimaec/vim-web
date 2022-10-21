@@ -42,6 +42,9 @@ function _MenuHelp (props: { help: HelpState }) {
       <div
         className="menu-help-overlay z-30 absolute inset-0 bg-black/80 w-full h-full flex items-center justify-center"
         onClick={onCloseBtn}
+        onContextMenu={(event) => {
+          event.preventDefault()
+        }}
       >
         <div
           className="flex flex-col py-5"
