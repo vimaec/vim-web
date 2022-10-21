@@ -12,7 +12,7 @@ const url = params.has('vim')
   '/src/assets/residence.vim'
 // : '/src/assets/skanska.nozip.vim'
 
-const viewer = new VIM.Viewer({ axes: { size: 75 } })
+const viewer = new VIM.Viewer()
 const container = createContainer(viewer)
 const root = createRoot(container.ui)
 root.render(
