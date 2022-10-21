@@ -30,8 +30,9 @@ export function useIsolation (
   const viewer = componentViewer.base
   const helper = componentViewer
   const isolationRef = useRef<VIM.Object[]>()
+
   const lastIsolation = useRef<VIM.Object[]>()
-  const changed = useRef<(source: string) => void>()
+  const changed = useRef<((source: string) => void)[]>([])
 
   const any = () => !!isolationRef.current
 
@@ -78,7 +79,7 @@ export function useIsolation (
   }
 
   const onChange = (action: (source: IsolationSource) => void) => {
-    changed.current = action
+    changed.current.push(action)
   }
 
   const current = () => {
@@ -92,7 +93,7 @@ export function useIsolation (
 
     isolate(viewer, settings, objects)
     isolationRef.current = objects
-    changed.current(source)
+    changed.current.forEach((f) => f(source))
   }
 
   const toggleContextual = (source: string) => {
@@ -125,7 +126,7 @@ export function useIsolation (
         isolationRef.current = [...lastIsolation.current]
       }
     }
-    changed.current(source)
+    changed.current.forEach((f) => f(source))
   }
 
   const hideSelection = (source: string) => {
@@ -141,7 +142,7 @@ export function useIsolation (
     }
     isolate(viewer, settings, result, source !== 'contextMenu')
     isolationRef.current = result
-    changed.current(source)
+    changed.current.forEach((f) => f(source))
   }
 
   const show = (objects: VIM.Object[], source: string) => {
@@ -150,14 +151,14 @@ export function useIsolation (
     const result = [...new Set(isolation)]
     const isolated = isolate(viewer, settings, result)
     isolationRef.current = isolated ? result : undefined
-    changed.current(source)
+    changed.current.forEach((f) => f(source))
   }
 
   const clear = (source: string) => {
     showAll()
     lastIsolation.current = isolationRef.current
     isolationRef.current = undefined
-    changed.current(source)
+    changed.current.forEach((f) => f(source))
   }
 
   return {

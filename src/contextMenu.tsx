@@ -6,9 +6,9 @@ import {
 import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import { Isolation } from './helpers/isolation'
-import { ArrayEquals } from './helpers/data'
 import { ViewerWrapper } from './helpers/viewer'
 import { HelpState } from './help'
+import { ArrayEquals } from './helpers/data'
 
 export const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
 type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -43,6 +43,7 @@ export function _VimContextMenu (props: {
     return !viewer.sectionBox.box.containsBox(viewer.renderer.getBoundingBox())
   }
   const [clipping, setClipping] = useState<boolean>(isClipping())
+  const [, setVersion] = useState(0)
   const hidden = props.isolation.any()
 
   useEffect(() => {
@@ -59,6 +60,8 @@ export function _VimContextMenu (props: {
       setClipping(isClipping())
     )
 
+    // force re-render and reevalution of isolation.
+    props.isolation.onChange(() => setVersion((v) => v + 1))
     return () => {
       subState()
       subConfirm()
