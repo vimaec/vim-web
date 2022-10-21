@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { ViewerWrapper } from '../helpers/viewer'
 
+const SEARCH_DELAY_MS = 200
 export function BimSearch (props: {
   viewer: ViewerWrapper
   filter: string
@@ -8,8 +9,21 @@ export function BimSearch (props: {
   count: number
   setSearching: (value: boolean) => void
 }) {
+  const [text, setText] = useState('')
+  const changeTimeout = useRef<ReturnType<typeof setTimeout>>()
+
+  useEffect(() => {
+    setText(props.filter)
+  }, [props.filter])
+
   const onChange = (e: React.FormEvent<HTMLInputElement>) => {
-    props.setFilter(e.currentTarget.value)
+    const value = e.currentTarget.value
+    setText(value)
+    clearTimeout(changeTimeout.current)
+    changeTimeout.current = setTimeout(
+      () => props.setFilter(value),
+      SEARCH_DELAY_MS
+    )
   }
 
   const onFocus = () => {
@@ -41,12 +55,12 @@ export function BimSearch (props: {
         type="search"
         name="name"
         placeholder="Type here to search"
-        value={props.filter}
+        value={text}
         onFocus={onFocus}
         onBlur={onBlur}
         onChange={onChange}
       />
-      {props.count !== undefined && props.filter
+      {props.count !== undefined && text
         ? (
         <div className="vim-bim-search-count rounded-full bg-primary-royal text-white text-xs font-bold py-1 px-2 absolute right-16">
           {props.count}
