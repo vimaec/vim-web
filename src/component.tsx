@@ -66,7 +66,7 @@ export function VimComponent (props: {
   loading?: boolean
 }) {
   const useLogo = props.logo === undefined ? true : props.logo
-  const useInspector = props.bimPanel === undefined ? true : props.bimPanel
+  const useBimPanel = props.bimPanel === undefined ? true : props.bimPanel
   const useMenu = props.menu === undefined ? true : props.menu
   const useMenuTop = props.menuTop === undefined ? true : props.menuTop
   const useLoading = props.loading === undefined ? true : props.loading
@@ -75,7 +75,7 @@ export function VimComponent (props: {
   const viewer = useRef(new ViewerWrapper(props.viewer)).current
   const settings = useSettings(props.viewer)
   const isolation = useIsolation(viewer, settings.get)
-  const side = useSideState(useInspector)
+  const side = useSideState(useBimPanel)
   const help = useHelp()
   const [vim, selection] = useViewerState(props.viewer)
 
@@ -106,13 +106,17 @@ export function VimComponent (props: {
 
   const sidePanel = (
     <>
-      <BimPanel
-        viewer={viewer}
-        vim={vim}
-        selection={selection}
-        visible={side.get() === 'bim'}
-        isolation={isolation}
-      />
+      {!useBimPanel
+        ? (
+        <BimPanel
+          viewer={viewer}
+          vim={vim}
+          selection={selection}
+          visible={side.get() === 'bim'}
+          isolation={isolation}
+        />
+          )
+        : null}
       <MenuSettings
         visible={side.get() === 'settings'}
         viewer={props.viewer}
