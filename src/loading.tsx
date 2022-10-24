@@ -18,7 +18,10 @@ function _LoadingBox (props: { viewer: VIM.Viewer }) {
     ): Promise<VIM.Vim> {
       return prevLoad(source, options, (p) => {
         setProgress(p.loaded)
-      }).then((_) => setProgress(undefined))
+      }).then((vim) => {
+        setProgress(undefined)
+        return vim
+      })
     }
 
     // Clean up
