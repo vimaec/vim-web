@@ -17,7 +17,6 @@ export function Overlay (props: { viewer: VIM.Viewer; side: SideState }) {
     ) => {
       overlay.current?.addEventListener(evnt, (e) => {
         props.viewer.viewport.canvas.dispatchEvent(construct(evnt, e))
-        e.stopImmediatePropagation()
         if (preventDefault) {
           e.preventDefault()
         }
