@@ -16,7 +16,16 @@ const viewer = new VIM.Viewer()
 const container = createContainer(viewer)
 const root = createRoot(container.ui)
 root.render(
-  <VimComponent root={container.root} viewer={viewer} onMount={loadVim} />
+  <VimComponent
+    viewer={viewer}
+    onMount={loadVim}
+    settings={{
+      useBimPanel: false,
+      useAxesPanel: false,
+      useFullScreenBtn: false,
+      useLogo: false
+    }}
+  />
 )
 
 function loadVim () {

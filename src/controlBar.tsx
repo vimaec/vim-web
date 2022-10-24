@@ -7,6 +7,7 @@ import { Cursor, CursorManager, pointerToCursor } from './helpers/cursor'
 import { ViewerWrapper } from './helpers/viewer'
 import * as Icons from './icons'
 import { HelpState } from './help'
+import { Settings } from './settings/settings'
 
 // Shared Buttons style
 
@@ -50,6 +51,7 @@ export function ControlBar (props: {
   side: SideState
   isolation: Isolation
   cursor: CursorManager
+  settings: Settings
 }) {
   const [show, setShow] = useState(true)
   const showRef = useRef(show)
@@ -363,7 +365,11 @@ function TabTools (props: {
   return measuring ? measureTab : section.active ? sectionTab : toolsTab
 }
 
-function TabSettings (props: { help: HelpState; side: SideState }) {
+function TabSettings (props: {
+  help: HelpState
+  side: SideState
+  settings: Settings
+}) {
   const [fullScreen, setFullScreen] = useState<boolean>(
     !!document.fullscreenElement
   )
@@ -433,10 +439,10 @@ function TabSettings (props: { help: HelpState; side: SideState }) {
 
   return (
     <>
-      {btnTreeView}
+      {props.settings.useBimPanel ? btnTreeView : null}
       {btnSettings}
       {btnHelp}
-      {btnFullScreen}
+      {props.settings.useFullScreenBtn ? btnFullScreen : null}
     </>
   )
 }

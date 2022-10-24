@@ -6,7 +6,7 @@ import 'vim-webgl-viewer/dist/style.css'
 
 import * as VIM from 'vim-webgl-viewer/'
 
-import { MenuTop } from './axesPanel'
+import { AxesPanel } from './axesPanel'
 import { ControlBar } from './controlBar'
 import { LoadingBox } from './loading'
 import { BimPanel } from './bim/bimPanel'
@@ -20,7 +20,7 @@ import { Overlay } from './overlay'
 
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
-import { useSettings } from './settings/settings'
+import { Settings, useSettings } from './settings/settings'
 import { useIsolation } from './helpers/isolation'
 import { ViewerWrapper } from './helpers/viewer'
 
@@ -56,26 +56,15 @@ export function createContainer (viewer: VIM.Viewer) {
 }
 
 export function VimComponent (props: {
-  root: HTMLDivElement
   viewer: VIM.Viewer
   onMount: () => void
-  logo?: boolean
-  bimPanel?: boolean
-  menu?: boolean
-  menuTop?: boolean
-  loading?: boolean
+  settings?: Partial<Settings>
 }) {
-  const useLogo = props.logo === undefined ? true : props.logo
-  const useBimPanel = props.bimPanel === undefined ? true : props.bimPanel
-  const useMenu = props.menu === undefined ? true : props.menu
-  const useMenuTop = props.menuTop === undefined ? true : props.menuTop
-  const useLoading = props.loading === undefined ? true : props.loading
-
   const cursor = useRef(new CursorManager(props.viewer)).current
   const viewer = useRef(new ViewerWrapper(props.viewer)).current
-  const settings = useSettings(props.viewer)
-  const isolation = useIsolation(viewer, settings.get)
-  const side = useSideState(useBimPanel)
+  const settings = useSettings(props.viewer, props.settings)
+  const isolation = useIsolation(viewer, settings.value)
+  const side = useSideState(settings.value.useBimPanel)
   const help = useHelp()
   const [vim, selection] = useViewerState(props.viewer)
 
@@ -106,7 +95,7 @@ export function VimComponent (props: {
 
   const sidePanel = (
     <>
-      {useBimPanel
+      {settings.value.useBimPanel
         ? (
         <BimPanel
           viewer={viewer}
@@ -129,9 +118,13 @@ export function VimComponent (props: {
     <>
       <Overlay viewer={viewer.base} side={side}></Overlay>
       <MenuHelp help={help} />
-      {useLogo ? <Logo /> : null}
-      {useLoading ? <LoadingBox viewer={props.viewer} /> : null}
-      {useMenu
+      {settings.value.useLogo ? <Logo /> : null}
+      {settings.value.useLoadingBox
+        ? (
+        <LoadingBox viewer={props.viewer} />
+          )
+        : null}
+      {settings.value.useControlBar
         ? (
         <ControlBar
           viewer={viewer}
@@ -139,10 +132,11 @@ export function VimComponent (props: {
           side={side}
           isolation={isolation}
           cursor={cursor}
+          settings={settings.value}
         />
           )
         : null}
-      {useMenuTop ? <MenuTop viewer={viewer} /> : null}
+      {settings.value.useAxesPanel ? <AxesPanel viewer={viewer} /> : null}
       <SidePanel viewer={props.viewer} side={side} content={sidePanel} />
       <ReactTooltip delayShow={200} />
       <VimContextMenu

@@ -6,21 +6,33 @@ export class Settings {
   showGroundPlane: boolean = true
   showPerformance: boolean = true
 
+  // Not exposed in UI
+  useLogo: boolean = true
+  useBimPanel: boolean = true
+  useAxesPanel: boolean = true
+  useControlBar: boolean = true
+  useLoadingBox: boolean = true
+  useFullScreenBtn: boolean = true
+
   clone () {
     return Object.assign(new Settings(), this) as Settings
   }
 }
 
-export type SettingsState = { get: Settings; set: (value: Settings) => void }
+export type SettingsState = { value: Settings; set: (value: Settings) => void }
 
-export function useSettings (viewer: VIM.Viewer): SettingsState {
-  const [settings, setSettings] = useState(new Settings())
+export function useSettings (
+  viewer: VIM.Viewer,
+  value: Partial<Settings>
+): SettingsState {
+  const merge = Object.assign(new Settings(), value) as Settings
+  const [settings, setSettings] = useState(merge)
 
   useEffect(() => {
     applySettings(viewer, settings)
   }, [settings])
 
-  return useMemo(() => ({ get: settings, set: setSettings }), [settings])
+  return useMemo(() => ({ value: settings, set: setSettings }), [settings])
 }
 
 export function applySettings (viewer: VIM.Viewer, settings: Settings) {

@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react'
 import * as Icons from './icons'
 import { ViewerWrapper } from './helpers/viewer'
 
-export const MenuTop = React.memo(_MenuTop)
-function _MenuTop (props: { viewer: ViewerWrapper }) {
+export const AxesPanel = React.memo(_AxesPanel)
+function _AxesPanel (props: { viewer: ViewerWrapper }) {
   const viewer = props.viewer.base
   const helper = props.viewer
 

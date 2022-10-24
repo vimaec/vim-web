@@ -21,14 +21,14 @@ export function MenuSettings (props: {
       </label>
     )
   }
-  const next = props.settings.get.clone()
+  const next = props.settings.value.clone()
 
   const settingsToggle = (
     label: string,
     getter: (settings: Settings) => boolean,
     setter: (settings: Settings, b: boolean) => void
   ) => {
-    return toggleElement(label, getter(props.settings.get), () => {
+    return toggleElement(label, getter(props.settings.value), () => {
       setter(next, !getter(next))
       props.settings.set(next)
     })
