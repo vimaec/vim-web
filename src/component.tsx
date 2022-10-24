@@ -106,7 +106,7 @@ export function VimComponent (props: {
 
   const sidePanel = (
     <>
-      {!useBimPanel
+      {useBimPanel
         ? (
         <BimPanel
           viewer={viewer}
