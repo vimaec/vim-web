@@ -12,6 +12,7 @@ type IsolationSource =
   | 'tree'
   | 'keyboard'
   | 'controlBar'
+  | string
 
 export type Isolation = {
   current: () => VIM.Object[]
