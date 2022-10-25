@@ -21,7 +21,7 @@ import { Overlay } from './overlay'
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
 import { Settings, useSettings } from './settings/settings'
-import { useIsolation } from './helpers/isolation'
+import { Isolation, useIsolation } from './helpers/isolation'
 import { ViewerWrapper } from './helpers/viewer'
 
 export * as VIM from 'vim-webgl-viewer/'
@@ -55,14 +55,17 @@ export function createContainer (viewer: VIM.Viewer) {
   return { root, ui, gfx }
 }
 
+export type ViewerComponent = { viewer: ViewerWrapper; isolation: Isolation }
+
 export function VimComponent (props: {
-  viewer: VIM.Viewer
-  onMount: () => void
+  viewer?: VIM.Viewer
+  onMount: (component: ViewerComponent) => void
   settings?: Partial<Settings>
 }) {
-  const cursor = useRef(new CursorManager(props.viewer)).current
   const viewer = useRef(new ViewerWrapper(props.viewer)).current
+  const cursor = useRef(new CursorManager(props.viewer)).current
   const settings = useSettings(props.viewer, props.settings)
+
   const isolation = useIsolation(viewer, settings.value)
   const side = useSideState(settings.value.useBimPanel)
   const help = useHelp()
@@ -70,7 +73,7 @@ export function VimComponent (props: {
 
   // On first render
   useEffect(() => {
-    props.onMount()
+    props.onMount({ viewer, isolation })
     cursor.register()
 
     // Frame on vim loaded
