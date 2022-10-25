@@ -61,7 +61,7 @@ export function _VimContextMenu (props: {
     )
 
     // force re-render and reevalution of isolation.
-    props.isolation.onChange(() => setVersion((v) => v + 1))
+    props.isolation.onChanged.subscribe(() => setVersion((v) => v + 1))
     return () => {
       subState()
       subConfirm()
@@ -84,12 +84,12 @@ export function _VimContextMenu (props: {
   }
 
   const onSelectionIsolateBtn = (e: ClickCallback) => {
-    props.isolation.toggleContextual('contextMenu')
+    props.isolation.toggleIsolation('contextMenu')
     e.stopPropagation()
   }
 
   const onSelectionHideBtn = (e: ClickCallback) => {
-    props.isolation.hideSelection('contextMenu')
+    props.isolation.hide([...viewer.selection.objects], 'contextMenu')
     e.stopPropagation()
   }
 

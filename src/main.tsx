@@ -15,18 +15,7 @@ const url = params.has('vim')
 const viewer = new VIM.Viewer()
 const container = createContainer(viewer)
 const root = createRoot(container.ui)
-root.render(
-  <VimComponent
-    viewer={viewer}
-    onMount={loadVim}
-    settings={{
-      useBimPanel: false,
-      useAxesPanel: false,
-      useFullScreenBtn: false,
-      useLogo: false
-    }}
-  />
-)
+root.render(<VimComponent viewer={viewer} onMount={loadVim} />)
 
 function loadVim () {
   viewer.loadVim(url, {
