@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { createRoot } from 'react-dom/client'
 import ReactTooltip from 'react-tooltip'
 import logo from './assets/logo.png'
 import './style.css'
@@ -26,6 +27,26 @@ import { ViewerWrapper } from './helpers/viewer'
 
 export * as VIM from 'vim-webgl-viewer/'
 
+export type ViewerComponent = {
+  viewer: VIM.Viewer
+  helpers: ViewerWrapper
+  isolation: Isolation
+}
+
+// Creates a ui container along with a VIM.Viewer and the associated react component
+export function createVimComponent (
+  onMount: (component: ViewerComponent) => void,
+  settings: Partial<Settings> = {}
+) {
+  const viewer = new VIM.Viewer()
+  const container = createContainer(viewer)
+  const root = createRoot(container.ui)
+  const component = React.createFactory(VimComponent)
+  root.render(component({ viewer, onMount, settings }))
+  return root
+}
+
+// Creates a ui container for the react component
 export function createContainer (viewer: VIM.Viewer) {
   const root = document.createElement('div')
   root.className = 'vim-component'
@@ -55,10 +76,9 @@ export function createContainer (viewer: VIM.Viewer) {
   return { root, ui, gfx }
 }
 
-export type ViewerComponent = { viewer: ViewerWrapper; isolation: Isolation }
-
+// React component that provides ui for the Vim Viewer.
 export function VimComponent (props: {
-  viewer?: VIM.Viewer
+  viewer: VIM.Viewer
   onMount: (component: ViewerComponent) => void
   settings?: Partial<Settings>
 }) {
@@ -73,7 +93,7 @@ export function VimComponent (props: {
 
   // On first render
   useEffect(() => {
-    props.onMount({ viewer, isolation })
+    props.onMount({ viewer: props.viewer, helpers: viewer, isolation })
     cursor.register()
 
     // Frame on vim loaded
