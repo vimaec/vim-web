@@ -5,7 +5,7 @@ import { setComponentBehind } from './helpers/html'
 type Progress = 'processing' | number | string
 
 export const LoadingBox = React.memo(_LoadingBox)
-function _LoadingBox (props: { viewer: VIM.Viewer }) {
+function _LoadingBox (props: { viewer: VIM.Viewer; msg: string }) {
   const [progress, setProgress] = useState<Progress>()
 
   // Patch load
@@ -34,23 +34,7 @@ function _LoadingBox (props: { viewer: VIM.Viewer }) {
     setComponentBehind(progress !== undefined)
   }, [progress])
 
-  const msg =
-    progress === 'processing'
-      ? (
-          'Processing'
-        )
-      : typeof progress === 'number'
-        ? (
-      <div className="flex justify-between w-full">
-        <span>Loading...</span>
-        <span>{Math.round(progress / 1000000)} MB</span>
-      </div>
-          )
-        : typeof progress === 'string'
-          ? (
-      `Error: ${progress}`
-            )
-          : undefined
+  const msg = props.msg ?? formatProgress(progress)
 
   if (!msg) return null
   return (
@@ -64,4 +48,23 @@ function _LoadingBox (props: { viewer: VIM.Viewer }) {
       </div>
     </div>
   )
+}
+
+function formatProgress (progress: Progress) {
+  return progress === 'processing'
+    ? (
+        'Processing'
+      )
+    : typeof progress === 'number'
+      ? (
+    <div className="flex justify-between w-full">
+      <span>Loading...</span>
+      <span>{Math.round(progress / 1000000)} MB</span>
+    </div>
+        )
+      : typeof progress === 'string'
+        ? (
+    `Error: ${progress}`
+          )
+        : undefined
 }

@@ -31,6 +31,7 @@ export type ViewerComponent = {
   viewer: VIM.Viewer
   helpers: ViewerWrapper
   isolation: Isolation
+  setMsg: (s: string) => void
 }
 
 // Creates a ui container along with a VIM.Viewer and the associated react component
@@ -90,10 +91,11 @@ export function VimComponent (props: {
   const side = useSideState(settings.value.useBimPanel)
   const help = useHelp()
   const [vim, selection] = useViewerState(props.viewer)
+  const [msg, setMsg] = useState<string>()
 
   // On first render
   useEffect(() => {
-    props.onMount({ viewer: props.viewer, helpers: viewer, isolation })
+    props.onMount({ viewer: props.viewer, helpers: viewer, isolation, setMsg })
     cursor.register()
 
     // Frame on vim loaded
@@ -144,7 +146,7 @@ export function VimComponent (props: {
       {settings.value.useLogo ? <Logo /> : null}
       {settings.value.useLoadingBox
         ? (
-        <LoadingBox viewer={props.viewer} />
+        <LoadingBox viewer={props.viewer} msg={msg} />
           )
         : null}
       {settings.value.useControlBar
