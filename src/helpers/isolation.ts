@@ -60,7 +60,7 @@ export function useIsolation (
         for (const obj of vim.getAllObjects()) {
           const has = set.has(obj)
           obj.visible = has
-          if (!has) allVisible = false
+          if (obj.hasMesh && !has) allVisible = false
         }
 
         vim.scene.material =
