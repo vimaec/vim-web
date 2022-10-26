@@ -219,7 +219,8 @@ body {
 .vim-gfx.bim-panel-open + .vim-ui .vim-menu-toast {
   left: calc(50% + 190px);
 }
-.vim-gfx.bim-panel-open + .vim-ui .vim-loading-box {
+
+.vim-loading-box {
   margin: auto;
   align-self: center;
   position: absolute;
