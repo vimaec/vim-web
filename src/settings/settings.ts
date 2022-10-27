@@ -47,25 +47,8 @@ export function applySettings (viewer: VIM.Viewer, settings: Settings) {
     }
   }
 
-  // Isolation material
-  viewer.vims.forEach((v) => {
-    if (!settings.useIsolationMaterial) {
-      v.scene.material = undefined
-      return
-    }
+  // Isolation settings are applied in isolation.
 
-    let hidden = false
-    for (const obj of v.getAllObjects()) {
-      if (!obj.visible) {
-        hidden = true
-        break
-      }
-    }
-    if (hidden) {
-      v.scene.material = viewer.renderer.materials.isolation
-    }
-
-    // Don't show ground plane when isolation is on.
-    viewer.environment.groundPlane.visible = settings.showGroundPlane
-  })
+  // Don't show ground plane when isolation is on.
+  viewer.environment.groundPlane.visible = settings.showGroundPlane
 }

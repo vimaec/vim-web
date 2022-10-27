@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import { Settings } from '../settings/settings'
 import { ViewerWrapper } from './viewer'
@@ -33,6 +33,16 @@ export function useIsolation (
   const isolationRef = useRef<VIM.Object[]>()
   const lastIsolation = useRef<VIM.Object[]>()
   const onChanged = useRef(new SimpleEventDispatcher<string>()).current
+
+  useEffect(() => {
+    const set = new Set(isolationRef.current?.map((o) => o.vim))
+    viewer.vims.forEach((v) => {
+      v.scene.material =
+        set.has(v) && settings.useIsolationMaterial
+          ? viewer.renderer.materials.isolation
+          : undefined
+    })
+  }, [settings, viewer])
 
   const any = () => !!isolationRef.current
 
