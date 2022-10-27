@@ -142,7 +142,7 @@ export function VimComponent (props: {
   return (
     <>
       <Overlay viewer={viewer.base} side={side}></Overlay>
-      <MenuHelp help={help} />
+      <MenuHelp help={help} settings={settings.value} />
       {settings.value.useLogo ? <Logo /> : null}
       {settings.value.useLoadingBox
         ? (

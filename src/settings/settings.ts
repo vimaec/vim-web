@@ -13,6 +13,7 @@ export class Settings {
   useControlBar: boolean = true
   useLoadingBox: boolean = true
   useFullScreenBtn: boolean = true
+  canFollowUrls: boolean = true
 
   clone () {
     return Object.assign(new Settings(), this) as Settings

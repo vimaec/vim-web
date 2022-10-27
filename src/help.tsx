@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import helpImage from './assets/quick-controls.svg'
 import * as Icons from './icons'
 import { setComponentBehind } from './helpers/html'
+import { Settings } from './settings/settings'
 
 const urlSupport = 'https://support.vimaec.com'
 const urlControls =
@@ -24,17 +25,11 @@ export function useHelp (): HelpState {
 }
 
 export const MenuHelp = React.memo(_MenuHelp)
-function _MenuHelp (props: { help: HelpState }) {
+function _MenuHelp (props: { help: HelpState; settings: Settings }) {
   if (!props.help.visible) return null
 
   const onCloseBtn = () => {
     props.help.setVisible(false)
-  }
-  const onControlsBtn = () => {
-    window.open(urlControls)
-  }
-  const onHelpBtn = () => {
-    window.open(urlSupport)
   }
 
   return (
@@ -70,22 +65,35 @@ function _MenuHelp (props: { help: HelpState }) {
               src={helpImage}
             ></img>
           </div>
-          <div className="flex justify-end">
-            <button
-              className="text-white text-xs font-bold uppercase border border-white hover:border-primary-royal hover:bg-primary-royal rounded-full py-2 px-8 mr-4"
-              onClick={onControlsBtn}
-            >
-              Full Control List
-            </button>
-            <button
-              className="text-primary text-xs font-bold border border-white uppercase bg-white hover:border-primary-royal hover:text-white hover:bg-primary-royal rounded-full py-2 px-8"
-              onClick={onHelpBtn}
-            >
-              Help Center
-            </button>
-          </div>
+          {props.settings.canFollowUrls ? linkButtons() : null}
         </div>
       </div>
     </>
+  )
+}
+
+function linkButtons () {
+  const onControlsBtn = () => {
+    window.open(urlControls)
+  }
+  const onHelpBtn = () => {
+    window.open(urlSupport)
+  }
+
+  return (
+    <div className="flex justify-end">
+      <button
+        className="text-white text-xs font-bold uppercase border border-white hover:border-primary-royal hover:bg-primary-royal rounded-full py-2 px-8 mr-4"
+        onClick={onControlsBtn}
+      >
+        Full Control List
+      </button>
+      <button
+        className="text-primary text-xs font-bold border border-white uppercase bg-white hover:border-primary-royal hover:text-white hover:bg-primary-royal rounded-full py-2 px-8"
+        onClick={onHelpBtn}
+      >
+        Help Center
+      </button>
+    </div>
   )
 }
