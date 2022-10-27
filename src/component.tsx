@@ -41,10 +41,10 @@ export function createVimComponent (
 ) {
   const viewer = new VIM.Viewer()
   const container = createContainer(viewer)
-  const root = createRoot(container.ui)
+  const reactRoot = createRoot(container.ui)
   const component = React.createFactory(VimComponent)
-  root.render(component({ viewer, onMount, settings }))
-  return { root, viewer }
+  reactRoot.render(component({ viewer, onMount, settings }))
+  return { container, reactRoot, viewer }
 }
 
 // Creates a ui container for the react component
