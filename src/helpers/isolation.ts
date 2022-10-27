@@ -97,8 +97,8 @@ export function useIsolation (
       lastIsolation.current = isolationRef.current
     }
 
-    _isolate(viewer, settings, objects)
-    isolationRef.current = objects
+    const isolated = _isolate(viewer, settings, objects)
+    isolationRef.current = isolated ? objects : undefined
     onChanged.dispatch(source)
   }
 
@@ -118,18 +118,18 @@ export function useIsolation (
         isolationRef.current = undefined
       } else {
         // Replace Isolation
-        _isolate(viewer, settings, selection)
-        isolationRef.current = selection
+        const isolated = _isolate(viewer, settings, selection)
+        isolationRef.current = isolated ? selection : undefined
       }
     } else {
       if (selection.length > 0) {
         // Set new Isolation
-        _isolate(viewer, settings, selection)
-        isolationRef.current = selection
+        const isolated = _isolate(viewer, settings, selection)
+        isolationRef.current = isolated ? selection : undefined
       } else if (lastIsolation.current) {
         // Restore last isolation
-        _isolate(viewer, settings, lastIsolation.current)
-        isolationRef.current = [...lastIsolation.current]
+        const isolated = _isolate(viewer, settings, lastIsolation.current)
+        isolationRef.current = isolated ? [...lastIsolation.current] : undefined
       }
     }
     onChanged.dispatch(source)
@@ -142,8 +142,13 @@ export function useIsolation (
     for (const obj of initial) {
       if (!selection.has(obj)) result.push(obj)
     }
-    _isolate(viewer, settings, result, source !== 'contextMenu')
-    isolationRef.current = result
+    const isolated = _isolate(
+      viewer,
+      settings,
+      result,
+      source !== 'contextMenu'
+    )
+    isolationRef.current = isolated ? result : undefined
     onChanged.dispatch(source)
   }
 
