@@ -203,7 +203,7 @@ export function _VimContextMenu (props: {
           section.visible
         )}
         {createButton(
-          'Fit section box to selection',
+          'Fit Section Box to Selection',
           '',
           onFitSectionToSelectionBtn,
           section.visible && hasSelection
