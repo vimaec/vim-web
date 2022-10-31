@@ -39,7 +39,7 @@ function _LoadingBox (props: { viewer: VIM.Viewer; msg: string }) {
   if (!msg) return null
   return (
     <div
-      className="loading-wrapper backdrop-blur fixed items-center justify-center top-0 left-0 w-full h-full z-30 bg-overflow"
+      className="loading-wrapper backdrop-blur fixed items-center justify-center top-0 left-0 w-full h-full z-40 bg-overflow"
       onContextMenu={(event) => event.preventDefault()}
     >
       <div className="vim-loading-box w-[320px] text-gray-medium bg-white px-5 py-4 rounded shadow-lg z-20">

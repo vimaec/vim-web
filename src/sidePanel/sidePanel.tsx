@@ -22,7 +22,7 @@ export function _SidePanel (props: {
   const iconOptions = { height: '20', width: '20', fill: 'currentColor' }
   return (
     <div
-      className={`vim-side-panel fixed left-0 top-0 bg-gray-lightest p-6 text-gray-darker h-full ${
+      className={`vim-side-panel z-30 fixed left-0 top-0 bg-gray-lightest p-6 text-gray-darker h-full ${
         props.side.get() !== 'none' ? '' : 'hidden'
       }`}
     >
