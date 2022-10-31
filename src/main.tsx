@@ -1,7 +1,5 @@
 import * as VIM from 'vim-webgl-viewer/'
 
-import React from 'react'
-import { createRoot } from 'react-dom/client'
 import { createVimComponent, ViewerComponent } from './component'
 
 // Parse URL
