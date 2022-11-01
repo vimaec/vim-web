@@ -11,7 +11,11 @@ import { AxesPanel } from './axesPanel'
 import { ControlBar } from './controlBar'
 import { LoadingBox } from './loading'
 import { BimPanel } from './bim/bimPanel'
-import { showContextMenu, VimContextMenu } from './contextMenu'
+import {
+  contextMenuCustomization,
+  showContextMenu,
+  VimContextMenu
+} from './contextMenu'
 import { MenuHelp, useHelp } from './help'
 import { SidePanel } from './sidePanel/sidePanel'
 import { useSideState } from './sidePanel/sideState'
@@ -32,6 +36,7 @@ export type ViewerComponent = {
   helpers: ViewerWrapper
   isolation: Isolation
   setMsg: (s: string) => void
+  customizeContextMenu: (c: contextMenuCustomization) => void
 }
 
 // Creates a ui container along with a VIM.Viewer and the associated react component
@@ -89,13 +94,22 @@ export function VimComponent (props: {
 
   const isolation = useIsolation(viewer, settings.value)
   const side = useSideState(settings.value.useBimPanel)
+  const [contextMenu, setcontextMenu] = useState<contextMenuCustomization>()
   const help = useHelp()
   const [vim, selection] = useViewerState(props.viewer)
   const [msg, setMsg] = useState<string>()
 
   // On first render
   useEffect(() => {
-    props.onMount({ viewer: props.viewer, helpers: viewer, isolation, setMsg })
+    props.onMount({
+      viewer: props.viewer,
+      helpers: viewer,
+      isolation,
+      setMsg,
+      // Double lambda is required to avoid react from using reducer pattern
+      // https://stackoverflow.com/questions/59040989/usestate-with-a-lambda-invokes-the-lambda-when-set
+      customizeContextMenu: (v) => setcontextMenu(() => v)
+    })
     cursor.register()
 
     // Frame on vim loaded
@@ -169,6 +183,7 @@ export function VimComponent (props: {
         help={help}
         isolation={isolation}
         selection={selection}
+        customization={contextMenu}
       />
       <MenuToast viewer={props.viewer}></MenuToast>
     </>
