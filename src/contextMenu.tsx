@@ -121,7 +121,11 @@ export function _VimContextMenu (props: {
   }
 
   const onSelectionIsolateBtn = (e: ClickCallback) => {
-    props.isolation.toggleIsolation('contextMenu')
+    props.isolation.isolate(
+      [...props.viewer.base.selection.objects],
+      'contextMenu'
+    )
+    helper.base.selection.clear()
     e.stopPropagation()
   }
 

@@ -31,6 +31,7 @@ export class ComponentInputs implements VIM.InputScheme {
       }
       case VIM.KEYS.KEY_I: {
         this._isolation.toggleIsolation('keyboard')
+        this._viewer.frameVisibleObjects()
         return true
       }
 

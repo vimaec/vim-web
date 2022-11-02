@@ -57,13 +57,8 @@ export function useIsolation (
   const _isolate = (
     viewer: VIM.Viewer,
     settings: Settings,
-    objects: VIM.Object[],
-    frame: boolean = true
+    objects: VIM.Object[]
   ) => {
-    if (ArrayEquals(objects, isolationRef.current)) {
-      return
-    }
-
     let allVisible = true
     if (!objects) {
       showAll()
@@ -142,12 +137,7 @@ export function useIsolation (
     for (const obj of initial) {
       if (!selection.has(obj)) result.push(obj)
     }
-    const isolated = _isolate(
-      viewer,
-      settings,
-      result,
-      source !== 'contextMenu'
-    )
+    const isolated = _isolate(viewer, settings, result)
     isolationRef.current = isolated ? result : undefined
     onChanged.dispatch(source)
     objects.forEach((o) => viewer.selection.remove(o))
