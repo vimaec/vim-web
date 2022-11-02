@@ -14,6 +14,7 @@ export class Settings {
   useLoadingBox: boolean = true
   useFullScreenBtn: boolean = true
   canFollowUrls: boolean = true
+  useOrthographicCameraBtn: boolean = true
 
   clone () {
     return Object.assign(new Settings(), this) as Settings

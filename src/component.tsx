@@ -175,7 +175,11 @@ export function VimComponent (props: {
         />
           )
         : null}
-      {settings.value.useAxesPanel ? <AxesPanel viewer={viewer} /> : null}
+      {settings.value.useAxesPanel
+        ? (
+        <AxesPanel viewer={viewer} settings={settings.value} />
+          )
+        : null}
       <SidePanel viewer={props.viewer} side={side} content={sidePanel} />
       <ReactTooltip delayShow={200} />
       <VimContextMenu

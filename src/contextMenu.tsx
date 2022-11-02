@@ -31,6 +31,24 @@ export type contextMenuButton = {
   enabled: boolean
 }
 
+export const contextMenuIds = {
+  showControls: 'showControls',
+  dividerCamera: 'dividerCamera',
+  resetCamera: 'resetCamera',
+  zoomToFit: 'zoomToFit',
+  dividerSelection: 'dividerSelection',
+  isolateSelection: 'isolateObject',
+  hideObject: 'hideObject',
+  clearSelection: 'clearSelection',
+  showAll: 'showAll',
+  dividerMeasure: 'dividerMeasure',
+  deleteMeasurement: 'deleteMeasurement',
+  dividerSection: 'dividerSection',
+  ignoreSection: 'ignoreSection',
+  resetSection: 'resetSection',
+  fitSectionToSelection: 'fitSectionToSelection'
+}
+
 export type contextMenuDivider = {
   id: string
   enabled: boolean
@@ -170,81 +188,84 @@ export function _VimContextMenu (props: {
 
   let elements: contextMenuElement[] = [
     {
-      id: 'showControls',
+      id: contextMenuIds.showControls,
       label: 'Show Controls',
       keyboard: 'F1',
       action: onShowControlsBtn,
       enabled: true
     },
-    { id: 'dividerCamera', enabled: true },
+    { id: contextMenuIds.dividerCamera, enabled: true },
     {
-      id: 'resetCamera',
+      id: contextMenuIds.resetCamera,
       label: 'Reset Camera',
       keyboard: 'HOME',
       action: onCameraResetBtn,
       enabled: true
     },
     {
-      id: 'zoomToFit',
+      id: contextMenuIds.zoomToFit,
       label: 'Zoom to Fit',
       keyboard: 'HOME',
       action: onCameraFrameBtn,
       enabled: true
     },
-    { id: 'dividerSelection', enabled: hasSelection || hidden },
+    { id: contextMenuIds.dividerSelection, enabled: hasSelection || hidden },
     {
-      id: 'isolateObject',
+      id: contextMenuIds.isolateSelection,
       label: 'Isolate Object',
       keyboard: 'I',
       action: onSelectionIsolateBtn,
       enabled: hasSelection && !isolated
     },
     {
-      id: 'hideObject',
+      id: contextMenuIds.hideObject,
       label: 'Hide Object',
       keyboard: '',
       action: onSelectionHideBtn,
       enabled: hasSelection
     },
     {
-      id: 'clearSelection',
+      id: contextMenuIds.clearSelection,
       label: 'Clear Selection',
       keyboard: 'Esc',
       action: onSelectionClearBtn,
       enabled: hasSelection
     },
     {
-      id: 'showAll',
+      id: contextMenuIds.showAll,
       label: 'Show All',
       keyboard: '',
       action: onShowAllBtn,
       enabled: hidden
     },
-    { id: 'dividerMeasure', enabled: measuring },
+    { id: contextMenuIds.dividerMeasure, enabled: measuring },
     {
-      id: 'deleteMeasurement',
+      id: contextMenuIds.deleteMeasurement,
       label: 'Delete Measurement',
       keyboard: '',
       action: onMeasureDeleteBtn,
       enabled: measuring
     },
-    { id: 'dividerSection', enabled: clipping || section.visible },
     {
-      id: 'ignoreSection',
+      id: contextMenuIds.dividerSection,
+      enabled: clipping || section.visible
+    },
+    {
+      id: contextMenuIds.ignoreSection,
       label: section.clip ? 'Ignore Section Box' : 'Apply Section Box',
       keyboard: '',
       action: onSectionToggleBtn,
       enabled: clipping
     },
     {
-      id: 'resetSection',
+      id: contextMenuIds.resetSection,
       label: 'Reset Section Box',
       keyboard: '',
       action: onSectionResetBtn,
       enabled: clipping
     },
     {
-      id: 'ignoreSection',
+      id: contextMenuIds.fitSectionToSelection,
       label: 'Fit Section Box to Selection',
       keyboard: '',
       action: onFitSectionToSelectionBtn,
