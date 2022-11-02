@@ -30,6 +30,7 @@ import { Isolation, useIsolation } from './helpers/isolation'
 import { ViewerWrapper } from './helpers/viewer'
 
 export * as VIM from 'vim-webgl-viewer/'
+export * from './contextMenu'
 
 export type ViewerComponent = {
   viewer: VIM.Viewer
