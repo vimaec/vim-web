@@ -29,7 +29,6 @@ export function useIsolation (
   settings: Settings
 ): Isolation {
   const viewer = componentViewer.base
-  const helper = componentViewer
   const isolationRef = useRef<VIM.Object[]>()
   const lastIsolation = useRef<VIM.Object[]>()
   const onChanged = useRef(new SimpleEventDispatcher<string>()).current
@@ -82,10 +81,6 @@ export function useIsolation (
             ? viewer.renderer.materials.isolation
             : undefined
       })
-    }
-
-    if (frame) {
-      helper.frameVisibleObjects()
     }
 
     return !allVisible
