@@ -61,6 +61,10 @@ export function useIsolation (
     objects: VIM.Object[],
     frame: boolean = true
   ) => {
+    if (ArrayEquals(objects, isolationRef.current)) {
+      return
+    }
+
     let allVisible = true
     if (!objects) {
       showAll()
@@ -84,7 +88,6 @@ export function useIsolation (
       helper.frameVisibleObjects()
     }
 
-    viewer.selection.clear()
     return !allVisible
   }
 
@@ -120,12 +123,14 @@ export function useIsolation (
         // Replace Isolation
         const isolated = _isolate(viewer, settings, selection)
         isolationRef.current = isolated ? selection : undefined
+        viewer.selection.clear()
       }
     } else {
       if (selection.length > 0) {
         // Set new Isolation
         const isolated = _isolate(viewer, settings, selection)
         isolationRef.current = isolated ? selection : undefined
+        viewer.selection.clear()
       } else if (lastIsolation.current) {
         // Restore last isolation
         const isolated = _isolate(viewer, settings, lastIsolation.current)
@@ -150,6 +155,7 @@ export function useIsolation (
     )
     isolationRef.current = isolated ? result : undefined
     onChanged.dispatch(source)
+    objects.forEach((o) => viewer.selection.remove(o))
   }
 
   const show = (objects: VIM.Object[], source: string) => {
