@@ -100,11 +100,21 @@ function getElementBimHeader (info: VIM.ElementInfo): BimHeader {
 
 async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
   const documents = await vim.document.getBimDocumentSummary()
+  const main = documents.find((d) => !d.isLinked) ?? documents[0]
+
   return [
     [['Document', formatSource(vim.source), 'w-3/12', 'w-9/12']],
-    [['Created on', vim.document.header.created, 'w-3/12', 'w-9/12']],
-    // Enable back when the data is relevent in the header
-    // [['Created by', vim.document.header.generator, 'w-3/12', 'w-9/12']],
+    [['Source Path', main.pathName, 'w-3/12', 'w-9/12']],
+    [
+      [
+        'Created on',
+        formatDate(vim.document.header.created),
+        'w-3/12',
+        'w-9/12'
+      ]
+    ],
+    [['Created with', vim.document.header.generator, 'w-3/12', 'w-9/12']],
+
     undefined,
     [
       [
@@ -128,6 +138,10 @@ async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
 }
 
 function formatSource (source: string) {
-  const parts = source.split('/')
+  const parts = source?.split('/')
   return parts[parts.length - 1]
+}
+
+function formatDate (source: string) {
+  return source?.replace(/(..:..):../, '$1')
 }
