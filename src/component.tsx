@@ -32,7 +32,7 @@ import { ViewerWrapper } from './helpers/viewer'
 export * as VIM from 'vim-webgl-viewer/'
 export * from './contextMenu'
 
-export type ViewerComponent = {
+export type VimComponentRef = {
   viewer: VIM.Viewer
   helpers: ViewerWrapper
   isolation: Isolation
@@ -42,7 +42,7 @@ export type ViewerComponent = {
 
 // Creates a ui container along with a VIM.Viewer and the associated react component
 export function createVimComponent (
-  onMount: (component: ViewerComponent) => void,
+  onMount: (component: VimComponentRef) => void,
   settings: Partial<Settings> = {}
 ) {
   const viewer = new VIM.Viewer()
@@ -86,7 +86,7 @@ export function createContainer (viewer: VIM.Viewer) {
 // React component that provides ui for the Vim Viewer.
 export function VimComponent (props: {
   viewer: VIM.Viewer
-  onMount: (component: ViewerComponent) => void
+  onMount: (component: VimComponentRef) => void
   settings?: Partial<Settings>
 }) {
   const viewer = useRef(new ViewerWrapper(props.viewer)).current

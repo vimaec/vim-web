@@ -1,6 +1,6 @@
 import * as VIM from 'vim-webgl-viewer/'
 
-import { createVimComponent, ViewerComponent } from './component'
+import { createVimComponent, VimComponentRef } from './component'
 
 // Parse URL
 const params = new URLSearchParams(window.location.search)
@@ -12,7 +12,7 @@ const url = params.has('vim')
 
 createVimComponent(loadVim)
 
-function loadVim (cmp: ViewerComponent) {
+function loadVim (cmp: VimComponentRef) {
   globalThis.viewer = cmp.viewer
   globalThis.component = cmp
   cmp.viewer.loadVim(url, {
