@@ -442,10 +442,10 @@ function TabSettings (props: {
 
   return (
     <>
-      {props.settings.useBimPanel ? btnTreeView : null}
+      {props.settings.ui.bimPanel ? btnTreeView : null}
       {btnSettings}
       {btnHelp}
-      {props.settings.useFullScreenBtn ? btnFullScreen : null}
+      {props.settings.capacity.canGoFullScreen ? btnFullScreen : null}
     </>
   )
 }

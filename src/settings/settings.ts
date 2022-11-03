@@ -1,23 +1,45 @@
 import { useEffect, useMemo, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
+import deepmerge from 'deepmerge'
 
-export class Settings {
-  useIsolationMaterial: boolean = true
-  showGroundPlane: boolean = true
-  showPerformance: boolean = true
+export type Settings = {
+  viewer: Partial<{
+    isolationMaterial: boolean
+    groundPlane: boolean
+  }>
+  capacity: Partial<{
+    canFollowUrl: boolean
+    canGoFullScreen: boolean
+    useOrthographicCamera: boolean
+  }>
 
-  // Not exposed in UI
-  useLogo: boolean = true
-  useBimPanel: boolean = true
-  useAxesPanel: boolean = true
-  useControlBar: boolean = true
-  useLoadingBox: boolean = true
-  useFullScreenBtn: boolean = true
-  canFollowUrls: boolean = true
-  useOrthographicCameraBtn: boolean = true
+  ui: Partial<{
+    logo: boolean
+    bimPanel: boolean
+    axesPanel: boolean
+    controlBar: boolean
+    loadingBox: boolean
+    performance: boolean
+  }>
+}
 
-  clone () {
-    return Object.assign(new Settings(), this) as Settings
+const defaultSettings: Settings = {
+  viewer: {
+    isolationMaterial: true,
+    groundPlane: true
+  },
+  capacity: {
+    canFollowUrl: true,
+    canGoFullScreen: true,
+    useOrthographicCamera: true
+  },
+  ui: {
+    logo: true,
+    bimPanel: true,
+    axesPanel: true,
+    controlBar: true,
+    loadingBox: true,
+    performance: true
   }
 }
 
@@ -27,7 +49,7 @@ export function useSettings (
   viewer: VIM.Viewer,
   value: Partial<Settings>
 ): SettingsState {
-  const merge = Object.assign(new Settings(), value) as Settings
+  const merge = deepmerge(defaultSettings, value)
   const [settings, setSettings] = useState(merge)
 
   useEffect(() => {
@@ -41,7 +63,7 @@ export function applySettings (viewer: VIM.Viewer, settings: Settings) {
   // Show/Hide performance gizmo
   const performance = document.getElementsByClassName('vim-performance')[0]
   if (performance) {
-    if (settings.showPerformance) {
+    if (settings.ui.performance) {
       performance.classList.remove('hidden')
     } else {
       performance.classList.add('hidden')
@@ -51,5 +73,5 @@ export function applySettings (viewer: VIM.Viewer, settings: Settings) {
   // Isolation settings are applied in isolation.
 
   // Don't show ground plane when isolation is on.
-  viewer.environment.groundPlane.visible = settings.showGroundPlane
+  viewer.environment.groundPlane.visible = settings.viewer.groundPlane
 }

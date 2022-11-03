@@ -10,7 +10,7 @@ const url = params.has('vim')
   '/src/assets/residence.vim'
 // : '/src/assets/skanska.nozip.vim'
 
-createVimComponent(loadVim, { useOrthographicCameraBtn: false })
+createVimComponent(loadVim)
 
 function loadVim (cmp: ViewerComponent) {
   globalThis.viewer = cmp.viewer

@@ -1,6 +1,7 @@
 import React from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import { Settings, SettingsState } from './settings'
+import { cloneDeep } from 'lodash-es'
 
 export function MenuSettings (props: {
   visible: boolean
@@ -21,7 +22,7 @@ export function MenuSettings (props: {
       </label>
     )
   }
-  const next = props.settings.value.clone()
+  const next = cloneDeep(props.settings.value)
 
   const settingsToggle = (
     label: string,
@@ -39,18 +40,18 @@ export function MenuSettings (props: {
       <h2 className="text-xs font-bold uppercase mb-6">Display Settings</h2>
       {settingsToggle(
         'Show hidden object with ghost effect',
-        (settings) => settings.useIsolationMaterial,
-        (settings, value) => (settings.useIsolationMaterial = value)
+        (settings) => settings.viewer.isolationMaterial,
+        (settings, value) => (settings.viewer.isolationMaterial = value)
       )}
       {settingsToggle(
         'Show ground plane',
-        (settings) => settings.showGroundPlane,
-        (settings, value) => (settings.showGroundPlane = value)
+        (settings) => settings.viewer.groundPlane,
+        (settings, value) => (settings.viewer.groundPlane = value)
       )}
       {settingsToggle(
         'Show performance',
-        (settings) => settings.showPerformance,
-        (settings, value) => (settings.showPerformance = value)
+        (settings) => settings.ui.performance,
+        (settings, value) => (settings.ui.performance = value)
       )}
     </>
   )

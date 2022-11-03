@@ -65,7 +65,7 @@ function _MenuHelp (props: { help: HelpState; settings: Settings }) {
               src={helpImage}
             ></img>
           </div>
-          {props.settings.canFollowUrls ? linkButtons() : null}
+          {props.settings.capacity.canFollowUrl ? linkButtons() : null}
         </div>
       </div>
     </>

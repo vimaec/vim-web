@@ -67,7 +67,7 @@ function _AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
     >
       <div className="vim-top-buttons order-2 flex p-1 rounded-b-xl pointer-events-auto justify-center bg-white mb-0 mt-auto">
         <div className="mx-1">
-          {props.settings.useOrthographicCameraBtn ? btnOrtho : null}
+          {props.settings.capacity.useOrthographicCamera ? btnOrtho : null}
         </div>
         <div className="mx-1">{btnHome}</div>
       </div>

@@ -37,7 +37,7 @@ export function useIsolation (
     const set = new Set(isolationRef.current?.map((o) => o.vim))
     viewer.vims.forEach((v) => {
       v.scene.material =
-        set.has(v) && settings.useIsolationMaterial
+        set.has(v) && settings.viewer.isolationMaterial
           ? viewer.renderer.materials.isolation
           : undefined
     })
@@ -72,7 +72,7 @@ export function useIsolation (
         }
 
         vim.scene.material =
-          !allVisible && settings.useIsolationMaterial
+          !allVisible && settings.viewer.isolationMaterial
             ? viewer.renderer.materials.isolation
             : undefined
       })
