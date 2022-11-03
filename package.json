@@ -63,7 +63,7 @@
     "react-tooltip": "^4.2.21",
     "ste-signals": "^3.0.6",
     "ste-simple-events": "^3.0.6",
-    "vim-webgl-viewer": "1.4.4-dev.1"
+    "vim-webgl-viewer": "1.4.4"
   },
   "keywords": [
     "3d",
