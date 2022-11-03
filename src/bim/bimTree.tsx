@@ -123,7 +123,7 @@ export function BimTree (props: {
               }`}
               onClick={(e) => {
                 toggleVisibility(
-                  viewer,
+                  helper,
                   props.isolation,
                   treeRef.current,
                   item.index as number
@@ -225,7 +225,7 @@ export function BimTree (props: {
 }
 
 function toggleVisibility (
-  viewer: VIM.Viewer,
+  viewer: ViewerWrapper,
   isolation: Isolation,
   tree: BimTreeData,
   index: number
@@ -233,7 +233,7 @@ function toggleVisibility (
   const objs = tree
     .getLeafs(index)
     .map((n) =>
-      viewer.vims[0].getObjectFromElement(tree.nodes[n]?.data.element)
+      viewer.base.vims[0].getObjectFromElement(tree.nodes[n]?.data.element)
     )
 
   const visibility = tree.nodes[index].visible
@@ -242,6 +242,7 @@ function toggleVisibility (
   } else {
     isolation.hide(objs, 'tree')
   }
+  viewer.frameVisibleObjects()
 }
 
 function updateViewerFocus (

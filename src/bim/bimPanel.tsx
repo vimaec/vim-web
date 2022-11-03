@@ -29,13 +29,13 @@ export function BimPanel (props: {
   }
 
   useEffect(() => {
-    props.isolation.onChange((source: string) => {
+    const sub = props.isolation.onChanged.subscribe((source: string) => {
       if (source !== 'tree' && source !== 'search') setFilter('')
     })
 
     // Clean up
     return () => {
-      props.isolation.onChange(undefined)
+      sub()
     }
   }, [])
 
@@ -62,9 +62,9 @@ export function BimPanel (props: {
       if (searching.current) {
         if (filter !== '') {
           const objects = result.map((e) => vim.getObjectFromElement(e.element))
-          props.isolation.set(objects, 'search')
+          props.isolation.isolate(objects, 'search')
         } else {
-          props.isolation.set(undefined, 'search')
+          props.isolation.isolate(undefined, 'search')
         }
       }
     }

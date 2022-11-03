@@ -1,58 +1,77 @@
 import { useEffect, useMemo, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
+import deepmerge from 'deepmerge'
 
-export class Settings {
-  useIsolationMaterial: boolean = true
-  showGroundPlane: boolean = true
-  showPerformance: boolean = true
+export type Settings = {
+  viewer: Partial<{
+    isolationMaterial: boolean
+    groundPlane: boolean
+  }>
+  capacity: Partial<{
+    canFollowUrl: boolean
+    canGoFullScreen: boolean
+    useOrthographicCamera: boolean
+  }>
 
-  clone () {
-    return Object.assign(new Settings(), this) as Settings
+  ui: Partial<{
+    logo: boolean
+    bimPanel: boolean
+    axesPanel: boolean
+    controlBar: boolean
+    loadingBox: boolean
+    performance: boolean
+  }>
+}
+
+const defaultSettings: Settings = {
+  viewer: {
+    isolationMaterial: true,
+    groundPlane: true
+  },
+  capacity: {
+    canFollowUrl: true,
+    canGoFullScreen: true,
+    useOrthographicCamera: true
+  },
+  ui: {
+    logo: true,
+    bimPanel: true,
+    axesPanel: true,
+    controlBar: true,
+    loadingBox: true,
+    performance: true
   }
 }
 
-export type SettingsState = { get: Settings; set: (value: Settings) => void }
+export type SettingsState = { value: Settings; set: (value: Settings) => void }
 
-export function useSettings (viewer: VIM.Viewer): SettingsState {
-  const [settings, setSettings] = useState(new Settings())
+export function useSettings (
+  viewer: VIM.Viewer,
+  value: Partial<Settings>
+): SettingsState {
+  const merge = deepmerge(defaultSettings, value)
+  const [settings, setSettings] = useState(merge)
 
   useEffect(() => {
     applySettings(viewer, settings)
   }, [settings])
 
-  return useMemo(() => ({ get: settings, set: setSettings }), [settings])
+  return useMemo(() => ({ value: settings, set: setSettings }), [settings])
 }
 
 export function applySettings (viewer: VIM.Viewer, settings: Settings) {
   // Show/Hide performance gizmo
   const performance = document.getElementsByClassName('vim-performance')[0]
   if (performance) {
-    if (settings.showPerformance) {
+    if (settings.ui.performance) {
       performance.classList.remove('hidden')
     } else {
       performance.classList.add('hidden')
     }
   }
 
-  // Isolation material
-  viewer.vims.forEach((v) => {
-    if (!settings.useIsolationMaterial) {
-      v.scene.material = undefined
-      return
-    }
+  // Isolation settings are applied in isolation.
 
-    let hidden = false
-    for (const obj of v.getAllObjects()) {
-      if (!obj.visible) {
-        hidden = true
-        break
-      }
-    }
-    if (hidden) {
-      v.scene.material = viewer.renderer.materials.isolation
-    }
-
-    // Don't show ground plane when isolation is on.
-    viewer.environment.groundPlane.visible = settings.showGroundPlane
-  })
+  // Don't show ground plane when isolation is on.
+  viewer.environment.groundPlane.visible = settings.viewer.groundPlane
 }

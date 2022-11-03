@@ -23,12 +23,49 @@ export function showContextMenu (position: { x: number; y: number }) {
   showMenu(showMenuConfig)
 }
 
+export type contextMenuButton = {
+  id: string
+  label: string
+  keyboard: string
+  action: (e: ClickCallback) => void
+  enabled: boolean
+}
+
+export const contextMenuElementIds = {
+  showControls: 'showControls',
+  dividerCamera: 'dividerCamera',
+  resetCamera: 'resetCamera',
+  zoomToFit: 'zoomToFit',
+  dividerSelection: 'dividerSelection',
+  isolateSelection: 'isolateObject',
+  hideObject: 'hideObject',
+  clearSelection: 'clearSelection',
+  showAll: 'showAll',
+  dividerMeasure: 'dividerMeasure',
+  deleteMeasurement: 'deleteMeasurement',
+  dividerSection: 'dividerSection',
+  ignoreSection: 'ignoreSection',
+  resetSection: 'resetSection',
+  fitSectionToSelection: 'fitSectionToSelection'
+}
+
+export type contextMenuDivider = {
+  id: string
+  enabled: boolean
+}
+export type contextMenuElement = contextMenuButton | contextMenuDivider
+
+export type contextMenuCustomization = (
+  e: contextMenuElement[]
+) => contextMenuElement[]
+
 export const VimContextMenu = React.memo(_VimContextMenu)
 export function _VimContextMenu (props: {
   viewer: ViewerWrapper
   help: HelpState
   isolation: Isolation
   selection: VIM.Object[]
+  customization?: (e: contextMenuElement[]) => contextMenuElement[]
 }) {
   const viewer = props.viewer.base
   const helper = props.viewer
@@ -61,7 +98,7 @@ export function _VimContextMenu (props: {
     )
 
     // force re-render and reevalution of isolation.
-    props.isolation.onChange(() => setVersion((v) => v + 1))
+    props.isolation.onChanged.subscribe(() => setVersion((v) => v + 1))
     return () => {
       subState()
       subConfirm()
@@ -84,12 +121,16 @@ export function _VimContextMenu (props: {
   }
 
   const onSelectionIsolateBtn = (e: ClickCallback) => {
-    props.isolation.toggleContextual('contextMenu')
+    props.isolation.isolate(
+      [...props.viewer.base.selection.objects],
+      'contextMenu'
+    )
+    helper.base.selection.clear()
     e.stopPropagation()
   }
 
   const onSelectionHideBtn = (e: ClickCallback) => {
-    props.isolation.hideSelection('contextMenu')
+    props.isolation.hide([...viewer.selection.objects], 'contextMenu')
     e.stopPropagation()
   }
 
@@ -120,27 +161,27 @@ export function _VimContextMenu (props: {
     viewer.sectionBox.fitBox(viewer.selection.getBoundingBox())
   }
 
-  const createButton = (
-    label: string,
-    keyboard: string,
-    action: (e: ClickCallback) => void,
-    condition: boolean = true
-  ) => {
-    if (!condition) return null
+  const createButton = (button: contextMenuButton) => {
+    if (!button.enabled) return null
     return (
       <MenuItem
+        key={button.id}
         className="hover:bg-gray-lightest px-5 py-2 flex items-center justify-between cursor-pointer select-none"
-        onClick={action}
+        onClick={button.action}
       >
-        <span>{label}</span>
-        <span className="text-gray-medium">{keyboard}</span>
+        <span>{button.label}</span>
+        <span className="text-gray-medium">{button.keyboard}</span>
       </MenuItem>
     )
   }
-  const createDivider = (condition: boolean = true) => {
-    return condition
+  const createDivider = (divider: contextMenuDivider) => {
+    return divider.enabled
       ? (
-      <MenuItem className="border-t border-gray-lighter my-1" divider />
+      <MenuItem
+        key={divider.id}
+        className="border-t border-gray-lighter my-1"
+        divider
+      />
         )
       : null
   }
@@ -148,6 +189,98 @@ export function _VimContextMenu (props: {
   const hasSelection = props.selection?.length > 0
   const measuring = !!viewer.measure.stage
   const isolated = ArrayEquals(props.selection, props.isolation.current())
+
+  let elements: contextMenuElement[] = [
+    {
+      id: contextMenuElementIds.showControls,
+      label: 'Show Controls',
+      keyboard: 'F1',
+      action: onShowControlsBtn,
+      enabled: true
+    },
+    { id: contextMenuElementIds.dividerCamera, enabled: true },
+    {
+      id: contextMenuElementIds.resetCamera,
+      label: 'Reset Camera',
+      keyboard: 'HOME',
+      action: onCameraResetBtn,
+      enabled: true
+    },
+    {
+      id: contextMenuElementIds.zoomToFit,
+      label: 'Zoom to Fit',
+      keyboard: 'HOME',
+      action: onCameraFrameBtn,
+      enabled: true
+    },
+    {
+      id: contextMenuElementIds.dividerSelection,
+      enabled: hasSelection || hidden
+    },
+    {
+      id: contextMenuElementIds.isolateSelection,
+      label: 'Isolate Object',
+      keyboard: 'I',
+      action: onSelectionIsolateBtn,
+      enabled: hasSelection && !isolated
+    },
+    {
+      id: contextMenuElementIds.hideObject,
+      label: 'Hide Object',
+      keyboard: '',
+      action: onSelectionHideBtn,
+      enabled: hasSelection
+    },
+    {
+      id: contextMenuElementIds.clearSelection,
+      label: 'Clear Selection',
+      keyboard: 'Esc',
+      action: onSelectionClearBtn,
+      enabled: hasSelection
+    },
+    {
+      id: contextMenuElementIds.showAll,
+      label: 'Show All',
+      keyboard: '',
+      action: onShowAllBtn,
+      enabled: hidden
+    },
+    { id: contextMenuElementIds.dividerMeasure, enabled: measuring },
+    {
+      id: contextMenuElementIds.deleteMeasurement,
+      label: 'Delete Measurement',
+      keyboard: '',
+      action: onMeasureDeleteBtn,
+      enabled: measuring
+    },
+    {
+      id: contextMenuElementIds.dividerSection,
+      enabled: clipping || section.visible
+    },
+    {
+      id: contextMenuElementIds.ignoreSection,
+      label: section.clip ? 'Ignore Section Box' : 'Apply Section Box',
+      keyboard: '',
+      action: onSectionToggleBtn,
+      enabled: clipping
+    },
+    {
+      id: contextMenuElementIds.resetSection,
+      label: 'Reset Section Box',
+      keyboard: '',
+      action: onSectionResetBtn,
+      enabled: clipping
+    },
+    {
+      id: contextMenuElementIds.fitSectionToSelection,
+      label: 'Fit Section Box to Selection',
+      keyboard: '',
+      action: onFitSectionToSelectionBtn,
+      enabled: section.visible && hasSelection
+    }
+  ]
+  elements = props.customization?.(elements) ?? elements
+
   return (
     <div
       className="vim-context-menu"
@@ -160,54 +293,9 @@ export function _VimContextMenu (props: {
         className="text-gray-darker bg-white py-1 w-[240px] rounded shadow-lg z-50"
         id={VIM_CONTEXT_MENU_ID}
       >
-        {createButton('Show Controls', 'F1', onShowControlsBtn)}
-
-        {/* Camera */}
-        {createDivider()}
-        {createButton('Reset Camera', 'HOME', onCameraResetBtn)}
-        {createButton('Zoom to Fit', 'F', onCameraFrameBtn)}
-
-        {/* Selection */}
-        {createDivider(hasSelection || hidden)}
-        {createButton(
-          'Isolate Object',
-          'I',
-          onSelectionIsolateBtn,
-          hasSelection && !isolated
-        )}
-        {createButton('Hide Object', '', onSelectionHideBtn, hasSelection)}
-        {createButton(
-          'Clear Selection',
-          'Esc',
-          onSelectionClearBtn,
-          hasSelection
-        )}
-        {createButton('Show All', '', onShowAllBtn, hidden)}
-
-        {/* Measure */}
-        {createDivider(measuring)}
-        {createButton('Delete Measurement', '', onMeasureDeleteBtn, measuring)}
-
-        {/* Section */}
-        {createDivider(clipping || section.visible)}
-        {createButton(
-          section.clip ? 'Ignore Section Box' : 'Apply Section Box',
-          '',
-          onSectionToggleBtn,
-          clipping
-        )}
-        {createButton(
-          'Reset Section Box',
-          '',
-          onSectionResetBtn,
-          section.visible
-        )}
-        {createButton(
-          'Fit section box to selection',
-          '',
-          onFitSectionToSelectionBtn,
-          section.visible && hasSelection
-        )}
+        {elements.map((e) => {
+          return 'label' in e ? createButton(e) : createDivider(e)
+        })}
       </ContextMenu>
     </div>
   )

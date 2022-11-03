@@ -1,9 +1,10 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import { Settings } from '../settings/settings'
 import { ViewerWrapper } from './viewer'
 
 import { ArrayEquals } from './data'
+import { SimpleEventDispatcher } from 'ste-simple-events'
 
 type IsolationSource =
   | 'search'
@@ -11,28 +12,36 @@ type IsolationSource =
   | 'tree'
   | 'keyboard'
   | 'controlBar'
+  | string
 
 export type Isolation = {
-  set: (objects: VIM.Object[], source: IsolationSource) => void
   current: () => VIM.Object[]
+  any: () => boolean
+  isolate: (objects: VIM.Object[], source: IsolationSource) => void
+  toggleIsolation: (source: IsolationSource) => void
   show: (objects: VIM.Object[], source: IsolationSource) => void
   hide: (objects: VIM.Object[], source: IsolationSource) => void
-  toggleContextual: (source: IsolationSource) => void
-  hideSelection: (source: IsolationSource) => void
   clear: (source: IsolationSource) => void
-  any: () => boolean
-  onChange: (action: (source: IsolationSource) => void) => void
+  onChanged: SimpleEventDispatcher<string>
 }
 export function useIsolation (
   componentViewer: ViewerWrapper,
   settings: Settings
 ): Isolation {
   const viewer = componentViewer.base
-  const helper = componentViewer
   const isolationRef = useRef<VIM.Object[]>()
-
   const lastIsolation = useRef<VIM.Object[]>()
-  const changed = useRef<((source: string) => void)[]>([])
+  const onChanged = useRef(new SimpleEventDispatcher<string>()).current
+
+  useEffect(() => {
+    const set = new Set(isolationRef.current?.map((o) => o.vim))
+    viewer.vims.forEach((v) => {
+      v.scene.material =
+        set.has(v) && settings.viewer.isolationMaterial
+          ? viewer.renderer.materials.isolation
+          : undefined
+    })
+  }, [settings, viewer])
 
   const any = () => !!isolationRef.current
 
@@ -45,11 +54,10 @@ export function useIsolation (
     })
   }
 
-  const isolate = (
+  const _isolate = (
     viewer: VIM.Viewer,
     settings: Settings,
-    objects: VIM.Object[],
-    frame: boolean = true
+    objects: VIM.Object[]
   ) => {
     let allVisible = true
     if (!objects) {
@@ -60,43 +68,34 @@ export function useIsolation (
         for (const obj of vim.getAllObjects()) {
           const has = set.has(obj)
           obj.visible = has
-          if (!has) allVisible = false
+          if (obj.hasMesh && !has) allVisible = false
         }
 
         vim.scene.material =
-          !allVisible && settings.useIsolationMaterial
+          !allVisible && settings.viewer.isolationMaterial
             ? viewer.renderer.materials.isolation
             : undefined
       })
     }
 
-    if (frame) {
-      helper.frameVisibleObjects()
-    }
-
-    viewer.selection.clear()
     return !allVisible
-  }
-
-  const onChange = (action: (source: IsolationSource) => void) => {
-    changed.current.push(action)
   }
 
   const current = () => {
     return isolationRef.current
   }
 
-  const set = (objects: VIM.Object[], source: string) => {
+  const isolate = (objects: VIM.Object[], source: string) => {
     if (isolationRef.current) {
       lastIsolation.current = isolationRef.current
     }
 
-    isolate(viewer, settings, objects)
-    isolationRef.current = objects
-    changed.current.forEach((f) => f(source))
+    const isolated = _isolate(viewer, settings, objects)
+    isolationRef.current = isolated ? objects : undefined
+    onChanged.dispatch(source)
   }
 
-  const toggleContextual = (source: string) => {
+  const toggleIsolation = (source: string) => {
     const selection = [...viewer.selection.objects]
 
     if (isolationRef.current) {
@@ -112,25 +111,23 @@ export function useIsolation (
         isolationRef.current = undefined
       } else {
         // Replace Isolation
-        isolate(viewer, settings, selection)
-        isolationRef.current = selection
+        const isolated = _isolate(viewer, settings, selection)
+        isolationRef.current = isolated ? selection : undefined
+        viewer.selection.clear()
       }
     } else {
       if (selection.length > 0) {
         // Set new Isolation
-        isolate(viewer, settings, selection)
-        isolationRef.current = selection
+        const isolated = _isolate(viewer, settings, selection)
+        isolationRef.current = isolated ? selection : undefined
+        viewer.selection.clear()
       } else if (lastIsolation.current) {
         // Restore last isolation
-        isolate(viewer, settings, lastIsolation.current)
-        isolationRef.current = [...lastIsolation.current]
+        const isolated = _isolate(viewer, settings, lastIsolation.current)
+        isolationRef.current = isolated ? [...lastIsolation.current] : undefined
       }
     }
-    changed.current.forEach((f) => f(source))
-  }
-
-  const hideSelection = (source: string) => {
-    hide([...viewer.selection.objects], source)
+    onChanged.dispatch(source)
   }
 
   const hide = (objects: VIM.Object[], source: string) => {
@@ -140,36 +137,36 @@ export function useIsolation (
     for (const obj of initial) {
       if (!selection.has(obj)) result.push(obj)
     }
-    isolate(viewer, settings, result, source !== 'contextMenu')
-    isolationRef.current = result
-    changed.current.forEach((f) => f(source))
+    const isolated = _isolate(viewer, settings, result)
+    isolationRef.current = isolated ? result : undefined
+    onChanged.dispatch(source)
+    objects.forEach((o) => viewer.selection.remove(o))
   }
 
   const show = (objects: VIM.Object[], source: string) => {
     const isolation = isolationRef.current ?? []
     objects.forEach((o) => isolation.push(o))
     const result = [...new Set(isolation)]
-    const isolated = isolate(viewer, settings, result)
+    const isolated = _isolate(viewer, settings, result)
     isolationRef.current = isolated ? result : undefined
-    changed.current.forEach((f) => f(source))
+    onChanged.dispatch(source)
   }
 
   const clear = (source: string) => {
     showAll()
     lastIsolation.current = isolationRef.current
     isolationRef.current = undefined
-    changed.current.forEach((f) => f(source))
+    onChanged.dispatch(source)
   }
 
   return {
     any,
-    set,
+    isolate,
     show,
     hide,
-    toggleContextual,
-    hideSelection,
+    toggleIsolation,
     clear,
     current,
-    onChange
+    onChanged
   }
 }

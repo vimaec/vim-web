@@ -35,7 +35,7 @@ export function useSideState (useInspector: boolean): SideState {
 
   const get = () => {
     const result = sideRef.current[sideRef.current.length - 1] ?? 'none'
-    if (result && !useInspector) return 'none'
+    if (result === 'bim' && !useInspector) return 'none'
     return result
   }
 

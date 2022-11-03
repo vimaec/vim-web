@@ -154,13 +154,23 @@ async function getVimDocumentDetails (vim: VIM.Vim): Promise<BimDetailsInfo> {
     documents.map((d) => [
       d.title,
       [
-        { name: 'Revit Version', value: d.version, group: d.title },
-        { name: 'Revit Author(s)', value: d.author, group: d.title },
-        { name: 'Last Modified', value: d.date, group: d.title }
+        { name: 'Product', value: formatProduct(d.version), group: d.title },
+        { name: 'Author(s)', value: d.author, group: d.title },
+        { name: 'Last Modified', value: formatDate(d.date), group: d.title }
       ]
     ])
   )
   return [{ section: 'Source Files', content: data }]
+}
+
+function formatProduct (value: string) {
+  return value?.replace('Autodesk', '')
+}
+
+function formatDate (value: string) {
+  const date = Date.parse(value)
+  if (isNaN(date)) return ''
+  return value
 }
 
 async function getObjectParameterDetails (

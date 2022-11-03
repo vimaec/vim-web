@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { createRoot } from 'react-dom/client'
 import ReactTooltip from 'react-tooltip'
 import logo from './assets/logo.png'
 import './style.css'
@@ -6,11 +7,15 @@ import 'vim-webgl-viewer/dist/style.css'
 
 import * as VIM from 'vim-webgl-viewer/'
 
-import { MenuTop } from './axesPanel'
+import { AxesPanel } from './axesPanel'
 import { ControlBar } from './controlBar'
 import { LoadingBox } from './loading'
 import { BimPanel } from './bim/bimPanel'
-import { showContextMenu, VimContextMenu } from './contextMenu'
+import {
+  contextMenuCustomization,
+  showContextMenu,
+  VimContextMenu
+} from './contextMenu'
 import { MenuHelp, useHelp } from './help'
 import { SidePanel } from './sidePanel/sidePanel'
 import { useSideState } from './sidePanel/sideState'
@@ -20,12 +25,35 @@ import { Overlay } from './overlay'
 
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
-import { useSettings } from './settings/settings'
-import { useIsolation } from './helpers/isolation'
+import { Settings, useSettings } from './settings/settings'
+import { Isolation, useIsolation } from './helpers/isolation'
 import { ViewerWrapper } from './helpers/viewer'
 
 export * as VIM from 'vim-webgl-viewer/'
+export * from './contextMenu'
 
+export type VimComponentRef = {
+  viewer: VIM.Viewer
+  helpers: ViewerWrapper
+  isolation: Isolation
+  setMsg: (s: string) => void
+  customizeContextMenu: (c: contextMenuCustomization) => void
+}
+
+// Creates a ui container along with a VIM.Viewer and the associated react component
+export function createVimComponent (
+  onMount: (component: VimComponentRef) => void,
+  settings: Partial<Settings> = {}
+) {
+  const viewer = new VIM.Viewer()
+  const container = createContainer(viewer)
+  const reactRoot = createRoot(container.ui)
+  const component = React.createFactory(VimComponent)
+  reactRoot.render(component({ viewer, onMount, settings }))
+  return { container, reactRoot, viewer }
+}
+
+// Creates a ui container for the react component
 export function createContainer (viewer: VIM.Viewer) {
   const root = document.createElement('div')
   root.className = 'vim-component'
@@ -55,33 +83,34 @@ export function createContainer (viewer: VIM.Viewer) {
   return { root, ui, gfx }
 }
 
+// React component that provides ui for the Vim Viewer.
 export function VimComponent (props: {
-  root: HTMLDivElement
   viewer: VIM.Viewer
-  onMount: () => void
-  logo?: boolean
-  bimPanel?: boolean
-  menu?: boolean
-  menuTop?: boolean
-  loading?: boolean
+  onMount: (component: VimComponentRef) => void
+  settings?: Partial<Settings>
 }) {
-  const useLogo = props.logo === undefined ? true : props.logo
-  const useInspector = props.bimPanel === undefined ? true : props.bimPanel
-  const useMenu = props.menu === undefined ? true : props.menu
-  const useMenuTop = props.menuTop === undefined ? true : props.menuTop
-  const useLoading = props.loading === undefined ? true : props.loading
-
-  const cursor = useRef(new CursorManager(props.viewer)).current
   const viewer = useRef(new ViewerWrapper(props.viewer)).current
-  const settings = useSettings(props.viewer)
-  const isolation = useIsolation(viewer, settings.get)
-  const side = useSideState(useInspector)
+  const cursor = useRef(new CursorManager(props.viewer)).current
+  const settings = useSettings(props.viewer, props.settings)
+
+  const isolation = useIsolation(viewer, settings.value)
+  const side = useSideState(settings.value.ui.bimPanel)
+  const [contextMenu, setcontextMenu] = useState<contextMenuCustomization>()
   const help = useHelp()
   const [vim, selection] = useViewerState(props.viewer)
+  const [msg, setMsg] = useState<string>()
 
   // On first render
   useEffect(() => {
-    props.onMount()
+    props.onMount({
+      viewer: props.viewer,
+      helpers: viewer,
+      isolation,
+      setMsg,
+      // Double lambda is required to avoid react from using reducer pattern
+      // https://stackoverflow.com/questions/59040989/usestate-with-a-lambda-invokes-the-lambda-when-set
+      customizeContextMenu: (v) => setcontextMenu(() => v)
+    })
     cursor.register()
 
     // Frame on vim loaded
@@ -106,13 +135,17 @@ export function VimComponent (props: {
 
   const sidePanel = (
     <>
-      <BimPanel
-        viewer={viewer}
-        vim={vim}
-        selection={selection}
-        visible={side.get() === 'bim'}
-        isolation={isolation}
-      />
+      {settings.value.ui.bimPanel
+        ? (
+        <BimPanel
+          viewer={viewer}
+          vim={vim}
+          selection={selection}
+          visible={side.get() === 'bim'}
+          isolation={isolation}
+        />
+          )
+        : null}
       <MenuSettings
         visible={side.get() === 'settings'}
         viewer={props.viewer}
@@ -124,10 +157,14 @@ export function VimComponent (props: {
   return (
     <>
       <Overlay viewer={viewer.base} side={side}></Overlay>
-      <MenuHelp help={help} />
-      {useLogo ? <Logo /> : null}
-      {useLoading ? <LoadingBox viewer={props.viewer} /> : null}
-      {useMenu
+      <MenuHelp help={help} settings={settings.value} />
+      {settings.value.ui.logo ? <Logo /> : null}
+      {settings.value.ui.loadingBox
+        ? (
+        <LoadingBox viewer={props.viewer} msg={msg} />
+          )
+        : null}
+      {settings.value.ui.controlBar
         ? (
         <ControlBar
           viewer={viewer}
@@ -135,10 +172,15 @@ export function VimComponent (props: {
           side={side}
           isolation={isolation}
           cursor={cursor}
+          settings={settings.value}
         />
           )
         : null}
-      {useMenuTop ? <MenuTop viewer={viewer} /> : null}
+      {settings.value.ui.axesPanel
+        ? (
+        <AxesPanel viewer={viewer} settings={settings.value} />
+          )
+        : null}
       <SidePanel viewer={props.viewer} side={side} content={sidePanel} />
       <ReactTooltip delayShow={200} />
       <VimContextMenu
@@ -146,6 +188,7 @@ export function VimComponent (props: {
         help={help}
         isolation={isolation}
         selection={selection}
+        customization={contextMenu}
       />
       <MenuToast viewer={props.viewer}></MenuToast>
     </>
