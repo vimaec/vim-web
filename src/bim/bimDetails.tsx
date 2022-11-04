@@ -125,7 +125,6 @@ function createTable (
                   <span
                     data-tip={p.value}
                     className="w-1/2 border-r border-gray-light p-2 truncate select-none"
-                    title={p.name}
                     key={'parameters-th-' + id}
                   >
                     {p.name}
@@ -133,7 +132,6 @@ function createTable (
                   <span
                     data-tip={p.value}
                     className="w-1/2 text-gray-medium p-2 truncate"
-                    title={p.value}
                     key={'parameters-td-' + id}
                   >
                     {p.value}
