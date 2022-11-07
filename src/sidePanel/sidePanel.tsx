@@ -1,8 +1,11 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import * as Icons from '../icons'
 import { SideState } from './sideState'
 import { Resizable } from 're-resizable'
+
+const MAX_WIDTH = 0.5
+const MIN_WIDTH = 240
 
 export const SidePanel = React.memo(_SidePanel)
 export function _SidePanel (props: {
@@ -10,21 +13,42 @@ export function _SidePanel (props: {
   viewer: VIM.Viewer
   content: JSX.Element
 }) {
+  const getParentWidth = () => {
+    const parent = props.viewer.viewport.canvas.parentElement
+    return parent.parentElement.clientWidth
+  }
+
+  // state to force re-render on resize
+  const [, setParentWidth] = useState(getParentWidth())
+
   const resize = () => {
     resizeCanvas(
       props.viewer,
       props.side.getContent() !== 'none',
       props.side.getWidth()
     )
+    props.viewer.viewport.ResizeToParent()
   }
-  // Resize canvas when panel opens/closes.
+
+  const getMaxSize = () => {
+    return getParentWidth() * MAX_WIDTH
+  }
+
+  const getClampedSize = () => {
+    const next = Math.min(props.side.getWidth(), getMaxSize())
+    return Math.max(next, MIN_WIDTH)
+  }
+
+  // Resize canvas on each re-render.
   useEffect(() => {
-    props.viewer.viewport.canvas.focus()
     resize()
   })
 
   useEffect(() => {
-    window.addEventListener('resize', resize)
+    window.addEventListener('resize', () => {
+      setParentWidth((w) => getParentWidth())
+      props.side.setWidth(getClampedSize())
+    })
   }, [])
 
   const onNavBtn = () => {
@@ -34,13 +58,13 @@ export function _SidePanel (props: {
   const iconOptions = { height: '20', width: '20', fill: 'currentColor' }
   return (
     <Resizable
-      onResizeStop={(e, direction, ref, d) => {
+      size={{ width: props.side.getWidth(), height: '100%' }}
+      minWidth={240}
+      maxWidth={getMaxSize()}
+      onResize={(e, direction, ref, d) => {
         props.side.setWidth(ref.clientWidth)
         console.log(ref.clientWidth)
       }}
-      defaultSize={{ width: props.side.getWidth(), height: '100%' }}
-      minWidth={240}
-      maxWidth={'50%'}
       style={{
         position: 'fixed'
       }}
@@ -62,6 +86,7 @@ export function _SidePanel (props: {
 function resizeCanvas (viewer: VIM.Viewer, visible: boolean, width: number) {
   const parent = viewer.viewport.canvas.parentElement
   const full = parent.parentElement.clientWidth
+
   if (visible) {
     parent.style.width = `${full - width}px`
     parent.style.marginLeft = `${width}px`
