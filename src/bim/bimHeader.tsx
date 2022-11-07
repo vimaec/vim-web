@@ -64,14 +64,17 @@ function createHeader (header: BimHeader) {
       return [
         <dt
           data-tip={pair[1]}
-          className={'text-gray-medium py-1 truncate select-none ' + pair[2]}
+          className={
+            'bim-header-title text-gray-medium py-1 truncate select-none ' +
+            pair[2]
+          }
           key={`dt-${rowIndex}-${columnIndex}`}
         >
           {pair[0]}
         </dt>,
         <dd
           data-tip={pair[1]}
-          className={'py-1 truncate ' + pair[3]}
+          className={'bim-header-value py-1 truncate ' + pair[3]}
           key={`dd-${rowIndex}-${columnIndex}`}
         >
           {pair[1]}
