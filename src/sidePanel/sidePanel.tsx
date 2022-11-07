@@ -10,16 +10,22 @@ export function _SidePanel (props: {
   viewer: VIM.Viewer
   content: JSX.Element
 }) {
-  // Resize canvas when panel opens/closes.
-  useEffect(() => {
-    props.viewer.viewport.canvas.focus()
+  const resize = () => {
     resizeCanvas(
       props.viewer,
       props.side.getContent() !== 'none',
       props.side.getWidth()
     )
-    props.viewer.viewport.ResizeToParent()
+  }
+  // Resize canvas when panel opens/closes.
+  useEffect(() => {
+    props.viewer.viewport.canvas.focus()
+    resize()
   })
+
+  useEffect(() => {
+    window.addEventListener('resize', resize)
+  }, [])
 
   const onNavBtn = () => {
     props.side.popContent()
@@ -54,9 +60,6 @@ export function _SidePanel (props: {
 }
 
 function resizeCanvas (viewer: VIM.Viewer, visible: boolean, width: number) {
-  console.log('RESIZE')
-  console.log(visible)
-  console.log(width)
   const parent = viewer.viewport.canvas.parentElement
   const full = parent.parentElement.clientWidth
   if (visible) {

@@ -17,8 +17,9 @@ export function useSideState (
   defaultWidth: number
 ): SideState {
   const [side, setSide] = useState<SideContent[]>(['bim'])
-  const [width, setWidth] = useState<number>(defaultWidth)
+  const [width, _setWidth] = useState<number>(defaultWidth)
   const sideRef = useRef(side)
+  const widthRef = useRef(width)
 
   const toggleContent = (content: SideContent) => {
     let r
@@ -50,6 +51,10 @@ export function useSideState (
     setSide([value])
   }
 
+  const setWidth = (value: number) => {
+    widthRef.current = value
+    _setWidth(value)
+  }
   return useMemo(
     () => ({
       setContent,
@@ -57,7 +62,7 @@ export function useSideState (
       toggleContent,
       popContent,
       getNav,
-      getWidth: () => width,
+      getWidth: () => widthRef.current,
       setWidth
     }),
     [side, width]
