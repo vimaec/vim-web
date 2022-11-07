@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import * as Icons from '../icons'
 import { SideState } from './sideState'
+import { Resizable } from 're-resizable'
 
 export const SidePanel = React.memo(_SidePanel)
 export function _SidePanel (props: {
@@ -12,18 +13,33 @@ export function _SidePanel (props: {
   // Resize canvas when panel opens/closes.
   useEffect(() => {
     props.viewer.viewport.canvas.focus()
-    resizeCanvas(props.viewer, props.side.get() !== 'none')
+    resizeCanvas(
+      props.viewer,
+      props.side.getContent() !== 'none',
+      props.side.getWidth()
+    )
+    props.viewer.viewport.ResizeToParent()
   })
 
   const onNavBtn = () => {
-    props.side.pop()
+    props.side.popContent()
   }
 
   const iconOptions = { height: '20', width: '20', fill: 'currentColor' }
   return (
-    <div
-      className={`vim-side-panel z-30 fixed left-0 top-0 bg-gray-lightest p-6 text-gray-darker h-full ${
-        props.side.get() !== 'none' ? '' : 'hidden'
+    <Resizable
+      onResizeStop={(e, direction, ref, d) => {
+        props.side.setWidth(ref.clientWidth)
+        console.log(ref.clientWidth)
+      }}
+      defaultSize={{ width: props.side.getWidth(), height: '100%' }}
+      minWidth={240}
+      maxWidth={'50%'}
+      style={{
+        position: 'fixed'
+      }}
+      className={`vim-side-panel-test left-0 top-0 bg-gray-lightest p-6 text-gray-darker z-20 ${
+        props.side.getContent() !== 'none' ? '' : 'hidden'
       }`}
     >
       <button
@@ -33,18 +49,21 @@ export function _SidePanel (props: {
         {Icons.close(iconOptions)}
       </button>
       {props.content}
-    </div>
+    </Resizable>
   )
 }
 
-function resizeCanvas (viewer: VIM.Viewer, open: boolean) {
-  const tag = 'bim-panel-open'
+function resizeCanvas (viewer: VIM.Viewer, visible: boolean, width: number) {
+  console.log('RESIZE')
+  console.log(visible)
+  console.log(width)
   const parent = viewer.viewport.canvas.parentElement
-  if (parent) {
-    const has = parent.classList.contains(tag)
-    if (open === has) return
-    if (open && !has) parent.classList.add(tag)
-    if (!open && has) parent.classList.remove(tag)
-    viewer.viewport.ResizeToParent()
+  const full = parent.parentElement.clientWidth
+  if (visible) {
+    parent.style.width = `${full - width}px`
+    parent.style.marginLeft = `${width}px`
+  } else {
+    parent.style.width = '100%'
+    parent.style.marginLeft = '0px'
   }
 }

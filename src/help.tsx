@@ -3,6 +3,7 @@ import helpImage from './assets/quick-controls.svg'
 import * as Icons from './icons'
 import { setComponentBehind } from './helpers/html'
 import { Settings } from './settings/settings'
+import { SideState } from './sidePanel/sideState'
 
 const urlSupport = 'https://support.vimaec.com'
 const urlControls =
@@ -10,6 +11,7 @@ const urlControls =
 
 export type HelpState = {
   visible: boolean
+
   setVisible: (value: boolean) => void
 }
 
@@ -25,7 +27,11 @@ export function useHelp (): HelpState {
 }
 
 export const MenuHelp = React.memo(_MenuHelp)
-function _MenuHelp (props: { help: HelpState; settings: Settings }) {
+function _MenuHelp (props: {
+  help: HelpState
+  settings: Settings
+  side: SideState
+}) {
   if (!props.help.visible) return null
 
   const onCloseBtn = () => {
@@ -48,7 +54,13 @@ function _MenuHelp (props: { help: HelpState; settings: Settings }) {
           }}
         >
           <div className="flex justify-between mb-8">
-            <h2 className="text-white font-bold text-sm uppercase">
+            <h2
+              className="text-white font-bold text-sm uppercase"
+              style={{
+                marginLeft: props.side.getWidth(),
+                maxWidth: `calc(100% - ${props.side.getWidth()}px)`
+              }}
+            >
               Key navigation controls
             </h2>
             <button className="text-white" onClick={onCloseBtn}>
@@ -63,6 +75,10 @@ function _MenuHelp (props: { help: HelpState; settings: Settings }) {
             <img
               className="menu-help-controls mb-8 mx-auto 2xl:w-[50vw]"
               src={helpImage}
+              style={{
+                marginLeft: props.side.getWidth(),
+                maxWidth: `calc(100% - ${props.side.getWidth()}px)`
+              }}
             ></img>
           </div>
           {props.settings.capacity.canFollowUrl ? linkButtons() : null}

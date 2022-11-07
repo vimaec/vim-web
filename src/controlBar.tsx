@@ -89,6 +89,7 @@ export function ControlBar (props: {
 
   return (
     <div
+      style={{ paddingLeft: props.side.getWidth() }}
       className={`vim-control-bar flex z-20 items-center justify-center w-full fixed px-2 bottom-0 py-2 mb-9 transition-opacity transition-all ${
         show ? 'opacity-100 ' : 'opacity-0 pointer-events-none'
       }`}
@@ -401,24 +402,24 @@ function TabSettings (props: {
   }
 
   const onTreeViewBtn = () => {
-    props.side.toggle('bim')
+    props.side.toggleContent('bim')
   }
 
   const onSettingsBtn = () => {
-    props.side.toggle('settings')
+    props.side.toggleContent('settings')
   }
 
   const btnTreeView = toggleButton(
     'Project Inspector',
     onTreeViewBtn,
     Icons.treeView,
-    () => props.side.get() === 'bim'
+    () => props.side.getContent() === 'bim'
   )
   const btnSettings = toggleButton(
     'Settings',
     onSettingsBtn,
     Icons.settings,
-    () => props.side.get() === 'settings'
+    () => props.side.getContent() === 'settings'
   )
   const btnHelp = toggleButton(
     'Help',

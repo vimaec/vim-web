@@ -94,7 +94,7 @@ export function VimComponent (props: {
   const settings = useSettings(props.viewer, props.settings)
 
   const isolation = useIsolation(viewer, settings.value)
-  const side = useSideState(settings.value.ui.bimPanel)
+  const side = useSideState(settings.value.ui.bimPanel, 480)
   const [contextMenu, setcontextMenu] = useState<contextMenuCustomization>()
   const help = useHelp()
   const [vim, selection] = useViewerState(props.viewer)
@@ -141,13 +141,13 @@ export function VimComponent (props: {
           viewer={viewer}
           vim={vim}
           selection={selection}
-          visible={side.get() === 'bim'}
+          visible={side.getContent() === 'bim'}
           isolation={isolation}
         />
           )
         : null}
       <MenuSettings
-        visible={side.get() === 'settings'}
+        visible={side.getContent() === 'settings'}
         viewer={props.viewer}
         settings={settings}
       />
@@ -157,7 +157,7 @@ export function VimComponent (props: {
   return (
     <>
       <Overlay viewer={viewer.base} side={side}></Overlay>
-      <MenuHelp help={help} settings={settings.value} />
+      <MenuHelp help={help} settings={settings.value} side={side} />
       {settings.value.ui.logo ? <Logo /> : null}
       {settings.value.ui.loadingBox
         ? (
@@ -190,7 +190,7 @@ export function VimComponent (props: {
         selection={selection}
         customization={contextMenu}
       />
-      <MenuToast viewer={props.viewer}></MenuToast>
+      <MenuToast viewer={props.viewer} side={side}></MenuToast>
     </>
   )
 }

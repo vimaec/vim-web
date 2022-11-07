@@ -11,7 +11,7 @@ export function MenuSettings (props: {
   if (!props.visible) return null
   const toggleElement = (label: string, state: boolean, action: () => void) => {
     return (
-      <label className="text-gray-warm m-1 w-max py-1 flex items-center select-none">
+      <label className="text-gray-warm m-1 py-1 flex items-center select-none">
         <input
           type="checkbox"
           checked={state}
