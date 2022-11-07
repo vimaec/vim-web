@@ -63,7 +63,6 @@ export function _SidePanel (props: {
       maxWidth={getMaxSize()}
       onResize={(e, direction, ref, d) => {
         props.side.setWidth(ref.clientWidth)
-        console.log(ref.clientWidth)
       }}
       style={{
         position: 'fixed'
