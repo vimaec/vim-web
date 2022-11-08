@@ -44,7 +44,7 @@ function _MenuToast (props: { viewer: VIM.Viewer; side: SideState }) {
       }}
     >
       <div
-        className={`vim-menu-toast rounded shadow-lg py-2 px-5 flex items-center justify-between transition-all m-auto ${
+        className={`vim-menu-toast rounded shadow-lg py-2 px-5 flex items-center justify-between transition-all m-auto bg-gray-warm ${
           visible ? 'opacity-100' : 'opacity-0'
         }`}
       >

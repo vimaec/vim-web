@@ -63,12 +63,6 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
-/* Toast Notification */
-/*
-.vim-menu-toast {
-  background-color: var(--c-dark-gray-warm);
-}
-*/
 /* Axes Gizmo*/
 .gizmo-axis-canvas {
   display: block;
