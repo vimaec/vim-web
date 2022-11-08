@@ -40,13 +40,20 @@ export type VimComponentRef = {
   customizeContextMenu: (c: contextMenuCustomization) => void
 }
 
+export type VimComponentContainer = {
+  root: HTMLDivElement
+  ui: HTMLDivElement
+  gfx: HTMLDivElement
+}
+
 // Creates a ui container along with a VIM.Viewer and the associated react component
 export function createVimComponent (
   onMount: (component: VimComponentRef) => void,
+  container?: VimComponentContainer,
   settings: Partial<Settings> = {}
 ) {
   const viewer = new VIM.Viewer()
-  const container = createContainer(viewer)
+  container = container ?? createContainer(viewer)
   const reactRoot = createRoot(container.ui)
   const component = React.createFactory(VimComponent)
   reactRoot.render(component({ viewer, onMount, settings }))
@@ -54,7 +61,7 @@ export function createVimComponent (
 }
 
 // Creates a ui container for the react component
-export function createContainer (viewer: VIM.Viewer) {
+export function createContainer (viewer: VIM.Viewer): VimComponentContainer {
   const root = document.createElement('div')
   root.className = 'vim-component'
   root.style.height = '100%'
