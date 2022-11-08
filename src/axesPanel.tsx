@@ -18,6 +18,14 @@ function _AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
     )
     const axes = document.getElementsByClassName('gizmo-axis-canvas')[0]
     ui.current.appendChild(axes)
+    axes.classList.add(
+      'block',
+      '!static',
+      'order-1',
+      'mx-auto',
+      'mb-0',
+      'mt-auto'
+    )
 
     // Clean up
     return () => {
