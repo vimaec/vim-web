@@ -6,7 +6,8 @@ type BimHeaderEntry = [
   key: string,
   value: string | number,
   class1: string,
-  class2: string
+  class2: string,
+  class3: string
 ]
 type BimHeader = BimHeaderEntry[][]
 
@@ -61,43 +62,43 @@ function createHeader (header: BimHeader) {
   const rows = header.map((row, rowIndex) => {
     if (!row) return null
     return row.map((pair, columnIndex) => {
-      return [
+      return <dl className={'flex w-full ' + pair[4]}>
         <dt
           data-tip={pair[1]}
           className={
-            'bim-header-title text-gray-medium py-1 truncate select-none ' +
+            'bim-header-title text-gray-medium py-1 shrink-0 whitespace-nowrap min-w-[100px] select-none ' +
             pair[2]
           }
           key={`dt-${rowIndex}-${columnIndex}`}
         >
           {pair[0]}
-        </dt>,
+        </dt>
         <dd
           data-tip={pair[1]}
-          className={'bim-header-value py-1 truncate ' + pair[3]}
+          className={'bim-header-value py-1 shrink-1 truncate ' + pair[3]}
           key={`dd-${rowIndex}-${columnIndex}`}
         >
           {pair[1]}
         </dd>
-      ]
+      </dl>
     })
   })
 
   return (
-    <div className="vim-bim-inspector mb-6">
-      <dl className="flex flex-wrap">{rows}</dl>
+    <div className="vim-bim-inspector flex flex-wrap mb-6">
+      {rows}
     </div>
   )
 }
 
 function getElementBimHeader (info: VIM.ElementInfo): BimHeader {
   return [
-    [['Document', info.documentTitle, 'w-3/12', 'w-9/12']],
-    [['Workset', info.workset, 'w-3/12', 'w-9/12']],
-    [['Category', info.categoryName, 'w-3/12', 'w-9/12']],
-    [['Family Name', info.familyName, 'w-3/12', 'w-9/12']],
-    [['Family Type', info.familyTypeName, 'w-3/12', 'w-9/12']],
-    [['Element Id', info.id, 'w-3/12', 'w-9/12']]
+    [['Document', info.documentTitle, 'w-3/12', 'w-9/12', 'w-full']],
+    [['Workset', info.workset, 'w-3/12', 'w-9/12', 'w-full']],
+    [['Category', info.categoryName, 'w-3/12', 'w-9/12', 'w-full']],
+    [['Family Name', info.familyName, 'w-3/12', 'w-9/12', 'w-full']],
+    [['Family Type', info.familyTypeName, 'w-3/12', 'w-9/12', 'w-full']],
+    [['Element Id', info.id, 'w-3/12', 'w-9/12', 'w-full']]
   ]
 }
 
@@ -106,36 +107,39 @@ async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
   const main = documents.find((d) => !d.isLinked) ?? documents[0]
 
   return [
-    [['Document', formatSource(vim.source), 'w-3/12', 'w-9/12']],
-    [['Source Path', main.pathName, 'w-3/12', 'w-9/12']],
+    [['Document', formatSource(vim.source), 'w-3/12', 'w-9/12', 'w-full']],
+    [['Source Path', main.pathName, 'w-3/12', 'w-9/12', 'w-full']],
     [
       [
         'Created on',
         formatDate(vim.document.header.created),
         'w-3/12',
-        'w-9/12'
+        'w-9/12',
+        'w-full'
       ]
     ],
-    [['Created with', vim.document.header.generator, 'w-3/12', 'w-9/12']],
+    [['Created with', vim.document.header.generator, 'w-3/12', 'w-9/12', 'w-full']],
 
     undefined,
     [
       [
         'BIM Count',
         [...vim.document.getAllElements()].length,
-        'w-3/12 mt-5',
-        'w-3/12 mt-5'
+        'w-3/12',
+        'w-3/12',
+        'w-1/2 mt-5'
       ],
       [
         'Node Count',
         vim.document.g3d.getInstanceCount(),
-        'w-3/12 mt-5',
-        'w-3/12 mt-5'
+        'w-3/12',
+        'w-3/12',
+        'w-1/2 mt-5'
       ]
     ],
     [
-      ['Mesh Count', vim.document.g3d.getMeshCount(), 'w-3/12', 'w-3/12'],
-      ['Revit Files', documents?.length, 'w-3/12', 'w-3/12']
+      ['Mesh Count', vim.document.g3d.getMeshCount(), 'w-3/12', 'w-3/12', 'w-1/2'],
+      ['Revit Files', documents?.length, 'w-3/12', 'w-3/12', 'w-1/2']
     ]
   ]
 }
