@@ -78,10 +78,6 @@ body {
   margin: auto auto 0 auto;
 }
 
-.VimLoadingBox h1 {
-  color: #050c1a;
-}
-
 .vim-section {
   position: fixed;
   bottom: 0px;
