@@ -70,6 +70,13 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+/*No focus states*/
+button:focus,
+input[type='search']:focus {
+  outline: 0;
+  box-shadow: none;
+}
+
 /* Axes Gizmo (Comes from viewer)*/
 .gizmo-axis-canvas {
   display: block;
@@ -79,24 +86,6 @@ body {
 }
 
 /* MENU */
-
-.vim-control-bar td {
-  pointer-events: all;
-}
-
-.vim-control-bar td.empty {
-  pointer-events: none;
-}
-
-.vim-control-bar table {
-  width: 64px;
-}
-
-.vim-control-bar button:focus,
-.vim-bim-search input[type='search']:focus {
-  outline: 0;
-  box-shadow: none;
-}
 
 .vim-control-bar .iconButton {
   color: var(--c-white);
