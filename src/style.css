@@ -63,34 +63,15 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
-/* Axes Gizmo*/
+/* Axes Gizmo (Comes from viewer)*/
 .gizmo-axis-canvas {
   display: block;
   position: static !important;
   order: 1;
   margin: auto auto 0 auto;
-  filter: saturate(0%);
-}
-
-.vim-top:hover .gizmo-axis-canvas {
-  filter: saturate(100%);
-}
-
-.vim-top {
-  opacity: 0.5;
-}
-
-.vim-top:hover {
-  opacity: 1;
-}
-
-/* Context Menu */
-.checked {
-  font-weight: bold;
 }
 
 /* Logo */
-
 .vim-logo {
   position: fixed;
   top: 16px;
