@@ -203,9 +203,9 @@ export function VimComponent (props: {
 }
 
 const Logo = React.memo(() => (
-  <div className="vim-logo">
+  <div className="vim-logo fixed top-4 left-4">
     <a href="https://vimaec.com">
-      <img src={logo}></img>
+      <img className="vim-logo-img h-12 w-32" src={logo}></img>
     </a>
   </div>
 ))
