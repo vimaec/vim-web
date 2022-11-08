@@ -96,7 +96,7 @@ export function BimPanel (props: {
       </div>
       <hr className="border-gray-divider mb-5 -mx-6" />
       <h2 className="text-xs font-bold uppercase mb-4">Bim Inspector</h2>
-      <div className="vim-bim-lower h-1/2 overflow-y-auto">
+      <div className="vim-bim-lower h-1/2 overflow-y-auto overflow-x-hidden">
         <BimObjectHeader
           elements={filteredElements}
           object={last}
