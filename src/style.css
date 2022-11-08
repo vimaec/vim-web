@@ -85,14 +85,6 @@ input[type='search']:focus {
   margin: auto auto 0 auto;
 }
 
-.vim-loading-box {
-  margin: auto;
-  align-self: center;
-  position: absolute;
-  top: calc(50% - 37px);
-  left: calc(50% - 160px);
-}
-
 .submenu-item-active {
   position: relative;
 }

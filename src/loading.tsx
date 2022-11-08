@@ -42,7 +42,7 @@ function _LoadingBox (props: { viewer: VIM.Viewer; msg: string }) {
       className="loading-wrapper backdrop-blur fixed items-center justify-center top-0 left-0 w-full h-full z-40 bg-overflow"
       onContextMenu={(event) => event.preventDefault()}
     >
-      <div className="vim-loading-box w-[320px] bg-white px-5 py-4 rounded shadow-lg z-20">
+      <div className="vim-loading-box m-auto self-center absolute top-[calc(50%-37px)] left-[calc(50%-160px)] w-[320px] bg-white px-5 py-4 rounded shadow-lg z-20">
         <h1 className="w-full mb-2 text-gray-medium"> {msg} </h1>
         <span className="loader"></span>
       </div>
