@@ -85,45 +85,6 @@ input[type='search']:focus {
   margin: auto auto 0 auto;
 }
 
-/* MENU */
-
-.vim-control-bar .iconButton {
-  color: var(--c-white);
-  border: none;
-  background-color: transparent;
-}
-
-.vim-control-bar .iconButton.active {
-  background-color: var(--c-primary-royal);
-}
-
-.vim-control-bar .iconButton img {
-  width: 42px;
-  height: 42px;
-}
-
-.vim-control-bar .iconButton:hover img {
-  transform: scale(1.1);
-}
-
-.vim-control-bar .iconButton:active img {
-  transform: scale(1.1);
-  filter: brightness(1.5);
-}
-
-.vim-control-bar .iconButton:disabled img {
-  filter: brightness(0.5);
-  transform: scale(1);
-}
-
-/* Help Controls Widget */
-.vim-help-controls {
-  position: fixed;
-  bottom: 64px;
-  width: 100%;
-  pointer-events: none;
-}
-
 /* Tooltips */
 .__react_component_tooltip {
   background-color: var(--c-white) !important;
