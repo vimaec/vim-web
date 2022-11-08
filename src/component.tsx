@@ -189,7 +189,13 @@ export function VimComponent (props: {
           )
         : null}
       <SidePanel viewer={props.viewer} side={side} content={sidePanel} />
-      <ReactTooltip delayShow={200} />
+      <ReactTooltip
+        arrowColor="transparent"
+        type="light"
+        className="!bg-white !text-xs !text-gray-darkest !opacity-100 !border !border-solid !border-gray-medium !shadow-[2px_6px_15px_rgba(0,0,0,0.3)] !transition-opacity"
+        delayShow={200}
+      />
+
       <VimContextMenu
         viewer={viewer}
         help={help}
