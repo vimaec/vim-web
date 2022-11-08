@@ -78,14 +78,6 @@ body {
   margin: auto auto 0 auto;
 }
 
-.vim-section {
-  position: fixed;
-  bottom: 0px;
-  right: 64px;
-  width: 64px;
-  pointer-events: all;
-}
-
 /* MENU */
 
 .vim-control-bar td {
