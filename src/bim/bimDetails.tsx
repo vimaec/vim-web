@@ -91,7 +91,7 @@ function createTable (
       <ul className="">
         <li key={'title-' + key}>
           <h3 className="text-xs font-bold uppercase bg-gray-light px-2 py-2 flex justify-between">
-            <span className="w-1/2">{key}</span>
+            <span className="">{key}</span>
             <button className="text-gray-medium" onClick={() => setOpen(!open)}>
               {' '}
               {open
