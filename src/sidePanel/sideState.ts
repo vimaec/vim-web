@@ -55,6 +55,10 @@ export function useSideState (
     widthRef.current = value
     _setWidth(value)
   }
+  const getWidth = () => {
+    return getContent() === 'none' ? 0 : widthRef.current
+  }
+
   return useMemo(
     () => ({
       setContent,
@@ -62,7 +66,7 @@ export function useSideState (
       toggleContent,
       popContent,
       getNav,
-      getWidth: () => widthRef.current,
+      getWidth,
       setWidth
     }),
     [side, width]
