@@ -64,10 +64,11 @@ body {
 }
 
 /* Toast Notification */
+/*
 .vim-menu-toast {
   background-color: var(--c-dark-gray-warm);
 }
-
+*/
 /* Axes Gizmo*/
 .gizmo-axis-canvas {
   display: block;
@@ -234,7 +235,7 @@ body {
   font-family: inherit;
 }
 
-.rct-tree-root>div>.rct-tree-items-container {
+.rct-tree-root > div > .rct-tree-items-container {
   max-height: calc(50vh - 9rem);
   overflow-y: auto;
   content-visibility: auto;
@@ -244,7 +245,10 @@ body {
   border: none;
 }
 
-.rct-tree-items-container li .rct-tree-item-title-container .rct-tree-item-button {
+.rct-tree-items-container
+  li
+  .rct-tree-item-title-container
+  .rct-tree-item-button {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -257,11 +261,11 @@ body {
   user-select: none;
 }
 
-.rct-tree-items-container>li:nth-child(odd) {
+.rct-tree-items-container > li:nth-child(odd) {
   background-color: var(--c-white);
 }
 
-.rct-tree-items-container>li:nth-child(even) {
+.rct-tree-items-container > li:nth-child(even) {
   background-color: var(--c-gray-zebra);
 }
 
@@ -302,7 +306,7 @@ body {
   transition: 0.3s;
 }
 
-.rct-tree-item-title-container-expanded>.rct-tree-item-arrow::before {
+.rct-tree-item-title-container-expanded > .rct-tree-item-arrow::before {
   transform: rotate(90deg);
   transition: 0.3s;
 }
@@ -311,7 +315,7 @@ body {
   fill: var(--c-medium-gray);
 }
 
-.parameters:first-child>ul>li h3 {
+.parameters:first-child > ul > li h3 {
   border-top-right-radius: 4px;
 }
 
@@ -319,8 +323,12 @@ body {
   max-height: 44vh;
 }
 
-.vim-bim-tree .rct-tree-root:not(.rct-tree-root-focus) .rct-tree-item-title-container-selected,
-.vim-bim-tree .rct-tree-root.rct-tree-root-focus .rct-tree-item-title-container-selected {
+.vim-bim-tree
+  .rct-tree-root:not(.rct-tree-root-focus)
+  .rct-tree-item-title-container-selected,
+.vim-bim-tree
+  .rct-tree-root.rct-tree-root-focus
+  .rct-tree-item-title-container-selected {
   background-color: var(--c-lightest-blue);
 }
 
@@ -377,24 +385,32 @@ body {
 }
 
 /* Hover selected element */
-.rct-tree-item-title-container-selected .rct-tree-item-button:hover .rct-tree-item-visibility.vim-visible {
+.rct-tree-item-title-container-selected
+  .rct-tree-item-button:hover
+  .rct-tree-item-visibility.vim-visible {
   display: block;
   background-image: var(--visible-light-blue);
 }
 
-.rct-tree-item-title-container-selected .rct-tree-item-button:hover .rct-tree-item-visibility.vim-hidden {
+.rct-tree-item-title-container-selected
+  .rct-tree-item-button:hover
+  .rct-tree-item-visibility.vim-hidden {
   display: block;
   background-image: var(--hidden-light-blue);
 }
 
 /* Hover toggle button*/
-.rct-tree-item-title-container-selected .rct-tree-item-button .rct-tree-item-visibility.vim-visible:hover,
+.rct-tree-item-title-container-selected
+  .rct-tree-item-button
+  .rct-tree-item-visibility.vim-visible:hover,
 .rct-tree-item-button .rct-tree-item-visibility.vim-visible:hover {
   display: block;
   background-image: var(--hidden-royal-blue);
 }
 
-.rct-tree-item-title-container-selected .rct-tree-item-button .rct-tree-item-visibility.vim-hidden:hover,
+.rct-tree-item-title-container-selected
+  .rct-tree-item-button
+  .rct-tree-item-visibility.vim-hidden:hover,
 .rct-tree-item-button .rct-tree-item-visibility.vim-hidden:hover {
   display: block;
   background-image: var(--visible-royal-blue);
