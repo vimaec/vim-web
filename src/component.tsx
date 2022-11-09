@@ -63,14 +63,14 @@ export function createVimComponent (
 // Creates a ui container for the react component
 export function createContainer (viewer: VIM.Viewer): VimComponentContainer {
   const root = document.createElement('div')
-  root.className = 'vim-component'
-  root.style.height = '100%'
+  root.className =
+    'vim-component vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full'
   document.body.append(root)
 
   // container for canvases
   const gfx = document.createElement('div')
-  gfx.className = 'vim-gfx'
-  gfx.style.height = '100%'
+  gfx.className = 'vim-gfx vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full'
+
   root.append(gfx)
 
   gfx.append(viewer.viewport.canvas)
@@ -79,8 +79,8 @@ export function createContainer (viewer: VIM.Viewer): VimComponentContainer {
 
   // container for ui
   const ui = document.createElement('div')
-  ui.className = 'vim-ui'
-  ui.style.height = '100%'
+  ui.className = 'vim-ui vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full'
+
   root.append(ui)
 
   // Initial viewer settings
@@ -160,7 +160,6 @@ export function VimComponent (props: {
       />
     </>
   )
-
   return (
     <>
       <Overlay viewer={viewer.base} side={side}></Overlay>
@@ -192,7 +191,7 @@ export function VimComponent (props: {
       <ReactTooltip
         arrowColor="transparent"
         type="light"
-        className="!bg-white !text-xs !text-gray-darkest !opacity-100 !border !border-solid !border-gray-medium !shadow-[2px_6px_15px_rgba(0,0,0,0.3)] !transition-opacity"
+        className="!vc-border !vc-border-solid !vc-border-gray-medium !vc-bg-white !vc-text-xs !vc-text-gray-darkest !vc-opacity-100 !vc-shadow-[2px_6px_15px_rgba(0,0,0,0.3)] !vc-transition-opacity"
         delayShow={200}
       />
 
@@ -209,9 +208,9 @@ export function VimComponent (props: {
 }
 
 const Logo = React.memo(() => (
-  <div className="vim-logo fixed top-4 left-4">
+  <div className={'vim-logo vc-fixed vc-top-4 vc-left-4'}>
     <a href="https://vimaec.com">
-      <img className="vim-logo-img h-12 w-32" src={logo}></img>
+      <img className="vim-logo-img vc-h-12 vc-w-32" src={logo}></img>
     </a>
   </div>
 ))

@@ -37,9 +37,9 @@ export function BimSearch (props: {
   }
 
   return (
-    <div className="vim-bim-search mb-4 flex items-center">
+    <div className="vim-bim-search vc-mb-4 vc-flex vc-items-center">
       <svg
-        className="text-gray-light -mr-4"
+        className="-vc-mr-4 vc-text-gray-light"
         xmlns="http://www.w3.org/2000/svg"
         width="16"
         viewBox="0 0 256 256"
@@ -51,7 +51,7 @@ export function BimSearch (props: {
         />
       </svg>
       <input
-        className="w-full bg-transparent border-b border-t-0 border-l-0 border-r-0 border-gray-light outline-none focus:outline-none focus-within:outline-none focus-within:border-b-primary-royal active:text-primary-royal focus-within:text-primary-royal placeholder-text-gray-medium py-1 pl-6"
+        className="vc-placeholder-text-gray-medium vc-w-full vc-border-b vc-border-t-0 vc-border-l-0 vc-border-r-0 vc-border-gray-light vc-bg-transparent vc-py-1 vc-pl-6 vc-outline-none focus-within:vc-border-b-primary-royal focus-within:vc-text-primary-royal focus-within:vc-outline-none focus:vc-outline-none active:vc-text-primary-royal"
         type="search"
         name="name"
         placeholder="Type here to search"
@@ -62,7 +62,7 @@ export function BimSearch (props: {
       />
       {props.count !== undefined && text
         ? (
-        <div className="vim-bim-search-count rounded-full bg-primary-royal text-white text-xs font-bold py-1 px-2 absolute right-16">
+        <div className="vim-bim-search-count vc-absolute vc-right-16 vc-rounded-full vc-bg-primary-royal vc-py-1 vc-px-2 vc-text-xs vc-font-bold vc-text-white">
           {props.count}
         </div>
           )

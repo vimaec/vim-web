@@ -62,43 +62,48 @@ function createHeader (header: BimHeader) {
   const rows = header.map((row, rowIndex) => {
     if (!row) return null
     return row.map((pair, columnIndex) => {
-      return <dl className={'flex w-full ' + pair[4]}>
-        <dt
-          data-tip={pair[1]}
-          className={
-            'bim-header-title text-gray-medium py-1 shrink-0 whitespace-nowrap min-w-[100px] select-none ' +
-            pair[2]
-          }
-          key={`dt-${rowIndex}-${columnIndex}`}
-        >
-          {pair[0]}
-        </dt>
-        <dd
-          data-tip={pair[1]}
-          className={'bim-header-value py-1 shrink-1 truncate ' + pair[3]}
-          key={`dd-${rowIndex}-${columnIndex}`}
-        >
-          {pair[1]}
-        </dd>
-      </dl>
+      return (
+        <dl className={`vc-flex vc-w-full ${pair[4]}`}>
+          <dt
+            data-tip={pair[1]}
+            className={`bim-header-title vc-min-w-[100px] vc-shrink-0 vc-select-none vc-whitespace-nowrap vc-py-1 vc-text-gray-medium ${pair[2]}`}
+            key={`dt-${rowIndex}-${columnIndex}`}
+          >
+            {pair[0]}
+          </dt>
+          <dd
+            data-tip={pair[1]}
+            className={`bim-header-value vc-shrink-1 vc-truncate vc-py-1 ${pair[3]}`}
+            key={`dd-${rowIndex}-${columnIndex}`}
+          >
+            {pair[1]}
+          </dd>
+        </dl>
+      )
     })
   })
 
   return (
-    <div className="vim-bim-inspector flex flex-wrap mb-6">
-      {rows}
-    </div>
+    <div className="vim-bim-inspector vc-mb-6 vc-flex vc-flex-wrap">{rows}</div>
   )
 }
 
 function getElementBimHeader (info: VIM.ElementInfo): BimHeader {
   return [
-    [['Document', info.documentTitle, 'w-3/12', 'w-9/12', 'w-full']],
-    [['Workset', info.workset, 'w-3/12', 'w-9/12', 'w-full']],
-    [['Category', info.categoryName, 'w-3/12', 'w-9/12', 'w-full']],
-    [['Family Name', info.familyName, 'w-3/12', 'w-9/12', 'w-full']],
-    [['Family Type', info.familyTypeName, 'w-3/12', 'w-9/12', 'w-full']],
-    [['Element Id', info.id, 'w-3/12', 'w-9/12', 'w-full']]
+    [['Document', info.documentTitle, 'vc-w-3/12', 'vc-w-9/12', 'vc-w-full']],
+    [['Workset', info.workset, 'vc-w-3/12', 'vc-w-9/12', 'vc-w-full']],
+    [['Category', info.categoryName, 'vc-w-3/12', 'vc-w-9/12', 'vc-w-full']],
+    [['Family Name', info.familyName, 'vc-w-3/12', 'vc-w-9/12', 'vc-w-full']],
+    [
+      [
+        'Family Type',
+        info.familyTypeName,
+        'vc-w-3/12',
+        'vc-w-9/12',
+        'vc-w-full'
+      ]
+    ],
+    [['Element Id', info.id, 'vc-w-3/12', 'vc-w-9/12', 'vc-w-full']]
   ]
 }
 
@@ -107,39 +112,61 @@ async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
   const main = documents.find((d) => !d.isLinked) ?? documents[0]
 
   return [
-    [['Document', formatSource(vim.source), 'w-3/12', 'w-9/12', 'w-full']],
-    [['Source Path', main.pathName, 'w-3/12', 'w-9/12', 'w-full']],
+    [
+      [
+        'Document',
+        formatSource(vim.source),
+        'vc-w-3/12',
+        'vc-w-9/12',
+        'vc-w-full'
+      ]
+    ],
+    [['Source Path', main.pathName, 'vc-w-3/12', 'vc-w-9/12', 'vc-w-full']],
     [
       [
         'Created on',
         formatDate(vim.document.header.created),
-        'w-3/12',
-        'w-9/12',
-        'w-full'
+        'vc-w-3/12',
+        'vc-w-9/12',
+        'vc-w-full'
       ]
     ],
-    [['Created with', vim.document.header.generator, 'w-3/12', 'w-9/12', 'w-full']],
+    [
+      [
+        'Created with',
+        vim.document.header.generator,
+        'vc-w-3/12',
+        'vc-w-9/12',
+        'vc-w-full'
+      ]
+    ],
 
     undefined,
     [
       [
         'BIM Count',
         [...vim.document.getAllElements()].length,
-        'w-3/12',
-        'w-3/12',
-        'w-1/2 mt-5'
+        'vc-w-3/12',
+        'vc-w-3/12',
+        'vc-w-1/2 mt-5'
       ],
       [
         'Node Count',
         vim.document.g3d.getInstanceCount(),
-        'w-3/12',
-        'w-3/12',
-        'w-1/2 mt-5'
+        'vc-w-3/12',
+        'vc-w-3/12',
+        'vc-w-1/2 mt-5'
       ]
     ],
     [
-      ['Mesh Count', vim.document.g3d.getMeshCount(), 'w-3/12', 'w-3/12', 'w-1/2'],
-      ['Revit Files', documents?.length, 'w-3/12', 'w-3/12', 'w-1/2']
+      [
+        'Mesh Count',
+        vim.document.g3d.getMeshCount(),
+        'vc-w-3/12',
+        'vc-w-3/12',
+        'vc-w-1/2'
+      ],
+      ['Revit Files', documents?.length, 'vc-w-3/12', 'vc-w-3/12', 'vc-w-1/2']
     ]
   ]
 }

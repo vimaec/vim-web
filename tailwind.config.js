@@ -1,8 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
-  ],
+  prefix: 'vc-',
+  content: ['./src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     colors: {
       transparent: 'transparent',
@@ -49,11 +48,9 @@ module.exports = {
       'white-t50': 'var(--c-white-t50)',
       overflow: {
         DEFAULT: 'var(--c-overflow)'
-      },
+      }
     },
-    extend: {},
+    extend: {}
   },
-  plugins: [
-    require('@tailwindcss/forms'),
-  ],
+  plugins: [require('@tailwindcss/forms')]
 }

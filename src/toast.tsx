@@ -36,7 +36,7 @@ function _MenuToast (props: { viewer: VIM.Viewer; side: SideState }) {
   return (
     <div
       className={
-        'vim-menu-toast-outer absolute top-[10%] flex pointer-events-none'
+        'vim-menu-toast vc-pointer-events-none vc-absolute vc-top-[10%] vc-flex'
       }
       style={{
         marginLeft: props.side.getWidth(),
@@ -44,14 +44,16 @@ function _MenuToast (props: { viewer: VIM.Viewer; side: SideState }) {
       }}
     >
       <div
-        className={`vim-menu-toast rounded shadow-lg py-2 px-5 flex items-center justify-between transition-all m-auto bg-gray-warm ${
-          visible ? 'opacity-100' : 'opacity-0'
+        className={`vim-menu-toast vc-m-auto vc-flex vc-items-center vc-justify-between vc-rounded vc-bg-gray-warm vc-py-2 vc-px-5 vc-shadow-lg vc-transition-all ${
+          visible ? 'vc-opacity-100' : 'vc-opacity-0'
         }`}
       >
-        <span className="text-sm uppercase font-semibold text-gray-light">
+        <span className="vc-text-sm vc-font-semibold vc-uppercase vc-text-gray-light">
           Speed:
         </span>
-        <span className="font-bold text-lg text-white ml-1">{speed + 25}</span>
+        <span className="vc-ml-1 vc-text-lg vc-font-bold vc-text-white">
+          {speed + 25}
+        </span>
       </div>
     </div>
   )

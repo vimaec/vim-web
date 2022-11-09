@@ -18,8 +18,8 @@ const toggleButton = (
   isOn: () => boolean
 ) => {
   const style = isOn()
-    ? 'control-bar-button rounded-full mx-1 h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-primary'
-    : 'control-bar-button rounded-full mx-1 h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal text-gray-medium'
+    ? 'vim-control-bar-button vc-rounded-full vc-mx-1 vc-h-10 vc-w-10 vc-flex vc-items-center vc-justify-center vc-transition-all hover:vc-scale-110 hover:vc-text-primary-royal vc-text-primary'
+    : 'vim-control-bar-button vc-rounded-full vc-mx-1 vc-h-10 vc-w-10 vc-flex vc-items-center vc-justify-center vc-transition-all hover:vc-scale-110 hover:vc-text-primary-royal vc-text-gray-medium'
   return (
     <button data-tip={tip} onClick={action} className={style} type="button">
       {icon({ height: '20', width: '20', fill: 'currentColor' })}
@@ -34,8 +34,8 @@ const actionButton = (
   state: boolean
 ) => {
   const style = state
-    ? 'control-bar-button rounded-full mx-1 text-white h-10 w-10 flex items-center justify-center transition-all hover:scale-110 opacity-60 hover:opacity-100'
-    : 'control-bar-button rounded-full mx-1 text-gray-medium h-10 w-10 flex items-center justify-center transition-all hover:scale-110 hover:text-primary-royal'
+    ? 'vim-control-bar-button vc-rounded-full vc-mx-1 vc-text-white vc-h-10 vc-w-10 vc-flex vc-items-center vc-justify-center vc-transition-all hover:vc-scale-110 vc-opacity-60 hover:vc-opacity-100'
+    : 'vim-control-bar-button vc-rounded-full vc-mx-1 vc-text-gray-medium vc-h-10 vc-w-10 vc-flex vc-items-center vc-justify-center vc-transition-all hover:vc-scale-110 hover:vc-text-primary-royal'
 
   return (
     <button data-tip={tip} onClick={action} className={style} type="button">
@@ -90,15 +90,15 @@ export function ControlBar (props: {
   return (
     <div
       style={{ paddingLeft: props.side.getWidth() }}
-      className={`vim-control-bar flex z-20 items-center justify-center w-full fixed px-2 bottom-0 py-2 mb-9 transition-opacity transition-all ${
-        show ? 'opacity-100 ' : 'opacity-0 pointer-events-none'
+      className={`vim-control-bar vc-fixed vc-bottom-0 vc-z-20 vc-mb-9 vc-flex vc-w-full vc-items-center vc-justify-center vc-px-2 vc-py-2 vc-transition-opacity vc-transition-all ${
+        show ? 'vc-opacity-100' : 'vc-pointer-events-none vc-opacity-0'
       }`}
     >
-      <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md mx-2">
+      <div className="vc-vim-control-bar-section vc-mx-2 vc-flex vc-items-center vc-rounded-full vc-bg-white vc-px-2 vc-shadow-md">
         <TabCamera {...props} />
       </div>
       <TabTools {...props} />
-      <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 shadow-md mx-2">
+      <div className="vim-control-bar-section vc-mx-2 vc-flex vc-items-center vc-rounded-full vc-bg-white vc-px-2 vc-shadow-md">
         <TabSettings {...props} />
       </div>
     </div>
@@ -295,7 +295,7 @@ function TabTools (props: {
   )
 
   const toolsTab = (
-    <div className="vim-control-bar-section flex items-center bg-white rounded-full px-2 mx-2 shadow-md">
+    <div className="vim-control-bar-section vc-mx-2 vc-flex vc-items-center vc-rounded-full vc-bg-white vc-px-2 vc-shadow-md">
       {btnSection}
       {btnMeasure}
       {btnIsolation}
@@ -315,10 +315,10 @@ function TabTools (props: {
     !!measuring
   )
   const measureTab = (
-    <div className="vim-control-bar-section flex items-center bg-primary rounded-full px-2 mx-2 shadow-md">
-      <div className="mx-1">{btnMeasureDelete}</div>
-      <div className="mx-1 py-1 bg-white/[.5] h-5 w-px"></div>
-      <div className="mx-1">{btnMeasureConfirm}</div>
+    <div className="vim-control-bar-section vc-mx-2 vc-flex vc-items-center vc-rounded-full vc-bg-primary vc-px-2 vc-shadow-md">
+      <div className="vc-mx-1">{btnMeasureDelete}</div>
+      <div className="vc-mx-1 vc-h-5 vc-w-px vc-bg-white/[.5] vc-py-1"></div>
+      <div className="vc-mx-1">{btnMeasureConfirm}</div>
     </div>
   )
 
@@ -354,11 +354,11 @@ function TabTools (props: {
     section.active
   )
   const sectionTab = (
-    <div className="vim-control-bar-section flex items-center bg-primary rounded-full px-2 mx-2 shadow-md">
+    <div className="vim-control-bar-section vc-mx-2 vc-flex vc-items-center vc-rounded-full vc-bg-primary vc-px-2 vc-shadow-md">
       {btnSectionReset}
       {btnSectionShrink}
       {section.clip ? btnSectionNoClip : btnSectionClip}
-      <div className="mx-1 py-1 bg-white/[.5] h-5 w-px"></div>
+      <div className="vc-mx-1 vc-h-5 vc-w-px vc-bg-white/[.5] vc-py-1"></div>
       {btnSectionConfirm}
     </div>
   )

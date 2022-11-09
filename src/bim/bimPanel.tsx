@@ -77,9 +77,11 @@ export function BimPanel (props: {
   const last = props.selection[props.selection.length - 1]
 
   return (
-    <div className={`vim-bim-panel ${props.visible ? '' : 'hidden'}`}>
-      <div className="vim-bim-upper h-1/2">
-        <h2 className="text-xs font-bold uppercase mb-6">Project Inspector</h2>
+    <div className={`vim-bim-panel ${props.visible ? '' : 'vc-hidden'}`}>
+      <div className="vim-bim-upper vc-h-1/2">
+        <h2 className="vim-bim-upper-title vc-mb-6 vc-text-xs vc-font-bold vc-uppercase">
+          Project Inspector
+        </h2>
         <BimSearch
           viewer={viewer}
           filter={filter}
@@ -94,9 +96,12 @@ export function BimPanel (props: {
           isolation={props.isolation}
         />
       </div>
-      <hr className="border-gray-divider mb-5 -mx-6" />
-      <h2 className="text-xs font-bold uppercase mb-4">Bim Inspector</h2>
-      <div className="vim-bim-lower h-1/2 overflow-y-auto overflow-x-hidden">
+      <hr className="-vc-mx-6 vc-mb-5 vc-border-gray-divider" />
+
+      <h2 className="vc-mb-4 vc-text-xs vc-font-bold vc-uppercase">
+        Bim Inspector
+      </h2>
+      <div className="vim-bim-lower vc-h-1/2 vc-overflow-y-auto vc-overflow-x-hidden">
         <BimObjectHeader
           elements={filteredElements}
           object={last}

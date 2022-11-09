@@ -11,12 +11,12 @@ export function MenuSettings (props: {
   if (!props.visible) return null
   const toggleElement = (label: string, state: boolean, action: () => void) => {
     return (
-      <label className="text-gray-warm m-1 py-1 flex items-center select-none">
+      <label className="vc-m-1 vc-flex vc-select-none vc-items-center vc-py-1 vc-text-gray-warm">
         <input
           type="checkbox"
           checked={state}
           onChange={action}
-          className="w-[18px] h-[18px] rounded border border-gray-medium checked:bg-primary-royal mr-2 "
+          className="vc-checked:bg-primary-royal vc-mr-2 vc-h-[18px] vc-w-[18px] vc-rounded vc-border vc-border-gray-medium "
         ></input>{' '}
         {label}
       </label>
@@ -37,7 +37,9 @@ export function MenuSettings (props: {
   // {toggleElement("Hide action menu while moving camera")}
   return (
     <>
-      <h2 className="text-xs font-bold uppercase mb-6">Display Settings</h2>
+      <h2 className="vc-mb-6 vc-text-xs vc-font-bold vc-uppercase">
+        Display Settings
+      </h2>
       {settingsToggle(
         'Show hidden object with ghost effect',
         (settings) => settings.viewer.isolationMaterial,

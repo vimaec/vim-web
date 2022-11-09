@@ -166,11 +166,11 @@ export function _VimContextMenu (props: {
     return (
       <MenuItem
         key={button.id}
-        className="hover:bg-gray-lightest px-5 py-2 flex items-center justify-between cursor-pointer select-none"
+        className="vim-context-menu-item vc-flex vc-cursor-pointer vc-select-none vc-items-center vc-justify-between vc-px-5 vc-py-2 hover:vc-bg-gray-lightest"
         onClick={button.action}
       >
         <span>{button.label}</span>
-        <span className="text-gray-medium">{button.keyboard}</span>
+        <span className="vc-text-gray-medium">{button.keyboard}</span>
       </MenuItem>
     )
   }
@@ -179,7 +179,7 @@ export function _VimContextMenu (props: {
       ? (
       <MenuItem
         key={divider.id}
-        className="border-t border-gray-lighter my-1"
+        className="vim-context-menu-item vc-my-1 vc-border-t vc-border-gray-lighter"
         divider
       />
         )
@@ -290,7 +290,7 @@ export function _VimContextMenu (props: {
     >
       <ContextMenu
         preventHideOnContextMenu={true}
-        className="text-gray-darker bg-white py-1 w-[240px] rounded shadow-lg z-50"
+        className="vc-z-50 vc-w-[240px] vc-rounded vc-bg-white vc-py-1 vc-text-gray-darker vc-shadow-lg"
         id={VIM_CONTEXT_MENU_ID}
       >
         {elements.map((e) => {

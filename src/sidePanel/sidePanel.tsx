@@ -67,12 +67,12 @@ export function _SidePanel (props: {
       style={{
         position: 'fixed'
       }}
-      className={`vim-side-panel-test left-0 top-0 bg-gray-lightest p-6 text-gray-darker z-20 ${
-        props.side.getContent() !== 'none' ? '' : 'hidden'
+      className={`vim-side-panel vc-top-0 vc-left-0 vc-z-20 vc-bg-gray-lightest vc-p-6 vc-text-gray-darker ${
+        props.side.getContent() !== 'none' ? '' : 'vc-hidden'
       }`}
     >
       <button
-        className="vim-side-panel-nav text-gray-medium absolute right-6 top-6"
+        className="vim-side-panel-nav vc-absolute vc-right-6 vc-top-6 vc-text-gray-medium"
         onClick={onNavBtn}
       >
         {Icons.close(iconOptions)}

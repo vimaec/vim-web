@@ -39,12 +39,15 @@ function _LoadingBox (props: { viewer: VIM.Viewer; msg: string }) {
   if (!msg) return null
   return (
     <div
-      className="loading-wrapper backdrop-blur fixed items-center justify-center top-0 left-0 w-full h-full z-40 bg-overflow"
+      className="vim-loading-wrapper vc-fixed vc-top-0 vc-left-0 vc-z-40 vc-h-full vc-w-full vc-items-center vc-justify-center vc-bg-overflow vc-backdrop-blur"
       onContextMenu={(event) => event.preventDefault()}
     >
-      <div className="vim-loading-box m-auto self-center absolute top-[calc(50%-37px)] left-[calc(50%-160px)] w-[320px] bg-white px-5 py-4 rounded shadow-lg z-20">
-        <h1 className="w-full mb-2 text-gray-medium"> {msg} </h1>
-        <span className="loader"></span>
+      <div className="vim-loading-box vc-absolute vc-top-[calc(50%-37px)] vc-left-[calc(50%-160px)] vc-z-20 vc-m-auto vc-w-[320px] vc-self-center vc-rounded vc-bg-white vc-px-5 vc-py-4 vc-shadow-lg">
+        <h1 className="vim-loading-title vc-mb-2 vc-w-full vc-text-gray-medium">
+          {' '}
+          {msg}{' '}
+        </h1>
+        <span className="vim-loading-widget"></span>
       </div>
     </div>
   )
@@ -57,7 +60,7 @@ function formatProgress (progress: Progress) {
       )
     : typeof progress === 'number'
       ? (
-    <div className="flex justify-between w-full">
+    <div className="vc-flex vc-w-full vc-justify-between">
       <span>Loading...</span>
       <span>{Math.round(progress / 1000000)} MB</span>
     </div>

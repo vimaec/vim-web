@@ -95,7 +95,7 @@ export function BimTree (props: {
 
   return (
     <div
-      className="vim-bim-tree mb-5"
+      className="vim-bim-tree vc-mb-5"
       ref={div}
       tabIndex={0}
       onFocus={() => viewer.inputs.keyboard.unregister()}
