@@ -64,9 +64,9 @@ export function applySettings (viewer: VIM.Viewer, settings: Settings) {
   const performance = document.getElementsByClassName('vim-performance')[0]
   if (performance) {
     if (settings.ui.performance) {
-      performance.classList.remove('hidden')
+      performance.classList.remove('vc-hidden')
     } else {
-      performance.classList.add('hidden')
+      performance.classList.add('vc-hidden')
     }
   }
 

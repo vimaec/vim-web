@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { ViewerWrapper } from '../helpers/viewer'
+import * as Icons from '../icons'
 
 const SEARCH_DELAY_MS = 200
 export function BimSearch (props: {
@@ -7,7 +8,6 @@ export function BimSearch (props: {
   filter: string
   setFilter: (s: string) => void
   count: number
-  setSearching: (value: boolean) => void
 }) {
   const [text, setText] = useState('')
   const changeTimeout = useRef<ReturnType<typeof setTimeout>>()
@@ -21,25 +21,34 @@ export function BimSearch (props: {
     setText(value)
     clearTimeout(changeTimeout.current)
     changeTimeout.current = setTimeout(
-      () => props.setFilter(value),
+      () => {
+        props.setFilter(value)
+        console.log('set filter ' + value)
+      },
+
       SEARCH_DELAY_MS
     )
   }
 
+  const onClear = () => {
+    console.log('clear filter')
+    setText('')
+    clearTimeout(changeTimeout.current)
+    props.setFilter('')
+  }
+
   const onFocus = () => {
     props.viewer.base.inputs.keyboard.unregister()
-    props.setSearching(true)
   }
 
   const onBlur = () => {
     props.viewer.base.inputs.keyboard.register()
-    props.setSearching(false)
   }
 
   return (
     <div className="vim-bim-search vc-mb-4 vc-flex vc-items-center">
       <svg
-        className="-vc-mr-4 vc-text-gray-light"
+        className="search-icon -vc-mr-4 vc-text-gray-light"
         xmlns="http://www.w3.org/2000/svg"
         width="16"
         viewBox="0 0 256 256"
@@ -51,8 +60,8 @@ export function BimSearch (props: {
         />
       </svg>
       <input
-        className="vc-placeholder-text-gray-medium vc-w-full vc-border-b vc-border-t-0 vc-border-l-0 vc-border-r-0 vc-border-gray-light vc-bg-transparent vc-py-1 vc-pl-6 vc-outline-none focus-within:vc-border-b-primary-royal focus-within:vc-text-primary-royal focus-within:vc-outline-none focus:vc-outline-none active:vc-text-primary-royal"
-        type="search"
+        className="search-input vc-placeholder-text-gray-medium vc-w-full vc-border-b vc-border-t-0 vc-border-l-0 vc-border-r-0 vc-border-gray-light vc-bg-transparent vc-py-1 vc-pl-6 vc-outline-none focus-within:vc-border-b-primary-royal focus-within:vc-text-primary-royal focus-within:vc-outline-none focus:vc-outline-none active:vc-text-primary-royal"
+        type="input"
         name="name"
         placeholder="Type here to search"
         value={text}
@@ -60,9 +69,15 @@ export function BimSearch (props: {
         onBlur={onBlur}
         onChange={onChange}
       />
+      <button className="search-clear" onClick={onClear}>
+        {text.length > 0
+          ? Icons.close({ width: 16, height: 16, fill: 'currentColor' })
+          : null}
+      </button>
+
       {props.count !== undefined && text
         ? (
-        <div className="vim-bim-search-count vc-absolute vc-right-16 vc-rounded-full vc-bg-primary-royal vc-py-1 vc-px-2 vc-text-xs vc-font-bold vc-text-white">
+        <div className="search-count vc-absolute vc-right-16 vc-rounded-full vc-bg-primary-royal vc-py-1 vc-px-2 vc-text-xs vc-font-bold vc-text-white">
           {props.count}
         </div>
           )

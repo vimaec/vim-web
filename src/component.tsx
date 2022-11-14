@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import ReactTooltip from 'react-tooltip'
 import logo from './assets/logo.png'
+import Stats from 'stats-js'
 import './style.css'
 import 'vim-webgl-viewer/dist/style.css'
 
@@ -109,6 +110,7 @@ export function VimComponent (props: {
 
   // On first render
   useEffect(() => {
+    addPerformanceCounter()
     props.onMount({
       viewer: props.viewer,
       helpers: viewer,
@@ -239,4 +241,19 @@ function useViewerState (viewer: VIM.Viewer) {
   }, [])
 
   return [vim, selection] as [VIM.Vim, VIM.Object[]]
+}
+
+function addPerformanceCounter () {
+  const ui = document.getElementsByClassName('vim-ui')[0]
+  const stats = new Stats()
+  const div = stats.dom as HTMLDivElement
+  div.className =
+    'vim-performance !vc-absolute !vc-right-6 !vc-left-auto !vc-top-52 !vc-z-1'
+  ui.appendChild(stats.dom)
+
+  function animate () {
+    requestAnimationFrame(() => animate())
+    stats.update()
+  }
+  animate()
 }

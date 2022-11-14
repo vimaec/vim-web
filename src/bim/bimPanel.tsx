@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 
 import { BimTree } from './bimTree'
@@ -22,7 +22,6 @@ export function BimPanel (props: {
   const [vim, setVim] = useState<VIM.Vim>()
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
   const [filteredElements, setFilteredElements] = useState<VIM.ElementInfo[]>()
-  const searching = useRef<boolean>(false)
 
   if (props.vim !== vim) {
     setVim(props.vim)
@@ -52,6 +51,7 @@ export function BimPanel (props: {
 
   // on filter or elements update, update filteredElements
   useEffect(() => {
+    console.log('effect filter ' + filter)
     if (vim && elements) {
       const meshElements = elements.filter(
         (e) => vim.getObjectFromElement(e.element).hasMesh
@@ -59,13 +59,11 @@ export function BimPanel (props: {
       const result = filterElements(vim, meshElements, filter)
       setFilteredElements(result)
 
-      if (searching.current) {
-        if (filter !== '') {
-          const objects = result.map((e) => vim.getObjectFromElement(e.element))
-          props.isolation.isolate(objects, 'search')
-        } else {
-          props.isolation.isolate(undefined, 'search')
-        }
+      if (filter !== '') {
+        const objects = result.map((e) => vim.getObjectFromElement(e.element))
+        props.isolation.isolate(objects, 'search')
+      } else {
+        props.isolation.isolate(undefined, 'search')
       }
     }
   }, [filter, elements])
@@ -87,7 +85,6 @@ export function BimPanel (props: {
           filter={filter}
           setFilter={updateFilter}
           count={filteredElements?.length}
-          setSearching={(value: boolean) => (searching.current = value)}
         />
         <BimTree
           viewer={viewer}
