@@ -140,34 +140,7 @@ async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
         'vc-w-full'
       ]
     ],
-
-    undefined,
-    [
-      [
-        'BIM Count',
-        [...vim.document.getAllElements()].length,
-        'vc-w-3/12',
-        'vc-w-3/12',
-        'vc-w-1/2 mt-5'
-      ],
-      [
-        'Node Count',
-        vim.document.g3d.getInstanceCount(),
-        'vc-w-3/12',
-        'vc-w-3/12',
-        'vc-w-1/2 mt-5'
-      ]
-    ],
-    [
-      [
-        'Mesh Count',
-        vim.document.g3d.getMeshCount(),
-        'vc-w-3/12',
-        'vc-w-3/12',
-        'vc-w-1/2'
-      ],
-      ['Revit Files', documents?.length, 'vc-w-3/12', 'vc-w-3/12', 'vc-w-1/2']
-    ]
+    undefined
   ]
 }
 
