@@ -68,16 +68,19 @@ function _AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
     </button>
   )
 
+  const createButton = (button: JSX.Element, condition: boolean = true) => {
+    if (!condition) return null
+    return <div className="vc-mx-1 ">{button}</div>
+  }
+
   return (
     <div
       ref={ui}
       className="vim-axes-panel vc-fixed vc-right-6 vc-top-6 vc-z-20 vc-flex vc-h-[145px] vc-w-[100px] vc-flex-col vc-rounded-2xl vc-border vc-border-white vc-opacity-50 vc-shadow-lg vc-saturate-0 vc-transition-all hover:vc-opacity-100 hover:vc-saturate-100"
     >
       <div className="vim-top-buttons vc-pointer-events-auto vc-order-2 vc-mb-0 vc-mt-auto vc-flex vc-justify-center vc-rounded-b-xl vc-bg-white vc-p-1">
-        <div className="vc-mx-1">
-          {props.settings.capacity.useOrthographicCamera ? btnOrtho : null}
-        </div>
-        <div className="vc-mx-1">{btnHome}</div>
+        {createButton(btnOrtho, props.settings.capacity.useOrthographicCamera)}
+        {createButton(btnHome)}
       </div>
     </div>
   )
