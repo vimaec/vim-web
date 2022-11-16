@@ -46,7 +46,7 @@ export function BimSearch (props: {
   }
 
   return (
-    <div className="vim-bim-search vc-mb-4 vc-flex vc-items-center">
+    <div className="vim-bim-search vc-mb-4 vc-flex vc-items-center vc-relative">
       <svg
         className="search-icon -vc-mr-4 vc-text-gray-light"
         xmlns="http://www.w3.org/2000/svg"
@@ -69,11 +69,10 @@ export function BimSearch (props: {
         onBlur={onBlur}
         onChange={onChange}
       />
-      <button className="search-clear" onClick={onClear}>
-        {text.length > 0
-          ? Icons.close({ width: 16, height: 16, fill: 'currentColor' })
-          : null}
-      </button>
+        { text.length > 0
+          ? <button className="search-clear vc-text-white vc-bg-gray-medium vc-w-4 vc-h-4 vc-flex vc-items-center vc-justify-center vc-rounded-full vc-shrink-0 vc-absolute vc-right-0" onClick={onClear}>{Icons.close({ width: 10, height: 10, fill: 'currentColor' })} </button>
+          : null
+          }
 
       {props.count !== undefined && text
         ? (
