@@ -59,7 +59,7 @@ export function _SidePanel (props: {
   return (
     <Resizable
       size={{ width: props.side.getWidth(), height: '100%' }}
-      minWidth={240}
+      minWidth={300}
       maxWidth={getMaxSize()}
       onResize={(e, direction, ref, d) => {
         props.side.setWidth(ref.clientWidth)
