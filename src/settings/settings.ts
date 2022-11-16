@@ -55,6 +55,7 @@ export function useSettings (
   useEffect(() => {
     applySettings(viewer, settings)
   }, [settings])
+  applySettings(viewer, merge)
 
   return useMemo(() => ({ value: settings, set: setSettings }), [settings])
 }
