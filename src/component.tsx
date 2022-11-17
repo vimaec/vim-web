@@ -27,7 +27,7 @@ import { Overlay } from './overlay'
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
 import { Settings, useSettings } from './settings/settings'
-import { Isolation, useIsolation } from './helpers/isolation'
+import { Isolation } from './helpers/isolation'
 import { ViewerWrapper } from './helpers/viewer'
 
 export * as VIM from 'vim-webgl-viewer/'
@@ -101,7 +101,9 @@ export function VimComponent (props: {
   const cursor = useRef(new CursorManager(props.viewer)).current
   const settings = useSettings(props.viewer, props.settings)
 
-  const isolation = useIsolation(viewer, settings.value)
+  const [isolation] = useState(() => new Isolation(viewer, settings.value))
+  useEffect(() => isolation.updateSettings(settings.value), [settings])
+
   const side = useSideState(settings.value.ui.bimPanel, 480)
   const [contextMenu, setcontextMenu] = useState<contextMenuCustomization>()
   const help = useHelp()
