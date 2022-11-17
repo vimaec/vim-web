@@ -52,10 +52,15 @@ export function useSettings (
   const merge = deepmerge(defaultSettings, value)
   const [settings, setSettings] = useState(merge)
 
+  // First Time
+  useEffect(() => {
+    applySettings(viewer, settings)
+  }, [])
+
+  // On Change
   useEffect(() => {
     applySettings(viewer, settings)
   }, [settings])
-  applySettings(viewer, merge)
 
   return useMemo(() => ({ value: settings, set: setSettings }), [settings])
 }
