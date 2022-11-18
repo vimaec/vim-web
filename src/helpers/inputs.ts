@@ -31,7 +31,6 @@ export class ComponentInputs implements VIM.InputScheme {
       }
       case VIM.KEYS.KEY_I: {
         this._isolation.toggleIsolation('keyboard')
-        this._viewer.frameVisibleObjects()
         return true
       }
 
@@ -44,6 +43,26 @@ export class ComponentInputs implements VIM.InputScheme {
           this._isolation.clear('keyboard')
           return true
         }
+        break
+      }
+
+      case VIM.KEYS.KEY_V: {
+        if (this._viewer.base.selection.count === 0) return
+        const objs = [...this._viewer.base.selection.objects]
+        const visible = objs.findIndex((o) => o.visible) >= 0
+        if (visible) {
+          this._isolation.hide(
+            [...this._viewer.base.selection.objects],
+            'keyboard'
+          )
+          this._viewer.base.selection.clear()
+        } else {
+          this._isolation.show(
+            [...this._viewer.base.selection.objects],
+            'keyboard'
+          )
+        }
+        return true
       }
     }
 

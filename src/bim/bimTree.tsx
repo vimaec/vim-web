@@ -242,7 +242,6 @@ function toggleVisibility (
   } else {
     isolation.hide(objs, 'tree')
   }
-  viewer.frameVisibleObjects()
 }
 
 function updateViewerFocus (

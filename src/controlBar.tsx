@@ -288,7 +288,6 @@ function TabTools (props: {
     'Toggle Isolation',
     () => {
       props.isolation.toggleIsolation('controlBar')
-      props.viewer.frameVisibleObjects()
     },
     Icons.toggleIsolation,
     false

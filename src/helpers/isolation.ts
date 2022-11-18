@@ -7,6 +7,7 @@ import { SimpleEventDispatcher } from 'ste-simple-events'
 
 export class Isolation {
   viewer: VIM.Viewer
+  helper: ViewerWrapper
   settings: Settings
   isolation: VIM.Object[]
   lastIsolation: VIM.Object[]
@@ -14,6 +15,7 @@ export class Isolation {
 
   constructor (componentViewer: ViewerWrapper, settings: Settings) {
     this.viewer = componentViewer.base
+    this.helper = componentViewer
     this.updateSettings(settings)
   }
 
@@ -75,6 +77,7 @@ export class Isolation {
 
     const isolated = this._isolate(this.viewer, this.settings, objects)
     this.isolation = isolated ? objects : undefined
+    this.helper.frameVisibleObjects()
     this.onChanged.dispatch(source)
   }
 
@@ -93,6 +96,7 @@ export class Isolation {
         // Replace Isolation
         const isolated = this._isolate(this.viewer, this.settings, selection)
         this.isolation = isolated ? selection : undefined
+        this.helper.frameVisibleObjects()
         this.viewer.selection.clear()
       }
     } else {
@@ -100,6 +104,7 @@ export class Isolation {
         // Set new Isolation
         const isolated = this._isolate(this.viewer, this.settings, selection)
         this.isolation = isolated ? selection : undefined
+        this.helper.frameVisibleObjects()
         this.viewer.selection.clear()
       } else if (this.lastIsolation) {
         // Restore last isolation

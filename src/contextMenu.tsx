@@ -39,6 +39,7 @@ export const contextMenuElementIds = {
   dividerSelection: 'dividerSelection',
   isolateSelection: 'isolateObject',
   hideObject: 'hideObject',
+  showObject: 'showObject',
   clearSelection: 'clearSelection',
   showAll: 'showAll',
   dividerMeasure: 'dividerMeasure',
@@ -134,6 +135,11 @@ export function _VimContextMenu (props: {
     e.stopPropagation()
   }
 
+  const onSelectionShowBtn = (e: ClickCallback) => {
+    props.isolation.show([...viewer.selection.objects], 'contextMenu')
+    e.stopPropagation()
+  }
+
   const onSelectionClearBtn = (e: ClickCallback) => {
     viewer.selection.clear()
     e.stopPropagation()
@@ -187,6 +193,7 @@ export function _VimContextMenu (props: {
   }
 
   const hasSelection = props.selection?.length > 0
+  const hasVisibleSelection = props.selection?.findIndex((o) => o.visible) >= 0
   const measuring = !!viewer.measure.stage
   const isolated = ArrayEquals(props.selection, props.isolation.current())
 
@@ -209,7 +216,7 @@ export function _VimContextMenu (props: {
     {
       id: contextMenuElementIds.zoomToFit,
       label: 'Zoom to Fit',
-      keyboard: 'HOME',
+      keyboard: 'F',
       action: onCameraFrameBtn,
       enabled: true
     },
@@ -227,10 +234,18 @@ export function _VimContextMenu (props: {
     {
       id: contextMenuElementIds.hideObject,
       label: 'Hide Object',
-      keyboard: '',
+      keyboard: 'V',
       action: onSelectionHideBtn,
-      enabled: hasSelection
+      enabled: hasVisibleSelection
     },
+    {
+      id: contextMenuElementIds.showObject,
+      label: 'Show Object',
+      keyboard: 'V',
+      action: onSelectionShowBtn,
+      enabled: hasSelection && !hasVisibleSelection
+    },
+
     {
       id: contextMenuElementIds.clearSelection,
       label: 'Clear Selection',
@@ -241,7 +256,7 @@ export function _VimContextMenu (props: {
     {
       id: contextMenuElementIds.showAll,
       label: 'Show All',
-      keyboard: '',
+      keyboard: 'Esc',
       action: onShowAllBtn,
       enabled: hidden
     },
