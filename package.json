@@ -1,6 +1,6 @@
 {
   "name": "vim-webgl-component",
-  "version": "0.2.6-dev.8",
+  "version": "0.2.10",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "files": [
     "dist"
@@ -66,7 +66,7 @@
     "stats-js": "^1.0.1",
     "ste-signals": "^3.0.6",
     "ste-simple-events": "^3.0.6",
-    "vim-webgl-viewer": "1.4.7-dev.4"
+    "vim-webgl-viewer": "1.4.12-dev.0"
   },
   "keywords": [
     "3d",
