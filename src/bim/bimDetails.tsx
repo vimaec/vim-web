@@ -160,9 +160,7 @@ async function getVimDocumentDetails (vim: VIM.Vim): Promise<BimDetailsInfo> {
           name: 'Version',
           value: formatVersion(d.version, d.product),
           group: d.title
-        },
-        { name: 'Author(s)', value: d.author, group: d.title },
-        { name: 'Last Modified', value: formatDate(d.date), group: d.title }
+        }
       ]
     ])
   )
