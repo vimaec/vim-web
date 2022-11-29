@@ -76,7 +76,7 @@ export function BimSearch (props: {
 
       {props.count !== undefined && text
         ? (
-        <div className="search-count vc-absolute vc-right-16 vc-rounded-full vc-bg-primary-royal vc-py-1 vc-px-2 vc-text-xs vc-font-bold vc-text-white">
+        <div className="search-count vc-absolute vc-right-8 vc-rounded-full vc-bg-primary-royal vc-py-1 vc-px-2 vc-text-xs vc-font-bold vc-text-white">
           {props.count}
         </div>
           )

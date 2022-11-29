@@ -4,9 +4,9 @@ import { createVimComponent, VimComponentRef } from './component'
 
 // Parse URL
 const params = new URLSearchParams(window.location.search)
-const url = params.has('vim') ? params.get('vim') : 'spanish.vim' // : 'https://vim.azureedge.net/samples/residence.vim'
-// ;('/src/assets/residence.vim')
-// : '/src/assets/skanska.nozip.vim'
+const url = params.has('vim')
+  ? params.get('vim')
+  : 'https://vim.azureedge.net/samples/residence.vim'
 
 createVimComponent(loadVim, undefined, {
   capacity: { useOrthographicCamera: false }

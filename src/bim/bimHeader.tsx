@@ -140,6 +140,7 @@ async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
         'vc-w-full'
       ]
     ],
+    [['Created by', main.user, 'vc-w-3/12', 'vc-w-9/12', 'vc-w-full']],
     undefined
   ]
 }
