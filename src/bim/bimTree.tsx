@@ -54,7 +54,7 @@ export function BimTree (props: {
 
   useEffect(() => {
     const subVis = viewer.renderer.onVisibilityChanged.subscribe(() => {
-      treeRef.current.updateVisibility(viewer)
+      treeRef.current?.updateVisibility(viewer)
       setVersion((v) => v + 1)
     })
 
