@@ -18,6 +18,14 @@ function _AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
     )
     const axes = document.getElementsByClassName('gizmo-axis-canvas')[0]
     ui.current.appendChild(axes)
+    axes.classList.add(
+      'vc-block',
+      '!vc-static',
+      'vc-order-1',
+      'vc-mx-auto',
+      'vc-mb-0',
+      'vc-mt-auto'
+    )
 
     // Clean up
     return () => {
@@ -34,7 +42,7 @@ function _AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
       data-tip="Reset Camera"
       onClick={onHomeBtn}
       className={
-        'rounded-full text-gray-medium h-8 w-8 flex items-center justify-center transition-all hover:text-primary-royal'
+        'vim-home-btn vc-flex vc-h-8 vc-w-8 vc-items-center vc-justify-center vc-rounded-full vc-text-gray-medium vc-transition-all hover:vc-text-primary-royal'
       }
       type="button"
     >
@@ -46,7 +54,7 @@ function _AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
       data-tip={ortho ? 'Orthographic' : 'Perspective'}
       onClick={() => (props.viewer.base.camera.orthographic = !ortho)}
       className={
-        'rounded-full text-gray-medium h-8 w-8 flex items-center justify-center transition-all hover:text-primary-royal'
+        'vim-camera-btn vc-flex vc-h-8 vc-w-8 vc-items-center vc-justify-center vc-rounded-full vc-text-gray-medium vc-transition-all hover:vc-text-primary-royal'
       }
       type="button"
     >
@@ -60,16 +68,19 @@ function _AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
     </button>
   )
 
+  const createButton = (button: JSX.Element, condition: boolean = true) => {
+    if (!condition) return null
+    return <div className="vc-mx-1 ">{button}</div>
+  }
+
   return (
     <div
       ref={ui}
-      className="vim-top border z-20 border-white flex flex-col fixed right-6 top-6 w-[100px] h-[145px] rounded-2xl shadow-lg transition-all"
+      className="vim-axes-panel vc-fixed vc-right-6 vc-top-6 vc-z-20 vc-flex vc-h-[145px] vc-w-[100px] vc-flex-col vc-rounded-2xl vc-border vc-border-white vc-opacity-50 vc-shadow-lg vc-saturate-0 vc-transition-all hover:vc-opacity-100 hover:vc-saturate-100"
     >
-      <div className="vim-top-buttons order-2 flex p-1 rounded-b-xl pointer-events-auto justify-center bg-white mb-0 mt-auto">
-        <div className="mx-1">
-          {props.settings.capacity.useOrthographicCamera ? btnOrtho : null}
-        </div>
-        <div className="mx-1">{btnHome}</div>
+      <div className="vim-top-buttons vc-pointer-events-auto vc-order-2 vc-mb-0 vc-mt-auto vc-flex vc-justify-center vc-rounded-b-xl vc-bg-white vc-p-1">
+        {createButton(btnOrtho, props.settings.capacity.useOrthographicCamera)}
+        {createButton(btnHome)}
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 {
   "name": "vim-webgl-component",
-  "version": "0.2.3",
+  "version": "0.2.9",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "files": [
     "dist"
@@ -47,7 +47,8 @@
     "http-server": "^14.1.0",
     "opener": "^1.5.2",
     "postcss": "^8.4.14",
-    "prettier": "2.7.1",
+    "prettier": "^2.7.1",
+    "prettier-plugin-tailwindcss": "^0.1.13",
     "react-dom": "^18.1.0",
     "tailwindcss": "^3.1.6",
     "typescript": "^4.8.3",
@@ -58,12 +59,14 @@
     "deepmerge": "^4.2.2",
     "jsx": "^0.9.89",
     "lodash-es": "^4.17.21",
+    "re-resizable": "^6.9.9",
     "react": "^18.1.0",
     "react-complex-tree": "^1.1.9",
     "react-tooltip": "^4.2.21",
+    "stats-js": "^1.0.1",
     "ste-signals": "^3.0.6",
     "ste-simple-events": "^3.0.6",
-    "vim-webgl-viewer": "1.4.4"
+    "vim-webgl-viewer": "1.4.10"
   },
   "keywords": [
     "3d",

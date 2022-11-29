@@ -44,9 +44,11 @@ export function Overlay (props: { viewer: VIM.Viewer; side: SideState }) {
     <div
       ref={overlay}
       onContextMenu={(e) => e.preventDefault()}
-      className={`vim-overlay absolute top-0 h-full w-full z-10 ${
-        props.side.get() !== 'none' ? 'bim-panel-open' : ''
-      }`}
+      className={'vim-overlay vc-absolute vc-top-0 vc-left-0 vc-z-10 vc-h-full'}
+      style={{
+        marginLeft: `${props.side.getWidth()}px`,
+        width: `calc(100% - ${props.side.getWidth()}px)`
+      }}
     ></div>
   )
 }

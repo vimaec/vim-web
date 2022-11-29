@@ -6,11 +6,11 @@ import { createVimComponent, VimComponentRef } from './component'
 const params = new URLSearchParams(window.location.search)
 const url = params.has('vim')
   ? params.get('vim')
-  : // : 'https://vim.azureedge.net/samples/residence.vim'
-  '/src/assets/residence.vim'
-// : '/src/assets/skanska.nozip.vim'
+  : 'https://vim.azureedge.net/samples/residence.vim'
 
-createVimComponent(loadVim)
+createVimComponent(loadVim, undefined, {
+  capacity: { useOrthographicCamera: false }
+})
 
 function loadVim (cmp: VimComponentRef) {
   globalThis.viewer = cmp.viewer

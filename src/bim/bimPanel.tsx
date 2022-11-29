@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 
 import { BimTree } from './bimTree'
@@ -22,7 +22,6 @@ export function BimPanel (props: {
   const [vim, setVim] = useState<VIM.Vim>()
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
   const [filteredElements, setFilteredElements] = useState<VIM.ElementInfo[]>()
-  const searching = useRef<boolean>(false)
 
   if (props.vim !== vim) {
     setVim(props.vim)
@@ -52,6 +51,7 @@ export function BimPanel (props: {
 
   // on filter or elements update, update filteredElements
   useEffect(() => {
+    console.log('effect filter ' + filter)
     if (vim && elements) {
       const meshElements = elements.filter(
         (e) => vim.getObjectFromElement(e.element).hasMesh
@@ -59,13 +59,11 @@ export function BimPanel (props: {
       const result = filterElements(vim, meshElements, filter)
       setFilteredElements(result)
 
-      if (searching.current) {
-        if (filter !== '') {
-          const objects = result.map((e) => vim.getObjectFromElement(e.element))
-          props.isolation.isolate(objects, 'search')
-        } else {
-          props.isolation.isolate(undefined, 'search')
-        }
+      if (filter !== '') {
+        const objects = result.map((e) => vim.getObjectFromElement(e.element))
+        props.isolation.isolate(objects, 'search')
+      } else {
+        props.isolation.isolate(undefined, 'search')
       }
     }
   }, [filter, elements])
@@ -77,15 +75,16 @@ export function BimPanel (props: {
   const last = props.selection[props.selection.length - 1]
 
   return (
-    <div className={`vim-bim-panel ${props.visible ? '' : 'hidden'}`}>
-      <div className="vim-bim-upper h-1/2">
-        <h2 className="text-xs font-bold uppercase mb-6">Project Inspector</h2>
+    <div className={`vim-bim-panel ${props.visible ? '' : 'vc-hidden'}`}>
+      <div className="vim-bim-upper vc-h-1/2">
+        <h2 className="vim-bim-upper-title vc-mb-6 vc-text-xs vc-font-bold vc-uppercase">
+          Project Inspector
+        </h2>
         <BimSearch
           viewer={viewer}
           filter={filter}
           setFilter={updateFilter}
           count={filteredElements?.length}
-          setSearching={(value: boolean) => (searching.current = value)}
         />
         <BimTree
           viewer={viewer}
@@ -94,9 +93,12 @@ export function BimPanel (props: {
           isolation={props.isolation}
         />
       </div>
-      <hr className="border-gray-divider mb-5 -mx-6" />
-      <h2 className="text-xs font-bold uppercase mb-4">Bim Inspector</h2>
-      <div className="vim-bim-lower h-1/2 overflow-y-auto">
+      <hr className="-vc-mx-6 vc-mb-5 vc-border-gray-divider" />
+
+      <h2 className="vc-mb-4 vc-text-xs vc-font-bold vc-uppercase">
+        Bim Inspector
+      </h2>
+      <div className="vim-bim-lower vc-h-1/2 vc-overflow-y-auto vc-overflow-x-hidden">
         <BimObjectHeader
           elements={filteredElements}
           object={last}

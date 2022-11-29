@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import ReactTooltip from 'react-tooltip'
 import logo from './assets/logo.png'
+import Stats from 'stats-js'
 import './style.css'
 import 'vim-webgl-viewer/dist/style.css'
 
@@ -26,7 +27,7 @@ import { Overlay } from './overlay'
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
 import { Settings, useSettings } from './settings/settings'
-import { Isolation, useIsolation } from './helpers/isolation'
+import { Isolation } from './helpers/isolation'
 import { ViewerWrapper } from './helpers/viewer'
 
 export * as VIM from 'vim-webgl-viewer/'
@@ -40,13 +41,20 @@ export type VimComponentRef = {
   customizeContextMenu: (c: contextMenuCustomization) => void
 }
 
+export type VimComponentContainer = {
+  root: HTMLDivElement
+  ui: HTMLDivElement
+  gfx: HTMLDivElement
+}
+
 // Creates a ui container along with a VIM.Viewer and the associated react component
 export function createVimComponent (
   onMount: (component: VimComponentRef) => void,
+  container?: VimComponentContainer,
   settings: Partial<Settings> = {}
 ) {
   const viewer = new VIM.Viewer()
-  const container = createContainer(viewer)
+  container = container ?? createContainer(viewer)
   const reactRoot = createRoot(container.ui)
   const component = React.createFactory(VimComponent)
   reactRoot.render(component({ viewer, onMount, settings }))
@@ -54,16 +62,16 @@ export function createVimComponent (
 }
 
 // Creates a ui container for the react component
-export function createContainer (viewer: VIM.Viewer) {
+export function createContainer (viewer: VIM.Viewer): VimComponentContainer {
   const root = document.createElement('div')
-  root.className = 'vim-component'
-  root.style.height = '100%'
+  root.className =
+    'vim-component vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full'
   document.body.append(root)
 
   // container for canvases
   const gfx = document.createElement('div')
-  gfx.className = 'vim-gfx'
-  gfx.style.height = '100%'
+  gfx.className = 'vim-gfx vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full'
+
   root.append(gfx)
 
   gfx.append(viewer.viewport.canvas)
@@ -72,8 +80,8 @@ export function createContainer (viewer: VIM.Viewer) {
 
   // container for ui
   const ui = document.createElement('div')
-  ui.className = 'vim-ui'
-  ui.style.height = '100%'
+  ui.className = 'vim-ui vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full'
+
   root.append(ui)
 
   // Initial viewer settings
@@ -93,8 +101,10 @@ export function VimComponent (props: {
   const cursor = useRef(new CursorManager(props.viewer)).current
   const settings = useSettings(props.viewer, props.settings)
 
-  const isolation = useIsolation(viewer, settings.value)
-  const side = useSideState(settings.value.ui.bimPanel)
+  const [isolation] = useState(() => new Isolation(viewer, settings.value))
+  useEffect(() => isolation.updateSettings(settings.value), [settings])
+
+  const side = useSideState(settings.value.ui.bimPanel, 480)
   const [contextMenu, setcontextMenu] = useState<contextMenuCustomization>()
   const help = useHelp()
   const [vim, selection] = useViewerState(props.viewer)
@@ -102,6 +112,7 @@ export function VimComponent (props: {
 
   // On first render
   useEffect(() => {
+    addPerformanceCounter()
     props.onMount({
       viewer: props.viewer,
       helpers: viewer,
@@ -141,23 +152,22 @@ export function VimComponent (props: {
           viewer={viewer}
           vim={vim}
           selection={selection}
-          visible={side.get() === 'bim'}
+          visible={side.getContent() === 'bim'}
           isolation={isolation}
         />
           )
         : null}
       <MenuSettings
-        visible={side.get() === 'settings'}
+        visible={side.getContent() === 'settings'}
         viewer={props.viewer}
         settings={settings}
       />
     </>
   )
-
   return (
     <>
       <Overlay viewer={viewer.base} side={side}></Overlay>
-      <MenuHelp help={help} settings={settings.value} />
+      <MenuHelp help={help} settings={settings.value} side={side} />
       {settings.value.ui.logo ? <Logo /> : null}
       {settings.value.ui.loadingBox
         ? (
@@ -182,7 +192,13 @@ export function VimComponent (props: {
           )
         : null}
       <SidePanel viewer={props.viewer} side={side} content={sidePanel} />
-      <ReactTooltip delayShow={200} />
+      <ReactTooltip
+        arrowColor="transparent"
+        type="light"
+        className="!vc-border !vc-border-solid !vc-border-gray-medium !vc-bg-white !vc-text-xs !vc-text-gray-darkest !vc-opacity-100 !vc-shadow-[2px_6px_15px_rgba(0,0,0,0.3)] !vc-transition-opacity"
+        delayShow={200}
+      />
+
       <VimContextMenu
         viewer={viewer}
         help={help}
@@ -190,15 +206,15 @@ export function VimComponent (props: {
         selection={selection}
         customization={contextMenu}
       />
-      <MenuToast viewer={props.viewer}></MenuToast>
+      <MenuToast viewer={props.viewer} side={side}></MenuToast>
     </>
   )
 }
 
 const Logo = React.memo(() => (
-  <div className="vim-logo">
+  <div className={'vim-logo vc-fixed vc-top-4 vc-left-4'}>
     <a href="https://vimaec.com">
-      <img src={logo}></img>
+      <img className="vim-logo-img vc-h-12 vc-w-32" src={logo}></img>
     </a>
   </div>
 ))
@@ -227,4 +243,19 @@ function useViewerState (viewer: VIM.Viewer) {
   }, [])
 
   return [vim, selection] as [VIM.Vim, VIM.Object[]]
+}
+
+function addPerformanceCounter () {
+  const ui = document.getElementsByClassName('vim-ui')[0]
+  const stats = new Stats()
+  const div = stats.dom as HTMLDivElement
+  div.className =
+    'vim-performance !vc-absolute !vc-right-6 !vc-left-auto !vc-top-52 !vc-z-1'
+  ui.appendChild(stats.dom)
+
+  function animate () {
+    requestAnimationFrame(() => animate())
+    stats.update()
+  }
+  animate()
 }

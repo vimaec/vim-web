@@ -3,18 +3,25 @@ import { useMemo, useRef, useState } from 'react'
 export type SideContent = 'none' | 'bim' | 'settings'
 
 export type SideState = {
-  toggle: (content: SideContent) => void
-  pop: () => void
+  toggleContent: (content: SideContent) => void
+  popContent: () => void
   getNav: () => 'back' | 'close'
-  get: () => SideContent
-  set: (value: SideContent) => void
+  getContent: () => SideContent
+  setContent: (value: SideContent) => void
+  getWidth: () => number
+  setWidth: (value: number) => void
 }
 
-export function useSideState (useInspector: boolean): SideState {
+export function useSideState (
+  useInspector: boolean,
+  defaultWidth: number
+): SideState {
   const [side, setSide] = useState<SideContent[]>(['bim'])
+  const [width, _setWidth] = useState<number>(defaultWidth)
   const sideRef = useRef(side)
+  const widthRef = useRef(width)
 
-  const toggle = (content: SideContent) => {
+  const toggleContent = (content: SideContent) => {
     let r
     const [A, B] = sideRef.current
     if (!A && !B) r = [content]
@@ -25,7 +32,7 @@ export function useSideState (useInspector: boolean): SideState {
     sideRef.current = r
     setSide(r)
   }
-  const pop = () => {
+  const popContent = () => {
     sideRef.current.pop()
     setSide([...sideRef.current])
   }
@@ -33,25 +40,35 @@ export function useSideState (useInspector: boolean): SideState {
     return sideRef.current.length > 1 ? 'back' : 'close'
   }
 
-  const get = () => {
+  const getContent = () => {
     const result = sideRef.current[sideRef.current.length - 1] ?? 'none'
     if (result === 'bim' && !useInspector) return 'none'
     return result
   }
 
-  const set = (value: SideContent) => {
+  const setContent = (value: SideContent) => {
     sideRef.current = [value]
     setSide([value])
   }
 
+  const setWidth = (value: number) => {
+    widthRef.current = value
+    _setWidth(value)
+  }
+  const getWidth = () => {
+    return getContent() === 'none' ? 0 : widthRef.current
+  }
+
   return useMemo(
     () => ({
-      set,
-      get,
-      toggle,
-      pop,
-      getNav
+      setContent,
+      getContent,
+      toggleContent,
+      popContent,
+      getNav,
+      getWidth,
+      setWidth
     }),
-    [side]
+    [side, width]
   )
 }

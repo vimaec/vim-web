@@ -3,6 +3,7 @@ import helpImage from './assets/quick-controls.svg'
 import * as Icons from './icons'
 import { setComponentBehind } from './helpers/html'
 import { Settings } from './settings/settings'
+import { SideState } from './sidePanel/sideState'
 
 const urlSupport = 'https://support.vimaec.com'
 const urlControls =
@@ -10,6 +11,7 @@ const urlControls =
 
 export type HelpState = {
   visible: boolean
+
   setVisible: (value: boolean) => void
 }
 
@@ -25,7 +27,11 @@ export function useHelp (): HelpState {
 }
 
 export const MenuHelp = React.memo(_MenuHelp)
-function _MenuHelp (props: { help: HelpState; settings: Settings }) {
+function _MenuHelp (props: {
+  help: HelpState
+  settings: Settings
+  side: SideState
+}) {
   if (!props.help.visible) return null
 
   const onCloseBtn = () => {
@@ -35,23 +41,32 @@ function _MenuHelp (props: { help: HelpState; settings: Settings }) {
   return (
     <>
       <div
-        className="menu-help-overlay z-40 absolute inset-0 bg-black/80 w-full h-full flex items-center justify-center"
+        className="vim-help-overlay vc-absolute vc-inset-0 vc-z-40 vc-flex vc-h-full vc-w-full vc-items-center vc-justify-center vc-bg-black/80"
         onClick={onCloseBtn}
         onContextMenu={(event) => {
           event.preventDefault()
         }}
       >
         <div
-          className="flex flex-col py-5"
+          className="vim-help-blocker vc-flex vc-flex-col vc-py-5"
           onClick={(e) => {
             e.stopPropagation()
           }}
         >
-          <div className="flex justify-between mb-8">
-            <h2 className="text-white font-bold text-sm uppercase">
+          <div className="vim-help vc-mb-8 vc-flex vc-justify-between">
+            <h2
+              className="vim-help-title vc-text-sm vc-font-bold vc-uppercase vc-text-white"
+              style={{
+                marginLeft: props.side.getWidth(),
+                maxWidth: `calc(100% - ${props.side.getWidth()}px)`
+              }}
+            >
               Key navigation controls
             </h2>
-            <button className="text-white" onClick={onCloseBtn}>
+            <button
+              className="vim-help-close vc-text-white"
+              onClick={onCloseBtn}
+            >
               {Icons.close({
                 height: '20px',
                 width: '20px',
@@ -61,8 +76,12 @@ function _MenuHelp (props: { help: HelpState; settings: Settings }) {
           </div>
           <div className="">
             <img
-              className="menu-help-controls mb-8 mx-auto 2xl:w-[50vw]"
+              className="vim-help-img vc-2xl:w-[50vw] vc-mx-auto vc-mb-8"
               src={helpImage}
+              style={{
+                marginLeft: props.side.getWidth(),
+                maxWidth: `calc(100% - ${props.side.getWidth()}px)`
+              }}
             ></img>
           </div>
           {props.settings.capacity.canFollowUrl ? linkButtons() : null}
@@ -81,15 +100,15 @@ function linkButtons () {
   }
 
   return (
-    <div className="flex justify-end">
+    <div className="vc-flex vc-justify-end">
       <button
-        className="text-white text-xs font-bold uppercase border border-white hover:border-primary-royal hover:bg-primary-royal rounded-full py-2 px-8 mr-4"
+        className="vc-hover:border-primary-royal vc-hover:bg-primary-royal vc-mr-4 vc-rounded-full vc-border vc-border-white vc-py-2 vc-px-8 vc-text-xs vc-font-bold vc-uppercase vc-text-white"
         onClick={onControlsBtn}
       >
         Full Control List
       </button>
       <button
-        className="text-primary text-xs font-bold border border-white uppercase bg-white hover:border-primary-royal hover:text-white hover:bg-primary-royal rounded-full py-2 px-8"
+        className="vc-rounded-full vc-border vc-border-white vc-bg-white vc-py-2 vc-px-8 vc-text-xs vc-font-bold vc-uppercase vc-text-primary hover:vc-border-primary-royal hover:vc-bg-primary-royal hover:vc-text-white"
         onClick={onHelpBtn}
       >
         Help Center

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
+import { SideState } from './sidePanel/sideState'
 
 export type ToastConfigSpeed = {
   visible: boolean
@@ -7,7 +8,7 @@ export type ToastConfigSpeed = {
 }
 
 export const MenuToast = React.memo(_MenuToast)
-function _MenuToast (props: { viewer: VIM.Viewer }) {
+function _MenuToast (props: { viewer: VIM.Viewer; side: SideState }) {
   const [visible, setVisible] = useState<boolean>()
   const [speed, setSpeed] = useState<number>(-1)
   const speedRef = useRef<number>(speed)
@@ -34,14 +35,26 @@ function _MenuToast (props: { viewer: VIM.Viewer }) {
 
   return (
     <div
-      className={`vim-menu-toast rounded shadow-lg py-2 px-5 flex items-center justify-between transition-all ${
-        visible ? 'opacity-100' : 'opacity-0'
-      }`}
+      className={
+        'vim-menu-toast vc-pointer-events-none vc-absolute vc-top-[10%] vc-flex'
+      }
+      style={{
+        marginLeft: props.side.getWidth(),
+        width: `calc(100% - ${props.side.getWidth()}px)`
+      }}
     >
-      <span className="text-sm uppercase font-semibold text-gray-light">
-        Speed:
-      </span>
-      <span className="font-bold text-lg text-white ml-1">{speed + 25}</span>
+      <div
+        className={`vim-menu-toast vc-m-auto vc-flex vc-items-center vc-justify-between vc-rounded vc-bg-gray-warm vc-py-2 vc-px-5 vc-shadow-lg vc-transition-all ${
+          visible ? 'vc-opacity-100' : 'vc-opacity-0'
+        }`}
+      >
+        <span className="vc-text-sm vc-font-semibold vc-uppercase vc-text-gray-light">
+          Speed:
+        </span>
+        <span className="vc-ml-1 vc-text-lg vc-font-bold vc-text-white">
+          {speed + 25}
+        </span>
+      </div>
     </div>
   )
 }

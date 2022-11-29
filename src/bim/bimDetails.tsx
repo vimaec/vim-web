@@ -65,7 +65,7 @@ function createTables (
     return (
       <h2
         key={`title-${value}`}
-        className="text-xs font-bold uppercase text-gray-medium p-2 rounded-t border-t border-l border-r border-gray-light w-auto inline-flex"
+        className="vc-inline-flex vc-w-auto vc-rounded-t vc-border-t vc-border-l vc-border-r vc-border-gray-light vc-p-2 vc-text-xs vc-font-bold vc-uppercase vc-text-gray-medium"
       >
         {value}
       </h2>
@@ -90,14 +90,17 @@ function createTable (
     <div key={'parameters-' + key} className={'parameters'}>
       <ul className="">
         <li key={'title-' + key}>
-          <h3 className="text-xs font-bold uppercase bg-gray-light px-2 py-2 flex justify-between">
-            <span className="w-1/2">{key}</span>
-            <button className="text-gray-medium" onClick={() => setOpen(!open)}>
+          <h3 className="vc-flex vc-justify-between vc-bg-gray-light vc-px-2 vc-py-2 vc-text-xs vc-font-bold vc-uppercase">
+            <span className="">{key}</span>
+            <button
+              className="vc-text-gray-medium"
+              onClick={() => setOpen(!open)}
+            >
               {' '}
               {open
                 ? (
                 <Icons.collapse
-                  className="transition-all rotate-180"
+                  className="vc-rotate-180 vc-transition-all"
                   height="15"
                   width="15"
                   fill="currentColor"
@@ -105,7 +108,7 @@ function createTable (
                   )
                 : (
                 <Icons.collapse
-                  className="transition-all rotate-0"
+                  className="vc-rotate-0 vc-transition-all"
                   height="15"
                   width="15"
                   fill="currentColor"
@@ -119,21 +122,19 @@ function createTable (
             const id = key + p.name + i
             return (
                 <li
-                  className="even:bg-white odd:bg-gray-zebra flex"
+                  className="vc-even:bg-white vc-odd:bg-gray-zebra vc-flex"
                   key={'parameters-tr-' + id}
                 >
                   <span
                     data-tip={p.value}
-                    className="w-1/2 border-r border-gray-light p-2 truncate select-none"
-                    title={p.name}
+                    className="bim-details-title vc-w-1/2 vc-select-none vc-truncate vc-border-r vc-border-gray-light vc-p-2"
                     key={'parameters-th-' + id}
                   >
                     {p.name}
                   </span>
                   <span
                     data-tip={p.value}
-                    className="w-1/2 text-gray-medium p-2 truncate"
-                    title={p.value}
+                    className="bim-details-value vc-w-1/2 vc-truncate vc-p-2 vc-text-gray-medium"
                     key={'parameters-td-' + id}
                   >
                     {p.value}
@@ -154,9 +155,12 @@ async function getVimDocumentDetails (vim: VIM.Vim): Promise<BimDetailsInfo> {
     documents.map((d) => [
       d.title,
       [
-        { name: 'Product', value: formatProduct(d.version), group: d.title },
-        { name: 'Author(s)', value: d.author, group: d.title },
-        { name: 'Last Modified', value: formatDate(d.date), group: d.title }
+        { name: 'Product', value: formatProduct(d.product), group: d.title },
+        {
+          name: 'Version',
+          value: formatVersion(d.version, d.product),
+          group: d.title
+        }
       ]
     ])
   )
@@ -164,7 +168,11 @@ async function getVimDocumentDetails (vim: VIM.Vim): Promise<BimDetailsInfo> {
 }
 
 function formatProduct (value: string) {
-  return value?.replace('Autodesk', '')
+  return value?.replace('Autodesk', '').trim()
+}
+
+function formatVersion (value: string, product: string) {
+  return value?.replace('Autodesk', '').replace(product, '').trim()
 }
 
 function formatDate (value: string) {
