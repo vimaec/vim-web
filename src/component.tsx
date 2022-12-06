@@ -33,21 +33,62 @@ import { ViewerWrapper } from './helpers/viewer'
 export * as VIM from 'vim-webgl-viewer/'
 export * from './contextMenu'
 
+/**
+ * Root level api of the vim component
+ */
 export type VimComponentRef = {
+  /**
+   * Vim webgl viewer around which the webgl component is built.
+   */
   viewer: VIM.Viewer
+
+  /**
+   * Higher level helper methods that used the component.
+   */
   helpers: ViewerWrapper
+
+  /**
+   * Isolation api managing isolation state in the component.
+   */
   isolation: Isolation
+
+  /**
+   * Sets a message to be displayed in the loading box. Set undefined to hide.
+   */
   setMsg: (s: string) => void
+
+  /**
+   * Callback to change the context menu at runtime.
+   */
   customizeContextMenu: (c: contextMenuCustomization) => void
 }
 
+/**
+ * Basic HTML structure that the webgl component expects
+ */
 export type VimComponentContainer = {
+  /**
+   * Root of the viewer, all component ui should have this as an acestor.
+   */
   root: HTMLDivElement
+  /**
+   * Div where to instantiate ui elements.
+   */
   ui: HTMLDivElement
+
+  /**
+   * Div to hold viewer canvases and ui
+   */
   gfx: HTMLDivElement
 }
 
-// Creates a ui container along with a VIM.Viewer and the associated react component
+/**
+ * Creates a ui container along with a VIM.Viewer and the associated react component
+ * @param onMount callback when the component is ready, the returned ref is the main way to interact with the component.
+ * @param container optional container object, a container will be created if none is given.
+ * @param settings component settings.
+ * @returns resulting container, reactRoot and viewer.
+ */
 export function createVimComponent (
   onMount: (component: VimComponentRef) => void,
   container?: VimComponentContainer,
@@ -61,7 +102,9 @@ export function createVimComponent (
   return { container, reactRoot, viewer }
 }
 
-// Creates a ui container for the react component
+/**
+ * Creates a default container for the vim component around a vim viewer
+ */
 export function createContainer (viewer: VIM.Viewer): VimComponentContainer {
   const root = document.createElement('div')
   root.className =
@@ -91,7 +134,12 @@ export function createContainer (viewer: VIM.Viewer): VimComponentContainer {
   return { root, ui, gfx }
 }
 
-// React component that provides ui for the Vim Viewer.
+/**
+ * Vim Component JSX Element proving UI for the vim viewer.
+ * @param viewer Vim viewer for which to provide ui.
+ * @param onMount
+ * @param settings
+ */
 export function VimComponent (props: {
   viewer: VIM.Viewer
   onMount: (component: VimComponentRef) => void
@@ -102,7 +150,7 @@ export function VimComponent (props: {
   const settings = useSettings(props.viewer, props.settings)
 
   const [isolation] = useState(() => new Isolation(viewer, settings.value))
-  useEffect(() => isolation.updateSettings(settings.value), [settings])
+  useEffect(() => isolation.applySettings(settings.value), [settings])
 
   const side = useSideState(settings.value.ui.bimPanel, 480)
   const [contextMenu, setcontextMenu] = useState<contextMenuCustomization>()
@@ -245,6 +293,9 @@ function useViewerState (viewer: VIM.Viewer) {
   return [vim, selection] as [VIM.Vim, VIM.Object[]]
 }
 
+/**
+ * Adds popular performance gizmo from package stat-js
+ */
 function addPerformanceCounter () {
   const ui = document.getElementsByClassName('vim-ui')[0]
   const stats = new Stats()

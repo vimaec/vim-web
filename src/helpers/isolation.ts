@@ -16,10 +16,13 @@ export class Isolation {
   constructor (componentViewer: ViewerWrapper, settings: Settings) {
     this.viewer = componentViewer.base
     this.helper = componentViewer
-    this.updateSettings(settings)
+    this.applySettings(settings)
   }
 
-  updateSettings (settings: Settings) {
+  /**
+   * Applies relevent settings to isolation.
+   */
+  applySettings (settings: Settings) {
     this.settings = settings
     const set = new Set(this.isolation?.map((o) => o.vim))
     this.viewer.vims.forEach((v) => {
@@ -30,46 +33,23 @@ export class Isolation {
     })
   }
 
+  /**
+   * Returns true if there are currently objects isolated.
+   */
   any () {
     return this.isolation !== undefined
   }
 
-  showAll () {
-    this.viewer.vims.forEach((v) => {
-      for (const obj of v.getAllObjects()) {
-        obj.visible = true
-      }
-      v.scene.material = undefined
-    })
-  }
-
-  _isolate (viewer: VIM.Viewer, settings: Settings, objects: VIM.Object[]) {
-    let allVisible = true
-    if (!objects) {
-      this.showAll()
-    } else {
-      const set = new Set(objects)
-      viewer.vims.forEach((vim) => {
-        for (const obj of vim.getAllObjects()) {
-          const has = set.has(obj)
-          obj.visible = has
-          if (obj.hasMesh && !has) allVisible = false
-        }
-
-        vim.scene.material =
-          !allVisible && settings.viewer.isolationMaterial
-            ? viewer.renderer.materials.isolation
-            : undefined
-      })
-    }
-
-    return !allVisible
-  }
-
+  /**
+   * Returns current isolation object array.
+   */
   current () {
     return this.isolation
   }
 
+  /**
+   * Isolates the objects in the given array and shows the rest.
+   */
   isolate (objects: VIM.Object[], source: string) {
     if (this.isolation) {
       this.lastIsolation = this.isolation
@@ -81,6 +61,9 @@ export class Isolation {
     this.onChanged.dispatch(source)
   }
 
+  /**
+   * Toggles current isolation based on selection.
+   */
   toggleIsolation (source: string) {
     const selection = [...this.viewer.selection.objects]
 
@@ -90,7 +73,7 @@ export class Isolation {
     if (this.isolation) {
       if (selection.length === 0 || ArrayEquals(this.isolation, selection)) {
         // Cancel isolation
-        this.showAll()
+        this._showAll()
         this.isolation = undefined
       } else {
         // Replace Isolation
@@ -119,6 +102,9 @@ export class Isolation {
     this.onChanged.dispatch(source)
   }
 
+  /**
+   * Remove given objects from the isolation set
+   */
   hide (objects: VIM.Object[], source: string) {
     const selection = new Set(objects)
     const initial = this.isolation ?? this.viewer.vims[0].getAllObjects()
@@ -132,6 +118,9 @@ export class Isolation {
     objects.forEach((o) => this.viewer.selection.remove(o))
   }
 
+  /**
+   * Add given objects to the isolation set
+   */
   show (objects: VIM.Object[], source: string) {
     const isolation = this.isolation ?? []
     objects.forEach((o) => isolation.push(o))
@@ -141,10 +130,52 @@ export class Isolation {
     this.onChanged.dispatch(source)
   }
 
+  /**
+   * Clears current isolation.
+   */
   clear (source: string) {
-    this.showAll()
+    this._showAll()
     this.lastIsolation = this.isolation
     this.isolation = undefined
     this.onChanged.dispatch(source)
+  }
+
+  /**
+   * Show all objects and quit isolation mode.
+   */
+  private _showAll () {
+    this.viewer.vims.forEach((v) => {
+      for (const obj of v.getAllObjects()) {
+        obj.visible = true
+      }
+      v.scene.material = undefined
+    })
+  }
+
+  private _isolate (
+    viewer: VIM.Viewer,
+    settings: Settings,
+    objects: VIM.Object[]
+  ) {
+    let allVisible = true
+    if (!objects) {
+      this._showAll()
+    } else {
+      const set = new Set(objects)
+      viewer.vims.forEach((vim) => {
+        for (const obj of vim.getAllObjects()) {
+          const has = set.has(obj)
+          obj.visible = has
+          if (obj.hasMesh && !has) allVisible = false
+        }
+
+        vim.scene.material =
+          !allVisible && settings.viewer.isolationMaterial
+            ? viewer.renderer.materials.isolation
+            : undefined
+      })
+    }
+
+    return !allVisible
   }
 }
