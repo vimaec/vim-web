@@ -12,7 +12,7 @@ type BimHeaderEntry = {
 }
 type BimHeader = BimHeaderEntry[][]
 
-export function BimObjectHeader (props: {
+export function BimObjectHeader(props: {
   elements: VIM.ElementInfo[]
   object: VIM.Object
   visible: boolean
@@ -41,7 +41,7 @@ export function BimObjectHeader (props: {
   return createHeader(getElementBimHeader(element))
 }
 
-export function BimDocumentHeader (props: { vim: VIM.Vim; visible: boolean }) {
+export function BimDocumentHeader(props: { vim: VIM.Vim; visible: boolean }) {
   const [vim, setVim] = useState<VIM.Vim>()
   const [header, setHeader] = useState<BimHeader>()
 
@@ -59,7 +59,7 @@ export function BimDocumentHeader (props: { vim: VIM.Vim; visible: boolean }) {
   return createHeader(header)
 }
 
-function createHeader (header: BimHeader) {
+function createHeader(header: BimHeader) {
   const rows = header.map((row, rowIndex) => {
     if (!row) return null
     return row.map((entry, columnIndex) => {
@@ -76,11 +76,11 @@ function createHeader (header: BimHeader) {
             {entry.label}
           </dt>
           <dd
-            data-tip={entry.label}
+            data-tip={entry.value}
             className={`bim-header-value vc-shrink-1 vc-truncate vc-py-1 ${entry.ddStyle}`}
             key={`dd-${entry.key}`}
           >
-            {entry.label}
+            {entry.value}
           </dd>
         </dl>
       )
@@ -92,7 +92,7 @@ function createHeader (header: BimHeader) {
   )
 }
 
-function getElementBimHeader (info: VIM.ElementInfo): BimHeader {
+function getElementBimHeader(info: VIM.ElementInfo): BimHeader {
   return [
     [
       {
@@ -157,7 +157,7 @@ function getElementBimHeader (info: VIM.ElementInfo): BimHeader {
   ]
 }
 
-async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
+async function getVimBimHeader(vim: VIM.Vim): Promise<BimHeader> {
   const documents = await vim.document.getBimDocumentSummary()
   const main = documents.find((d) => !d.isLinked) ?? documents[0]
 
@@ -215,11 +215,11 @@ async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
   ]
 }
 
-function formatSource (source: string) {
+function formatSource(source: string) {
   const parts = source?.split('/')
   return parts[parts.length - 1]
 }
 
-function formatDate (source: string) {
+function formatDate(source: string) {
   return source?.replace(/(..:..):../, '$1')
 }
