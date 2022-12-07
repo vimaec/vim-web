@@ -44,7 +44,9 @@ const actionButton = (
   )
 }
 
-// Main Control bar
+/**
+ * JSX Component for the control bar.
+ */
 export function ControlBar (props: {
   viewer: ViewerWrapper
   help: HelpState
@@ -65,7 +67,7 @@ export function ControlBar (props: {
   // On First Render
   useEffect(() => {
     // Hide bar for a couple ms
-    const subCam = props.viewer.base.camera.onMoved.subscribe(() => {
+    const subCam = props.viewer.viewer.camera.onMoved.subscribe(() => {
       if (showRef.current) {
         showRef.current = false
         setShow(false)
@@ -106,7 +108,7 @@ export function ControlBar (props: {
 }
 
 function TabCamera (props: { viewer: ViewerWrapper }) {
-  const viewer = props.viewer.base
+  const viewer = props.viewer.viewer
   const helper = props.viewer
   const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerActive)
 
@@ -188,7 +190,7 @@ function TabTools (props: {
   cursor: CursorManager
   isolation: Isolation
 }) {
-  const viewer = props.viewer.base
+  const viewer = props.viewer.viewer
   // Need a ref to get the up to date value in callback.
   const [measuring, setMeasuring] = useState(false)
   // eslint-disable-next-line no-unused-vars

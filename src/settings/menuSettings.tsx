@@ -3,10 +3,17 @@ import * as VIM from 'vim-webgl-viewer/'
 import { Settings, SettingsState } from './settings'
 import { cloneDeep } from 'lodash-es'
 
+/**
+ * JSX Component to interact with settings.
+ * @param viewer current viewer
+ * @param settings setting state
+ * @param visible will return null if this is false.
+ * @returns
+ */
 export function MenuSettings (props: {
-  visible: boolean
   viewer: VIM.Viewer
   settings: SettingsState
+  visible: boolean
 }) {
   if (!props.visible) return null
   const toggleElement = (label: string, state: boolean, action: () => void) => {

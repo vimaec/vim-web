@@ -3,9 +3,12 @@ import * as Icons from './icons'
 import { ViewerWrapper } from './helpers/viewer'
 import { Settings } from './settings/settings'
 
+/**
+ * JSX Component for axes gizmo.
+ */
 export const AxesPanel = React.memo(_AxesPanel)
 function _AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
-  const viewer = props.viewer.base
+  const viewer = props.viewer.viewer
   const helper = props.viewer
 
   const [ortho, setOrtho] = useState<boolean>(viewer.camera.orthographic)
@@ -52,7 +55,7 @@ function _AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
   const btnOrtho = (
     <button
       data-tip={ortho ? 'Orthographic' : 'Perspective'}
-      onClick={() => (props.viewer.base.camera.orthographic = !ortho)}
+      onClick={() => (props.viewer.viewer.camera.orthographic = !ortho)}
       className={
         'vim-camera-btn vc-flex vc-h-8 vc-w-8 vc-items-center vc-justify-center vc-rounded-full vc-text-gray-medium vc-transition-all hover:vc-text-primary-royal'
       }

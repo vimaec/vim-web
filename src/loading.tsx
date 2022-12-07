@@ -4,6 +4,9 @@ import { setComponentBehind } from './helpers/html'
 
 type Progress = 'processing' | number | string
 
+/**
+ * Loading box JSX Component tha can also be used to show messages.
+ */
 export const LoadingBox = React.memo(_LoadingBox)
 function _LoadingBox (props: { viewer: VIM.Viewer; msg: string }) {
   const [progress, setProgress] = useState<Progress>()

@@ -28,7 +28,8 @@
     "release-patch": "npm version patch && git push && npm publish",
     "release-dev": "npm run build && npm run bump-dev && git push && npm run publish-dev",
     "declarations": "tsc --declaration --emitDeclarationOnly --outdir ./dist/types",
-    "eslint": "eslint --ext .js,.ts src --fix"
+    "eslint": "eslint --ext .js,.ts src --fix",
+    "documentation": "typedoc --entryPointStrategy expand --out docs/api --excludePrivate ./src/ && git add ./docs/"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",
@@ -58,7 +59,6 @@
     "@firefox-devtools/react-contextmenu": "^5.0.0",
     "deepmerge": "^4.2.2",
     "jsx": "^0.9.89",
-    "lodash-es": "^4.17.21",
     "re-resizable": "^6.9.9",
     "react": "^18.2.0",
     "react-complex-tree": "^2.0.0",
@@ -66,6 +66,7 @@
     "stats-js": "^1.0.1",
     "ste-signals": "^3.0.7",
     "ste-simple-events": "^3.0.7",
+    "typedoc": "^0.23.21",
     "vim-webgl-viewer": "1.4.12-dev.14"
   },
   "keywords": [

@@ -1,5 +1,8 @@
 export type MapTree<K, V> = Map<K, V[] | MapTree<K, V>>
 
+/**
+ * Returns true if both argument are null or pair-wise equal.
+ */
 export function ArrayEquals<T> (first: T[], second: T[]) {
   if (!first && !second) return true
   if (!first) return false

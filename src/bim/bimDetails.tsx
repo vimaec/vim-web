@@ -4,13 +4,25 @@ import * as VIM from 'vim-webgl-viewer/'
 import { groupBy } from '../helpers/data'
 import * as Icons from '../icons'
 
-export type TableEntry = {
+/**
+ * Represents one entry of the detail tables.
+ */
+type TableEntry = {
   name: string | undefined
   value: string | undefined
   group: string | undefined
 }
+
+/**
+ * Grouping of entries into section.
+ */
 type BimDetailsInfo = { section: string; content: Map<string, TableEntry[]> }[]
 
+/**
+ * Returns a UI representation of an object details.
+ * @param object Vim object from which to pull the data.
+ * @param visible Will return a null element if false.
+ */
 export function BimObjectDetails (props: {
   object: VIM.Object
   visible: boolean
@@ -18,11 +30,16 @@ export function BimObjectDetails (props: {
   return BimDetails(props.object, getObjectParameterDetails, props.visible)
 }
 
+/**
+ * Returns a high level - UI representation of the a whole vim document.
+ * @param vim Vim from which to pull the data.
+ * @param visible Will return a null element if false.
+ */
 export function BimDocumentDetails (props: { vim: VIM.Vim; visible: boolean }) {
   return BimDetails(props.vim, getVimDocumentDetails, props.visible)
 }
 
-export function BimDetails<T> (
+function BimDetails<T> (
   input: T,
   toData: (v: T) => Promise<BimDetailsInfo>,
   visible: boolean

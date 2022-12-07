@@ -1,7 +1,6 @@
 import React from 'react'
 
 // Common
-
 export const settings = ({ height, width, fill }) => (
   <svg height={height} width={width} viewBox="0 0 256 256">
     <path

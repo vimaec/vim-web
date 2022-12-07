@@ -7,6 +7,9 @@ import { Resizable } from 're-resizable'
 const MAX_WIDTH = 0.5
 const MIN_WIDTH = 240
 
+/**
+ * JSX Component for collapsible and resizable side panel.
+ */
 export const SidePanel = React.memo(_SidePanel)
 export function _SidePanel (props: {
   side: SideState

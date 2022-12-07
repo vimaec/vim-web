@@ -1,5 +1,8 @@
 import * as VIM from 'vim-webgl-viewer/'
 
+/**
+ * Css classes for custom cursors.
+ */
 export type Cursor =
   | 'cursor-regular'
   | 'cursor-orbit'
@@ -10,6 +13,9 @@ export type Cursor =
   | 'cursor-measure'
   | 'cursor-section-box'
 
+/**
+ * Maps between viewer pointers and cursor css classes
+ */
 export function pointerToCursor (pointer: VIM.PointerMode): Cursor {
   switch (pointer) {
     case 'orbit':
@@ -27,6 +33,9 @@ export function pointerToCursor (pointer: VIM.PointerMode): Cursor {
   }
 }
 
+/**
+ * Listens to the vim viewer and updates css cursors classes on the canvas accordingly.
+ */
 export class CursorManager {
   private _viewer: VIM.Viewer
   private cursor: Cursor
@@ -36,34 +45,43 @@ export class CursorManager {
     this._viewer = viewer
   }
 
+  /**
+   * Register to viewer events
+   */
   register () {
     // Update and Register cursor for pointers
     this.setCursor(pointerToCursor(this._viewer.inputs.pointerActive))
 
     const sub1 = this._viewer.inputs.onPointerModeChanged.subscribe(() =>
-      this.updateCursor()
+      this._updateCursor()
     )
     const sub2 = this._viewer.inputs.onPointerOverrideChanged.subscribe(() =>
-      this.updateCursor()
+      this._updateCursor()
     )
     const sub3 = this._viewer.sectionBox.onStateChanged.subscribe(() => {
       if (!this._viewer.sectionBox.visible) {
         this._boxHover = false
-        this.updateCursor()
+        this._updateCursor()
       }
     })
     const sub4 = this._viewer.sectionBox.onHover.subscribe((hover) => {
       this._boxHover = hover
-      this.updateCursor()
+      this._updateCursor()
     })
     this._subscriptions = [sub1, sub2, sub3, sub4]
   }
 
+  /**
+   * Unregister from viewer events
+   */
   unregister () {
     this._subscriptions?.forEach((s) => s())
     this._subscriptions = null
   }
 
+  /**
+   * Set a specific cursor.
+   */
   setCursor = (value: Cursor) => {
     if (value === this.cursor) return
     if (!this.cursor) {
@@ -74,7 +92,7 @@ export class CursorManager {
     this.cursor = value
   }
 
-  updateCursor = () => {
+  private _updateCursor = () => {
     const cursor = this._viewer.inputs.pointerOverride
       ? pointerToCursor(this._viewer.inputs.pointerOverride)
       : this._boxHover

@@ -14,7 +14,9 @@ export type HelpState = {
 
   setVisible: (value: boolean) => void
 }
-
+/**
+ * State closure for help page.
+ */
 export function useHelp (): HelpState {
   const [visible, setVisible] = useState(false)
 
@@ -26,6 +28,9 @@ export function useHelp (): HelpState {
   return useMemo(() => ({ visible, setVisible }), [visible, setVisible])
 }
 
+/**
+ * JSX Component for help page.
+ */
 export const MenuHelp = React.memo(_MenuHelp)
 function _MenuHelp (props: {
   help: HelpState

@@ -12,6 +12,12 @@ export type SideState = {
   setWidth: (value: number) => void
 }
 
+/**
+ * Returns state closure for side panel
+ * @param useInspector inspector will only be displayed if this is true.
+ * @param defaultWidth default width of the side panel in pixel.
+ * @returns
+ */
 export function useSideState (
   useInspector: boolean,
   defaultWidth: number

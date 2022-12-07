@@ -60,6 +60,9 @@ export type contextMenuCustomization = (
   e: contextMenuElement[]
 ) => contextMenuElement[]
 
+/**
+ * Context menu definition according to current state.
+ */
 export const VimContextMenu = React.memo(_VimContextMenu)
 export function _VimContextMenu (props: {
   viewer: ViewerWrapper
@@ -68,7 +71,7 @@ export function _VimContextMenu (props: {
   selection: VIM.Object[]
   customization?: (e: contextMenuElement[]) => contextMenuElement[]
 }) {
-  const viewer = props.viewer.base
+  const viewer = props.viewer.viewer
   const helper = props.viewer
   const [section, setSection] = useState<{
     visible: boolean
@@ -123,10 +126,10 @@ export function _VimContextMenu (props: {
 
   const onSelectionIsolateBtn = (e: ClickCallback) => {
     props.isolation.isolate(
-      [...props.viewer.base.selection.objects],
+      [...props.viewer.viewer.selection.objects],
       'contextMenu'
     )
-    helper.base.selection.clear()
+    helper.viewer.selection.clear()
     e.stopPropagation()
   }
 

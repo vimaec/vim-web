@@ -3,15 +3,26 @@ import { ElementInfo } from 'vim-webgl-viewer'
 import { VIM } from '../component'
 import { MapTree, sort, toMapTree } from '../helpers/data'
 
-// These names are used by css to format visibilty toggles
+/**
+ * Custom visibility CSS classes to avoid clashes with tailwind
+ */
 export type NodeVisibility = 'vim-visible' | 'vim-undefined' | 'vim-hidden'
 
+/**
+ * Extension of TreeItem
+ */
 export type VimTreeNode = TreeItem<ElementInfo> & {
   title: string
   parent: number
   visible: NodeVisibility
 }
 
+/**
+ * Returns map-based tree with elements organized hierarchically.
+ * @param viewer current viewer.
+ * @param elements elements to include in the treeview.
+ * @returns
+ */
 export function toTreeData (viewer: VIM.Viewer, elements: VIM.ElementInfo[]) {
   if (!elements) return
   const tree = toMapTree(elements, [

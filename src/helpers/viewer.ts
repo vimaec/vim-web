@@ -4,24 +4,24 @@ import * as VIM from 'vim-webgl-viewer/'
  * Wraps the webgl viewer and provide higher level methods
  */
 export class ViewerWrapper {
-  base: VIM.Viewer
+  viewer: VIM.Viewer
   constructor (viewer: VIM.Viewer) {
-    this.base = viewer
+    this.viewer = viewer
   }
 
   /**
    * Reset camera to initial position
    */
   resetCamera () {
-    this.base.camera.reset()
-    this.base.camera.frame('all', 45)
+    this.viewer.camera.reset()
+    this.viewer.camera.frame('all', 45)
   }
 
   /**
    * Make camera frame selection if any otherwise frame visible objects
    */
   frameContext () {
-    if (this.base.selection.count > 0) {
+    if (this.viewer.selection.count > 0) {
       this.frameSelection()
     } else {
       this.frameVisibleObjects()
@@ -29,14 +29,18 @@ export class ViewerWrapper {
   }
 
   /**
-   * Make camera frame selection
+   * Make camera frame selection, if no selection does nothing.
    */
   frameSelection () {
-    if (this.base.selection.count === 0) return
-    const box = this.base.selection.getBoundingBox()
+    if (this.viewer.selection.count === 0) return
+    const box = this.viewer.selection.getBoundingBox()
 
-    if (box && this.base.sectionBox.box.intersectsBox(box)) {
-      this.base.camera.frame(box, 'none', this.base.camera.defaultLerpDuration)
+    if (box && this.viewer.sectionBox.box.intersectsBox(box)) {
+      this.viewer.camera.frame(
+        box,
+        'none',
+        this.viewer.camera.defaultLerpDuration
+      )
     }
   }
 
@@ -44,10 +48,10 @@ export class ViewerWrapper {
    * Makes camera frame all visible objects
    */
   frameVisibleObjects (source?: VIM.Vim) {
-    this.base.camera.frame(
+    this.viewer.camera.frame(
       this.getVisibleBoundingBox(source),
       'none',
-      this.base.camera.defaultLerpDuration
+      this.viewer.camera.defaultLerpDuration
     )
   }
 
@@ -68,7 +72,7 @@ export class ViewerWrapper {
     if (source) {
       vimBoxUnion(source)
     } else {
-      for (const vim of this.base.vims) {
+      for (const vim of this.viewer.vims) {
         vimBoxUnion(vim)
       }
     }

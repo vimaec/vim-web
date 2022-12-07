@@ -3,6 +3,13 @@ import { ViewerWrapper } from '../helpers/viewer'
 import * as Icons from '../icons'
 
 const SEARCH_DELAY_MS = 200
+/**
+ * Returns a jsx component of a search bar to search and filter bim data.
+ * @param viewer viewer helper.
+ * @param filter current search string.
+ * @param setFilter callback to set filter
+ * @param count current search result count.
+ */
 export function BimSearch (props: {
   viewer: ViewerWrapper
   filter: string
@@ -38,15 +45,15 @@ export function BimSearch (props: {
   }
 
   const onFocus = () => {
-    props.viewer.base.inputs.keyboard.unregister()
+    props.viewer.viewer.inputs.keyboard.unregister()
   }
 
   const onBlur = () => {
-    props.viewer.base.inputs.keyboard.register()
+    props.viewer.viewer.inputs.keyboard.register()
   }
 
   return (
-    <div className="vim-bim-search vc-mb-4 vc-flex vc-items-center vc-relative">
+    <div className="vim-bim-search vc-relative vc-mb-4 vc-flex vc-items-center">
       <svg
         className="search-icon -vc-mr-4 vc-text-gray-light"
         xmlns="http://www.w3.org/2000/svg"
@@ -69,10 +76,16 @@ export function BimSearch (props: {
         onBlur={onBlur}
         onChange={onChange}
       />
-        { text.length > 0
-          ? <button className="search-clear vc-text-white vc-bg-gray-medium vc-w-4 vc-h-4 vc-flex vc-items-center vc-justify-center vc-rounded-full vc-shrink-0 vc-absolute vc-right-0" onClick={onClear}>{Icons.close({ width: 10, height: 10, fill: 'currentColor' })} </button>
-          : null
-          }
+      {text.length > 0
+        ? (
+        <button
+          className="search-clear vc-absolute vc-right-0 vc-flex vc-h-4 vc-w-4 vc-shrink-0 vc-items-center vc-justify-center vc-rounded-full vc-bg-gray-medium vc-text-white"
+          onClick={onClear}
+        >
+          {Icons.close({ width: 10, height: 10, fill: 'currentColor' })}{' '}
+        </button>
+          )
+        : null}
 
       {props.count !== undefined && text
         ? (

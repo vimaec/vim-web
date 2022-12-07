@@ -26,7 +26,7 @@ import { Overlay } from './overlay'
 
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
-import { Settings, useSettings } from './settings/settings'
+import { Settings, PartialSettings, useSettings } from './settings/settings'
 import { Isolation } from './helpers/isolation'
 import { ViewerWrapper } from './helpers/viewer'
 
@@ -43,7 +43,7 @@ export type VimComponentRef = {
   viewer: VIM.Viewer
 
   /**
-   * Higher level helper methods that used the component.
+   * Higher level helper methods built around the vim viewer.
    */
   helpers: ViewerWrapper
 
@@ -58,7 +58,7 @@ export type VimComponentRef = {
   setMsg: (s: string) => void
 
   /**
-   * Callback to change the context menu at runtime.
+   * Callback to customize context menu at runtime.
    */
   customizeContextMenu: (c: contextMenuCustomization) => void
 }
@@ -92,7 +92,7 @@ export type VimComponentContainer = {
 export function createVimComponent (
   onMount: (component: VimComponentRef) => void,
   container?: VimComponentContainer,
-  settings: Partial<Settings> = {}
+  settings: PartialSettings = {}
 ) {
   const viewer = new VIM.Viewer()
   container = container ?? createContainer(viewer)
@@ -143,7 +143,7 @@ export function createContainer (viewer: VIM.Viewer): VimComponentContainer {
 export function VimComponent (props: {
   viewer: VIM.Viewer
   onMount: (component: VimComponentRef) => void
-  settings?: Partial<Settings>
+  settings?: PartialSettings
 }) {
   const viewer = useRef(new ViewerWrapper(props.viewer)).current
   const cursor = useRef(new CursorManager(props.viewer)).current
@@ -214,7 +214,7 @@ export function VimComponent (props: {
   )
   return (
     <>
-      <Overlay viewer={viewer.base} side={side}></Overlay>
+      <Overlay viewer={viewer.viewer} side={side}></Overlay>
       <MenuHelp help={help} settings={settings.value} side={side} />
       {settings.value.ui.logo ? <Logo /> : null}
       {settings.value.ui.loadingBox
