@@ -13,7 +13,7 @@ function _LoadingBox (props: { viewer: VIM.Viewer; msg: string }) {
     const prevLoad = props.viewer.loadVim.bind(props.viewer)
     props.viewer.loadVim = function (
       source: string | ArrayBuffer,
-      options: VIM.VimOptions.Root,
+      options: VIM.VimOptions,
       _: (logger: VIM.IProgressLogs) => void
     ): Promise<VIM.Vim> {
       return prevLoad(source, options, (p) => {

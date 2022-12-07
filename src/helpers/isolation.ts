@@ -28,7 +28,7 @@ export class Isolation {
     this.viewer.vims.forEach((v) => {
       v.scene.material =
         set.has(v) && this.settings.viewer.isolationMaterial
-          ? this.viewer.renderer.materials.isolation
+          ? this.viewer.materials.isolation
           : undefined
     })
   }
@@ -171,7 +171,7 @@ export class Isolation {
 
         vim.scene.material =
           !allVisible && settings.viewer.isolationMaterial
-            ? viewer.renderer.materials.isolation
+            ? viewer.materials.isolation
             : undefined
       })
     }

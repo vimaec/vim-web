@@ -6,7 +6,7 @@ export default defineConfig({
     sourcemap: true,
     lib: {
       formats: ['iife', 'es'],
-      entry: resolve(__dirname, './src/vim.ts'),
+      entry: resolve(__dirname, 'src/component.tsx'),
       name: 'component'
     },
     // Minify set to true will break the IIFE output

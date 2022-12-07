@@ -44,7 +44,7 @@ export class BimTreeData {
         return node.visible
       }
       set.add(node)
-      if (node.hasChildren) {
+      if (node.children.length > 0) {
         let hidden = true
         let visible = true
         node.children.forEach((c) => {
@@ -87,7 +87,7 @@ export class BimTreeData {
 
   getLeafs (node: number, result: number[] = []) {
     const current = this.nodes[node]
-    if (current.hasChildren) {
+    if (current.children?.length > 0) {
       current.children.forEach((c) => this.getLeafs(c as number, result))
     } else {
       result.push(current.index as number)
@@ -118,7 +118,7 @@ export class BimTreeData {
   getChildren (node: number, recusive = false, result: number[] = []) {
     result.push(node)
     const current = this.nodes[node]
-    if (current.hasChildren) {
+    if (current.children?.length > 0) {
       if (recusive) {
         current.children.forEach((c) =>
           this.getChildren(c as number, recusive, result)
@@ -157,7 +157,7 @@ export class BimTreeData {
           index: i,
           parent,
           title: k,
-          hasChildren: children.length > 0,
+          isFolder: children.length > 0,
           data: undefined,
           children,
           visible: undefined
@@ -169,7 +169,7 @@ export class BimTreeData {
           index: i,
           parent,
           title: k,
-          hasChildren: v.length > 0,
+          isFolder: v.length > 0,
           data: undefined,
           children: range(v.length, i + 1),
           visible: undefined
@@ -181,7 +181,7 @@ export class BimTreeData {
             index: i,
             parent: self,
             title: `${e.name} [${e.id}]`,
-            hasChildren: false,
+            isFolder: false,
             data: e,
             children: [],
             visible: undefined
