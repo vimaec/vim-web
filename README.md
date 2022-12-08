@@ -53,9 +53,9 @@ Martin Ashton - martin.ashton@vimaec.com
 ## Acknowledgments
 Thanks to these great packages and more:
 
-[react-complex-tree] https://github.com/lukasbach/react-complex-tree
-[re-resizable] https://github.com/bokuweb/re-resizable
-[react-tooltip] https://github.com/ReactTooltip/react-tooltip
+ - [react-complex-tree] https://github.com/lukasbach/react-complex-tree
+ - [re-resizable] https://github.com/bokuweb/re-resizable
+ - [react-tooltip] https://github.com/ReactTooltip/react-tooltip
 
 
 [react-url]: https://reactjs.org/
