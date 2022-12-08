@@ -46,9 +46,8 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 ## Contact
 
-Simon Roberge - simon.roberge@vimaec.com
-Martin Ashton - martin.ashton@vimaec.com
-
+ - Simon Roberge - simon.roberge@vimaec.com
+ - Martin Ashton - martin.ashton@vimaec.com
 
 ## Acknowledgments
 Thanks to these great packages and more:
