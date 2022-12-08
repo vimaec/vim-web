@@ -109,6 +109,21 @@ createVimComponent((cmp: VimComponentRef) => {
 })
 
 ```
+
+### Display a Custom Message
+```javascript
+createVimComponent((cmp: VimComponentRef) => {
+  cmp.viewer
+    .loadVim('https://vim.azureedge.net/samples/residence.vim')
+    .then((vim) => {
+      cmp.setMsg('Custom message for 3 seconds')
+      setTimeout(() => cmp.setMsg(undefined), 3000)
+    })
+})
+
+```
+
+
 ## License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
