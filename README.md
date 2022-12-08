@@ -96,9 +96,19 @@ createVimComponent((cmp: VimComponentRef) => {
 ```
 
 ### Isolate an object
+```javascript
 
+createVimComponent((cmp: VimComponentRef) => {
+  cmp.viewer
+    .loadVim('https://vim.azureedge.net/samples/residence.vim')
+    .then((vim) => {
+      // Get object using its BIM id form the loaded vim.
+      const objects = vim.getObjectsFromElementId(ID)
+      cmp.isolation.isolate(objects, 'custom')
+    })
+})
 
-
+```
 ## License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
