@@ -1,4 +1,7 @@
 # Vim Webgl Component
+# Documentation
+
+[API Documentation](https://vimaec.github.io/vim-webgl-app/api/index.html)
 
 ## Live Demo
 - [Small Model Demo - Residence](https://vimaec.github.io/vim-webgl-app)
@@ -7,22 +10,24 @@
 
 ## About The Project
 
+The VIM WebGL Component is an open-source high-performance 3D model viewer and BIM inspector that specializes in loading extremely large AEC (Architectural/Engineering/Construction) models represented as VIM files.
 
+The VIM file format is a high-performance 3D scene format that supports rich BIM data, and can be easily extended to support other relational or non-relation data sets.
 
-The vim webgl component is a UI layer built on top of the vim webgl viewer.
+Unlike IFC the VIM format is already tessellated, and ready to render. This results in very fast load times. Unlike glTF the VIM format is faster to load, scales better, and has a consistent structure for relational BIM data.
+
+More information on the vim format can be found here: https://github.com/vimaec/vim
 
 Intents:
 
 - Provide a smooth online user experience while browsing complex bim data.
-- Test and demonstrate the capabilities of the underlying vim-viewer.
+- Test and demonstrate the capabilities of the underlying vim-webgl-viewer.
 - Be easy to use, extend and customize for other developpers.
 
 ### Built With
 - [VIM Webgl Viewer](https://github.com/vimaec/vim-webgl-viewer)
 - [react.js](https://reactjs.org/)
 - [three.js](https://threejs.org/)
-
-<!-- GETTING STARTED -->
 
 ## Getting Started
 
@@ -127,7 +132,6 @@ createVimComponent((cmp: VimComponentRef) => {
 })
 
 ```
-
 
 ## License
 
