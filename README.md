@@ -13,7 +13,7 @@ Intents:
 - Be easy to use, extend and customize for other developpers.
 
 ### Built With
-- [vim webgl viewer](https://github.com/vimaec/vim-webgl-viewer)
+- [VIM Webgl Viewer](https://github.com/vimaec/vim-webgl-viewer)
 - [react.js](https://reactjs.org/)
 - [three.js](https://threejs.org/)
 
