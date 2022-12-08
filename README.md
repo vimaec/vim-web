@@ -2,7 +2,7 @@
 
 ## About The Project
 
-Live Demo : (https://vimaec.github.io/vim-webgl-app/release/)
+Live Demo : [HERE](https://vimaec.github.io/vim-webgl-app/release/)
 
 The vim webgl component is a UI layer built on top of the vim webgl viewer.
 
@@ -13,9 +13,9 @@ Intents:
 - Be easy to use, extend and customize for other developpers.
 
 ### Built With
-- [vim webgl viewer] [https://github.com/vimaec/vim-webgl-viewer]
-- [react.js][[react-url](https://reactjs.org/)]
-- [three.js][[three-url](https://threejs.org/)]
+- [vim webgl viewer](https://github.com/vimaec/vim-webgl-viewer)
+- [react.js](https://reactjs.org/)
+- [three.js](https://threejs.org/)
 
 <!-- GETTING STARTED -->
 
@@ -136,9 +136,9 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 ## Acknowledgments
 Thanks to these great packages and more:
 
- - [react-complex-tree] [https://github.com/lukasbach/react-complex-tree]
- - [re-resizable] [https://github.com/bokuweb/re-resizable]
- - [react-tooltip] [https://github.com/ReactTooltip/react-tooltip]
- - [strongly typed events] [https://github.com/KeesCBakker/Strongly-Typed-Events-for-TypeScript#readme]
+ - [react-complex-tree](https://github.com/lukasbach/react-complex-tree)
+ - [re-resizable](https://github.com/bokuweb/re-resizable)
+ - [react-tooltip](https://github.com/ReactTooltip/react-tooltip)
+ - [strongly typed events](https://github.com/KeesCBakker/Strongly-Typed-Events-for-TypeScript#readme)
 
 
