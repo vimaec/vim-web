@@ -14,8 +14,8 @@ Intents:
 
 ### Built With
 
-- [react.js][react-url]
-- [three.js][three-url]
+- [react.js][[react-url](https://reactjs.org/)]
+- [three.js][[three-url](https://threejs.org/)]
 
 <!-- GETTING STARTED -->
 
@@ -136,11 +136,9 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 ## Acknowledgments
 Thanks to these great packages and more:
 
- - [react-complex-tree] https://github.com/lukasbach/react-complex-tree
- - [re-resizable] https://github.com/bokuweb/re-resizable
- - [react-tooltip] https://github.com/ReactTooltip/react-tooltip
- - [strongly typed events] https://github.com/KeesCBakker/Strongly-Typed-Events-for-TypeScript#readme
+ - [react-complex-tree] [https://github.com/lukasbach/react-complex-tree]
+ - [re-resizable] [https://github.com/bokuweb/re-resizable]
+ - [react-tooltip] [https://github.com/ReactTooltip/react-tooltip]
+ - [strongly typed events] [https://github.com/KeesCBakker/Strongly-Typed-Events-for-TypeScript#readme]
 
 
-[react-url]: https://reactjs.org/
-[three-url]: https://threejs.org/
