@@ -139,6 +139,7 @@ Thanks to these great packages and more:
  - [react-complex-tree] https://github.com/lukasbach/react-complex-tree
  - [re-resizable] https://github.com/bokuweb/re-resizable
  - [react-tooltip] https://github.com/ReactTooltip/react-tooltip
+ - [strongly typed events] https://github.com/KeesCBakker/Strongly-Typed-Events-for-TypeScript#readme
 
 
 [react-url]: https://reactjs.org/
