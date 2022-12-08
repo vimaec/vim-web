@@ -31,6 +31,43 @@ Make sure you have a recent version of NodeJS installed as Vite requires it.
 ## How To
 
 ### Customize Inputs
+`
+
+class MyScheme implements VIM.InputScheme {
+  default: VIM.DefaultInputScheme
+
+  constructor (viewer: VIM.Viewer) {
+    this.default = new VIM.DefaultInputScheme(viewer)
+  }
+
+  onMainAction (hit: VIM.InputAction): void {
+    console.log('Custom click message')
+    this.default.onMainAction(hit)
+  }
+
+  // Idle action is called when the mouse is idle for a certain delay
+  onIdleAction (hit: VIM.InputAction): void {
+    console.log('Idle action is disabled')
+    // Because we are not calling default
+  }
+
+  onKeyAction (key: number): boolean {
+    switch (key) {
+      case VIM.KEYS.KEY_SPACE: {
+        console.log('Space bar is disabled.')
+        // Because we are not calling default
+        return true
+      }
+    }
+    return this.default.onKeyAction(key)
+  }
+}
+
+createVimComponent((cmp: VimComponentRef) => {
+  cmp.viewer.loadVim('https://vim.azureedge.net/samples/residence.vim')
+  cmp.viewer.inputs.scheme = new MyScheme(cmp.viewer)
+})
+`
 
 ### Customize Context Menu
 
