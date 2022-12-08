@@ -2,7 +2,7 @@
 
 ## About The Project
 
-[See it in action] (https://vimaec.github.io/vim-webgl-app/release/)
+See it in action : (https://vimaec.github.io/vim-webgl-app/release/)
 
 The vim webgl component is a UI layer built on top of the vim webgl viewer.
 
