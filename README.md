@@ -1,8 +1,13 @@
 # Vim Webgl Component
 
+## Live Demo
+- [Small Model Demo - Residence](https://vimaec.github.io/vim-webgl-app)
+- [Medium Model Demo - Medical Tower](https://vimaec.github.io/vim-webgl-app?vim=https://vim.azureedge.net/samples/skanska.vim)
+- [Large Model Demo - Stadium](https://vimaec.github.io/vim-webgl-app?vim=https://vim.azureedge.net/samples/stadium.vim) (_Warning_: slow download times)
+
 ## About The Project
 
-Live Demo : [HERE](https://vimaec.github.io/vim-webgl-app/release/)
+
 
 The vim webgl component is a UI layer built on top of the vim webgl viewer.
 
