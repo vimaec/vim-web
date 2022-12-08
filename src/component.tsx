@@ -127,7 +127,7 @@ export function createContainer (viewer: VIM.Viewer): VimComponentContainer {
 
   // container for ui
   const ui = document.createElement('div')
-  ui.className = 'vim-ui vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full'
+  ui.className = 'vim-ui vc-top-0 vc-left-0 vc-h-full vc-w-full'
 
   root.append(ui)
 
