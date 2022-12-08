@@ -33,6 +33,7 @@ Make sure you have a recent version of NodeJS installed as Vite requires it.
 ### Customize Inputs
 
 ```javascript
+// Define the new input scheme.
 class MyScheme implements VIM.InputScheme {
   default: VIM.DefaultInputScheme
 
@@ -65,6 +66,7 @@ class MyScheme implements VIM.InputScheme {
 
 createVimComponent((cmp: VimComponentRef) => {
   cmp.viewer.loadVim('https://vim.azureedge.net/samples/residence.vim')
+  // Override the viewer input scheme.
   cmp.viewer.inputs.scheme = new MyScheme(cmp.viewer)
 })
 ```
