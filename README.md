@@ -14,8 +14,8 @@ Intents:
 
 ### Built With
 
-- [![React][react.js]][react-url]
-- [![Three][three.js]][three-url]
+- [react.js][react-url]
+- [three.js][three-url]
 
 <!-- GETTING STARTED -->
 
