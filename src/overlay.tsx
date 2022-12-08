@@ -1,3 +1,7 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import React, { useEffect, useRef } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import { SideState } from './sidePanel/sideState'

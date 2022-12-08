@@ -1,4 +1,8 @@
 /**
+ * @module viw-webgl-component
+ */
+
+/**
  * Ads the behind css class to the vim component div.
  */
 export function setComponentBehind (value: boolean) {

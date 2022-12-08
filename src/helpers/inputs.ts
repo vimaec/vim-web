@@ -1,3 +1,8 @@
+/**
+ * @module viw-webgl-component
+ */
+
+
 import * as VIM from 'vim-webgl-viewer/'
 import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycaster'
 import { Isolation } from './isolation'

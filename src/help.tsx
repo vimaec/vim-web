@@ -1,3 +1,7 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import React, { useEffect, useMemo, useState } from 'react'
 import helpImage from './assets/quick-controls.svg'
 import * as Icons from './icons'
@@ -28,11 +32,16 @@ export function useHelp (): HelpState {
   return useMemo(() => ({ visible, setVisible }), [visible, setVisible])
 }
 
+
+/**
+ * JSX Memoized version of MenuHelp.
+ */
+export const MenuHelpMemo = React.memo(MenuHelp)
+
 /**
  * JSX Component for help page.
  */
-export const MenuHelp = React.memo(_MenuHelp)
-function _MenuHelp (props: {
+function MenuHelp (props: {
   help: HelpState
   settings: Settings
   side: SideState

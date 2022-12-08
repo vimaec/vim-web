@@ -1,3 +1,7 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import React from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import { Settings, SettingsState } from './settings'

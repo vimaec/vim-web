@@ -1,3 +1,7 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import { useMemo, useRef, useState } from 'react'
 
 export type SideContent = 'none' | 'bim' | 'settings'

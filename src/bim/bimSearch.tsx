@@ -1,3 +1,7 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import React, { useEffect, useRef, useState } from 'react'
 import { ViewerWrapper } from '../helpers/viewer'
 import * as Icons from '../icons'

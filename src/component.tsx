@@ -1,3 +1,7 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import React, { useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import ReactTooltip from 'react-tooltip'
@@ -8,30 +12,30 @@ import 'vim-webgl-viewer/dist/style.css'
 
 import * as VIM from 'vim-webgl-viewer/'
 
-import { AxesPanel } from './axesPanel'
+import { AxesPanelMemo } from './axesPanel'
 import { ControlBar } from './controlBar'
-import { LoadingBox } from './loading'
+import { LoadingBoxMemo } from './loading'
 import { BimPanel } from './bim/bimPanel'
 import {
   contextMenuCustomization,
   showContextMenu,
-  VimContextMenu
+  VimContextMenuMemo
 } from './contextMenu'
-import { MenuHelp, useHelp } from './help'
-import { SidePanel } from './sidePanel/sidePanel'
+import { MenuHelpMemo, useHelp } from './help'
+import { SidePanelMemo } from './sidePanel/sidePanel'
 import { useSideState } from './sidePanel/sideState'
 import { MenuSettings } from './settings/menuSettings'
-import { MenuToast } from './toast'
+import { MenuToastMemo } from './toast'
 import { Overlay } from './overlay'
 
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
-import { Settings, PartialSettings, useSettings } from './settings/settings'
+import { PartialSettings, useSettings } from './settings/settings'
 import { Isolation } from './helpers/isolation'
 import { ViewerWrapper } from './helpers/viewer'
 
 export * as VIM from 'vim-webgl-viewer/'
-export * from './contextMenu'
+export * as ContextMenu from './contextMenu'
 
 /**
  * Root level api of the vim component
@@ -55,7 +59,7 @@ export type VimComponentRef = {
   /**
    * Sets a message to be displayed in the loading box. Set undefined to hide.
    */
-  setMsg: (s: string) => void
+  setMsg: (s: string | undefined) => void
 
   /**
    * Callback to customize context menu at runtime.
@@ -215,11 +219,11 @@ export function VimComponent (props: {
   return (
     <>
       <Overlay viewer={viewer.viewer} side={side}></Overlay>
-      <MenuHelp help={help} settings={settings.value} side={side} />
-      {settings.value.ui.logo ? <Logo /> : null}
+      <MenuHelpMemo help={help} settings={settings.value} side={side} />
+      {settings.value.ui.logo ? <LogoMemo /> : null}
       {settings.value.ui.loadingBox
         ? (
-        <LoadingBox viewer={props.viewer} msg={msg} />
+        <LoadingBoxMemo viewer={props.viewer} msg={msg} />
           )
         : null}
       {settings.value.ui.controlBar
@@ -236,10 +240,10 @@ export function VimComponent (props: {
         : null}
       {settings.value.ui.axesPanel
         ? (
-        <AxesPanel viewer={viewer} settings={settings.value} />
+        <AxesPanelMemo viewer={viewer} settings={settings.value} />
           )
         : null}
-      <SidePanel viewer={props.viewer} side={side} content={sidePanel} />
+      <SidePanelMemo viewer={props.viewer} side={side} content={sidePanel} />
       <ReactTooltip
         arrowColor="transparent"
         type="light"
@@ -247,19 +251,19 @@ export function VimComponent (props: {
         delayShow={200}
       />
 
-      <VimContextMenu
+      <VimContextMenuMemo
         viewer={viewer}
         help={help}
         isolation={isolation}
         selection={selection}
         customization={contextMenu}
       />
-      <MenuToast viewer={props.viewer} side={side}></MenuToast>
+      <MenuToastMemo viewer={props.viewer} side={side}></MenuToastMemo>
     </>
   )
 }
 
-const Logo = React.memo(() => (
+const LogoMemo = React.memo(() => (
   <div className={'vim-logo vc-fixed vc-top-4 vc-left-4'}>
     <a href="https://vimaec.com">
       <img className="vim-logo-img vc-h-12 vc-w-32" src={logo}></img>

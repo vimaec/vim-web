@@ -1,3 +1,7 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import * as VIM from 'vim-webgl-viewer/'
 
 /**

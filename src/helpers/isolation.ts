@@ -1,3 +1,8 @@
+/**
+ * @module viw-webgl-component
+ */
+
+
 import * as VIM from 'vim-webgl-viewer/'
 import { Settings } from '../settings/settings'
 import { ViewerWrapper } from './viewer'

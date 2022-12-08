@@ -1,9 +1,16 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import { useEffect, useMemo, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import deepmerge from 'deepmerge'
 
-// https://stackoverflow.com/questions/41980195/recursive-partialt-in-typescript
-type RecursivePartial<T> = {
+/**
+ * Makes all fields optional recursively
+ * https://stackoverflow.com/questions/41980195/recursive-partialt-in-typescript
+ */
+export type RecursivePartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[]
     ? RecursivePartial<U>[]
     : T[P] extends object

@@ -1,13 +1,21 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import React, { useEffect, useRef, useState } from 'react'
 import * as Icons from './icons'
 import { ViewerWrapper } from './helpers/viewer'
 import { Settings } from './settings/settings'
 
 /**
+ * Memoized version of the AxesPanelMemo.
+ */
+export const AxesPanelMemo = React.memo(AxesPanel)
+
+/**
  * JSX Component for axes gizmo.
  */
-export const AxesPanel = React.memo(_AxesPanel)
-function _AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
+function AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
   const viewer = props.viewer.viewer
   const helper = props.viewer
 
@@ -49,7 +57,7 @@ function _AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
       }
       type="button"
     >
-      <Icons.home height="20" width="20" fill="currentColor" />{' '}
+      <Icons.home height={20} width={20} fill="currentColor" />{' '}
     </button>
   )
   const btnOrtho = (
@@ -63,10 +71,10 @@ function _AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
     >
       {ortho
         ? (
-        <Icons.orthographic height="20" width="20" fill="currentColor" />
+        <Icons.orthographic height={20} width={20} fill="currentColor" />
           )
         : (
-        <Icons.perspective height="20" width="20" fill="currentColor" />
+        <Icons.perspective height={20} width={20} fill="currentColor" />
           )}
     </button>
   )

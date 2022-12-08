@@ -1,3 +1,6 @@
+/**
+ * @module viw-webgl-component
+ */
 import { TreeItem } from 'react-complex-tree'
 import { ElementInfo } from 'vim-webgl-viewer'
 import { VIM } from '../component'

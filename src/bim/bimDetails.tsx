@@ -1,3 +1,7 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import React, { useEffect, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
@@ -122,16 +126,16 @@ function createTable (
                 ? (
                 <Icons.collapse
                   className="vc-rotate-180 vc-transition-all"
-                  height="15"
-                  width="15"
+                  height={15}
+                  width={15}
                   fill="currentColor"
                 />
                   )
                 : (
                 <Icons.collapse
                   className="vc-rotate-0 vc-transition-all"
-                  height="15"
-                  width="15"
+                  height={15}
+                  width={15}
                   fill="currentColor"
                 />
                   )}

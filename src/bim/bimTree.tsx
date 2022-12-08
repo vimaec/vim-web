@@ -1,3 +1,7 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ControlledTreeEnvironment,

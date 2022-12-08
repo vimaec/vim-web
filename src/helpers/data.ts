@@ -1,3 +1,10 @@
+/**
+ * @module data
+ */
+
+/**
+ * Recursive Tree implemented as a recursive map.
+ */
 export type MapTree<K, V> = Map<K, V[] | MapTree<K, V>>
 
 /**

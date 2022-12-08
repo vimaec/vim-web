@@ -29,7 +29,7 @@
     "release-dev": "npm run build && npm run bump-dev && git push && npm run publish-dev",
     "declarations": "tsc --declaration --emitDeclarationOnly --outdir ./dist/types",
     "eslint": "eslint --ext .js,.ts src --fix",
-    "documentation": "typedoc --entryPointStrategy expand --out docs/api --excludePrivate ./src/ && git add ./docs/"
+    "documentation": "typedoc --entryPointStrategy expand --mergeModulesMergeMode module --out docs/api --excludeProtected --excludeExternals --excludePrivate --exclude ./src/main.tsx --exclude ./src/module.d.ts ./src/ && git add ./docs/"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",
@@ -53,7 +53,9 @@
     "react-dom": "^18.2.0",
     "tailwindcss": "^3.2.4",
     "typescript": "^4.9.3",
-    "vite": "^3.2.5"
+    "vite": "^3.2.5",
+    "typedoc": "^0.23.21",
+    "typedoc-plugin-merge-modules": "^4.0.1"
   },
   "dependencies": {
     "@firefox-devtools/react-contextmenu": "^5.0.0",
@@ -66,7 +68,6 @@
     "stats-js": "^1.0.1",
     "ste-signals": "^3.0.7",
     "ste-simple-events": "^3.0.7",
-    "typedoc": "^0.23.21",
     "vim-webgl-viewer": "1.4.12-dev.14"
   },
   "keywords": [
