@@ -31,8 +31,8 @@ Make sure you have a recent version of NodeJS installed as Vite requires it.
 ## How To
 
 ### Customize Inputs
-`
 
+~~~~
 class MyScheme implements VIM.InputScheme {
   default: VIM.DefaultInputScheme
 
@@ -67,7 +67,7 @@ createVimComponent((cmp: VimComponentRef) => {
   cmp.viewer.loadVim('https://vim.azureedge.net/samples/residence.vim')
   cmp.viewer.inputs.scheme = new MyScheme(cmp.viewer)
 })
-`
+~~~~
 
 ### Customize Context Menu
 
