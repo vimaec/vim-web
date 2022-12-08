@@ -21,12 +21,10 @@ Intents:
 
 ## Getting Started
 
-1- Clone the project.
-2- Open the project in VS Code.
-3- Install packages by running npm install.
-4- Run the dev command to start a live test server.
-
-### Prerequisites
+1. Clone the project.
+2. Open the project in VS Code.
+3. Install packages by running npm install.
+4. Run the dev command to start a live test server.
 
 Make sure you have a recent version of NodeJS installed as Vite requires it.
 
