@@ -72,6 +72,28 @@ createVimComponent((cmp: VimComponentRef) => {
 ```
 
 ### Customize Context Menu
+```javascript
+createVimComponent((cmp: VimComponentRef) => {
+  cmp.viewer.loadVim('https://vim.azureedge.net/samples/residence.vim')
+  cmp.customizeContextMenu((menu) => [
+    // Keep existing menu
+    ...menu,
+    // Append a divider
+    {
+      id: 'custom-divier',
+      enabled: true
+    },
+    // Append a custom button
+    {
+      action: () => console.log('Custom button'),
+      enabled: true,
+      id: 'custom-button',
+      keyboard: '',
+      label: 'Custom Button'
+    }
+  ])
+})
+```
 
 ### Isolate an object
 
