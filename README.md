@@ -1,9 +1,11 @@
 # Vim Webgl Component
+
 # Documentation
 
-[API Documentation](https://vimaec.github.io/vim-webgl-app/api/index.html)
+[API Documentation](https://vimaec.github.io/vim-webgl-app/docs/api/index.html)
 
 ## Live Demo
+
 - [Small Model Demo - Residence](https://vimaec.github.io/vim-webgl-app)
 - [Medium Model Demo - Medical Tower](https://vimaec.github.io/vim-webgl-app/release?vim=https://vim.azureedge.net/samples/skanska.vim)
 - [Large Model Demo - Stadium](https://vimaec.github.io/vim-webgl-app/release?vim=https://vim.azureedge.net/samples/stadium.vim) (_Warning_: slow download times)
@@ -25,6 +27,7 @@ Intents:
 - Be easy to use, extend and customize for other developpers.
 
 ### Built With
+
 - [VIM Webgl Viewer](https://github.com/vimaec/vim-webgl-viewer)
 - [react.js](https://reactjs.org/)
 - [three.js](https://threejs.org/)
@@ -82,6 +85,7 @@ createVimComponent((cmp: VimComponentRef) => {
 ```
 
 ### Customize Context Menu
+
 ```javascript
 createVimComponent((cmp: VimComponentRef) => {
   cmp.viewer.loadVim('https://vim.azureedge.net/samples/residence.vim')
@@ -106,8 +110,8 @@ createVimComponent((cmp: VimComponentRef) => {
 ```
 
 ### Isolate an object
-```javascript
 
+```javascript
 createVimComponent((cmp: VimComponentRef) => {
   cmp.viewer
     .loadVim('https://vim.azureedge.net/samples/residence.vim')
@@ -117,10 +121,10 @@ createVimComponent((cmp: VimComponentRef) => {
       cmp.isolation.isolate(objects, 'custom')
     })
 })
-
 ```
 
 ### Display a Custom Message
+
 ```javascript
 createVimComponent((cmp: VimComponentRef) => {
   cmp.viewer
@@ -130,7 +134,6 @@ createVimComponent((cmp: VimComponentRef) => {
       setTimeout(() => cmp.setMsg(undefined), 3000)
     })
 })
-
 ```
 
 ## License
@@ -139,15 +142,14 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 ## Contact
 
- - Simon Roberge - simon.roberge@vimaec.com
- - Martin Ashton - martin.ashton@vimaec.com
+- Simon Roberge - simon.roberge@vimaec.com
+- Martin Ashton - martin.ashton@vimaec.com
 
 ## Acknowledgments
+
 Thanks to these great packages and more:
 
- - [react-complex-tree](https://github.com/lukasbach/react-complex-tree)
- - [re-resizable](https://github.com/bokuweb/re-resizable)
- - [react-tooltip](https://github.com/ReactTooltip/react-tooltip)
- - [strongly typed events](https://github.com/KeesCBakker/Strongly-Typed-Events-for-TypeScript#readme)
-
-
+- [react-complex-tree](https://github.com/lukasbach/react-complex-tree)
+- [re-resizable](https://github.com/bokuweb/re-resizable)
+- [react-tooltip](https://github.com/ReactTooltip/react-tooltip)
+- [strongly typed events](https://github.com/KeesCBakker/Strongly-Typed-Events-for-TypeScript#readme)

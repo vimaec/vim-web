@@ -1,11 +1,22 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import { setComponentBehind } from './helpers/html'
 
 type Progress = 'processing' | number | string
 
-export const LoadingBox = React.memo(_LoadingBox)
-function _LoadingBox (props: { viewer: VIM.Viewer; msg: string }) {
+/**
+ * Memoized version of Loading Box
+ */
+export const LoadingBoxMemo = React.memo(LoadingBox)
+
+/**
+ * Loading box JSX Component tha can also be used to show messages.
+ */
+function LoadingBox (props: { viewer: VIM.Viewer; msg: string }) {
   const [progress, setProgress] = useState<Progress>()
 
   // Patch load
@@ -13,7 +24,7 @@ function _LoadingBox (props: { viewer: VIM.Viewer; msg: string }) {
     const prevLoad = props.viewer.loadVim.bind(props.viewer)
     props.viewer.loadVim = function (
       source: string | ArrayBuffer,
-      options: VIM.VimOptions.Root,
+      options: VIM.VimOptions,
       _: (logger: VIM.IProgressLogs) => void
     ): Promise<VIM.Vim> {
       return prevLoad(source, options, (p) => {

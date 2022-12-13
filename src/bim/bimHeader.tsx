@@ -1,16 +1,27 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import ReactTooltip from 'react-tooltip'
 
-type BimHeaderEntry = [
-  key: string,
-  value: string | number,
-  class1: string,
-  class2: string,
-  class3: string
-]
+type BimHeaderEntry = {
+  key: string
+  label: string
+  value: string | number
+  dtStyle: string
+  ddStyle: string
+  dlStyle: string
+}
 type BimHeader = BimHeaderEntry[][]
 
+/**
+ * Returns a jsx component representing the main information of a Vim Object.
+ * @param elements an array with data for all elements.
+ * @param object object from which to pull the data.
+ * @param visible will return null if this is false.
+ */
 export function BimObjectHeader (props: {
   elements: VIM.ElementInfo[]
   object: VIM.Object
@@ -40,6 +51,11 @@ export function BimObjectHeader (props: {
   return createHeader(getElementBimHeader(element))
 }
 
+/**
+ * Returns a jsx component representing the main information of a Vim Object.
+ * @param vim vim from which to pull the data.
+ * @param visible will return null if this is false.
+ */
 export function BimDocumentHeader (props: { vim: VIM.Vim; visible: boolean }) {
   const [vim, setVim] = useState<VIM.Vim>()
   const [header, setHeader] = useState<BimHeader>()
@@ -61,22 +77,25 @@ export function BimDocumentHeader (props: { vim: VIM.Vim; visible: boolean }) {
 function createHeader (header: BimHeader) {
   const rows = header.map((row, rowIndex) => {
     if (!row) return null
-    return row.map((pair, columnIndex) => {
+    return row.map((entry, columnIndex) => {
       return (
-        <dl className={`vc-flex vc-w-full ${pair[4]}`}>
+        <dl
+          key={`dl-${entry.key}`}
+          className={`vc-flex vc-w-full ${entry.dlStyle}`}
+        >
           <dt
-            data-tip={pair[1]}
-            className={`bim-header-title vc-min-w-[100px] vc-shrink-0 vc-select-none vc-whitespace-nowrap vc-py-1 vc-text-gray-medium ${pair[2]}`}
-            key={`dt-${rowIndex}-${columnIndex}`}
+            data-tip={entry.label}
+            className={`bim-header-title vc-min-w-[100px] vc-shrink-0 vc-select-none vc-whitespace-nowrap vc-py-1 vc-text-gray-medium ${entry.dtStyle}`}
+            key={`dt-${entry.key}`}
           >
-            {pair[0]}
+            {entry.label}
           </dt>
           <dd
-            data-tip={pair[1]}
-            className={`bim-header-value vc-shrink-1 vc-truncate vc-py-1 ${pair[3]}`}
-            key={`dd-${rowIndex}-${columnIndex}`}
+            data-tip={entry.value}
+            className={`bim-header-value vc-shrink-1 vc-truncate vc-py-1 ${entry.ddStyle}`}
+            key={`dd-${entry.key}`}
           >
-            {pair[1]}
+            {entry.value}
           </dd>
         </dl>
       )
@@ -90,20 +109,66 @@ function createHeader (header: BimHeader) {
 
 function getElementBimHeader (info: VIM.ElementInfo): BimHeader {
   return [
-    [['Document', info.documentTitle, 'vc-w-3/12', 'vc-w-9/12', 'vc-w-full']],
-    [['Workset', info.workset, 'vc-w-3/12', 'vc-w-9/12', 'vc-w-full']],
-    [['Category', info.categoryName, 'vc-w-3/12', 'vc-w-9/12', 'vc-w-full']],
-    [['Family Name', info.familyName, 'vc-w-3/12', 'vc-w-9/12', 'vc-w-full']],
     [
-      [
-        'Family Type',
-        info.familyTypeName,
-        'vc-w-3/12',
-        'vc-w-9/12',
-        'vc-w-full'
-      ]
+      {
+        key: 'document',
+        label: 'Document',
+        value: info.documentTitle,
+        dtStyle: 'vc-w-3/12',
+        ddStyle: 'vc-w-9/12',
+        dlStyle: 'vc-w-full'
+      }
     ],
-    [['Element Id', info.id, 'vc-w-3/12', 'vc-w-9/12', 'vc-w-full']]
+    [
+      {
+        key: 'workset',
+        label: 'Workset',
+        value: info.workset,
+        dtStyle: 'vc-w-3/12',
+        ddStyle: 'vc-w-9/12',
+        dlStyle: 'vc-w-full'
+      }
+    ],
+    [
+      {
+        key: 'category',
+        label: 'Category',
+        value: info.categoryName,
+        dtStyle: 'vc-w-3/12',
+        ddStyle: 'vc-w-9/12',
+        dlStyle: 'vc-w-full'
+      }
+    ],
+    [
+      {
+        key: 'familyName',
+        label: 'Family Name',
+        value: info.familyName,
+        dtStyle: 'vc-w-3/12',
+        ddStyle: 'vc-w-9/12',
+        dlStyle: 'vc-w-full'
+      }
+    ],
+    [
+      {
+        key: 'familyTypeName',
+        label: 'Family Type',
+        value: info.familyTypeName,
+        dtStyle: 'vc-w-3/12',
+        ddStyle: 'vc-w-9/12',
+        dlStyle: 'vc-w-full'
+      }
+    ],
+    [
+      {
+        key: 'elementId',
+        label: 'Element Id',
+        value: info.id,
+        dtStyle: 'vc-w-3/12',
+        ddStyle: 'vc-w-9/12',
+        dlStyle: 'vc-w-full'
+      }
+    ]
   ]
 }
 
@@ -113,35 +178,55 @@ async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
 
   return [
     [
-      [
-        'Document',
-        formatSource(vim.source),
-        'vc-w-3/12',
-        'vc-w-9/12',
-        'vc-w-full'
-      ]
-    ],
-    [['Source Path', main.pathName, 'vc-w-3/12', 'vc-w-9/12', 'vc-w-full']],
-    [
-      [
-        'Created on',
-        formatDate(vim.document.header.created),
-        'vc-w-3/12',
-        'vc-w-9/12',
-        'vc-w-full'
-      ]
+      {
+        key: 'document',
+        label: 'Document',
+        value: formatSource(vim.source),
+        dtStyle: 'vc-w-3/12',
+        ddStyle: 'vc-w-9/12',
+        dlStyle: 'vc-w-full'
+      }
     ],
     [
-      [
-        'Created with',
-        vim.document.header.generator,
-        'vc-w-3/12',
-        'vc-w-9/12',
-        'vc-w-full'
-      ]
+      {
+        key: 'sourcePath',
+        label: 'Source Path',
+        value: main.pathName,
+        dtStyle: 'vc-w-3/12',
+        ddStyle: 'vc-w-9/12',
+        dlStyle: 'vc-w-full'
+      }
     ],
-    [['Created by', main.user, 'vc-w-3/12', 'vc-w-9/12', 'vc-w-full']],
-    undefined
+    [
+      {
+        key: 'createdOn',
+        label: 'Created on',
+        value: formatDate(vim.document.header.created),
+        dtStyle: 'vc-w-3/12',
+        ddStyle: 'vc-w-9/12',
+        dlStyle: 'vc-w-full'
+      }
+    ],
+    [
+      {
+        key: 'createdWith',
+        label: 'Created with',
+        value: vim.document.header.generator,
+        dtStyle: 'vc-w-3/12',
+        ddStyle: 'vc-w-9/12',
+        dlStyle: 'vc-w-full'
+      }
+    ],
+    [
+      {
+        key: 'createdBy',
+        label: 'Created by',
+        value: vim.document.header.generator,
+        dtStyle: 'vc-w-3/12',
+        ddStyle: 'vc-w-9/12',
+        dlStyle: 'vc-w-full'
+      }
+    ]
   ]
 }
 

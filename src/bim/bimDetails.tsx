@@ -1,12 +1,32 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import React, { useEffect, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
 import { groupBy } from '../helpers/data'
 import * as Icons from '../icons'
 
-export type TableEntry = { name: string; value: string; group: string }
+/**
+ * Represents one entry of the detail tables.
+ */
+type TableEntry = {
+  name: string | undefined
+  value: string | undefined
+  group: string | undefined
+}
+
+/**
+ * Grouping of entries into section.
+ */
 type BimDetailsInfo = { section: string; content: Map<string, TableEntry[]> }[]
 
+/**
+ * Returns a UI representation of an object details.
+ * @param object Vim object from which to pull the data.
+ * @param visible Will return a null element if false.
+ */
 export function BimObjectDetails (props: {
   object: VIM.Object
   visible: boolean
@@ -14,11 +34,16 @@ export function BimObjectDetails (props: {
   return BimDetails(props.object, getObjectParameterDetails, props.visible)
 }
 
+/**
+ * Returns a high level - UI representation of the a whole vim document.
+ * @param vim Vim from which to pull the data.
+ * @param visible Will return a null element if false.
+ */
 export function BimDocumentDetails (props: { vim: VIM.Vim; visible: boolean }) {
   return BimDetails(props.vim, getVimDocumentDetails, props.visible)
 }
 
-export function BimDetails<T> (
+function BimDetails<T> (
   input: T,
   toData: (v: T) => Promise<BimDetailsInfo>,
   visible: boolean
@@ -101,16 +126,16 @@ function createTable (
                 ? (
                 <Icons.collapse
                   className="vc-rotate-180 vc-transition-all"
-                  height="15"
-                  width="15"
+                  height={15}
+                  width={15}
                   fill="currentColor"
                 />
                   )
                 : (
                 <Icons.collapse
                   className="vc-rotate-0 vc-transition-all"
-                  height="15"
-                  width="15"
+                  height={15}
+                  width={15}
                   fill="currentColor"
                 />
                   )}
@@ -155,10 +180,10 @@ async function getVimDocumentDetails (vim: VIM.Vim): Promise<BimDetailsInfo> {
     documents.map((d) => [
       d.title,
       [
-        { name: 'Product', value: formatProduct(d.product), group: d.title },
+        { name: 'Product', value: d.product, group: d.title },
         {
           name: 'Version',
-          value: formatVersion(d.version, d.product),
+          value: d.version,
           group: d.title
         }
       ]
@@ -167,25 +192,11 @@ async function getVimDocumentDetails (vim: VIM.Vim): Promise<BimDetailsInfo> {
   return [{ section: 'Source Files', content: data }]
 }
 
-function formatProduct (value: string) {
-  return value?.replace('Autodesk', '').trim()
-}
-
-function formatVersion (value: string, product: string) {
-  return value?.replace('Autodesk', '').replace(product, '').trim()
-}
-
-function formatDate (value: string) {
-  const date = Date.parse(value)
-  if (isNaN(date)) return ''
-  return value
-}
-
 async function getObjectParameterDetails (
   object: VIM.Object
 ): Promise<BimDetailsInfo> {
   let parameters = await object?.getBimParameters()
-  parameters = parameters.filter(acceptParameter)
+  parameters = parameters.filter((p) => acceptParameter(p))
   parameters = parameters.sort((a, b) => compare(a.group, b.group))
   const instance = groupBy(
     parameters.filter((p) => p.isInstance),
@@ -286,15 +297,24 @@ const ordering = [
 ]
 const orderMap = new Map(ordering.map((s, i) => [s, i]))
 
-function compare (s1: string, s2: string) {
-  const has1 = orderMap.has(s1)
-  const has2 = orderMap.has(s2)
-  if (has1 && !has2) return -1
-  if (!has1 && has2) return 1
-  if (!has1 && !has2) return s1.localeCompare(s2)
-  const eq = orderMap.get(s2) - orderMap.get(s2)
-  if (eq === 0) return s1.localeCompare(s2)
-  return eq
+function compare (s1: string | undefined, s2: string | undefined) {
+  if (!s1 || !s2) {
+    if (s1 && !s2) return 1
+    if (!s1 && !s2) return 0
+    if (!s1 && s2) return -1
+  } else {
+    const o1 = orderMap.get(s1)
+    const o2 = orderMap.get(s2)
+    if (!o1 || !o2) {
+      if (o1 && !o2) return -1
+      if (!o1 && o2) return 1
+      if (!o1 && !o2) return s1.localeCompare(s2)
+    } else {
+      const eq = o2 - o1
+      if (eq === 0) return s1.localeCompare(s2)
+      return eq
+    }
+  }
 }
 
 function acceptParameter (parameter: TableEntry) {

@@ -1,3 +1,7 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import React, { useEffect, useRef, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import { SideState } from './sidePanel/sideState'
@@ -7,8 +11,15 @@ export type ToastConfigSpeed = {
   speed: number
 }
 
-export const MenuToast = React.memo(_MenuToast)
-function _MenuToast (props: { viewer: VIM.Viewer; side: SideState }) {
+/**
+ * Memoized version of MenuToast.
+ */
+export const MenuToastMemo = React.memo(MenuToast)
+
+/**
+ * Toast jsx component that briefly shows up when camera speed changes.
+ */
+function MenuToast (props: { viewer: VIM.Viewer; side: SideState }) {
   const [visible, setVisible] = useState<boolean>()
   const [speed, setSpeed] = useState<number>(-1)
   const speedRef = useRef<number>(speed)

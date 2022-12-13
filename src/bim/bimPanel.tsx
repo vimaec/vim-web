@@ -1,3 +1,7 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 
@@ -8,6 +12,15 @@ import { BimSearch } from './bimSearch'
 import { Isolation } from '../helpers/isolation'
 import { ViewerWrapper } from '../helpers/viewer'
 
+/**
+ * Returns a jsx component representing most data of a vim object or vim document.
+ * @param viewer viewer helper
+ * @param vim Vim from which to get the data.
+ * @param selection Current viewer selection.
+ * @param isolation Isolation object.
+ * @param visible will only render if this is true.
+ * @returns
+ */
 export function BimPanel (props: {
   viewer: ViewerWrapper
   vim: VIM.Vim
@@ -106,7 +119,7 @@ export function BimPanel (props: {
         />
         <BimObjectDetails object={last} visible={last !== undefined} />
         <BimDocumentHeader
-          vim={viewer.base.vims[0]}
+          vim={viewer.viewer.vims[0]}
           visible={last === undefined}
         />
         <BimDocumentDetails vim={vim} visible={last === undefined} />

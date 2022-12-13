@@ -13,7 +13,8 @@ createVimComponent(loadVim, undefined, {
 })
 
 function loadVim (cmp: VimComponentRef) {
-  globalThis.viewer = cmp.viewer
+  cmp.helpers.viewer
+
   globalThis.component = cmp
   cmp.viewer.loadVim(url, {
     rotation: { x: 270, y: 0, z: 0 }

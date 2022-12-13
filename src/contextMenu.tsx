@@ -1,3 +1,7 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import {
   ContextMenu,
   MenuItem,
@@ -10,8 +14,8 @@ import { ViewerWrapper } from './helpers/viewer'
 import { HelpState } from './help'
 import { ArrayEquals } from './helpers/data'
 
-export const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
-type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
+const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
+export type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
 
 export function showContextMenu (position: { x: number; y: number }) {
   const showMenuConfig = {
@@ -23,14 +27,9 @@ export function showContextMenu (position: { x: number; y: number }) {
   showMenu(showMenuConfig)
 }
 
-export type contextMenuButton = {
-  id: string
-  label: string
-  keyboard: string
-  action: (e: ClickCallback) => void
-  enabled: boolean
-}
-
+/**
+ * Current list of context menu item ids. Used to find and replace items when customizing the context menu.
+ */
 export const contextMenuElementIds = {
   showControls: 'showControls',
   dividerCamera: 'dividerCamera',
@@ -50,25 +49,49 @@ export const contextMenuElementIds = {
   fitSectionToSelection: 'fitSectionToSelection'
 }
 
+/**
+ * Represents a button in the context menu. It can't be clicked triggering given action.
+ */
+export type contextMenuButton = {
+  id: string
+  label: string
+  keyboard: string
+  action: (e: ClickCallback) => void
+  enabled: boolean
+}
+
+/**
+ * Represents a divider in the context menu. It can't be clicked.
+ */
 export type contextMenuDivider = {
   id: string
   enabled: boolean
 }
 export type contextMenuElement = contextMenuButton | contextMenuDivider
 
+/**
+ * A map function that changes the context menu.
+ */
 export type contextMenuCustomization = (
   e: contextMenuElement[]
 ) => contextMenuElement[]
 
-export const VimContextMenu = React.memo(_VimContextMenu)
-export function _VimContextMenu (props: {
+/**
+ * Memoized version of VimContextMenu.
+ */
+export const VimContextMenuMemo = React.memo(VimContextMenu)
+
+/**
+ * Context menu component definition according to current state.
+ */
+export function VimContextMenu (props: {
   viewer: ViewerWrapper
   help: HelpState
   isolation: Isolation
   selection: VIM.Object[]
   customization?: (e: contextMenuElement[]) => contextMenuElement[]
 }) {
-  const viewer = props.viewer.base
+  const viewer = props.viewer.viewer
   const helper = props.viewer
   const [section, setSection] = useState<{
     visible: boolean
@@ -123,10 +146,10 @@ export function _VimContextMenu (props: {
 
   const onSelectionIsolateBtn = (e: ClickCallback) => {
     props.isolation.isolate(
-      [...props.viewer.base.selection.objects],
+      [...props.viewer.viewer.selection.objects],
       'contextMenu'
     )
-    helper.base.selection.clear()
+    helper.viewer.selection.clear()
     e.stopPropagation()
   }
 

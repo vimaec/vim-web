@@ -1,27 +1,48 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import { useEffect, useMemo, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import deepmerge from 'deepmerge'
 
+/**
+ * Makes all fields optional recursively
+ * https://stackoverflow.com/questions/41980195/recursive-partialt-in-typescript
+ */
+export type RecursivePartial<T> = {
+  [P in keyof T]?: T[P] extends (infer U)[]
+    ? RecursivePartial<U>[]
+    : T[P] extends object
+    ? RecursivePartial<T[P]>
+    : T[P]
+}
+
+/**
+ * Vim component settings, can either be set at component intialization or by user using UI.
+ */
 export type Settings = {
-  viewer: Partial<{
+  viewer: {
     isolationMaterial: boolean
     groundPlane: boolean
-  }>
-  capacity: Partial<{
+  }
+  capacity: {
     canFollowUrl: boolean
     canGoFullScreen: boolean
     useOrthographicCamera: boolean
-  }>
+  }
 
-  ui: Partial<{
+  ui: {
     logo: boolean
     bimPanel: boolean
     axesPanel: boolean
     controlBar: boolean
     loadingBox: boolean
     performance: boolean
-  }>
+  }
 }
+
+export type PartialSettings = RecursivePartial<Settings>
 
 const defaultSettings: Settings = {
   viewer: {
@@ -45,11 +66,14 @@ const defaultSettings: Settings = {
 
 export type SettingsState = { value: Settings; set: (value: Settings) => void }
 
+/**
+ * Returns a new state closure for settings.
+ */
 export function useSettings (
   viewer: VIM.Viewer,
-  value: Partial<Settings>
+  value: PartialSettings
 ): SettingsState {
-  const merge = deepmerge(defaultSettings, value)
+  const merge = deepmerge(defaultSettings, value) as Settings
   const [settings, setSettings] = useState(merge)
 
   // First Time
@@ -65,6 +89,9 @@ export function useSettings (
   return useMemo(() => ({ value: settings, set: setSettings }), [settings])
 }
 
+/**
+ * Apply given vim component settings to the given viewer.
+ */
 export function applySettings (viewer: VIM.Viewer, settings: Settings) {
   // Show/Hide performance gizmo
   const performance = document.getElementsByClassName('vim-performance')[0]

@@ -1,3 +1,7 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ControlledTreeEnvironment,
@@ -13,13 +17,20 @@ import { ArrayEquals } from '../helpers/data'
 import { Isolation } from '../helpers/isolation'
 import { BimTreeData, toTreeData, VimTreeNode } from './bimTreeData'
 
+/**
+ * Treeview component reprentation of current vim document bim data.
+ * @param viewer current viewer.
+ * @param elements an array with all element bim data.
+ * @param objects an array of objects to include in the tree view.
+ * @param isolation current isolation state.
+ */
 export function BimTree (props: {
   viewer: ViewerWrapper
   elements: VIM.ElementInfo[]
   objects: VIM.Object[]
   isolation: Isolation
 }) {
-  const viewer = props.viewer.base
+  const viewer = props.viewer.viewer
   const helper = props.viewer
   // Data state
   const [objects, setObjects] = useState<VIM.Object[]>([])
@@ -36,7 +47,7 @@ export function BimTree (props: {
   const div = useRef<HTMLDivElement>()
 
   useMemo(() => {
-    return (treeRef.current = toTreeData(props.viewer.base, elements))
+    return (treeRef.current = toTreeData(props.viewer.viewer, elements))
   }, [elements])
 
   useEffect(() => {
@@ -54,7 +65,7 @@ export function BimTree (props: {
 
   useEffect(() => {
     const subVis = viewer.renderer.onVisibilityChanged.subscribe(() => {
-      treeRef.current.updateVisibility(viewer)
+      treeRef.current?.updateVisibility(viewer)
       setVersion((v) => v + 1)
     })
 
@@ -233,7 +244,7 @@ function toggleVisibility (
   const objs = tree
     .getLeafs(index)
     .map((n) =>
-      viewer.base.vims[0].getObjectFromElement(tree.nodes[n]?.data.element)
+      viewer.viewer.vims[0].getObjectFromElement(tree.nodes[n]?.data.element)
     )
 
   const visibility = tree.nodes[index].visible

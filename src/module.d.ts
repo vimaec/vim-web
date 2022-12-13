@@ -1,3 +1,5 @@
+// Fixes image import errors in typecript.
+
 declare module '*.png' {
   const value: any
   export = value

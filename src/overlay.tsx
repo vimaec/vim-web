@@ -1,3 +1,7 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import React, { useEffect, useRef } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import { SideState } from './sidePanel/sideState'
@@ -44,7 +48,7 @@ export function Overlay (props: { viewer: VIM.Viewer; side: SideState }) {
     <div
       ref={overlay}
       onContextMenu={(e) => e.preventDefault()}
-      className={'vim-overlay vc-absolute vc-top-0 vc-left-0 vc-z-10 vc-h-full'}
+      className={'vim-overlay vc-top-0 vc-left-0 vc-z-10 vc-h-full'}
       style={{
         marginLeft: `${props.side.getWidth()}px`,
         width: `calc(100% - ${props.side.getWidth()}px)`

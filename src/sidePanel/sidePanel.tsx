@@ -1,3 +1,7 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import * as Icons from '../icons'
@@ -7,8 +11,15 @@ import { Resizable } from 're-resizable'
 const MAX_WIDTH = 0.5
 const MIN_WIDTH = 240
 
-export const SidePanel = React.memo(_SidePanel)
-export function _SidePanel (props: {
+/**
+ * Memoized version of the SidePanel.
+ */
+export const SidePanelMemo = React.memo(SidePanel)
+
+/**
+ * JSX Component for collapsible and resizable side panel.
+ */
+export function SidePanel (props: {
   side: SideState
   viewer: VIM.Viewer
   content: JSX.Element
@@ -55,7 +66,7 @@ export function _SidePanel (props: {
     props.side.popContent()
   }
 
-  const iconOptions = { height: '20', width: '20', fill: 'currentColor' }
+  const iconOptions = { height: 20, width: 20, fill: 'currentColor' }
   return (
     <Resizable
       size={{ width: props.side.getWidth(), height: '100%' }}

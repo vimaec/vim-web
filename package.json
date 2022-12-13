@@ -1,13 +1,13 @@
 {
   "name": "vim-webgl-component",
-  "version": "0.2.9",
+  "version": "0.2.11-dev.7",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "files": [
     "dist"
   ],
   "main": "./dist/vim-webgl-component.iife.js",
   "types": "./dist/types/component.d.ts",
-  "module": "./dist/vim-webgl-component.es.js",
+  "module": "./dist/vim-webgl-component.mjs",
   "homepage": "https://github.com/vimaec/vim-webgl-component.git",
   "bugs": {
     "url": "https://github.com/vimaec/vim-webgl-component/issues"
@@ -28,13 +28,14 @@
     "release-patch": "npm version patch && git push && npm publish",
     "release-dev": "npm run build && npm run bump-dev && git push && npm run publish-dev",
     "declarations": "tsc --declaration --emitDeclarationOnly --outdir ./dist/types",
-    "eslint": "eslint --ext .js,.ts src --fix"
+    "eslint": "eslint --ext .js,.ts src --fix",
+    "documentation": "typedoc --entryPointStrategy expand --mergeModulesMergeMode module --out docs/api --excludeProtected --excludeExternals --excludePrivate --exclude ./src/main.tsx --exclude ./src/module.d.ts ./src/ && git add ./docs/"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",
     "@types/react": "^17.0.39",
-    "@types/react-dom": "^18.0.5",
-    "@types/three": "^0.133.0",
+    "@types/react-dom": "^18.0.9",
+    "@types/three": "^0.146.0",
     "@typescript-eslint/eslint-plugin": "^5.36.2",
     "autoprefixer": "^10.4.7",
     "eslint": "^8.23.1",
@@ -49,24 +50,25 @@
     "postcss": "^8.4.14",
     "prettier": "^2.7.1",
     "prettier-plugin-tailwindcss": "^0.1.13",
-    "react-dom": "^18.1.0",
-    "tailwindcss": "^3.1.6",
-    "typescript": "^4.8.3",
-    "vite": "^2.8.4"
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.2.4",
+    "typescript": "^4.9.3",
+    "vite": "^3.2.5",
+    "typedoc": "^0.23.21",
+    "typedoc-plugin-merge-modules": "^4.0.1"
   },
   "dependencies": {
     "@firefox-devtools/react-contextmenu": "^5.0.0",
     "deepmerge": "^4.2.2",
     "jsx": "^0.9.89",
-    "lodash-es": "^4.17.21",
     "re-resizable": "^6.9.9",
-    "react": "^18.1.0",
-    "react-complex-tree": "^1.1.9",
+    "react": "^18.2.0",
+    "react-complex-tree": "^2.0.0",
     "react-tooltip": "^4.2.21",
     "stats-js": "^1.0.1",
-    "ste-signals": "^3.0.6",
-    "ste-simple-events": "^3.0.6",
-    "vim-webgl-viewer": "1.4.10"
+    "ste-signals": "^3.0.7",
+    "ste-simple-events": "^3.0.7",
+    "vim-webgl-viewer": "1.4.12-dev.14"
   },
   "keywords": [
     "3d",
