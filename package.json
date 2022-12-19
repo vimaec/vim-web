@@ -68,7 +68,7 @@
     "stats-js": "^1.0.1",
     "ste-signals": "^3.0.7",
     "ste-simple-events": "^3.0.7",
-    "vim-webgl-viewer": "1.4.12-dev.21"
+    "vim-webgl-viewer": "1.4.12-dev.26"
   },
   "keywords": [
     "3d",
