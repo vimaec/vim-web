@@ -64,7 +64,7 @@ export function BimTree (props: {
   }, [elements, objects])
 
   useEffect(() => {
-    const subVis = viewer.renderer.onVisibilityChanged.subscribe(() => {
+    const subVis = viewer.renderer.onSceneUpdated.subscribe(() => {
       treeRef.current?.updateVisibility(viewer)
       setVersion((v) => v + 1)
     })
@@ -109,8 +109,8 @@ export function BimTree (props: {
       className="vim-bim-tree vc-mb-5"
       ref={div}
       tabIndex={0}
-      onFocus={() => (viewer.camera.freeze = true)}
-      onBlur={() => (viewer.camera.freeze = false)}
+      onFocus={() => (viewer.inputs.keyboard.arrowsEnabled = true)}
+      onBlur={() => (viewer.inputs.keyboard.arrowsEnabled = false)}
     >
       <ControlledTreeEnvironment
         items={treeRef.current.nodes}
