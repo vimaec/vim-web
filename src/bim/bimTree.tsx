@@ -109,8 +109,8 @@ export function BimTree (props: {
       className="vim-bim-tree vc-mb-5"
       ref={div}
       tabIndex={0}
-      onFocus={() => (viewer.inputs.keyboard.arrowsEnabled = true)}
-      onBlur={() => (viewer.inputs.keyboard.arrowsEnabled = false)}
+      onFocus={() => (viewer.inputs.keyboard.arrowsEnabled = false)}
+      onBlur={() => (viewer.inputs.keyboard.arrowsEnabled = true)}
     >
       <ControlledTreeEnvironment
         items={treeRef.current.nodes}
