@@ -2,15 +2,17 @@
  * @module viw-webgl-component
  */
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 
-import { BimTree } from './bimTree'
+import { BimTree, TreeActionRef } from './bimTree'
 import { BimDocumentDetails, BimObjectDetails } from './bimDetails'
 import { BimDocumentHeader, BimObjectHeader } from './bimHeader'
 import { BimSearch } from './bimSearch'
 import { Isolation } from '../helpers/isolation'
 import { ViewerWrapper } from '../helpers/viewer'
+import { Grouping } from './bimTreeData'
+import { TreeRef } from 'react-complex-tree'
 
 /**
  * Returns a jsx component representing most data of a vim object or vim document.
@@ -35,6 +37,8 @@ export function BimPanel (props: {
   const [vim, setVim] = useState<VIM.Vim>()
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
   const [filteredElements, setFilteredElements] = useState<VIM.ElementInfo[]>()
+  const [grouping, setGrouping] = useState<Grouping>('Family')
+  const treeRef = useRef<TreeActionRef>()
 
   if (props.vim !== vim) {
     setVim(props.vim)
@@ -85,6 +89,11 @@ export function BimPanel (props: {
     setFilter(value)
   }
 
+  const updateGrouping = (value: Grouping) => {
+    console.log('group : ' + value)
+    setGrouping(value)
+  }
+
   const last = props.selection[props.selection.length - 1]
 
   return (
@@ -99,11 +108,46 @@ export function BimPanel (props: {
           setFilter={updateFilter}
           count={filteredElements?.length}
         />
+        <select
+          className="vim-bim-grouping"
+          onChange={(e) => updateGrouping(e.target.value as Grouping)}
+        >
+          <option value={'Family'}>Family</option>
+          <option value={'Level'}>Level</option>
+          <option value={'Workset'}>Workset</option>
+        </select>
+        <select
+          className="vim-bim-actions"
+          onChange={(e) => {
+            switch (e.target.value) {
+              case 'show':
+                treeRef.current?.showAll()
+                e.target.value = ''
+                break
+              case 'hide':
+                treeRef.current?.hideAll()
+                e.target.value = ''
+                break
+              case 'collapse':
+                treeRef.current?.collapseAll()
+                e.target.value = ''
+                break
+            }
+          }}
+        >
+          <option value={''}>...</option>
+          <option value={'show'}>Show All</option>
+          <option value={'hide'}>Hide All</option>
+          <option value={'collapse'}>Collapse All</option>
+        </select>
+
         <BimTree
+          actionRef={treeRef}
           viewer={viewer}
           elements={filteredElements}
           objects={props.selection}
           isolation={props.isolation}
+          grouping={grouping}
         />
       </div>
       <hr className="-vc-mx-6 vc-mb-5 vc-border-gray-divider" />
