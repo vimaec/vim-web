@@ -109,6 +109,7 @@ export function BimPanel (props: {
           count={filteredElements?.length}
         />
         <select
+          hidden={true}
           className="vim-bim-grouping"
           onChange={(e) => updateGrouping(e.target.value as Grouping)}
         >
@@ -117,6 +118,7 @@ export function BimPanel (props: {
           <option value={'Workset'}>Workset</option>
         </select>
         <select
+          hidden={true}
           className="vim-bim-actions"
           onChange={(e) => {
             switch (e.target.value) {
