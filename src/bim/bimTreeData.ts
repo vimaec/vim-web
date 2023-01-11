@@ -11,6 +11,8 @@ import { MapTree, sort, toMapTree } from '../helpers/data'
  */
 export type NodeVisibility = 'vim-visible' | 'vim-undefined' | 'vim-hidden'
 
+export type Grouping = 'Family' | 'Level' | 'Workset'
+
 /**
  * Extension of TreeItem
  */
@@ -26,10 +28,24 @@ export type VimTreeNode = TreeItem<ElementInfo> & {
  * @param elements elements to include in the treeview.
  * @returns
  */
-export function toTreeData (viewer: VIM.Viewer, elements: VIM.ElementInfo[]) {
+export function toTreeData (
+  viewer: VIM.Viewer,
+  elements: VIM.ElementInfo[],
+  grouping: Grouping
+) {
   if (!elements) return
+
+  const main: (e: VIM.ElementInfo) => string =
+    grouping === 'Family'
+      ? (e) => e.categoryName
+      : grouping === 'Level'
+        ? (e) => e.level
+        : grouping === 'Workset'
+          ? (e) => e.workset
+          : null
+
   const tree = toMapTree(elements, [
-    (e) => e.categoryName,
+    main,
     (e) => e.familyName,
     (e) => e.familyTypeName
   ])

@@ -1,6 +1,6 @@
 {
   "name": "vim-webgl-component",
-  "version": "0.2.11-dev.7",
+  "version": "0.2.11",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "files": [
     "dist"
@@ -37,7 +37,7 @@
     "@types/react-dom": "^18.0.9",
     "@types/three": "^0.146.0",
     "@typescript-eslint/eslint-plugin": "^5.36.2",
-    "autoprefixer": "^10.4.7",
+    "autoprefixer": "10.4.5",
     "eslint": "^8.23.1",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-standard-with-typescript": "^22.0.0",
@@ -68,7 +68,7 @@
     "stats-js": "^1.0.1",
     "ste-signals": "^3.0.7",
     "ste-simple-events": "^3.0.7",
-    "vim-webgl-viewer": "1.4.12-dev.14"
+    "vim-webgl-viewer": "1.4.12"
   },
   "keywords": [
     "3d",

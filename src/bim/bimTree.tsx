@@ -15,7 +15,13 @@ import { showContextMenu } from '../contextMenu'
 import { ViewerWrapper } from '../helpers/viewer'
 import { ArrayEquals } from '../helpers/data'
 import { Isolation } from '../helpers/isolation'
-import { BimTreeData, toTreeData, VimTreeNode } from './bimTreeData'
+import { BimTreeData, Grouping, toTreeData, VimTreeNode } from './bimTreeData'
+
+export type TreeActionRef = {
+  showAll: () => void
+  hideAll: () => void
+  collapseAll: () => void
+}
 
 /**
  * Treeview component reprentation of current vim document bim data.
@@ -25,16 +31,17 @@ import { BimTreeData, toTreeData, VimTreeNode } from './bimTreeData'
  * @param isolation current isolation state.
  */
 export function BimTree (props: {
+  actionRef: React.MutableRefObject<TreeActionRef>
   viewer: ViewerWrapper
   elements: VIM.ElementInfo[]
   objects: VIM.Object[]
   isolation: Isolation
+  grouping: Grouping
 }) {
   const viewer = props.viewer.viewer
   const helper = props.viewer
   // Data state
   const [objects, setObjects] = useState<VIM.Object[]>([])
-  const [elements, setElements] = useState<VIM.ElementInfo[]>()
   const treeRef = useRef<BimTreeData>()
 
   // Tree state
@@ -45,26 +52,45 @@ export function BimTree (props: {
   const [, setVersion] = useState(0)
   const focus = useRef<number>(0)
   const div = useRef<HTMLDivElement>()
+  props.actionRef.current = {
+    showAll: () => {
+      props.isolation.clear('tree')
+    },
+    hideAll: () => {
+      props.isolation.isolate([], 'tree')
+    },
+    collapseAll: () => {
+      setExpandedItems([])
+    }
+  }
 
   useMemo(() => {
-    return (treeRef.current = toTreeData(props.viewer.viewer, elements))
-  }, [elements])
+    return (treeRef.current = toTreeData(
+      props.viewer.viewer,
+      props.elements,
+      props.grouping
+    ))
+  }, [props.elements, props.grouping])
+
+  useEffect(() => {
+    setExpandedItems([])
+  }, [props.grouping])
 
   useEffect(() => {
     ReactTooltip.rebuild()
-  }, [expandedItems, elements])
+  }, [expandedItems, props.elements])
 
   // Scroll view so that element is visible, if needed.
   useEffect(() => {
-    if (elements && objects.length === 1) {
+    if (props.elements && objects.length === 1) {
       scrollToSelection(div.current)
       const [first] = viewer.selection.objects
       focus.current = treeRef.current.getNodeFromElement(first.element)
     }
-  }, [elements, objects])
+  }, [props.elements, objects])
 
   useEffect(() => {
-    const subVis = viewer.renderer.onVisibilityChanged.subscribe(() => {
+    const subVis = viewer.renderer.onSceneUpdated.subscribe(() => {
       treeRef.current?.updateVisibility(viewer)
       setVersion((v) => v + 1)
     })
@@ -74,13 +100,8 @@ export function BimTree (props: {
     }
   }, [])
 
-  // Generate or regenerate tree as needed.
-  if (props.elements && props.elements !== elements) {
-    setElements(props.elements)
-  }
-
   // Display loading if no elements
-  if (!elements) {
+  if (!props.elements) {
     return (
       <div className="vim-bim-tree" ref={div}>
         Loading . . .
@@ -109,8 +130,8 @@ export function BimTree (props: {
       className="vim-bim-tree vc-mb-5"
       ref={div}
       tabIndex={0}
-      onFocus={() => viewer.inputs.keyboard.unregister()}
-      onBlur={() => viewer.inputs.keyboard.register()}
+      onFocus={() => (viewer.inputs.keyboard.arrowsEnabled = false)}
+      onBlur={() => (viewer.inputs.keyboard.arrowsEnabled = true)}
     >
       <ControlledTreeEnvironment
         items={treeRef.current.nodes}
