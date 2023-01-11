@@ -58,7 +58,7 @@
     "typedoc-plugin-merge-modules": "^4.0.1"
   },
   "dependencies": {
-    "@firefox-devtools/react-contextmenu": "^5.0.0",
+    "@firefox-devtools/react-contextmenu": "^5.1.0",
     "deepmerge": "^4.2.2",
     "jsx": "^0.9.89",
     "re-resizable": "^6.9.9",
@@ -68,7 +68,7 @@
     "stats-js": "^1.0.1",
     "ste-signals": "^3.0.7",
     "ste-simple-events": "^3.0.7",
-    "vim-webgl-viewer": "1.4.13"
+    "vim-webgl-viewer": "1.4.14-dev.0"
   },
   "keywords": [
     "3d",
