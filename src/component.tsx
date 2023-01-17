@@ -354,7 +354,7 @@ function useLogState () {
   }, [log])
 }
 
-type LogsRef = {
+export type LogsRef = {
   log: (value: string) => void
   clear: () => void
   getLog: () => string
