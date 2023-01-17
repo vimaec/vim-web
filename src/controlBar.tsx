@@ -426,6 +426,13 @@ function TabSettings (props: {
     Icons.settings,
     () => props.side.getContent() === 'settings'
   )
+  const btnLogs = toggleButton(
+    'Logs',
+    () => props.side.toggleContent('logs'),
+    Icons.home,
+    () => props.side.getContent() === 'logs'
+  )
+
   const btnHelp = toggleButton(
     'Help',
     onHelpBtn,
@@ -450,6 +457,7 @@ function TabSettings (props: {
     <>
       {props.settings.ui.bimPanel ? btnTreeView : null}
       {btnSettings}
+      {props.settings.ui.logPanel ? btnLogs : null}
       {btnHelp}
       {props.settings.capacity.canGoFullScreen ? btnFullScreen : null}
     </>

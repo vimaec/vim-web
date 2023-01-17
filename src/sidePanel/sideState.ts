@@ -4,7 +4,7 @@
 
 import { useMemo, useRef, useState } from 'react'
 
-export type SideContent = 'none' | 'bim' | 'settings'
+export type SideContent = 'none' | 'bim' | 'settings' | 'logs'
 
 export type SideState = {
   toggleContent: (content: SideContent) => void

@@ -2,7 +2,7 @@
  * @module viw-webgl-component
  */
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { createRoot } from 'react-dom/client'
 import ReactTooltip from 'react-tooltip'
 import logo from './assets/logo.png'
@@ -65,6 +65,8 @@ export type VimComponentRef = {
    * Callback to customize context menu at runtime.
    */
   customizeContextMenu: (c: contextMenuCustomization) => void
+
+  logs: LogsRef
 }
 
 /**
@@ -161,6 +163,8 @@ export function VimComponent (props: {
   const help = useHelp()
   const [vim, selection] = useViewerState(props.viewer)
   const [msg, setMsg] = useState<string>()
+  const [log, setLog] = useState<string>()
+  const logs = useLogState()
 
   // On first render
   useEffect(() => {
@@ -170,6 +174,7 @@ export function VimComponent (props: {
       helpers: viewer,
       isolation,
       setMsg,
+      logs,
       // Double lambda is required to avoid react from using reducer pattern
       // https://stackoverflow.com/questions/59040989/usestate-with-a-lambda-invokes-the-lambda-when-set
       customizeContextMenu: (v) => setcontextMenu(() => v)
@@ -214,6 +219,11 @@ export function VimComponent (props: {
         viewer={props.viewer}
         settings={settings}
       />
+      {settings.value.ui.logPanel
+        ? (
+        <Logs visible={side.getContent() === 'logs'} text={logs.getLog()} />
+          )
+        : null}
     </>
   )
   return (
@@ -313,4 +323,39 @@ function addPerformanceCounter () {
     stats.update()
   }
   animate()
+}
+
+function Logs (props: { visible: boolean; text: string }) {
+  return props.visible
+    ? (
+    <div className="vim-logs vc-h-full vc-w-full">
+      <h2 className="vim-bim-upper-title vc-mb-6 vc-text-xs vc-font-bold vc-uppercase">
+        Logs
+      </h2>
+      <textarea
+        className="vim-logs-box vc-h-full vc-w-full"
+        value={props.text}
+      ></textarea>
+    </div>
+      )
+    : null
+}
+
+function useLogState () {
+  const [log, setLog] = useState<string>()
+  return useMemo(() => {
+    return {
+      log: (value: string) => {
+        setLog(value)
+      },
+      clear: () => setLog(''),
+      getLog: () => log
+    } as LogsRef
+  }, [log])
+}
+
+type LogsRef = {
+  log: (value: string) => void
+  clear: () => void
+  getLog: () => string
 }

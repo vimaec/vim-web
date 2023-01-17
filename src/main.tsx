@@ -9,6 +9,7 @@ const url = params.has('vim')
   : 'https://vim.azureedge.net/samples/residence.vim'
 
 createVimComponent(loadVim, undefined, {
+  ui: { logPanel: true },
   capacity: { useOrthographicCamera: false }
 })
 

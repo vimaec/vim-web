@@ -39,6 +39,7 @@ export type Settings = {
     controlBar: boolean
     loadingBox: boolean
     performance: boolean
+    logPanel: boolean
   }
 }
 
@@ -60,7 +61,8 @@ const defaultSettings: Settings = {
     axesPanel: true,
     controlBar: true,
     loadingBox: true,
-    performance: true
+    performance: true,
+    logPanel: false
   }
 }
 
