@@ -326,13 +326,43 @@ function addPerformanceCounter () {
 }
 
 function Logs (props: { visible: boolean; text: string }) {
+  const text = useRef<HTMLTextAreaElement>()
+  const btn = useRef<HTMLButtonElement>()
+  const anchor = useRef<HTMLAnchorElement>()
+  const onCopyBtn = () => {
+    text.current.select()
+    navigator.clipboard.writeText(text.current.value)
+  }
+
+  const onSaveButton = () => {
+    const blob = new Blob([text.current.value], { type: 'csv' })
+    anchor.current.href = URL.createObjectURL(blob)
+    anchor.current.download = 'cells'
+  }
+
   return props.visible
     ? (
     <div className="vim-logs vc-h-full vc-w-full">
       <h2 className="vim-bim-upper-title vc-mb-6 vc-text-xs vc-font-bold vc-uppercase">
         Logs
       </h2>
+      <button
+        ref={btn}
+        className="vim-logs-copy bg-transparent vc-absolute vc-top-4 vc-ml-12 vc-rounded vc-border vc-border-light-blue vc-py-1 vc-px-2 vc-font-semibold vc-text-light-blue hover:vc-border-transparent hover:vc-bg-light-blue hover:vc-text-white"
+        onClick={onCopyBtn}
+      >
+        Copy
+      </button>
+      <button
+        ref={btn}
+        className="vim-logs-copy bg-transparent vc-absolute vc-top-4 vc-ml-28 vc-rounded vc-border vc-border-light-blue vc-py-1 vc-px-2 vc-font-semibold vc-text-light-blue hover:vc-border-transparent hover:vc-bg-light-blue hover:vc-text-white"
+        onClick={onSaveButton}
+      >
+        <a ref={anchor}>Save</a>
+      </button>
       <textarea
+        readOnly={true}
+        ref={text}
         className="vim-logs-box vc-h-full vc-w-full"
         value={props.text}
       ></textarea>
