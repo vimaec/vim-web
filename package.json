@@ -1,6 +1,6 @@
 {
   "name": "vim-webgl-component",
-  "version": "0.2.17-dev.7",
+  "version": "0.2.17-dev.8",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "files": [
     "dist"
