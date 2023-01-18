@@ -30,6 +30,7 @@ export type Settings = {
     canFollowUrl: boolean
     canGoFullScreen: boolean
     useOrthographicCamera: boolean
+    canDownload: boolean
   }
 
   ui: {
@@ -53,7 +54,8 @@ const defaultSettings: Settings = {
   capacity: {
     canFollowUrl: true,
     canGoFullScreen: true,
-    useOrthographicCamera: true
+    useOrthographicCamera: true,
+    canDownload: true
   },
   ui: {
     logo: true,

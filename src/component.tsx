@@ -27,10 +27,11 @@ import { useSideState } from './sidePanel/sideState'
 import { MenuSettings } from './settings/menuSettings'
 import { MenuToastMemo } from './toast'
 import { Overlay } from './overlay'
+import { Logs, LogsRef, useLogState } from './logsPanel'
 
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
-import { PartialSettings, useSettings } from './settings/settings'
+import { PartialSettings, Settings, useSettings } from './settings/settings'
 import { Isolation } from './helpers/isolation'
 import { ViewerWrapper } from './helpers/viewer'
 
@@ -221,7 +222,11 @@ export function VimComponent (props: {
       />
       {settings.value.ui.logPanel
         ? (
-        <Logs visible={side.getContent() === 'logs'} text={logs.getLog()} />
+        <Logs
+          visible={side.getContent() === 'logs'}
+          text={logs.getLog()}
+          settings={settings.value}
+        />
           )
         : null}
     </>
@@ -323,68 +328,4 @@ function addPerformanceCounter () {
     stats.update()
   }
   animate()
-}
-
-function Logs (props: { visible: boolean; text: string }) {
-  const anchor = useRef<HTMLAnchorElement>()
-  const prev = useRef<string>()
-  const url = useMemo(() => {
-    console.log('revoke: ' + prev.current)
-    URL.revokeObjectURL(prev.current)
-    const blob = new Blob([props.text], { type: 'csv' })
-    const r = URL.createObjectURL(blob)
-    console.log('created: ' + r)
-    prev.current = r
-    return r
-  }, [props.text])
-
-  const onCopyBtn = () => {
-    navigator.clipboard.writeText(props.text)
-  }
-
-  return props.visible ? (
-    <div className="vim-logs vc-h-full vc-w-full">
-      <h2 className="vim-bim-upper-title vc-mb-6 vc-text-xs vc-font-bold vc-uppercase">
-        Logs
-      </h2>
-      <button
-        className="vim-logs-copy bg-transparent vc-absolute vc-top-4 vc-ml-12 vc-rounded vc-border vc-border-light-blue vc-py-1 vc-px-2 vc-font-semibold vc-text-light-blue hover:vc-border-transparent hover:vc-bg-light-blue hover:vc-text-white"
-        onClick={onCopyBtn}
-      >
-        Copy
-      </button>
-      <button
-        className="vim-logs-copy bg-transparent vc-absolute vc-top-4 vc-ml-28 vc-rounded vc-border vc-border-light-blue vc-py-1 vc-px-2 vc-font-semibold vc-text-light-blue hover:vc-border-transparent hover:vc-bg-light-blue hover:vc-text-white"
-        // onClick={onSaveButton}
-      >
-        <a ref={anchor} href={url} download="cells">
-          Save
-        </a>
-      </button>
-      <textarea
-        readOnly={true}
-        className="vim-logs-box vc-h-full vc-w-full"
-        value={props.text}
-      ></textarea>
-    </div>
-  ) : null
-}
-
-function useLogState () {
-  const [log, setLog] = useState<string>()
-  return useMemo(() => {
-    return {
-      log: (value: string) => {
-        setLog(value)
-      },
-      clear: () => setLog(''),
-      getLog: () => log
-    } as LogsRef
-  }, [log])
-}
-
-export type LogsRef = {
-  log: (value: string) => void
-  clear: () => void
-  getLog: () => string
 }
