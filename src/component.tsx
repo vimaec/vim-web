@@ -340,7 +340,6 @@ function Logs (props: { visible: boolean; text: string }) {
     anchor.current.href = url
     anchor.current.download = 'cells'
     setTimeout(() => {
-      document.body.removeChild(a)
       window.URL.revokeObjectURL(url)
     }, 0)
   }
