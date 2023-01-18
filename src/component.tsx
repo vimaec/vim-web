@@ -329,11 +329,11 @@ function Logs (props: { visible: boolean; text: string }) {
   const anchor = useRef<HTMLAnchorElement>()
   const prev = useRef<string>()
   const url = useMemo(() => {
-    // console.log('revoke: ' + prev.current)
+    console.log('revoke: ' + prev.current)
     URL.revokeObjectURL(prev.current)
     const blob = new Blob([props.text], { type: 'csv' })
     const r = URL.createObjectURL(blob)
-    // console.log('created: ' + r)
+    console.log('created: ' + r)
     prev.current = r
     return r
   }, [props.text])
