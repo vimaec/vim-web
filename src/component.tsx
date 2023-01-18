@@ -336,8 +336,13 @@ function Logs (props: { visible: boolean; text: string }) {
 
   const onSaveButton = () => {
     const blob = new Blob([text.current.value], { type: 'csv' })
-    anchor.current.href = URL.createObjectURL(blob)
+    const url = URL.createObjectURL(blob)
+    anchor.current.href = url
     anchor.current.download = 'cells'
+    setTimeout(() => {
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(url)
+    }, 0)
   }
 
   return props.visible
