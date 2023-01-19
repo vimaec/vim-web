@@ -120,6 +120,8 @@ export function BimTree (props: {
     setSelectedItems(selection)
   }
 
+  if (!props.treeData) return null
+
   return (
     <div
       className="vim-bim-tree vc-mb-5"

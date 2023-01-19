@@ -33,12 +33,11 @@ export function BimPanel (props: {
 }) {
   const viewer = props.viewer
 
-  const [filter, setFilter] = useState('')
-
   const [vim, setVim] = useState<VIM.Vim>()
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
-  const [filteredElements, setFilteredElements] = useState<VIM.ElementInfo[]>()
+  const [filter, setFilter] = useState('')
   const [grouping, setGrouping] = useState<Grouping>('Family')
+
   const tree = useMemo(() => {
     const tree = toTreeData(props.viewer.viewer, elements, grouping)
 
@@ -96,23 +95,21 @@ export function BimPanel (props: {
     }
   }, [vim])
 
-  // on filter or elements update, update filteredElements
-  useEffect(() => {
-    console.log('effect filter ' + filter)
-    if (vim && elements) {
-      const meshElements = elements.filter(
-        (e) => vim.getObjectFromElement(e.element).hasMesh
-      )
-      const result = filterElements(vim, meshElements, filter)
-      setFilteredElements(result)
+  const filteredElements = useMemo(() => {
+    if (!elements) return []
+    const meshElements = elements.filter(
+      (e) => vim.getObjectFromElement(e.element).hasMesh
+    )
+    const result = filterElements(vim, meshElements, filter)
 
-      if (filter !== '') {
-        const objects = result.map((e) => vim.getObjectFromElement(e.element))
-        props.isolation.isolate(objects, 'search')
-      } else {
-        props.isolation.isolate(undefined, 'search')
-      }
+    // side effect doesnt belong here
+    if (filter !== '') {
+      const objects = result.map((e) => vim.getObjectFromElement(e.element))
+      props.isolation.isolate(objects, 'search')
+    } else {
+      props.isolation.isolate(undefined, 'search')
     }
+    return result
   }, [filter, elements])
 
   const updateFilter = (value: string) => {
