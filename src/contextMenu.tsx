@@ -112,7 +112,6 @@ export function VimContextMenu (props: {
     visible: viewer.sectionBox.visible,
     clip: viewer.sectionBox.clip
   })
-  console.log('CONTEXT MENU')
   const isClipping = () => {
     return !viewer.sectionBox.box.containsBox(viewer.renderer.getBoundingBox())
   }

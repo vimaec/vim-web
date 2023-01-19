@@ -29,7 +29,7 @@ export type VimTreeNode = TreeItem<ElementInfo> & {
  * @returns
  */
 export function toTreeData (
-  viewer: VIM.Viewer,
+  vim: VIM.Vim,
   elements: VIM.ElementInfo[],
   grouping: Grouping
 ) {
@@ -52,7 +52,7 @@ export function toTreeData (
   sort(tree)
 
   const result = new BimTreeData(tree)
-  result.updateVisibility(viewer)
+  result.updateVisibility(vim)
   return result
 }
 
@@ -67,7 +67,7 @@ export class BimTreeData {
     this.flatten(map)
   }
 
-  updateVisibility (viewer: VIM.Viewer) {
+  updateVisibility (vim: VIM.Vim) {
     const set = new Set<VimTreeNode>()
     const updateOne = (node: VimTreeNode): NodeVisibility => {
       if (set.has(node)) {
@@ -89,7 +89,7 @@ export class BimTreeData {
             : 'vim-undefined'
         return node.visible
       } else {
-        const obj = viewer.vims[0].getObjectFromElement(node.data?.element)
+        const obj = vim.getObjectFromElement(node.data?.element)
         node.visible = obj?.visible ? 'vim-visible' : 'vim-hidden'
         return node.visible
       }

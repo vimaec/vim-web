@@ -165,11 +165,11 @@ export function VimComponent (props: {
   const side = useSideState(settings.value.ui.bimPanel, 480)
   const [contextMenu, setcontextMenu] = useState<contextMenuCustomization>()
   const help = useHelp()
-  const [vim, selection] = useViewerState(props.viewer)
+  const viewerState = useViewerState(props.viewer)
   const [msg, setMsg] = useState<string>()
-  const [log, setLog] = useState<string>()
   const logs = useLogState()
   const treeRef = useRef<TreeActionRef>()
+
   // On first render
   useEffect(() => {
     addPerformanceCounter()
@@ -212,8 +212,7 @@ export function VimComponent (props: {
         ? (
         <BimPanel
           viewer={viewer}
-          vim={vim}
-          selection={selection}
+          viewerState={viewerState}
           visible={side.getContent() === 'bim'}
           isolation={isolation}
           treeRef={treeRef}
@@ -275,7 +274,7 @@ export function VimComponent (props: {
         viewer={viewer}
         help={help}
         isolation={isolation}
-        selection={selection}
+        selection={viewerState.selection}
         customization={contextMenu}
         treeRef={treeRef}
       />
@@ -299,6 +298,7 @@ function useViewerState (viewer: VIM.Viewer) {
   const [selection, setSelection] = useState<VIM.Object[]>([
     ...viewer.selection.objects
   ])
+  const [elements, setElements] = useState<VIM.ElementInfo[]>()
 
   useEffect(() => {
     // register to viewer state changes
@@ -315,7 +315,17 @@ function useViewerState (viewer: VIM.Viewer) {
     }
   }, [])
 
-  return [vim, selection] as [VIM.Vim, VIM.Object[]]
+  useEffect(() => {
+    if (vim) {
+      vim.document.getElementsSummary().then((elements) => {
+        setElements(elements)
+      })
+    } else {
+      setElements(undefined)
+    }
+  }, [vim])
+
+  return { vim, selection, elements } as ViewerState
 }
 
 /**
@@ -334,4 +344,10 @@ function addPerformanceCounter () {
     stats.update()
   }
   animate()
+}
+
+export type ViewerState = {
+  vim: VIM.Vim
+  selection: VIM.Object[]
+  elements: VIM.ElementInfo[]
 }

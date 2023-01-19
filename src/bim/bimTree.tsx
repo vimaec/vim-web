@@ -15,7 +15,7 @@ import { showContextMenu } from '../contextMenu'
 import { ViewerWrapper } from '../helpers/viewer'
 import { ArrayEquals } from '../helpers/data'
 import { Isolation } from '../helpers/isolation'
-import { BimTreeData, Grouping, toTreeData, VimTreeNode } from './bimTreeData'
+import { BimTreeData, Grouping, VimTreeNode } from './bimTreeData'
 
 export type TreeActionRef = {
   showAll: () => void
@@ -86,7 +86,7 @@ export function BimTree (props: {
 
   useEffect(() => {
     const subVis = viewer.renderer.onSceneUpdated.subscribe(() => {
-      props.treeData?.updateVisibility(viewer)
+      props.treeData?.updateVisibility(viewer.vims[0])
       setVersion((v) => v + 1)
     })
 

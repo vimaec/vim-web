@@ -13,6 +13,7 @@ import { Isolation } from '../helpers/isolation'
 import { ViewerWrapper } from '../helpers/viewer'
 import { Grouping, toTreeData } from './bimTreeData'
 import { TreeRef } from 'react-complex-tree'
+import { ViewerState } from '../component'
 
 /**
  * Returns a jsx component representing most data of a vim object or vim document.
@@ -25,21 +26,22 @@ import { TreeRef } from 'react-complex-tree'
  */
 export function BimPanel (props: {
   viewer: ViewerWrapper
-  vim: VIM.Vim
-  selection: VIM.Object[]
+  viewerState: ViewerState
   isolation: Isolation
   visible: boolean
   treeRef: React.MutableRefObject<TreeActionRef>
 }) {
   const viewer = props.viewer
 
-  const [vim, setVim] = useState<VIM.Vim>()
-  const [elements, setElements] = useState<VIM.ElementInfo[]>()
   const [filter, setFilter] = useState('')
   const [grouping, setGrouping] = useState<Grouping>('Family')
 
   const tree = useMemo(() => {
-    const tree = toTreeData(props.viewer.viewer, elements, grouping)
+    const tree = toTreeData(
+      props.viewer.viewer.vims[0],
+      props.viewerState.elements,
+      grouping
+    )
 
     if (props.treeRef.current) {
       props.treeRef.current.selectSibblings = (object: VIM.Object) => {
@@ -61,13 +63,9 @@ export function BimPanel (props: {
     }
 
     return tree
-  }, [elements, grouping])
+  }, [props.viewerState, grouping])
 
   const treeRef = useRef<TreeActionRef>()
-
-  if (props.vim !== vim) {
-    setVim(props.vim)
-  }
 
   useEffect(() => {
     props.treeRef.current = treeRef.current
@@ -84,33 +82,24 @@ export function BimPanel (props: {
     }
   }, [])
 
-  // on vim update, update elements
-  useEffect(() => {
-    if (vim) {
-      vim.document.getElementsSummary().then((elements) => {
-        setElements(elements)
-      })
-    } else {
-      setElements(undefined)
-    }
-  }, [vim])
-
   const filteredElements = useMemo(() => {
-    if (!elements) return []
-    const meshElements = elements.filter(
-      (e) => vim.getObjectFromElement(e.element).hasMesh
+    if (!props.viewerState.elements) return []
+    const meshElements = props.viewerState.elements.filter(
+      (e) => props.viewerState.vim.getObjectFromElement(e.element).hasMesh
     )
-    const result = filterElements(vim, meshElements, filter)
+    const result = filterElements(props.viewerState.vim, meshElements, filter)
 
     // side effect doesnt belong here
     if (filter !== '') {
-      const objects = result.map((e) => vim.getObjectFromElement(e.element))
+      const objects = result.map((e) =>
+        props.viewerState.vim.getObjectFromElement(e.element)
+      )
       props.isolation.isolate(objects, 'search')
     } else {
       props.isolation.isolate(undefined, 'search')
     }
     return result
-  }, [filter, elements])
+  }, [filter, props.viewerState.elements])
 
   const updateFilter = (value: string) => {
     setFilter(value)
@@ -121,7 +110,8 @@ export function BimPanel (props: {
     setGrouping(value)
   }
 
-  const last = props.selection[props.selection.length - 1]
+  const last =
+    props.viewerState.selection[props.viewerState.selection.length - 1]
 
   return (
     <div className={`vim-bim-panel ${props.visible ? '' : 'vc-hidden'}`}>
@@ -174,7 +164,7 @@ export function BimPanel (props: {
           actionRef={treeRef}
           viewer={viewer}
           elements={filteredElements}
-          objects={props.selection}
+          objects={props.viewerState.selection}
           isolation={props.isolation}
           grouping={grouping}
           treeData={tree}
@@ -196,7 +186,10 @@ export function BimPanel (props: {
           vim={viewer.viewer.vims[0]}
           visible={last === undefined}
         />
-        <BimDocumentDetails vim={vim} visible={last === undefined} />
+        <BimDocumentDetails
+          vim={props.viewerState.vim}
+          visible={last === undefined}
+        />
       </div>
     </div>
   )
