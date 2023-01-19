@@ -145,19 +145,37 @@ export class BimTreeData {
     return none ? 'none' : all ? 'all' : 'some'
   }
 
-  getChildren (node: number, recusive = false, result: number[] = []) {
-    result.push(node)
+  getChildren (
+    node: number,
+    includeSelf = false,
+    recursive = false,
+    result: number[] = []
+  ) {
+    if (includeSelf) {
+      result.push(node)
+    }
     const current = this.nodes[node]
     if (current.children?.length > 0) {
-      if (recusive) {
+      if (recursive) {
         current.children.forEach((c) =>
-          this.getChildren(c as number, recusive, result)
+          this.getChildren(c as number, true, recursive, result)
         )
       } else {
         current.children.forEach((c) => result.push(c as number))
       }
     }
     return result
+  }
+
+  getParent (node: number) {
+    const current = this.nodes[node]
+    return current.parent
+  }
+
+  getSibblings (node: number) {
+    const parent = this.nodes[node].parent
+    const sibblings = this.getChildren(parent)
+    return sibblings
   }
 
   getAncestors (node: number) {

@@ -21,6 +21,7 @@ export type TreeActionRef = {
   showAll: () => void
   hideAll: () => void
   collapseAll: () => void
+  selectSibblings: (element: VIM.Object) => void
 }
 
 /**
@@ -52,7 +53,8 @@ export function BimTree (props: {
   const [, setVersion] = useState(0)
   const focus = useRef<number>(0)
   const div = useRef<HTMLDivElement>()
-  props.actionRef.current = {
+
+  props.actionRef.current = props.actionRef.current ?? {
     showAll: () => {
       props.isolation.clear('tree')
     },
@@ -61,15 +63,30 @@ export function BimTree (props: {
     },
     collapseAll: () => {
       setExpandedItems([])
-    }
+    },
+    selectSibblings: () => {}
   }
 
   useMemo(() => {
-    return (treeRef.current = toTreeData(
-      props.viewer.viewer,
-      props.elements,
-      props.grouping
-    ))
+    const tree = toTreeData(props.viewer.viewer, props.elements, props.grouping)
+    treeRef.current = tree
+
+    props.actionRef.current.selectSibblings = (object: VIM.Object) => {
+      const element = object.element
+      const node = treeRef.current.getNodeFromElement(element)
+      const sibblings = treeRef.current.getSibblings(node)
+      const result = sibblings.map((n) => {
+        console.log(n)
+        const nn = treeRef.current.nodes[n]
+        console.log(nn)
+        const e = nn.data.element
+        const o = viewer.vims[0].getObjectFromElement(e)
+        console.log(o)
+        return o
+      })
+
+      viewer.selection.select(result)
+    }
   }, [props.elements, props.grouping])
 
   useEffect(() => {

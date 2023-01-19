@@ -29,6 +29,7 @@ export function BimPanel (props: {
   selection: VIM.Object[]
   isolation: Isolation
   visible: boolean
+  treeRef: React.MutableRefObject<TreeActionRef>
 }) {
   const viewer = props.viewer
 
@@ -43,6 +44,10 @@ export function BimPanel (props: {
   if (props.vim !== vim) {
     setVim(props.vim)
   }
+
+  useEffect(() => {
+    props.treeRef.current = treeRef.current
+  })
 
   useEffect(() => {
     const sub = props.isolation.onChanged.subscribe((source: string) => {

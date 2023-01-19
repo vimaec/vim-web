@@ -34,6 +34,7 @@ import { CursorManager } from './helpers/cursor'
 import { PartialSettings, Settings, useSettings } from './settings/settings'
 import { Isolation } from './helpers/isolation'
 import { ViewerWrapper } from './helpers/viewer'
+import { TreeActionRef } from './bim/bimTree'
 
 export * as VIM from 'vim-webgl-viewer/'
 export * as ContextMenu from './contextMenu'
@@ -68,6 +69,8 @@ export type VimComponentRef = {
   customizeContextMenu: (c: contextMenuCustomization) => void
 
   logs: LogsRef
+
+  selectSibbings(object: VIM.Object)
 }
 
 /**
@@ -166,7 +169,7 @@ export function VimComponent (props: {
   const [msg, setMsg] = useState<string>()
   const [log, setLog] = useState<string>()
   const logs = useLogState()
-
+  const treeRef = useRef<TreeActionRef>()
   // On first render
   useEffect(() => {
     addPerformanceCounter()
@@ -178,7 +181,8 @@ export function VimComponent (props: {
       logs,
       // Double lambda is required to avoid react from using reducer pattern
       // https://stackoverflow.com/questions/59040989/usestate-with-a-lambda-invokes-the-lambda-when-set
-      customizeContextMenu: (v) => setcontextMenu(() => v)
+      customizeContextMenu: (v) => setcontextMenu(() => v),
+      selectSibbings: treeRef.current.selectSibblings
     })
     cursor.register()
 
@@ -212,6 +216,7 @@ export function VimComponent (props: {
           selection={selection}
           visible={side.getContent() === 'bim'}
           isolation={isolation}
+          treeRef={treeRef}
         />
           )
         : null}
@@ -272,6 +277,7 @@ export function VimComponent (props: {
         isolation={isolation}
         selection={selection}
         customization={contextMenu}
+        treeRef={treeRef}
       />
       <MenuToastMemo viewer={props.viewer} side={side}></MenuToastMemo>
     </>
