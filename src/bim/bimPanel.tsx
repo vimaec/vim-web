@@ -2,7 +2,7 @@
  * @module viw-webgl-component
  */
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useMemo } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 
 import { BimTree, TreeActionRef } from './bimTree'
@@ -11,7 +11,7 @@ import { BimDocumentHeader, BimObjectHeader } from './bimHeader'
 import { BimSearch } from './bimSearch'
 import { Isolation } from '../helpers/isolation'
 import { ViewerWrapper } from '../helpers/viewer'
-import { Grouping } from './bimTreeData'
+import { Grouping, toTreeData } from './bimTreeData'
 import { TreeRef } from 'react-complex-tree'
 
 /**
@@ -39,6 +39,31 @@ export function BimPanel (props: {
   const [elements, setElements] = useState<VIM.ElementInfo[]>()
   const [filteredElements, setFilteredElements] = useState<VIM.ElementInfo[]>()
   const [grouping, setGrouping] = useState<Grouping>('Family')
+  const tree = useMemo(() => {
+    const tree = toTreeData(props.viewer.viewer, elements, grouping)
+
+    if (props.treeRef.current) {
+      props.treeRef.current.selectSibblings = (object: VIM.Object) => {
+        const element = object.element
+        const node = tree.getNodeFromElement(element)
+        const sibblings = tree.getSibblings(node)
+        const result = sibblings.map((n) => {
+          console.log(n)
+          const nn = tree.nodes[n]
+          console.log(nn)
+          const e = nn.data.element
+          const o = props.viewer.viewer.vims[0].getObjectFromElement(e)
+          console.log(o)
+          return o
+        })
+
+        props.viewer.viewer.selection.select(result)
+      }
+    }
+
+    return tree
+  }, [elements, grouping])
+
   const treeRef = useRef<TreeActionRef>()
 
   if (props.vim !== vim) {
@@ -155,6 +180,7 @@ export function BimPanel (props: {
           objects={props.selection}
           isolation={props.isolation}
           grouping={grouping}
+          treeData={tree}
         />
       </div>
       <hr className="-vc-mx-6 vc-mb-5 vc-border-gray-divider" />
