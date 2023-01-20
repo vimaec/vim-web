@@ -163,7 +163,6 @@ export function BimPanel (props: {
         <BimTree
           actionRef={treeRef}
           viewer={viewer}
-          elements={filteredElements}
           objects={props.viewerState.selection}
           isolation={props.isolation}
           grouping={grouping}

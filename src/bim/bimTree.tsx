@@ -34,7 +34,6 @@ export type TreeActionRef = {
 export function BimTree (props: {
   actionRef: React.MutableRefObject<TreeActionRef>
   viewer: ViewerWrapper
-  elements: VIM.ElementInfo[]
   objects: VIM.Object[]
   isolation: Isolation
   treeData: BimTreeData
@@ -73,16 +72,16 @@ export function BimTree (props: {
 
   useEffect(() => {
     ReactTooltip.rebuild()
-  }, [expandedItems, props.elements])
+  }, [expandedItems, props.treeData])
 
   // Scroll view so that element is visible, if needed.
   useEffect(() => {
-    if (props.elements && objects.length === 1) {
+    if (props.treeData && objects.length === 1) {
       scrollToSelection(div.current)
       const [first] = viewer.selection.objects
       focus.current = props.treeData.getNodeFromElement(first.element)
     }
-  }, [props.elements, objects])
+  }, [props.treeData, objects])
 
   useEffect(() => {
     const subVis = viewer.renderer.onSceneUpdated.subscribe(() => {
@@ -96,7 +95,7 @@ export function BimTree (props: {
   }, [])
 
   // Display loading if no elements
-  if (!props.elements) {
+  if (!props.treeData) {
     return (
       <div className="vim-bim-tree" ref={div}>
         Loading . . .
