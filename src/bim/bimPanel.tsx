@@ -2,7 +2,7 @@
  * @module viw-webgl-component
  */
 
-import React, { useEffect, useRef, useState, useMemo } from 'react'
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 
 import { BimTree, TreeActionRef } from './bimTree'
@@ -12,7 +12,6 @@ import { BimSearch } from './bimSearch'
 import { Isolation } from '../helpers/isolation'
 import { ViewerWrapper } from '../helpers/viewer'
 import { Grouping, toTreeData } from './bimTreeData'
-import { TreeRef } from 'react-complex-tree'
 import { ViewerState } from '../component'
 
 /**
@@ -31,84 +30,50 @@ export function BimPanel (props: {
   visible: boolean
   treeRef: React.MutableRefObject<TreeActionRef>
 }) {
-  const viewer = props.viewer
-
   const [filter, setFilter] = useState('')
   const [grouping, setGrouping] = useState<Grouping>('Family')
 
-  const tree = useMemo(() => {
-    const tree = toTreeData(
-      props.viewer.viewer.vims[0],
-      props.viewerState.elements,
-      grouping
-    )
-
-    if (props.treeRef.current) {
-      props.treeRef.current.selectSibblings = (object: VIM.Object) => {
-        const element = object.element
-        const node = tree.getNodeFromElement(element)
-        const sibblings = tree.getSibblings(node)
-        const result = sibblings.map((n) => {
-          console.log(n)
-          const nn = tree.nodes[n]
-          console.log(nn)
-          const e = nn.data.element
-          const o = props.viewer.viewer.vims[0].getObjectFromElement(e)
-          console.log(o)
-          return o
-        })
-
-        props.viewer.viewer.selection.select(result)
-      }
-    }
-
-    return tree
-  }, [props.viewerState, grouping])
-
-  const treeRef = useRef<TreeActionRef>()
-
-  useEffect(() => {
-    props.treeRef.current = treeRef.current
-  })
-
-  useEffect(() => {
-    const sub = props.isolation.onChanged.subscribe((source: string) => {
-      if (source !== 'tree' && source !== 'search') setFilter('')
-    })
-
-    // Clean up
-    return () => {
-      sub()
-    }
-  }, [])
-
+  // Filter elements with meshes using search term.
   const filteredElements = useMemo(() => {
-    if (!props.viewerState.elements) return []
+    if (!props.viewerState.elements) return
     const meshElements = props.viewerState.elements.filter(
       (e) => props.viewerState.vim.getObjectFromElement(e.element).hasMesh
     )
     const result = filterElements(props.viewerState.vim, meshElements, filter)
 
-    // side effect doesnt belong here
+    return result
+  }, [filter, props.viewerState.elements])
+
+  // Update tree based on filtered elements
+  const tree = useMemo(() => {
+    return toTreeData(props.viewerState.vim, filteredElements, grouping)
+  }, [props.viewerState.vim, filteredElements, grouping])
+
+  // Update Isolation on filter change.
+  useEffect(() => {
     if (filter !== '') {
-      const objects = result.map((e) =>
+      const objects = filteredElements.map((e) =>
         props.viewerState.vim.getObjectFromElement(e.element)
       )
       props.isolation.isolate(objects, 'search')
     } else {
       props.isolation.isolate(undefined, 'search')
     }
-    return result
-  }, [filter, props.viewerState.elements])
+  }, [filter])
 
-  const updateFilter = (value: string) => {
-    setFilter(value)
-  }
+  // Clear filter on isolation change
+  useEffect(() => {
+    const unsubscribe = props.isolation.onChanged.subscribe(
+      (source: string) => {
+        if (source !== 'tree' && source !== 'search') setFilter('')
+      }
+    )
 
-  const updateGrouping = (value: Grouping) => {
-    console.log('group : ' + value)
-    setGrouping(value)
-  }
+    // Clean up
+    return () => {
+      unsubscribe()
+    }
+  }, [])
 
   const last =
     props.viewerState.selection[props.viewerState.selection.length - 1]
@@ -120,35 +85,35 @@ export function BimPanel (props: {
           Project Inspector
         </h2>
         <BimSearch
-          viewer={viewer}
+          viewer={props.viewer}
           filter={filter}
-          setFilter={updateFilter}
+          setFilter={setFilter}
           count={filteredElements?.length}
         />
         <select
-          hidden={true}
+          // hidden={true}
           className="vim-bim-grouping"
-          onChange={(e) => updateGrouping(e.target.value as Grouping)}
+          onChange={(e) => setGrouping(e.target.value as Grouping)}
         >
           <option value={'Family'}>Family</option>
           <option value={'Level'}>Level</option>
           <option value={'Workset'}>Workset</option>
         </select>
         <select
-          hidden={true}
+          // hidden={true}
           className="vim-bim-actions"
           onChange={(e) => {
             switch (e.target.value) {
               case 'show':
-                treeRef.current?.showAll()
+                props.treeRef.current?.showAll()
                 e.target.value = ''
                 break
               case 'hide':
-                treeRef.current?.hideAll()
+                props.treeRef.current?.hideAll()
                 e.target.value = ''
                 break
               case 'collapse':
-                treeRef.current?.collapseAll()
+                props.treeRef.current?.collapseAll()
                 e.target.value = ''
                 break
             }
@@ -161,11 +126,10 @@ export function BimPanel (props: {
         </select>
 
         <BimTree
-          actionRef={treeRef}
-          viewer={viewer}
+          actionRef={props.treeRef}
+          viewer={props.viewer}
           objects={props.viewerState.selection}
           isolation={props.isolation}
-          grouping={grouping}
           treeData={tree}
         />
       </div>
@@ -182,7 +146,7 @@ export function BimPanel (props: {
         />
         <BimObjectDetails object={last} visible={last !== undefined} />
         <BimDocumentHeader
-          vim={viewer.viewer.vims[0]}
+          vim={props.viewer.viewer.vims[0]}
           visible={last === undefined}
         />
         <BimDocumentDetails

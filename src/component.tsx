@@ -182,7 +182,7 @@ export function VimComponent (props: {
       // Double lambda is required to avoid react from using reducer pattern
       // https://stackoverflow.com/questions/59040989/usestate-with-a-lambda-invokes-the-lambda-when-set
       customizeContextMenu: (v) => setcontextMenu(() => v),
-      selectSibbings: treeRef.current.selectSibblings
+      selectSibbings: (o) => treeRef.current.selectSibblings(o)
     })
     cursor.register()
 
@@ -325,7 +325,10 @@ function useViewerState (viewer: VIM.Viewer) {
     }
   }, [vim])
 
-  return { vim, selection, elements } as ViewerState
+  return useMemo(() => {
+    const result = { vim, selection, elements } as ViewerState
+    return result
+  }, [vim, selection, elements])
 }
 
 /**

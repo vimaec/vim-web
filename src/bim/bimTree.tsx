@@ -37,7 +37,6 @@ export function BimTree (props: {
   objects: VIM.Object[]
   isolation: Isolation
   treeData: BimTreeData
-  grouping: Grouping
 }) {
   const viewer = props.viewer.viewer
   const helper = props.viewer
@@ -49,26 +48,41 @@ export function BimTree (props: {
   const [selectedItems, setSelectedItems] = useState<number[]>([])
   const [focusedItem, setFocusedItem] = useState<number>()
   const [doubleClick] = useState(new DoubleClickManager())
-  const [, setVersion] = useState(0)
+  const [version, setVersion] = useState(0)
   const focus = useRef<number>(0)
   const div = useRef<HTMLDivElement>()
 
-  props.actionRef.current = props.actionRef.current ?? {
-    showAll: () => {
-      props.isolation.clear('tree')
-    },
-    hideAll: () => {
-      props.isolation.isolate([], 'tree')
-    },
-    collapseAll: () => {
-      setExpandedItems([])
-    },
-    selectSibblings: () => {}
-  }
+  props.actionRef.current = useMemo(
+    () => ({
+      showAll: () => {
+        props.isolation.clear('tree')
+      },
+      hideAll: () => {
+        props.isolation.isolate([], 'tree')
+      },
+      collapseAll: () => {
+        setExpandedItems([])
+      },
+      selectSibblings: (object: VIM.Object) => {
+        const element = object.element
+        const node = props.treeData.getNodeFromElement(element)
+        const sibblings = props.treeData.getSibblings(node)
+        const result = sibblings.map((n) => {
+          const nn = props.treeData.nodes[n]
+          const e = nn.data.element
+          const o = props.viewer.viewer.vims[0].getObjectFromElement(e)
+          return o
+        })
+
+        props.viewer.viewer.selection.select(result)
+      }
+    }),
+    [props.treeData]
+  )
 
   useEffect(() => {
     setExpandedItems([])
-  }, [props.grouping])
+  }, [props.treeData])
 
   useEffect(() => {
     ReactTooltip.rebuild()
@@ -84,15 +98,15 @@ export function BimTree (props: {
   }, [props.treeData, objects])
 
   useEffect(() => {
-    const subVis = viewer.renderer.onSceneUpdated.subscribe(() => {
+    const unsubscribe = viewer.renderer.onSceneUpdated.subscribe(() => {
       props.treeData?.updateVisibility(viewer.vims[0])
       setVersion((v) => v + 1)
     })
 
     return () => {
-      subVis()
+      unsubscribe()
     }
-  }, [])
+  }, [props.treeData])
 
   // Display loading if no elements
   if (!props.treeData) {
