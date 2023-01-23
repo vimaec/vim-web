@@ -70,6 +70,12 @@ const defaultSettings: Settings = {
 
 export type SettingsState = { value: Settings; set: (value: Settings) => void }
 
+export function getLocalSettings () {
+  const json = localStorage.getItem('component.settings')
+  if (!json) return
+  return JSON.parse(json) as Settings
+}
+
 /**
  * Returns a new state closure for settings.
  */
@@ -97,8 +103,9 @@ export function useSettings (
  * Apply given vim component settings to the given viewer.
  */
 export function applySettings (viewer: VIM.Viewer, settings: Settings) {
+  localStorage.setItem('component.settings', JSON.stringify(settings))
   // Show/Hide performance gizmo
-  const performance = document.getElementsByClassName('vim-performance')[0]
+  const performance = document.getElementsByClassName('vim-performance-div')[0]
   if (performance) {
     if (settings.ui.performance) {
       performance.classList.remove('vc-hidden')

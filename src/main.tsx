@@ -1,6 +1,10 @@
 import * as VIM from 'vim-webgl-viewer/'
 
-import { createVimComponent, VimComponentRef } from './component'
+import {
+  createVimComponent,
+  VimComponentRef,
+  getLocalSettings
+} from './component'
 
 // Parse URL
 const params = new URLSearchParams(window.location.search)
@@ -8,10 +12,14 @@ const url = params.has('vim')
   ? params.get('vim')
   : 'https://vim.azureedge.net/samples/residence.vim'
 
-createVimComponent(loadVim, undefined, {
-  ui: { logPanel: true },
-  capacity: { useOrthographicCamera: false }
-})
+createVimComponent(
+  loadVim,
+  undefined,
+  getLocalSettings() ?? {
+    ui: { logPanel: true },
+    capacity: { useOrthographicCamera: false }
+  }
+)
 
 function loadVim (cmp: VimComponentRef) {
   cmp.helpers.viewer
@@ -20,6 +28,11 @@ function loadVim (cmp: VimComponentRef) {
   cmp.viewer.loadVim(url, {
     rotation: { x: 270, y: 0, z: 0 }
   })
+}
+
+const settings = {
+  ui: { logPanel: true },
+  capacity: { useOrthographicCamera: false }
 }
 
 globalThis.VIM = VIM

@@ -38,6 +38,7 @@ import { TreeActionRef } from './bim/bimTree'
 
 export * as VIM from 'vim-webgl-viewer/'
 export * as ContextMenu from './contextMenu'
+export { getLocalSettings } from './settings/settings'
 
 /**
  * Root level api of the vim component
@@ -169,10 +170,11 @@ export function VimComponent (props: {
   const [msg, setMsg] = useState<string>()
   const logs = useLogState()
   const treeRef = useRef<TreeActionRef>()
+  const prefRef = useRef<HTMLDivElement>(null)
 
   // On first render
   useEffect(() => {
-    addPerformanceCounter()
+    addPerformanceCounter(prefRef.current)
     props.onMount({
       viewer: props.viewer,
       helpers: viewer,
@@ -237,6 +239,7 @@ export function VimComponent (props: {
   )
   return (
     <>
+      <div className="vim-performance-div" ref={prefRef}></div>
       <Overlay viewer={viewer.viewer} side={side}></Overlay>
       <MenuHelpMemo help={help} settings={settings.value} side={side} />
       {settings.value.ui.logo ? <LogoMemo /> : null}
@@ -334,13 +337,12 @@ function useViewerState (viewer: VIM.Viewer) {
 /**
  * Adds popular performance gizmo from package stat-js
  */
-function addPerformanceCounter () {
-  const ui = document.getElementsByClassName('vim-ui')[0]
+function addPerformanceCounter (parent: HTMLDivElement) {
   const stats = new Stats()
   const div = stats.dom as HTMLDivElement
   div.className =
     'vim-performance !vc-absolute !vc-right-6 !vc-left-auto !vc-top-52 !vc-z-1'
-  ui.appendChild(stats.dom)
+  parent.appendChild(div)
 
   function animate () {
     requestAnimationFrame(() => animate())
