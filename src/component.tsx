@@ -34,6 +34,7 @@ import { CursorManager } from './helpers/cursor'
 import { PartialSettings, Settings, useSettings } from './settings/settings'
 import { Isolation } from './helpers/isolation'
 import { ViewerWrapper } from './helpers/viewer'
+import { TreeActionRef } from './bim/bimTree'
 
 export * as VIM from 'vim-webgl-viewer/'
 export * as ContextMenu from './contextMenu'
@@ -68,6 +69,8 @@ export type VimComponentRef = {
   customizeContextMenu: (c: contextMenuCustomization) => void
 
   logs: LogsRef
+
+  selectSibbings(object: VIM.Object)
 }
 
 /**
@@ -162,10 +165,10 @@ export function VimComponent (props: {
   const side = useSideState(settings.value.ui.bimPanel, 480)
   const [contextMenu, setcontextMenu] = useState<contextMenuCustomization>()
   const help = useHelp()
-  const [vim, selection] = useViewerState(props.viewer)
+  const viewerState = useViewerState(props.viewer)
   const [msg, setMsg] = useState<string>()
-  const [log, setLog] = useState<string>()
   const logs = useLogState()
+  const treeRef = useRef<TreeActionRef>()
 
   // On first render
   useEffect(() => {
@@ -178,7 +181,8 @@ export function VimComponent (props: {
       logs,
       // Double lambda is required to avoid react from using reducer pattern
       // https://stackoverflow.com/questions/59040989/usestate-with-a-lambda-invokes-the-lambda-when-set
-      customizeContextMenu: (v) => setcontextMenu(() => v)
+      customizeContextMenu: (v) => setcontextMenu(() => v),
+      selectSibbings: (o) => treeRef.current.selectSibblings(o)
     })
     cursor.register()
 
@@ -208,10 +212,10 @@ export function VimComponent (props: {
         ? (
         <BimPanel
           viewer={viewer}
-          vim={vim}
-          selection={selection}
+          viewerState={viewerState}
           visible={side.getContent() === 'bim'}
           isolation={isolation}
+          treeRef={treeRef}
         />
           )
         : null}
@@ -270,8 +274,9 @@ export function VimComponent (props: {
         viewer={viewer}
         help={help}
         isolation={isolation}
-        selection={selection}
+        selection={viewerState.selection}
         customization={contextMenu}
+        treeRef={treeRef}
       />
       <MenuToastMemo viewer={props.viewer} side={side}></MenuToastMemo>
     </>
@@ -293,6 +298,7 @@ function useViewerState (viewer: VIM.Viewer) {
   const [selection, setSelection] = useState<VIM.Object[]>([
     ...viewer.selection.objects
   ])
+  const [elements, setElements] = useState<VIM.ElementInfo[]>()
 
   useEffect(() => {
     // register to viewer state changes
@@ -309,7 +315,20 @@ function useViewerState (viewer: VIM.Viewer) {
     }
   }, [])
 
-  return [vim, selection] as [VIM.Vim, VIM.Object[]]
+  useEffect(() => {
+    if (vim) {
+      vim.document.getElementsSummary().then((elements) => {
+        setElements(elements)
+      })
+    } else {
+      setElements(undefined)
+    }
+  }, [vim])
+
+  return useMemo(() => {
+    const result = { vim, selection, elements } as ViewerState
+    return result
+  }, [vim, selection, elements])
 }
 
 /**
@@ -328,4 +347,10 @@ function addPerformanceCounter () {
     stats.update()
   }
   animate()
+}
+
+export type ViewerState = {
+  vim: VIM.Vim
+  selection: VIM.Object[]
+  elements: VIM.ElementInfo[]
 }

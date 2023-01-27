@@ -29,7 +29,7 @@ export type VimTreeNode = TreeItem<ElementInfo> & {
  * @returns
  */
 export function toTreeData (
-  viewer: VIM.Viewer,
+  vim: VIM.Vim,
   elements: VIM.ElementInfo[],
   grouping: Grouping
 ) {
@@ -52,7 +52,7 @@ export function toTreeData (
   sort(tree)
 
   const result = new BimTreeData(tree)
-  result.updateVisibility(viewer)
+  result.updateVisibility(vim)
   return result
 }
 
@@ -67,7 +67,7 @@ export class BimTreeData {
     this.flatten(map)
   }
 
-  updateVisibility (viewer: VIM.Viewer) {
+  updateVisibility (vim: VIM.Vim) {
     const set = new Set<VimTreeNode>()
     const updateOne = (node: VimTreeNode): NodeVisibility => {
       if (set.has(node)) {
@@ -89,7 +89,7 @@ export class BimTreeData {
             : 'vim-undefined'
         return node.visible
       } else {
-        const obj = viewer.vims[0].getObjectFromElement(node.data?.element)
+        const obj = vim.getObjectFromElement(node.data?.element)
         node.visible = obj?.visible ? 'vim-visible' : 'vim-hidden'
         return node.visible
       }
@@ -145,19 +145,37 @@ export class BimTreeData {
     return none ? 'none' : all ? 'all' : 'some'
   }
 
-  getChildren (node: number, recusive = false, result: number[] = []) {
-    result.push(node)
+  getChildren (
+    node: number,
+    includeSelf = false,
+    recursive = false,
+    result: number[] = []
+  ) {
+    if (includeSelf) {
+      result.push(node)
+    }
     const current = this.nodes[node]
     if (current.children?.length > 0) {
-      if (recusive) {
+      if (recursive) {
         current.children.forEach((c) =>
-          this.getChildren(c as number, recusive, result)
+          this.getChildren(c as number, true, recursive, result)
         )
       } else {
         current.children.forEach((c) => result.push(c as number))
       }
     }
     return result
+  }
+
+  getParent (node: number) {
+    const current = this.nodes[node]
+    return current.parent
+  }
+
+  getSibblings (node: number) {
+    const parent = this.nodes[node].parent
+    const sibblings = this.getChildren(parent)
+    return sibblings
   }
 
   getAncestors (node: number) {

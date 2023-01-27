@@ -15,12 +15,13 @@ import { showContextMenu } from '../contextMenu'
 import { ViewerWrapper } from '../helpers/viewer'
 import { ArrayEquals } from '../helpers/data'
 import { Isolation } from '../helpers/isolation'
-import { BimTreeData, Grouping, toTreeData, VimTreeNode } from './bimTreeData'
+import { BimTreeData, Grouping, VimTreeNode } from './bimTreeData'
 
 export type TreeActionRef = {
   showAll: () => void
   hideAll: () => void
   collapseAll: () => void
+  selectSibblings: (element: VIM.Object) => void
 }
 
 /**
@@ -33,75 +34,82 @@ export type TreeActionRef = {
 export function BimTree (props: {
   actionRef: React.MutableRefObject<TreeActionRef>
   viewer: ViewerWrapper
-  elements: VIM.ElementInfo[]
   objects: VIM.Object[]
   isolation: Isolation
-  grouping: Grouping
+  treeData: BimTreeData
 }) {
   const viewer = props.viewer.viewer
   const helper = props.viewer
   // Data state
   const [objects, setObjects] = useState<VIM.Object[]>([])
-  const treeRef = useRef<BimTreeData>()
 
   // Tree state
   const [expandedItems, setExpandedItems] = useState<number[]>([])
   const [selectedItems, setSelectedItems] = useState<number[]>([])
   const [focusedItem, setFocusedItem] = useState<number>()
   const [doubleClick] = useState(new DoubleClickManager())
-  const [, setVersion] = useState(0)
+  const [version, setVersion] = useState(0)
   const focus = useRef<number>(0)
   const div = useRef<HTMLDivElement>()
-  props.actionRef.current = {
-    showAll: () => {
-      props.isolation.clear('tree')
-    },
-    hideAll: () => {
-      props.isolation.isolate([], 'tree')
-    },
-    collapseAll: () => {
-      setExpandedItems([])
-    }
-  }
 
-  useMemo(() => {
-    return (treeRef.current = toTreeData(
-      props.viewer.viewer,
-      props.elements,
-      props.grouping
-    ))
-  }, [props.elements, props.grouping])
+  props.actionRef.current = useMemo(
+    () => ({
+      showAll: () => {
+        props.isolation.clear('tree')
+      },
+      hideAll: () => {
+        props.isolation.isolate([], 'tree')
+      },
+      collapseAll: () => {
+        setExpandedItems([])
+      },
+      selectSibblings: (object: VIM.Object) => {
+        const element = object.element
+        const node = props.treeData.getNodeFromElement(element)
+        const sibblings = props.treeData.getSibblings(node)
+        const result = sibblings.map((n) => {
+          const nn = props.treeData.nodes[n]
+          const e = nn.data.element
+          const o = props.viewer.viewer.vims[0].getObjectFromElement(e)
+          return o
+        })
+
+        props.viewer.viewer.selection.select(result)
+      }
+    }),
+    [props.treeData]
+  )
 
   useEffect(() => {
     setExpandedItems([])
-  }, [props.grouping])
+  }, [props.treeData])
 
   useEffect(() => {
     ReactTooltip.rebuild()
-  }, [expandedItems, props.elements])
+  }, [expandedItems, props.treeData])
 
   // Scroll view so that element is visible, if needed.
   useEffect(() => {
-    if (props.elements && objects.length === 1) {
+    if (props.treeData && objects.length === 1) {
       scrollToSelection(div.current)
       const [first] = viewer.selection.objects
-      focus.current = treeRef.current.getNodeFromElement(first.element)
+      focus.current = props.treeData.getNodeFromElement(first.element)
     }
-  }, [props.elements, objects])
+  }, [props.treeData, objects])
 
   useEffect(() => {
-    const subVis = viewer.renderer.onSceneUpdated.subscribe(() => {
-      treeRef.current?.updateVisibility(viewer)
+    const unsubscribe = viewer.renderer.onSceneUpdated.subscribe(() => {
+      props.treeData?.updateVisibility(viewer.vims[0])
       setVersion((v) => v + 1)
     })
 
     return () => {
-      subVis()
+      unsubscribe()
     }
-  }, [])
+  }, [props.treeData])
 
   // Display loading if no elements
-  if (!props.elements) {
+  if (!props.treeData) {
     return (
       <div className="vim-bim-tree" ref={div}>
         Loading . . .
@@ -113,17 +121,19 @@ export function BimTree (props: {
   if (!ArrayEquals(props.objects, objects)) {
     setObjects(props.objects)
     const nodes = props.objects.map((o) =>
-      treeRef.current.getNodeFromElement(o.element)
+      props.treeData.getNodeFromElement(o.element)
     )
 
     // updated expanded items
-    const parents = nodes.flatMap((n) => treeRef.current.getAncestors(n))
-    const selection = treeRef.current.getSelection(
+    const parents = nodes.flatMap((n) => props.treeData.getAncestors(n))
+    const selection = props.treeData.getSelection(
       props.objects.map((o) => o.element)
     )
     setExpandedItems([...new Set(expandedItems.concat(parents))])
     setSelectedItems(selection)
   }
+
+  if (!props.treeData) return null
 
   return (
     <div
@@ -134,7 +144,7 @@ export function BimTree (props: {
       onBlur={() => (viewer.inputs.keyboard.arrowsEnabled = true)}
     >
       <ControlledTreeEnvironment
-        items={treeRef.current.nodes}
+        items={props.treeData.nodes}
         getItemTitle={(item) => (item as VimTreeNode).title}
         viewState={{
           'tree-bim': {
@@ -151,13 +161,13 @@ export function BimTree (props: {
             </span>
             <div
               className={`rct-tree-item-visibility ${
-                treeRef.current.nodes[item.index as number].visible
+                props.treeData.nodes[item.index as number].visible
               }`}
               onClick={(e) => {
                 toggleVisibility(
                   helper,
                   props.isolation,
-                  treeRef.current,
+                  props.treeData,
                   item.index as number
                 )
                 e.stopPropagation()
@@ -195,29 +205,24 @@ export function BimTree (props: {
             },
             onClick: (e) => {
               if (e.shiftKey) {
-                const range = treeRef.current.getRange(
+                const range = props.treeData.getRange(
                   focus.current,
                   item.index as number
                 )
-                updateViewerSelection(treeRef.current, viewer, range, 'set')
+                updateViewerSelection(props.treeData, viewer, range, 'set')
               } else if (isControlKey(e)) {
                 if (renderFlags.isSelected) {
-                  const leafs = treeRef.current.getLeafs(item.index as number)
-                  updateViewerSelection(
-                    treeRef.current,
-                    viewer,
-                    leafs,
-                    'remove'
-                  )
+                  const leafs = props.treeData.getLeafs(item.index as number)
+                  updateViewerSelection(props.treeData, viewer, leafs, 'remove')
                   focus.current = item.index as number
                 } else {
-                  const leafs = treeRef.current.getLeafs(item.index as number)
-                  updateViewerSelection(treeRef.current, viewer, leafs, 'add')
+                  const leafs = props.treeData.getLeafs(item.index as number)
+                  updateViewerSelection(props.treeData, viewer, leafs, 'add')
                   focus.current = item.index as number
                 }
               } else {
-                const leafs = treeRef.current.getLeafs(item.index as number)
-                updateViewerSelection(treeRef.current, viewer, leafs, 'set')
+                const leafs = props.treeData.getLeafs(item.index as number)
+                updateViewerSelection(props.treeData, viewer, leafs, 'set')
                 focus.current = item.index as number
               }
               actions.primaryAction()
@@ -235,7 +240,7 @@ export function BimTree (props: {
         onFocusItem={(item) => {
           const index = item.index as number
           setFocusedItem(index)
-          updateViewerFocus(viewer, treeRef.current, index)
+          updateViewerFocus(viewer, props.treeData, index)
         }}
         // Default behavior
         onExpandItem={(item) => {
