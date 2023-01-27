@@ -27,7 +27,7 @@
     "release-minor": "npm version minor && git push && npm publish",
     "release-patch": "npm version patch && git push && npm publish",
     "release-dev": "npm run build && npm run bump-dev && git push && npm run publish-dev",
-    "release-current": "npm run build && git push && npm run publish",
+    "release-current": "npm run build && git push && npm publish",
     "declarations": "tsc --declaration --emitDeclarationOnly --outdir ./dist/types",
     "eslint": "eslint --ext .js,.ts src --fix",
     "documentation": "typedoc --entryPointStrategy expand --mergeModulesMergeMode module --out docs/api --excludeProtected --excludeExternals --excludePrivate --exclude ./src/main.tsx --exclude ./src/module.d.ts ./src/ && git add ./docs/"
