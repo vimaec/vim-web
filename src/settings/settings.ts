@@ -103,7 +103,10 @@ export function useSettings (
  * Apply given vim component settings to the given viewer.
  */
 export function applySettings (viewer: VIM.Viewer, settings: Settings) {
-  localStorage.setItem('component.settings', JSON.stringify(settings))
+  try {
+    localStorage.setItem('component.settings', JSON.stringify(settings))
+  } catch (error) {}
+
   // Show/Hide performance gizmo
   const performance = document.getElementsByClassName('vim-performance-div')[0]
   if (performance) {
