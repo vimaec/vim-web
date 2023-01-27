@@ -2,7 +2,7 @@
  * @module viw-webgl-component
  */
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { createRoot } from 'react-dom/client'
 import ReactTooltip from 'react-tooltip'
 import logo from './assets/logo.png'
@@ -27,10 +27,11 @@ import { useSideState } from './sidePanel/sideState'
 import { MenuSettings } from './settings/menuSettings'
 import { MenuToastMemo } from './toast'
 import { Overlay } from './overlay'
+import { Logs, LogsRef, useLogState } from './logsPanel'
 
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
-import { PartialSettings, useSettings } from './settings/settings'
+import { PartialSettings, Settings, useSettings } from './settings/settings'
 import { Isolation } from './helpers/isolation'
 import { ViewerWrapper } from './helpers/viewer'
 
@@ -65,6 +66,8 @@ export type VimComponentRef = {
    * Callback to customize context menu at runtime.
    */
   customizeContextMenu: (c: contextMenuCustomization) => void
+
+  logs: LogsRef
 }
 
 /**
@@ -161,6 +164,8 @@ export function VimComponent (props: {
   const help = useHelp()
   const [vim, selection] = useViewerState(props.viewer)
   const [msg, setMsg] = useState<string>()
+  const [log, setLog] = useState<string>()
+  const logs = useLogState()
 
   // On first render
   useEffect(() => {
@@ -170,6 +175,7 @@ export function VimComponent (props: {
       helpers: viewer,
       isolation,
       setMsg,
+      logs,
       // Double lambda is required to avoid react from using reducer pattern
       // https://stackoverflow.com/questions/59040989/usestate-with-a-lambda-invokes-the-lambda-when-set
       customizeContextMenu: (v) => setcontextMenu(() => v)
@@ -214,6 +220,15 @@ export function VimComponent (props: {
         viewer={props.viewer}
         settings={settings}
       />
+      {settings.value.ui.logPanel
+        ? (
+        <Logs
+          visible={side.getContent() === 'logs'}
+          text={logs.getLog()}
+          settings={settings.value}
+        />
+          )
+        : null}
     </>
   )
   return (

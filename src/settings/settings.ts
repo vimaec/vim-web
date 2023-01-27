@@ -30,6 +30,7 @@ export type Settings = {
     canFollowUrl: boolean
     canGoFullScreen: boolean
     useOrthographicCamera: boolean
+    canDownload: boolean
   }
 
   ui: {
@@ -39,6 +40,7 @@ export type Settings = {
     controlBar: boolean
     loadingBox: boolean
     performance: boolean
+    logPanel: boolean
   }
 }
 
@@ -52,7 +54,8 @@ const defaultSettings: Settings = {
   capacity: {
     canFollowUrl: true,
     canGoFullScreen: true,
-    useOrthographicCamera: true
+    useOrthographicCamera: true,
+    canDownload: true
   },
   ui: {
     logo: true,
@@ -60,7 +63,8 @@ const defaultSettings: Settings = {
     axesPanel: true,
     controlBar: true,
     loadingBox: true,
-    performance: true
+    performance: true,
+    logPanel: false
   }
 }
 
