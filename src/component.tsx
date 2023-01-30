@@ -175,17 +175,7 @@ export function VimComponent (props: {
   // On first render
   useEffect(() => {
     addPerformanceCounter(prefRef.current)
-    props.onMount({
-      viewer: props.viewer,
-      helpers: viewer,
-      isolation,
-      setMsg,
-      logs,
-      // Double lambda is required to avoid react from using reducer pattern
-      // https://stackoverflow.com/questions/59040989/usestate-with-a-lambda-invokes-the-lambda-when-set
-      customizeContextMenu: (v) => setcontextMenu(() => v),
-      selectSibbings: (o) => treeRef.current.selectSibblings(o)
-    })
+
     cursor.register()
 
     // Frame on vim loaded
@@ -199,6 +189,18 @@ export function VimComponent (props: {
     // Register context menu
     const subContext =
       props.viewer.inputs.onContextMenu.subscribe(showContextMenu)
+
+    props.onMount({
+      viewer: props.viewer,
+      helpers: viewer,
+      isolation,
+      setMsg,
+      logs,
+      // Double lambda is required to avoid react from using reducer pattern
+      // https://stackoverflow.com/questions/59040989/usestate-with-a-lambda-invokes-the-lambda-when-set
+      customizeContextMenu: (v) => setcontextMenu(() => v),
+      selectSibbings: (o) => treeRef.current.selectSibblings(o)
+    })
 
     // Clean up
     return () => {
