@@ -64,7 +64,7 @@ export function useLogState () {
   return useMemo(() => {
     return {
       log: (value: string) => {
-        setLog([log, value].join('\n'))
+        setLog([log, value].join('\n').trim())
       },
       clear: () => setLog(''),
       getLog: () => log
