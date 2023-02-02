@@ -60,11 +60,13 @@ export function Logs (props: {
  * Returns a state object to interact with the log panel.
  */
 export function useLogState () {
+  const logRef = useRef<string>()
   const [log, setLog] = useState<string>()
   return useMemo(() => {
     return {
       log: (value: string) => {
-        setLog([log, value].join('\n').trim())
+        logRef.current = [logRef.current, value].join('\n').trim()
+        setLog(logRef.current)
       },
       clear: () => setLog(''),
       getLog: () => log
