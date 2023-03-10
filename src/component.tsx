@@ -184,7 +184,11 @@ export function VimComponent (props: {
     })
 
     // Setup custom input scheme
-    props.viewer.inputs.scheme = new ComponentInputScheme(viewer, isolation)
+    props.viewer.inputs.scheme = new ComponentInputScheme(
+      viewer,
+      isolation,
+      side
+    )
 
     // Register context menu
     const subContext =
@@ -262,11 +266,7 @@ export function VimComponent (props: {
         />
           )
         : null}
-      {settings.value.ui.axesPanel
-        ? (
-        <AxesPanelMemo viewer={viewer} settings={settings.value} />
-          )
-        : null}
+      <AxesPanelMemo viewer={viewer} settings={settings.value} />
       <SidePanelMemo viewer={props.viewer} side={side} content={sidePanel} />
       <ReactTooltip
         arrowColor="transparent"
