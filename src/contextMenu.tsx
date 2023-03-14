@@ -23,7 +23,6 @@ export type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
 export function showContextMenu (
   position: { x: number; y: number } | undefined
 ) {
-  console.log(position)
   hideMenu()
   if (!position) {
     return
