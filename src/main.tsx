@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import * as VIM from 'vim-webgl-viewer/'
 
 import {
@@ -8,31 +9,28 @@ import {
 
 // Parse URL
 const params = new URLSearchParams(window.location.search)
+// Edge server doesn't serve http ranges properly
 const url = params.has('vim')
   ? params.get('vim')
-  : 'https://vim.azureedge.net/samples/residence.vim'
+  : 'https://vimdevelopment01storage.blob.core.windows.net/samples/residence_nozip.vim'
 
 createVimComponent(
   loadVim,
   undefined,
   getLocalSettings() ?? {
-    ui: { logPanel: true },
+    ui: { logPanel: false },
     capacity: { useOrthographicCamera: false }
   }
 )
 
 function loadVim (cmp: VimComponentRef) {
-  cmp.helpers.viewer
-
   globalThis.component = cmp
   cmp.viewer.loadVim(url, {
-    rotation: { x: 270, y: 0, z: 0 }
+    // instances: [0, 1, 2, 3, 4, 5],
+    rotation: new THREE.Vector3(270, 0, 0)
+    // streamBim: true,
+    // streamGeometry: true
   })
-}
-
-const settings = {
-  ui: { logPanel: true },
-  capacity: { useOrthographicCamera: false }
 }
 
 globalThis.VIM = VIM

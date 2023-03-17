@@ -13,6 +13,7 @@ import { Isolation } from '../helpers/isolation'
 import { ViewerWrapper } from '../helpers/viewer'
 import { Grouping, toTreeData } from './bimTreeData'
 import { ViewerState } from '../component'
+import {AugmentedElement} from '../helpers/element'
 
 /**
  * Returns a jsx component representing most data of a vim object or vim document.
@@ -37,7 +38,7 @@ export function BimPanel (props: {
   const filteredElements = useMemo(() => {
     if (!props.viewerState.elements) return
     const meshElements = props.viewerState.elements.filter(
-      (e) => props.viewerState.vim.getObjectFromElement(e.element).hasMesh
+      (e) => props.viewerState.vim.getObjectFromElement(e.index)?.hasMesh
     )
     const result = filterElements(props.viewerState.vim, meshElements, filter)
 
@@ -53,7 +54,7 @@ export function BimPanel (props: {
   useEffect(() => {
     if (filter !== '') {
       const objects = filteredElements.map((e) =>
-        props.viewerState.vim.getObjectFromElement(e.element)
+        props.viewerState.vim.getObjectFromElement(e.index)
       )
       props.isolation.isolate(objects, 'search')
     } else {
@@ -160,7 +161,7 @@ export function BimPanel (props: {
 
 function filterElements (
   vim: VIM.Vim,
-  elements: VIM.ElementInfo[],
+  elements: AugmentedElement[],
   filter: string
 ) {
   const filterLower = filter.toLocaleLowerCase()
@@ -168,9 +169,9 @@ function filterElements (
     (e) =>
       e.id.toString().toLocaleLowerCase().includes(filterLower) ||
       e.name.toLocaleLowerCase().includes(filterLower) ||
-      e.categoryName.toLocaleLowerCase().includes(filterLower) ||
+      e.category?.name.toLocaleLowerCase().includes(filterLower) ||
       e.familyName.toLocaleLowerCase().includes(filterLower) ||
-      e.familyTypeName.toLocaleLowerCase().includes(filterLower)
+      e.type.toLocaleLowerCase().includes(filterLower)
   )
   return filtered
 }

@@ -43,7 +43,7 @@ export class ViewerWrapper {
       this.viewer.camera.frame(
         box,
         'none',
-        this.viewer.camera.defaultLerpDuration
+        true
       )
     }
   }
@@ -55,7 +55,7 @@ export class ViewerWrapper {
     this.viewer.camera.frame(
       this.getVisibleBoundingBox(source),
       'none',
-      this.viewer.camera.defaultLerpDuration
+      true
     )
   }
 

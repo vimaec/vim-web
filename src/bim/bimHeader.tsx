@@ -5,6 +5,7 @@
 import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import ReactTooltip from 'react-tooltip'
+import {AugmentedElement} from '../helpers/element'
 
 type BimHeaderEntry = {
   key: string
@@ -23,7 +24,7 @@ type BimHeader = BimHeaderEntry[][]
  * @param visible will return null if this is false.
  */
 export function BimObjectHeader (props: {
-  elements: VIM.ElementInfo[]
+  elements: AugmentedElement[]
   object: VIM.Object
   visible: boolean
 }) {
@@ -37,9 +38,9 @@ export function BimObjectHeader (props: {
     return <div className="vim-bim-inspector">Loading . . .</div>
   }
 
-  let element: VIM.ElementInfo
+  let element: AugmentedElement
   for (const e of props.elements) {
-    if (props.object.element === e.element) {
+    if (props.object.element === e.index) {
       element = e
     }
   }
@@ -107,13 +108,13 @@ function createHeader (header: BimHeader) {
   )
 }
 
-function getElementBimHeader (info: VIM.ElementInfo): BimHeader {
+function getElementBimHeader (info: AugmentedElement): BimHeader {
   return [
     [
       {
         key: 'document',
         label: 'Document',
-        value: info.documentTitle,
+        value: info.bimDocument?.name,
         dtStyle: 'vc-w-3/12',
         ddStyle: 'vc-w-9/12',
         dlStyle: 'vc-w-full'
@@ -123,7 +124,7 @@ function getElementBimHeader (info: VIM.ElementInfo): BimHeader {
       {
         key: 'workset',
         label: 'Workset',
-        value: info.workset,
+        value: info.workset?.name,
         dtStyle: 'vc-w-3/12',
         ddStyle: 'vc-w-9/12',
         dlStyle: 'vc-w-full'
@@ -133,7 +134,7 @@ function getElementBimHeader (info: VIM.ElementInfo): BimHeader {
       {
         key: 'category',
         label: 'Category',
-        value: info.categoryName,
+        value: info.category?.name,
         dtStyle: 'vc-w-3/12',
         ddStyle: 'vc-w-9/12',
         dlStyle: 'vc-w-full'
@@ -153,7 +154,7 @@ function getElementBimHeader (info: VIM.ElementInfo): BimHeader {
       {
         key: 'familyTypeName',
         label: 'Family Type',
-        value: info.familyTypeName,
+        value: info.familyName,
         dtStyle: 'vc-w-3/12',
         ddStyle: 'vc-w-9/12',
         dlStyle: 'vc-w-full'
@@ -173,7 +174,7 @@ function getElementBimHeader (info: VIM.ElementInfo): BimHeader {
 }
 
 async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
-  const documents = await vim.document.getBimDocumentSummary()
+  const documents = await vim.document.bimDocument.getAll()
   const main = documents.find((d) => !d.isLinked) ?? documents[0]
 
   return [
@@ -201,7 +202,7 @@ async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
       {
         key: 'createdOn',
         label: 'Created on',
-        value: formatDate(vim.document.header.created),
+        value: formatDate(vim.header.created),
         dtStyle: 'vc-w-3/12',
         ddStyle: 'vc-w-9/12',
         dlStyle: 'vc-w-full'
@@ -211,7 +212,7 @@ async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
       {
         key: 'createdWith',
         label: 'Created with',
-        value: vim.document.header.generator,
+        value: vim.header.generator,
         dtStyle: 'vc-w-3/12',
         ddStyle: 'vc-w-9/12',
         dlStyle: 'vc-w-full'
@@ -221,7 +222,7 @@ async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
       {
         key: 'createdBy',
         label: 'Created by',
-        value: vim.document.header.generator,
+        value: vim.header.generator,
         dtStyle: 'vc-w-3/12',
         ddStyle: 'vc-w-9/12',
         dlStyle: 'vc-w-full'

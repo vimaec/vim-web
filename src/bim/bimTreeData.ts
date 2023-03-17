@@ -2,9 +2,9 @@
  * @module viw-webgl-component
  */
 import { TreeItem } from 'react-complex-tree'
-import { ElementInfo } from 'vim-webgl-viewer'
 import { VIM } from '../component'
 import { MapTree, sort, toMapTree } from '../helpers/data'
+import {AugmentedElement} from '../helpers/element'
 
 /**
  * Custom visibility CSS classes to avoid clashes with tailwind
@@ -16,7 +16,7 @@ export type Grouping = 'Family' | 'Level' | 'Workset'
 /**
  * Extension of TreeItem
  */
-export type VimTreeNode = TreeItem<ElementInfo> & {
+export type VimTreeNode = TreeItem<AugmentedElement> & {
   title: string
   parent: number
   visible: NodeVisibility
@@ -30,25 +30,21 @@ export type VimTreeNode = TreeItem<ElementInfo> & {
  */
 export function toTreeData (
   vim: VIM.Vim,
-  elements: VIM.ElementInfo[],
+  elements: AugmentedElement[],
   grouping: Grouping
 ) {
   if (!elements) return
 
-  const main: (e: VIM.ElementInfo) => string =
+  const main: (e: AugmentedElement) => string =
     grouping === 'Family'
-      ? (e) => e.categoryName
+      ? (e) => e.familyName
       : grouping === 'Level'
-        ? (e) => e.level
+        ? (e) => e.levelName
         : grouping === 'Workset'
-          ? (e) => e.workset
+          ? (e) => e.worksetName
           : null
 
-  const tree = toMapTree(elements, [
-    main,
-    (e) => e.familyName,
-    (e) => e.familyTypeName
-  ])
+  const tree = toMapTree(elements, [main, (e) => e.familyName, (e) => e.type])
   sort(tree)
 
   const result = new BimTreeData(tree)
@@ -60,7 +56,7 @@ export class BimTreeData {
   nodes: Record<number, VimTreeNode>
   elementToNode: Map<number, number>
 
-  constructor (map: MapTree<string, ElementInfo>) {
+  constructor (map: MapTree<string, AugmentedElement>) {
     this.nodes = {}
     this.elementToNode = new Map<number, number>()
 
@@ -89,7 +85,7 @@ export class BimTreeData {
             : 'vim-undefined'
         return node.visible
       } else {
-        const obj = vim.getObjectFromElement(node.data?.element)
+        const obj = vim.getObjectFromElement(node.data?.index)
         node.visible = obj?.visible ? 'vim-visible' : 'vim-hidden'
         return node.visible
       }
@@ -191,7 +187,7 @@ export class BimTreeData {
   }
 
   private flatten (
-    map: MapTree<string, ElementInfo>,
+    map: MapTree<string, AugmentedElement>,
     i = -1
   ): [number, number[]] {
     const keys: number[] = []
@@ -234,7 +230,7 @@ export class BimTreeData {
             children: [],
             visible: undefined
           }
-          this.elementToNode.set(e.element, i)
+          this.elementToNode.set(e.index, i)
         })
       }
     }
