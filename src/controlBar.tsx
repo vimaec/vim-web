@@ -230,15 +230,8 @@ function TabTools (props: {
     const next = !(viewer.sectionBox.visible && viewer.sectionBox.interactive)
     viewer.sectionBox.interactive = next
     viewer.sectionBox.visible = next
-    if (
-      next &&
-      viewer.sectionBox.box.containsPoint(viewer.camera.camera.position)
-    ) {
-      viewer.camera.frame(
-        viewer.renderer.section.box,
-        'center',
-        viewer.camera.defaultLerpDuration
-      )
+    if (next && viewer.sectionBox.box.containsPoint(viewer.camera.position)) {
+      viewer.camera.frame(viewer.renderer.section.box, 'center', true)
     }
   }
 

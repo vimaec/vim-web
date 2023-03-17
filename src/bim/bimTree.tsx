@@ -69,7 +69,7 @@ export function BimTree (props: {
         const sibblings = props.treeData.getSibblings(node)
         const result = sibblings.map((n) => {
           const nn = props.treeData.nodes[n]
-          const e = nn.data.element
+          const e = nn.data.index
           const o = props.viewer.viewer.vims[0].getObjectFromElement(e)
           return o
         })
@@ -270,7 +270,7 @@ function toggleVisibility (
   const objs = tree
     .getLeafs(index)
     .map((n) =>
-      viewer.viewer.vims[0].getObjectFromElement(tree.nodes[n]?.data.element)
+      viewer.viewer.vims[0].getObjectFromElement(tree.nodes[n]?.data.index)
     )
 
   const visibility = tree.nodes[index].visible
@@ -287,7 +287,7 @@ function updateViewerFocus (
   index: number
 ) {
   const node = tree.nodes[index]
-  const obj = viewer.vims[0].getObjectFromElement(node.data?.element)
+  const obj = viewer.vims[0].getObjectFromElement(node.data?.index)
   viewer.selection.focus(obj)
 }
 
@@ -300,7 +300,7 @@ function updateViewerSelection (
   const objects: VIM.Object[] = []
   nodes.forEach((n) => {
     const item = tree.nodes[n]
-    const element = item.data.element
+    const element = item.data.index
 
     const obj = viewer.vims[0].getObjectFromElement(element)
     objects.push(obj)

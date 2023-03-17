@@ -31,10 +31,11 @@ import { Logs, LogsRef, useLogState } from './logsPanel'
 
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
-import { PartialSettings, Settings, useSettings } from './settings/settings'
+import { PartialSettings, useSettings } from './settings/settings'
 import { Isolation } from './helpers/isolation'
 import { ViewerWrapper } from './helpers/viewer'
 import { TreeActionRef } from './bim/bimTree'
+import { getElements, AugmentedElement } from './helpers/element'
 
 export * as VIM from 'vim-webgl-viewer/'
 export * as ContextMenu from './contextMenu'
@@ -303,7 +304,7 @@ function useViewerState (viewer: VIM.Viewer) {
   const [selection, setSelection] = useState<VIM.Object[]>([
     ...viewer.selection.objects
   ])
-  const [elements, setElements] = useState<VIM.ElementInfo[]>()
+  const [elements, setElements] = useState<AugmentedElement[]>()
 
   useEffect(() => {
     // register to viewer state changes
@@ -322,7 +323,7 @@ function useViewerState (viewer: VIM.Viewer) {
 
   useEffect(() => {
     if (vim) {
-      vim.document.getElementsSummary().then((elements) => {
+      getElements(vim).then((elements) => {
         setElements(elements)
       })
     } else {
@@ -356,5 +357,5 @@ function addPerformanceCounter (parent: HTMLDivElement) {
 export type ViewerState = {
   vim: VIM.Vim
   selection: VIM.Object[]
-  elements: VIM.ElementInfo[]
+  elements: AugmentedElement[]
 }
