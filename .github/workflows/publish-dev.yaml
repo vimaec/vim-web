@@ -17,7 +17,7 @@ jobs:
           git config --global user.email "simon.roberge@vimaec.com"
           git config --global user.name "Simon Roberge"
       - name: Pull changes from remote
-        run: git pull origin develop
+        run: git pull origin dev
 
       - name: Setup Node
         uses: actions/setup-node@v2
