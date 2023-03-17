@@ -62,6 +62,26 @@ export function MenuSettings (props: {
         (settings, value) => (settings.viewer.groundPlane = value)
       )}
       {settingsToggle(
+        'Show Logo',
+        (settings) => settings.ui.logo,
+        (settings, value) => (settings.ui.logo = value)
+      )}
+      {settingsToggle(
+        'Show Bim Panel',
+        (settings) => settings.ui.bimPanel,
+        (settings, value) => (settings.ui.bimPanel = value)
+      )}
+      {settingsToggle(
+        'Show Axes',
+        (settings) => settings.ui.axesPanel,
+        (settings, value) => (settings.ui.axesPanel = value)
+      )}
+      {settingsToggle(
+        'Show Control Bar',
+        (settings) => settings.ui.controlBar,
+        (settings, value) => (settings.ui.controlBar = value)
+      )}
+      {settingsToggle(
         'Show performance',
         (settings) => settings.ui.performance,
         (settings, value) => (settings.ui.performance = value)
