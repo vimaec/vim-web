@@ -13,7 +13,7 @@ import { Isolation } from '../helpers/isolation'
 import { ViewerWrapper } from '../helpers/viewer'
 import { Grouping, toTreeData } from './bimTreeData'
 import { ViewerState } from '../component'
-import {AugmentedElement} from '../helpers/element'
+import { AugmentedElement } from '../helpers/element'
 
 /**
  * Returns a jsx component representing most data of a vim object or vim document.
@@ -92,7 +92,7 @@ export function BimPanel (props: {
           count={filteredElements?.length}
         />
         <select
-          // hidden={true}
+          hidden={true} // Object selection doesnt work well when grouping changes.
           className="vim-bim-grouping"
           onChange={(e) => setGrouping(e.target.value as Grouping)}
         >
