@@ -448,9 +448,9 @@ function TabSettings (props: {
 
   return (
     <>
-      {props.settings.ui.bimPanel ? btnTreeView : null}
+      {props.settings.ui.bimPanel === true ? btnTreeView : null}
       {btnSettings}
-      {props.settings.ui.logPanel ? btnLogs : null}
+      {props.settings.ui.logPanel === true ? btnLogs : null}
       {btnHelp}
       {props.settings.capacity.canGoFullScreen ? btnFullScreen : null}
     </>

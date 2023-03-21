@@ -84,7 +84,7 @@ function AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
     return <div className="vc-mx-1 ">{button}</div>
   }
 
-  const hidden = props.settings.ui.axesPanel ? '' : ' vc-hidden'
+  const hidden = props.settings.ui.axesPanel === true ? '' : ' vc-hidden'
 
   return (
     <div

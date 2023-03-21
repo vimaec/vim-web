@@ -164,7 +164,7 @@ export function VimComponent (props: {
   const [isolation] = useState(() => new Isolation(viewer, settings.value))
   useEffect(() => isolation.applySettings(settings.value), [settings])
 
-  const side = useSideState(settings.value.ui.bimPanel, 480)
+  const side = useSideState(settings.value.ui.bimPanel === true, 480)
   const [contextMenu, setcontextMenu] = useState<contextMenuCustomization>()
   const help = useHelp()
   const viewerState = useViewerState(props.viewer)
@@ -217,7 +217,7 @@ export function VimComponent (props: {
 
   const sidePanel = (
     <>
-      {settings.value.ui.bimPanel
+      {settings.value.ui.bimPanel === true
         ? (
         <BimPanel
           viewer={viewer}
@@ -233,7 +233,7 @@ export function VimComponent (props: {
         viewer={props.viewer}
         settings={settings}
       />
-      {settings.value.ui.logPanel
+      {settings.value.ui.logPanel === true
         ? (
         <Logs
           visible={side.getContent() === 'logs'}
@@ -249,13 +249,13 @@ export function VimComponent (props: {
       <div className="vim-performance-div" ref={prefRef}></div>
       <Overlay viewer={viewer.viewer} side={side}></Overlay>
       <MenuHelpMemo help={help} settings={settings.value} side={side} />
-      {settings.value.ui.logo ? <LogoMemo /> : null}
-      {settings.value.ui.loadingBox
+      {settings.value.ui.logo === true ? <LogoMemo /> : null}
+      {settings.value.ui.loadingBox === true
         ? (
         <LoadingBoxMemo viewer={props.viewer} msg={msg} />
           )
         : null}
-      {settings.value.ui.controlBar
+      {settings.value.ui.controlBar === true
         ? (
         <ControlBar
           viewer={viewer}

@@ -17,20 +17,21 @@ const url = params.has('vim')
 createVimComponent(
   loadVim,
   undefined,
-  getLocalSettings() ?? {
-    ui: { logPanel: false },
+  getLocalSettings({
+    // ui: { logPanel: 'restricted' },
     capacity: { useOrthographicCamera: false }
-  }
+  })
 )
 
-function loadVim (cmp: VimComponentRef) {
+async function loadVim (cmp: VimComponentRef) {
   globalThis.component = cmp
-  cmp.viewer.loadVim(url, {
+  await cmp.viewer.loadVim(url, {
     // instances: [0, 1, 2, 3, 4, 5],
     rotation: new THREE.Vector3(270, 0, 0)
     // streamBim: true,
     // streamGeometry: true
   })
+  cmp.logs.log('HEllo')
 }
 
 globalThis.VIM = VIM

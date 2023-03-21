@@ -4,7 +4,7 @@
 
 import React from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { Settings, SettingsState } from './settings'
+import { RestrictedOption, Settings, SettingsState } from './settings'
 import { cloneDeep } from 'lodash-es'
 
 /**
@@ -37,11 +37,16 @@ export function MenuSettings (props: {
 
   const settingsToggle = (
     label: string,
-    getter: (settings: Settings) => boolean,
+    getter: (settings: Settings) => RestrictedOption,
     setter: (settings: Settings, b: boolean) => void
   ) => {
-    return toggleElement(label, getter(props.settings.value), () => {
-      setter(next, !getter(next))
+    const value = getter(next)
+    if (value === 'restricted') {
+      return null
+    }
+    return toggleElement(label, value, () => {
+      const value = getter(next) as boolean
+      setter(next, !value)
       props.settings.set(next)
     })
   }
@@ -85,6 +90,11 @@ export function MenuSettings (props: {
         'Show performance',
         (settings) => settings.ui.performance,
         (settings, value) => (settings.ui.performance = value)
+      )}
+      {settingsToggle(
+        'Show Logs',
+        (settings) => settings.ui.logPanel,
+        (settings, value) => (settings.ui.logPanel = value)
       )}
     </>
   )

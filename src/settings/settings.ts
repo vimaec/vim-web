@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import deepmerge from 'deepmerge'
+import { cloneDeep } from 'lodash-es'
 
 /**
  * Makes all fields optional recursively
@@ -17,6 +18,8 @@ export type RecursivePartial<T> = {
     ? RecursivePartial<T[P]>
     : T[P]
 }
+
+export type RestrictedOption = boolean | 'restricted'
 
 /**
  * Vim component settings, can either be set at component intialization or by user using UI.
@@ -34,13 +37,13 @@ export type Settings = {
   }
 
   ui: {
-    logo: boolean
-    bimPanel: boolean
-    axesPanel: boolean
-    controlBar: boolean
-    loadingBox: boolean
-    performance: boolean
-    logPanel: boolean
+    logo: RestrictedOption
+    bimPanel: RestrictedOption
+    axesPanel: RestrictedOption
+    controlBar: RestrictedOption
+    loadingBox: RestrictedOption
+    performance: RestrictedOption
+    logPanel: RestrictedOption
   }
 }
 
@@ -70,10 +73,11 @@ const defaultSettings: Settings = {
 
 export type SettingsState = { value: Settings; set: (value: Settings) => void }
 
-export function getLocalSettings () {
+export function getLocalSettings (value: RecursivePartial<Settings>) {
   const json = localStorage.getItem('component.settings')
-  if (!json) return
-  return JSON.parse(json) as Settings
+  const previous = JSON.parse(json) as Settings
+  applyRestricted(previous, value)
+  return previous
 }
 
 /**
@@ -99,12 +103,36 @@ export function useSettings (
   return useMemo(() => ({ value: settings, set: setSettings }), [settings])
 }
 
+function removeRestricted (settings: Settings) {
+  const clone = cloneDeep(settings) as Settings
+  for (const k of Object.keys(clone.ui)) {
+    const u = clone.ui as any
+    u[k] = u[k] === true
+  }
+  return clone
+}
+
+function applyRestricted (
+  previous: Settings,
+  current: RecursivePartial<Settings>
+) {
+  if (!current?.ui) return
+  for (const k of Object.keys(current.ui)) {
+    const p = previous.ui as any
+    const c = current.ui as any
+    if (c[k] === 'restricted') {
+      p[k] = 'restricted'
+    }
+  }
+}
+
 /**
  * Apply given vim component settings to the given viewer.
  */
 export function applySettings (viewer: VIM.Viewer, settings: Settings) {
   try {
-    localStorage.setItem('component.settings', JSON.stringify(settings))
+    const save = removeRestricted(settings)
+    localStorage.setItem('component.settings', JSON.stringify(save))
   } catch (error) {}
 
   // Show/Hide performance gizmo
