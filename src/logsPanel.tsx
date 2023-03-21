@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react'
+import { settings } from './icons'
 import { Settings } from './settings/settings'
 
 /**
@@ -9,19 +10,17 @@ export function Logs (props: {
   text: string
   settings: Settings
 }) {
+  const textbox = useRef<HTMLTextAreaElement>()
   const anchor = useRef<HTMLAnchorElement>(null)
   const prev = useRef<string>()
-  const url = useMemo(() => {
-    console.log('revoke: ' + prev.current)
-    if (prev.current) URL.revokeObjectURL(prev.current)
-    const blob = new Blob([props.text], { type: 'csv' })
-    const r = URL.createObjectURL(blob)
-    console.log('created: ' + r)
-    prev.current = r
-    return r
-  }, [props.text])
+  const url = props.settings.capacity.canDownload
+    ? useMemo(() => {
+      return (prev.current = updateDownloadLink(prev.current, props.text))
+    }, [props.text])
+    : null
 
-  const onCopyBtn = () => {
+  const onCopyBtn = (textbox: HTMLTextAreaElement) => {
+    textbox.select()
     navigator.clipboard.writeText(props.text)
   }
 
@@ -33,7 +32,7 @@ export function Logs (props: {
       </h2>
       <button
         className="vim-logs-copy bg-transparent vc-absolute vc-top-4 vc-ml-12 vc-rounded vc-border vc-border-light-blue vc-py-1 vc-px-2 vc-font-semibold vc-text-light-blue hover:vc-border-transparent hover:vc-bg-light-blue hover:vc-text-white"
-        onClick={onCopyBtn}
+        onClick={() => onCopyBtn(textbox.current)}
       >
         Copy
       </button>
@@ -47,6 +46,7 @@ export function Logs (props: {
           )
         : null}
       <textarea
+        ref={textbox}
         readOnly={true}
         className="vim-logs-box vc-h-full vc-w-full"
         value={props.text}
@@ -54,6 +54,18 @@ export function Logs (props: {
     </div>
       )
     : null
+}
+
+function updateDownloadLink (previous: string, text: string) {
+  if (previous) {
+    URL.revokeObjectURL(previous)
+    console.log('revoked: ' + previous)
+  }
+
+  const blob = new Blob([text], { type: 'csv' })
+  const r = URL.createObjectURL(blob)
+  console.log('created: ' + r)
+  return r
 }
 
 /**
