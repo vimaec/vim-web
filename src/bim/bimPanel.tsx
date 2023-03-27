@@ -36,7 +36,7 @@ export function BimPanel (props: {
 
   // Filter elements with meshes using search term.
   const filteredElements = useMemo(() => {
-    if (!props.viewerState.elements) return
+    if (!props.viewerState.elements) return []
     const meshElements = props.viewerState.elements.filter(
       (e) => props.viewerState.vim.getObjectFromElement(e.index)?.hasMesh
     )
