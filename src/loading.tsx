@@ -35,6 +35,18 @@ function LoadingBox (props: { viewer: VIM.Viewer; msg: string }) {
       })
     }
 
+    // Patch request
+    const prevRequest = props.viewer.requestVim.bind(props.viewer)
+    props.viewer.requestVim = function (
+      source: string | ArrayBuffer,
+      options: VIM.VimPartialSettings
+    ): VIM.VimRequest {
+      const request = prevRequest(source, options) as VIM.VimRequest
+      request.onProgress.sub((progress) => setProgress(progress.loaded))
+      request.onLoaded.sub((vim) => setProgress(undefined))
+      return request
+    }
+
     // Clean up
     return () => {
       props.viewer.loadVim = props.viewer.loadVim.bind(props.viewer)
