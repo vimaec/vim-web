@@ -31,7 +31,7 @@ import { Logs, LogsRef, useLogState } from './logsPanel'
 
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
-import { PartialSettings, Settings, useSettings } from './settings/settings'
+import { PartialSettings, useSettings } from './settings/settings'
 import { Isolation } from './helpers/isolation'
 import { ViewerWrapper } from './helpers/viewer'
 import { TreeActionRef } from './bim/bimTree'
@@ -173,7 +173,7 @@ export function VimComponent (props: {
   const side = useSideState(settings.value.ui.bimPanel === true, 480)
   const [contextMenu, setcontextMenu] = useState<contextMenuCustomization>()
   const help = useHelp()
-  const viewerState = useViewerState(props.viewer, settings.value)
+  const viewerState = useViewerState(props.viewer)
   const [msg, setMsg] = useState<string>()
   const logs = useLogState()
   const treeRef = useRef<TreeActionRef>()
@@ -304,7 +304,7 @@ const LogoMemo = React.memo(() => (
   </div>
 ))
 
-function useViewerState (viewer: VIM.Viewer, settings: Settings) {
+function useViewerState (viewer: VIM.Viewer) {
   const getVim = () => viewer.selection.vim ?? viewer.vims[0]
 
   const [vim, setVim] = useState<VIM.Vim>(getVim())
@@ -329,12 +329,12 @@ function useViewerState (viewer: VIM.Viewer, settings: Settings) {
   }, [])
 
   useEffect(() => {
-    if (vim && settings.ui.bimPanel !== 'restricted') {
+    if (vim) {
       getElements(vim).then((elements) => {
         setElements(elements)
       })
     } else {
-      setElements([])
+      setElements(undefined)
     }
   }, [vim])
 
