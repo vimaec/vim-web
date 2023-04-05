@@ -51,6 +51,11 @@ export type VimComponentRef = {
   viewer: VIM.Viewer
 
   /**
+   * Vim webgl loader to download vims.
+   */
+  loader: VIM.Loader
+
+  /**
    * Higher level helper methods built around the vim viewer.
    */
   helpers: ViewerWrapper
@@ -157,8 +162,9 @@ export function VimComponent (props: {
   onMount: (component: VimComponentRef) => void
   settings?: PartialSettings
 }) {
-  const viewer = useRef(new ViewerWrapper(props.viewer)).current
-  const cursor = useRef(new CursorManager(props.viewer)).current
+  const viewer = useMemo(() => new ViewerWrapper(props.viewer), [])
+  const cursor = useMemo(() => new CursorManager(props.viewer), [])
+  const loader = useMemo(() => new VIM.Loader(), [])
   const settings = useSettings(props.viewer, props.settings)
 
   const [isolation] = useState(() => new Isolation(viewer, settings.value))
@@ -197,6 +203,7 @@ export function VimComponent (props: {
 
     props.onMount({
       viewer: props.viewer,
+      loader,
       helpers: viewer,
       isolation,
       setMsg,
@@ -252,7 +259,7 @@ export function VimComponent (props: {
       {settings.value.ui.logo === true ? <LogoMemo /> : null}
       {settings.value.ui.loadingBox === true
         ? (
-        <LoadingBoxMemo viewer={props.viewer} msg={msg} />
+        <LoadingBoxMemo loader={loader} msg={msg} />
           )
         : null}
       {settings.value.ui.controlBar === true

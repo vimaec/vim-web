@@ -19,23 +19,23 @@ createVimComponent(
   undefined,
   getLocalSettings({
     // ui: { logPanel: 'restricted' },
-    capacity: { useOrthographicCamera: false },
-    ui: { bimPanel: 'restricted' }
+    capacity: { useOrthographicCamera: false }
+    // ui: { bimPanel: 'restricted' }
   })
 )
 
 async function loadVim (cmp: VimComponentRef) {
   globalThis.component = cmp
-  const request = cmp.viewer.requestVim(url, {
+  const vim = await cmp.loader.load(url, {
     // instances: [23000],
     // loadRooms: true,
-    // streamBim: true,
+    streamBim: true,
     // streamGeometry: true,
     rotation: new THREE.Vector3(270, 0, 0)
     // noStrings: true,
     // noMap: false
   })
-  await request.send()
+  cmp.viewer.add(vim)
 }
 
 globalThis.VIM = VIM
