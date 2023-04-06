@@ -40,7 +40,9 @@ export type Settings = {
     logo: RestrictedOption
     bimPanel: RestrictedOption
     axesPanel: RestrictedOption
-    controlBar: RestrictedOption
+    controlBarCursors: RestrictedOption
+    controlBarTools: RestrictedOption
+    controlBarSettings: RestrictedOption
     loadingBox: RestrictedOption
     performance: RestrictedOption
     logPanel: RestrictedOption
@@ -64,7 +66,9 @@ const defaultSettings: Settings = {
     logo: true,
     bimPanel: true,
     axesPanel: true,
-    controlBar: true,
+    controlBarCursors: true,
+    controlBarTools: true,
+    controlBarSettings: true,
     loadingBox: true,
     performance: true,
     logPanel: false

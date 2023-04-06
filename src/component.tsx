@@ -262,18 +262,14 @@ export function VimComponent (props: {
         <LoadingBoxMemo loader={loader} msg={msg} />
           )
         : null}
-      {settings.value.ui.controlBar === true
-        ? (
-        <ControlBar
-          viewer={viewer}
-          help={help}
-          side={side}
-          isolation={isolation}
-          cursor={cursor}
-          settings={settings.value}
-        />
-          )
-        : null}
+      <ControlBar
+        viewer={viewer}
+        help={help}
+        side={side}
+        isolation={isolation}
+        cursor={cursor}
+        settings={settings.value}
+      />
       <AxesPanelMemo viewer={viewer} settings={settings.value} />
       <SidePanelMemo viewer={props.viewer} side={side} content={sidePanel} />
       <ReactTooltip

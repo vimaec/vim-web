@@ -100,13 +100,9 @@ export function ControlBar (props: {
         show ? 'vc-opacity-100' : 'vc-pointer-events-none vc-opacity-0'
       }`}
     >
-      <div className="vc-vim-control-bar-section vc-mx-2 vc-flex vc-items-center vc-rounded-full vc-bg-white vc-px-2 vc-shadow-md">
-        <TabCamera {...props} />
-      </div>
-      <TabTools {...props} />
-      <div className="vim-control-bar-section vc-mx-2 vc-flex vc-items-center vc-rounded-full vc-bg-white vc-px-2 vc-shadow-md">
-        <TabSettings {...props} />
-      </div>
+      {props.settings.ui.controlBarCursors ? <TabCamera {...props} /> : null}
+      {props.settings.ui.controlBarTools ? <TabTools {...props} /> : null}
+      {props.settings.ui.controlBarSettings ? <TabSettings {...props} /> : null}
     </div>
   )
 }
@@ -177,14 +173,14 @@ function TabCamera (props: { viewer: ViewerWrapper }) {
   )
 
   return (
-    <>
+    <div className="vc-vim-control-bar-section vc-mx-2 vc-flex vc-items-center vc-rounded-full vc-bg-white vc-px-2 vc-shadow-md">
       {btnOrbit}
       {btnLook}
       {btnPan}
       {btnZoom}
       {btnFrameRect}
       {btnFrame}
-    </>
+    </div>
   )
 }
 
@@ -447,13 +443,13 @@ function TabSettings (props: {
   )
 
   return (
-    <>
+    <div className="vim-control-bar-section vc-mx-2 vc-flex vc-items-center vc-rounded-full vc-bg-white vc-px-2 vc-shadow-md">
       {props.settings.ui.bimPanel === true ? btnTreeView : null}
       {btnSettings}
       {props.settings.ui.logPanel === true ? btnLogs : null}
       {btnHelp}
       {props.settings.capacity.canGoFullScreen ? btnFullScreen : null}
-    </>
+    </div>
   )
 }
 

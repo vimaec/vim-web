@@ -82,9 +82,19 @@ export function MenuSettings (props: {
         (settings, value) => (settings.ui.axesPanel = value)
       )}
       {settingsToggle(
-        'Show Control Bar',
-        (settings) => settings.ui.controlBar,
-        (settings, value) => (settings.ui.controlBar = value)
+        'Show Control Bar Cursors',
+        (settings) => settings.ui.controlBarCursors,
+        (settings, value) => (settings.ui.controlBarCursors = value)
+      )}
+      {settingsToggle(
+        'Show Control Bar Tools',
+        (settings) => settings.ui.controlBarTools,
+        (settings, value) => (settings.ui.controlBarTools = value)
+      )}
+      {settingsToggle(
+        'Show Control Bar Settings',
+        (settings) => settings.ui.controlBarSettings,
+        (settings, value) => (settings.ui.controlBarSettings = value)
       )}
       {settingsToggle(
         'Show performance',
