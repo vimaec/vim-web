@@ -4,8 +4,9 @@
 
 import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
+import { VimDocument } from 'vim-format/'
 import ReactTooltip from 'react-tooltip'
-import {AugmentedElement} from '../helpers/element'
+import { AugmentedElement } from '../helpers/element'
 
 type BimHeaderEntry = {
   key: string
@@ -114,7 +115,7 @@ function getElementBimHeader (info: AugmentedElement): BimHeader {
       {
         key: 'document',
         label: 'Document',
-        value: info.bimDocument?.name,
+        value: info.bimDocumentName,
         dtStyle: 'vc-w-3/12',
         ddStyle: 'vc-w-9/12',
         dlStyle: 'vc-w-full'
@@ -124,7 +125,7 @@ function getElementBimHeader (info: AugmentedElement): BimHeader {
       {
         key: 'workset',
         label: 'Workset',
-        value: info.workset?.name,
+        value: info.worksetName,
         dtStyle: 'vc-w-3/12',
         ddStyle: 'vc-w-9/12',
         dlStyle: 'vc-w-full'
@@ -134,7 +135,7 @@ function getElementBimHeader (info: AugmentedElement): BimHeader {
       {
         key: 'category',
         label: 'Category',
-        value: info.category?.name,
+        value: info.categoryName,
         dtStyle: 'vc-w-3/12',
         ddStyle: 'vc-w-9/12',
         dlStyle: 'vc-w-full'

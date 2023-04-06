@@ -4,7 +4,7 @@
 import { TreeItem } from 'react-complex-tree'
 import { VIM } from '../component'
 import { MapTree, sort, toMapTree } from '../helpers/data'
-import {AugmentedElement} from '../helpers/element'
+import { AugmentedElement } from '../helpers/element'
 
 /**
  * Custom visibility CSS classes to avoid clashes with tailwind
@@ -37,14 +37,18 @@ export function toTreeData (
 
   const main: (e: AugmentedElement) => string =
     grouping === 'Family'
-      ? (e) => e.familyName
+      ? (e) => e.categoryName
       : grouping === 'Level'
         ? (e) => e.levelName
         : grouping === 'Workset'
           ? (e) => e.worksetName
           : null
 
-  const tree = toMapTree(elements, [main, (e) => e.familyName, (e) => e.type])
+  const tree = toMapTree(elements, [
+    main,
+    (e) => e.familyName,
+    (e) => e.familyTypeName
+  ])
   sort(tree)
 
   const result = new BimTreeData(tree)

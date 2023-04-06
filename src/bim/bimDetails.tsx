@@ -144,7 +144,7 @@ function createTable (
         </li>
         {open
           ? entries.map((p, i) => {
-            const id = key + p.name + i
+            const id = `${key}_${p.name}_${i}`
             return (
                 <li
                   className="vc-even:bg-white vc-odd:bg-gray-zebra vc-flex"
