@@ -444,7 +444,10 @@ function TabSettings (props: {
 
   return (
     <div className="vim-control-bar-section vc-mx-2 vc-flex vc-items-center vc-rounded-full vc-bg-white vc-px-2 vc-shadow-md">
-      {props.settings.ui.bimPanel === true ? btnTreeView : null}
+      {props.settings.ui.bimTreePanel === true ||
+      props.settings.ui.bimInfoPanel === true
+        ? btnTreeView
+        : null}
       {btnSettings}
       {props.settings.ui.logPanel === true ? btnLogs : null}
       {btnHelp}

@@ -14,6 +14,8 @@ import { ViewerWrapper } from '../helpers/viewer'
 import { Grouping, toTreeData } from './bimTreeData'
 import { ViewerState } from '../component'
 import { AugmentedElement } from '../helpers/element'
+import { Settings } from '../settings/settings'
+import { settings } from '../icons'
 
 /**
  * Returns a jsx component representing most data of a vim object or vim document.
@@ -29,8 +31,16 @@ export function BimPanel (props: {
   viewerState: ViewerState
   isolation: Isolation
   visible: boolean
+  settings: Settings
   treeRef: React.MutableRefObject<TreeActionRef>
 }) {
+  if (
+    props.settings.ui.bimInfoPanel !== true &&
+    props.settings.ui.bimInfoPanel !== false
+  ) {
+    return null
+  }
+
   const [filter, setFilter] = useState('')
   const [grouping, setGrouping] = useState<Grouping>('Family')
 
@@ -81,81 +91,102 @@ export function BimPanel (props: {
 
   return (
     <div className={`vim-bim-panel ${props.visible ? '' : 'vc-hidden'}`}>
-      <div className="vim-bim-upper vc-h-1/2">
-        <h2 className="vim-bim-upper-title vc-mb-6 vc-text-xs vc-font-bold vc-uppercase">
-          Project Inspector
-        </h2>
-        <BimSearch
-          viewer={props.viewer}
-          filter={filter}
-          setFilter={setFilter}
-          count={filteredElements?.length}
-        />
-        <select
-          hidden={true} // Object selection doesnt work well when grouping changes.
-          className="vim-bim-grouping"
-          onChange={(e) => setGrouping(e.target.value as Grouping)}
-        >
-          <option value={'Family'}>Family</option>
-          <option value={'Level'}>Level</option>
-          <option value={'Workset'}>Workset</option>
-        </select>
-        <select
-          // hidden={true}
-          className="vim-bim-actions"
-          onChange={(e) => {
-            switch (e.target.value) {
-              case 'show':
-                props.treeRef.current?.showAll()
-                e.target.value = ''
-                break
-              case 'hide':
-                props.treeRef.current?.hideAll()
-                e.target.value = ''
-                break
-              case 'collapse':
-                props.treeRef.current?.collapseAll()
-                e.target.value = ''
-                break
-            }
-          }}
-        >
-          <option value={''}>...</option>
-          <option value={'show'}>Show All</option>
-          <option value={'hide'}>Hide All</option>
-          <option value={'collapse'}>Collapse All</option>
-        </select>
+      {props.settings.ui.bimTreePanel !== true ? null : (
+        <div className="vim-bim-upper vc-h-1/2">
+          <h2 className="vim-bim-upper-title vc-mb-6 vc-text-xs vc-font-bold vc-uppercase">
+            Project Inspector
+          </h2>
+          <BimSearch
+            viewer={props.viewer}
+            filter={filter}
+            setFilter={setFilter}
+            count={filteredElements?.length}
+          />
+          <select
+            hidden={true} // Object selection doesnt work well when grouping changes.
+            className="vim-bim-grouping"
+            onChange={(e) => setGrouping(e.target.value as Grouping)}
+          >
+            <option value={'Family'}>Family</option>
+            <option value={'Level'}>Level</option>
+            <option value={'Workset'}>Workset</option>
+          </select>
+          <select
+            // hidden={true}
+            className="vim-bim-actions"
+            onChange={(e) => {
+              switch (e.target.value) {
+                case 'show':
+                  props.treeRef.current?.showAll()
+                  e.target.value = ''
+                  break
+                case 'hide':
+                  props.treeRef.current?.hideAll()
+                  e.target.value = ''
+                  break
+                case 'collapse':
+                  props.treeRef.current?.collapseAll()
+                  e.target.value = ''
+                  break
+              }
+            }}
+          >
+            <option value={''}>...</option>
+            <option value={'show'}>Show All</option>
+            <option value={'hide'}>Hide All</option>
+            <option value={'collapse'}>Collapse All</option>
+          </select>
 
-        <BimTree
-          actionRef={props.treeRef}
-          viewer={props.viewer}
-          objects={props.viewerState.selection}
-          isolation={props.isolation}
-          treeData={tree}
-        />
-      </div>
-      <hr className="-vc-mx-6 vc-mb-5 vc-border-gray-divider" />
+          <BimTree
+            actionRef={props.treeRef}
+            viewer={props.viewer}
+            objects={props.viewerState.selection}
+            isolation={props.isolation}
+            treeData={tree}
+          />
+        </div>
+      )}
 
+      {
+        // Divider if needed.
+        props.settings.ui.bimTreePanel === true &&
+        props.settings.ui.bimInfoPanel === true
+          ? divider()
+          : null
+      }
+
+      {props.settings.ui.bimInfoPanel === true
+        ? bimInfo(last, props.viewerState.vim, filteredElements)
+        : null}
+    </div>
+  )
+}
+
+function divider () {
+  return <hr className="-vc-mx-6 vc-mb-5 vc-border-gray-divider" />
+}
+
+function bimInfo (
+  object: VIM.Object,
+  vim: VIM.Vim,
+  elements: AugmentedElement[]
+) {
+  return (
+    <>
       <h2 className="vc-mb-4 vc-text-xs vc-font-bold vc-uppercase">
         Bim Inspector
       </h2>
       <div className="vim-bim-lower vc-h-1/2 vc-overflow-y-auto vc-overflow-x-hidden">
         <BimObjectHeader
-          elements={filteredElements}
-          object={last}
-          visible={last !== undefined}
+          elements={elements}
+          object={object}
+          visible={object !== undefined}
         />
-        <BimObjectDetails object={last} visible={last !== undefined} />
-        <BimDocumentHeader
-          vim={props.viewer.viewer.vims[0]}
-          visible={last === undefined}
-        />
-        <BimDocumentDetails
-          vim={props.viewerState.vim}
-          visible={last === undefined}
-        />
+        <BimObjectDetails object={object} visible={object !== undefined} />
+        <BimDocumentHeader vim={vim} visible={object === undefined} />
+        <BimDocumentDetails vim={vim} visible={object === undefined} />
       </div>
-    </div>
+    </>
   )
 }
 

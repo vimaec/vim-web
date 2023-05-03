@@ -72,9 +72,14 @@ export function MenuSettings (props: {
         (settings, value) => (settings.ui.logo = value)
       )}
       {settingsToggle(
-        'Show Bim Panel',
-        (settings) => settings.ui.bimPanel,
-        (settings, value) => (settings.ui.bimPanel = value)
+        'Show Bim Tree',
+        (settings) => settings.ui.bimTreePanel,
+        (settings, value) => (settings.ui.bimTreePanel = value)
+      )}
+      {settingsToggle(
+        'Show Bim Info',
+        (settings) => settings.ui.bimInfoPanel,
+        (settings, value) => (settings.ui.bimInfoPanel = value)
       )}
       {settingsToggle(
         'Show Axes',

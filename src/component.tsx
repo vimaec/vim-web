@@ -170,7 +170,11 @@ export function VimComponent (props: {
   const [isolation] = useState(() => new Isolation(viewer, settings.value))
   useEffect(() => isolation.applySettings(settings.value), [settings])
 
-  const side = useSideState(settings.value.ui.bimPanel === true, 480)
+  const side = useSideState(
+    settings.value.ui.bimTreePanel === true ||
+      settings.value.ui.bimInfoPanel === true,
+    480
+  )
   const [contextMenu, setcontextMenu] = useState<contextMenuCustomization>()
   const help = useHelp()
   const viewerState = useViewerState(props.viewer)
@@ -224,17 +228,14 @@ export function VimComponent (props: {
 
   const sidePanel = (
     <>
-      {settings.value.ui.bimPanel === true
-        ? (
-        <BimPanel
-          viewer={viewer}
-          viewerState={viewerState}
-          visible={side.getContent() === 'bim'}
-          isolation={isolation}
-          treeRef={treeRef}
-        />
-          )
-        : null}
+      <BimPanel
+        viewer={viewer}
+        viewerState={viewerState}
+        visible={side.getContent() === 'bim'}
+        isolation={isolation}
+        treeRef={treeRef}
+        settings={settings.value}
+      />
       <MenuSettings
         visible={side.getContent() === 'settings'}
         viewer={props.viewer}

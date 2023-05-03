@@ -35,10 +35,10 @@ export type Settings = {
     useOrthographicCamera: boolean
     canDownload: boolean
   }
-
   ui: {
     logo: RestrictedOption
-    bimPanel: RestrictedOption
+    bimTreePanel: RestrictedOption
+    bimInfoPanel: RestrictedOption
     axesPanel: RestrictedOption
     controlBarCursors: RestrictedOption
     controlBarTools: RestrictedOption
@@ -64,7 +64,8 @@ const defaultSettings: Settings = {
   },
   ui: {
     logo: true,
-    bimPanel: true,
+    bimTreePanel: true,
+    bimInfoPanel: true,
     axesPanel: true,
     controlBarCursors: true,
     controlBarTools: true,

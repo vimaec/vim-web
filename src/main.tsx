@@ -18,14 +18,8 @@ createVimComponent(loadVim, undefined, getLocalSettings())
 
 async function loadVim (cmp: VimComponentRef) {
   globalThis.component = cmp
-  const vim = await cmp.loader.load('skanska.nozip.vim', {
-    // instances: [23000],
-    // loadRooms: true,
-    // streamBim: true,
-    // streamGeometry: true,
+  const vim = await cmp.loader.load('residence_nozip.vim', {
     rotation: new THREE.Vector3(270, 0, 0)
-    // noStrings: true,
-    // noMap: false
   })
   cmp.viewer.add(vim)
 }
