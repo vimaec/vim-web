@@ -187,7 +187,7 @@ export function VimComponent (props: {
 
     // Frame on vim loaded
     const subLoad = props.viewer.onVimLoaded.subscribe(() => {
-      props.viewer.camera.frame('all', 45)
+      props.viewer.camera.do().frame('all', props.viewer.camera.defaultForward)
     })
 
     // Setup custom input scheme

@@ -17,8 +17,7 @@ export class ViewerWrapper {
    * Reset camera to initial position
    */
   resetCamera () {
-    this.viewer.camera.reset()
-    this.viewer.camera.frame('all', 45)
+    this.viewer.camera.lerp(1).reset()
   }
 
   /**
@@ -40,11 +39,7 @@ export class ViewerWrapper {
     const box = this.viewer.selection.getBoundingBox()
 
     if (box && this.viewer.sectionBox.box.intersectsBox(box)) {
-      this.viewer.camera.frame(
-        box,
-        'none',
-        true
-      )
+      this.viewer.camera.lerp(1).frame(box)
     }
   }
 
@@ -52,11 +47,7 @@ export class ViewerWrapper {
    * Makes camera frame all visible objects
    */
   frameVisibleObjects (source?: VIM.Vim) {
-    this.viewer.camera.frame(
-      this.getVisibleBoundingBox(source),
-      'none',
-      true
-    )
+    this.viewer.camera.lerp(1).frame(this.getVisibleBoundingBox(source))
   }
 
   /**

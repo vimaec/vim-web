@@ -77,11 +77,11 @@ const defaultSettings: Settings = {
 
 export type SettingsState = { value: Settings; set: (value: Settings) => void }
 
-export function getLocalSettings (value: RecursivePartial<Settings>) {
+export function getLocalSettings (value: RecursivePartial<Settings> = {}) {
   const json = localStorage.getItem('component.settings')
   const previous = JSON.parse(json) as Settings
   applyRestricted(previous, value)
-  return previous
+  return previous ?? {}
 }
 
 /**

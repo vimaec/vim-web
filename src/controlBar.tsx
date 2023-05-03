@@ -227,7 +227,7 @@ function TabTools (props: {
     viewer.sectionBox.interactive = next
     viewer.sectionBox.visible = next
     if (next && viewer.sectionBox.box.containsPoint(viewer.camera.position)) {
-      viewer.camera.frame(viewer.renderer.section.box, 'center', true)
+      viewer.camera.lerp(1).frame(viewer.renderer.section.box)
     }
   }
 
