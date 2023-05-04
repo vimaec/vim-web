@@ -172,10 +172,10 @@ export class BimTreeData {
     return current.parent
   }
 
-  getSibblings (node: number) {
+  getSiblings (node: number) {
     const parent = this.nodes[node].parent
-    const sibblings = this.getChildren(parent)
-    return sibblings
+    const siblings = this.getChildren(parent)
+    return siblings
   }
 
   getAncestors (node: number) {
@@ -238,7 +238,7 @@ export class BimTreeData {
         })
       }
     }
-    // return last used index and sibbling indices at this level.
+    // return last used index and sibling indices at this level.
     return [i, keys]
   }
 }

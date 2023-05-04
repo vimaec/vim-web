@@ -167,7 +167,7 @@ export function VimContextMenu (props: {
 
   const onSelectSimilarBtn = (e: ClickCallback) => {
     const o = [...props.viewer.viewer.selection.objects][0]
-    props.treeRef.current.selectSibblings(o)
+    props.treeRef.current.selectSiblings(o)
     e.stopPropagation()
   }
 

@@ -223,7 +223,7 @@ export function VimComponent (props: {
       updateSettings: (updater) => {
         settings.update(updater)
       },
-      selectSibbings: (o) => treeRef.current.selectSibblings(o)
+      selectSibbings: (o) => treeRef.current.selectSiblings(o)
     })
 
     // Clean up

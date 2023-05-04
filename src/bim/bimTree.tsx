@@ -15,13 +15,13 @@ import { showContextMenu } from '../contextMenu'
 import { ViewerWrapper } from '../helpers/viewer'
 import { ArrayEquals } from '../helpers/data'
 import { Isolation } from '../helpers/isolation'
-import { BimTreeData, Grouping, VimTreeNode } from './bimTreeData'
+import { BimTreeData, VimTreeNode } from './bimTreeData'
 
 export type TreeActionRef = {
   showAll: () => void
   hideAll: () => void
   collapseAll: () => void
-  selectSibblings: (element: VIM.Object) => void
+  selectSiblings: (element: VIM.Object) => void
 }
 
 /**
@@ -63,11 +63,11 @@ export function BimTree (props: {
       collapseAll: () => {
         setExpandedItems([])
       },
-      selectSibblings: (object: VIM.Object) => {
+      selectSiblings: (object: VIM.Object) => {
         const element = object.element
         const node = props.treeData.getNodeFromElement(element)
-        const sibblings = props.treeData.getSibblings(node)
-        const result = sibblings.map((n) => {
+        const siblings = props.treeData.getSiblings(node)
+        const result = siblings.map((n) => {
           const nn = props.treeData.nodes[n]
           const e = nn.data.index
           const o = props.viewer.viewer.vims[0].getObjectFromElement(e)
