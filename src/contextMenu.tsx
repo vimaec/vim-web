@@ -15,6 +15,8 @@ import { Isolation } from './helpers/isolation'
 import { ViewerWrapper } from './helpers/viewer'
 import { HelpState } from './help'
 import { ArrayEquals } from './helpers/data'
+import { TreeActionRef } from './bim/bimTree'
+import { Settings } from './settings/settings'
 
 export const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
 export type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -22,7 +24,6 @@ export type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
 export function showContextMenu (
   position: { x: number; y: number } | undefined
 ) {
-  console.log(position)
   hideMenu()
   if (!position) {
     return
@@ -46,6 +47,7 @@ export const contextMenuElementIds = {
   zoomToFit: 'zoomToFit',
   dividerSelection: 'dividerSelection',
   isolateSelection: 'isolateObject',
+  selectSimilar: 'selectSimilar',
   hideObject: 'hideObject',
   showObject: 'showObject',
   clearSelection: 'clearSelection',
@@ -99,6 +101,7 @@ export function VimContextMenu (props: {
   isolation: Isolation
   selection: VIM.Object[]
   customization?: (e: contextMenuElement[]) => contextMenuElement[]
+  treeRef: React.MutableRefObject<TreeActionRef>
 }) {
   const viewer = props.viewer.viewer
   const helper = props.viewer
@@ -159,6 +162,12 @@ export function VimContextMenu (props: {
       'contextMenu'
     )
     helper.viewer.selection.clear()
+    e.stopPropagation()
+  }
+
+  const onSelectSimilarBtn = (e: ClickCallback) => {
+    const o = [...props.viewer.viewer.selection.objects][0]
+    props.treeRef.current.selectSiblings(o)
     e.stopPropagation()
   }
 
@@ -262,6 +271,13 @@ export function VimContextMenu (props: {
       keyboard: 'I',
       action: onSelectionIsolateBtn,
       enabled: hasSelection && !isolated
+    },
+    {
+      id: contextMenuElementIds.selectSimilar,
+      label: 'Select Similar',
+      keyboard: undefined,
+      action: onSelectSimilarBtn,
+      enabled: hasSelection
     },
     {
       id: contextMenuElementIds.hideObject,

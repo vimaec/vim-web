@@ -84,10 +84,15 @@ function AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
     return <div className="vc-mx-1 ">{button}</div>
   }
 
+  const hidden = props.settings.ui.axesPanel === true ? '' : ' vc-hidden'
+
   return (
     <div
       ref={ui}
-      className="vim-axes-panel vc-fixed vc-right-6 vc-top-6 vc-z-20 vc-flex vc-h-[145px] vc-w-[100px] vc-flex-col vc-rounded-2xl vc-border vc-border-white vc-opacity-50 vc-shadow-lg vc-saturate-0 vc-transition-all hover:vc-opacity-100 hover:vc-saturate-100"
+      className={
+        'vim-axes-panel vc-fixed vc-right-6 vc-top-6 vc-z-20 vc-flex vc-h-[145px] vc-w-[100px] vc-flex-col vc-rounded-2xl vc-border vc-border-white vc-opacity-50 vc-shadow-lg vc-saturate-0 vc-transition-all hover:vc-opacity-100 hover:vc-saturate-100' +
+        hidden
+      }
     >
       <div className="vim-top-buttons vc-pointer-events-auto vc-order-2 vc-mb-0 vc-mt-auto vc-flex vc-justify-center vc-rounded-b-xl vc-bg-white vc-p-1">
         {createButton(btnOrtho, props.settings.capacity.useOrthographicCamera)}

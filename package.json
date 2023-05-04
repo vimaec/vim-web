@@ -1,6 +1,6 @@
 {
   "name": "vim-webgl-component",
-  "version": "0.2.15",
+  "version": "0.2.26",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "files": [
     "dist"
@@ -27,16 +27,17 @@
     "release-minor": "npm version minor && git push && npm publish",
     "release-patch": "npm version patch && git push && npm publish",
     "release-dev": "npm run build && npm run bump-dev && git push && npm run publish-dev",
+    "release-current": "npm run build && git push && npm publish",
     "declarations": "tsc --declaration --emitDeclarationOnly --outdir ./dist/types",
     "eslint": "eslint --ext .js,.ts src --fix",
     "documentation": "typedoc --entryPointStrategy expand --mergeModulesMergeMode module --out docs/api --excludeProtected --excludeExternals --excludePrivate --exclude ./src/main.tsx --exclude ./src/module.d.ts ./src/ && git add ./docs/"
   },
   "devDependencies": {
-    "@tailwindcss/forms": "^0.5.3",
     "@types/react": "^17.0.39",
     "@types/react-dom": "^18.0.9",
     "@types/three": "^0.146.0",
     "@typescript-eslint/eslint-plugin": "^5.36.2",
+    "@tailwindcss/forms": "0.5.3",
     "autoprefixer": "10.4.5",
     "eslint": "^8.23.1",
     "eslint-config-prettier": "^8.5.0",
@@ -68,7 +69,8 @@
     "stats-js": "^1.0.1",
     "ste-signals": "^3.0.7",
     "ste-simple-events": "^3.0.7",
-    "vim-webgl-viewer": "1.4.15"
+    "vim-webgl-viewer": "1.5.6",
+    "lodash-es": "^4.17.21"
   },
   "keywords": [
     "3d",

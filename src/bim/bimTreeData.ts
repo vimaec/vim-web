@@ -2,9 +2,9 @@
  * @module viw-webgl-component
  */
 import { TreeItem } from 'react-complex-tree'
-import { ElementInfo } from 'vim-webgl-viewer'
 import { VIM } from '../component'
 import { MapTree, sort, toMapTree } from '../helpers/data'
+import { AugmentedElement } from '../helpers/element'
 
 /**
  * Custom visibility CSS classes to avoid clashes with tailwind
@@ -16,7 +16,7 @@ export type Grouping = 'Family' | 'Level' | 'Workset'
 /**
  * Extension of TreeItem
  */
-export type VimTreeNode = TreeItem<ElementInfo> & {
+export type VimTreeNode = TreeItem<AugmentedElement> & {
   title: string
   parent: number
   visible: NodeVisibility
@@ -29,19 +29,19 @@ export type VimTreeNode = TreeItem<ElementInfo> & {
  * @returns
  */
 export function toTreeData (
-  viewer: VIM.Viewer,
-  elements: VIM.ElementInfo[],
+  vim: VIM.Vim,
+  elements: AugmentedElement[],
   grouping: Grouping
 ) {
   if (!elements) return
 
-  const main: (e: VIM.ElementInfo) => string =
+  const main: (e: AugmentedElement) => string =
     grouping === 'Family'
       ? (e) => e.categoryName
       : grouping === 'Level'
-        ? (e) => e.level
+        ? (e) => e.levelName
         : grouping === 'Workset'
-          ? (e) => e.workset
+          ? (e) => e.worksetName
           : null
 
   const tree = toMapTree(elements, [
@@ -52,7 +52,7 @@ export function toTreeData (
   sort(tree)
 
   const result = new BimTreeData(tree)
-  result.updateVisibility(viewer)
+  result.updateVisibility(vim)
   return result
 }
 
@@ -60,14 +60,14 @@ export class BimTreeData {
   nodes: Record<number, VimTreeNode>
   elementToNode: Map<number, number>
 
-  constructor (map: MapTree<string, ElementInfo>) {
+  constructor (map: MapTree<string, AugmentedElement>) {
     this.nodes = {}
     this.elementToNode = new Map<number, number>()
 
     this.flatten(map)
   }
 
-  updateVisibility (viewer: VIM.Viewer) {
+  updateVisibility (vim: VIM.Vim) {
     const set = new Set<VimTreeNode>()
     const updateOne = (node: VimTreeNode): NodeVisibility => {
       if (set.has(node)) {
@@ -89,7 +89,7 @@ export class BimTreeData {
             : 'vim-undefined'
         return node.visible
       } else {
-        const obj = viewer.vims[0].getObjectFromElement(node.data?.element)
+        const obj = vim.getObjectFromElement(node.data?.index)
         node.visible = obj?.visible ? 'vim-visible' : 'vim-hidden'
         return node.visible
       }
@@ -145,19 +145,37 @@ export class BimTreeData {
     return none ? 'none' : all ? 'all' : 'some'
   }
 
-  getChildren (node: number, recusive = false, result: number[] = []) {
-    result.push(node)
+  getChildren (
+    node: number,
+    includeSelf = false,
+    recursive = false,
+    result: number[] = []
+  ) {
+    if (includeSelf) {
+      result.push(node)
+    }
     const current = this.nodes[node]
     if (current.children?.length > 0) {
-      if (recusive) {
+      if (recursive) {
         current.children.forEach((c) =>
-          this.getChildren(c as number, recusive, result)
+          this.getChildren(c as number, true, recursive, result)
         )
       } else {
         current.children.forEach((c) => result.push(c as number))
       }
     }
     return result
+  }
+
+  getParent (node: number) {
+    const current = this.nodes[node]
+    return current.parent
+  }
+
+  getSiblings (node: number) {
+    const parent = this.nodes[node].parent
+    const siblings = this.getChildren(parent)
+    return siblings
   }
 
   getAncestors (node: number) {
@@ -173,7 +191,7 @@ export class BimTreeData {
   }
 
   private flatten (
-    map: MapTree<string, ElementInfo>,
+    map: MapTree<string, AugmentedElement>,
     i = -1
   ): [number, number[]] {
     const keys: number[] = []
@@ -216,11 +234,11 @@ export class BimTreeData {
             children: [],
             visible: undefined
           }
-          this.elementToNode.set(e.element, i)
+          this.elementToNode.set(e.index, i)
         })
       }
     }
-    // return last used index and sibbling indices at this level.
+    // return last used index and sibling indices at this level.
     return [i, keys]
   }
 }

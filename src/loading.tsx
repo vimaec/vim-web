@@ -4,6 +4,7 @@
 
 import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
+import { PartialSettings, VimSettings } from 'vim-webgl-viewer/'
 import { setComponentBehind } from './helpers/html'
 
 type Progress = 'processing' | number | string
@@ -16,28 +17,30 @@ export const LoadingBoxMemo = React.memo(LoadingBox)
 /**
  * Loading box JSX Component tha can also be used to show messages.
  */
-function LoadingBox (props: { viewer: VIM.Viewer; msg: string }) {
+function LoadingBox (props: { loader: VIM.Loader; msg: string }) {
   const [progress, setProgress] = useState<Progress>()
 
   // Patch load
   useEffect(() => {
-    const prevLoad = props.viewer.loadVim.bind(props.viewer)
-    props.viewer.loadVim = function (
+    const prev = props.loader.createRequest.bind(props.loader)
+    props.loader.createRequest = function (
       source: string | ArrayBuffer,
-      options: VIM.VimOptions,
-      _: (logger: VIM.IProgressLogs) => void
-    ): Promise<VIM.Vim> {
-      return prevLoad(source, options, (p) => {
-        setProgress(p.loaded)
-      }).then((vim) => {
+      settings: Partial<VimSettings>
+    ) {
+      const request = prev(source, settings) as VIM.VimRequest
+      const disconnect = request.onProgress.sub((progress) =>
+        setProgress(progress.loaded)
+      )
+      request.onLoaded.sub((vim) => {
         setProgress(undefined)
-        return vim
+        disconnect()
       })
+      return request
     }
 
     // Clean up
     return () => {
-      props.viewer.loadVim = props.viewer.loadVim.bind(props.viewer)
+      props.loader.createRequest = prev
     }
   }, [])
 

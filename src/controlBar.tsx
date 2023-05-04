@@ -100,13 +100,9 @@ export function ControlBar (props: {
         show ? 'vc-opacity-100' : 'vc-pointer-events-none vc-opacity-0'
       }`}
     >
-      <div className="vc-vim-control-bar-section vc-mx-2 vc-flex vc-items-center vc-rounded-full vc-bg-white vc-px-2 vc-shadow-md">
-        <TabCamera {...props} />
-      </div>
-      <TabTools {...props} />
-      <div className="vim-control-bar-section vc-mx-2 vc-flex vc-items-center vc-rounded-full vc-bg-white vc-px-2 vc-shadow-md">
-        <TabSettings {...props} />
-      </div>
+      {props.settings.ui.controlBarCursors ? <TabCamera {...props} /> : null}
+      {props.settings.ui.controlBarTools ? <TabTools {...props} /> : null}
+      {props.settings.ui.controlBarSettings ? <TabSettings {...props} /> : null}
     </div>
   )
 }
@@ -177,14 +173,14 @@ function TabCamera (props: { viewer: ViewerWrapper }) {
   )
 
   return (
-    <>
+    <div className="vc-vim-control-bar-section vc-mx-2 vc-flex vc-items-center vc-rounded-full vc-bg-white vc-px-2 vc-shadow-md">
       {btnOrbit}
       {btnLook}
       {btnPan}
       {btnZoom}
       {btnFrameRect}
       {btnFrame}
-    </>
+    </div>
   )
 }
 
@@ -230,15 +226,8 @@ function TabTools (props: {
     const next = !(viewer.sectionBox.visible && viewer.sectionBox.interactive)
     viewer.sectionBox.interactive = next
     viewer.sectionBox.visible = next
-    if (
-      next &&
-      viewer.sectionBox.box.containsPoint(viewer.camera.camera.position)
-    ) {
-      viewer.camera.frame(
-        viewer.renderer.section.box,
-        'center',
-        viewer.camera.defaultLerpDuration
-      )
+    if (next && viewer.sectionBox.box.containsPoint(viewer.camera.position)) {
+      viewer.camera.lerp(1).frame(viewer.renderer.section.box)
     }
   }
 
@@ -426,6 +415,13 @@ function TabSettings (props: {
     Icons.settings,
     () => props.side.getContent() === 'settings'
   )
+  const btnLogs = toggleButton(
+    'Logs',
+    () => props.side.toggleContent('logs'),
+    Icons.home,
+    () => props.side.getContent() === 'logs'
+  )
+
   const btnHelp = toggleButton(
     'Help',
     onHelpBtn,
@@ -447,12 +443,16 @@ function TabSettings (props: {
   )
 
   return (
-    <>
-      {props.settings.ui.bimPanel ? btnTreeView : null}
+    <div className="vim-control-bar-section vc-mx-2 vc-flex vc-items-center vc-rounded-full vc-bg-white vc-px-2 vc-shadow-md">
+      {props.settings.ui.bimTreePanel === true ||
+      props.settings.ui.bimInfoPanel === true
+        ? btnTreeView
+        : null}
       {btnSettings}
+      {props.settings.ui.logPanel === true ? btnLogs : null}
       {btnHelp}
       {props.settings.capacity.canGoFullScreen ? btnFullScreen : null}
-    </>
+    </div>
   )
 }
 

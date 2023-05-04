@@ -4,7 +4,7 @@
 
 import React from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { Settings, SettingsState } from './settings'
+import { RestrictedOption, Settings, SettingsState } from './settings'
 import { cloneDeep } from 'lodash-es'
 
 /**
@@ -33,16 +33,19 @@ export function MenuSettings (props: {
       </label>
     )
   }
-  const next = cloneDeep(props.settings.value)
 
   const settingsToggle = (
     label: string,
-    getter: (settings: Settings) => boolean,
+    getter: (settings: Settings) => RestrictedOption,
     setter: (settings: Settings, b: boolean) => void
   ) => {
-    return toggleElement(label, getter(props.settings.value), () => {
-      setter(next, !getter(next))
-      props.settings.set(next)
+    const value = getter(props.settings.value)
+    if (value === 'restricted') {
+      return null
+    }
+    return toggleElement(label, value, () => {
+      const value = getter(props.settings.value) as boolean
+      props.settings.update((s) => setter(s, !value))
     })
   }
   // {toggleElement("Hide action menu while moving camera")}
@@ -62,9 +65,49 @@ export function MenuSettings (props: {
         (settings, value) => (settings.viewer.groundPlane = value)
       )}
       {settingsToggle(
+        'Show Logo',
+        (settings) => settings.ui.logo,
+        (settings, value) => (settings.ui.logo = value)
+      )}
+      {settingsToggle(
+        'Show Bim Tree',
+        (settings) => settings.ui.bimTreePanel,
+        (settings, value) => (settings.ui.bimTreePanel = value)
+      )}
+      {settingsToggle(
+        'Show Bim Info',
+        (settings) => settings.ui.bimInfoPanel,
+        (settings, value) => (settings.ui.bimInfoPanel = value)
+      )}
+      {settingsToggle(
+        'Show Axes',
+        (settings) => settings.ui.axesPanel,
+        (settings, value) => (settings.ui.axesPanel = value)
+      )}
+      {settingsToggle(
+        'Show Control Bar Cursors',
+        (settings) => settings.ui.controlBarCursors,
+        (settings, value) => (settings.ui.controlBarCursors = value)
+      )}
+      {settingsToggle(
+        'Show Control Bar Tools',
+        (settings) => settings.ui.controlBarTools,
+        (settings, value) => (settings.ui.controlBarTools = value)
+      )}
+      {settingsToggle(
+        'Show Control Bar Settings',
+        (settings) => settings.ui.controlBarSettings,
+        (settings, value) => (settings.ui.controlBarSettings = value)
+      )}
+      {settingsToggle(
         'Show performance',
         (settings) => settings.ui.performance,
         (settings, value) => (settings.ui.performance = value)
+      )}
+      {settingsToggle(
+        'Show Logs',
+        (settings) => settings.ui.logPanel,
+        (settings, value) => (settings.ui.logPanel = value)
       )}
     </>
   )

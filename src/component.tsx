@@ -2,7 +2,7 @@
  * @module viw-webgl-component
  */
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { createRoot } from 'react-dom/client'
 import ReactTooltip from 'react-tooltip'
 import logo from './assets/logo.png'
@@ -27,15 +27,19 @@ import { useSideState } from './sidePanel/sideState'
 import { MenuSettings } from './settings/menuSettings'
 import { MenuToastMemo } from './toast'
 import { Overlay } from './overlay'
+import { Logs, LogsRef, useLogState } from './logsPanel'
 
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
-import { PartialSettings, useSettings } from './settings/settings'
+import { PartialSettings, Settings, useSettings } from './settings/settings'
 import { Isolation } from './helpers/isolation'
 import { ViewerWrapper } from './helpers/viewer'
+import { TreeActionRef } from './bim/bimTree'
+import { getElements, AugmentedElement } from './helpers/element'
 
 export * as VIM from 'vim-webgl-viewer/'
 export * as ContextMenu from './contextMenu'
+export { getLocalSettings } from './settings/settings'
 
 /**
  * Root level api of the vim component
@@ -45,6 +49,11 @@ export type VimComponentRef = {
    * Vim webgl viewer around which the webgl component is built.
    */
   viewer: VIM.Viewer
+
+  /**
+   * Vim webgl loader to download vims.
+   */
+  loader: VIM.Loader
 
   /**
    * Higher level helper methods built around the vim viewer.
@@ -65,6 +74,15 @@ export type VimComponentRef = {
    * Callback to customize context menu at runtime.
    */
   customizeContextMenu: (c: contextMenuCustomization) => void
+
+  /**
+   * Callback to update settings runtime.
+   */
+  updateSettings: (updater: (e: Settings) => void) => void
+
+  logs: LogsRef
+
+  selectSibbings(object: VIM.Object)
 }
 
 /**
@@ -149,44 +167,64 @@ export function VimComponent (props: {
   onMount: (component: VimComponentRef) => void
   settings?: PartialSettings
 }) {
-  const viewer = useRef(new ViewerWrapper(props.viewer)).current
-  const cursor = useRef(new CursorManager(props.viewer)).current
+  const viewer = useMemo(() => new ViewerWrapper(props.viewer), [])
+  const cursor = useMemo(() => new CursorManager(props.viewer), [])
+  const loader = useMemo(() => new VIM.Loader(), [])
   const settings = useSettings(props.viewer, props.settings)
 
   const [isolation] = useState(() => new Isolation(viewer, settings.value))
   useEffect(() => isolation.applySettings(settings.value), [settings])
 
-  const side = useSideState(settings.value.ui.bimPanel, 480)
+  const side = useSideState(
+    settings.value.ui.bimTreePanel === true ||
+      settings.value.ui.bimInfoPanel === true,
+    480
+  )
   const [contextMenu, setcontextMenu] = useState<contextMenuCustomization>()
   const help = useHelp()
-  const [vim, selection] = useViewerState(props.viewer)
+  const viewerState = useViewerState(props.viewer)
   const [msg, setMsg] = useState<string>()
+  const logs = useLogState()
+  const treeRef = useRef<TreeActionRef>()
+  const prefRef = useRef<HTMLDivElement>(null)
 
   // On first render
   useEffect(() => {
-    addPerformanceCounter()
-    props.onMount({
-      viewer: props.viewer,
-      helpers: viewer,
-      isolation,
-      setMsg,
-      // Double lambda is required to avoid react from using reducer pattern
-      // https://stackoverflow.com/questions/59040989/usestate-with-a-lambda-invokes-the-lambda-when-set
-      customizeContextMenu: (v) => setcontextMenu(() => v)
-    })
+    addPerformanceCounter(prefRef.current)
+
     cursor.register()
 
     // Frame on vim loaded
     const subLoad = props.viewer.onVimLoaded.subscribe(() => {
-      props.viewer.camera.frame('all', 45)
+      props.viewer.camera.do().frame('all', props.viewer.camera.defaultForward)
     })
 
     // Setup custom input scheme
-    props.viewer.inputs.scheme = new ComponentInputScheme(viewer, isolation)
+    props.viewer.inputs.scheme = new ComponentInputScheme(
+      viewer,
+      isolation,
+      side
+    )
 
     // Register context menu
     const subContext =
       props.viewer.inputs.onContextMenu.subscribe(showContextMenu)
+
+    props.onMount({
+      viewer: props.viewer,
+      loader,
+      helpers: viewer,
+      isolation,
+      setMsg,
+      logs,
+      // Double lambda is required to avoid react from using reducer pattern
+      // https://stackoverflow.com/questions/59040989/usestate-with-a-lambda-invokes-the-lambda-when-set
+      customizeContextMenu: (v) => setcontextMenu(() => v),
+      updateSettings: (updater) => {
+        settings.update(updater)
+      },
+      selectSibbings: (o) => treeRef.current.selectSiblings(o)
+    })
 
     // Clean up
     return () => {
@@ -198,51 +236,50 @@ export function VimComponent (props: {
 
   const sidePanel = (
     <>
-      {settings.value.ui.bimPanel
-        ? (
-        <BimPanel
-          viewer={viewer}
-          vim={vim}
-          selection={selection}
-          visible={side.getContent() === 'bim'}
-          isolation={isolation}
-        />
-          )
-        : null}
+      <BimPanel
+        viewer={viewer}
+        viewerState={viewerState}
+        visible={side.getContent() === 'bim'}
+        isolation={isolation}
+        treeRef={treeRef}
+        settings={settings.value}
+      />
       <MenuSettings
         visible={side.getContent() === 'settings'}
         viewer={props.viewer}
         settings={settings}
       />
-    </>
-  )
-  return (
-    <>
-      <Overlay viewer={viewer.viewer} side={side}></Overlay>
-      <MenuHelpMemo help={help} settings={settings.value} side={side} />
-      {settings.value.ui.logo ? <LogoMemo /> : null}
-      {settings.value.ui.loadingBox
+      {settings.value.ui.logPanel === true
         ? (
-        <LoadingBoxMemo viewer={props.viewer} msg={msg} />
-          )
-        : null}
-      {settings.value.ui.controlBar
-        ? (
-        <ControlBar
-          viewer={viewer}
-          help={help}
-          side={side}
-          isolation={isolation}
-          cursor={cursor}
+        <Logs
+          visible={side.getContent() === 'logs'}
+          text={logs.getLog()}
           settings={settings.value}
         />
           )
         : null}
-      {settings.value.ui.axesPanel
+    </>
+  )
+  return (
+    <>
+      <div className="vim-performance-div" ref={prefRef}></div>
+      <Overlay viewer={viewer.viewer} side={side}></Overlay>
+      <MenuHelpMemo help={help} settings={settings.value} side={side} />
+      {settings.value.ui.logo === true ? <LogoMemo /> : null}
+      {settings.value.ui.loadingBox === true
         ? (
-        <AxesPanelMemo viewer={viewer} settings={settings.value} />
+        <LoadingBoxMemo loader={loader} msg={msg} />
           )
         : null}
+      <ControlBar
+        viewer={viewer}
+        help={help}
+        side={side}
+        isolation={isolation}
+        cursor={cursor}
+        settings={settings.value}
+      />
+      <AxesPanelMemo viewer={viewer} settings={settings.value} />
       <SidePanelMemo viewer={props.viewer} side={side} content={sidePanel} />
       <ReactTooltip
         arrowColor="transparent"
@@ -255,8 +292,9 @@ export function VimComponent (props: {
         viewer={viewer}
         help={help}
         isolation={isolation}
-        selection={selection}
+        selection={viewerState.selection}
         customization={contextMenu}
+        treeRef={treeRef}
       />
       <MenuToastMemo viewer={props.viewer} side={side}></MenuToastMemo>
     </>
@@ -278,6 +316,7 @@ function useViewerState (viewer: VIM.Viewer) {
   const [selection, setSelection] = useState<VIM.Object[]>([
     ...viewer.selection.objects
   ])
+  const [elements, setElements] = useState<AugmentedElement[]>()
 
   useEffect(() => {
     // register to viewer state changes
@@ -294,23 +333,41 @@ function useViewerState (viewer: VIM.Viewer) {
     }
   }, [])
 
-  return [vim, selection] as [VIM.Vim, VIM.Object[]]
+  useEffect(() => {
+    if (vim) {
+      getElements(vim).then((elements) => {
+        setElements(elements)
+      })
+    } else {
+      setElements(undefined)
+    }
+  }, [vim])
+
+  return useMemo(() => {
+    const result = { vim, selection, elements } as ViewerState
+    return result
+  }, [vim, selection, elements])
 }
 
 /**
  * Adds popular performance gizmo from package stat-js
  */
-function addPerformanceCounter () {
-  const ui = document.getElementsByClassName('vim-ui')[0]
+function addPerformanceCounter (parent: HTMLDivElement) {
   const stats = new Stats()
   const div = stats.dom as HTMLDivElement
   div.className =
     'vim-performance !vc-absolute !vc-right-6 !vc-left-auto !vc-top-52 !vc-z-1'
-  ui.appendChild(stats.dom)
+  parent.appendChild(div)
 
   function animate () {
     requestAnimationFrame(() => animate())
     stats.update()
   }
   animate()
+}
+
+export type ViewerState = {
+  vim: VIM.Vim
+  selection: VIM.Object[]
+  elements: AugmentedElement[]
 }

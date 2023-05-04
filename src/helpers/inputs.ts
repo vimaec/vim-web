@@ -2,9 +2,9 @@
  * @module viw-webgl-component
  */
 
-
 import * as VIM from 'vim-webgl-viewer/'
 import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycaster'
+import { SideState } from '../sidePanel/sideState'
 import { Isolation } from './isolation'
 import { ViewerWrapper } from './viewer'
 
@@ -15,11 +15,17 @@ export class ComponentInputs implements VIM.InputScheme {
   private _viewer: ViewerWrapper
   private _default: VIM.InputScheme
   private _isolation: Isolation
+  private _sideState: SideState
 
-  constructor (viewer: ViewerWrapper, isolation: Isolation) {
+  constructor (
+    viewer: ViewerWrapper,
+    isolation: Isolation,
+    sideState: SideState
+  ) {
     this._viewer = viewer
     this._default = new VIM.DefaultInputScheme(viewer.viewer)
     this._isolation = isolation
+    this._sideState = sideState
   }
 
   onMainAction (hit: InputAction): void {
@@ -33,6 +39,10 @@ export class ComponentInputs implements VIM.InputScheme {
   onKeyAction (key: number): boolean {
     // F
     switch (key) {
+      case VIM.KEYS.KEY_F4: {
+        this._sideState.toggleContent('settings')
+        return true
+      }
       case VIM.KEYS.KEY_F: {
         this._viewer.frameContext()
         return true
