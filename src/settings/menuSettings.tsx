@@ -33,21 +33,19 @@ export function MenuSettings (props: {
       </label>
     )
   }
-  const next = cloneDeep(props.settings.value)
 
   const settingsToggle = (
     label: string,
     getter: (settings: Settings) => RestrictedOption,
     setter: (settings: Settings, b: boolean) => void
   ) => {
-    const value = getter(next)
+    const value = getter(props.settings.value)
     if (value === 'restricted') {
       return null
     }
     return toggleElement(label, value, () => {
-      const value = getter(next) as boolean
-      setter(next, !value)
-      props.settings.set(next)
+      const value = getter(props.settings.value) as boolean
+      props.settings.update((s) => setter(s, !value))
     })
   }
   // {toggleElement("Hide action menu while moving camera")}

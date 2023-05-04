@@ -76,7 +76,10 @@ const defaultSettings: Settings = {
   }
 }
 
-export type SettingsState = { value: Settings; set: (value: Settings) => void }
+export type SettingsState = {
+  value: Settings
+  update: (updater: (s: Settings) => void) => void
+}
 
 export function getLocalSettings (value: RecursivePartial<Settings> = {}) {
   const json = localStorage.getItem('component.settings')
@@ -95,6 +98,12 @@ export function useSettings (
   const merge = deepmerge(defaultSettings, value) as Settings
   const [settings, setSettings] = useState(merge)
 
+  const update = function (updater: (s: Settings) => void) {
+    const next = cloneDeep(settings)
+    updater(next)
+    setSettings(next)
+  }
+
   // First Time
   useEffect(() => {
     applySettings(viewer, settings)
@@ -105,7 +114,7 @@ export function useSettings (
     applySettings(viewer, settings)
   }, [settings])
 
-  return useMemo(() => ({ value: settings, set: setSettings }), [settings])
+  return useMemo(() => ({ value: settings, update }), [settings])
 }
 
 function removeRestricted (settings: Settings) {

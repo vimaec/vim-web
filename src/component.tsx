@@ -31,7 +31,7 @@ import { Logs, LogsRef, useLogState } from './logsPanel'
 
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
-import { PartialSettings, useSettings } from './settings/settings'
+import { PartialSettings, Settings, useSettings } from './settings/settings'
 import { Isolation } from './helpers/isolation'
 import { ViewerWrapper } from './helpers/viewer'
 import { TreeActionRef } from './bim/bimTree'
@@ -74,6 +74,11 @@ export type VimComponentRef = {
    * Callback to customize context menu at runtime.
    */
   customizeContextMenu: (c: contextMenuCustomization) => void
+
+  /**
+   * Callback to update settings runtime.
+   */
+  updateSettings: (updater: (e: Settings) => void) => void
 
   logs: LogsRef
 
@@ -215,6 +220,9 @@ export function VimComponent (props: {
       // Double lambda is required to avoid react from using reducer pattern
       // https://stackoverflow.com/questions/59040989/usestate-with-a-lambda-invokes-the-lambda-when-set
       customizeContextMenu: (v) => setcontextMenu(() => v),
+      updateSettings: (updater) => {
+        settings.update(updater)
+      },
       selectSibbings: (o) => treeRef.current.selectSibblings(o)
     })
 
