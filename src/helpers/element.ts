@@ -47,13 +47,16 @@ async function getFamilyTypeNameMap (document: VimDocument) {
 
   return new Map<number, string>(
     familyInstanceElement.map((e, i) => {
-      const familyType = familyInstanceFamilyType[i]
+      const familyType = familyInstanceFamilyType?.[i]
 
       const element = Number.isInteger(familyType)
         ? familyTypeElement[familyType]
         : undefined
 
-      const name = Number.isInteger(element) ? elementName[element] : undefined
+      const name = Number.isInteger(element)
+        ? elementName?.[element]
+        : undefined
+
       return [e, name]
     })
   )
