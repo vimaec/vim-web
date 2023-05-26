@@ -55,12 +55,12 @@ export function MenuSettings (props: {
         Display Settings
       </h2>
       {settingsToggle(
-        'Show hidden object with ghost effect',
+        'Ghost Hidden Objects',
         (settings) => settings.viewer.isolationMaterial,
         (settings, value) => (settings.viewer.isolationMaterial = value)
       )}
       {settingsToggle(
-        'Show ground plane',
+        'Show Ground Plane',
         (settings) => settings.viewer.groundPlane,
         (settings, value) => (settings.viewer.groundPlane = value)
       )}
@@ -100,7 +100,7 @@ export function MenuSettings (props: {
         (settings, value) => (settings.ui.controlBarSettings = value)
       )}
       {settingsToggle(
-        'Show performance',
+        'Show Performance',
         (settings) => settings.ui.performance,
         (settings, value) => (settings.ui.performance = value)
       )}

@@ -5,7 +5,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import * as Icons from './icons'
 import { ViewerWrapper } from './helpers/viewer'
-import { Settings } from './settings/settings'
+import { Settings, SettingsState } from './settings/settings'
 
 /**
  * Memoized version of the AxesPanelMemo.
@@ -15,7 +15,7 @@ export const AxesPanelMemo = React.memo(AxesPanel)
 /**
  * JSX Component for axes gizmo.
  */
-function AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
+function AxesPanel (props: { viewer: ViewerWrapper; settings: SettingsState }) {
   const viewer = props.viewer.viewer
   const helper = props.viewer
 
@@ -44,17 +44,45 @@ function AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
     }
   }, [])
 
+  const onIsolationBtn = () => {
+    props.settings.update(
+      (s) => (s.viewer.isolationMaterial = !s.viewer.isolationMaterial)
+    )
+  }
+
   const onHomeBtn = () => {
     helper.resetCamera()
   }
+
+  const btnStyle =
+    'vim-home-btn vc-flex vc-h-8 vc-w-6 vc-items-center vc-justify-center vc-rounded-full vc-text-gray-medium vc-transition-all hover:vc-text-primary-royal'
+
+  const btnIsolation = (
+    <button
+      data-tip={
+        props.settings.value.viewer.isolationMaterial
+          ? 'Disable Ghosting'
+          : 'Enable Ghosting'
+      }
+      onClick={onIsolationBtn}
+      className={'vim-isolation-btn' + btnStyle}
+      type="button"
+    >
+      {props.settings.value.viewer.isolationMaterial
+        ? (
+        <Icons.sectionBoxClip height={20} width={20} fill="currentColor" />
+          )
+        : (
+        <Icons.sectionBoxNoClip height={20} width={20} fill="currentColor" />
+          )}
+    </button>
+  )
 
   const btnHome = (
     <button
       data-tip="Reset Camera"
       onClick={onHomeBtn}
-      className={
-        'vim-home-btn vc-flex vc-h-8 vc-w-8 vc-items-center vc-justify-center vc-rounded-full vc-text-gray-medium vc-transition-all hover:vc-text-primary-royal'
-      }
+      className={'vim-home-btn' + btnStyle}
       type="button"
     >
       <Icons.home height={20} width={20} fill="currentColor" />{' '}
@@ -64,9 +92,7 @@ function AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
     <button
       data-tip={ortho ? 'Orthographic' : 'Perspective'}
       onClick={() => (props.viewer.viewer.camera.orthographic = !ortho)}
-      className={
-        'vim-camera-btn vc-flex vc-h-8 vc-w-8 vc-items-center vc-justify-center vc-rounded-full vc-text-gray-medium vc-transition-all hover:vc-text-primary-royal'
-      }
+      className={'vim-camera-btn' + btnStyle}
       type="button"
     >
       {ortho
@@ -84,7 +110,7 @@ function AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
     return <div className="vc-mx-1 ">{button}</div>
   }
 
-  const hidden = props.settings.ui.axesPanel === true ? '' : ' vc-hidden'
+  const hidden = props.settings.value.ui.axesPanel === true ? '' : ' vc-hidden'
 
   return (
     <div
@@ -95,8 +121,12 @@ function AxesPanel (props: { viewer: ViewerWrapper; settings: Settings }) {
       }
     >
       <div className="vim-top-buttons vc-pointer-events-auto vc-order-2 vc-mb-0 vc-mt-auto vc-flex vc-justify-center vc-rounded-b-xl vc-bg-white vc-p-1">
-        {createButton(btnOrtho, props.settings.capacity.useOrthographicCamera)}
+        {createButton(
+          btnOrtho,
+          props.settings.value.capacity.useOrthographicCamera
+        )}
         {createButton(btnHome)}
+        {createButton(btnIsolation)}
       </div>
     </div>
   )

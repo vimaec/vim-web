@@ -279,7 +279,7 @@ export function VimComponent (props: {
         cursor={cursor}
         settings={settings.value}
       />
-      <AxesPanelMemo viewer={viewer} settings={settings.value} />
+      <AxesPanelMemo viewer={viewer} settings={settings} />
       <SidePanelMemo viewer={props.viewer} side={side} content={sidePanel} />
       <ReactTooltip
         arrowColor="transparent"
