@@ -2,7 +2,6 @@
  * @module viw-webgl-component
  */
 
-
 import * as VIM from 'vim-webgl-viewer/'
 import { Settings } from '../settings/settings'
 import { ViewerWrapper } from './viewer'
@@ -21,6 +20,7 @@ export class Isolation {
   private _lastIsolation: VIM.Object[]
 
   private _helper: ViewerWrapper
+  private _references: Map<VIM.Vim, VIM.Object[]>
 
   private _onChanged = new SimpleEventDispatcher<string>()
   /** Signal dispatched when the isolation set changes. */
@@ -46,6 +46,11 @@ export class Isolation {
           ? this._viewer.materials.isolation
           : undefined
     })
+  }
+
+  setReference (vim: VIM.Vim, objects: VIM.Object[]) {
+    this._references = this._references ?? new Map<VIM.Vim, VIM.Object[]>()
+    this._references.set(vim, objects)
   }
 
   /**
@@ -178,7 +183,8 @@ export class Isolation {
     } else {
       const set = new Set(objects)
       viewer.vims.forEach((vim) => {
-        for (const obj of vim.getAllObjects()) {
+        const all = this._references?.get(vim) ?? vim.getAllObjects()
+        for (const obj of all) {
           const has = set.has(obj)
           obj.visible = has
           if (obj.hasMesh && !has) allVisible = false
