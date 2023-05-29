@@ -185,7 +185,7 @@ export class Isolation {
     settings: Settings,
     objects: VIM.Object[]
   ) {
-    const useIsolation = true
+    let useIsolation = true
     if (!objects) {
       this._showAll()
     } else {
@@ -195,7 +195,9 @@ export class Isolation {
           obj.visible = set.has(obj)
         }
 
-        const useIsolation = !setsEqual(this._references.get(vim), set)
+        if (!setsEqual(this._references.get(vim), set)) {
+          useIsolation = true
+        }
 
         vim.scene.material =
           useIsolation && settings.viewer.isolationMaterial
