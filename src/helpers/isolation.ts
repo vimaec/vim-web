@@ -20,7 +20,7 @@ export class Isolation {
   private _lastIsolation: VIM.Object[]
 
   private _helper: ViewerWrapper
-  private _references: Map<VIM.Vim, VIM.Object[]>
+  private _references: Map<VIM.Vim, Set<VIM.Object>>
 
   private _onChanged = new SimpleEventDispatcher<string>()
   /** Signal dispatched when the isolation set changes. */
@@ -49,8 +49,8 @@ export class Isolation {
   }
 
   setReference (vim: VIM.Vim, objects: VIM.Object[]) {
-    this._references = this._references ?? new Map<VIM.Vim, VIM.Object[]>()
-    this._references.set(vim, objects)
+    this._references = this._references ?? new Map<VIM.Vim, Set<VIM.Object>>()
+    this._references.set(vim, new Set(objects))
   }
 
   getReference (vim: VIM.Vim) {
@@ -185,26 +185,39 @@ export class Isolation {
     settings: Settings,
     objects: VIM.Object[]
   ) {
-    let allVisible = true
+    const useIsolation = true
     if (!objects) {
       this._showAll()
     } else {
       const set = new Set(objects)
       viewer.vims.forEach((vim) => {
-        const all = this._references?.get(vim) ?? vim.getAllObjects()
-        for (const obj of all) {
-          const has = set.has(obj)
-          obj.visible = has
-          if (obj.hasMesh && !has) allVisible = false
+        for (const obj of vim.getAllObjects()) {
+          obj.visible = set.has(obj)
         }
 
+        const useIsolation = !setsEqual(this._references.get(vim), set)
+
         vim.scene.material =
-          !allVisible && settings.viewer.isolationMaterial
+          useIsolation && settings.viewer.isolationMaterial
             ? viewer.materials.isolation
             : undefined
       })
     }
 
-    return !allVisible
+    return useIsolation
   }
+}
+
+function setsEqual<T> (set1: Set<T>, set2: Set<T>): boolean {
+  if (set1.size !== set2.size) {
+    return false
+  }
+
+  for (const item of set1) {
+    if (!set2.has(item)) {
+      return false
+    }
+  }
+
+  return true
 }
