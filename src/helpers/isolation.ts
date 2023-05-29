@@ -53,6 +53,10 @@ export class Isolation {
     this._references.set(vim, objects)
   }
 
+  getReference (vim: VIM.Vim) {
+    return this._references?.get(vim)
+  }
+
   clearReferences () {
     this._references.clear()
   }
