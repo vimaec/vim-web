@@ -53,6 +53,10 @@ export class Isolation {
     this._references.set(vim, objects)
   }
 
+  clearReferences () {
+    this._references.clear()
+  }
+
   /**
    * Returns true if there are currently objects isolated.
    */
