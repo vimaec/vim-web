@@ -185,7 +185,7 @@ export class Isolation {
     settings: Settings,
     objects: VIM.Object[]
   ) {
-    let useIsolation = true
+    let useIsolation = false
     if (!objects) {
       this._showAll()
     } else {
