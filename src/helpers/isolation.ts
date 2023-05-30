@@ -20,7 +20,7 @@ export class Isolation {
   private _lastIsolation: VIM.Object[]
 
   private _helper: ViewerWrapper
-  private _references: Map<VIM.Vim, Set<VIM.Object>>
+  private _references = new Map<VIM.Vim, Set<VIM.Object>>()
 
   private _onChanged = new SimpleEventDispatcher<string>()
   /** Signal dispatched when the isolation set changes. */
@@ -49,16 +49,15 @@ export class Isolation {
   }
 
   setReference (vim: VIM.Vim, objects: VIM.Object[]) {
-    this._references = this._references ?? new Map<VIM.Vim, Set<VIM.Object>>()
     this._references.set(vim, new Set(objects))
   }
 
   getReference (vim: VIM.Vim) {
-    return this._references?.get(vim)
+    return this._references.get(vim)
   }
 
   clearReferences () {
-    this._references?.clear()
+    this._references.clear()
   }
 
   /**
