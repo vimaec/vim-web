@@ -70,10 +70,10 @@ function AxesPanel (props: { viewer: ViewerWrapper; settings: SettingsState }) {
     >
       {props.settings.value.viewer.isolationMaterial
         ? (
-        <Icons.sectionBoxClip height={20} width={20} fill="currentColor" />
+        <Icons.ghost height={20} width={20} fill="currentColor" />
           )
         : (
-        <Icons.sectionBoxNoClip height={20} width={20} fill="currentColor" />
+        <Icons.ghostDead height={20} width={20} fill="currentColor" />
           )}
     </button>
   )
@@ -116,7 +116,7 @@ function AxesPanel (props: { viewer: ViewerWrapper; settings: SettingsState }) {
     <div
       ref={ui}
       className={
-        'vim-axes-panel vc-fixed vc-right-6 vc-top-6 vc-z-20 vc-flex vc-h-[145px] vc-w-[100px] vc-flex-col vc-rounded-2xl vc-border vc-border-white vc-opacity-50 vc-shadow-lg vc-saturate-0 vc-transition-all hover:vc-opacity-100 hover:vc-saturate-100' +
+        'vim-axes-panel vc-fixed vc-right-6 vc-top-6 vc-z-20 vc-flex vc-h-[144px] vc-w-[112px] vc-flex-col vc-rounded-2xl vc-border vc-border-white vc-opacity-50 vc-shadow-lg vc-saturate-0 vc-transition-all hover:vc-opacity-100 hover:vc-saturate-100' +
         hidden
       }
     >
