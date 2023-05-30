@@ -58,7 +58,7 @@ export class Isolation {
   }
 
   clearReferences () {
-    this._references.clear()
+    this._references?.clear()
   }
 
   /**
