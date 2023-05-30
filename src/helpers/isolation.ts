@@ -195,7 +195,8 @@ export class Isolation {
           obj.visible = set.has(obj)
         }
 
-        if (!setsEqual(this._references.get(vim), set)) {
+        const reference = this._references.get(vim)
+        if (!reference || !setsEqual(reference, set)) {
           useIsolation = true
         }
 
