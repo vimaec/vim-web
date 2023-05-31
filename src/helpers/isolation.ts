@@ -76,6 +76,7 @@ export class Isolation {
 
   /**
    * Isolates the objects in the given array and shows the rest.
+   * Returns true if isolation occurs.
    */
   isolate (objects: VIM.Object[], source: string) {
     if (this._isolation) {
@@ -86,6 +87,7 @@ export class Isolation {
     this._isolation = isolated ? objects : undefined
     this._helper.frameVisibleObjects()
     this._onChanged.dispatch(source)
+    return isolated
   }
 
   /**
