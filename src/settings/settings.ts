@@ -5,7 +5,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import deepmerge from 'deepmerge'
-import { cloneDeep } from 'lodash-es'
 
 /**
  * Makes all fields optional recursively
@@ -99,7 +98,7 @@ export function useSettings (
   const [settings, setSettings] = useState(merge)
 
   const update = function (updater: (s: Settings) => void) {
-    const next = cloneDeep(settings)
+    const next = structuredClone(settings)
     updater(next)
     setSettings(next)
   }
@@ -118,7 +117,7 @@ export function useSettings (
 }
 
 function removeRestricted (settings: Settings) {
-  const clone = cloneDeep(settings) as Settings
+  const clone = structuredClone(settings)
   for (const k of Object.keys(clone.ui)) {
     const u = clone.ui as any
     u[k] = u[k] === true
