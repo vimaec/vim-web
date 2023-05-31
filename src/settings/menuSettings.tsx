@@ -5,7 +5,6 @@
 import React from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import { RestrictedOption, Settings, SettingsState } from './settings'
-import { cloneDeep } from 'lodash-es'
 
 /**
  * JSX Component to interact with settings.
