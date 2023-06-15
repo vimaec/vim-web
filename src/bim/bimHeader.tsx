@@ -4,14 +4,13 @@
 
 import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { VimDocument } from 'vim-format/'
 import ReactTooltip from 'react-tooltip'
 import { AugmentedElement } from '../helpers/element'
 
 type BimHeaderEntry = {
   key: string
   label: string
-  value: string | number
+  value: string | number | bigint
   dtStyle: string
   ddStyle: string
   dlStyle: string
