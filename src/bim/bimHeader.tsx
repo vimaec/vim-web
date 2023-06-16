@@ -96,7 +96,7 @@ function createHeader (header: BimHeader) {
             className={`bim-header-value vc-shrink-1 vc-truncate vc-py-1 ${entry.ddStyle}`}
             key={`dd-${entry.key}`}
           >
-            {entry.value}
+            {entry.value?.toString()}
           </dd>
         </dl>
       )
