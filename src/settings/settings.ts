@@ -29,6 +29,7 @@ export type Settings = {
     groundPlane: boolean
   }
   capacity: {
+    canReadLocalStorage: boolean
     canFollowUrl: boolean
     canGoFullScreen: boolean
     useOrthographicCamera: boolean
@@ -56,6 +57,7 @@ const defaultSettings: Settings = {
     groundPlane: true
   },
   capacity: {
+    canReadLocalStorage: true,
     canFollowUrl: true,
     canGoFullScreen: true,
     useOrthographicCamera: true,
@@ -81,10 +83,18 @@ export type SettingsState = {
 }
 
 export function getLocalSettings (value: RecursivePartial<Settings> = {}) {
-  const json = localStorage.getItem('component.settings')
-  const previous = JSON.parse(json) as Settings
-  applyRestricted(previous, value)
-  return previous ?? {}
+  if (!this.canReadLocalStorage) {
+    return {}
+  }
+  try {
+    const json = localStorage.getItem('component.settings')
+    const previous = JSON.parse(json) as Settings
+    applyRestricted(previous, value)
+    return previous ?? {}
+  } catch (e) {
+    console.error('Could not read local storage')
+    return {}
+  }
 }
 
 /**
