@@ -14,7 +14,7 @@ import * as VIM from 'vim-webgl-viewer/'
 
 import { AxesPanelMemo } from './axesPanel'
 import { ControlBar } from './controlBar'
-import { LoadingBoxMemo } from './loading'
+import { LoadingBoxMemo, MsgInfo } from './loading'
 import { BimPanel } from './bim/bimPanel'
 import {
   contextMenuCustomization,
@@ -68,7 +68,7 @@ export type VimComponentRef = {
   /**
    * Sets a message to be displayed in the loading box. Set undefined to hide.
    */
-  setMsg: (s: string | undefined) => void
+  setMsg: (msg: string | undefined, info?: string) => void
 
   /**
    * Callback to customize context menu at runtime.
@@ -183,7 +183,7 @@ export function VimComponent (props: {
   const [contextMenu, setcontextMenu] = useState<contextMenuCustomization>()
   const help = useHelp()
   const viewerState = useViewerState(props.viewer)
-  const [msg, setMsg] = useState<string>()
+  const [msg, setMsg] = useState<MsgInfo>()
   const logs = useLogState()
   const treeRef = useRef<TreeActionRef>()
   const prefRef = useRef<HTMLDivElement>(null)
@@ -215,7 +215,7 @@ export function VimComponent (props: {
       loader,
       helpers: viewer,
       isolation,
-      setMsg,
+      setMsg: (message: string, info: string) => setMsg({ message, info }),
       logs,
       // Double lambda is required to avoid react from using reducer pattern
       // https://stackoverflow.com/questions/59040989/usestate-with-a-lambda-invokes-the-lambda-when-set
@@ -268,7 +268,7 @@ export function VimComponent (props: {
       {settings.value.ui.logo === true ? <LogoMemo /> : null}
       {settings.value.ui.loadingBox === true
         ? (
-        <LoadingBoxMemo loader={loader} msg={msg} />
+        <LoadingBoxMemo loader={loader} content={msg} />
           )
         : null}
       <ControlBar
@@ -281,12 +281,6 @@ export function VimComponent (props: {
       />
       <AxesPanelMemo viewer={viewer} settings={settings} />
       <SidePanelMemo viewer={props.viewer} side={side} content={sidePanel} />
-      <ReactTooltip
-        arrowColor="transparent"
-        type="light"
-        className="!vc-border !vc-border-solid !vc-border-gray-medium !vc-bg-white !vc-text-xs !vc-text-gray-darkest !vc-opacity-100 !vc-shadow-[2px_6px_15px_rgba(0,0,0,0.3)] !vc-transition-opacity"
-        delayShow={200}
-      />
 
       <VimContextMenuMemo
         viewer={viewer}
@@ -297,6 +291,13 @@ export function VimComponent (props: {
         treeRef={treeRef}
       />
       <MenuToastMemo viewer={props.viewer} side={side}></MenuToastMemo>
+      <ReactTooltip
+        multiline={true}
+        arrowColor="transparent"
+        type="light"
+        className="!vc-w-1/4 !vc-border !vc-border-solid !vc-border-gray-medium !vc-bg-white !vc-text-xs !vc-text-gray-darkest !vc-opacity-100 !vc-shadow-[2px_6px_15px_rgba(0,0,0,0.3)] !vc-transition-opacity"
+        delayShow={200}
+      />
     </>
   )
 }
@@ -356,8 +357,9 @@ function addPerformanceCounter (parent: HTMLDivElement) {
   const stats = new Stats()
   const div = stats.dom as HTMLDivElement
   div.className =
-    'vim-performance !vc-absolute !vc-right-6 !vc-left-auto !vc-top-52 !vc-z-1'
+    'vim-performance !vc-absolute !vc-right-6 !vc-left-auto !vc-top-52'
   parent.appendChild(div)
+  div.style.zIndex = '35'
 
   function animate () {
     requestAnimationFrame(() => animate())

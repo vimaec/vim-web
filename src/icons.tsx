@@ -31,9 +31,14 @@ export function settings ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function help ({ height, width, fill }: IconOptions) {
+export function help ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg
+      height={height}
+      width={width}
+      viewBox="0 0 256 256"
+      className={className}
+    >
       <path
         fill={fill}
         d="M128 0C57.308 0 0 57.308 0 128s57.308 128 128 128 128-57.308 128-128S198.692 0 128 0Zm0 232c-57.346 0-104-46.654-104-104S70.654 24 128 24s104 46.654 104 104-46.654 104-104 104Z"
