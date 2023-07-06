@@ -20,7 +20,7 @@ export class Isolation {
   private _lastIsolation: VIM.Object[]
 
   private _helper: ViewerWrapper
-  private _references = new Map<VIM.Vim, Set<VIM.Object>>()
+  private _references = new Map<VIM.Vim, Set<VIM.Object> | 'all'>()
 
   private _onChanged = new SimpleEventDispatcher<string>()
   /** Signal dispatched when the isolation set changes. */
@@ -191,14 +191,20 @@ export class Isolation {
       this._showAll()
     } else {
       const set = new Set(objects)
+      let all = true
       viewer.vims.forEach((vim) => {
         for (const obj of vim.getAllObjects()) {
           obj.visible = set.has(obj)
+          all = all && obj.visible
         }
 
         const reference = this._references.get(vim)
-        if (!reference || !setsEqual(reference, set)) {
+        if (reference === undefined) {
           useIsolation = true
+        } else if (reference === 'all') {
+          useIsolation = all
+        } else {
+          useIsolation = !setsEqual(reference, set)
         }
 
         vim.scene.material =
