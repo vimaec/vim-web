@@ -48,8 +48,9 @@ export class Isolation {
     })
   }
 
-  setReference (vim: VIM.Vim, objects: VIM.Object[]) {
-    this._references.set(vim, new Set(objects))
+  setReference (vim: VIM.Vim, reference: VIM.Object[] | 'all') {
+    const value = reference === 'all' ? reference : new Set(reference)
+    this._references.set(vim, value)
   }
 
   getReference (vim: VIM.Vim) {
