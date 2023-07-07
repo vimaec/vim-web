@@ -20,7 +20,7 @@ export class Isolation {
   private _lastIsolation: VIM.Object[]
 
   private _helper: ViewerWrapper
-  private _references = new Map<VIM.Vim, Set<VIM.Object> | 'all'>()
+  private _references = new Map<VIM.Vim, Set<VIM.Object> | 'always'>()
 
   private _onChanged = new SimpleEventDispatcher<string>()
   /** Signal dispatched when the isolation set changes. */
@@ -48,8 +48,8 @@ export class Isolation {
     })
   }
 
-  setReference (vim: VIM.Vim, reference: VIM.Object[] | 'all') {
-    const value = reference === 'all' ? reference : new Set(reference)
+  setReference (vim: VIM.Vim, reference: VIM.Object[] | 'always') {
+    const value = reference === 'always' ? reference : new Set(reference)
     this._references.set(vim, value)
   }
 
@@ -203,9 +203,9 @@ export class Isolation {
 
         const reference = this._references.get(vim)
         if (reference === undefined) {
+          useIsolation = !all
+        } else if (reference === 'always') {
           useIsolation = true
-        } else if (reference === 'all') {
-          useIsolation = all
         } else {
           useIsolation = !setsEqual(reference, set)
         }
