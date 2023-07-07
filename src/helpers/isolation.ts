@@ -194,8 +194,10 @@ export class Isolation {
       let all = true
       viewer.vims.forEach((vim) => {
         for (const obj of vim.getAllObjects()) {
-          obj.visible = set.has(obj)
-          all = all && obj.visible
+          if (obj.hasMesh) {
+            obj.visible = set.has(obj)
+            all = all && obj.visible
+          }
         }
 
         const reference = this._references.get(vim)
