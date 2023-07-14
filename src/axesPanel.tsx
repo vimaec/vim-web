@@ -27,16 +27,18 @@ function AxesPanel (props: { viewer: ViewerWrapper; settings: SettingsState }) {
     const subCam = viewer.camera.onValueChanged.subscribe(() =>
       setOrtho(viewer.camera.orthographic)
     )
-    const axes = document.getElementsByClassName('gizmo-axis-canvas')[0]
-    ui.current.appendChild(axes)
-    axes.classList.add(
-      'vc-block',
-      '!vc-static',
-      'vc-order-1',
-      'vc-mx-auto',
-      'vc-mb-0',
-      'vc-mt-auto'
-    )
+
+    if (viewer.axesCanvas) {
+      ui.current.appendChild(viewer.axesCanvas)
+      viewer.axesCanvas.classList.add(
+        'vc-block',
+        '!vc-static',
+        'vc-order-1',
+        'vc-mx-auto',
+        'vc-mb-0',
+        'vc-mt-auto'
+      )
+    }
 
     // Clean up
     return () => {
