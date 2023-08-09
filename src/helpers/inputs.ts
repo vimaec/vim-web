@@ -43,6 +43,11 @@ export class ComponentInputs implements VIM.InputScheme {
         this._sideState.toggleContent('settings')
         return true
       }
+      case VIM.KEYS.KEY_4: {
+        this._sideState.toggleContent('settings')
+        return true
+      }
+
       case VIM.KEYS.KEY_F: {
         this._viewer.frameContext()
         return true

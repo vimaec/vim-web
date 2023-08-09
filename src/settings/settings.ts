@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import deepmerge from 'deepmerge'
+import { orbit } from '../icons'
 
 /**
  * Makes all fields optional recursively
@@ -38,14 +39,64 @@ export type Settings = {
     logo: RestrictedOption
     bimTreePanel: RestrictedOption
     bimInfoPanel: RestrictedOption
+
+    // axesPanel
     axesPanel: RestrictedOption
-    controlBarCursors: RestrictedOption
-    controlBarTools: RestrictedOption
-    controlBarSettings: RestrictedOption
+    orthographic: RestrictedOption
+    resetCamera: RestrictedOption
+    enableGhost: RestrictedOption
+
+    // cursors
+    orbit: RestrictedOption
+    lookAround: RestrictedOption
+    pan: RestrictedOption
+    zoom: RestrictedOption
+    zoomWindow: RestrictedOption
+    zoomToFit: RestrictedOption
+
+    // tools
+    sectioningMode: RestrictedOption
+    measuringMode: RestrictedOption
+    toggleIsolation: RestrictedOption
+
+    // Settings
+    projectInspector: RestrictedOption
+    settings: RestrictedOption
+    help: RestrictedOption
+    maximise: RestrictedOption
+
     loadingBox: RestrictedOption
     performance: RestrictedOption
     logPanel: RestrictedOption
   }
+}
+
+export function anyUiCursor (settings: Settings) {
+  return (
+    settings.ui.orbit ||
+    settings.ui.lookAround ||
+    settings.ui.pan ||
+    settings.ui.zoom ||
+    settings.ui.zoomWindow ||
+    settings.ui.zoomToFit
+  )
+}
+
+export function anyUiTool (settings: Settings) {
+  return (
+    settings.ui.sectioningMode ||
+    settings.ui.measuringMode ||
+    settings.ui.toggleIsolation
+  )
+}
+
+export function anyUiSetting (settings: Settings) {
+  return (
+    settings.ui.projectInspector ||
+    settings.ui.settings ||
+    settings.ui.help ||
+    settings.ui.maximise
+  )
 }
 
 export type PartialSettings = RecursivePartial<Settings>
@@ -65,10 +116,32 @@ const defaultSettings: Settings = {
     logo: true,
     bimTreePanel: true,
     bimInfoPanel: true,
+
+    // axesPanel
     axesPanel: true,
-    controlBarCursors: true,
-    controlBarTools: true,
-    controlBarSettings: true,
+    orthographic: true,
+    resetCamera: true,
+    enableGhost: true,
+
+    // cursors
+    orbit: true,
+    lookAround: true,
+    pan: true,
+    zoom: true,
+    zoomWindow: true,
+    zoomToFit: true,
+
+    // tools
+    sectioningMode: true,
+    measuringMode: true,
+    toggleIsolation: true,
+
+    // Settings
+    projectInspector: true,
+    settings: true,
+    help: true,
+    maximise: true,
+
     loadingBox: true,
     performance: true,
     logPanel: false

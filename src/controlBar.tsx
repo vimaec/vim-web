@@ -11,16 +11,23 @@ import { Cursor, CursorManager, pointerToCursor } from './helpers/cursor'
 import { ViewerWrapper } from './helpers/viewer'
 import * as Icons from './icons'
 import { HelpState } from './help'
-import { Settings } from './settings/settings'
+import {
+  Settings,
+  anyUiCursor,
+  anyUiSetting,
+  anyUiTool
+} from './settings/settings'
 
 // Shared Buttons style
 
 const toggleButton = (
+  enabled: () => boolean,
   tip: string,
   action: () => void,
   icon: ({ height, width, fill }) => JSX.Element,
   isOn: () => boolean
 ) => {
+  if (!enabled()) return null
   const style = isOn()
     ? 'vim-control-bar-button vc-rounded-full vc-mx-1 vc-h-10 vc-w-10 vc-flex vc-items-center vc-justify-center vc-transition-all hover:vc-scale-110 hover:vc-text-primary-royal vc-text-primary'
     : 'vim-control-bar-button vc-rounded-full vc-mx-1 vc-h-10 vc-w-10 vc-flex vc-items-center vc-justify-center vc-transition-all hover:vc-scale-110 hover:vc-text-primary-royal vc-text-gray-medium'
@@ -32,11 +39,13 @@ const toggleButton = (
 }
 
 const actionButton = (
+  enabled: () => boolean,
   tip: string,
   action: () => void,
   icon: ({ height, width, fill }) => JSX.Element,
   state: boolean
 ) => {
+  if (!enabled()) return null
   const style = state
     ? 'vim-control-bar-button vc-rounded-full vc-mx-1 vc-text-white vc-h-10 vc-w-10 vc-flex vc-items-center vc-justify-center vc-transition-all hover:vc-scale-110 vc-opacity-60 hover:vc-opacity-100'
     : 'vim-control-bar-button vc-rounded-full vc-mx-1 vc-text-gray-medium vc-h-10 vc-w-10 vc-flex vc-items-center vc-justify-center vc-transition-all hover:vc-scale-110 hover:vc-text-primary-royal'
@@ -100,14 +109,14 @@ export function ControlBar (props: {
         show ? 'vc-opacity-100' : 'vc-pointer-events-none vc-opacity-0'
       }`}
     >
-      {props.settings.ui.controlBarCursors ? <TabCamera {...props} /> : null}
-      {props.settings.ui.controlBarTools ? <TabTools {...props} /> : null}
-      {props.settings.ui.controlBarSettings ? <TabSettings {...props} /> : null}
+      {anyUiCursor(props.settings) ? <TabCamera {...props} /> : null}
+      {anyUiTool(props.settings) ? <TabTools {...props} /> : null}
+      {anyUiSetting(props.settings) ? <TabSettings {...props} /> : null}
     </div>
   )
 }
 
-function TabCamera (props: { viewer: ViewerWrapper }) {
+function TabCamera (props: { viewer: ViewerWrapper; settings: Settings }) {
   const viewer = props.viewer.viewer
   const helper = props.viewer
   const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerActive)
@@ -131,30 +140,35 @@ function TabCamera (props: { viewer: ViewerWrapper }) {
 
   // Camera
   const btnOrbit = toggleButton(
+    () => props.settings.ui.orbit === true,
     'Orbit',
     () => onModeBtn('orbit'),
     Icons.orbit,
     () => mode === 'orbit'
   )
   const btnLook = toggleButton(
+    () => props.settings.ui.lookAround === true,
     'Look Around',
     () => onModeBtn('look'),
     Icons.look,
     () => mode === 'look'
   )
   const btnPan = toggleButton(
+    () => props.settings.ui.pan === true,
     'Pan',
     () => onModeBtn('pan'),
     Icons.pan,
     () => mode === 'pan'
   )
   const btnZoom = toggleButton(
+    () => props.settings.ui.zoom === true,
     'Zoom',
     () => onModeBtn('zoom'),
     Icons.zoom,
     () => mode === 'zoom'
   )
   const btnFrameRect = toggleButton(
+    () => props.settings.ui.zoomWindow === true,
     'Zoom Window',
     () => {
       onModeBtn('rect')
@@ -166,6 +180,7 @@ function TabCamera (props: { viewer: ViewerWrapper }) {
   )
 
   const btnFrame = actionButton(
+    () => props.settings.ui.zoomWindow === true,
     'Zoom to Fit',
     () => helper.frameContext(),
     Icons.frameSelection,
@@ -189,6 +204,7 @@ function TabTools (props: {
   viewer: ViewerWrapper
   cursor: CursorManager
   isolation: Isolation
+  settings: Settings
 }) {
   const viewer = props.viewer.viewer
   // Need a ref to get the up to date value in callback.
@@ -266,6 +282,7 @@ function TabTools (props: {
   }
 
   const btnSection = actionButton(
+    () => props.settings.ui.sectioningMode === true,
     'Sectioning Mode',
     onSectionBtn,
     Icons.sectionBox,
@@ -273,6 +290,7 @@ function TabTools (props: {
   )
 
   const btnMeasure = actionButton(
+    () => props.settings.ui.measuringMode === true,
     'Measuring Mode',
     onMeasureBtn,
     Icons.measure,
@@ -280,6 +298,7 @@ function TabTools (props: {
   )
 
   const btnIsolation = actionButton(
+    () => props.settings.ui.toggleIsolation === true,
     'Toggle Isolation',
     () => {
       props.isolation.toggleIsolation('controlBar')
@@ -297,12 +316,14 @@ function TabTools (props: {
   )
 
   const btnMeasureDelete = actionButton(
+    () => true,
     'Delete',
     onMeasureDeleteBtn,
     Icons.trash,
     !!measuring
   )
   const btnMeasureConfirm = actionButton(
+    () => true,
     'Done',
     onMeasureBtn,
     Icons.checkmark,
@@ -317,12 +338,14 @@ function TabTools (props: {
   )
 
   const btnSectionReset = actionButton(
+    () => true,
     'Reset Section Box',
     onResetSectionBtn,
     Icons.sectionBoxReset,
     section.active
   )
   const btnSectionShrink = actionButton(
+    () => true,
     'Shrink to Selection',
     () => viewer.sectionBox.fitBox(viewer.selection.getBoundingBox()),
     Icons.sectionBoxShrink,
@@ -330,18 +353,21 @@ function TabTools (props: {
   )
 
   const btnSectionClip = actionButton(
+    () => true,
     'Apply Section Box',
     onSectionClip,
     Icons.sectionBoxNoClip,
     section.active
   )
   const btnSectionNoClip = actionButton(
+    () => true,
     'Ignore Section Box',
     onSectionNoClip,
     Icons.sectionBoxClip,
     section.active
   )
   const btnSectionConfirm = actionButton(
+    () => true,
     'Done',
     onSectionBtn,
     Icons.checkmark,
@@ -404,18 +430,21 @@ function TabSettings (props: {
   }
 
   const btnTreeView = toggleButton(
+    () => props.settings.ui.projectInspector === true,
     'Project Inspector',
     onTreeViewBtn,
     Icons.treeView,
     () => props.side.getContent() === 'bim'
   )
   const btnSettings = toggleButton(
+    () => props.settings.ui.settings === true,
     'Settings',
     onSettingsBtn,
     Icons.settings,
     () => props.side.getContent() === 'settings'
   )
   const btnLogs = toggleButton(
+    () => props.settings.ui.logPanel === true,
     'Logs',
     () => props.side.toggleContent('logs'),
     Icons.home,
@@ -423,6 +452,7 @@ function TabSettings (props: {
   )
 
   const btnHelp = toggleButton(
+    () => props.settings.ui.help === true,
     'Help',
     onHelpBtn,
     Icons.help,
@@ -430,6 +460,9 @@ function TabSettings (props: {
   )
 
   const btnFullScreen = actionButton(
+    () =>
+      props.settings.ui.maximise === true &&
+      props.settings.capacity.canGoFullScreen,
     document.fullscreenElement ? 'Fullscreen' : 'Minimize',
     () => {
       if (document.fullscreenElement) {
@@ -449,9 +482,9 @@ function TabSettings (props: {
         ? btnTreeView
         : null}
       {btnSettings}
-      {props.settings.ui.logPanel === true ? btnLogs : null}
+      {btnLogs}
       {btnHelp}
-      {props.settings.capacity.canGoFullScreen ? btnFullScreen : null}
+      {btnFullScreen}
     </div>
   )
 }
