@@ -71,7 +71,15 @@ export type Settings = {
   }
 }
 
-export function anyUiCursor (settings: Settings) {
+export function anyUiAxesButton (settings: Settings) {
+  return (
+    settings.ui.orthographic ||
+    settings.ui.resetCamera ||
+    settings.ui.enableGhost
+  )
+}
+
+export function anyUiCursorButton (settings: Settings) {
   return (
     settings.ui.orbit ||
     settings.ui.lookAround ||
@@ -82,7 +90,7 @@ export function anyUiCursor (settings: Settings) {
   )
 }
 
-export function anyUiTool (settings: Settings) {
+export function anyUiToolButton (settings: Settings) {
   return (
     settings.ui.sectioningMode ||
     settings.ui.measuringMode ||
@@ -90,7 +98,7 @@ export function anyUiTool (settings: Settings) {
   )
 }
 
-export function anyUiSetting (settings: Settings) {
+export function anyUiSettingButton (settings: Settings) {
   return (
     settings.ui.projectInspector ||
     settings.ui.settings ||

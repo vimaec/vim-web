@@ -13,9 +13,9 @@ import * as Icons from './icons'
 import { HelpState } from './help'
 import {
   Settings,
-  anyUiCursor,
-  anyUiSetting,
-  anyUiTool
+  anyUiCursorButton,
+  anyUiSettingButton,
+  anyUiToolButton
 } from './settings/settings'
 
 // Shared Buttons style
@@ -109,9 +109,9 @@ export function ControlBar (props: {
         show ? 'vc-opacity-100' : 'vc-pointer-events-none vc-opacity-0'
       }`}
     >
-      {anyUiCursor(props.settings) ? <TabCamera {...props} /> : null}
-      {anyUiTool(props.settings) ? <TabTools {...props} /> : null}
-      {anyUiSetting(props.settings) ? <TabSettings {...props} /> : null}
+      {anyUiCursorButton(props.settings) ? <TabCamera {...props} /> : null}
+      {anyUiToolButton(props.settings) ? <TabTools {...props} /> : null}
+      {anyUiSettingButton(props.settings) ? <TabSettings {...props} /> : null}
     </div>
   )
 }
@@ -178,9 +178,8 @@ function TabCamera (props: { viewer: ViewerWrapper; settings: Settings }) {
     Icons.frameRect,
     () => mode === 'rect'
   )
-
   const btnFrame = actionButton(
-    () => props.settings.ui.zoomWindow === true,
+    () => props.settings.ui.zoomToFit === true,
     'Zoom to Fit',
     () => helper.frameContext(),
     Icons.frameSelection,

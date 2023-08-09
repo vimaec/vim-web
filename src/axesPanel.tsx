@@ -5,7 +5,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import * as Icons from './icons'
 import { ViewerWrapper } from './helpers/viewer'
-import { Settings, SettingsState } from './settings/settings'
+import { Settings, SettingsState, anyUiAxesButton } from './settings/settings'
 
 /**
  * Memoized version of the AxesPanelMemo.
@@ -114,6 +114,29 @@ function AxesPanel (props: { viewer: ViewerWrapper; settings: SettingsState }) {
 
   const hidden = props.settings.value.ui.axesPanel === true ? '' : ' vc-hidden'
 
+  const createBar = () => {
+    if (!anyUiAxesButton(props.settings.value)) {
+      return (
+        // Keeps layout when all buttons are disabled.
+        <span className="vc-pointer-events-auto vc-order-2 vc-mb-0 vc-mt-auto vc-flex vc-justify-center vc-rounded-b-xl vc-bg-white" />
+      )
+    }
+    return (
+      <div className="vim-top-buttons vc-pointer-events-auto vc-order-2 vc-mb-0 vc-mt-auto vc-flex vc-justify-center vc-rounded-b-xl vc-bg-white vc-p-1">
+        {createButton(
+          btnOrtho,
+          props.settings.value.capacity.useOrthographicCamera &&
+            props.settings.value.ui.orthographic === true
+        )}
+        {createButton(btnHome, props.settings.value.ui.resetCamera === true)}
+        {createButton(
+          btnIsolation,
+          props.settings.value.ui.enableGhost === true
+        )}
+      </div>
+    )
+  }
+
   return (
     <div
       ref={ui}
@@ -122,14 +145,7 @@ function AxesPanel (props: { viewer: ViewerWrapper; settings: SettingsState }) {
         hidden
       }
     >
-      <div className="vim-top-buttons vc-pointer-events-auto vc-order-2 vc-mb-0 vc-mt-auto vc-flex vc-justify-center vc-rounded-b-xl vc-bg-white vc-p-1">
-        {createButton(
-          btnOrtho,
-          props.settings.value.capacity.useOrthographicCamera
-        )}
-        {createButton(btnHome)}
-        {createButton(btnIsolation)}
-      </div>
+      {createBar()}
     </div>
   )
 }
