@@ -45,6 +45,7 @@ export { getLocalSettings } from './settings/settings'
  * Root level api of the vim component
  */
 export type VimComponentRef = {
+  container: VimComponentContainer
   /**
    * Vim webgl viewer around which the webgl component is built.
    */
@@ -120,7 +121,12 @@ export function createVimComponent (
   container = container ?? createContainer(viewer)
   const reactRoot = createRoot(container.ui)
   reactRoot.render(
-    <VimComponent onMount={onMount} viewer={viewer} settings={settings} />
+    <VimComponent
+      container={container}
+      onMount={onMount}
+      viewer={viewer}
+      settings={settings}
+    />
   )
   return { container, reactRoot, viewer }
 }
@@ -164,6 +170,7 @@ export function createContainer (viewer: VIM.Viewer): VimComponentContainer {
  * @param settings
  */
 export function VimComponent (props: {
+  container: VimComponentContainer
   viewer: VIM.Viewer
   onMount: (component: VimComponentRef) => void
   settings?: PartialSettings
@@ -212,6 +219,7 @@ export function VimComponent (props: {
       props.viewer.inputs.onContextMenu.subscribe(showContextMenu)
 
     props.onMount({
+      container: props.container,
       viewer: props.viewer,
       loader,
       helpers: viewer,
@@ -281,7 +289,12 @@ export function VimComponent (props: {
         settings={settings.value}
       />
       <AxesPanelMemo viewer={viewer} settings={settings} />
-      <SidePanelMemo viewer={props.viewer} side={side} content={sidePanel} />
+      <SidePanelMemo
+        container={props.container}
+        viewer={props.viewer}
+        side={side}
+        content={sidePanel}
+      />
 
       <VimContextMenuMemo
         viewer={viewer}
@@ -296,7 +309,7 @@ export function VimComponent (props: {
         multiline={true}
         arrowColor="transparent"
         type="light"
-        className="!vc-w-1/4 !vc-border !vc-border-solid !vc-border-gray-medium !vc-bg-white !vc-text-xs !vc-text-gray-darkest !vc-opacity-100 !vc-shadow-[2px_6px_15px_rgba(0,0,0,0.3)] !vc-transition-opacity"
+        className="!vc-max-w-xs !vc-border !vc-border-solid !vc-border-gray-medium !vc-bg-white !vc-text-xs !vc-text-gray-darkest !vc-opacity-100 !vc-shadow-[2px_6px_15px_rgba(0,0,0,0.3)] !vc-transition-opacity"
         delayShow={200}
       />
     </>
