@@ -91,7 +91,6 @@ export function MenuSettings (props: {
           (settings) => settings.ui.performance,
           (settings, value) => (settings.ui.performance = value)
         )}
-        ,
         {settingsToggle(
           'Show Loading Box',
           (settings) => settings.ui.loadingBox,
