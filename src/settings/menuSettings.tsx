@@ -82,17 +82,23 @@ export function MenuSettings (props: {
           (settings, value) => (settings.ui.bimInfoPanel = value)
         )}
         {settingsToggle(
-          'Show Axes',
+          'Show Axes Panel',
           (settings) => settings.ui.axesPanel,
           (settings, value) => (settings.ui.axesPanel = value)
         )}
         {settingsToggle(
-          'Show Performance',
+          'Show Performance Panel',
           (settings) => settings.ui.performance,
           (settings, value) => (settings.ui.performance = value)
         )}
+        ,
         {settingsToggle(
-          'Show Logs',
+          'Show Loading Box',
+          (settings) => settings.ui.loadingBox,
+          (settings, value) => (settings.ui.loadingBox = value)
+        )}
+        {settingsToggle(
+          'Show Logs Panel',
           (settings) => settings.ui.logPanel,
           (settings, value) => (settings.ui.logPanel = value)
         )}
