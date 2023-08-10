@@ -53,7 +53,7 @@ export function MenuSettings (props: {
       <h2 className="vc-mb-6 vc-text-xs vc-font-bold vc-uppercase">
         Display Settings
       </h2>
-      <div className="vim-settings vc-m-1 vc-max-h-full vc-overflow-y-auto">
+      <div className="vim-settings vc-m-1 vc-max-h-[95%] vc-overflow-y-auto">
         <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Viewer</h3>
         {settingsToggle(
           'Ghost Hidden Objects',
