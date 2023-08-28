@@ -174,7 +174,7 @@ function getElementBimHeader (info: AugmentedElement): BimHeader {
 }
 
 async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
-  const documents = await vim.document.bimDocument.getAll()
+  const documents = await vim.bim.bimDocument.getAll()
   const main = documents.find((d) => !d.isLinked) ?? documents[0]
 
   return [

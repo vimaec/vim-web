@@ -174,7 +174,7 @@ function createTable (
 }
 
 async function getVimDocumentDetails (vim: VIM.Vim): Promise<BimDetailsInfo> {
-  let documents = await vim?.document.bimDocument.getAll()
+  let documents = await vim?.bim.bimDocument.getAll()
   documents = documents.sort((a, b) => compare(a.title, b.title))
   const data = new Map<string, TableEntry[]>(
     documents.map((d) => [

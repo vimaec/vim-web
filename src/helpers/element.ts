@@ -11,14 +11,14 @@ export type AugmentedElement = VIM.Format.IElement & {
 export async function getElements (vim: VIM.Vim) {
   const [elements, bimDocument, category, levels, worksets] = await Promise.all(
     [
-      vim.document.element?.getAll(),
-      vim.document.bimDocument?.getAllTitle(),
-      vim.document.category?.getAllName(),
-      vim.document.level?.getAllElementIndex(),
-      vim.document.workset?.getAllName()
+      vim.bim.element?.getAll(),
+      vim.bim.bimDocument?.getAllTitle(),
+      vim.bim.category?.getAllName(),
+      vim.bim.level?.getAllElementIndex(),
+      vim.bim.workset?.getAllName()
     ]
   )
-  const familyTypeMap = await getFamilyTypeNameMap(vim.document)
+  const familyTypeMap = await getFamilyTypeNameMap(vim.bim)
 
   if (!elements) return
   const result = elements.map((e) => ({

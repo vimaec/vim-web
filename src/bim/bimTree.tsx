@@ -16,6 +16,7 @@ import { ViewerWrapper } from '../helpers/viewer'
 import { ArrayEquals } from '../helpers/data'
 import { Isolation } from '../helpers/isolation'
 import { BimTreeData, VimTreeNode } from './bimTreeData'
+import { help } from '../icons'
 
 export type TreeActionRef = {
   showAll: () => void
@@ -70,7 +71,7 @@ export function BimTree (props: {
         const result = siblings.map((n) => {
           const nn = props.treeData.nodes[n]
           const e = nn.data.index
-          const o = props.viewer.viewer.vims[0].getObjectFromElement(e)
+          const o = props.viewer.getVim(0).getObjectFromElement(e)
           return o
         })
 
@@ -99,7 +100,7 @@ export function BimTree (props: {
 
   useEffect(() => {
     const unsubscribe = viewer.renderer.onSceneUpdated.subscribe(() => {
-      props.treeData?.updateVisibility(viewer.vims[0])
+      props.treeData?.updateVisibility(helper.getVim(0))
       setVersion((v) => v + 1)
     })
 
@@ -209,20 +210,20 @@ export function BimTree (props: {
                   focus.current,
                   item.index as number
                 )
-                updateViewerSelection(props.treeData, viewer, range, 'set')
+                updateViewerSelection(props.treeData, helper, range, 'set')
               } else if (isControlKey(e)) {
                 if (renderFlags.isSelected) {
                   const leafs = props.treeData.getLeafs(item.index as number)
-                  updateViewerSelection(props.treeData, viewer, leafs, 'remove')
+                  updateViewerSelection(props.treeData, helper, leafs, 'remove')
                   focus.current = item.index as number
                 } else {
                   const leafs = props.treeData.getLeafs(item.index as number)
-                  updateViewerSelection(props.treeData, viewer, leafs, 'add')
+                  updateViewerSelection(props.treeData, helper, leafs, 'add')
                   focus.current = item.index as number
                 }
               } else {
                 const leafs = props.treeData.getLeafs(item.index as number)
-                updateViewerSelection(props.treeData, viewer, leafs, 'set')
+                updateViewerSelection(props.treeData, helper, leafs, 'set')
                 focus.current = item.index as number
               }
               actions.primaryAction()
@@ -240,7 +241,7 @@ export function BimTree (props: {
         onFocusItem={(item) => {
           const index = item.index as number
           setFocusedItem(index)
-          updateViewerFocus(viewer, props.treeData, index)
+          updateViewerFocus(helper, props.treeData, index)
         }}
         // Default behavior
         onExpandItem={(item) => {
@@ -270,7 +271,7 @@ function toggleVisibility (
   const objs = tree
     .getLeafs(index)
     .map((n) =>
-      viewer.viewer.vims[0].getObjectFromElement(tree.nodes[n]?.data.index)
+      viewer.getVim(0).getObjectFromElement(tree.nodes[n]?.data.index)
     )
 
   const visibility = tree.nodes[index].visible
@@ -282,18 +283,18 @@ function toggleVisibility (
 }
 
 function updateViewerFocus (
-  viewer: VIM.Viewer,
+  viewer: ViewerWrapper,
   tree: BimTreeData,
   index: number
 ) {
   const node = tree.nodes[index]
-  const obj = viewer.vims[0].getObjectFromElement(node.data?.index)
-  viewer.selection.focus(obj)
+  const obj = viewer.getVim(0).getObjectFromElement(node.data?.index)
+  viewer.viewer.selection.focus(obj)
 }
 
 function updateViewerSelection (
   tree: BimTreeData,
-  viewer: VIM.Viewer,
+  viewer: ViewerWrapper,
   nodes: number[],
   operation: 'add' | 'remove' | 'set'
 ) {
@@ -302,18 +303,18 @@ function updateViewerSelection (
     const item = tree.nodes[n]
     const element = item.data.index
 
-    const obj = viewer.vims[0].getObjectFromElement(element)
+    const obj = viewer.getVim(0).getObjectFromElement(element)
     objects.push(obj)
   })
   switch (operation) {
     case 'add':
-      viewer.selection.add(...objects)
+      viewer.viewer.selection.add(...objects)
       break
     case 'remove':
-      viewer.selection.remove(...objects)
+      viewer.viewer.selection.remove(...objects)
       break
     case 'set':
-      viewer.selection.select(objects)
+      viewer.viewer.selection.select(objects)
       break
   }
 }
