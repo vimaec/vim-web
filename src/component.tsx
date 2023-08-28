@@ -122,7 +122,7 @@ export function createVimComponent (
   const reactRoot = createRoot(container.ui)
   reactRoot.render(
     <VimComponent
-      container={container}
+      container={{ root: container.root, gfx: container.gfx, ui: container.ui }}
       onMount={onMount}
       viewer={viewer}
       settings={settings}
