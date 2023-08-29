@@ -16,7 +16,6 @@ import { ViewerWrapper } from '../helpers/viewer'
 import { ArrayEquals } from '../helpers/data'
 import { Isolation } from '../helpers/isolation'
 import { BimTreeData, VimTreeNode } from './bimTreeData'
-import { help } from '../icons'
 
 export type TreeActionRef = {
   showAll: () => void
@@ -210,20 +209,20 @@ export function BimTree (props: {
                   focus.current,
                   item.index as number
                 )
-                updateViewerSelection(props.treeData, helper, range, 'set')
+                updateViewerSelection(props.treeData, viewer, range, 'set')
               } else if (isControlKey(e)) {
                 if (renderFlags.isSelected) {
                   const leafs = props.treeData.getLeafs(item.index as number)
-                  updateViewerSelection(props.treeData, helper, leafs, 'remove')
+                  updateViewerSelection(props.treeData, viewer, leafs, 'remove')
                   focus.current = item.index as number
                 } else {
                   const leafs = props.treeData.getLeafs(item.index as number)
-                  updateViewerSelection(props.treeData, helper, leafs, 'add')
+                  updateViewerSelection(props.treeData, viewer, leafs, 'add')
                   focus.current = item.index as number
                 }
               } else {
                 const leafs = props.treeData.getLeafs(item.index as number)
-                updateViewerSelection(props.treeData, helper, leafs, 'set')
+                updateViewerSelection(props.treeData, viewer, leafs, 'set')
                 focus.current = item.index as number
               }
               actions.primaryAction()
@@ -241,7 +240,7 @@ export function BimTree (props: {
         onFocusItem={(item) => {
           const index = item.index as number
           setFocusedItem(index)
-          updateViewerFocus(helper, props.treeData, index)
+          updateViewerFocus(viewer, props.treeData, index)
         }}
         // Default behavior
         onExpandItem={(item) => {
@@ -283,18 +282,18 @@ function toggleVisibility (
 }
 
 function updateViewerFocus (
-  viewer: ViewerWrapper,
+  viewer: VIM.Viewer,
   tree: BimTreeData,
   index: number
 ) {
   const node = tree.nodes[index]
-  const obj = viewer.getVim(0).getObjectFromElement(node.data?.index)
-  viewer.viewer.selection.focus(obj)
+  const obj = viewer.vims[0].getObjectFromElement(node.data?.index)
+  viewer.selection.focus(obj)
 }
 
 function updateViewerSelection (
   tree: BimTreeData,
-  viewer: ViewerWrapper,
+  viewer: VIM.Viewer,
   nodes: number[],
   operation: 'add' | 'remove' | 'set'
 ) {
@@ -303,18 +302,18 @@ function updateViewerSelection (
     const item = tree.nodes[n]
     const element = item.data.index
 
-    const obj = viewer.getVim(0).getObjectFromElement(element)
+    const obj = viewer.vims[0].getObjectFromElement(element)
     objects.push(obj)
   })
   switch (operation) {
     case 'add':
-      viewer.viewer.selection.add(...objects)
+      viewer.selection.add(...objects)
       break
     case 'remove':
-      viewer.viewer.selection.remove(...objects)
+      viewer.selection.remove(...objects)
       break
     case 'set':
-      viewer.viewer.selection.select(objects)
+      viewer.selection.select(objects)
       break
   }
 }
