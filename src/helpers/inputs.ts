@@ -39,11 +39,8 @@ export class ComponentInputs implements VIM.InputScheme {
   onKeyAction (key: number): boolean {
     // F
     switch (key) {
-      case VIM.KEYS.KEY_F4: {
-        this._sideState.toggleContent('settings')
-        return true
-      }
-      case VIM.KEYS.KEY_4: {
+      case VIM.KEYS.KEY_F4:
+      case VIM.KEYS.KEY_DIVIDE: {
         this._sideState.toggleContent('settings')
         return true
       }
