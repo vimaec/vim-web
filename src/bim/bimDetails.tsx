@@ -56,18 +56,17 @@ function BimDetails<T> (
     ReactTooltip.rebuild()
   })
 
-  if (!visible) return null
-
   if (input !== object) {
     setObject(input)
     toData(input).then((data) => {
+      if (!data) return null
       setDetails(data)
       open.init(data.flatMap((d) => [...d.content.keys()]))
     })
   }
 
-  if (!details) {
-    return <div className="vim-inspector-properties"> Loading . . .</div>
+  if (!visible || !details) {
+    return null
   }
 
   return (
@@ -196,6 +195,7 @@ async function getObjectParameterDetails (
   object: VIM.Object
 ): Promise<BimDetailsInfo> {
   let parameters = await object?.getBimParameters()
+  if (!parameters) return null
   parameters = parameters.filter((p) => acceptParameter(p))
   parameters = parameters.sort((a, b) => compare(a.group, b.group))
   const instance = groupBy(

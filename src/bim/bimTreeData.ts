@@ -228,7 +228,7 @@ export class BimTreeData {
           this.nodes[++i] = {
             index: i,
             parent: self,
-            title: `${e.name} [${e.id}]`,
+            title: `${e.name} ${e.id ? `[${e.id}]` : ''}`,
             isFolder: false,
             data: e,
             children: [],

@@ -171,20 +171,43 @@ function bimInfo (
   vim: VIM.Vim,
   elements: AugmentedElement[]
 ) {
+  const objectHeader = BimObjectHeader({
+    elements,
+    object,
+    visible: object !== undefined
+  })
+
+  const objectDetails = BimObjectDetails({
+    object,
+    visible: object !== undefined
+  })
+
+  const docHeader = BimDocumentHeader({
+    vim,
+    visible: object === undefined
+  })
+
+  const docDetails = BimDocumentDetails({
+    vim,
+    visible: object === undefined
+  })
+
+  const title = (
+    <h2 className="vc-mb-4 vc-text-xs vc-font-bold vc-uppercase">
+      Bim Inspector
+    </h2>
+  )
+
+  const any = objectHeader || objectDetails || docHeader || docDetails
+
   return (
     <>
-      <h2 className="vc-mb-4 vc-text-xs vc-font-bold vc-uppercase">
-        Bim Inspector
-      </h2>
+      {any ? title : null}
       <div className="vim-bim-lower vc-h-1/2 vc-overflow-y-auto vc-overflow-x-hidden">
-        <BimObjectHeader
-          elements={elements}
-          object={object}
-          visible={object !== undefined}
-        />
-        <BimObjectDetails object={object} visible={object !== undefined} />
-        <BimDocumentHeader vim={vim} visible={object === undefined} />
-        <BimDocumentDetails vim={vim} visible={object === undefined} />
+        {objectHeader}
+        {objectDetails}
+        {docHeader}
+        {docDetails}
       </div>
     </>
   )
@@ -198,11 +221,11 @@ function filterElements (
   const filterLower = filter.toLocaleLowerCase()
   const filtered = elements.filter(
     (e) =>
-      e.id.toString().toLocaleLowerCase().includes(filterLower) ||
-      e.name.toLocaleLowerCase().includes(filterLower) ||
-      e.category?.name.toLocaleLowerCase().includes(filterLower) ||
-      e.familyName.toLocaleLowerCase().includes(filterLower) ||
-      e.type.toLocaleLowerCase().includes(filterLower)
+      (e.id?.toString() ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.name ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.category?.name ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.familyName ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.type ?? '').toLocaleLowerCase().includes(filterLower)
   )
   return filtered
 }

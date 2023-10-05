@@ -66,11 +66,7 @@ export function BimDocumentHeader (props: { vim: VIM.Vim; visible: boolean }) {
     getVimBimHeader(props.vim).then((h) => setHeader(h))
   }
 
-  if (!props.visible) return null
-
-  if (!header) {
-    return <>Loading...</>
-  }
+  if (!props.visible || !header) return null
 
   return createHeader(header)
 }
@@ -174,7 +170,8 @@ function getElementBimHeader (info: AugmentedElement): BimHeader {
 }
 
 async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
-  const documents = await vim.bim.bimDocument.getAll()
+  const documents = await vim.bim.bimDocument?.getAll()
+  if (!documents) return null
   const main = documents.find((d) => !d.isLinked) ?? documents[0]
 
   return [

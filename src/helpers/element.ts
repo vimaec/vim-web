@@ -28,7 +28,8 @@ export async function getElements (vim: VIM.Vim) {
     familyTypeName: familyTypeMap.get(e.index),
     levelName: levels ? elements[levels[e?.levelIndex ?? -1]]?.name : undefined,
     worksetName: worksets ? worksets[e?.worksetIndex ?? -1] : undefined
-  }))
+  })) as AugmentedElement[]
+
   return result as AugmentedElement[]
 }
 
