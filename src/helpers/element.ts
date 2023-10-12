@@ -9,6 +9,7 @@ export type AugmentedElement = VIM.Format.IElement & {
   worksetName: string
 }
 export async function getElements (vim: VIM.Vim) {
+  if (!vim.bim) return undefined
   const [elements, bimDocument, category, levels, worksets] = await Promise.all(
     [
       vim.bim.element?.getAll(),
@@ -20,7 +21,7 @@ export async function getElements (vim: VIM.Vim) {
   )
   const familyTypeMap = await getFamilyTypeNameMap(vim.bim)
 
-  if (!elements) return
+  if (!elements) return undefined
   const result = elements.map((e) => ({
     ...e,
     bimDocumentName: bimDocument ? bimDocument[e.bimDocumentIndex] : undefined,

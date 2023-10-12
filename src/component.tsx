@@ -196,6 +196,11 @@ export function VimComponent (props: {
   const treeRef = useRef<TreeActionRef>()
   const prefRef = useRef<HTMLDivElement>(null)
 
+
+  useEffect(() => {
+    side.setHasBim(viewerState.vim?.bim !== undefined)
+  }, [viewerState.vim?.bim])
+
   // On first render
   useEffect(() => {
     addPerformanceCounter(prefRef.current)

@@ -15,7 +15,6 @@ import { Grouping, toTreeData } from './bimTreeData'
 import { ViewerState } from '../component'
 import { AugmentedElement } from '../helpers/element'
 import { Settings } from '../settings/settings'
-import { settings } from '../icons'
 
 /**
  * Returns a jsx component representing most data of a vim object or vim document.

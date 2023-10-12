@@ -12,6 +12,7 @@ export type SideState = {
   getNav: () => 'back' | 'close'
   getContent: () => SideContent
   setContent: (value: SideContent) => void
+  setHasBim: (value: boolean) => void
   getWidth: () => number
   setWidth: (value: number) => void
 }
@@ -27,9 +28,11 @@ export function useSideState (
   defaultWidth: number
 ): SideState {
   const [side, setSide] = useState<SideContent[]>(['bim'])
+  const [hasBim, _setHasBim] = useState<boolean>(false)
   const [width, _setWidth] = useState<number>(defaultWidth)
   const sideRef = useRef(side)
   const widthRef = useRef(width)
+  const hasBimRef = useRef(false)
 
   const toggleContent = (content: SideContent) => {
     let r
@@ -52,8 +55,13 @@ export function useSideState (
 
   const getContent = () => {
     const result = sideRef.current[sideRef.current.length - 1] ?? 'none'
-    if (result === 'bim' && !useInspector) return 'none'
+    if (result === 'bim' && (!useInspector || !hasBimRef.current)) return 'none'
     return result
+  }
+
+  const setHasBim = (value: boolean) => {
+    hasBimRef.current = value
+    _setHasBim(value)
   }
 
   const setContent = (value: SideContent) => {
@@ -71,6 +79,7 @@ export function useSideState (
 
   return useMemo(
     () => ({
+      setHasBim,
       setContent,
       getContent,
       toggleContent,

@@ -170,9 +170,10 @@ function getElementBimHeader (info: AugmentedElement): BimHeader {
 }
 
 async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
-  const documents = await vim.bim.bimDocument?.getAll()
-  if (!documents) return null
-  const main = documents.find((d) => !d.isLinked) ?? documents[0]
+  const documents = await vim.bim?.bimDocument?.getAll()
+  const main = documents
+    ? documents.find((d) => !d.isLinked) ?? documents[0]
+    : undefined
 
   return [
     [
@@ -189,7 +190,7 @@ async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
       {
         key: 'sourcePath',
         label: 'Source Path',
-        value: main.pathName,
+        value: main?.pathName ?? '',
         dtStyle: 'vc-w-3/12',
         ddStyle: 'vc-w-9/12',
         dlStyle: 'vc-w-full'
