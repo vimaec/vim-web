@@ -6,9 +6,9 @@
 
 ## Live Demo
 
-- [Small Model Demo - Residence](https://vimaec.github.io/vim-webgl-app)
-- [Medium Model Demo - Medical Tower](https://vimaec.github.io/vim-webgl-app/release?vim=https://vim.azureedge.net/samples/skanska.vim)
-- [Large Model Demo - Stadium](https://vimaec.github.io/vim-webgl-app/release?vim=https://vim.azureedge.net/samples/stadium.vim) (_Warning_: slow download times)
+- [Small Model Demo - Residence](https://vimaec.github.io/vim-webgl-app?vim=https://vim02.azureedge.net/samples/residence.vim)
+- [Medium Model Demo - Medical Tower](https://vimaec.github.io/vim-webgl-app/release?vim=https://vim02.azureedge.net/samples/skanska.vim)
+- [Large Model Demo - Stadium](https://vimaec.github.io/vim-webgl-app/release?vim=https://vim02.azureedge.net/samples/stadium.vim) (_Warning_: slow download times)
 
 ## About The Project
 
