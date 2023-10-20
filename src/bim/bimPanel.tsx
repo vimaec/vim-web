@@ -34,8 +34,9 @@ export function BimPanel (props: {
   treeRef: React.MutableRefObject<TreeActionRef>
 }) {
   if (
-    props.settings.ui.bimTreePanel === false &&
-    props.settings.ui.bimInfoPanel === false
+    (props.settings.ui.bimTreePanel === false &&
+      props.settings.ui.bimInfoPanel === false) ||
+    props.viewerState.elements === undefined
   ) {
     return null
   }
