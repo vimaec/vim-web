@@ -39,6 +39,7 @@ export class Isolation {
    */
   applySettings (settings: Settings) {
     this._settings = settings
+    if (this._settings.viewer.disableIsolation) return
     const set = new Set(this._isolation?.map((o) => o.vim))
     this._viewer.vims.forEach((v) => {
       v.scene.material =
@@ -80,6 +81,8 @@ export class Isolation {
    * Returns true if isolation occurs.
    */
   isolate (objects: VIM.Object[], source: string) {
+    if (this._settings.viewer.disableIsolation) return
+
     if (this._isolation) {
       this._lastIsolation = this._isolation
     }
@@ -95,6 +98,7 @@ export class Isolation {
    * Toggles current isolation based on selection.
    */
   toggleIsolation (source: string) {
+    if (this._settings.viewer.disableIsolation) return
     const selection = [...this._viewer.selection.objects]
 
     if (this._isolation) {
@@ -136,6 +140,7 @@ export class Isolation {
    * Remove given objects from the isolation set
    */
   hide (objects: VIM.Object[], source: string) {
+    if (this._settings.viewer.disableIsolation) return
     const selection = new Set(objects)
     const initial = this._isolation ?? this._viewer.vims[0].getAllObjects()
     const result: VIM.Object[] = []
@@ -152,6 +157,7 @@ export class Isolation {
    * Add given objects to the isolation set
    */
   show (objects: VIM.Object[], source: string) {
+    if (this._settings.viewer.disableIsolation) return
     const isolation = this._isolation ?? []
     objects.forEach((o) => isolation.push(o))
     const result = [...new Set(isolation)]
@@ -164,6 +170,7 @@ export class Isolation {
    * Clears current isolation.
    */
   clear (source: string) {
+    if (this._settings.viewer.disableIsolation) return
     this._showAll()
     this._lastIsolation = this._isolation
     this._isolation = undefined

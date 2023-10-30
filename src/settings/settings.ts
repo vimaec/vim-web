@@ -26,6 +26,7 @@ export type RestrictedOption = boolean | 'restricted'
  */
 export type Settings = {
   viewer: {
+    disableIsolation: boolean
     isolationMaterial: boolean
     groundPlane: boolean
   }
@@ -111,6 +112,7 @@ export type PartialSettings = RecursivePartial<Settings>
 
 const defaultSettings: Settings = {
   viewer: {
+    disableIsolation: false,
     isolationMaterial: true,
     groundPlane: true
   },
