@@ -62,6 +62,7 @@ export function BimPanel (props: {
 
   // Update Isolation on filter change.
   useEffect(() => {
+    if (props.settings.ui.bimInfoPanel !== true) return
     if (filter !== '') {
       const objects = filteredElements.map((e) =>
         props.viewerState.vim.getObjectFromElement(e.index)
