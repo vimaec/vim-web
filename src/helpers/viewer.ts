@@ -65,7 +65,7 @@ export class ViewerWrapper {
     let box: VIM.THREE.Box3
 
     const vimBoxUnion = (vim: VIM.Vim) => {
-      for (const obj of vim.getAllObjects()) {
+      for (const obj of vim.getObjects()) {
         if (!obj.visible) continue
         const b = obj.getBoundingBox()
         if (!b) continue

@@ -142,7 +142,7 @@ export class Isolation {
   hide (objects: VIM.Object[], source: string) {
     if (this._settings.viewer.disableIsolation) return
     const selection = new Set(objects)
-    const initial = this._isolation ?? this._viewer.vims[0].getAllObjects()
+    const initial = this._isolation ?? this._viewer.vims[0].getObjects()
     const result: VIM.Object[] = []
     for (const obj of initial) {
       if (!selection.has(obj)) result.push(obj)
@@ -182,7 +182,7 @@ export class Isolation {
    */
   private _showAll () {
     this._viewer.vims.forEach((v) => {
-      for (const obj of v.getAllObjects()) {
+      for (const obj of v.getObjects()) {
         obj.visible = true
       }
       v.scene.material = undefined
@@ -204,7 +204,7 @@ export class Isolation {
         if (vim instanceof VIM.VimX) {
           vim = vim.vim
         }
-        for (const obj of vim.getAllObjects()) {
+        for (const obj of vim.getObjects()) {
           if (obj.hasMesh) {
             obj.visible = set.has(obj)
             all = all && obj.visible
