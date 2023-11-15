@@ -28,9 +28,9 @@ function AxesPanel (props: { viewer: ViewerWrapper; settings: SettingsState }) {
       setOrtho(viewer.camera.orthographic)
     )
 
-    if (viewer.axesCanvas) {
-      ui.current.appendChild(viewer.axesCanvas)
-      viewer.axesCanvas.classList.add(
+    if (viewer.gizmos.axes.canvas) {
+      ui.current.appendChild(viewer.gizmos.axes.canvas)
+      viewer.gizmos.axes.canvas.classList.add(
         'vc-block',
         '!vc-static',
         'vc-order-1',

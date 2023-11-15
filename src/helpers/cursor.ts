@@ -62,13 +62,13 @@ export class CursorManager {
     const sub2 = this._viewer.inputs.onPointerOverrideChanged.subscribe(() =>
       this._updateCursor()
     )
-    const sub3 = this._viewer.sectionBox.onStateChanged.subscribe(() => {
-      if (!this._viewer.sectionBox.visible) {
+    const sub3 = this._viewer.gizmos.section.onStateChanged.subscribe(() => {
+      if (!this._viewer.gizmos.section.visible) {
         this._boxHover = false
         this._updateCursor()
       }
     })
-    const sub4 = this._viewer.sectionBox.onHover.subscribe((hover) => {
+    const sub4 = this._viewer.gizmos.section.onHover.subscribe((hover) => {
       this._boxHover = hover
       this._updateCursor()
     })

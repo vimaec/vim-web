@@ -172,8 +172,8 @@ function TabCamera (props: { viewer: ViewerWrapper; settings: Settings }) {
     'Zoom Window',
     () => {
       onModeBtn('rect')
-      viewer.sectionBox.visible = false
-      viewer.sectionBox.interactive = false
+      viewer.gizmos.section.visible = false
+      viewer.gizmos.section.interactive = false
     },
     Icons.frameRect,
     () => mode === 'rect'
@@ -211,18 +211,19 @@ function TabTools (props: {
   // eslint-disable-next-line no-unused-vars
   const [measurement, setMeasurement] = useState<VIM.THREE.Vector3>()
   const [section, setSection] = useState<{ clip: boolean; active: boolean }>({
-    clip: viewer.sectionBox.clip,
-    active: viewer.sectionBox.visible && viewer.sectionBox.interactive
+    clip: viewer.gizmos.section.clip,
+    active: viewer.gizmos.section.visible && viewer.gizmos.section.interactive
   })
 
   const measuringRef = useRef<boolean>()
   measuringRef.current = measuring
 
   useEffect(() => {
-    const subSection = viewer.sectionBox.onStateChanged.subscribe(() =>
+    const subSection = viewer.gizmos.section.onStateChanged.subscribe(() =>
       setSection({
-        clip: viewer.sectionBox.clip,
-        active: viewer.sectionBox.visible && viewer.sectionBox.interactive
+        clip: viewer.gizmos.section.clip,
+        active:
+          viewer.gizmos.section.visible && viewer.gizmos.section.interactive
       })
     )
 
@@ -238,10 +239,15 @@ function TabTools (props: {
       viewer.inputs.pointerActive = viewer.inputs.pointerFallback
     }
 
-    const next = !(viewer.sectionBox.visible && viewer.sectionBox.interactive)
-    viewer.sectionBox.interactive = next
-    viewer.sectionBox.visible = next
-    if (next && viewer.sectionBox.box.containsPoint(viewer.camera.position)) {
+    const next = !(
+      viewer.gizmos.section.visible && viewer.gizmos.section.interactive
+    )
+    viewer.gizmos.section.interactive = next
+    viewer.gizmos.section.visible = next
+    if (
+      next &&
+      viewer.gizmos.section.box.containsPoint(viewer.camera.position)
+    ) {
       viewer.camera.lerp(1).frame(viewer.renderer.section.box)
     }
   }
@@ -250,7 +256,7 @@ function TabTools (props: {
     ReactTooltip.hide()
 
     if (measuring) {
-      viewer.measure.abort()
+      viewer.gizmos.measure.abort()
       setMeasuring(false)
     } else {
       setMeasuring(true)
@@ -264,19 +270,19 @@ function TabTools (props: {
   }
 
   const onResetSectionBtn = () => {
-    viewer.sectionBox.fitBox(viewer.renderer.getBoundingBox())
+    viewer.gizmos.section.fitBox(viewer.renderer.getBoundingBox())
   }
 
   const onSectionClip = () => {
-    viewer.sectionBox.clip = true
+    viewer.gizmos.section.clip = true
   }
   const onSectionNoClip = () => {
-    viewer.sectionBox.clip = false
+    viewer.gizmos.section.clip = false
   }
 
   const onMeasureDeleteBtn = () => {
     ReactTooltip.hide()
-    viewer.measure.abort()
+    viewer.gizmos.measure.abort()
     onMeasureBtn()
   }
 
@@ -346,7 +352,7 @@ function TabTools (props: {
   const btnSectionShrink = actionButton(
     () => true,
     'Shrink to Selection',
-    () => viewer.sectionBox.fitBox(viewer.selection.getBoundingBox()),
+    () => viewer.gizmos.section.fitBox(viewer.selection.getBoundingBox()),
     Icons.sectionBoxShrink,
     section.active
   )
@@ -498,14 +504,14 @@ function loopMeasure (
   setCursor: (cursor: Cursor) => void
 ) {
   const onMouseMove = () => {
-    setMeasure(viewer.measure.measurement)
+    setMeasure(viewer.gizmos.measure.measurement)
   }
   setCursor('cursor-measure')
   viewer.viewport.canvas.addEventListener('mousemove', onMouseMove)
-  viewer.measure
+  viewer.gizmos.measure
     .start()
     .then(() => {
-      setMeasure(viewer.measure.measurement)
+      setMeasure(viewer.gizmos.measure.measurement)
     })
     .catch(() => {
       setMeasure(undefined)
@@ -516,7 +522,7 @@ function loopMeasure (
       if (getMeasuring()) {
         loopMeasure(viewer, getMeasuring, setMeasure, setCursor)
       } else {
-        viewer.measure.clear()
+        viewer.gizmos.measure.clear()
       }
     })
 }

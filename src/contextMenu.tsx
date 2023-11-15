@@ -109,11 +109,11 @@ export function VimContextMenu (props: {
     visible: boolean
     clip: boolean
   }>({
-    visible: viewer.sectionBox.visible,
-    clip: viewer.sectionBox.clip
+    visible: viewer.gizmos.section.visible,
+    clip: viewer.gizmos.section.clip
   })
   const isClipping = () => {
-    return !viewer.sectionBox.box.containsBox(viewer.renderer.getBoundingBox())
+    return !viewer.gizmos.section.box.containsBox(viewer.renderer.getBoundingBox())
   }
   const [clipping, setClipping] = useState<boolean>(isClipping())
   const [, setVersion] = useState(0)
@@ -121,15 +121,15 @@ export function VimContextMenu (props: {
 
   useEffect(() => {
     // Register to selection
-    const subState = viewer.sectionBox.onStateChanged.subscribe(() => {
+    const subState = viewer.gizmos.section.onStateChanged.subscribe(() => {
       setSection({
-        visible: viewer.sectionBox.visible,
-        clip: viewer.sectionBox.clip
+        visible: viewer.gizmos.section.visible,
+        clip: viewer.gizmos.section.clip
       })
     })
 
     // Register to section box
-    const subConfirm = viewer.sectionBox.onBoxConfirm.subscribe(() =>
+    const subConfirm = viewer.gizmos.section.onBoxConfirm.subscribe(() =>
       setClipping(isClipping())
     )
 
@@ -192,20 +192,20 @@ export function VimContextMenu (props: {
   }
 
   const onSectionToggleBtn = (e: ClickCallback) => {
-    viewer.sectionBox.clip = !viewer.sectionBox.clip
+    viewer.gizmos.section.clip = !viewer.gizmos.section.clip
   }
 
   const onSectionResetBtn = (e: ClickCallback) => {
-    viewer.sectionBox.fitBox(viewer.renderer.getBoundingBox())
+    viewer.gizmos.section.fitBox(viewer.renderer.getBoundingBox())
     e.stopPropagation()
   }
 
   const onMeasureDeleteBtn = (e: ClickCallback) => {
-    viewer.measure.abort()
+    viewer.gizmos.measure.abort()
   }
 
   const onFitSectionToSelectionBtn = (e: ClickCallback) => {
-    viewer.sectionBox.fitBox(viewer.selection.getBoundingBox())
+    viewer.gizmos.section.fitBox(viewer.selection.getBoundingBox())
   }
 
   const createButton = (button: contextMenuButton) => {
@@ -235,7 +235,7 @@ export function VimContextMenu (props: {
 
   const hasSelection = props.selection?.length > 0
   const hasVisibleSelection = props.selection?.findIndex((o) => o.visible) >= 0
-  const measuring = !!viewer.measure.stage
+  const measuring = !!viewer.gizmos.measure.stage
   const isolated = ArrayEquals(props.selection, props.isolation.current())
 
   let elements: contextMenuElement[] = [

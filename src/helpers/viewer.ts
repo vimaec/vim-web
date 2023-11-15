@@ -46,7 +46,7 @@ export class ViewerWrapper {
     if (this.viewer.selection.count === 0) return
     const box = this.viewer.selection.getBoundingBox()
 
-    if (box && this.viewer.sectionBox.box.intersectsBox(box)) {
+    if (box && this.viewer.gizmos.section.box.intersectsBox(box)) {
       this.viewer.camera.lerp(1).frame(box)
     }
   }

@@ -148,7 +148,7 @@ export function createContainer (viewer: VIM.Viewer): VimComponentContainer {
 
   gfx.append(viewer.viewport.canvas)
   gfx.append(viewer.viewport.text)
-  gfx.append(viewer.axesCanvas)
+  gfx.append(viewer.gizmos.axes.canvas)
 
   // container for ui
   const ui = document.createElement('div')
@@ -158,7 +158,7 @@ export function createContainer (viewer: VIM.Viewer): VimComponentContainer {
 
   // Initial viewer settings
   viewer.viewport.canvas.tabIndex = 0
-  viewer.sectionBox.clip = true
+  viewer.gizmos.section.clip = true
 
   return { root, ui, gfx }
 }
@@ -195,7 +195,6 @@ export function VimComponent (props: {
   const logs = useLogState()
   const treeRef = useRef<TreeActionRef>()
   const prefRef = useRef<HTMLDivElement>(null)
-
 
   useEffect(() => {
     side.setHasBim(viewerState.vim?.bim !== undefined)
