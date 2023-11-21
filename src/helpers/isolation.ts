@@ -201,9 +201,6 @@ export class Isolation {
       const set = new Set(objects)
       let all = true
       viewer.vims.forEach((vim) => {
-        if (vim instanceof VIM.VimX) {
-          vim = vim.vim
-        }
         for (const obj of vim.getObjects()) {
           if (obj.hasMesh) {
             obj.visible = set.has(obj)

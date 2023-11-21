@@ -330,11 +330,7 @@ const LogoMemo = React.memo(() => (
 
 function useViewerState (viewer: VIM.Viewer) {
   const getVim = () => {
-    const vim = viewer.selection.vim ?? viewer.vims[0]
-    if (vim instanceof VIM.VimX) {
-      return vim.vim
-    }
-    return vim
+    return viewer.selection.vim ?? viewer.vims[0]
   }
 
   const [vim, setVim] = useState<VIM.Vim>(getVim())

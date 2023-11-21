@@ -14,11 +14,7 @@ export class ViewerWrapper {
   }
 
   getVim (index: number) {
-    const vim = this.viewer.vims[index]
-    if (vim instanceof VIM.VimX) {
-      return vim.vim
-    }
-    return vim
+    return this.viewer.vims[index]
   }
 
   /**
@@ -76,11 +72,7 @@ export class ViewerWrapper {
       vimBoxUnion(source)
     } else {
       for (const vim of this.viewer.vims) {
-        if (vim instanceof VIM.VimX) {
-          vimBoxUnion(vim.vim)
-        } else {
-          vimBoxUnion(vim)
-        }
+        vimBoxUnion(vim)
       }
     }
 
