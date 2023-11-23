@@ -81,6 +81,8 @@ export type VimComponentRef = {
    */
   updateSettings: (updater: (e: Settings) => void) => void
 
+  registerToSettings: (action: (e: Settings) => void) => void
+
   logs: LogsRef
 
   selectSibbings(object: VIM.Object)
@@ -236,7 +238,9 @@ export function VimComponent (props: {
       updateSettings: (updater) => {
         settings.update(updater)
       },
-      selectSibbings: (o) => treeRef.current.selectSiblings(o)
+      selectSibbings: (o) => treeRef.current.selectSiblings(o),
+      // Double lambda is required to avoid react from using reducer pattern
+      registerToSettings: (action) => settings.register((s) => action(s))
     })
 
     // Clean up

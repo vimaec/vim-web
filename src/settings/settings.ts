@@ -2,7 +2,7 @@
  * @module viw-webgl-component
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import deepmerge from 'deepmerge'
 import { orbit } from '../icons'
@@ -161,6 +161,7 @@ const defaultSettings: Settings = {
 export type SettingsState = {
   value: Settings
   update: (updater: (s: Settings) => void) => void
+  register: (action: (s: Settings) => void) => void
 }
 
 export function getLocalSettings (value: RecursivePartial<Settings> = {}) {
@@ -184,11 +185,13 @@ export function useSettings (
 ): SettingsState {
   const merge = deepmerge(defaultSettings, value) as Settings
   const [settings, setSettings] = useState(merge)
+  const onUpdate = useRef<(s: Settings) => void>(undefined)
 
   const update = function (updater: (s: Settings) => void) {
-    const next = structuredClone(settings)
+    const next = { ...settings } // Shallow copy
     updater(next)
     setSettings(next)
+    onUpdate.current?.(next)
   }
 
   // First Time
@@ -201,7 +204,14 @@ export function useSettings (
     applySettings(viewer, settings)
   }, [settings])
 
-  return useMemo(() => ({ value: settings, update }), [settings])
+  return useMemo(
+    () => ({
+      value: settings,
+      update,
+      register: (v) => (onUpdate.current = v)
+    }),
+    [settings]
+  )
 }
 
 function removeRestricted (settings: Settings) {
