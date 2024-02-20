@@ -12,7 +12,7 @@ const params = new URLSearchParams(window.location.search)
 // Edge server doesn't serve http ranges properly
 const url = params.has('vim')
   ? params.get('vim')
-  : 'https://vimdevelopment01storage.blob.core.windows.net/samples/TowerS-ARCHITECTURE-ALL.v1.2.50.vim'
+  : 'https://vim02.azureedge.net/samples/residence.v1.2.75.vim'
 
 createVimComponent(loadVim, undefined, getLocalSettings())
 
@@ -21,8 +21,6 @@ async function loadVim (cmp: VimComponentRef) {
   globalThis.component = cmp
   const vim = await VIM.VimxLoader.loadAny(
     'https://vim02.azureedge.net/samples/residence.v1.2.75.vim',
-    // 'https://vimdevelopment01storage.blob.core.windows.net/split-mesh/residence.vimx',
-    // 'https://vimdevelopment01storage.blob.core.windows.net/split-mesh/tower.vimx',
     {
       // const vim = await cmp.loader.load(url!, {
       progressive: true,
