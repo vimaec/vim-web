@@ -16,11 +16,11 @@ export class Isolation {
   private _viewer: VIM.Viewer
 
   private _settings: Settings
-  private _isolation: VIM.Object[]
-  private _lastIsolation: VIM.Object[]
+  private _isolation: VIM.IObject[]
+  private _lastIsolation: VIM.IObject[]
 
   private _helper: ViewerWrapper
-  private _references = new Map<VIM.Vim, Set<VIM.Object> | 'always'>()
+  private _references = new Map<VIM.Vim, Set<VIM.IObject> | 'always'>()
 
   private _onChanged = new SimpleEventDispatcher<string>()
   /** Signal dispatched when the isolation set changes. */
@@ -80,7 +80,7 @@ export class Isolation {
    * Isolates the objects in the given array and shows the rest.
    * Returns true if isolation occurs.
    */
-  isolate (objects: VIM.Object[], source: string) {
+  isolate (objects: VIM.IObject[], source: string) {
     if (this._settings.viewer.disableIsolation) return
 
     if (this._isolation) {
@@ -139,11 +139,11 @@ export class Isolation {
   /**
    * Remove given objects from the isolation set
    */
-  hide (objects: VIM.Object[], source: string) {
+  hide (objects: VIM.IObject[], source: string) {
     if (this._settings.viewer.disableIsolation) return
     const selection = new Set(objects)
     const initial = this._isolation ?? this._viewer.vims[0].getObjects()
-    const result: VIM.Object[] = []
+    const result: VIM.IObject[] = []
     for (const obj of initial) {
       if (!selection.has(obj)) result.push(obj)
     }
@@ -156,7 +156,7 @@ export class Isolation {
   /**
    * Add given objects to the isolation set
    */
-  show (objects: VIM.Object[], source: string) {
+  show (objects: VIM.IObject[], source: string) {
     if (this._settings.viewer.disableIsolation) return
     const isolation = this._isolation ?? []
     objects.forEach((o) => isolation.push(o))
@@ -192,7 +192,7 @@ export class Isolation {
   private _isolate (
     viewer: VIM.Viewer,
     settings: Settings,
-    objects: VIM.Object[]
+    objects: VIM.IObject[]
   ) {
     let useIsolation = false
     if (!objects) {

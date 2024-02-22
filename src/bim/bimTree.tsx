@@ -21,7 +21,7 @@ export type TreeActionRef = {
   showAll: () => void
   hideAll: () => void
   collapseAll: () => void
-  selectSiblings: (element: VIM.Object) => void
+  selectSiblings: (element: VIM.IObject) => void
 }
 
 /**
@@ -34,14 +34,14 @@ export type TreeActionRef = {
 export function BimTree (props: {
   actionRef: React.MutableRefObject<TreeActionRef>
   viewer: ViewerWrapper
-  objects: VIM.Object[]
+  objects: VIM.IObject[]
   isolation: Isolation
   treeData: BimTreeData
 }) {
   const viewer = props.viewer.viewer
   const helper = props.viewer
   // Data state
-  const [objects, setObjects] = useState<VIM.Object[]>([])
+  const [objects, setObjects] = useState<VIM.IObject[]>([])
 
   // Tree state
   const [expandedItems, setExpandedItems] = useState<number[]>([])

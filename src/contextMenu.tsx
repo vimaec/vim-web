@@ -99,7 +99,7 @@ export function VimContextMenu (props: {
   viewer: ViewerWrapper
   help: HelpState
   isolation: Isolation
-  selection: VIM.Object[]
+  selection: VIM.IObject[]
   customization?: (e: contextMenuElement[]) => contextMenuElement[]
   treeRef: React.MutableRefObject<TreeActionRef>
 }) {

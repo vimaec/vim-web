@@ -208,6 +208,7 @@ function TabTools (props: {
   const viewer = props.viewer.viewer
   // Need a ref to get the up to date value in callback.
   const [measuring, setMeasuring] = useState(false)
+  const firstSection = useRef(true)
   // eslint-disable-next-line no-unused-vars
   const [measurement, setMeasurement] = useState<VIM.THREE.Vector3>()
   const [section, setSection] = useState<{ clip: boolean; active: boolean }>({
@@ -234,6 +235,7 @@ function TabTools (props: {
   }, [])
 
   const onSectionBtn = () => {
+
     ReactTooltip.hide()
     if (viewer.inputs.pointerActive === 'rect') {
       viewer.inputs.pointerActive = viewer.inputs.pointerFallback
@@ -244,12 +246,16 @@ function TabTools (props: {
     )
     viewer.gizmos.section.interactive = next
     viewer.gizmos.section.visible = next
-    if (
-      next &&
-      viewer.gizmos.section.box.containsPoint(viewer.camera.position)
-    ) {
-      viewer.camera.lerp(1).frame(viewer.renderer.section.box)
+
+    if (next){
+      if(firstSection){
+        viewer.gizmos.section.fitBox(viewer.renderer.getBoundingBox().expandByScalar(1))
+      }
+      if(viewer.gizmos.section.box.containsPoint(viewer.camera.position)){
+        viewer.camera.lerp(1).frame(viewer.renderer.section.box)
+      }
     }
+    firstSection.current = false
   }
 
   const onMeasureBtn = () => {

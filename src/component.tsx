@@ -338,7 +338,7 @@ function useViewerState (viewer: VIM.Viewer) {
   }
 
   const [vim, setVim] = useState<VIM.Vim>(getVim())
-  const [selection, setSelection] = useState<VIM.Object[]>([
+  const [selection, setSelection] = useState<VIM.IObject[]>([
     ...viewer.selection.objects
   ])
   const [elements, setElements] = useState<AugmentedElement[]>()
