@@ -24,7 +24,7 @@ export function SidePanel (props: {
   container: VimComponentContainer
   side: SideState
   viewer: VIM.Viewer
-  content: JSX.Element
+  content: () => JSX.Element
 }) {
   // state to force re-render on resize
   const [, setParentWidth] = useState(props.container.root.clientWidth)
@@ -112,7 +112,7 @@ export function SidePanel (props: {
       >
         {Icons.close(iconOptions)}
       </button>
-      {props.content}
+      {props.content()}
     </Resizable>
   )
 }

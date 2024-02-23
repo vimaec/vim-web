@@ -15,7 +15,7 @@ import * as VIM from 'vim-webgl-viewer/'
 import { AxesPanelMemo } from './axesPanel'
 import { ControlBar } from './controlBar'
 import { LoadingBoxMemo, MsgInfo } from './loading'
-import { BimPanel } from './bim/bimPanel'
+import { BimPanel, OptionalBimPanel } from './bim/bimPanel'
 import {
   contextMenuCustomization,
   showContextMenu,
@@ -250,9 +250,9 @@ export function VimComponent (props: {
     }
   }, [])
 
-  const sidePanel = (
+  const sidePanel = () => (
     <>
-      <BimPanel
+      <OptionalBimPanel
         viewer={viewer}
         viewerState={viewerState}
         visible={side.getContent() === 'bim'}

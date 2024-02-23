@@ -16,6 +16,25 @@ import { ViewerState } from '../component'
 import { AugmentedElement } from '../helpers/element'
 import { Settings } from '../settings/settings'
 
+
+export function OptionalBimPanel (props: {
+  viewer: ViewerWrapper
+  viewerState: ViewerState
+  isolation: Isolation
+  visible: boolean
+  settings: Settings
+  treeRef: React.MutableRefObject<TreeActionRef>
+}) {
+  if (
+    ( props.settings.ui.bimTreePanel === false &&
+      props.settings.ui.bimInfoPanel === false) ||
+    props.viewerState.elements === undefined
+  ) {
+    return null
+  }
+  return React.createElement(BimPanel, props)
+}
+
 /**
  * Returns a jsx component representing most data of a vim object or vim document.
  * @param viewer viewer helper
@@ -33,17 +52,12 @@ export function BimPanel (props: {
   settings: Settings
   treeRef: React.MutableRefObject<TreeActionRef>
 }) {
-  if (
-    (props.settings.ui.bimTreePanel === false &&
-      props.settings.ui.bimInfoPanel === false) ||
-    props.viewerState.elements === undefined
-  ) {
-    return null
-  }
+
 
   const [filter, setFilter] = useState('')
   const [grouping, setGrouping] = useState<Grouping>('Family')
 
+  
   // Filter elements with meshes using search term.
   const filteredElements = useMemo(() => {
     if (!props.viewerState.elements) return
