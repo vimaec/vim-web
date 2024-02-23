@@ -160,7 +160,6 @@ export function createContainer (viewer: VIM.Viewer): VimComponentContainer {
 
   // Initial viewer settings
   viewer.viewport.canvas.tabIndex = 0
-  viewer.gizmos.section.clip = true
 
   return { root, ui, gfx }
 }

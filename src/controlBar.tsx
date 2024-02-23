@@ -244,17 +244,19 @@ function TabTools (props: {
     const next = !(
       viewer.gizmos.section.visible && viewer.gizmos.section.interactive
     )
-    viewer.gizmos.section.interactive = next
-    viewer.gizmos.section.visible = next
 
     if (next){
-      if(firstSection){
+      if(firstSection.current){
+        viewer.gizmos.section.clip = true
         viewer.gizmos.section.fitBox(viewer.renderer.getBoundingBox().expandByScalar(1))
       }
       if(viewer.gizmos.section.box.containsPoint(viewer.camera.position)){
         viewer.camera.lerp(1).frame(viewer.renderer.section.box)
       }
     }
+
+    viewer.gizmos.section.interactive = next
+    viewer.gizmos.section.visible = next
     firstSection.current = false
   }
 
