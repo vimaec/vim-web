@@ -17,34 +17,35 @@ export type MsgInfo = { message: string; info: string }
  */
 export const LoadingBoxMemo = React.memo(LoadingBox)
 
+export class OpenWrapper {
+
+  onProgress: (progress: VIM.Format.IProgressLogs) => void
+  onDone : () => void 
+
+   async open (
+    source: string | ArrayBuffer,
+    settings: VIM.VimPartialSettings,
+    onProgress?: (p: VIM.Format.IProgressLogs) => void
+  ){
+    var vim = await VIM.open(source, settings, (p) => {
+      onProgress?.(p)
+      this.onProgress(p)
+    })
+    this.onDone()
+    return vim
+  }
+}
+
 /**
  * Loading box JSX Component tha can also be used to show messages.
  */
-function LoadingBox (props: { loader: VIM.Loader; content: MsgInfo }) {
+function LoadingBox (props: { loader: OpenWrapper, content: MsgInfo }) {
   const [progress, setProgress] = useState<Progress>()
 
   // Patch load
   useEffect(() => {
-    const prev = props.loader.createRequest.bind(props.loader)
-    props.loader.createRequest = function (
-      source: string | ArrayBuffer,
-      settings: Partial<VimSettings>
-    ) {
-      const request = prev(source, settings) as VIM.VimRequest
-      const disconnect = request.onProgress.sub((progress) =>
-        setProgress(progress.loaded)
-      )
-      request.onLoaded.sub((vim) => {
-        setProgress(undefined)
-        disconnect()
-      })
-      return request
-    }
-
-    // Clean up
-    return () => {
-      props.loader.createRequest = prev
-    }
+    props.loader.onProgress = (p: VIM.Format.IProgressLogs) => setProgress(p.loaded)
+    props.loader.onDone = () => setProgress(null)
   }, [])
 
   useEffect(() => {

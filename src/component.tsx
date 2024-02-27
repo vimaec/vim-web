@@ -14,7 +14,7 @@ import * as VIM from 'vim-webgl-viewer/'
 
 import { AxesPanelMemo } from './axesPanel'
 import { ControlBar } from './controlBar'
-import { LoadingBoxMemo, MsgInfo } from './loading'
+import { LoadingBoxMemo, MsgInfo, OpenWrapper } from './loading'
 import { BimPanel, OptionalBimPanel } from './bim/bimPanel'
 import {
   contextMenuCustomization,
@@ -54,7 +54,7 @@ export type VimComponentRef = {
   /**
    * Vim webgl loader to download vims.
    */
-  loader: VIM.Loader
+  loader: OpenWrapper
 
   /**
    * Higher level helper methods built around the vim viewer.
@@ -178,7 +178,7 @@ export function VimComponent (props: {
 }) {
   const viewer = useMemo(() => new ViewerWrapper(props.viewer), [])
   const cursor = useMemo(() => new CursorManager(props.viewer), [])
-  const loader = useMemo(() => new VIM.Loader(), [])
+  const loader = useRef(new OpenWrapper())
   const settings = useSettings(props.viewer, props.settings)
 
   const [isolation] = useState(() => new Isolation(viewer, settings.value))
@@ -226,7 +226,7 @@ export function VimComponent (props: {
     props.onMount({
       container: props.container,
       viewer: props.viewer,
-      loader,
+      loader: loader.current,
       helpers: viewer,
       isolation,
       setMsg: (message: string, info: string) => setMsg({ message, info }),
@@ -284,7 +284,7 @@ export function VimComponent (props: {
       {settings.value.ui.logo === true ? <LogoMemo /> : null}
       {settings.value.ui.loadingBox === true
         ? (
-        <LoadingBoxMemo loader={loader} content={msg} />
+        <LoadingBoxMemo loader={loader.current} content={msg} />
           )
         : null}
       <ControlBar
