@@ -196,6 +196,7 @@ async function getVimDocumentDetails (vim: VIM.Vim): Promise<BimDetailsInfo> {
 async function getObjectParameterDetails (
   object: VIM.Object
 ): Promise<BimDetailsInfo> {
+  
   let parameters = await object?.getBimParameters()
   if (!parameters) return null
   parameters = parameters.filter((p) => acceptParameter(p))

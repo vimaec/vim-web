@@ -24,7 +24,7 @@ function AxesPanel (props: { viewer: ViewerWrapper; settings: SettingsState }) {
   const ui = useRef<HTMLDivElement>()
 
   useEffect(() => {
-    const subCam = viewer.camera.onValueChanged.subscribe(() =>
+    const subCam = viewer.camera.onSettingsChanged.subscribe(() =>
       setOrtho(viewer.camera.orthographic)
     )
 

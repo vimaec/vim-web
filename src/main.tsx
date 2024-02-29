@@ -12,7 +12,7 @@ const params = new URLSearchParams(window.location.search)
 // Edge server doesn't serve http ranges properly
 const url = params.has('vim')
   ? params.get('vim')
-  : 'https://vim02.azureedge.net/samples/residence.v1.2.75.vim'
+  : null
 
 createVimComponent(loadVim, undefined, getLocalSettings())
 
@@ -21,8 +21,8 @@ async function loadVim (cmp: VimComponentRef) {
   globalThis.component = cmp
   cmp.viewer.gizmos.loading.visible = true
   const vim = await cmp.loader.open(
-    url,
-    //"https://vimdevelopment01storage.blob.core.windows.net/samples/residence.v1.2.75.vimx",
+    url ?? 'https://vim02.azureedge.net/samples/residence.v1.2.75.vim',
+    //url ?? 'https://vim02.azureedge.net/samples/residence.v1.2.75.vimx',
     {
       progressive: true,
       rotation: new THREE.Vector3(270, 0, 0)
@@ -32,7 +32,7 @@ async function loadVim (cmp: VimComponentRef) {
   cmp.viewer.add(vim)
   vim.loadAll()
   cmp.viewer.camera.do().frame(vim)
-  
+
   console.log(`Loading completed in ${((Date.now() - time)/1000).toFixed(2)} seconds`)
   cmp.viewer.gizmos.loading.visible = false
 }
