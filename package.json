@@ -1,6 +1,6 @@
 {
   "name": "vim-webgl-component",
-  "version": "0.2.35-dev.41",
+  "version": "0.2.36-dev.1",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "files": [
     "dist"
@@ -21,13 +21,8 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build && npm run declarations",
-    "bump-dev": "npm version prerelease --preid=dev",
-    "publish-dev": "npm publish --tag=dev",
     "serve-dev": "http-server ./docs -o ./dev",
-    "release-minor": "npm version minor && git push && npm publish",
-    "release-patch": "npm version patch && git push && npm publish",
-    "release-dev": "npm run build && npm run bump-dev && git push && npm run publish-dev",
-    "release-current": "npm run build && git push && npm publish",
+    "package": "npm run build && git push && npm publish",
     "declarations": "tsc --declaration --emitDeclarationOnly --outdir ./dist/types",
     "eslint": "eslint --ext .js,.ts src --fix",
     "documentation": "typedoc --entryPointStrategy expand --mergeModulesMergeMode module --out docs/api --excludeProtected --excludeExternals --excludePrivate --exclude ./src/main.tsx --exclude ./src/module.d.ts ./src/ && git add ./docs/"
