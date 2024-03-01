@@ -207,11 +207,6 @@ export function VimComponent (props: {
 
     cursor.register()
 
-    // Frame on vim loaded
-    const subLoad = props.viewer.onVimLoaded.subscribe(() => {
-      props.viewer.camera.do().frame('all', props.viewer.camera.defaultForward)
-    })
-
     // Setup custom input scheme
     props.viewer.inputs.scheme = new ComponentInputScheme(
       viewer,
@@ -244,7 +239,6 @@ export function VimComponent (props: {
 
     // Clean up
     return () => {
-      subLoad()
       subContext()
       cursor.register()
     }

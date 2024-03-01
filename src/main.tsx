@@ -31,7 +31,7 @@ async function loadVim (cmp: VimComponentRef) {
 
   cmp.viewer.add(vim)
   vim.loadAll()
-  cmp.viewer.camera.do().frame(vim)
+  cmp.helpers.intialFraming()
 
   console.log(`Loading completed in ${((Date.now() - time)/1000).toFixed(2)} seconds`)
   cmp.viewer.gizmos.loading.visible = false

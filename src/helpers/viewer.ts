@@ -13,6 +13,14 @@ export class ViewerWrapper {
     this.viewer = viewer
   }
 
+  /**
+   * Make camera frame selection if any otherwise frame visible objects
+  */
+  intialFraming () {
+    this.frameVisibleObjects(undefined, 0)
+    this.viewer.camera.save()
+  }
+
   getVim (index: number) {
     return this.viewer.vims[index]
   }
@@ -50,8 +58,12 @@ export class ViewerWrapper {
   /**
    * Makes camera frame all visible objects
    */
-  frameVisibleObjects (source?: VIM.Vim) {
-    this.viewer.camera.lerp(1).frame(this.getVisibleBoundingBox(source))
+  frameVisibleObjects (source?: VIM.Vim, duration = 1) {
+    var movement = duration === 0
+      ? this.viewer.camera.snap()
+      : this.viewer.camera.lerp(duration)
+
+    movement.frame(this.getVisibleBoundingBox(source))
   }
 
   /**
