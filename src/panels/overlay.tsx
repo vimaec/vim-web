@@ -4,7 +4,7 @@
 
 import React, { useEffect, useRef } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { SideState } from './sidePanel/sideState'
+import { SideState } from '../sidePanel/sideState'
 
 /** This overlay is designed to go over the viewer canvas to intercept and dispatch events to the viewer canvas.
  * The point is that quickly finding a ui hit avoids the browser hit detection to search through all elements.

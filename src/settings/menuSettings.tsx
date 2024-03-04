@@ -96,11 +96,6 @@ export function MenuSettings (props: {
           (settings) => settings.ui.loadingBox,
           (settings, value) => (settings.ui.loadingBox = value)
         )}
-        {settingsToggle(
-          'Show Logs Panel',
-          (settings) => settings.ui.logPanel,
-          (settings, value) => (settings.ui.logPanel = value)
-        )}
         <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Axes</h3>
         {settingsToggle(
           'Show Orthographic Button',

@@ -5,10 +5,10 @@
 import React, { useEffect, useRef, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
-import { SideState } from './sidePanel/sideState'
-import { Isolation } from './helpers/isolation'
-import { Cursor, CursorManager, pointerToCursor } from './helpers/cursor'
-import { ViewerWrapper } from './helpers/viewer'
+import { SideState } from '../sidePanel/sideState'
+import { Isolation } from '../helpers/isolation'
+import { Cursor, CursorManager, pointerToCursor } from '../helpers/cursor'
+import { ComponentCamera } from '../helpers/camera'
 import * as Icons from './icons'
 import { HelpState } from './help'
 import {
@@ -16,7 +16,7 @@ import {
   anyUiCursorButton,
   anyUiSettingButton,
   anyUiToolButton
-} from './settings/settings'
+} from '../settings/settings'
 
 // Shared Buttons style
 
@@ -61,7 +61,8 @@ const actionButton = (
  * JSX Component for the control bar.
  */
 export function ControlBar (props: {
-  viewer: ViewerWrapper
+  viewer: VIM.Viewer
+  camera: ComponentCamera
   help: HelpState
   side: SideState
   isolation: Isolation
@@ -80,7 +81,7 @@ export function ControlBar (props: {
   // On First Render
   useEffect(() => {
     // Hide bar for a couple ms
-    const subCam = props.viewer.viewer.camera.onMoved.subscribe(() => {
+    const subCam = props.viewer.camera.onMoved.subscribe(() => {
       if (showRef.current) {
         showRef.current = false
         setShow(false)
@@ -116,9 +117,8 @@ export function ControlBar (props: {
   )
 }
 
-function TabCamera (props: { viewer: ViewerWrapper; settings: Settings }) {
-  const viewer = props.viewer.viewer
-  const helper = props.viewer
+function TabCamera (props: {viewer: VIM.Viewer, camera: ComponentCamera; settings: Settings }) {
+  const viewer = props.viewer
   const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerActive)
 
   useEffect(() => {
@@ -181,7 +181,7 @@ function TabCamera (props: { viewer: ViewerWrapper; settings: Settings }) {
   const btnFrame = actionButton(
     () => props.settings.ui.zoomToFit === true,
     'Zoom to Fit',
-    () => helper.frameContext(),
+    () => props.camera.frameContext(),
     Icons.frameSelection,
     false
   )
@@ -200,12 +200,12 @@ function TabCamera (props: { viewer: ViewerWrapper; settings: Settings }) {
 
 /* TAB TOOLS */
 function TabTools (props: {
-  viewer: ViewerWrapper
+  viewer: VIM.Viewer
   cursor: CursorManager
   isolation: Isolation
   settings: Settings
 }) {
-  const viewer = props.viewer.viewer
+  const viewer = props.viewer
   // Need a ref to get the up to date value in callback.
   const [measuring, setMeasuring] = useState(false)
   const firstSection = useRef(true)
@@ -456,13 +456,6 @@ function TabSettings (props: {
     Icons.settings,
     () => props.side.getContent() === 'settings'
   )
-  const btnLogs = toggleButton(
-    () => props.settings.ui.logPanel === true,
-    'Logs',
-    () => props.side.toggleContent('logs'),
-    Icons.home,
-    () => props.side.getContent() === 'logs'
-  )
 
   const btnHelp = toggleButton(
     () => props.settings.ui.help === true,
@@ -495,7 +488,6 @@ function TabSettings (props: {
         ? btnTreeView
         : null}
       {btnSettings}
-      {btnLogs}
       {btnHelp}
       {btnFullScreen}
     </div>

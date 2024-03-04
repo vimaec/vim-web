@@ -3,11 +3,11 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react'
-import helpImage from './assets/quick-controls.svg'
+import helpImage from '../assets/quick-controls.svg'
 import * as Icons from './icons'
-import { setComponentBehind } from './helpers/html'
-import { Settings } from './settings/settings'
-import { SideState } from './sidePanel/sideState'
+import { setComponentBehind } from '../helpers/html'
+import { Settings } from '../settings/settings'
+import { SideState } from '../sidePanel/sideState'
 
 const urlSupport = 'https://support.vimaec.com'
 const urlControls =

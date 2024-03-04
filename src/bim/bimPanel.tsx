@@ -10,15 +10,16 @@ import { BimDocumentDetails, BimObjectDetails } from './bimDetails'
 import { BimDocumentHeader, BimObjectHeader } from './bimHeader'
 import { BimSearch } from './bimSearch'
 import { Isolation } from '../helpers/isolation'
-import { ViewerWrapper } from '../helpers/viewer'
+import { ComponentCamera } from '../helpers/camera'
 import { Grouping, toTreeData } from './bimTreeData'
-import { ViewerState } from '../component'
+import { ViewerState } from '../viewerState'
 import { AugmentedElement } from '../helpers/element'
 import { Settings } from '../settings/settings'
 
 
 export function OptionalBimPanel (props: {
-  viewer: ViewerWrapper
+  viewer: VIM.Viewer
+  camera: ComponentCamera
   viewerState: ViewerState
   isolation: Isolation
   visible: boolean
@@ -45,7 +46,8 @@ export function OptionalBimPanel (props: {
  * @returns
  */
 export function BimPanel (props: {
-  viewer: ViewerWrapper
+  viewer: VIM.Viewer
+  camera: ComponentCamera
   viewerState: ViewerState
   isolation: Isolation
   visible: boolean
@@ -155,6 +157,7 @@ export function BimPanel (props: {
           <BimTree
             actionRef={props.treeRef}
             viewer={props.viewer}
+            camera={props.camera}
             objects={props.viewerState.selection}
             isolation={props.isolation}
             treeData={tree}

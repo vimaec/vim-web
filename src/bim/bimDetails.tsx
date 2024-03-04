@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
 import { groupBy } from '../helpers/data'
-import * as Icons from '../icons'
+import * as Icons from '../panels/icons'
 
 /**
  * Represents one entry of the detail tables.

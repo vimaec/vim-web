@@ -4,8 +4,9 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import * as Icons from './icons'
-import { ViewerWrapper } from './helpers/viewer'
-import { Settings, SettingsState, anyUiAxesButton } from './settings/settings'
+import { ComponentCamera } from '../helpers/camera'
+import { Settings, SettingsState, anyUiAxesButton } from '../settings/settings'
+import { VIM } from '../component'
 
 /**
  * Memoized version of the AxesPanelMemo.
@@ -15,9 +16,8 @@ export const AxesPanelMemo = React.memo(AxesPanel)
 /**
  * JSX Component for axes gizmo.
  */
-function AxesPanel (props: { viewer: ViewerWrapper; settings: SettingsState }) {
-  const viewer = props.viewer.viewer
-  const helper = props.viewer
+function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settings: SettingsState }) {
+  const viewer = props.viewer
 
   const [ortho, setOrtho] = useState<boolean>(viewer.camera.orthographic)
 
@@ -53,7 +53,7 @@ function AxesPanel (props: { viewer: ViewerWrapper; settings: SettingsState }) {
   }
 
   const onHomeBtn = () => {
-    helper.resetCamera()
+    props.camera.reset()
   }
 
   const btnStyle =
@@ -93,7 +93,7 @@ function AxesPanel (props: { viewer: ViewerWrapper; settings: SettingsState }) {
   const btnOrtho = (
     <button
       data-tip={ortho ? 'Orthographic' : 'Perspective'}
-      onClick={() => (props.viewer.viewer.camera.orthographic = !ortho)}
+      onClick={() => (props.viewer.camera.orthographic = !ortho)}
       className={'vim-camera-btn' + btnStyle}
       type="button"
     >

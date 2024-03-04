@@ -6,24 +6,27 @@ import * as VIM from 'vim-webgl-viewer/'
 import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycaster'
 import { SideState } from '../sidePanel/sideState'
 import { Isolation } from './isolation'
-import { ViewerWrapper } from './viewer'
+import { ComponentCamera } from './camera'
 
 /**
  * Custom viewer input scheme for the vim component
  */
 export class ComponentInputs implements VIM.InputScheme {
-  private _viewer: ViewerWrapper
+  private _viewer: VIM.Viewer
+  private _camera: ComponentCamera
   private _default: VIM.InputScheme
   private _isolation: Isolation
   private _sideState: SideState
 
   constructor (
-    viewer: ViewerWrapper,
+    viewer: VIM.Viewer,
+    camera: ComponentCamera,
     isolation: Isolation,
     sideState: SideState
   ) {
     this._viewer = viewer
-    this._default = new VIM.DefaultInputScheme(viewer.viewer)
+    this._camera = camera
+    this._default = new VIM.DefaultInputScheme(viewer)
     this._isolation = isolation
     this._sideState = sideState
   }
@@ -46,7 +49,7 @@ export class ComponentInputs implements VIM.InputScheme {
       }
 
       case VIM.KEYS.KEY_F: {
-        this._viewer.frameContext()
+        this._camera.frameContext()
         return true
       }
       case VIM.KEYS.KEY_I: {
@@ -55,8 +58,8 @@ export class ComponentInputs implements VIM.InputScheme {
       }
 
       case VIM.KEYS.KEY_ESCAPE: {
-        if (this._viewer.viewer.selection.count > 0) {
-          this._viewer.viewer.selection.clear()
+        if (this._viewer.selection.count > 0) {
+          this._viewer.selection.clear()
           return true
         }
         if (this._isolation.any()) {
@@ -67,18 +70,18 @@ export class ComponentInputs implements VIM.InputScheme {
       }
 
       case VIM.KEYS.KEY_V: {
-        if (this._viewer.viewer.selection.count === 0) return
-        const objs = [...this._viewer.viewer.selection.objects]
+        if (this._viewer.selection.count === 0) return
+        const objs = [...this._viewer.selection.objects]
         const visible = objs.findIndex((o) => o.visible) >= 0
         if (visible) {
           this._isolation.hide(
-            [...this._viewer.viewer.selection.objects],
+            [...this._viewer.selection.objects],
             'keyboard'
           )
-          this._viewer.viewer.selection.clear()
+          this._viewer.selection.clear()
         } else {
           this._isolation.show(
-            [...this._viewer.viewer.selection.objects],
+            [...this._viewer.selection.objects],
             'keyboard'
           )
         }

@@ -4,9 +4,11 @@
 
 import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { VimSettings } from 'vim-webgl-viewer/'
-import { setComponentBehind } from './helpers/html'
+import { setComponentBehind } from '../helpers/html'
 import * as Icons from './icons'
+import { SimpleEventDispatcher } from 'ste-simple-events'
+import { SignalDispatcher } from 'ste-signals'
+
 
 type Progress = 'processing' | number | string
 
@@ -17,11 +19,35 @@ export type MsgInfo = { message: string; info: string }
  */
 export const LoadingBoxMemo = React.memo(LoadingBox)
 
-export class OpenWrapper {
+/**
+ * Provides functionality for asynchronously opening sources and tracking progress.
+ * Includes event emitters for progress updates and completion notifications.
+ */
+export class ComponentWrapper {
 
-  onProgress: (progress: VIM.Format.IProgressLogs) => void
-  onDone : () => void 
+  /**
+   * Event emitter for progress updates.
+   */
+  get onProgress (){
+    return this._onProgress.asEvent()
+  }
+  private _onProgress = new SimpleEventDispatcher<VIM.Format.IProgressLogs>()
 
+  /**
+   * Event emitter for completion notifications.
+   */
+  get onDone (){
+    return this._onDone.asEvent()
+  } 
+  private _onDone = new SignalDispatcher()
+
+  /**
+   * Asynchronously opens a source, applying the provided settings.
+   * @param source The source to open, either as a string or ArrayBuffer.
+   * @param settings Partial settings to apply to the opened source.
+   * @param onProgress Optional callback function to track progress during opening.
+   * Receives progress logs as input.
+   */
    async open (
     source: string | ArrayBuffer,
     settings: VIM.VimPartialSettings,
@@ -29,9 +55,9 @@ export class OpenWrapper {
   ){
     var vim = await VIM.open(source, settings, (p) => {
       onProgress?.(p)
-      this.onProgress(p)
+      this._onProgress.dispatch(p)
     })
-    this.onDone()
+    this._onDone.dispatch()
     return vim
   }
 }
@@ -39,13 +65,13 @@ export class OpenWrapper {
 /**
  * Loading box JSX Component tha can also be used to show messages.
  */
-function LoadingBox (props: { loader: OpenWrapper, content: MsgInfo }) {
+function LoadingBox (props: { loader: ComponentWrapper, content: MsgInfo }) {
   const [progress, setProgress] = useState<Progress>()
 
   // Patch load
   useEffect(() => {
-    props.loader.onProgress = (p: VIM.Format.IProgressLogs) => setProgress(p.loaded)
-    props.loader.onDone = () => setProgress(null)
+    props.loader.onProgress.sub(p => setProgress(p.loaded))
+    props.loader.onDone.sub(() => setProgress(null))
   }, [])
 
   useEffect(() => {

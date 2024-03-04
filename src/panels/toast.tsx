@@ -4,7 +4,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { SideState } from './sidePanel/sideState'
+import { SideState } from '../sidePanel/sideState'
 
 export type ToastConfigSpeed = {
   visible: boolean

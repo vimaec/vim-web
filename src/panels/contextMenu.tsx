@@ -11,12 +11,12 @@ import {
 } from '@firefox-devtools/react-contextmenu'
 import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { Isolation } from './helpers/isolation'
-import { ViewerWrapper } from './helpers/viewer'
+import { Isolation } from '../helpers/isolation'
+import { ComponentCamera } from '../helpers/camera'
 import { HelpState } from './help'
-import { ArrayEquals } from './helpers/data'
-import { TreeActionRef } from './bim/bimTree'
-import { Settings } from './settings/settings'
+import { ArrayEquals } from '../helpers/data'
+import { TreeActionRef } from '../bim/bimTree'
+import { Settings } from '../settings/settings'
 
 export const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
 export type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -96,15 +96,16 @@ export const VimContextMenuMemo = React.memo(VimContextMenu)
  * Context menu component definition according to current state.
  */
 export function VimContextMenu (props: {
-  viewer: ViewerWrapper
+  viewer: VIM.Viewer
+  camera: ComponentCamera
   help: HelpState
   isolation: Isolation
   selection: VIM.IObject[]
   customization?: (e: contextMenuElement[]) => contextMenuElement[]
   treeRef: React.MutableRefObject<TreeActionRef>
 }) {
-  const viewer = props.viewer.viewer
-  const helper = props.viewer
+  const viewer = props.viewer
+  const camera = props.camera
   const [section, setSection] = useState<{
     visible: boolean
     clip: boolean
@@ -147,26 +148,26 @@ export function VimContextMenu (props: {
   }
 
   const onCameraResetBtn = (e: ClickCallback) => {
-    helper.resetCamera()
+    camera.reset()
     e.stopPropagation()
   }
 
   const onCameraFrameBtn = (e: ClickCallback) => {
-    helper.frameContext()
+    camera.frameContext()
     e.stopPropagation()
   }
 
   const onSelectionIsolateBtn = (e: ClickCallback) => {
     props.isolation.isolate(
-      [...props.viewer.viewer.selection.objects],
+      [...viewer.selection.objects],
       'contextMenu'
     )
-    helper.viewer.selection.clear()
+    props.viewer.selection.clear()
     e.stopPropagation()
   }
 
   const onSelectSimilarBtn = (e: ClickCallback) => {
-    const o = [...props.viewer.viewer.selection.objects][0]
+    const o = [...viewer.selection.objects][0]
     props.treeRef.current.selectSiblings(o)
     e.stopPropagation()
   }

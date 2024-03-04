@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import deepmerge from 'deepmerge'
-import { orbit } from '../icons'
+import { orbit } from '../panels/icons'
 
 /**
  * Makes all fields optional recursively
@@ -68,7 +68,6 @@ export type Settings = {
 
     loadingBox: RestrictedOption
     performance: RestrictedOption
-    logPanel: RestrictedOption
   }
 }
 
@@ -154,7 +153,6 @@ const defaultSettings: Settings = {
 
     loadingBox: true,
     performance: true,
-    logPanel: false
   }
 }
 

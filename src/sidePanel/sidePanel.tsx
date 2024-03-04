@@ -4,10 +4,10 @@
 
 import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import * as Icons from '../icons'
+import * as Icons from '../panels/icons'
 import { SideState } from './sideState'
-import { Enable, HandleStyles, Resizable } from 're-resizable'
-import { VimComponentContainer } from '../component'
+import { Enable, Resizable } from 're-resizable'
+import { VimComponentContainer } from '../container'
 
 const MAX_WIDTH = 0.5
 const MIN_WIDTH = 240
