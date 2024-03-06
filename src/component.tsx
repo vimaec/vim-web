@@ -37,6 +37,7 @@ import  {LogoMemo} from './panels/logo'
 import { VimComponentRef } from './vimComponentRef'
 
 export * as VIM from 'vim-webgl-viewer/'
+export const THREE = VIM.THREE
 export * as ContextMenu from './panels/contextMenu'
 export { getLocalSettings } from './settings/settings'
 export * from './vimComponentRef'
@@ -98,7 +99,7 @@ export function VimComponent (props: {
   const viewerState = useViewerState(props.viewer)
   const [msg, setMsg] = useState<MsgInfo>()
   const treeRef = useRef<TreeActionRef>()
-  const prefRef = useRef<HTMLDivElement>(null)
+  const performanceRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     side.setHasBim(viewerState.vim?.bim !== undefined)
@@ -106,7 +107,7 @@ export function VimComponent (props: {
 
   // On first render
   useEffect(() => {
-    addPerformanceCounter(prefRef.current)
+    addPerformanceCounter(performanceRef.current)
 
     cursor.register()
 
@@ -165,7 +166,7 @@ export function VimComponent (props: {
   )
   return (
     <>
-      <div className="vim-performance-div" ref={prefRef}></div>
+      <div className="vim-performance-div" ref={performanceRef}></div>
       <Overlay viewer={props.viewer} side={side}></Overlay>
       <MenuHelpMemo help={help} settings={settings.value} side={side} />
       {settings.value.ui.logo === true ? <LogoMemo /> : null}

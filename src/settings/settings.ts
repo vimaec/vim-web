@@ -5,7 +5,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import deepmerge from 'deepmerge'
-import { orbit } from '../panels/icons'
 
 /**
  * Makes all fields optional recursively
@@ -18,7 +17,10 @@ export type RecursivePartial<T> = {
     ? RecursivePartial<T[P]>
     : T[P]
 }
-
+/**
+ * true, false or restricted
+ * Restricted: is false and cannot be changed by the user.
+ */
 export type RestrictedOption = boolean | 'restricted'
 
 /**
@@ -247,7 +249,7 @@ export function applySettings (viewer: VIM.Viewer, settings: Settings) {
   // Show/Hide performance gizmo
   const performance = document.getElementsByClassName('vim-performance-div')[0]
   if (performance) {
-    if (settings.ui.performance) {
+    if (settings.ui.performance === true) {
       performance.classList.remove('vc-hidden')
     } else {
       performance.classList.add('vc-hidden')
