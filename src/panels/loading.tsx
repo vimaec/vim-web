@@ -23,15 +23,19 @@ export const LoadingBoxMemo = React.memo(LoadingBox)
  * Provides functionality for asynchronously opening sources and tracking progress.
  * Includes event emitters for progress updates and completion notifications.
  */
-export class ComponentWrapper {
+export class ComponentLoader {
+  private _viewer : VIM.Viewer
 
+  constructor(viewer : VIM.Viewer){
+    this._viewer = viewer
+  }
   /**
    * Event emitter for progress updates.
    */
   get onProgress (){
     return this._onProgress.asEvent()
   }
-  private _onProgress = new SimpleEventDispatcher<VIM.Format.IProgressLogs>()
+  private _onProgress = new SimpleEventDispatcher<VIM.IProgressLogs>()
 
   /**
    * Event emitter for completion notifications.
@@ -51,12 +55,13 @@ export class ComponentWrapper {
    async open (
     source: string | ArrayBuffer,
     settings: VIM.VimPartialSettings,
-    onProgress?: (p: VIM.Format.IProgressLogs) => void
+    onProgress?: (p: VIM.IProgressLogs) => void
   ){
     var vim = await VIM.open(source, settings, (p) => {
       onProgress?.(p)
       this._onProgress.dispatch(p)
     })
+    this._viewer.add(vim)
     this._onDone.dispatch()
     return vim
   }
@@ -65,7 +70,7 @@ export class ComponentWrapper {
 /**
  * Loading box JSX Component tha can also be used to show messages.
  */
-function LoadingBox (props: { loader: ComponentWrapper, content: MsgInfo }) {
+function LoadingBox (props: { loader: ComponentLoader, content: MsgInfo }) {
   const [progress, setProgress] = useState<Progress>()
 
   // Patch load

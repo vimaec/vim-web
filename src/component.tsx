@@ -11,7 +11,7 @@ import 'vim-webgl-viewer/dist/style.css'
 import * as VIM from 'vim-webgl-viewer/'
 import { AxesPanelMemo } from './panels/axesPanel'
 import { ControlBar } from './panels/controlBar'
-import { LoadingBoxMemo, MsgInfo, ComponentWrapper } from './panels/loading'
+import { LoadingBoxMemo, MsgInfo, ComponentLoader } from './panels/loading'
 import { OptionalBimPanel } from './bim/bimPanel'
 import {
   contextMenuCustomization,
@@ -82,7 +82,7 @@ export function VimComponent (props: {
 }) {
   const camera = useMemo(() => new ComponentCamera(props.viewer), [])
   const cursor = useMemo(() => new CursorManager(props.viewer), [])
-  const loader = useRef(new ComponentWrapper())
+  const loader = useRef(new ComponentLoader(props.viewer))
   const settings = useSettings(props.viewer, props.settings)
 
   const [isolation] = useState(() => new Isolation(props.viewer, camera, settings.value))
