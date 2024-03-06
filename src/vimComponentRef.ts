@@ -1,5 +1,5 @@
 import * as VIM from 'vim-webgl-viewer/'
-import { ComponentWrapper } from './panels/loading'
+import { ComponentLoader } from './panels/loading'
 import { contextMenuCustomization } from './panels/contextMenu'
 import { Settings } from './settings/settings'
 import { Isolation } from './helpers/isolation'
@@ -23,7 +23,7 @@ export type VimComponentRef = {
   /**
   * Vim WebGL loader to download VIMs.
   */
-  loader: ComponentWrapper
+  loader: ComponentLoader
 
   /**
   * Isolation API managing isolation state in the component.

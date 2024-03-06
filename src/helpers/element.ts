@@ -1,7 +1,7 @@
 import * as VIM from 'vim-webgl-viewer'
-import { VimDocument } from 'vim-format'
+import * as BIM from 'vim-format'
 
-export type AugmentedElement = VIM.Format.IElement & {
+export type AugmentedElement = BIM.IElement & {
   bimDocumentName: string
   categoryName: string
   familyTypeName: string
@@ -34,7 +34,7 @@ export async function getElements (vim: VIM.Vim) {
   return result as AugmentedElement[]
 }
 
-async function getFamilyTypeNameMap (document: VimDocument) {
+async function getFamilyTypeNameMap (document: BIM.VimDocument) {
   const [
     familyInstanceElement,
     familyInstanceFamilyType,

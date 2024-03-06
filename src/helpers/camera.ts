@@ -75,7 +75,7 @@ export class ComponentCamera {
    * @returns The bounding box of all visible objects.
    */
   getVisibleBoundingBox (source?: VIM.Vim) {
-    let box: VIM.THREE.Box3
+    let box: THREE.Box3
 
     const vimBoxUnion = (vim: VIM.Vim) => {
       for (const obj of vim.getObjects()) {

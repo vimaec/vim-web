@@ -1,10 +1,9 @@
-import * as THREE from 'three'
-import * as VIM from 'vim-webgl-viewer/'
-
+ 
 import {
   createVimComponent,
   VimComponentRef,
-  getLocalSettings
+  getLocalSettings,
+  THREE
 } from './component'
 
 // Parse URL
@@ -28,12 +27,10 @@ async function loadVim (cmp: VimComponentRef) {
       rotation: new THREE.Vector3(270, 0, 0)
     }
   )
-  cmp.viewer.add(vim)
   vim.loadAll()
   cmp.camera.frameAllAndSave()
 
   console.log(`Loading completed in ${((Date.now() - time)/1000).toFixed(2)} seconds`)
   cmp.viewer.gizmos.loading.visible = false
+  globalThis.component = cmp
 }
-
-globalThis.VIM = VIM

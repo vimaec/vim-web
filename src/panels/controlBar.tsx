@@ -210,7 +210,7 @@ function TabTools (props: {
   const [measuring, setMeasuring] = useState(false)
   const firstSection = useRef(true)
   // eslint-disable-next-line no-unused-vars
-  const [measurement, setMeasurement] = useState<VIM.THREE.Vector3>()
+  const [measurement, setMeasurement] = useState<THREE.Vector3>()
   const [section, setSection] = useState<{ clip: boolean; active: boolean }>({
     clip: viewer.gizmos.section.clip,
     active: viewer.gizmos.section.visible && viewer.gizmos.section.interactive
@@ -500,7 +500,7 @@ function TabSettings (props: {
 function loopMeasure (
   viewer: VIM.Viewer,
   getMeasuring: () => boolean,
-  setMeasure: (value: VIM.THREE.Vector3) => void,
+  setMeasure: (value: THREE.Vector3) => void,
   setCursor: (cursor: Cursor) => void
 ) {
   const onMouseMove = () => {
