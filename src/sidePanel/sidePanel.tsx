@@ -58,6 +58,11 @@ export function SidePanel (props: {
   })
 
   useEffect(() => {
+    // Init size to parent
+    setParentWidth((w) => props.container.root.clientWidth)
+      props.side.setWidth(getClampedSize())
+
+    // Listen to update size from parent
     window.addEventListener('resize', () => {
       setParentWidth((w) => props.container.root.clientWidth)
       props.side.setWidth(getClampedSize())
@@ -89,13 +94,11 @@ export function SidePanel (props: {
       onResizeStart={(e, direction, ref) => {
         if (direction !== 'right') {
           e.stopPropagation()
-          console.log('STOP')
         }
       }}
       onResize={(e, direction, ref, d) => {
         if (direction !== 'right') {
           e.stopPropagation()
-          console.log('STOP')
         }
         props.side.setWidth(ref.clientWidth)
       }}
