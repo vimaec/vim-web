@@ -33,7 +33,7 @@ export function toTreeData (
   elements: AugmentedElement[],
   grouping: Grouping
 ) {
-  if (!elements) return
+  if (!elements?.length) return
 
   const main: (e: AugmentedElement) => string =
     grouping === 'Family'

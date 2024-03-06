@@ -28,11 +28,11 @@ export function OptionalBimPanel (props: {
 }) {
   if (
     ( props.settings.ui.bimTreePanel === false &&
-      props.settings.ui.bimInfoPanel === false) ||
-    props.viewerState.elements === undefined
+      props.settings.ui.bimInfoPanel === false) 
   ) {
     return null
   }
+  
   return React.createElement(BimPanel, props)
 }
 
@@ -93,7 +93,9 @@ export function BimPanel (props: {
   useEffect(() => {
     const unsubscribe = props.isolation.onChanged.subscribe(
       (source: string) => {
-        if (source !== 'tree' && source !== 'search') setFilter('')
+        if (source !== 'tree' && source !== 'search'){
+          setFilter('')
+        } 
       }
     )
 
@@ -109,7 +111,7 @@ export function BimPanel (props: {
   return (
     <div className={`vim-bim-panel ${props.visible ? '' : 'vc-hidden'}`}>
       {props.settings.ui.bimTreePanel !== true ? null : (
-        <div className="vim-bim-upper vc-h-1/2">
+        <div className={`vim-bim-upper vc-h-1/2 ${props.viewerState.elements.length >0 ? '' : 'vc-hidden'}`}>
           <h2 className="vim-bim-upper-title vc-mb-6 vc-text-xs vc-font-bold vc-uppercase">
             Project Inspector
           </h2>
@@ -168,7 +170,8 @@ export function BimPanel (props: {
       {
         // Divider if needed.
         props.settings.ui.bimTreePanel === true &&
-        props.settings.ui.bimInfoPanel === true
+        props.settings.ui.bimInfoPanel === true &&
+        props.viewerState.elements.length >0
           ? divider()
           : null
       }

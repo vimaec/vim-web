@@ -31,7 +31,9 @@ export async function getElements (vim: VIM.Vim) {
     worksetName: worksets ? worksets[e?.worksetIndex ?? -1] : undefined
   })) as AugmentedElement[]
 
-  return result as AugmentedElement[]
+  const real = result.filter(e => vim.getObjectFromElement(e.index).hasMesh)
+  
+  return real as AugmentedElement[]
 }
 
 async function getFamilyTypeNameMap (document: BIM.VimDocument) {
