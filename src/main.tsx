@@ -26,7 +26,6 @@ async function loadVim (cmp: VimComponentRef) {
       rotation: new THREE.Vector3(270, 0, 0),
     }
   )
-  vim.loadAll()
 
   console.log(`Loading completed in ${((Date.now() - time)/1000).toFixed(2)} seconds`)
   globalThis.component = cmp

@@ -18,6 +18,8 @@
 - [JsFiddle - Message](https://jsfiddle.net/simon_vimaec/bh17u03t/)
 - [JsFiddle - Custom Inputs](https://jsfiddle.net/simon_vimaec/k0w4erjn/)
 - [JsFiddle - Custom Context Menu](https://jsfiddle.net/simon_vimaec/7marsfwj/)
+- [JsFiddle - Custom Camera](https://jsfiddle.net/simon_vimaec/2x0noetj/)
+- [JsFiddle - Custom Loading](https://jsfiddle.net/simon_vimaec/3g2epmf1/)
 
 # Overview
 

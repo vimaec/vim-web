@@ -4,7 +4,6 @@
 
 import {
   ContextMenu,
-  ContextMenuTrigger,
   MenuItem,
   showMenu,
   hideMenu
@@ -16,7 +15,6 @@ import { ComponentCamera } from '../helpers/camera'
 import { HelpState } from './help'
 import { ArrayEquals } from '../helpers/data'
 import { TreeActionRef } from '../bim/bimTree'
-import { Settings } from '../settings/settings'
 
 export const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
 export type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
