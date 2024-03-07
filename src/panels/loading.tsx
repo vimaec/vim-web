@@ -9,10 +9,18 @@ import * as Icons from './icons'
 import { SimpleEventDispatcher } from 'ste-simple-events'
 import { SignalDispatcher } from 'ste-signals'
 
-
 type Progress = 'processing' | number | string
 
 export type MsgInfo = { message: string; info: string }
+
+export type LoadSettings = VIM.VimPartialSettings &
+{
+  /**
+   * Controls whether to frame the camera on a vim everytime it is updated.
+   * Default: true 
+   */
+  autoFrame?: boolean
+}
 
 /**
  * Memoized version of Loading Box
@@ -29,6 +37,7 @@ export class ComponentLoader {
   constructor(viewer : VIM.Viewer){
     this._viewer = viewer
   }
+
   /**
    * Event emitter for progress updates.
    */
@@ -46,7 +55,7 @@ export class ComponentLoader {
   private _onDone = new SignalDispatcher()
 
   /**
-   * Asynchronously opens a source, applying the provided settings.
+   * Asynchronously opens a vim at source, applying the provided settings.
    * @param source The source to open, either as a string or ArrayBuffer.
    * @param settings Partial settings to apply to the opened source.
    * @param onProgress Optional callback function to track progress during opening.
@@ -54,7 +63,7 @@ export class ComponentLoader {
    */
    async open (
     source: string | ArrayBuffer,
-    settings: VIM.VimPartialSettings,
+    settings: LoadSettings,
     onProgress?: (p: VIM.IProgressLogs) => void
   ){
     var vim = await VIM.open(source, settings, (p) => {
@@ -62,10 +71,29 @@ export class ComponentLoader {
       this._onProgress.dispatch(p)
     })
     this._viewer.add(vim)
+    vim.onLoadingUpdate.subscribe(() => {
+      this._viewer.gizmos.loading.visible = vim.isLoading
+      if(settings.autoFrame != false &&!vim.isLoading){
+        this._viewer.camera.snap().frame(vim)
+        this._viewer.camera.save()
+      }
+    })
+      
     this._onDone.dispatch()
     return vim
   }
+  
+  /**
+   * Removes the vim from the viewer and disposes it.
+   * @param vim Vim to remove from the viewer.
+   */
+  close(vim: VIM.Vim){
+    this._viewer.remove(vim)
+    vim.dispose()
+  }
 }
+
+
 
 /**
  * Loading box JSX Component tha can also be used to show messages.

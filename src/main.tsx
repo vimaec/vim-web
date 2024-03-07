@@ -18,19 +18,16 @@ createVimComponent(loadVim, undefined, getLocalSettings())
 async function loadVim (cmp: VimComponentRef) {
   const time = Date.now()
 
-  cmp.viewer.gizmos.loading.visible = true
   const vim = await cmp.loader.open(
     url ?? 'https://vim02.azureedge.net/samples/residence.v1.2.75.vim',
     //url ?? 'https://vim02.azureedge.net/samples/residence.v1.2.75.vimx',
     {
       progressive: true,
-      rotation: new THREE.Vector3(270, 0, 0)
+      rotation: new THREE.Vector3(270, 0, 0),
     }
   )
   vim.loadAll()
-  cmp.camera.frameAllAndSave()
 
   console.log(`Loading completed in ${((Date.now() - time)/1000).toFixed(2)} seconds`)
-  cmp.viewer.gizmos.loading.visible = false
   globalThis.component = cmp
 }
