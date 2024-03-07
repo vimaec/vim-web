@@ -20,6 +20,12 @@ export type LoadSettings = VIM.VimPartialSettings &
    * Default: true 
    */
   autoFrame?: boolean
+
+  /**
+   * Controls whether to initially load the vim content or not.
+   * Default: false
+   */
+  loadEmpty?: boolean
 }
 
 /**
@@ -78,6 +84,9 @@ export class ComponentLoader {
         this._viewer.camera.save()
       }
     })
+    if(settings.loadEmpty !== true){
+      vim.loadAll()
+    }
       
     this._onDone.dispatch()
     return vim
