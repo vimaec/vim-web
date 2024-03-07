@@ -12,15 +12,7 @@ export class ComponentCamera {
   constructor (viewer: VIM.Viewer) {
     this._viewer = viewer
   }
-
-  /**
-   * Frames all elements in the scene and creates a checkpoint for camera reset.
-   */
-  frameAllAndSave () {
-    this.frameVisibleObjects(undefined, 0)
-    this._viewer.camera.save()
-  }
-
+  
   /**
    * Resets the camera to its initial position.
    */
@@ -66,7 +58,8 @@ export class ComponentCamera {
       ? this._viewer.camera.snap()
       : this._viewer.camera.lerp(duration)
 
-    movement.frame(this.getVisibleBoundingBox(source))
+    const box = this.getVisibleBoundingBox(source)
+    movement.frame(box)
   }
 
   /**
