@@ -33,17 +33,17 @@ export type VimComponentRef = {
   /**
   * Context menu API managing the content and behavior of the context menu.
   */
-  contextMenu : contextMenuRef
+  contextMenu : ContextMenuRef
 
   /**
   * Settings API managing settings applied to the component.
   */
-  settings: settingsRef
+  settings: SettingsRef
 
   /**
   * Message API to interact with the loading box.
   */
-  message : messageRef
+  message : MessageRef
 
   /**
   * Camera API to interact with the viewer camera at a higher level.
@@ -54,7 +54,7 @@ export type VimComponentRef = {
 /**
 * Settings API managing settings applied to the component.
 */
-type settingsRef = {
+export type SettingsRef = {
   // Double lambda is required to prevent react from using reducer pattern
   // https://stackoverflow.com/questions/59040989/usestate-with-a-lambda-invokes-the-lambda-when-set
 
@@ -72,7 +72,7 @@ type settingsRef = {
   
 }
 
-type contextMenuRef = {
+export type ContextMenuRef = {
   /**
   * Defines a callback function to dynamically customize the context menu.
   * @param customization The configuration object specifying the customization options for the context menu.
@@ -83,7 +83,7 @@ type contextMenuRef = {
 /**
 * Message API to interact with the loading box.
 */
-type messageRef = {
+export type MessageRef = {
   /**
    * Displays the provided content as a modal loading message.
    * @param content The content to be displayed.
