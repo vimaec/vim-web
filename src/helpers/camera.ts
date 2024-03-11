@@ -50,7 +50,7 @@ export class ComponentCamera {
 
 /**
  * Frames all visible objects in the scene.
- * @param source Optional VIM (Viewer Integrated Model) to specify the source of objects to frame.
+ * @param source Optional VIM to specify the source of objects to frame.
  * @param duration Duration of the camera movement animation (default: 1).
  */
   frameVisibleObjects (source?: VIM.Vim, duration = 1) {

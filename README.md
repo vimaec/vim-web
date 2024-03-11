@@ -23,7 +23,7 @@
 
 # Overview
 
-The VIMReact component is a React ui implementation for the [Vim WebGL Viewer]([https://jsfiddle.net/simon_vimaec/2khmqy9v/](https://github.com/vimaec/vim-webgl-viewer)).
+The VIM Webgl Component is a React ui implementation for the [Vim WebGL Viewer]([https://jsfiddle.net/simon_vimaec/2khmqy9v/](https://github.com/vimaec/vim-webgl-viewer)).
 
 ## Intents
 
@@ -32,6 +32,7 @@ The VIMReact component is a React ui implementation for the [Vim WebGL Viewer]([
 - Be easy to use, extend and customize for other developpers.
 
 ## VIM
+
 The VIM file format is a high-performance 3D scene format that supports rich BIM data, and can be easily extended to support other relational or non-relation data sets.
 Unlike IFC the VIM format is already tessellated, and ready to render. This results in very fast load times. Unlike glTF the VIM format is faster to load, scales better, and has a consistent structure for relational BIM data.
 More information on the vim format can be found here: https://github.com/vimaec/vim

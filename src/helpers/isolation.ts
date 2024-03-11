@@ -51,7 +51,7 @@ export class Isolation {
   }
 
   /**
-   * Sets the reference objects for a given VIM (Viewer Integrated Model).
+   * Sets the reference objects for a given VIM.
    * @param vim The VIM for which reference objects are being set.
    * @param reference An array of reference objects or the string 'always' to indicate permanent reference.
    */
@@ -61,7 +61,7 @@ export class Isolation {
   }
 
   /**
-   * Retrieves the reference objects set for a given VIM (Viewer Integrated Model).
+   * Retrieves the reference objects set for a given VIM.
    * @param vim The VIM for which reference objects are being retrieved.
    * @returns The reference objects set for the specified VIM.
    */

@@ -105,7 +105,7 @@ export class ComponentLoader {
 
 
 /**
- * Loading box JSX Component tha can also be used to show messages.
+ * Loading box JSX Component that can also be used to show messages.
  */
 function LoadingBox (props: { loader: ComponentLoader, content: MsgInfo }) {
   const [progress, setProgress] = useState<Progress>()
