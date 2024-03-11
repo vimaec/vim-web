@@ -10,12 +10,31 @@ import { BimDocumentDetails, BimObjectDetails } from './bimDetails'
 import { BimDocumentHeader, BimObjectHeader } from './bimHeader'
 import { BimSearch } from './bimSearch'
 import { Isolation } from '../helpers/isolation'
-import { ViewerWrapper } from '../helpers/viewer'
+import { ComponentCamera } from '../helpers/camera'
 import { Grouping, toTreeData } from './bimTreeData'
-import { ViewerState } from '../component'
+import { ViewerState } from '../viewerState'
 import { AugmentedElement } from '../helpers/element'
 import { Settings } from '../settings/settings'
-import { settings } from '../icons'
+
+
+export function OptionalBimPanel (props: {
+  viewer: VIM.Viewer
+  camera: ComponentCamera
+  viewerState: ViewerState
+  isolation: Isolation
+  visible: boolean
+  settings: Settings
+  treeRef: React.MutableRefObject<TreeActionRef>
+}) {
+  if (
+    ( props.settings.ui.bimTreePanel === false &&
+      props.settings.ui.bimInfoPanel === false) 
+  ) {
+    return null
+  }
+  
+  return React.createElement(BimPanel, props)
+}
 
 /**
  * Returns a jsx component representing most data of a vim object or vim document.
@@ -27,23 +46,20 @@ import { settings } from '../icons'
  * @returns
  */
 export function BimPanel (props: {
-  viewer: ViewerWrapper
+  viewer: VIM.Viewer
+  camera: ComponentCamera
   viewerState: ViewerState
   isolation: Isolation
   visible: boolean
   settings: Settings
   treeRef: React.MutableRefObject<TreeActionRef>
 }) {
-  if (
-    props.settings.ui.bimInfoPanel !== true &&
-    props.settings.ui.bimInfoPanel !== false
-  ) {
-    return null
-  }
+
 
   const [filter, setFilter] = useState('')
   const [grouping, setGrouping] = useState<Grouping>('Family')
 
+  
   // Filter elements with meshes using search term.
   const filteredElements = useMemo(() => {
     if (!props.viewerState.elements) return
@@ -62,6 +78,7 @@ export function BimPanel (props: {
 
   // Update Isolation on filter change.
   useEffect(() => {
+    if (props.settings.ui.bimInfoPanel !== true) return
     if (filter !== '') {
       const objects = filteredElements.map((e) =>
         props.viewerState.vim.getObjectFromElement(e.index)
@@ -76,7 +93,9 @@ export function BimPanel (props: {
   useEffect(() => {
     const unsubscribe = props.isolation.onChanged.subscribe(
       (source: string) => {
-        if (source !== 'tree' && source !== 'search') setFilter('')
+        if (source !== 'tree' && source !== 'search'){
+          setFilter('')
+        } 
       }
     )
 
@@ -92,7 +111,7 @@ export function BimPanel (props: {
   return (
     <div className={`vim-bim-panel ${props.visible ? '' : 'vc-hidden'}`}>
       {props.settings.ui.bimTreePanel !== true ? null : (
-        <div className="vim-bim-upper vc-h-1/2">
+        <div className={`vim-bim-upper vc-h-1/2 ${props.viewerState.elements.length >0 ? '' : 'vc-hidden'}`}>
           <h2 className="vim-bim-upper-title vc-mb-6 vc-text-xs vc-font-bold vc-uppercase">
             Project Inspector
           </h2>
@@ -140,6 +159,7 @@ export function BimPanel (props: {
           <BimTree
             actionRef={props.treeRef}
             viewer={props.viewer}
+            camera={props.camera}
             objects={props.viewerState.selection}
             isolation={props.isolation}
             treeData={tree}
@@ -150,7 +170,8 @@ export function BimPanel (props: {
       {
         // Divider if needed.
         props.settings.ui.bimTreePanel === true &&
-        props.settings.ui.bimInfoPanel === true
+        props.settings.ui.bimInfoPanel === true &&
+        props.viewerState.elements.length >0
           ? divider()
           : null
       }
@@ -171,20 +192,43 @@ function bimInfo (
   vim: VIM.Vim,
   elements: AugmentedElement[]
 ) {
+  const objectHeader = BimObjectHeader({
+    elements,
+    object,
+    visible: object !== undefined
+  })
+
+  const objectDetails = BimObjectDetails({
+    object,
+    visible: object !== undefined
+  })
+
+  const docHeader = BimDocumentHeader({
+    vim,
+    visible: object === undefined
+  })
+
+  const docDetails = BimDocumentDetails({
+    vim,
+    visible: object === undefined
+  })
+
+  const title = (
+    <h2 className="vc-mb-4 vc-text-xs vc-font-bold vc-uppercase">
+      Bim Inspector
+    </h2>
+  )
+
+  const any = objectHeader || objectDetails || docHeader || docDetails
+
   return (
     <>
-      <h2 className="vc-mb-4 vc-text-xs vc-font-bold vc-uppercase">
-        Bim Inspector
-      </h2>
+      {any ? title : null}
       <div className="vim-bim-lower vc-h-1/2 vc-overflow-y-auto vc-overflow-x-hidden">
-        <BimObjectHeader
-          elements={elements}
-          object={object}
-          visible={object !== undefined}
-        />
-        <BimObjectDetails object={object} visible={object !== undefined} />
-        <BimDocumentHeader vim={vim} visible={object === undefined} />
-        <BimDocumentDetails vim={vim} visible={object === undefined} />
+        {objectHeader}
+        {objectDetails}
+        {docHeader}
+        {docDetails}
       </div>
     </>
   )
@@ -198,11 +242,11 @@ function filterElements (
   const filterLower = filter.toLocaleLowerCase()
   const filtered = elements.filter(
     (e) =>
-      e.id.toString().toLocaleLowerCase().includes(filterLower) ||
-      e.name.toLocaleLowerCase().includes(filterLower) ||
-      e.category?.name.toLocaleLowerCase().includes(filterLower) ||
-      e.familyName.toLocaleLowerCase().includes(filterLower) ||
-      e.type.toLocaleLowerCase().includes(filterLower)
+      (e.id?.toString() ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.name ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.category?.name ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.familyName ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.type ?? '').toLocaleLowerCase().includes(filterLower)
   )
   return filtered
 }

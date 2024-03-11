@@ -2,10 +2,9 @@
  * @module viw-webgl-component
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import deepmerge from 'deepmerge'
-import { cloneDeep } from 'lodash-es'
 
 /**
  * Makes all fields optional recursively
@@ -18,7 +17,10 @@ export type RecursivePartial<T> = {
     ? RecursivePartial<T[P]>
     : T[P]
 }
-
+/**
+ * true, false or restricted
+ * Restricted: is false and cannot be changed by the user.
+ */
 export type RestrictedOption = boolean | 'restricted'
 
 /**
@@ -26,6 +28,7 @@ export type RestrictedOption = boolean | 'restricted'
  */
 export type Settings = {
   viewer: {
+    disableIsolation: boolean
     isolationMaterial: boolean
     groundPlane: boolean
   }
@@ -39,20 +42,78 @@ export type Settings = {
     logo: RestrictedOption
     bimTreePanel: RestrictedOption
     bimInfoPanel: RestrictedOption
+
+    // axesPanel
     axesPanel: RestrictedOption
-    controlBarCursors: RestrictedOption
-    controlBarTools: RestrictedOption
-    controlBarSettings: RestrictedOption
+    orthographic: RestrictedOption
+    resetCamera: RestrictedOption
+    enableGhost: RestrictedOption
+
+    // cursors
+    orbit: RestrictedOption
+    lookAround: RestrictedOption
+    pan: RestrictedOption
+    zoom: RestrictedOption
+    zoomWindow: RestrictedOption
+    zoomToFit: RestrictedOption
+
+    // tools
+    sectioningMode: RestrictedOption
+    measuringMode: RestrictedOption
+    toggleIsolation: RestrictedOption
+
+    // Settings
+    projectInspector: RestrictedOption
+    settings: RestrictedOption
+    help: RestrictedOption
+    maximise: RestrictedOption
+
     loadingBox: RestrictedOption
     performance: RestrictedOption
-    logPanel: RestrictedOption
   }
+}
+
+export function anyUiAxesButton (settings: Settings) {
+  return (
+    settings.ui.orthographic ||
+    settings.ui.resetCamera ||
+    settings.ui.enableGhost
+  )
+}
+
+export function anyUiCursorButton (settings: Settings) {
+  return (
+    settings.ui.orbit ||
+    settings.ui.lookAround ||
+    settings.ui.pan ||
+    settings.ui.zoom ||
+    settings.ui.zoomWindow ||
+    settings.ui.zoomToFit
+  )
+}
+
+export function anyUiToolButton (settings: Settings) {
+  return (
+    settings.ui.sectioningMode ||
+    settings.ui.measuringMode ||
+    settings.ui.toggleIsolation
+  )
+}
+
+export function anyUiSettingButton (settings: Settings) {
+  return (
+    settings.ui.projectInspector ||
+    settings.ui.settings ||
+    settings.ui.help ||
+    settings.ui.maximise
+  )
 }
 
 export type PartialSettings = RecursivePartial<Settings>
 
 const defaultSettings: Settings = {
   viewer: {
+    disableIsolation: false,
     isolationMaterial: true,
     groundPlane: true
   },
@@ -66,26 +127,53 @@ const defaultSettings: Settings = {
     logo: true,
     bimTreePanel: true,
     bimInfoPanel: true,
+
+    // axesPanel
     axesPanel: true,
-    controlBarCursors: true,
-    controlBarTools: true,
-    controlBarSettings: true,
+    orthographic: true,
+    resetCamera: true,
+    enableGhost: true,
+
+    // cursors
+    orbit: true,
+    lookAround: true,
+    pan: true,
+    zoom: true,
+    zoomWindow: true,
+    zoomToFit: true,
+
+    // tools
+    sectioningMode: true,
+    measuringMode: true,
+    toggleIsolation: true,
+
+    // Settings
+    projectInspector: true,
+    settings: true,
+    help: true,
+    maximise: true,
+
     loadingBox: true,
     performance: true,
-    logPanel: false
   }
 }
 
 export type SettingsState = {
   value: Settings
   update: (updater: (s: Settings) => void) => void
+  register: (action: (s: Settings) => void) => void
 }
 
 export function getLocalSettings (value: RecursivePartial<Settings> = {}) {
-  const json = localStorage.getItem('component.settings')
-  const previous = JSON.parse(json) as Settings
-  applyRestricted(previous, value)
-  return previous ?? {}
+  try {
+    const json = localStorage.getItem('component.settings')
+    const previous = JSON.parse(json) as Settings
+    applyRestricted(previous, value)
+    return previous ?? {}
+  } catch (e) {
+    console.error('Could not read local storage')
+    return {}
+  }
 }
 
 /**
@@ -97,11 +185,13 @@ export function useSettings (
 ): SettingsState {
   const merge = deepmerge(defaultSettings, value) as Settings
   const [settings, setSettings] = useState(merge)
+  const onUpdate = useRef<(s: Settings) => void>(undefined)
 
   const update = function (updater: (s: Settings) => void) {
-    const next = cloneDeep(settings)
+    const next = { ...settings } // Shallow copy
     updater(next)
     setSettings(next)
+    onUpdate.current?.(next)
   }
 
   // First Time
@@ -114,11 +204,18 @@ export function useSettings (
     applySettings(viewer, settings)
   }, [settings])
 
-  return useMemo(() => ({ value: settings, update }), [settings])
+  return useMemo(
+    () => ({
+      value: settings,
+      update,
+      register: (v) => (onUpdate.current = v)
+    }),
+    [settings]
+  )
 }
 
 function removeRestricted (settings: Settings) {
-  const clone = cloneDeep(settings) as Settings
+  const clone = structuredClone(settings)
   for (const k of Object.keys(clone.ui)) {
     const u = clone.ui as any
     u[k] = u[k] === true
@@ -152,7 +249,7 @@ export function applySettings (viewer: VIM.Viewer, settings: Settings) {
   // Show/Hide performance gizmo
   const performance = document.getElementsByClassName('vim-performance-div')[0]
   if (performance) {
-    if (settings.ui.performance) {
+    if (settings.ui.performance === true) {
       performance.classList.remove('vc-hidden')
     } else {
       performance.classList.add('vc-hidden')

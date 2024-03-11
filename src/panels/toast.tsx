@@ -4,7 +4,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { SideState } from './sidePanel/sideState'
+import { SideState } from '../sidePanel/sideState'
 
 export type ToastConfigSpeed = {
   visible: boolean
@@ -27,7 +27,7 @@ function MenuToast (props: { viewer: VIM.Viewer; side: SideState }) {
 
   useEffect(() => {
     speedRef.current = props.viewer.camera.speed
-    const subCam = props.viewer.camera.onValueChanged.subscribe(() => {
+    const subCam = props.viewer.camera.onSettingsChanged.subscribe(() => {
       if (props.viewer.camera.speed !== speedRef.current) {
         clearTimeout(toastTimeout.current)
         toastTimeout.current = setTimeout(() => setVisible(false), 1000)

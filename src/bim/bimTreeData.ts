@@ -33,7 +33,7 @@ export function toTreeData (
   elements: AugmentedElement[],
   grouping: Grouping
 ) {
-  if (!elements) return
+  if (!elements?.length) return
 
   const main: (e: AugmentedElement) => string =
     grouping === 'Family'
@@ -228,7 +228,7 @@ export class BimTreeData {
           this.nodes[++i] = {
             index: i,
             parent: self,
-            title: `${e.name} [${e.id}]`,
+            title: `${e.name} ${e.id ? `[${e.id}]` : ''}`,
             isFolder: false,
             data: e,
             children: [],

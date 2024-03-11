@@ -3,8 +3,8 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react'
-import { ViewerWrapper } from '../helpers/viewer'
-import * as Icons from '../icons'
+import * as Icons from '../panels/icons'
+import { VIM } from '../component'
 
 const SEARCH_DELAY_MS = 200
 /**
@@ -15,7 +15,7 @@ const SEARCH_DELAY_MS = 200
  * @param count current search result count.
  */
 export function BimSearch (props: {
-  viewer: ViewerWrapper
+  viewer: VIM.Viewer
   filter: string
   setFilter: (s: string) => void
   count: number
@@ -49,11 +49,11 @@ export function BimSearch (props: {
   }
 
   const onFocus = () => {
-    props.viewer.viewer.inputs.keyboard.unregister()
+    props.viewer.inputs.keyboard.unregister()
   }
 
   const onBlur = () => {
-    props.viewer.viewer.inputs.keyboard.register()
+    props.viewer.inputs.keyboard.register()
   }
 
   return (

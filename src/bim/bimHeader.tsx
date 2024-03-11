@@ -4,14 +4,13 @@
 
 import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { VimDocument } from 'vim-format/'
 import ReactTooltip from 'react-tooltip'
 import { AugmentedElement } from '../helpers/element'
 
 type BimHeaderEntry = {
   key: string
   label: string
-  value: string | number
+  value: string | number | bigint
   dtStyle: string
   ddStyle: string
   dlStyle: string
@@ -67,11 +66,7 @@ export function BimDocumentHeader (props: { vim: VIM.Vim; visible: boolean }) {
     getVimBimHeader(props.vim).then((h) => setHeader(h))
   }
 
-  if (!props.visible) return null
-
-  if (!header) {
-    return <>Loading...</>
-  }
+  if (!props.visible || !header) return null
 
   return createHeader(header)
 }
@@ -97,7 +92,7 @@ function createHeader (header: BimHeader) {
             className={`bim-header-value vc-shrink-1 vc-truncate vc-py-1 ${entry.ddStyle}`}
             key={`dd-${entry.key}`}
           >
-            {entry.value}
+            {entry.value?.toString()}
           </dd>
         </dl>
       )
@@ -175,8 +170,10 @@ function getElementBimHeader (info: AugmentedElement): BimHeader {
 }
 
 async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
-  const documents = await vim.document.bimDocument.getAll()
-  const main = documents.find((d) => !d.isLinked) ?? documents[0]
+  const documents = await vim.bim?.bimDocument?.getAll()
+  const main = documents
+    ? documents.find((d) => !d.isLinked) ?? documents[0]
+    : undefined
 
   return [
     [
@@ -193,7 +190,7 @@ async function getVimBimHeader (vim: VIM.Vim): Promise<BimHeader> {
       {
         key: 'sourcePath',
         label: 'Source Path',
-        value: main.pathName,
+        value: main?.pathName ?? '',
         dtStyle: 'vc-w-3/12',
         ddStyle: 'vc-w-9/12',
         dlStyle: 'vc-w-full'

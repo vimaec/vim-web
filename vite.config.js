@@ -7,12 +7,9 @@ export default defineConfig({
     lib: {
       formats: ['iife', 'es'],
       entry: resolve(__dirname, 'src/component.tsx'),
-      name: 'component'
+      name: 'VIMReact'
     },
     // Minify set to true will break the IIFE output
     minify: false,
-    rollupOptions: {
-      external: ['react', 'jsx', 'three']
-    }
   }
 })

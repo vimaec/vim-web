@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
 import { groupBy } from '../helpers/data'
-import * as Icons from '../icons'
+import * as Icons from '../panels/icons'
 
 /**
  * Represents one entry of the detail tables.
@@ -56,18 +56,17 @@ function BimDetails<T> (
     ReactTooltip.rebuild()
   })
 
-  if (!visible) return null
-
   if (input !== object) {
     setObject(input)
     toData(input).then((data) => {
+      if (!data) return null
       setDetails(data)
       open.init(data.flatMap((d) => [...d.content.keys()]))
     })
   }
 
-  if (!details) {
-    return <div className="vim-inspector-properties"> Loading . . .</div>
+  if (!visible || !details) {
+    return null
   }
 
   return (
@@ -174,7 +173,9 @@ function createTable (
 }
 
 async function getVimDocumentDetails (vim: VIM.Vim): Promise<BimDetailsInfo> {
-  let documents = await vim?.document.bimDocument.getAll()
+  let documents = await vim?.bim?.bimDocument.getAll()
+  if (!documents) return undefined
+
   documents = documents.sort((a, b) => compare(a.title, b.title))
   const data = new Map<string, TableEntry[]>(
     documents.map((d) => [
@@ -195,7 +196,9 @@ async function getVimDocumentDetails (vim: VIM.Vim): Promise<BimDetailsInfo> {
 async function getObjectParameterDetails (
   object: VIM.Object
 ): Promise<BimDetailsInfo> {
+  
   let parameters = await object?.getBimParameters()
+  if (!parameters) return null
   parameters = parameters.filter((p) => acceptParameter(p))
   parameters = parameters.sort((a, b) => compare(a.group, b.group))
   const instance = groupBy(
