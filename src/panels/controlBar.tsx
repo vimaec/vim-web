@@ -15,7 +15,8 @@ import {
   Settings,
   anyUiCursorButton,
   anyUiSettingButton,
-  anyUiToolButton
+  anyUiToolButton,
+  isTrue
 } from '../settings/settings'
 
 // Shared Buttons style
@@ -140,35 +141,35 @@ function TabCamera (props: {viewer: VIM.Viewer, camera: ComponentCamera; setting
 
   // Camera
   const btnOrbit = toggleButton(
-    () => props.settings.ui.orbit === true,
+    () => isTrue(props.settings.ui.orbit),
     'Orbit',
     () => onModeBtn('orbit'),
     Icons.orbit,
     () => mode === 'orbit'
   )
   const btnLook = toggleButton(
-    () => props.settings.ui.lookAround === true,
+    () => isTrue(props.settings.ui.lookAround),
     'Look Around',
     () => onModeBtn('look'),
     Icons.look,
     () => mode === 'look'
   )
   const btnPan = toggleButton(
-    () => props.settings.ui.pan === true,
+    () => isTrue(props.settings.ui.pan),
     'Pan',
     () => onModeBtn('pan'),
     Icons.pan,
     () => mode === 'pan'
   )
   const btnZoom = toggleButton(
-    () => props.settings.ui.zoom === true,
+    () => isTrue(props.settings.ui.zoom),
     'Zoom',
     () => onModeBtn('zoom'),
     Icons.zoom,
     () => mode === 'zoom'
   )
   const btnFrameRect = toggleButton(
-    () => props.settings.ui.zoomWindow === true,
+    () => isTrue(props.settings.ui.zoomWindow),
     'Zoom Window',
     () => {
       onModeBtn('rect')
@@ -179,7 +180,7 @@ function TabCamera (props: {viewer: VIM.Viewer, camera: ComponentCamera; setting
     () => mode === 'rect'
   )
   const btnFrame = actionButton(
-    () => props.settings.ui.zoomToFit === true,
+    () => isTrue(props.settings.ui.zoomToFit),
     'Zoom to Fit',
     () => props.camera.frameContext(),
     Icons.frameSelection,
@@ -295,7 +296,7 @@ function TabTools (props: {
   }
 
   const btnSection = actionButton(
-    () => props.settings.ui.sectioningMode === true,
+    () => isTrue(props.settings.ui.sectioningMode),
     'Sectioning Mode',
     onSectionBtn,
     Icons.sectionBox,
@@ -303,7 +304,7 @@ function TabTools (props: {
   )
 
   const btnMeasure = actionButton(
-    () => props.settings.ui.measuringMode === true,
+    () => isTrue(props.settings.ui.measuringMode),
     'Measuring Mode',
     onMeasureBtn,
     Icons.measure,
@@ -311,7 +312,7 @@ function TabTools (props: {
   )
 
   const btnIsolation = actionButton(
-    () => props.settings.ui.toggleIsolation === true,
+    () => isTrue(props.settings.ui.toggleIsolation),
     'Toggle Isolation',
     () => {
       props.isolation.toggleIsolation('controlBar')
@@ -443,14 +444,14 @@ function TabSettings (props: {
   }
 
   const btnTreeView = toggleButton(
-    () => props.settings.ui.projectInspector === true,
+    () => isTrue(props.settings.ui.projectInspector),
     'Project Inspector',
     onTreeViewBtn,
     Icons.treeView,
     () => props.side.getContent() === 'bim'
   )
   const btnSettings = toggleButton(
-    () => props.settings.ui.settings === true,
+    () => isTrue(props.settings.ui.settings),
     'Settings',
     onSettingsBtn,
     Icons.settings,
@@ -458,7 +459,7 @@ function TabSettings (props: {
   )
 
   const btnHelp = toggleButton(
-    () => props.settings.ui.help === true,
+    () => isTrue(props.settings.ui.help),
     'Help',
     onHelpBtn,
     Icons.help,
@@ -467,7 +468,7 @@ function TabSettings (props: {
 
   const btnFullScreen = actionButton(
     () =>
-      props.settings.ui.maximise === true &&
+      isTrue(props.settings.ui.maximise) &&
       props.settings.capacity.canGoFullScreen,
     document.fullscreenElement ? 'Fullscreen' : 'Minimize',
     () => {
@@ -483,8 +484,8 @@ function TabSettings (props: {
 
   return (
     <div className="vim-control-bar-section vc-mx-2 vc-flex vc-items-center vc-rounded-full vc-bg-white vc-px-2 vc-shadow-md">
-      {props.settings.ui.bimTreePanel === true ||
-      props.settings.ui.bimInfoPanel === true
+      {isTrue(props.settings.ui.bimTreePanel) ||
+      isTrue(props.settings.ui.bimInfoPanel)
         ? btnTreeView
         : null}
       {btnSettings}

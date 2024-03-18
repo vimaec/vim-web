@@ -14,7 +14,7 @@ import { ComponentCamera } from '../helpers/camera'
 import { Grouping, toTreeData } from './bimTreeData'
 import { ViewerState } from '../viewerState'
 import { AugmentedElement } from '../helpers/element'
-import { Settings } from '../settings/settings'
+import { Settings, isFalse, isTrue } from '../settings/settings'
 
 
 export function OptionalBimPanel (props: {
@@ -27,12 +27,11 @@ export function OptionalBimPanel (props: {
   treeRef: React.MutableRefObject<TreeActionRef>
 }) {
   if (
-    ( props.settings.ui.bimTreePanel === false &&
-      props.settings.ui.bimInfoPanel === false) 
+    (isFalse(props.settings.ui.bimTreePanel) &&
+     isFalse(props.settings.ui.bimInfoPanel)) 
   ) {
     return null
   }
-  
   return React.createElement(BimPanel, props)
 }
 
@@ -54,11 +53,8 @@ export function BimPanel (props: {
   settings: Settings
   treeRef: React.MutableRefObject<TreeActionRef>
 }) {
-
-
   const [filter, setFilter] = useState('')
   const [grouping, setGrouping] = useState<Grouping>('Family')
-
   
   // Filter elements with meshes using search term.
   const filteredElements = useMemo(() => {
@@ -78,7 +74,7 @@ export function BimPanel (props: {
 
   // Update Isolation on filter change.
   useEffect(() => {
-    if (props.settings.ui.bimInfoPanel !== true) return
+    if (isFalse(props.settings.ui.bimInfoPanel)) return
     if (filter !== '') {
       const objects = filteredElements.map((e) =>
         props.viewerState.vim.getObjectFromElement(e.index)
@@ -107,11 +103,11 @@ export function BimPanel (props: {
 
   const last =
     props.viewerState.selection[props.viewerState.selection.length - 1]
-
+  const full = isFalse(props.settings.ui.bimInfoPanel)
   return (
-    <div className={`vim-bim-panel ${props.visible ? '' : 'vc-hidden'}`}>
-      {props.settings.ui.bimTreePanel !== true ? null : (
-        <div className={`vim-bim-upper vc-h-1/2 ${props.viewerState.elements.length >0 ? '' : 'vc-hidden'}`}>
+    <div className={`vim-bim-panel ${full ? "full-tree" : ""} ${props.visible ? '' : 'vc-hidden'}`}>
+      {isFalse(props.settings.ui.bimTreePanel) ? null : (
+        <div className={`vim-bim-upper ${full ? "vc-h-screen" : "vc-h-1/2"} ${props.viewerState.elements.length > 0 ? '' : 'vc-hidden'}`}>
           <h2 className="vim-bim-upper-title vc-mb-6 vc-text-xs vc-font-bold vc-uppercase">
             Project Inspector
           </h2>
@@ -169,15 +165,15 @@ export function BimPanel (props: {
 
       {
         // Divider if needed.
-        props.settings.ui.bimTreePanel === true &&
-        props.settings.ui.bimInfoPanel === true &&
+        isTrue(props.settings.ui.bimTreePanel) &&
+        isTrue(props.settings.ui.bimInfoPanel) &&
         props.viewerState.elements.length >0
           ? divider()
           : null
       }
 
-      {props.settings.ui.bimInfoPanel === true
-        ? bimInfo(last, props.viewerState.vim, filteredElements)
+      {isTrue(props.settings.ui.bimInfoPanel)
+        ? bimInfo(last, props.viewerState.vim, filteredElements, isFalse(props.settings.ui.bimTreePanel))
         : null}
     </div>
   )
@@ -190,41 +186,32 @@ function divider () {
 function bimInfo (
   object: VIM.Object,
   vim: VIM.Vim,
-  elements: AugmentedElement[]
+  elements: AugmentedElement[],
+  full : boolean
 ) {
-  const objectHeader = BimObjectHeader({
+  const objectHeader = object ? React.createElement(BimObjectHeader, {
     elements,
     object,
-    visible: object !== undefined
-  })
+  }) : null
 
-  const objectDetails = BimObjectDetails({
+  const objectDetails = object ? React.createElement(BimObjectDetails, {
     object,
-    visible: object !== undefined
-  })
+  }) : null
 
-  const docHeader = BimDocumentHeader({
+  const docHeader = !object ? React.createElement(BimDocumentHeader,{
     vim,
-    visible: object === undefined
-  })
+  }) : null
 
-  const docDetails = BimDocumentDetails({
-    vim,
-    visible: object === undefined
-  })
-
-  const title = (
-    <h2 className="vc-mb-4 vc-text-xs vc-font-bold vc-uppercase">
-      Bim Inspector
-    </h2>
-  )
-
-  const any = objectHeader || objectDetails || docHeader || docDetails
+  const docDetails = !object ? React.createElement(BimDocumentDetails,{
+    vim
+  }) : null
 
   return (
     <>
-      {any ? title : null}
-      <div className="vim-bim-lower vc-h-1/2 vc-overflow-y-auto vc-overflow-x-hidden">
+      <h2 className="vc-mb-4 vc-text-xs vc-font-bold vc-uppercase">
+      Bim Inspector
+      </h2>
+      <div className={`vim-bim-lower ${full ?"vc-h-screen" : "vc-h-1/2"} vc-overflow-y-auto vc-overflow-x-hidden`}>
         {objectHeader}
         {objectDetails}
         {docHeader}
