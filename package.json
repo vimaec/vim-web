@@ -57,7 +57,7 @@
     "vim-webgl-viewer"
   ],
   "dependencies": {
-    "vim-webgl-viewer": "2.0.1",
+    "vim-webgl-viewer": "2.0.2-dev.0",
     "@firefox-devtools/react-contextmenu": "^5.1.0",
     "jsx": "^0.9.89",
     "re-resizable": "^6.9.9",
