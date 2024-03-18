@@ -2,9 +2,10 @@
  * @module viw-webgl-component
  */
 
-import React from 'react'
+import React, { ReactEventHandler } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { RestrictedOption, Settings, SettingsState } from './settings'
+import { UserBoolean, Settings } from './settings'
+import { SettingsState} from './settingsState'
 
 /**
  * JSX Component to interact with settings.
@@ -35,17 +36,41 @@ export function MenuSettings (props: {
 
   const settingsToggle = (
     label: string,
-    getter: (settings: Settings) => RestrictedOption,
+    getter: (settings: Settings) => UserBoolean,
     setter: (settings: Settings, b: boolean) => void
   ) => {
     const value = getter(props.settings.value)
-    if (value === 'restricted') {
+    if (value === 'AlwaysTrue' || value === 'AlwaysFalse') {
       return null
     }
     return toggleElement(label, value, () => {
-      const value = getter(props.settings.value) as boolean
+      const value = getter(props.settings.value)
       props.settings.update((s) => setter(s, !value))
     })
+  }
+
+  const settingsBox = ( label: string,
+    getter: (settings: Settings) => number,
+    setter: (settings: Settings, b: number) => void) =>{
+
+    const value = getter(props.settings.value).toString()
+    const update = (event: React.FocusEvent<HTMLInputElement, Element>) => {
+      const str = event.target.value
+      const n = Number.parseFloat(str)
+      console.log(str)
+      if (Number.isNaN(n)){
+        event.target.value = getter(props.settings.value).toString()
+      }
+      else{
+        props.settings.update(s => setter(s, n))
+      }
+
+    }
+    return <div className="container">
+      <label htmlFor="textbox" className='vc-w-3 vc-h-2 vc-pr-2'>{label}:</label>
+      <input type="text" placeholder={value} className='vc-w-10 vc-h-6 vc-pl-1' onBlur={e => update(e)}/>
+    </div>
+
   }
 
   return (
@@ -54,16 +79,38 @@ export function MenuSettings (props: {
         Display Settings
       </h2>
       <div className="vim-settings vc-m-1 vc-max-h-[95%] vc-overflow-y-auto">
-        <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Viewer</h3>
+        <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Inputs</h3>
+        {settingsBox(
+          "Scroll Speed",
+          s => s.inputs.scrollSpeed,
+          (s,v) => s.inputs.scrollSpeed = v
+        )}
+        <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Materials</h3>
         {settingsToggle(
-          'Ghost Hidden Objects',
-          (settings) => settings.viewer.isolationMaterial,
-          (settings, value) => (settings.viewer.isolationMaterial = value)
+          'Use Isolation Material',
+          (settings) => settings.isolation.useIsolationMaterial,
+          (settings, value) => {
+            settings.isolation.useIsolationMaterial = value
+            if(settings.peformance.useFastMaterial && value){
+              settings.peformance.useFastMaterial = false
+            } 
+          } 
         )}
         {settingsToggle(
+          'Use Performance Material',
+          (settings) => settings.peformance.useFastMaterial,
+          (settings, value) => {
+            settings.peformance.useFastMaterial = value
+            if(settings.isolation.useIsolationMaterial && value){
+              settings.isolation.useIsolationMaterial = false
+            } 
+          } 
+        )}
+        <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Scene</h3>
+        {settingsToggle(
           'Show Ground Plane',
-          (settings) => settings.viewer.groundPlane,
-          (settings, value) => (settings.viewer.groundPlane = value)
+          (settings) => settings.scene.groundPlane,
+          (settings, value) => (settings.scene.groundPlane = value)
         )}
         <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Panels</h3>
         {settingsToggle(
