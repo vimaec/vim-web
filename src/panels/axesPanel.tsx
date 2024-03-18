@@ -49,7 +49,7 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
 
   const onIsolationBtn = () => {
     props.settings.update(
-      (s) => (s.viewer.isolationMaterial = !s.viewer.isolationMaterial)
+      (s) => (s.isolation.useIsolationMaterial = !s.isolation.useIsolationMaterial)
     )
   }
 
@@ -63,7 +63,7 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
   const btnIsolation = (
     <button
       data-tip={
-        props.settings.value.viewer.isolationMaterial
+        props.settings.value.isolation.useIsolationMaterial
           ? 'Disable Ghosting'
           : 'Enable Ghosting'
       }
@@ -71,7 +71,7 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
       className={'vim-isolation-btn' + btnStyle}
       type="button"
     >
-      {props.settings.value.viewer.isolationMaterial
+      {props.settings.value.isolation.useIsolationMaterial
         ? (
         <Icons.ghost height={20} width={20} fill="currentColor" />
           )
