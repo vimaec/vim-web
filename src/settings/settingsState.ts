@@ -81,8 +81,14 @@ export function applySettings (viewer: VIM.Viewer, settings: Settings) {
 
   console.log(settings.peformance.useFastMaterial)
   viewer.vims.forEach((v) => {
-    v.scene.material = settings.peformance.useFastMaterial ? viewer.materials.simple : undefined
+    if(settings.peformance.useFastMaterial && v.scene.material === undefined){
+      v.scene.material = viewer.materials.simple
+    }
+    if(!settings.peformance.useFastMaterial && v.scene.material === viewer.materials.simple){
+      v.scene.material = undefined
+    }
   })
+  
 
   // Isolation settings are applied in isolation.
   // Don't show ground plane when isolation is on.
