@@ -28,5 +28,6 @@ async function loadVim (cmp: VimComponentRef) {
   )
 
   console.log(`Loading completed in ${((Date.now() - time)/1000).toFixed(2)} seconds`)
+  globalThis.THREE = THREE
   globalThis.component = cmp
 }
