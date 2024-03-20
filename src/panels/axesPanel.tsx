@@ -5,7 +5,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import * as Icons from './icons'
 import { ComponentCamera } from '../helpers/camera'
-import { Settings, SettingsState, anyUiAxesButton } from '../settings/settings'
+import { anyUiAxesButton, isTrue } from '../settings/settings'
+import { SettingsState } from '../settings/settingsState'
 import { VIM } from '../component'
 
 /**
@@ -48,7 +49,7 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
 
   const onIsolationBtn = () => {
     props.settings.update(
-      (s) => (s.viewer.isolationMaterial = !s.viewer.isolationMaterial)
+      (s) => (s.isolation.useIsolationMaterial = !s.isolation.useIsolationMaterial)
     )
   }
 
@@ -62,7 +63,7 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
   const btnIsolation = (
     <button
       data-tip={
-        props.settings.value.viewer.isolationMaterial
+        props.settings.value.isolation.useIsolationMaterial
           ? 'Disable Ghosting'
           : 'Enable Ghosting'
       }
@@ -70,7 +71,7 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
       className={'vim-isolation-btn' + btnStyle}
       type="button"
     >
-      {props.settings.value.viewer.isolationMaterial
+      {props.settings.value.isolation.useIsolationMaterial
         ? (
         <Icons.ghost height={20} width={20} fill="currentColor" />
           )
@@ -112,7 +113,7 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
     return <div className="vc-mx-1 ">{button}</div>
   }
 
-  const hidden = props.settings.value.ui.axesPanel === true ? '' : ' vc-hidden'
+  const hidden = isTrue(props.settings.value.ui.axesPanel) ? '' : ' vc-hidden'
 
   const createBar = () => {
     if (!anyUiAxesButton(props.settings.value)) {
@@ -126,12 +127,12 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
         {createButton(
           btnOrtho,
           props.settings.value.capacity.useOrthographicCamera &&
-            props.settings.value.ui.orthographic === true
+            isTrue(props.settings.value.ui.orthographic)
         )}
-        {createButton(btnHome, props.settings.value.ui.resetCamera === true)}
+        {createButton(btnHome, isTrue(props.settings.value.ui.resetCamera))}
         {createButton(
           btnIsolation,
-          props.settings.value.ui.enableGhost === true
+          isTrue(props.settings.value.ui.enableGhost)
         )}
       </div>
     )

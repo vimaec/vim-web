@@ -39,6 +39,7 @@ export const LoadingBoxMemo = React.memo(LoadingBox)
  */
 export class ComponentLoader {
   private _viewer : VIM.Viewer
+  loadCount : number
 
   constructor(viewer : VIM.Viewer){
     this._viewer = viewer
@@ -87,7 +88,7 @@ export class ComponentLoader {
     if(settings.loadEmpty !== true){
       vim.loadAll()
     }
-      
+    this.loadCount++
     this._onDone.dispatch()
     return vim
   }

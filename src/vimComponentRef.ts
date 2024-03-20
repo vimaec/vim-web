@@ -1,3 +1,7 @@
+/**
+ * @module public-api
+ */
+
 import * as VIM from 'vim-webgl-viewer/'
 import { ComponentLoader } from './panels/loading'
 import { contextMenuCustomization } from './panels/contextMenu'

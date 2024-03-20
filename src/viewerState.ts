@@ -1,3 +1,8 @@
+/**
+ * @module viw-webgl-component
+ */
+
+
 import { useEffect, useState, useMemo, useRef } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import { AugmentedElement, getElements } from './helpers/element'

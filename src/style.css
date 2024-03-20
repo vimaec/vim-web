@@ -103,6 +103,10 @@ input[type='search']::-webkit-search-cancel-button {
   content-visibility: auto;
 }
 
+.full-tree .rct-tree-items-container {
+  max-height: calc(95vh - 9rem) !important;
+}
+
 .rct-tree-items-container li .rct-tree-item-title-container {
   border: none;
 }
@@ -180,10 +184,6 @@ input[type='search']::-webkit-search-cancel-button {
 
 .parameters:first-child > ul > li h3 {
   border-top-right-radius: 4px;
-}
-
-.vim-bim-lower {
-  max-height: 44vh;
 }
 
 .vim-bim-tree

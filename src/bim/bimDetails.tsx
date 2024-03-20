@@ -29,9 +29,8 @@ type BimDetailsInfo = { section: string; content: Map<string, TableEntry[]> }[]
  */
 export function BimObjectDetails (props: {
   object: VIM.Object
-  visible: boolean
 }) {
-  return BimDetails(props.object, getObjectParameterDetails, props.visible)
+  return BimDetails(props.object, getObjectParameterDetails)
 }
 
 /**
@@ -39,14 +38,13 @@ export function BimObjectDetails (props: {
  * @param vim Vim from which to pull the data.
  * @param visible Will return a null element if false.
  */
-export function BimDocumentDetails (props: { vim: VIM.Vim; visible: boolean }) {
-  return BimDetails(props.vim, getVimDocumentDetails, props.visible)
+export function BimDocumentDetails (props: { vim: VIM.Vim }) {
+  return BimDetails(props.vim, getVimDocumentDetails)
 }
 
 function BimDetails<T> (
   input: T,
-  toData: (v: T) => Promise<BimDetailsInfo>,
-  visible: boolean
+  toData: (v: T) => Promise<BimDetailsInfo>
 ) {
   const open = createOpenState()
   const [object, setObject] = useState<T>()
@@ -65,7 +63,7 @@ function BimDetails<T> (
     })
   }
 
-  if (!visible || !details) {
+  if (!details) {
     return null
   }
 

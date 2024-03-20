@@ -2,10 +2,7 @@
  * @module viw-webgl-component
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import deepmerge from 'deepmerge'
-
 /**
  * Makes all fields optional recursively
  * https://stackoverflow.com/questions/41980195/recursive-partialt-in-typescript
@@ -21,16 +18,30 @@ export type RecursivePartial<T> = {
  * true, false or restricted
  * Restricted: is false and cannot be changed by the user.
  */
-export type RestrictedOption = boolean | 'restricted'
+export type UserBoolean = boolean | 'AlwaysTrue' | 'AlwaysFalse'
+export function isTrue(value:UserBoolean){
+  return value === true || value === 'AlwaysTrue'
+}
+export function isFalse(value:UserBoolean){
+  return value === false || value === 'AlwaysFalse'
+}
 
 /**
  * Vim component settings, can either be set at component intialization or by user using UI.
  */
 export type Settings = {
-  viewer: {
-    disableIsolation: boolean
-    isolationMaterial: boolean
+  scene:{
     groundPlane: boolean
+  }
+  inputs: {
+    scrollSpeed: number
+  }
+  peformance: {
+    useFastMaterial: boolean
+  }
+  isolation: {
+    enable: boolean
+    useIsolationMaterial: boolean
   }
   capacity: {
     canFollowUrl: boolean
@@ -39,37 +50,37 @@ export type Settings = {
     canDownload: boolean
   }
   ui: {
-    logo: RestrictedOption
-    bimTreePanel: RestrictedOption
-    bimInfoPanel: RestrictedOption
+    logo: UserBoolean
+    bimTreePanel: UserBoolean
+    bimInfoPanel: UserBoolean
 
     // axesPanel
-    axesPanel: RestrictedOption
-    orthographic: RestrictedOption
-    resetCamera: RestrictedOption
-    enableGhost: RestrictedOption
+    axesPanel: UserBoolean
+    orthographic: UserBoolean
+    resetCamera: UserBoolean
+    enableGhost: UserBoolean
 
     // cursors
-    orbit: RestrictedOption
-    lookAround: RestrictedOption
-    pan: RestrictedOption
-    zoom: RestrictedOption
-    zoomWindow: RestrictedOption
-    zoomToFit: RestrictedOption
+    orbit: UserBoolean
+    lookAround: UserBoolean
+    pan: UserBoolean
+    zoom: UserBoolean
+    zoomWindow: UserBoolean
+    zoomToFit: UserBoolean
 
     // tools
-    sectioningMode: RestrictedOption
-    measuringMode: RestrictedOption
-    toggleIsolation: RestrictedOption
+    sectioningMode: UserBoolean
+    measuringMode: UserBoolean
+    toggleIsolation: UserBoolean
 
     // Settings
-    projectInspector: RestrictedOption
-    settings: RestrictedOption
-    help: RestrictedOption
-    maximise: RestrictedOption
+    projectInspector: UserBoolean
+    settings: UserBoolean
+    help: UserBoolean
+    maximise: UserBoolean
 
-    loadingBox: RestrictedOption
-    performance: RestrictedOption
+    loadingBox: UserBoolean
+    performance: UserBoolean
   }
 }
 
@@ -111,11 +122,19 @@ export function anyUiSettingButton (settings: Settings) {
 
 export type PartialSettings = RecursivePartial<Settings>
 
-const defaultSettings: Settings = {
-  viewer: {
-    disableIsolation: false,
-    isolationMaterial: true,
-    groundPlane: true
+export const defaultSettings: Settings = {
+  scene: {
+    groundPlane: true,
+  },
+  inputs:{
+    scrollSpeed: VIM.defaultViewerSettings.camera.controls.scrollSpeed
+  },
+  peformance:{
+    useFastMaterial: false
+  },
+  isolation: {
+    enable: true,
+    useIsolationMaterial: true
   },
   capacity: {
     canFollowUrl: true,
@@ -158,106 +177,3 @@ const defaultSettings: Settings = {
   }
 }
 
-export type SettingsState = {
-  value: Settings
-  update: (updater: (s: Settings) => void) => void
-  register: (action: (s: Settings) => void) => void
-}
-
-export function getLocalSettings (value: RecursivePartial<Settings> = {}) {
-  try {
-    const json = localStorage.getItem('component.settings')
-    const previous = JSON.parse(json) as Settings
-    applyRestricted(previous, value)
-    return previous ?? {}
-  } catch (e) {
-    console.error('Could not read local storage')
-    return {}
-  }
-}
-
-/**
- * Returns a new state closure for settings.
- */
-export function useSettings (
-  viewer: VIM.Viewer,
-  value: PartialSettings
-): SettingsState {
-  const merge = deepmerge(defaultSettings, value) as Settings
-  const [settings, setSettings] = useState(merge)
-  const onUpdate = useRef<(s: Settings) => void>(undefined)
-
-  const update = function (updater: (s: Settings) => void) {
-    const next = { ...settings } // Shallow copy
-    updater(next)
-    setSettings(next)
-    onUpdate.current?.(next)
-  }
-
-  // First Time
-  useEffect(() => {
-    applySettings(viewer, settings)
-  }, [])
-
-  // On Change
-  useEffect(() => {
-    applySettings(viewer, settings)
-  }, [settings])
-
-  return useMemo(
-    () => ({
-      value: settings,
-      update,
-      register: (v) => (onUpdate.current = v)
-    }),
-    [settings]
-  )
-}
-
-function removeRestricted (settings: Settings) {
-  const clone = structuredClone(settings)
-  for (const k of Object.keys(clone.ui)) {
-    const u = clone.ui as any
-    u[k] = u[k] === true
-  }
-  return clone
-}
-
-function applyRestricted (
-  previous: Settings,
-  current: RecursivePartial<Settings>
-) {
-  if (!current?.ui) return
-  for (const k of Object.keys(current.ui)) {
-    const p = previous.ui as any
-    const c = current.ui as any
-    if (c[k] === 'restricted') {
-      p[k] = 'restricted'
-    }
-  }
-}
-
-/**
- * Apply given vim component settings to the given viewer.
- */
-export function applySettings (viewer: VIM.Viewer, settings: Settings) {
-  try {
-    const save = removeRestricted(settings)
-    localStorage.setItem('component.settings', JSON.stringify(save))
-  } catch (error) {}
-
-  // Show/Hide performance gizmo
-  const performance = document.getElementsByClassName('vim-performance-div')[0]
-  if (performance) {
-    if (settings.ui.performance === true) {
-      performance.classList.remove('vc-hidden')
-    } else {
-      performance.classList.add('vc-hidden')
-    }
-  }
-
-  // Isolation settings are applied in isolation.
-
-  // Don't show ground plane when isolation is on.
-  viewer.environment.groundPlane.visible = settings.viewer.groundPlane
-}

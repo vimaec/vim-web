@@ -1,5 +1,5 @@
 /**
- * @module viw-webgl-component
+ * @module public-api
  */
 
 import React, { useEffect, useRef, useState, useMemo } from 'react'
@@ -24,10 +24,11 @@ import { useSideState } from './sidePanel/sideState'
 import { MenuSettings } from './settings/menuSettings'
 import { MenuToastMemo } from './panels/toast'
 import { Overlay } from './panels/overlay'
-import { addPerformanceCounter} from './performance'
+import { addPerformanceCounter} from './panels/performance'
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
-import { PartialSettings, useSettings } from './settings/settings'
+import { PartialSettings, isTrue} from './settings/settings'
+import { useSettings} from './settings/settingsState'
 import { Isolation } from './helpers/isolation'
 import { ComponentCamera } from './helpers/camera'
 import { TreeActionRef } from './bim/bimTree'
@@ -39,8 +40,9 @@ import { VimComponentRef } from './vimComponentRef'
 export * as VIM from 'vim-webgl-viewer/'
 export const THREE = VIM.THREE
 export * as ContextMenu from './panels/contextMenu'
-export { getLocalSettings } from './settings/settings'
 export * from './vimComponentRef'
+export {getLocalSettings} from './settings/settingsStorage'
+export {type Settings, type PartialSettings, defaultSettings} from './settings/settings'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.
@@ -88,10 +90,11 @@ export function VimComponent (props: {
 
   const [isolation] = useState(() => new Isolation(props.viewer, camera, settings.value))
   useEffect(() => isolation.applySettings(settings.value), [settings])
+  useEffect(() => settings.update((s) =>s), [loader.current.loadCount])
 
   const side = useSideState(
-    settings.value.ui.bimTreePanel === true ||
-      settings.value.ui.bimInfoPanel === true,
+    isTrue(settings.value.ui.bimTreePanel) ||
+    isTrue(settings.value.ui.bimInfoPanel),
     480
   )
   const [contextMenu, setcontextMenu] = useState<contextMenuCustomization>()
@@ -169,8 +172,8 @@ export function VimComponent (props: {
       <div className="vim-performance-div" ref={performanceRef}></div>
       <Overlay viewer={props.viewer} side={side}></Overlay>
       <MenuHelpMemo help={help} settings={settings.value} side={side} />
-      {settings.value.ui.logo === true ? <LogoMemo /> : null}
-      {settings.value.ui.loadingBox === true
+      {isTrue(settings.value.ui.logo) ? <LogoMemo /> : null}
+      {isTrue(settings.value.ui.loadingBox)
         ? (
         <LoadingBoxMemo loader={loader.current} content={msg} />
           )

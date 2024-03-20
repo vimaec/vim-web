@@ -1,3 +1,8 @@
+/**
+ * @module viw-webgl-component
+ */
+
+
 import * as VIM from 'vim-webgl-viewer'
 import * as BIM from 'vim-format'
 
