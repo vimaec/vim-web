@@ -79,7 +79,6 @@ export function applySettings (viewer: VIM.Viewer, settings: Settings) {
   }
   viewer.inputs.mouse.scrollSpeed = settings.inputs.scrollSpeed
 
-  console.log(settings.peformance.useFastMaterial)
   viewer.vims.forEach((v) => {
     if(settings.peformance.useFastMaterial && v.scene.material === undefined){
       v.scene.material = viewer.materials.simple
