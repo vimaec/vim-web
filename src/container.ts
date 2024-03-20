@@ -1,4 +1,9 @@
+/**
+ * @module public-api
+ */
+
 import * as VIM from 'vim-webgl-viewer/'
+
 
 /**
  * Basic HTML structure that the webgl component expects

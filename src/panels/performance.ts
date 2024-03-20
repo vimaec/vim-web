@@ -1,3 +1,8 @@
+/**
+ * @module viw-webgl-component
+ */
+
+
 import Stats from 'stats-js'
 
 /**

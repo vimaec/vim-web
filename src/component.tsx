@@ -1,5 +1,5 @@
 /**
- * @module viw-webgl-component
+ * @module public-api
  */
 
 import React, { useEffect, useRef, useState, useMemo } from 'react'
@@ -24,7 +24,7 @@ import { useSideState } from './sidePanel/sideState'
 import { MenuSettings } from './settings/menuSettings'
 import { MenuToastMemo } from './panels/toast'
 import { Overlay } from './panels/overlay'
-import { addPerformanceCounter} from './performance'
+import { addPerformanceCounter} from './panels/performance'
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
 import { PartialSettings, isTrue} from './settings/settings'
@@ -42,6 +42,7 @@ export const THREE = VIM.THREE
 export * as ContextMenu from './panels/contextMenu'
 export * from './vimComponentRef'
 export {getLocalSettings} from './settings/settingsStorage'
+export {type Settings, type PartialSettings, defaultSettings} from './settings/settings'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.

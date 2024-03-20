@@ -1,3 +1,7 @@
+/**
+ * @module viw-webgl-component
+ */
+
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import { Settings, PartialSettings, defaultSettings, isTrue } from './settings'

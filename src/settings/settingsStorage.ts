@@ -1,4 +1,6 @@
-
+/**
+ * @module viw-webgl-component
+ */
 
 import { UserBoolean, Settings, RecursivePartial } from './settings'
 
