@@ -4,14 +4,14 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { Settings, PartialSettings, defaultSettings, isTrue } from './settings'
+import { ComponentSettings, PartialComponentSettings, defaultSettings, isTrue } from './settings'
 import deepmerge from 'deepmerge'
 import { saveSettingsToLocal } from './settingsStorage'
 
 export type SettingsState = {
-  value: Settings
-  update: (updater: (s: Settings) => void) => void
-  register: (action: (s: Settings) => void) => void
+  value: ComponentSettings
+  update: (updater: (s: ComponentSettings) => void) => void
+  register: (action: (s: ComponentSettings) => void) => void
 }
 
 /**
@@ -19,13 +19,13 @@ export type SettingsState = {
  */
 export function useSettings (
   viewer: VIM.Viewer,
-  value: PartialSettings
+  value: PartialComponentSettings
 ): SettingsState {
-  const merge = deepmerge(defaultSettings, value) as Settings
+  const merge = deepmerge(defaultSettings, value) as ComponentSettings
   const [settings, setSettings] = useState(merge)
-  const onUpdate = useRef<(s: Settings) => void>()
+  const onUpdate = useRef<(s: ComponentSettings) => void>()
 
-  const update = function (updater: (s: Settings) => void) {
+  const update = function (updater: (s: ComponentSettings) => void) {
     const next = { ...settings } // Shallow copy
     updater(next)
     validateSettings(next)
@@ -55,7 +55,7 @@ export function useSettings (
 }
 
 
-function validateSettings(settings: Settings){
+function validateSettings(settings: ComponentSettings){
   if(settings.peformance.useFastMaterial && settings.isolation.useIsolationMaterial){
     settings.peformance.useFastMaterial = false
   }
@@ -65,7 +65,7 @@ function validateSettings(settings: Settings){
 /**
  * Apply given vim component settings to the given viewer.
  */
-export function applySettings (viewer: VIM.Viewer, settings: Settings) {
+export function applySettings (viewer: VIM.Viewer, settings: ComponentSettings) {
   
 
   // Show/Hide performance gizmo
@@ -77,7 +77,6 @@ export function applySettings (viewer: VIM.Viewer, settings: Settings) {
       performance.classList.add('vc-hidden')
     }
   }
-  viewer.inputs.mouse.scrollSpeed = settings.inputs.scrollSpeed
 
   viewer.vims.forEach((v) => {
     if(settings.peformance.useFastMaterial && v.scene.material === undefined){
@@ -87,9 +86,5 @@ export function applySettings (viewer: VIM.Viewer, settings: Settings) {
       v.scene.material = undefined
     }
   })
-  
-
   // Isolation settings are applied in isolation.
-  // Don't show ground plane when isolation is on.
-  viewer.environment.groundPlane.visible = settings.scene.groundPlane
 }

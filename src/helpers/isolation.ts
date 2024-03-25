@@ -3,7 +3,7 @@
  */
 
 import * as VIM from 'vim-webgl-viewer/'
-import { Settings } from '../settings/settings'
+import { ComponentSettings } from '../settings/settings'
 import { ComponentCamera } from './camera'
 
 import { ArrayEquals } from './data'
@@ -15,7 +15,7 @@ import { SimpleEventDispatcher } from 'ste-simple-events'
 export class Isolation {
   private _viewer: VIM.Viewer
 
-  private _settings: Settings
+  private _settings: ComponentSettings
   private _isolation: VIM.IObject[]
   private _lastIsolation: VIM.IObject[]
 
@@ -28,7 +28,7 @@ export class Isolation {
     return this._onChanged.asEvent()
   }
 
-  constructor (viewer: VIM.Viewer, camera: ComponentCamera, settings: Settings) {
+  constructor (viewer: VIM.Viewer, camera: ComponentCamera, settings: ComponentSettings) {
     this._viewer = viewer
     this._camera = camera
     this.applySettings(settings)
@@ -38,7 +38,7 @@ export class Isolation {
    * Applies relevant settings to isolation.
    * @param settings The settings to be applied to isolation.
    */
-  applySettings (settings: Settings) {
+  applySettings (settings: ComponentSettings) {
     this._settings = settings
     if (!this._settings.isolation.enable) return
     const set = new Set(this._isolation?.map((o) => o.vim))
@@ -210,7 +210,7 @@ export class Isolation {
     })
   }
 
-  getMaterial(settings: Settings, isolate: boolean){
+  getMaterial(settings: ComponentSettings, isolate: boolean){
     if(settings.peformance.useFastMaterial){
       return this._viewer.materials.simple
     }
@@ -225,7 +225,7 @@ export class Isolation {
 
   private _isolate (
     viewer: VIM.Viewer,
-    settings: Settings,
+    settings: ComponentSettings,
     objects: VIM.IObject[]
   ) {
     let useIsolation = false

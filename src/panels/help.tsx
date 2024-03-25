@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import helpImage from '../assets/quick-controls.svg'
 import * as Icons from './icons'
 import { setComponentBehind } from '../helpers/html'
-import { Settings } from '../settings/settings'
+import { ComponentSettings } from '../settings/settings'
 import { SideState } from '../sidePanel/sideState'
 
 const urlSupport = 'https://support.vimaec.com'
@@ -43,7 +43,7 @@ export const MenuHelpMemo = React.memo(MenuHelp)
  */
 function MenuHelp (props: {
   help: HelpState
-  settings: Settings
+  settings: ComponentSettings
   side: SideState
 }) {
   if (!props.help.visible) return null

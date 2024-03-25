@@ -12,7 +12,7 @@ import { ComponentCamera } from '../helpers/camera'
 import * as Icons from './icons'
 import { HelpState } from './help'
 import {
-  Settings,
+  ComponentSettings,
   anyUiCursorButton,
   anyUiSettingButton,
   anyUiToolButton,
@@ -68,7 +68,7 @@ export function ControlBar (props: {
   side: SideState
   isolation: Isolation
   cursor: CursorManager
-  settings: Settings
+  settings: ComponentSettings
 }) {
   const [show, setShow] = useState(true)
   const showRef = useRef(show)
@@ -118,7 +118,7 @@ export function ControlBar (props: {
   )
 }
 
-function TabCamera (props: {viewer: VIM.Viewer, camera: ComponentCamera; settings: Settings }) {
+function TabCamera (props: {viewer: VIM.Viewer, camera: ComponentCamera; settings: ComponentSettings }) {
   const viewer = props.viewer
   const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerActive)
 
@@ -204,7 +204,7 @@ function TabTools (props: {
   viewer: VIM.Viewer
   cursor: CursorManager
   isolation: Isolation
-  settings: Settings
+  settings: ComponentSettings
 }) {
   const viewer = props.viewer
   // Need a ref to get the up to date value in callback.
@@ -406,7 +406,7 @@ function TabTools (props: {
 function TabSettings (props: {
   help: HelpState
   side: SideState
-  settings: Settings
+  settings: ComponentSettings
 }) {
   const [fullScreen, setFullScreen] = useState<boolean>(
     !!document.fullscreenElement

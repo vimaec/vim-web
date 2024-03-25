@@ -26,16 +26,12 @@ export function isFalse(value:UserBoolean){
   return value === false || value === 'AlwaysFalse'
 }
 
+export type PartialComponentSettings = RecursivePartial<ComponentSettings>
+
 /**
  * Vim component settings, can either be set at component intialization or by user using UI.
  */
-export type Settings = {
-  scene:{
-    groundPlane: boolean
-  }
-  inputs: {
-    scrollSpeed: number
-  }
+export type ComponentSettings = {
   peformance: {
     useFastMaterial: boolean
   }
@@ -84,7 +80,7 @@ export type Settings = {
   }
 }
 
-export function anyUiAxesButton (settings: Settings) {
+export function anyUiAxesButton (settings: ComponentSettings) {
   return (
     settings.ui.orthographic ||
     settings.ui.resetCamera ||
@@ -92,7 +88,7 @@ export function anyUiAxesButton (settings: Settings) {
   )
 }
 
-export function anyUiCursorButton (settings: Settings) {
+export function anyUiCursorButton (settings: ComponentSettings) {
   return (
     settings.ui.orbit ||
     settings.ui.lookAround ||
@@ -103,7 +99,7 @@ export function anyUiCursorButton (settings: Settings) {
   )
 }
 
-export function anyUiToolButton (settings: Settings) {
+export function anyUiToolButton (settings: ComponentSettings) {
   return (
     settings.ui.sectioningMode ||
     settings.ui.measuringMode ||
@@ -111,7 +107,7 @@ export function anyUiToolButton (settings: Settings) {
   )
 }
 
-export function anyUiSettingButton (settings: Settings) {
+export function anyUiSettingButton (settings: ComponentSettings) {
   return (
     settings.ui.projectInspector ||
     settings.ui.settings ||
@@ -120,15 +116,10 @@ export function anyUiSettingButton (settings: Settings) {
   )
 }
 
-export type PartialSettings = RecursivePartial<Settings>
 
-export const defaultSettings: Settings = {
-  scene: {
-    groundPlane: true,
-  },
-  inputs:{
-    scrollSpeed: VIM.defaultViewerSettings.camera.controls.scrollSpeed
-  },
+
+export const defaultSettings: ComponentSettings = {
+  
   peformance:{
     useFastMaterial: false
   },
