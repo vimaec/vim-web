@@ -3,7 +3,8 @@ import {
   createVimComponent,
   VimComponentRef,
   getLocalSettings,
-  THREE
+  THREE,
+  VIM
 } from './component'
 
 // Parse URL
@@ -13,7 +14,7 @@ const url = params.has('vim')
   ? params.get('vim')
   : null
 
-createVimComponent(loadVim, undefined, getLocalSettings())
+createVimComponent(loadVim, undefined, getLocalSettings(), VIM.getViewerSettingsFromUrl(window.location.search))
 
 async function loadVim (cmp: VimComponentRef) {
   const time = Date.now()

@@ -4,8 +4,9 @@
 
 import React, { ReactEventHandler } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { UserBoolean, Settings } from './settings'
+import { UserBoolean, ComponentSettings } from './settings'
 import { SettingsState} from './settingsState'
+import ReactTooltip from 'react-tooltip'
 
 /**
  * JSX Component to interact with settings.
@@ -36,8 +37,8 @@ export function MenuSettings (props: {
 
   const settingsToggle = (
     label: string,
-    getter: (settings: Settings) => UserBoolean,
-    setter: (settings: Settings, b: boolean) => void
+    getter: (settings: ComponentSettings) => UserBoolean,
+    setter: (settings: ComponentSettings, b: boolean) => void
   ) => {
     const value = getter(props.settings.value)
     if (value === 'AlwaysTrue' || value === 'AlwaysFalse') {
@@ -50,25 +51,26 @@ export function MenuSettings (props: {
   }
 
   const settingsBox = ( label: string,
-    getter: (settings: Settings) => number,
-    setter: (settings: Settings, b: number) => void) =>{
+    info: string,
+    getter: (settings: ComponentSettings) => number,
+    setter: (settings: ComponentSettings, b: number) => void) =>{
 
     const value = getter(props.settings.value).toString()
     const update = (event: React.FocusEvent<HTMLInputElement, Element>) => {
       const str = event.target.value
       const n = Number.parseFloat(str)
-      console.log(str)
       if (Number.isNaN(n)){
         event.target.value = getter(props.settings.value).toString()
       }
       else{
         props.settings.update(s => setter(s, n))
       }
-
     }
-    return <div className="container">
-      <label htmlFor="textbox" className='vc-w-3 vc-h-2 vc-pr-2'>{label}:</label>
-      <input type="text" placeholder={value} className='vc-w-10 vc-h-6 vc-pl-1' onBlur={e => update(e)}/>
+
+    return <div className="container vc-py-1">
+      <label htmlFor="textbox" className='vc-w-3 vc-h-2'>{label}:</label>
+      <input type="text" placeholder={value} className='vc-w-10 vc-h-6 vc-ml-1' onBlur={e => update(e)}/>
+      <label htmlFor="textbox" className='vc-w-3 vc-h-2 vc-text-gray vc-ml-1'>{info}</label>
     </div>
 
   }
@@ -82,8 +84,9 @@ export function MenuSettings (props: {
         <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Inputs</h3>
         {settingsBox(
           "Scroll Speed",
-          s => s.inputs.scrollSpeed,
-          (s,v) => s.inputs.scrollSpeed = v
+          "[0.1,10]",
+          s => props.viewer.inputs.mouse.scrollSpeed,
+          (s,v) => props.viewer.inputs.mouse.scrollSpeed = v
         )}
         <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Materials</h3>
         {settingsToggle(
@@ -109,8 +112,8 @@ export function MenuSettings (props: {
         <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Scene</h3>
         {settingsToggle(
           'Show Ground Plane',
-          (settings) => settings.scene.groundPlane,
-          (settings, value) => (settings.scene.groundPlane = value)
+          (_) => props.viewer.environment.groundPlane.visible,
+          (_, value) => props.viewer.environment.groundPlane.visible = value
         )}
         <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Panels</h3>
         {settingsToggle(

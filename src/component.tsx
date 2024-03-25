@@ -27,7 +27,7 @@ import { Overlay } from './panels/overlay'
 import { addPerformanceCounter} from './panels/performance'
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
-import { PartialSettings, isTrue} from './settings/settings'
+import { PartialComponentSettings, isTrue} from './settings/settings'
 import { useSettings} from './settings/settingsState'
 import { Isolation } from './helpers/isolation'
 import { ComponentCamera } from './helpers/camera'
@@ -41,8 +41,8 @@ export * as VIM from 'vim-webgl-viewer/'
 export const THREE = VIM.THREE
 export * as ContextMenu from './panels/contextMenu'
 export * from './vimComponentRef'
-export {getLocalSettings} from './settings/settingsStorage'
-export {type Settings, type PartialSettings, defaultSettings} from './settings/settings'
+export {getLocalComponentSettings as getLocalSettings} from './settings/settingsStorage'
+export {type ComponentSettings as Settings, type PartialComponentSettings as PartialSettings, defaultSettings} from './settings/settings'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.
@@ -54,9 +54,10 @@ export {type Settings, type PartialSettings, defaultSettings} from './settings/s
 export function createVimComponent (
   onMount: (component: VimComponentRef) => void,
   container?: VimComponentContainer,
-  settings: PartialSettings = {}
+  componentSettings: PartialComponentSettings = {},
+  viewerSettings: VIM.PartialViewerSettings = {}
 ) {
-  const viewer = new VIM.Viewer()
+  const viewer = new VIM.Viewer(viewerSettings)
   container = container ?? createContainer(viewer)
   const reactRoot = createRoot(container.ui)
   reactRoot.render(
@@ -64,7 +65,7 @@ export function createVimComponent (
       container={{ root: container.root, gfx: container.gfx, ui: container.ui }}
       onMount={onMount}
       viewer={viewer}
-      settings={settings}
+      settings={componentSettings}
     />
   )
   return { container, reactRoot, viewer }
@@ -81,7 +82,7 @@ export function VimComponent (props: {
   container: VimComponentContainer
   viewer: VIM.Viewer
   onMount: (component: VimComponentRef) => void
-  settings?: PartialSettings
+  settings?: PartialComponentSettings
 }) {
   const camera = useMemo(() => new ComponentCamera(props.viewer), [])
   const cursor = useMemo(() => new CursorManager(props.viewer), [])

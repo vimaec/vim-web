@@ -14,7 +14,7 @@ import { ComponentCamera } from '../helpers/camera'
 import { Grouping, toTreeData } from './bimTreeData'
 import { ViewerState } from '../viewerState'
 import { AugmentedElement } from '../helpers/element'
-import { Settings, isFalse, isTrue } from '../settings/settings'
+import { ComponentSettings, isFalse, isTrue } from '../settings/settings'
 
 
 export function OptionalBimPanel (props: {
@@ -23,7 +23,7 @@ export function OptionalBimPanel (props: {
   viewerState: ViewerState
   isolation: Isolation
   visible: boolean
-  settings: Settings
+  settings: ComponentSettings
   treeRef: React.MutableRefObject<TreeActionRef>
 }) {
   if (
@@ -50,7 +50,7 @@ export function BimPanel (props: {
   viewerState: ViewerState
   isolation: Isolation
   visible: boolean
-  settings: Settings
+  settings: ComponentSettings
   treeRef: React.MutableRefObject<TreeActionRef>
 }) {
   const [filter, setFilter] = useState('')

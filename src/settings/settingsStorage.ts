@@ -2,14 +2,14 @@
  * @module viw-webgl-component
  */
 
-import { UserBoolean, Settings, RecursivePartial } from './settings'
+import { UserBoolean, ComponentSettings, RecursivePartial, PartialComponentSettings } from './settings'
 
 
-export function getLocalSettings (value: RecursivePartial<Settings> = {}) {
+export function getLocalComponentSettings (settings: PartialComponentSettings = {}) {
   try {
     const json = localStorage.getItem('component.settings')
-    const previous = JSON.parse(json!) as Settings
-    applyPermission(previous, value)
+    const previous = JSON.parse(json!) as ComponentSettings
+    applyPermission(previous, settings)
     return previous ?? {}
   } catch (e) {
     console.error('Could not read local storage')
@@ -17,7 +17,7 @@ export function getLocalSettings (value: RecursivePartial<Settings> = {}) {
   }
 }
 
-export function saveSettingsToLocal(value: Settings){
+export function saveSettingsToLocal(value: ComponentSettings){
   try {
     const save = removePermission(value)
     localStorage.setItem('component.settings', JSON.stringify(save))
@@ -25,8 +25,8 @@ export function saveSettingsToLocal(value: Settings){
 }
 
 function applyPermission (
-  previous: Settings,
-  current: RecursivePartial<Settings>
+  previous: ComponentSettings,
+  current: RecursivePartial<ComponentSettings>
 ) {
   if (!current?.ui) return
   for (const k of Object.keys(current.ui)) {
@@ -41,7 +41,7 @@ function applyPermission (
   }
 }
 
-function removePermission (settings: Settings) {
+function removePermission (settings: ComponentSettings) {
   const clone = structuredClone(settings)
   for (const k of Object.keys(clone.ui)) {
     const u = clone.ui as any

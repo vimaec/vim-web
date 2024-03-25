@@ -5,7 +5,7 @@
 import * as VIM from 'vim-webgl-viewer/'
 import { ComponentLoader } from './panels/loading'
 import { contextMenuCustomization } from './panels/contextMenu'
-import { Settings } from './settings/settings'
+import { ComponentSettings } from './settings/settings'
 import { Isolation } from './helpers/isolation'
 import { ComponentCamera } from './helpers/camera'
 import { VimComponentContainer } from './container'
@@ -66,13 +66,13 @@ export type SettingsRef = {
    * Allows updating settings by providing a callback function.
    * @param updater A function that updates the current settings.
    */
-  update : (updater: (settings: Settings) => void) => void
+  update : (updater: (settings: ComponentSettings) => void) => void
 
   /**
    * Registers a callback function to be notified when settings are updated.
    * @param callback A function to be called when settings are updated, receiving the updated settings.
    */
-  register : (callback: (settings: Settings) => void) => void
+  register : (callback: (settings: ComponentSettings) => void) => void
   
 }
 
