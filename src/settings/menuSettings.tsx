@@ -2,11 +2,10 @@
  * @module viw-webgl-component
  */
 
-import React, { ReactEventHandler } from 'react'
+import React from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import { UserBoolean, ComponentSettings } from './settings'
 import { SettingsState} from './settingsState'
-import ReactTooltip from 'react-tooltip'
 
 /**
  * JSX Component to interact with settings.
@@ -52,6 +51,7 @@ export function MenuSettings (props: {
 
   const settingsBox = ( label: string,
     info: string,
+    transform : (value:number) => number,
     getter: (settings: ComponentSettings) => number,
     setter: (settings: ComponentSettings, b: number) => void) =>{
 
@@ -63,13 +63,15 @@ export function MenuSettings (props: {
         event.target.value = getter(props.settings.value).toString()
       }
       else{
-        props.settings.update(s => setter(s, n))
+        const value = transform(n)
+        event.target.value = value.toString()
+        props.settings.update(s => setter(s, value))
       }
     }
 
-    return <div className="container vc-py-1">
+    return <div className="vc-box-input vc-my-1">
       <label htmlFor="textbox" className='vc-w-3 vc-h-2'>{label}:</label>
-      <input type="text" placeholder={value} className='vc-w-10 vc-h-6 vc-ml-1' onBlur={e => update(e)}/>
+      <input type="text" placeholder={value} className='vc-w-14 vc-h-6 vc-ml-1 vc-p-1' onBlur={e => update(e)}/>
       <label htmlFor="textbox" className='vc-w-3 vc-h-2 vc-text-gray vc-ml-1'>{info}</label>
     </div>
 
@@ -85,6 +87,7 @@ export function MenuSettings (props: {
         {settingsBox(
           "Scroll Speed",
           "[0.1,10]",
+          n => VIM.THREE.MathUtils.clamp(n, 0.1, 10),
           s => props.viewer.inputs.mouse.scrollSpeed,
           (s,v) => props.viewer.inputs.mouse.scrollSpeed = v
         )}
