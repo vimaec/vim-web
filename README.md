@@ -20,6 +20,8 @@
 - [JsFiddle - Custom Context Menu](https://jsfiddle.net/simon_vimaec/7marsfwj/)
 - [JsFiddle - Custom Camera](https://jsfiddle.net/simon_vimaec/2x0noetj/)
 - [JsFiddle - Custom Loading](https://jsfiddle.net/simon_vimaec/3g2epmf1/)
+- [JsFiddle - Embedding](https://jsfiddle.net/simon_vimaec/8y321skn/)
+
 
 # Overview
 
