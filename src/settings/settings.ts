@@ -2,7 +2,6 @@
  * @module viw-webgl-component
  */
 
-import * as VIM from 'vim-webgl-viewer/'
 /**
  * Makes all fields optional recursively
  * https://stackoverflow.com/questions/41980195/recursive-partialt-in-typescript
@@ -19,14 +18,12 @@ export type RecursivePartial<T> = {
  * Restricted: is false and cannot be changed by the user.
  */
 export type UserBoolean = boolean | 'AlwaysTrue' | 'AlwaysFalse'
-export function isTrue(value:UserBoolean){
+export function isTrue (value:UserBoolean) {
   return value === true || value === 'AlwaysTrue'
 }
-export function isFalse(value:UserBoolean){
+export function isFalse (value:UserBoolean) {
   return value === false || value === 'AlwaysFalse'
 }
-
-export type PartialComponentSettings = RecursivePartial<ComponentSettings>
 
 /**
  * Vim component settings, can either be set at component intialization or by user using UI.
@@ -80,6 +77,8 @@ export type ComponentSettings = {
   }
 }
 
+export type PartialComponentSettings = RecursivePartial<ComponentSettings>
+
 export function anyUiAxesButton (settings: ComponentSettings) {
   return (
     settings.ui.orthographic ||
@@ -116,11 +115,8 @@ export function anyUiSettingButton (settings: ComponentSettings) {
   )
 }
 
-
-
 export const defaultSettings: ComponentSettings = {
-  
-  peformance:{
+  peformance: {
     useFastMaterial: false
   },
   isolation: {
@@ -164,7 +160,6 @@ export const defaultSettings: ComponentSettings = {
     maximise: true,
 
     loadingBox: true,
-    performance: true,
+    performance: true
   }
 }
-

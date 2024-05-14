@@ -2,7 +2,6 @@
  * @module viw-webgl-component
  */
 
-
 import { useEffect, useState, useMemo, useRef } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import { AugmentedElement, getElements } from './helpers/element'
@@ -42,7 +41,7 @@ export function useViewerState (viewer: VIM.Viewer) {
 
   useEffect(() => {
     vimConnection.current?.()
-    
+
     if (vim) {
       vimConnection.current = vim.onLoadingUpdate.subscribe(() => {
         getElements(vim).then((elements) => setElements(elements))

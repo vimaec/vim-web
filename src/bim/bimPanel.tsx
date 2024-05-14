@@ -2,12 +2,10 @@
  * @module viw-webgl-component
  */
 
-import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 
 import { BimTree, TreeActionRef } from './bimTree'
-import { BimDocumentDetails, BimObjectDetails } from './bimDetails'
-import { BimDocumentHeader, BimObjectHeader } from './bimHeader'
 import { BimSearch } from './bimSearch'
 import { Isolation } from '../helpers/isolation'
 import { ComponentCamera } from '../helpers/camera'
@@ -15,7 +13,8 @@ import { Grouping, toTreeData } from './bimTreeData'
 import { ViewerState } from '../viewerState'
 import { AugmentedElement } from '../helpers/element'
 import { ComponentSettings, isFalse, isTrue } from '../settings/settings'
-
+import { BimInfo } from './bimInfo'
+import { BimInfoPanelRef } from './bimInfoData'
 
 export function OptionalBimPanel (props: {
   viewer: VIM.Viewer
@@ -25,10 +24,11 @@ export function OptionalBimPanel (props: {
   visible: boolean
   settings: ComponentSettings
   treeRef: React.MutableRefObject<TreeActionRef>
+  bimInfoRef: BimInfoPanelRef
 }) {
   if (
     (isFalse(props.settings.ui.bimTreePanel) &&
-     isFalse(props.settings.ui.bimInfoPanel)) 
+     isFalse(props.settings.ui.bimInfoPanel))
   ) {
     return null
   }
@@ -52,10 +52,11 @@ export function BimPanel (props: {
   visible: boolean
   settings: ComponentSettings
   treeRef: React.MutableRefObject<TreeActionRef>
+  bimInfoRef: BimInfoPanelRef
 }) {
   const [filter, setFilter] = useState('')
   const [grouping, setGrouping] = useState<Grouping>('Family')
-  
+
   // Filter elements with meshes using search term.
   const filteredElements = useMemo(() => {
     if (!props.viewerState.elements) return
@@ -89,9 +90,9 @@ export function BimPanel (props: {
   useEffect(() => {
     const unsubscribe = props.isolation.onChanged.subscribe(
       (source: string) => {
-        if (source !== 'tree' && source !== 'search'){
+        if (source !== 'tree' && source !== 'search') {
           setFilter('')
-        } 
+        }
       }
     )
 
@@ -105,9 +106,11 @@ export function BimPanel (props: {
     props.viewerState.selection[props.viewerState.selection.length - 1]
   const full = isFalse(props.settings.ui.bimInfoPanel)
   return (
-    <div className={`vim-bim-panel ${full ? "full-tree" : ""} ${props.visible ? '' : 'vc-hidden'}`}>
-      {isFalse(props.settings.ui.bimTreePanel) ? null : (
-        <div className={`vim-bim-upper ${full ? "vc-h-screen" : "vc-h-1/2"} ${props.viewerState.elements.length > 0 ? '' : 'vc-hidden'}`}>
+    <div className={`vim-bim-panel ${full ? 'full-tree' : ''} ${props.visible ? '' : 'vc-hidden'}`}>
+      {isFalse(props.settings.ui.bimTreePanel)
+        ? null
+        : (
+        <div className={`vim-bim-upper ${full ? 'vc-h-screen' : 'vc-h-1/2'} ${props.viewerState.elements.length > 0 ? '' : 'vc-hidden'}`}>
           <h2 className="vim-bim-upper-title vc-mb-6 vc-text-xs vc-font-bold vc-uppercase">
             Project Inspector
           </h2>
@@ -161,19 +164,24 @@ export function BimPanel (props: {
             treeData={tree}
           />
         </div>
-      )}
-
+          )}
       {
         // Divider if needed.
         isTrue(props.settings.ui.bimTreePanel) &&
         isTrue(props.settings.ui.bimInfoPanel) &&
-        props.viewerState.elements.length >0
+        props.viewerState.elements.length > 0
           ? divider()
           : null
       }
 
       {isTrue(props.settings.ui.bimInfoPanel)
-        ? bimInfo(last, props.viewerState.vim, filteredElements, isFalse(props.settings.ui.bimTreePanel))
+        ? (<BimInfo
+            object={last}
+            vim={props.viewerState.vim}
+            elements={filteredElements}
+            full={isFalse(props.settings.ui.bimTreePanel)}
+            bimInfoRef={props.bimInfoRef}
+          />)
         : null}
     </div>
   )
@@ -181,44 +189,6 @@ export function BimPanel (props: {
 
 function divider () {
   return <hr className="-vc-mx-6 vc-mb-5 vc-border-gray-divider" />
-}
-
-function bimInfo (
-  object: VIM.Object,
-  vim: VIM.Vim,
-  elements: AugmentedElement[],
-  full : boolean
-) {
-  const objectHeader = object ? React.createElement(BimObjectHeader, {
-    elements,
-    object,
-  }) : null
-
-  const objectDetails = object ? React.createElement(BimObjectDetails, {
-    object,
-  }) : null
-
-  const docHeader = !object ? React.createElement(BimDocumentHeader,{
-    vim,
-  }) : null
-
-  const docDetails = !object ? React.createElement(BimDocumentDetails,{
-    vim
-  }) : null
-
-  return (
-    <>
-      <h2 className="vc-mb-4 vc-text-xs vc-font-bold vc-uppercase">
-      Bim Inspector
-      </h2>
-      <div className={`vim-bim-lower ${full ?"vc-h-screen" : "vc-h-1/2"} vc-overflow-y-auto vc-overflow-x-hidden`}>
-        {objectHeader}
-        {objectDetails}
-        {docHeader}
-        {docDetails}
-      </div>
-    </>
-  )
 }
 
 function filterElements (

@@ -24,25 +24,26 @@ import { useSideState } from './sidePanel/sideState'
 import { MenuSettings } from './settings/menuSettings'
 import { MenuToastMemo } from './panels/toast'
 import { Overlay } from './panels/overlay'
-import { addPerformanceCounter} from './panels/performance'
+import { addPerformanceCounter } from './panels/performance'
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
-import { PartialComponentSettings, isTrue} from './settings/settings'
-import { useSettings} from './settings/settingsState'
+import { PartialComponentSettings, isTrue } from './settings/settings'
+import { useSettings } from './settings/settingsState'
 import { Isolation } from './helpers/isolation'
 import { ComponentCamera } from './helpers/camera'
 import { TreeActionRef } from './bim/bimTree'
-import { VimComponentContainer, createContainer } from './container'
-import { useViewerState} from './viewerState'
-import  {LogoMemo} from './panels/logo'
+import { VimComponentContainer, createContainer, reparentViewer } from './container'
+import { useViewerState } from './viewerState'
+import { LogoMemo } from './panels/logo'
 import { VimComponentRef } from './vimComponentRef'
+import { createBimInfoState } from './bim/bimInfoData'
 
 export * as VIM from 'vim-webgl-viewer/'
 export const THREE = VIM.THREE
 export * as ContextMenu from './panels/contextMenu'
 export * from './vimComponentRef'
-export {getLocalComponentSettings as getLocalSettings} from './settings/settingsStorage'
-export {type ComponentSettings as Settings, type PartialComponentSettings as PartialSettings, defaultSettings} from './settings/settings'
+export { getLocalComponentSettings as getLocalSettings } from './settings/settingsStorage'
+export { type ComponentSettings as Settings, type PartialComponentSettings as PartialSettings, defaultSettings } from './settings/settings'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.
@@ -58,7 +59,8 @@ export function createVimComponent (
   viewerSettings: VIM.PartialViewerSettings = {}
 ) {
   const viewer = new VIM.Viewer(viewerSettings)
-  container = container ?? createContainer(viewer)
+  container = container ?? createContainer()
+  reparentViewer(container, viewer)
   const reactRoot = createRoot(container.ui)
   reactRoot.render(
     <VimComponent
@@ -91,7 +93,6 @@ export function VimComponent (props: {
 
   const [isolation] = useState(() => new Isolation(props.viewer, camera, settings.value))
   useEffect(() => isolation.applySettings(settings.value), [settings])
-  useEffect(() => settings.update((s) =>s), [loader.current.loadCount])
 
   const side = useSideState(
     isTrue(settings.value.ui.bimTreePanel) ||
@@ -99,6 +100,8 @@ export function VimComponent (props: {
     480
   )
   const [contextMenu, setcontextMenu] = useState<contextMenuCustomization>()
+  const bimInfoRef = createBimInfoState()
+
   const help = useHelp()
   const viewerState = useViewerState(props.viewer)
   const [msg, setMsg] = useState<MsgInfo>()
@@ -140,7 +143,8 @@ export function VimComponent (props: {
       message: {
         show: (message: string, info: string) => setMsg({ message, info }),
         hide: () => setMsg(undefined)
-      }
+      },
+      bim: bimInfoRef
     })
 
     // Clean up
@@ -160,6 +164,7 @@ export function VimComponent (props: {
         isolation={isolation}
         treeRef={treeRef}
         settings={settings.value}
+        bimInfoRef={bimInfoRef}
       />
       <MenuSettings
         visible={side.getContent() === 'settings'}

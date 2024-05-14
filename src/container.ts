@@ -4,7 +4,6 @@
 
 import * as VIM from 'vim-webgl-viewer/'
 
-
 /**
  * Basic HTML structure that the webgl component expects
  */
@@ -12,7 +11,7 @@ export type VimComponentContainer = {
   /**
    * Root of the viewer, all component ui should have this as an acestor.
    */
-  root: HTMLDivElement
+  root: HTMLElement
   /**
    * Div where to instantiate ui elements.
    */
@@ -27,30 +26,32 @@ export type VimComponentContainer = {
 /**
  * Creates a default container for the vim component around a vim viewer
  */
-export function createContainer (viewer: VIM.Viewer): VimComponentContainer {
-  const root = document.createElement('div')
-  root.className =
-    'vim-component vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full'
-  document.body.append(root)
+export function createContainer (element?: HTMLElement, styling: boolean = true): VimComponentContainer {
+  // fullscreen root
+  const root = element ?? document.createElement('div')
+  root.className += ' vim-component' +
+    (styling ? ' vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full' : '')
 
-  // container for canvases
+  // container for viewer canvases
   const gfx = document.createElement('div')
-  gfx.className = 'vim-gfx vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full'
-
-  root.append(gfx)
-
-  gfx.append(viewer.viewport.canvas)
-  gfx.append(viewer.viewport.text)
-  gfx.append(viewer.gizmos.axes.canvas)
+  gfx.className = 'vim-gfx' +
+    (styling ? ' vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full' : '')
 
   // container for ui
   const ui = document.createElement('div')
-  ui.className = 'vim-ui vc-top-0 vc-left-0 vc-h-full vc-w-full'
+  ui.className = 'vim-ui' +
+    (styling ? 'vc-top-0 vc-left-0 vc-h-full vc-w-full' : '')
 
+  root.append(gfx)
   root.append(ui)
-
-  // Initial viewer settings
-  viewer.viewport.canvas.tabIndex = 0
+  document.body.append(root)
 
   return { root, ui, gfx }
+}
+
+export function reparentViewer (container: VimComponentContainer, viewer: VIM.Viewer) {
+  container.gfx.append(viewer.viewport.canvas)
+  container.gfx.append(viewer.viewport.text)
+  container.gfx.append(viewer.gizmos.axes.canvas)
+  viewer.viewport.canvas.tabIndex = 0
 }

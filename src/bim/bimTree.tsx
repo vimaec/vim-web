@@ -47,7 +47,7 @@ export function BimTree (props: {
   const [selectedItems, setSelectedItems] = useState<number[]>([])
   const [focusedItem, setFocusedItem] = useState<number>()
   const [doubleClick] = useState(new DoubleClickManager())
-  const [version, setVersion] = useState(0)
+  const [, setVersion] = useState(0)
   const focus = useRef<number>(0)
   const div = useRef<HTMLDivElement>()
 
