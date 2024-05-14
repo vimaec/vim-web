@@ -25,6 +25,8 @@ export type VimComponentContainer = {
 
 /**
  * Creates a default container for the vim component around a vim viewer
+ * @element optional HTML element to use as root
+ * @styling whether to apply default fullscreen styling to the container. Default is true.
  */
 export function createContainer (element?: HTMLElement, styling: boolean = true): VimComponentContainer {
   // fullscreen root
@@ -49,6 +51,9 @@ export function createContainer (element?: HTMLElement, styling: boolean = true)
   return { root, ui, gfx }
 }
 
+/**
+ * Reparents the viewer to the given container
+ */
 export function reparentViewer (container: VimComponentContainer, viewer: VIM.Viewer) {
   container.gfx.append(viewer.viewport.canvas)
   container.gfx.append(viewer.viewport.text)
