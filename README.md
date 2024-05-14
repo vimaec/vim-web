@@ -2,7 +2,7 @@
 
 # Documentation
 
-[API Documentation](https://vimaec.github.io/vim-webgl-app/docs/api/index.html)
+[API Documentation](https://vimaec.github.io/vim-webgl-component/api/)
 
 # Live Demo
 
