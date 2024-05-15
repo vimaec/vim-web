@@ -2,8 +2,6 @@
  * @module public-api
  */
 
-import * as VIM from 'vim-webgl-viewer/'
-
 /**
  * Basic HTML structure that the webgl component expects
  */
@@ -49,14 +47,4 @@ export function createContainer (element?: HTMLElement, styling: boolean = true)
   document.body.append(root)
 
   return { root, ui, gfx }
-}
-
-/**
- * Reparents the viewer to the given container
- */
-export function reparentViewer (container: VimComponentContainer, viewer: VIM.Viewer) {
-  container.gfx.append(viewer.viewport.canvas)
-  container.gfx.append(viewer.viewport.text)
-  container.gfx.append(viewer.gizmos.axes.canvas)
-  viewer.viewport.canvas.tabIndex = 0
 }

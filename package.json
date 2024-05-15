@@ -1,6 +1,6 @@
 {
   "name": "vim-webgl-component",
-  "version": "0.3.3-d",
+  "version": "0.3.4",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "files": [
     "dist"
@@ -57,7 +57,7 @@
     "vim-webgl-viewer"
   ],
   "dependencies": {
-    "vim-webgl-viewer": "2.0.2-d",
+    "vim-webgl-viewer": "2.0.3",
     "@firefox-devtools/react-contextmenu": "^5.1.0",
     "jsx": "^0.9.89",
     "re-resizable": "^6.9.9",

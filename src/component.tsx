@@ -32,7 +32,7 @@ import { useSettings } from './settings/settingsState'
 import { Isolation } from './helpers/isolation'
 import { ComponentCamera } from './helpers/camera'
 import { TreeActionRef } from './bim/bimTree'
-import { VimComponentContainer, createContainer, reparentViewer } from './container'
+import { VimComponentContainer, createContainer } from './container'
 import { useViewerState } from './viewerState'
 import { LogoMemo } from './panels/logo'
 import { VimComponentRef } from './vimComponentRef'
@@ -60,7 +60,7 @@ export function createVimComponent (
 ) {
   const viewer = new VIM.Viewer(viewerSettings)
   container = container ?? createContainer()
-  reparentViewer(container, viewer)
+  viewer.viewport.reparent(container.gfx)
   const reactRoot = createRoot(container.ui)
   reactRoot.render(
     <VimComponent
@@ -119,6 +119,7 @@ export function VimComponent (props: {
     cursor.register()
 
     // Setup custom input scheme
+    props.viewer.viewport.canvas.tabIndex = 0
     props.viewer.inputs.scheme = new ComponentInputScheme(
       props.viewer,
       camera,
@@ -144,7 +145,7 @@ export function VimComponent (props: {
         show: (message: string, info: string) => setMsg({ message, info }),
         hide: () => setMsg(undefined)
       },
-      bim: bimInfoRef
+      bimInfo: bimInfoRef
     })
 
     // Clean up
