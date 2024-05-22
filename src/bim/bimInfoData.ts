@@ -123,7 +123,7 @@ export function createBimInfoState () : BimInfoPanelRef {
       return renderHeader
     },
     set onRenderHeader (value: DataRender<Entry[]>) {
-      setRenderHeader(() => value)
+      setRenderHeader(() => (value))
     },
 
     // onRenderHeaderEntry

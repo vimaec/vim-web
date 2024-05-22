@@ -10,7 +10,7 @@ import 'vim-webgl-viewer/dist/style.css'
 
 import * as VIM from 'vim-webgl-viewer/'
 import { AxesPanelMemo } from './panels/axesPanel'
-import { ControlBar } from './panels/controlBar'
+import { ControlBar } from './controlbar/controlBar'
 import { LoadingBoxMemo, MsgInfo, ComponentLoader } from './panels/loading'
 import { OptionalBimPanel } from './bim/bimPanel'
 import {
@@ -41,9 +41,11 @@ import { createBimInfoState } from './bim/bimInfoData'
 export * as VIM from 'vim-webgl-viewer/'
 export const THREE = VIM.THREE
 export * as ContextMenu from './panels/contextMenu'
+export * as BimInfo from './bim/bimInfoData'
 export * from './vimComponentRef'
 export { getLocalComponentSettings as getLocalSettings } from './settings/settingsStorage'
 export { type ComponentSettings as Settings, type PartialComponentSettings as PartialSettings, defaultSettings } from './settings/settings'
+export * from './container'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.
@@ -73,6 +75,13 @@ export function createVimComponent (
   return { container, reactRoot, viewer }
 }
 
+export function Test () {
+  useEffect(() => {
+    console.log('Test')
+  })
+  return <div className='Test'>Test</div>
+}
+
 /**
  * Represents a React component providing UI for the Vim viewer.
  * @param container The container object containing root, gfx, and UI elements for the Vim viewer.
@@ -89,7 +98,7 @@ export function VimComponent (props: {
   const camera = useMemo(() => new ComponentCamera(props.viewer), [])
   const cursor = useMemo(() => new CursorManager(props.viewer), [])
   const loader = useRef(new ComponentLoader(props.viewer))
-  const settings = useSettings(props.viewer, props.settings)
+  const settings = useSettings(props.viewer, props.settings ?? {})
 
   const [isolation] = useState(() => new Isolation(props.viewer, camera, settings.value))
   useEffect(() => isolation.applySettings(settings.value), [settings])

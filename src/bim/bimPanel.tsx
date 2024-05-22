@@ -13,7 +13,7 @@ import { Grouping, toTreeData } from './bimTreeData'
 import { ViewerState } from '../viewerState'
 import { AugmentedElement } from '../helpers/element'
 import { ComponentSettings, isFalse, isTrue } from '../settings/settings'
-import { BimInfo } from './bimInfo'
+import { BimInfoPanel } from './bimInfoPanel'
 import { BimInfoPanelRef } from './bimInfoData'
 
 export function OptionalBimPanel (props: {
@@ -175,7 +175,7 @@ export function BimPanel (props: {
       }
 
       {isTrue(props.settings.ui.bimInfoPanel)
-        ? (<BimInfo
+        ? (<BimInfoPanel
             object={last}
             vim={props.viewerState.vim}
             elements={filteredElements}

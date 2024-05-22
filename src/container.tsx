@@ -1,6 +1,7 @@
 /**
  * @module public-api
  */
+import React from 'react'
 
 /**
  * Basic HTML structure that the webgl component expects
@@ -40,11 +41,27 @@ export function createContainer (element?: HTMLElement, styling: boolean = true)
   // container for ui
   const ui = document.createElement('div')
   ui.className = 'vim-ui' +
-    (styling ? 'vc-top-0 vc-left-0 vc-h-full vc-w-full' : '')
+    (styling ? ' vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full' : '')
 
   root.append(gfx)
   root.append(ui)
   document.body.append(root)
 
   return { root, ui, gfx }
+}
+
+export function VimContainer (styling: boolean = true) {
+  const rootName = ' vim-component' +
+    (styling ? ' vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full' : '')
+
+  const gfxName = 'vim-gfx' +
+    (styling ? ' vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full' : '')
+
+  const uiName = 'vim-ui' +
+    (styling ? 'vc-top-0 vc-left-0 vc-h-full vc-w-full' : '')
+
+  return <div className={rootName}>
+    <div className={gfxName}/>
+    <div className={uiName}></div>
+  </div>
 }

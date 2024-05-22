@@ -2,7 +2,7 @@
  * @module viw-webgl-component
  */
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import * as Icons from '../panels/icons'
 import { SideState } from './sideState'
@@ -10,7 +10,6 @@ import { Enable, Resizable } from 're-resizable'
 import { VimComponentContainer } from '../container'
 
 const MAX_WIDTH = 0.5
-const MIN_WIDTH = 240
 
 /**
  * Memoized version of the SidePanel.
@@ -26,9 +25,9 @@ export function SidePanel (props: {
   viewer: VIM.Viewer
   content: () => JSX.Element
 }) {
-  // state to force re-render on resize
-  const [, setParentWidth] = useState(props.container.root.clientWidth)
+  const resizeTimeOut = useRef<number>()
 
+  // state to force re-render on resize
   const resizeGfx = () => {
     if (props.side.getContent() !== 'none') {
       const width = props.side.getWidth()
@@ -49,7 +48,7 @@ export function SidePanel (props: {
 
   const getClampedSize = () => {
     const next = Math.min(props.side.getWidth(), getMaxSize())
-    return Math.max(next, MIN_WIDTH)
+    return Math.max(next, props.side.minWidth)
   }
 
   // Resize canvas on each re-render.
@@ -59,14 +58,15 @@ export function SidePanel (props: {
 
   useEffect(() => {
     // Init size to parent
-    setParentWidth((w) => props.container.root.clientWidth)
+    props.side.setWidth(getClampedSize())
+    const obs = new ResizeObserver((entries) => {
       props.side.setWidth(getClampedSize())
-
-    // Listen to update size from parent
-    window.addEventListener('resize', () => {
-      setParentWidth((w) => props.container.root.clientWidth)
-      props.side.setWidth(getClampedSize())
+      clearTimeout(resizeTimeOut.current)
+      resizeTimeOut.current = window.setTimeout(() => {
+        resizeGfx()
+      }, 100)
     })
+    obs.observe(props.container.root)
   }, [])
 
   const onNavBtn = () => {
@@ -89,7 +89,7 @@ export function SidePanel (props: {
         } as Enable
       }
       size={{ width: props.side.getWidth(), height: '100%' }}
-      minWidth={300}
+      minWidth={props.side.minWidth}
       maxWidth={getMaxSize()}
       onResizeStart={(e, direction, ref) => {
         if (direction !== 'right') {
@@ -103,7 +103,7 @@ export function SidePanel (props: {
         props.side.setWidth(ref.clientWidth)
       }}
       style={{
-        position: 'fixed'
+        position: 'absolute'
       }}
       className={`vim-side-panel vc-top-0 vc-left-0 vc-z-20 vc-bg-gray-lightest vc-p-6 vc-text-gray-darker ${
         props.side.getContent() !== 'none' ? '' : 'vc-hidden'

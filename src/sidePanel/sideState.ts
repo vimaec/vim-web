@@ -7,6 +7,7 @@ import { useMemo, useRef, useState } from 'react'
 export type SideContent = 'none' | 'bim' | 'settings' | 'logs'
 
 export type SideState = {
+  minWidth: number
   toggleContent: (content: SideContent) => void
   popContent: () => void
   getNav: () => 'back' | 'close'
@@ -79,6 +80,7 @@ export function useSideState (
 
   return useMemo(
     () => ({
+      minWidth: 180,
       setHasBim,
       setContent,
       getContent,
@@ -87,7 +89,7 @@ export function useSideState (
       getNav,
       getWidth,
       setWidth
-    }),
+    } as SideState),
     [side, width]
   )
 }

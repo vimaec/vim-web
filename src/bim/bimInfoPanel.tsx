@@ -9,7 +9,7 @@ import { getVimData } from './bimInfoVim'
 import { AugmentedElement } from '../helpers/element'
 import { Data, BimInfoPanelRef } from './bimInfoData'
 
-export function BimInfo (props : {
+export function BimInfoPanel (props : {
     object: VIM.Object,
     vim: VIM.Vim,
     elements: AugmentedElement[],
@@ -58,7 +58,7 @@ export function BimInfo (props : {
       <h2 className="vc-mb-4 vc-text-xs vc-font-bold vc-uppercase">
       Bim Inspector
       </h2>
-      <div className={`vim-bim-lower ${props.full ? 'vc-h-[90vh]' : 'vc-h-[38vh]'} vc-overflow-y-auto vc-overflow-x-hidden`}>
+      <div className={`vim-bim-lower ${props.full ? 'vc-h-[90%]' : 'vc-h-[40%]'} vc-overflow-y-auto vc-overflow-x-hidden`}>
         {header()}
         {body()}
       </div>
