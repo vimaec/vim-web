@@ -105,17 +105,20 @@ export function SidePanel (props: {
       style={{
         position: 'absolute'
       }}
-      className={`vim-side-panel vc-top-0 vc-left-0 vc-z-20 vc-bg-gray-lightest vc-p-6 vc-text-gray-darker ${
+      className={`vim-side-panel vc-top-0 vc-left-0 vc-z-20 vc-bg-gray-lightest vc-text-gray-darker ${
         props.side.getContent() !== 'none' ? '' : 'vc-hidden'
       }`}
     >
-      <button
-        className="vim-side-panel-nav vc-absolute vc-right-6 vc-top-6 vc-text-gray-medium"
-        onClick={onNavBtn}
-      >
-        {Icons.close(iconOptions)}
-      </button>
-      {props.content()}
+      <div style={{ inset: 'min(1.5rem, 6%)' }}
+       className='vim-side-panel-content vc-absolute vc-inset-6'>
+        <button
+          className="vim-side-panel-nav vc-z-30 vc-top-[-0.25rem] vc-absolute vc-right-0 vc-top-0 vc-text-gray-medium"
+          onClick={onNavBtn}
+        >
+          {Icons.close(iconOptions)}
+        </button>
+        {props.content()}
+      </div>
     </Resizable>
   )
 }

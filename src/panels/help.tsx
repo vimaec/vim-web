@@ -107,19 +107,20 @@ function linkButtons () {
   }
 
   const text = (text: string) => {
-    return <div className="vc-overflow-hidden vc-whitespace-nowrap vc-text-clip vc-text-xs vc-uppercase vc-font-bold">{text}</div>
+    return <div className="vc-overflow-hidden vc-whitespace-nowrap vc-text-clip vc-uppercase vc-font-bold">{text}</div>
   }
 
-  const spacing = 'vc-min-w-0 vc-py-2 vc-px-8'
+  const spacing = 'vc-min-w-0 vc-py-2 vc-px-4'
   const hover = 'hover:vc-border-primary-royal hover:vc-bg-primary-royal hover:vc-text-white'
   const shape = 'vc-rounded-full vc-border vc-border-white'
   return (
-    <div className="vim-help-bottom vc-flex vc-mt-4 vc-justify-end vc-min-w-0">
+    <div style={{ fontSize: 'min(0.75rem, calc(0.75vw + 0.75vh))' }}
+    className="vim-help-bottom vc-flex vc-mt-4 vc-justify-end vc-min-w-0">
       <button
         className={`${spacing} ${hover} ${shape} vc-text-white`}
         onClick={onControlsBtn}
       >
-        {text('Full Control List')} 
+        {text('Full Control List')}
       </button>
       <button
         className= {`${spacing} ${hover} ${shape} vc-ml-2 vc-bg-white vc-text-primary `}

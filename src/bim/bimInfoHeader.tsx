@@ -39,18 +39,18 @@ function createEntry (bimInfoRef: BimInfoPanelRef, entry: BIM.Entry) {
   return (
     <dl
       key={`dl-${entry.key}`}
-      className={'vc-flex  vc-w-full vc-w-full'}
+      className={'vc-flex vc-w-full vc-w-full vc-my-1'}
     >
-      <dt
+      < dt
         data-tip={entry.label}
-        className={'bim-header-title vc-min-w-[100px] vc-shrink-0 vc-select-none vc-whitespace-nowrap vc-py-1 vc-text-gray-medium vc-w-3/12'}
+        className={'bim-header-title vc-mr-1 vc-shrink-0 vc-select-none vc-whitespace-nowrap vc-truncate vc-text-gray-medium vc-w-1/2'}
         key={`dt-${entry.key}`}
       >
         {entry.label}
       </dt>
       <dd
         data-tip={entry.value}
-        className={'bim-header-value vc-shrink-1 vc-truncate vc-py-1 vc-w-9/12'}
+        className={'bim-header-value vc-truncate vc-shrink-1'}
         key={`dd-${entry.key}`}
       >
         {create()}

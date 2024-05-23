@@ -58,14 +58,14 @@ function createSection (
     return (
       <h2
         key={`title-${value}`}
-        className="vim-bim-section-title vc-inline-flex vc-w-auto vc-rounded-t vc-border-t vc-border-l vc-border-r vc-border-gray-light vc-p-2 vc-text-xs vc-font-bold vc-uppercase vc-text-gray-medium"
+        className="vim-bim-section-title vc-inline-flex vc-w-auto vc-rounded-t vc-border-t vc-border-l vc-border-r vc-border-gray-light vc-p-2 vc-title vc-text-gray-medium"
       >
         {value}
       </h2>
     )
   }
 
-  const render = (group: BIM.Group) => {
+  const createContent = (group: BIM.Group) => {
     const standard = () => createGroup(bimInfoRef, group, getOpen, setOpen)
     if (bimInfoRef.onRenderBodyGroup !== undefined) {
       return React.createElement(bimInfoRef.onRenderBodyGroup, { data: group, standard })
@@ -75,7 +75,7 @@ function createSection (
 
   const content = Array.from(section.content, (group, i) => (
     <div key={group.key} className='vim-bim-group'>
-      {render(group)}
+      {createContent(group)}
     </div>))
 
   return <>
@@ -95,8 +95,8 @@ function createGroup (
   return (
     <ul>
       <li key={'title-' + group.key} className='vim-bim-group-title'>
-        <h3 className="vc-flex vc-justify-between vc-bg-gray-light vc-px-2 vc-py-2 vc-text-xs vc-font-bold vc-uppercase">
-          <span>{group.title}</span>
+        <h3 className="vc-flex vc-justify-between vc-bg-gray-light vc-px-2 vc-py-2 vc-title">
+          <span style = {{ width: 'calc(100% - 24px)' }} className='vc-whitespace-nowrap vc-truncate'>{group.title}</span>
           {createCollapseButton(open, (b) => setOpen(group.title, b))}
         </h3>
       </li>
@@ -111,7 +111,7 @@ function createCollapseButton (
 ) {
   return (
     <button
-    className="vc-text-gray-medium"
+    className="vim-group-collapse-button vc-text-gray-medium vc-"
     onClick={() => setOpen(!open)}
   >
     {' '}

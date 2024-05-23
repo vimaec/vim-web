@@ -2,7 +2,7 @@
  * @module viw-webgl-component
  */
 
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useRef } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 
 import { BimTree, TreeActionRef } from './bimTree'
@@ -106,12 +106,13 @@ export function BimPanel (props: {
     props.viewerState.selection[props.viewerState.selection.length - 1]
   const full = isFalse(props.settings.ui.bimInfoPanel)
   return (
-    <div className={`vim-bim-panel ${full ? 'full-tree' : ''} ${props.visible ? '' : 'vc-hidden'}`}>
+    <div className={`vim-bim-panel vc-inset-0 vc-absolute vc-h-full vc-w-full ${full ? 'full-tree' : ''} ${props.visible ? '' : 'vc-hidden'}`}>
       {isFalse(props.settings.ui.bimTreePanel)
         ? null
         : (
-        <div className={`vim-bim-upper ${full ? 'vc-h-screen' : 'vc-h-1/2'} ${props.viewerState.elements.length > 0 ? '' : 'vc-hidden'}`}>
-          <h2 className="vim-bim-upper-title vc-mb-6 vc-text-xs vc-font-bold vc-uppercase">
+        <div className={`vim-bim-upper vc-absolute vc-w-full ${full ? 'vc-h-screen' : 'vc-h-1/2'} ${props.viewerState.elements.length > 0 ? '' : 'vc-hidden'}`}>
+          <h2
+            className="vim-bim-upper-title vc-mb-4 vc-text-xs vc-font-bold vc-uppercase">
             Project Inspector
           </h2>
           <BimSearch
@@ -130,8 +131,8 @@ export function BimPanel (props: {
             <option value={'Workset'}>Workset</option>
           </select>
           <select
-            // hidden={true}
-            className="vim-bim-actions"
+            style={{ background: 'white', appearance: 'none', MozAppearance: 'none', WebkitAppearance: 'none' }}
+            className="vim-bim-actions vc-h-8 vc-p-1 vc-w-8 vc-rounded"
             onChange={(e) => {
               switch (e.target.value) {
                 case 'show':
@@ -188,7 +189,7 @@ export function BimPanel (props: {
 }
 
 function divider () {
-  return <hr className="-vc-mx-6 vc-mb-5 vc-border-gray-divider" />
+  return <hr style={{ top: 'max(52%, 160px)' }} className="divider vc-absolute vc-w-full vc-border-gray-divider" />
 }
 
 function filterElements (

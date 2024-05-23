@@ -92,13 +92,59 @@ input[type='search']::-webkit-search-cancel-button {
   }
 }
 
-/* === React Tree === */
-.rct-tree-root {
-  font-family: inherit;
+/*
+.vim-component {
+  container-type: size;
+}
+*/
+
+
+@container (width > 0px){
+  .vim-side-panel-content {
+    font-size: min(6cqw, 1rem);
+  }
+  .vc-title{
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: min(5.5cqw, 0.90rem);
+    line-height: 1;
+  }
 }
 
-.rct-tree-root > div > .rct-tree-items-container {
-  max-height: calc(50vh - 9rem);
+.vim-side-panel {
+  container-type: size;
+  container-name: vim-side-panel;
+}
+
+/*
+@container (position : absolute){
+  .vim-side-panel-content {
+    font-size: 5rem;
+  }
+}
+*/
+
+/* === React Tree === */
+.rct-tree-root {
+  padding: 0px 0px 0px 0px;
+  font-family: inherit;
+  position:absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.rct-tree-root > div {
+  position:absolute;
+  width: 100%;
+  height: 100%;
+  
+}
+
+.rct-tree-items-container {
+  position:absolute;
+  width: 100%;
+  height: 100%;
+
   overflow-y: auto;
   content-visibility: auto;
 }

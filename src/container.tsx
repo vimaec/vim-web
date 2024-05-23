@@ -27,21 +27,21 @@ export type VimComponentContainer = {
  * @element optional HTML element to use as root
  * @styling whether to apply default fullscreen styling to the container. Default is true.
  */
-export function createContainer (element?: HTMLElement, styling: boolean = true): VimComponentContainer {
+export function createContainer (element?: HTMLElement): VimComponentContainer {
   // fullscreen root
   const root = element ?? document.createElement('div')
-  root.className += ' vim-component' +
-    (styling ? ' vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full' : '')
+  root.classList.add('vim-component')
+  if (element === undefined) {
+    root.classList.add('vc-absolute', 'vc-inset-0')
+  }
 
   // container for viewer canvases
   const gfx = document.createElement('div')
-  gfx.className = 'vim-gfx' +
-    (styling ? ' vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full' : '')
+  gfx.className = 'vim-gfx vc-absolute vc-inset-0'
 
   // container for ui
   const ui = document.createElement('div')
-  ui.className = 'vim-ui' +
-    (styling ? ' vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full' : '')
+  ui.className = 'vim-ui vc-absolute vc-inset-0'
 
   root.append(gfx)
   root.append(ui)

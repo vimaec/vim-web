@@ -63,14 +63,14 @@ export function ControlBar (props: {
   return (
     <div
       style={{
-        gap: 'min(10px, 1vw)',
+        gap: 'min(10px, 1%)',
         left: props.side.getWidth(),
         width: `calc(100% - ${props.side.getWidth()}px)`,
-        marginBottom: 'min(36px, 2vw)'
+        marginBottom: 'min(36px, 2%)'
         // For some reason this causes the ui to flicker. Disabled for now.
         // opacity: show ? 1 : 0,
       }}
-      className='vim-control-bar vc-mt-2 vc-flex-wrap vc-min-w-0 vc-absolute vc-bottom-0 vc-z-20 vc-flex vc-items-center vc-justify-center vc-px-2 vc-py-2 transition-all'>
+      className='vim-control-bar vc-mt-2 vc-flex-wrap vc-min-w-0 vc-absolute vc-bottom-0 vc-z-20 vc-flex vc-items-center vc-justify-center vc-px-2 transition-all'>
       {anyUiCursorButton(props.settings) ? <TabCamera {...props} /> : null}
       {anyUiToolButton(props.settings) ? <TabTools {...props} /> : null}
       {anyUiSettingButton(props.settings) ? <TabSettings {...props} /> : null}
