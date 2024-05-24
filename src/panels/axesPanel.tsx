@@ -22,15 +22,21 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
 
   const [ortho, setOrtho] = useState<boolean>(viewer.camera.orthographic)
 
-  const ui = useRef<HTMLDivElement>()
+  const gizmoDiv = useRef<HTMLDivElement>()
+  const resize = useRef<ResizeObserver>()
 
   useEffect(() => {
+    resize.current = new ResizeObserver(() => {
+      viewer.gizmos.axes.resize(gizmoDiv.current.clientWidth)
+    })
+    resize.current.observe(gizmoDiv.current)
+
     const subCam = viewer.camera.onSettingsChanged.subscribe(() =>
       setOrtho(viewer.camera.orthographic)
     )
 
     if (viewer.gizmos.axes.canvas) {
-      ui.current.appendChild(viewer.gizmos.axes.canvas)
+      gizmoDiv.current.appendChild(viewer.gizmos.axes.canvas)
       viewer.gizmos.axes.canvas.classList.add(
         'vc-block',
         '!vc-static',
@@ -44,6 +50,7 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
     // Clean up
     return () => {
       subCam()
+      resize.current?.disconnect()
     }
   }, [])
 
@@ -58,10 +65,12 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
   }
 
   const btnStyle =
-    'vim-home-btn vc-flex vc-h-8 vc-w-6 vc-items-center vc-justify-center vc-rounded-full vc-text-gray-medium vc-transition-all hover:vc-text-primary-royal'
+    'vim-home-btn vc-flex vc-items-center vc-justify-center vc-text-gray-medium vc-transition-all hover:vc-text-primary-royal'
+  const btnFlex = { width: 'min(2vw, 1.5rem)', height: 'min(2w, 1.5rem)' }
 
   const btnIsolation = (
     <button
+      style={btnFlex}
       data-tip={
         props.settings.value.isolation.useIsolationMaterial
           ? 'Disable Ghosting'
@@ -83,6 +92,7 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
 
   const btnHome = (
     <button
+      style={btnFlex}
       data-tip="Reset Camera"
       onClick={onHomeBtn}
       className={'vim-home-btn' + btnStyle}
@@ -93,6 +103,7 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
   )
   const btnOrtho = (
     <button
+      style={btnFlex}
       data-tip={ortho ? 'Orthographic' : 'Perspective'}
       onClick={() => (props.viewer.camera.orthographic = !ortho)}
       className={'vim-camera-btn' + btnStyle}
@@ -110,7 +121,7 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
 
   const createButton = (button: JSX.Element, condition: boolean = true) => {
     if (!condition) return null
-    return <div className="vc-mx-1 ">{button}</div>
+    return button
   }
 
   const hidden = isTrue(props.settings.value.ui.axesPanel) ? '' : ' vc-hidden'
@@ -119,11 +130,11 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
     if (!anyUiAxesButton(props.settings.value)) {
       return (
         // Keeps layout when all buttons are disabled.
-        <span className="vc-pointer-events-auto vc-order-2 vc-mb-0 vc-mt-auto vc-flex vc-justify-center vc-rounded-b-xl vc-bg-white" />
+        <span className="vc-pointer-events-auto vc-absolute vc-inset-0 vc-order-2 vc-flex justify-evenly vc-bg-white" />
       )
     }
     return (
-      <div className="vim-top-buttons vc-pointer-events-auto vc-order-2 vc-mb-0 vc-mt-auto vc-flex vc-justify-center vc-rounded-b-xl vc-bg-white vc-p-1">
+      <div className="vim-axes-panel-buttons vc-absolute vc-inset-0 vc-pointer-events-auto vc-order-2 vc-flex vc-justify-evenly vc-bg-white">
         {createButton(
           btnOrtho,
           props.settings.value.capacity.useOrthographicCamera &&
@@ -139,14 +150,22 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
   }
 
   return (
-    <div
-      ref={ui}
+    <div style={{
+      borderRadius: 'min(1vw, 1rem)',
+      top: 'min(2vw, 1.5rem)',
+      right: 'min(2vw, 1.5rem)',
+      width: 'min(11vw, 112px)',
+      height: 'min(14vw, 144px)'
+    }}
       className={
-        'vim-axes-panel vc-absolute vc-right-6 vc-top-6 vc-z-20 vc-flex vc-h-[144px] vc-w-[112px] vc-flex-col vc-rounded-2xl vc-border vc-border-white vc-opacity-50 vc-shadow-lg vc-saturate-0 vc-transition-all hover:vc-opacity-100 hover:vc-saturate-100' +
+        'vim-axes-panel vc-absolute vc-overflow-hidden vc-z-20 vc-flex vc-flex-col vc-border vc-border-white vc-opacity-50 vc-shadow-lg vc-saturate-0 vc-transition-all hover:vc-opacity-100 hover:vc-saturate-100' +
         hidden
       }
     >
-      {createBar()}
+      <div ref={gizmoDiv} className='vim-axes-panel-gizmo vc-absolute vc-bottom-[20%] vc-top-2 vc-right-2 vc-left-2'/>
+      <div className='vim-axes-panel-bar vc-absolute vc-top-[80%] vc-bottom-0 vc-right-0 vc-left-0'>
+        {createBar()}
+      </div>
     </div>
   )
 }

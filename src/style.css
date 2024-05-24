@@ -109,11 +109,28 @@ input[type='search']::-webkit-search-cancel-button {
     font-size: min(5.5cqw, 0.90rem);
     line-height: 1;
   }
+  .vim-control-bar-button {
+    height: min(6cqmin, 1.25rem);
+    width: min(6cqmin, 1.25rem);
+  }
+  .vim-control-bar-section {
+    gap: min(3cqmin, 0.75rem)
+  }
+
+}
+
+.vim-axes-panel{
+
 }
 
 .vim-side-panel {
   container-type: size;
   container-name: vim-side-panel;
+}
+
+.vim-control-bar-container {
+  container-type: size;
+  container-name: MYCOOLCONTAINER;
 }
 
 /*

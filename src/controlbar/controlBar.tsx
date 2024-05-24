@@ -61,19 +61,21 @@ export function ControlBar (props: {
   }, [])
 
   return (
-    <div
-      style={{
+    <div className='vim-control-bar-container vc-absolute vc-right-0 vc-top-0 vc-bottom-0 vc-pointer-events-none' style={{
+      left: props.side.getWidth(),
+      width: `calc(100% - ${props.side.getWidth()}px)`
+    }}>
+      <div style={{
         gap: 'min(10px, 1%)',
-        left: props.side.getWidth(),
-        width: `calc(100% - ${props.side.getWidth()}px)`,
-        marginBottom: 'min(36px, 2%)'
+        bottom: 'min(64px, 2%)'
         // For some reason this causes the ui to flicker. Disabled for now.
         // opacity: show ? 1 : 0,
       }}
-      className='vim-control-bar vc-mt-2 vc-flex-wrap vc-min-w-0 vc-absolute vc-bottom-0 vc-z-20 vc-flex vc-items-center vc-justify-center vc-px-2 transition-all'>
-      {anyUiCursorButton(props.settings) ? <TabCamera {...props} /> : null}
-      {anyUiToolButton(props.settings) ? <TabTools {...props} /> : null}
-      {anyUiSettingButton(props.settings) ? <TabSettings {...props} /> : null}
+        className='vim-control-bar vc-pointer-events-auto vc-flex-wrap vc-mx-2 vc-min-w-0 vc-absolute vc-left-0 vc-right-0 vc-z-20 vc-flex vc-items-center vc-justify-center transition-all'>
+        {anyUiCursorButton(props.settings) ? <TabCamera {...props} /> : null}
+        {anyUiToolButton(props.settings) ? <TabTools {...props} /> : null}
+        {anyUiSettingButton(props.settings) ? <TabSettings {...props} /> : null}
+      </div>
     </div>
   )
 }

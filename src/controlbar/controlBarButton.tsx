@@ -1,6 +1,6 @@
 import React from 'react'
 
-const btnStyle = 'vim-control-bar-button vc-rounded-full vc-items-center vc-justify-center vc-flex vc-transition-all vc-h-[3vh] vc-w-[3vw] vc-max-h-5 vc-max-w-[1.25rem] vc-my-2 hover:vc-scale-110'
+const btnStyle = 'vim-control-bar-button vc-rounded-full vc-items-center vc-justify-center vc-flex vc-transition-all vc-my-2 hover:vc-scale-110'
 
 export function createButton (
   enabled: () => boolean,
