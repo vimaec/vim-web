@@ -9,7 +9,7 @@ import { SideState } from './sideState'
 import { Enable, Resizable } from 're-resizable'
 import { VimComponentContainer } from '../container'
 
-const MAX_WIDTH = 0.5
+const MAX_WIDTH = 0.75
 
 /**
  * Memoized version of the SidePanel.
@@ -31,12 +31,9 @@ export function SidePanel (props: {
   const resizeGfx = () => {
     if (props.side.getContent() !== 'none') {
       const width = props.side.getWidth()
-      const full = props.container.root.clientWidth
-      props.container.gfx.style.width = `${full - width}px`
-      props.container.gfx.style.marginLeft = `${width}px`
+      props.container.gfx.style.left = `${width}px`
     } else {
-      props.container.gfx.style.width = '100%'
-      props.container.gfx.style.marginLeft = '0px'
+      props.container.gfx.style.left = '0px'
     }
 
     props.viewer.viewport.ResizeToParent()

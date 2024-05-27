@@ -80,7 +80,7 @@ export function useSideState (
 
   return useMemo(
     () => ({
-      minWidth: 180,
+      minWidth: 120,
       setHasBim,
       setContent,
       getContent,

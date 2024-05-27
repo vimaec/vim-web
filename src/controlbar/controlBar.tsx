@@ -33,12 +33,43 @@ export function ControlBar (props: {
   cursor: CursorManager
   settings: ComponentSettings
 }) {
-  const [, setVersion] = useState(0)
-  const resizeObserver = useRef<ResizeObserver>()
-
   // eslint-disable-next-line no-unused-vars
   const [show, setShow] = useState(true)
   const cameraObserver = useRef<CameraObserver>()
+
+  // On Each Render
+  useEffect(() => {
+    ReactTooltip.rebuild()
+  })
+
+  useEffect(() => {
+    cameraObserver.current = new CameraObserver(props.viewer, 400)
+    cameraObserver.current.onChange = (moving) => setShow(!moving)
+
+    return () => {
+      cameraObserver.current?.dispose()
+    }
+  }, [])
+
+  return <div style={{
+    gap: 'min(10px, 1%)',
+    bottom: 'min(64px, 2%)'
+    // For some reason this causes the ui to flicker. Disabled for now.
+    // opacity: show ? 1 : 0,
+  }}
+    className='vim-control-bar vc-pointer-events-auto vc-flex-wrap vc-mx-2 vc-min-w-0 vc-absolute vc-left-0 vc-right-0 vc-z-20 vc-flex vc-items-center vc-justify-center transition-all'>
+    {anyUiCursorButton(props.settings) ? <TabCamera {...props} /> : null}
+    {anyUiToolButton(props.settings) ? <TabTools {...props} /> : null}
+    {anyUiSettingButton(props.settings) ? <TabSettings {...props} /> : null}
+  </div>
+}
+
+export function RestOfScreen (props:{
+  side: SideState,
+  content: () => JSX.Element
+}) {
+  const [, setVersion] = useState(0)
+  const resizeObserver = useRef<ResizeObserver>()
 
   // On Each Render
   useEffect(() => {
@@ -51,31 +82,16 @@ export function ControlBar (props: {
     })
     resizeObserver.current.observe(document.body)
 
-    cameraObserver.current = new CameraObserver(props.viewer, 400)
-    cameraObserver.current.onChange = (moving) => setShow(!moving)
-
     return () => {
       resizeObserver.current?.disconnect()
-      cameraObserver.current?.dispose()
     }
   }, [])
 
   return (
-    <div className='vim-control-bar-container vc-absolute vc-right-0 vc-top-0 vc-bottom-0 vc-pointer-events-none' style={{
+    <div className='vim-rest-of-screen vc-absolute vc-right-0 vc-top-0 vc-bottom-0 vc-pointer-events-none' style={{
       left: props.side.getWidth(),
       width: `calc(100% - ${props.side.getWidth()}px)`
     }}>
-      <div style={{
-        gap: 'min(10px, 1%)',
-        bottom: 'min(64px, 2%)'
-        // For some reason this causes the ui to flicker. Disabled for now.
-        // opacity: show ? 1 : 0,
-      }}
-        className='vim-control-bar vc-pointer-events-auto vc-flex-wrap vc-mx-2 vc-min-w-0 vc-absolute vc-left-0 vc-right-0 vc-z-20 vc-flex vc-items-center vc-justify-center transition-all'>
-        {anyUiCursorButton(props.settings) ? <TabCamera {...props} /> : null}
-        {anyUiToolButton(props.settings) ? <TabTools {...props} /> : null}
-        {anyUiSettingButton(props.settings) ? <TabSettings {...props} /> : null}
-      </div>
-    </div>
-  )
+      {props.content()}
+    </div>)
 }
