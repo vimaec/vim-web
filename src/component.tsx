@@ -10,7 +10,7 @@ import 'vim-webgl-viewer/dist/style.css'
 
 import * as VIM from 'vim-webgl-viewer/'
 import { AxesPanelMemo } from './panels/axesPanel'
-import { ControlBar } from './controlbar/controlBar'
+import { ControlBar, RestOfScreen } from './controlbar/controlBar'
 import { LoadingBoxMemo, MsgInfo, ComponentLoader } from './panels/loading'
 import { OptionalBimPanel } from './bim/bimPanel'
 import {
@@ -194,26 +194,30 @@ export function VimComponent (props: {
         <LoadingBoxMemo loader={loader.current} content={msg} />
           )
         : null}
-      <ControlBar
-        viewer={props.viewer}
-        camera={camera}
-        help={help}
-        side={side}
-        isolation={isolation}
-        cursor={cursor}
-        settings={settings.value}
-      />
-      <AxesPanelMemo
-        viewer={props.viewer}
-        camera={camera}
-        settings={settings}
-      />
       <SidePanelMemo
         container={props.container}
         viewer={props.viewer}
         side={side}
         content={sidePanel}
       />
+      <RestOfScreen side={side} content={() => {
+        return <>
+        <ControlBar
+          viewer={props.viewer}
+          camera={camera}
+          help={help}
+          side={side}
+          isolation={isolation}
+          cursor={cursor}
+          settings={settings.value}
+        />
+        <AxesPanelMemo
+          viewer={props.viewer}
+          camera={camera}
+          settings={settings}
+        />
+      </>
+      }}/>
 
       <VimContextMenuMemo
         viewer={props.viewer}
