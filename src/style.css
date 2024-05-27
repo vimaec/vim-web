@@ -116,21 +116,36 @@ input[type='search']::-webkit-search-cancel-button {
   .vim-control-bar-section {
     gap: min(3cqmin, 0.75rem)
   }
+  .vim-axes-panel{
+    border-radius: min(3cqw, 1rem);
+    top: min(2cqw, 1.5rem);
+    right: min(2cqw, 1.5rem);
+    width: min(22cqw, 112px);
+    height: min(28cqw, 144px);
+  }
 
+  .vim-axes-panel-gizmo{
+    top: min(1cqw, 0.5rem);
+    left: min(1cqw, 0.5rem);
+    right: min(1cqw, 0.5rem);
+    bottom: calc(20% + min(1cqw, 0.5rem));
+  }
+  .vim-axes-button{
+    height: min(5cqw, 1.25rem);
+    width: min(5cqw, 1.25rem);
+  }
+
+  .rct-tree-root {
+    font-size: min(6cqw, 1rem);
+  }
 }
 
-.vim-axes-panel{
-
+.vim-rest-of-screen {
+  container-type: size;
 }
 
 .vim-side-panel {
   container-type: size;
-  container-name: vim-side-panel;
-}
-
-.vim-control-bar-container {
-  container-type: size;
-  container-name: MYCOOLCONTAINER;
 }
 
 /*
