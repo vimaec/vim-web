@@ -136,7 +136,7 @@ export function BimTree (props: {
 
   return (
     <div
-      className="vim-bim-tree vc-absolute vc-top-[124px] vc-bottom-0 vc-left-0 vc-right-0"
+      className="vim-bim-tree vc-flex-1 vc-flex vc-w-full vc-min-h-0"
       ref={div}
       tabIndex={0}
       onFocus={() => (props.viewer.inputs.keyboard.arrowsEnabled = false)}
@@ -144,7 +144,9 @@ export function BimTree (props: {
     >
       <ControlledTreeEnvironment
         items={props.treeData.nodes}
+
         getItemTitle={(item) => (item as VimTreeNode).title}
+        showLiveDescription={false}
         viewState={{
           'tree-bim': {
             focusedItem,

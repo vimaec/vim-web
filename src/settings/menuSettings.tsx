@@ -27,7 +27,7 @@ export function MenuSettings (props: {
           type="checkbox"
           checked={state}
           onChange={action}
-          className="vc-checked:bg-primary-royal vc-mr-2 vc-h-[18px] vc-w-[18px] vc-rounded vc-border vc-border-gray-medium "
+          className="vim-settings-checkbox vc-checked:bg-primary-royal vc-mr-2 vc-rounded vc-border vc-border-gray-medium "
         ></input>{' '}
         {label}
       </label>
@@ -69,7 +69,7 @@ export function MenuSettings (props: {
 
     return <div className="vc-box-input vc-my-1">
       <label htmlFor="textbox" className='vc-w-3 vc-h-2'>{label}:</label>
-      <input type="text" placeholder={value} className='vc-w-14 vc-h-6 vc-ml-1 vc-p-1' onBlur={e => update(e)}/>
+      <input type="text" placeholder={value} className='vim-settings-textbox vc-w-14 vc-ml-1 vc-p-1' onBlur={e => update(e)}/>
       <label htmlFor="textbox" className='vc-w-3 vc-h-2 vc-text-gray vc-ml-1'>{info}</label>
     </div>
   }

@@ -110,9 +110,9 @@ export function BimPanel (props: {
       {isFalse(props.settings.ui.bimTreePanel)
         ? null
         : (
-        <div className={`vim-bim-upper vc-absolute vc-w-full ${full ? 'vc-h-screen' : 'vc-h-1/2'} ${props.viewerState.elements.length > 0 ? '' : 'vc-hidden'}`}>
+        <div className={`vim-bim-upper vc-flex vc-flex-col vc-absolute vc-w-full ${full ? 'vc-h-full' : 'vc-h-1/2'} ${props.viewerState.elements.length > 0 ? '' : 'vc-hidden'}`}>
           <h2
-            className="vim-bim-upper-title vc-mb-4 vc-text-xs vc-font-bold vc-uppercase">
+            className="vim-bim-upper-title vc-title vc-text-xs vc-font-bold vc-uppercase">
             Project Inspector
           </h2>
           <BimSearch
@@ -132,7 +132,7 @@ export function BimPanel (props: {
           </select>
           <select
             style={{ background: 'white', appearance: 'none', MozAppearance: 'none', WebkitAppearance: 'none' }}
-            className="vim-bim-actions vc-h-8 vc-p-1 vc-w-8 vc-rounded"
+            className="vim-bim-actions vc-w-8 vc-rounded vc-p-0 vc-m-0 vc-pl-2"
             onChange={(e) => {
               switch (e.target.value) {
                 case 'show':
@@ -155,16 +155,15 @@ export function BimPanel (props: {
             <option value={'hide'}>Hide All</option>
             <option value={'collapse'}>Collapse All</option>
           </select>
-
-          <BimTree
-            actionRef={props.treeRef}
-            viewer={props.viewer}
-            camera={props.camera}
-            objects={props.viewerState.selection}
-            isolation={props.isolation}
-            treeData={tree}
-          />
-        </div>
+            <BimTree
+              actionRef={props.treeRef}
+              viewer={props.viewer}
+              camera={props.camera}
+              objects={props.viewerState.selection}
+              isolation={props.isolation}
+              treeData={tree}
+            />
+          </div>
           )}
       {
         // Divider if needed.

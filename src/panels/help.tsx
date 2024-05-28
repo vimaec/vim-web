@@ -59,23 +59,22 @@ function MenuHelp (props: {
         onContextMenu={(event) => {
           event.preventDefault()
         }}
-      >
+      > {closeButton(onCloseBtn)}
         <div
-          className="vim-help-blocker vc-max-w-[900px] vc-w-3/4 vc-h-3/4 vc-absolute vc-p-5"
+          className="vim-help-blocker vc-gap-4 vc-justify-center vc-max-w-[900px] vc-w-[90%] vc-h-[80%] vc-absolute vc-p-5 vc-flex vc-flex-col"
           onClick={(e) => {
             e.stopPropagation()
           }}
         >
-          <div className="vim-help-top vc-mb-4">
+          <div className="vim-help-top">
             <h2
-              className="vim-help-title vc-mr-[24px] vc-text-sm vc-font-bold vc-uppercase vc-text-white"
+              className="vim-help-title vc-title vc-text-center vc-font-bold vc-uppercase vc-text-white"
             >
               Key navigation controls
             </h2>
-            {closeButton(onCloseBtn)}
           </div>
             <img
-              className="vim-help-img vc-w-full"
+              className="vim-help-img vc-min-h-0"
               src={helpImage}
             ></img>
           {props.settings.capacity.canFollowUrl ? linkButtons() : null}
@@ -85,17 +84,19 @@ function MenuHelp (props: {
   )
 }
 
-function closeButton (onButton:() => void) {
-  return <button
-    className="vim-help-close vc-absolute vc-top-[20px] vc-right-[20px] vc-text-white"
-    onClick={onButton}
-  >
-    {Icons.close({
-      height: '20px',
-      width: '20px',
-      fill: 'currentColor'
-    })}
-  </button>
+function closeButton(onButton: () => void) {
+  return (
+    <button
+      className="vim-help-close vc-absolute vc-top-[20px] vc-right-[20px] vc-text-white"
+      onClick={onButton}
+    >
+      {Icons.close({
+        height: '20px',
+        width: '20px',
+        fill: 'currentColor'
+      })}
+    </button>
+  );
 }
 
 function linkButtons () {
@@ -110,20 +111,19 @@ function linkButtons () {
     return <div className="vc-overflow-hidden vc-whitespace-nowrap vc-text-clip vc-uppercase vc-font-bold">{text}</div>
   }
 
-  const spacing = 'vc-min-w-0 vc-py-2 vc-px-4'
   const hover = 'hover:vc-border-primary-royal hover:vc-bg-primary-royal hover:vc-text-white'
   const shape = 'vc-rounded-full vc-border vc-border-white'
   return (
-    <div style={{ fontSize: 'min(0.75rem, calc(0.75vw + 0.75vh))' }}
-    className="vim-help-bottom vc-flex vc-mt-4 vc-justify-end vc-min-w-0">
+    <div
+    className="vim-help-bottom vc-flex vc-gap-4 vc-justify-center vc-min-w-0 vc-min-h-0">
       <button
-        className={`${spacing} ${hover} ${shape} vc-text-white`}
+        className={`vim-help-button ${hover} ${shape} vc-text-white`}
         onClick={onControlsBtn}
       >
         {text('Full Control List')}
       </button>
       <button
-        className= {`${spacing} ${hover} ${shape} vc-ml-2 vc-bg-white vc-text-primary `}
+        className= {`vim-help-button ${hover} ${shape} vc-bg-white vc-text-primary`}
         onClick={onHelpBtn}
       >{text('Help Center')}
       </button>
