@@ -43,7 +43,7 @@ function createEntry (bimInfoRef: BimInfoPanelRef, entry: BIM.Entry) {
     >
       < dt
         data-tip={entry.label}
-        className={'bim-header-title vc-mr-1 vc-shrink-0 vc-select-none vc-whitespace-nowrap vc-truncate vc-text-gray-medium vc-w-1/2'}
+        className={'bim-header-title vc-mr-1 vc-shrink-0 vc-select-none vc-whitespace-nowrap vc-truncate vc-text-gray-medium vc-w-1/3'}
         key={`dt-${entry.key}`}
       >
         {entry.label}

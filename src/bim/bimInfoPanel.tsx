@@ -55,11 +55,11 @@ export function BimInfoPanel (props : {
 
   return (
   <>
-    <h2 style={{ top: props.full ? '0px' : 'max(55%, 160px)' }}
+    <h2 style={{ top: props.full ? '0px' : '50%' }}
      className="vc-absolute vc-font-bold vc-uppercase">
       Bim Inspector
     </h2>
-    <div style={{ top: props.full ? '1.5rem' : 'calc(max(55%, 160px) + 1.5rem)' }}
+    <div style={{ top: props.full ? '1.5rem' : 'calc(50% + 1rem)' }}
       className={'vim-bim-lower vc-absolute vc-bottom-0 vc-right-0 vc-left-0 vc-overflow-y-auto vc-overflow-x-hidden'}>
       {header()}
       {body()}

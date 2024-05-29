@@ -101,15 +101,22 @@ input[type='search']::-webkit-search-cancel-button {
   container-type: size;
 }
 
+.vim-rest-of-screen {
+  container-type: size;
+}
+
+.vim-side-panel {
+  container-type: size;
+}
 
 @container (width > 0px){
   .vim-side-panel-content {
-    font-size: min(6cqmin, 1rem);
+    font-size: min(5cqmin, 0.8rem);
   }
   .vc-title{
     font-weight: bold;
     text-transform: uppercase;
-    font-size: min(5.5cqmin, 0.90rem);
+    font-size: min(4.5cqmin, 0.70rem);
     line-height: 1;
   }
   .vim-help-blocker{
@@ -159,18 +166,15 @@ input[type='search']::-webkit-search-cancel-button {
     height: min(5cqmin, 1rem);;
   }
 
-  .vim-bim-tree .rct-tree-root {
-    font-size: min(6cqmin, 1rem);
-  }
   .vim-bim-tree .rct-tree-item-title-container {
-    height: min(12cqmin, 2.5rem);
+    height: min(10cqmin, 2rem);
   }
   .vim-bim-tree .rct-tree-item-visibility {
     width: min(6cqmin, 1rem);
     height: min(6cqmin, 1rem);
   }
   .vim-bim-upper{
-    gap: min(6cqmin, 1rem);
+    gap: min(3cqmin, 1rem);
   }
   .vim-bim-actions{
     height: min(8cqmin, 2rem);
@@ -188,13 +192,7 @@ input[type='search']::-webkit-search-cancel-button {
   font-size: inherit;
 }
 
-.vim-rest-of-screen {
-  container-type: size;
-}
 
-.vim-side-panel {
-  container-type: size;
-}
 
 /* === React Tree === */
 .vim-bim-tree .rct-tree-root {

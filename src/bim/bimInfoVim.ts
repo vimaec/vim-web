@@ -29,17 +29,17 @@ export async function getHeader (vim: VIM.Vim): Promise<BIM.Entry[]> {
     },
     {
       key: 'createdOn',
-      label: 'Created on',
+      label: 'Created On',
       value: formatDate(vim?.header?.created)
     },
     {
       key: 'createdWith',
-      label: 'Created with',
+      label: 'Created With',
       value: vim?.header?.generator ?? ''
     },
     {
       key: 'createdBy',
-      label: 'Created by',
+      label: 'Created By',
       value: vim?.header?.generator ?? ''
     }
   ]

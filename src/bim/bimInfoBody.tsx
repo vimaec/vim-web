@@ -172,14 +172,14 @@ function createEntry (bimInfoRef: BimInfoPanelRef, entry: BIM.Entry) {
     >
       <span
         data-tip={entry.value}
-        className="vim-bim-entry-title vc-w-1/2 vc-select-none vc-truncate vc-border-r vc-border-gray-light vc-p-2"
+        className="vim-bim-entry-title vc-w-1/3 vc-select-none vc-truncate vc-border-r vc-border-gray-light vc-p-2"
         key={'parameters-th-' + entry.key}
       >
         {entry.label}
       </span>
       <span
         data-tip={entry.value}
-        className="vim-bim-entry-value vc-w-1/2 vc-truncate vc-p-2 vc-text-gray-medium"
+        className="vim-bim-entry-value vc-w-2/3 vc-truncate vc-p-2 vc-text-gray-medium"
         key={'parameters-td-' + entry.key}
       >
         {func()}

@@ -55,7 +55,7 @@ export function BimPanel (props: {
   bimInfoRef: BimInfoPanelRef
 }) {
   const [filter, setFilter] = useState('')
-  const [grouping, setGrouping] = useState<Grouping>('Family')
+  const [grouping] = useState<Grouping>('Family')
 
   // Filter elements with meshes using search term.
   const filteredElements = useMemo(() => {
@@ -121,40 +121,6 @@ export function BimPanel (props: {
             setFilter={setFilter}
             count={filteredElements?.length}
           />
-          <select
-            hidden={true} // Object selection doesnt work well when grouping changes.
-            className="vim-bim-grouping"
-            onChange={(e) => setGrouping(e.target.value as Grouping)}
-          >
-            <option value={'Family'}>Family</option>
-            <option value={'Level'}>Level</option>
-            <option value={'Workset'}>Workset</option>
-          </select>
-          <select
-            style={{ background: 'white', appearance: 'none', MozAppearance: 'none', WebkitAppearance: 'none' }}
-            className="vim-bim-actions vc-w-8 vc-rounded vc-p-0 vc-m-0 vc-pl-2"
-            onChange={(e) => {
-              switch (e.target.value) {
-                case 'show':
-                  props.treeRef.current?.showAll()
-                  e.target.value = ''
-                  break
-                case 'hide':
-                  props.treeRef.current?.hideAll()
-                  e.target.value = ''
-                  break
-                case 'collapse':
-                  props.treeRef.current?.collapseAll()
-                  e.target.value = ''
-                  break
-              }
-            }}
-          >
-            <option value={''}>...</option>
-            <option value={'show'}>Show All</option>
-            <option value={'hide'}>Hide All</option>
-            <option value={'collapse'}>Collapse All</option>
-          </select>
             <BimTree
               actionRef={props.treeRef}
               viewer={props.viewer}
@@ -188,7 +154,7 @@ export function BimPanel (props: {
 }
 
 function divider () {
-  return <hr style={{ top: 'max(52%, 160px)' }} className="divider vc-absolute vc-w-full vc-border-gray-divider" />
+  return <hr style={{ top: '50%' }} className="divider vc-absolute vc-w-full vc-border-gray-divider" />
 }
 
 function filterElements (
