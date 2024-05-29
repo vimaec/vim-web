@@ -32,7 +32,7 @@ export function useSideState (
   const [, _setHasBim] = useState<boolean>(false)
   const [width, _setWidth] = useState<number>(defaultWidth)
   const sideRef = useRef(side)
-  const widthRef = useRef(width)
+  const widthRef = useRef(defaultWidth)
   const hasBimRef = useRef(false)
 
   const toggleContent = (content: SideContent) => {

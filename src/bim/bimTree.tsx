@@ -136,13 +136,14 @@ export function BimTree (props: {
 
   return (
     <div
-      className="vim-bim-tree vc-flex-1 vc-flex vc-w-full vc-min-h-0"
+      className="vim-bim-tree vc-mt-2  vc-flex-1 vc-flex vc-w-full vc-min-h-0"
       ref={div}
       tabIndex={0}
       onFocus={() => (props.viewer.inputs.keyboard.arrowsEnabled = false)}
       onBlur={() => (props.viewer.inputs.keyboard.arrowsEnabled = true)}
     >
       <ControlledTreeEnvironment
+        renderDepthOffset={Math.min(div.current.clientWidth * 0.04, 10)}
         items={props.treeData.nodes}
 
         getItemTitle={(item) => (item as VimTreeNode).title}

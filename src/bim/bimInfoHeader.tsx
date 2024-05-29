@@ -24,7 +24,7 @@ export function BimHeader (props: {
     </div>))
 
   return (
-    <div className="vim-bim-header vc-mb-6">{rows}</div>
+    <div className="vim-bim-header">{rows}</div>
   )
 }
 
@@ -39,18 +39,18 @@ function createEntry (bimInfoRef: BimInfoPanelRef, entry: BIM.Entry) {
   return (
     <dl
       key={`dl-${entry.key}`}
-      className={'vc-flex vc-w-full vc-w-full vc-my-1'}
+      className={'vim-bim-header-entry vc-flex vc-w-full vc-w-full'}
     >
       < dt
         data-tip={entry.label}
-        className={'bim-header-title vc-mr-1 vc-shrink-0 vc-select-none vc-whitespace-nowrap vc-truncate vc-text-gray-medium vc-w-1/3'}
+        className={'bim-header-entry-title vc-mr-1 vc-shrink-0 vc-select-none vc-whitespace-nowrap vc-truncate vc-text-gray-medium vc-w-1/3'}
         key={`dt-${entry.key}`}
       >
         {entry.label}
       </dt>
       <dd
         data-tip={entry.value}
-        className={'bim-header-value vc-truncate vc-shrink-1'}
+        className={'bim-header-entry-value vc-truncate vc-shrink-1'}
         key={`dd-${entry.key}`}
       >
         {create()}

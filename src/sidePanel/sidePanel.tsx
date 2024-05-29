@@ -43,9 +43,12 @@ export function SidePanel (props: {
     return props.container.root.clientWidth * MAX_WIDTH
   }
 
-  const getClampedSize = () => {
-    const next = Math.min(props.side.getWidth(), getMaxSize())
-    return Math.max(next, props.side.minWidth)
+  const updateSize = () => {
+    let width = props.side.getWidth()
+    if (width === 0) return
+    width = Math.min(width, getMaxSize())
+    width = Math.max(width, props.side.minWidth)
+    props.side.setWidth(width)
   }
 
   // Resize canvas on each re-render.
@@ -55,9 +58,8 @@ export function SidePanel (props: {
 
   useEffect(() => {
     // Init size to parent
-    props.side.setWidth(getClampedSize())
     const obs = new ResizeObserver((entries) => {
-      props.side.setWidth(getClampedSize())
+      updateSize()
       clearTimeout(resizeTimeOut.current)
       resizeTimeOut.current = window.setTimeout(() => {
         resizeGfx()
@@ -106,14 +108,15 @@ export function SidePanel (props: {
         props.side.getContent() !== 'none' ? '' : 'vc-hidden'
       }`}
     >
-      <div style={{ inset: 'min(1.5rem, 6%)' }}
-       className='vim-side-panel-content vc-absolute vc-inset-6'>
-        <button
-          className="vim-side-panel-nav vc-z-30 vc-top-[-0.25rem] vc-absolute vc-right-0 vc-top-0 vc-text-gray-medium"
-          onClick={onNavBtn}
-        >
-          {Icons.close(iconOptions)}
-        </button>
+      <button
+        className="vim-side-panel-nav vc-z-30 vc-absolute vc-right-1 vc-top-1 vc-w-4 vc-h-4 vc-text-gray-medium"
+        onClick={onNavBtn}
+      >
+        {Icons.close({...iconOptions, className: 'vc-max-h-full vc-max-w-full' })}
+      </button>
+      <div
+       className='vim-side-panel-content vc-absolute vc-top-0 vc-bottom-0'>
+
         {props.content()}
       </div>
     </Resizable>

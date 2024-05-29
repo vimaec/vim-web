@@ -58,7 +58,7 @@ function createSection (
     return (
       <h2
         key={`title-${value}`}
-        className="vim-bim-section-title vc-inline-flex vc-w-auto vc-rounded-t vc-border-t vc-border-l vc-border-r vc-border-gray-light vc-p-2 vc-title vc-text-gray-medium"
+        className="vim-bim-section-title vc-inline-flex vc-w-auto vc-rounded-t vc-border-t vc-border-l vc-border-r vc-border-gray-light vc-px-2 vc-title vc-text-gray-medium"
       >
         {value}
       </h2>
@@ -95,7 +95,7 @@ function createGroup (
   return (
     <ul>
       <li key={'title-' + group.key} className='vim-bim-group-title'>
-        <h3 className="vc-flex vc-justify-between vc-bg-gray-light vc-px-2 vc-py-2 vc-title">
+        <h3 className="vc-flex vc-justify-between vc-items-center vc-bg-gray-light vc-px-2 vc-title">
           <span style = {{ width: 'calc(100% - 24px)' }} className='vc-whitespace-nowrap vc-truncate'>{group.title}</span>
           {createCollapseButton(open, (b) => setOpen(group.title, b))}
         </h3>
@@ -118,7 +118,7 @@ function createCollapseButton (
     {open
       ? (
       <Icons.collapse
-        className="vc-rotate-180 vc-transition-all"
+        className="vc-rotate-180 vc-max-h-full vc-transition-all"
         height={15}
         width={15}
         fill="currentColor"
@@ -126,7 +126,7 @@ function createCollapseButton (
         )
       : (
       <Icons.collapse
-        className="vc-rotate-0 vc-transition-all"
+        className="vc-rotate-0 vc-max-h-full vc-transition-all"
         height={15}
         width={15}
         fill="currentColor"
@@ -167,19 +167,19 @@ function createEntry (bimInfoRef: BimInfoPanelRef, entry: BIM.Entry) {
 
   return (
     <li
-      className="vim-bim-entry-list vc-even:bg-white vc-odd:bg-gray-zebra vc-flex"
+      className="vim-bim-body-entry vc-even:bg-white vc-odd:bg-gray-zebra vc-flex"
       key={'parameters-tr-' + entry.key}
     >
       <span
         data-tip={entry.value}
-        className="vim-bim-entry-title vc-w-1/3 vc-select-none vc-truncate vc-border-r vc-border-gray-light vc-p-2"
+        className="vim-bim-body-entry-title vc-w-1/3 vc-px-2 vc-select-none vc-truncate vc-border-r vc-border-gray-light"
         key={'parameters-th-' + entry.key}
       >
         {entry.label}
       </span>
       <span
         data-tip={entry.value}
-        className="vim-bim-entry-value vc-w-2/3 vc-truncate vc-p-2 vc-text-gray-medium"
+        className="vim-bim-body-entry-value vc-w-2/3 vc-truncate vc-px-2 vc-text-gray-medium"
         key={'parameters-td-' + entry.key}
       >
         {func()}

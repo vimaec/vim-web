@@ -110,7 +110,7 @@ export function BimPanel (props: {
       {isFalse(props.settings.ui.bimTreePanel)
         ? null
         : (
-        <div className={`vim-bim-upper vc-flex vc-flex-col vc-absolute vc-w-full ${full ? 'vc-h-full' : 'vc-h-1/2'} ${props.viewerState.elements.length > 0 ? '' : 'vc-hidden'}`}>
+        <div className={`vim-bim-upper vc-flex vc-flex-col vc-absolute vc-w-full ${full ? 'vc-h-full' : 'vc-h-[49%]'} ${props.viewerState.elements.length > 0 ? '' : 'vc-hidden'}`}>
           <h2
             className="vim-bim-upper-title vc-title vc-text-xs vc-font-bold vc-uppercase">
             Project Inspector
@@ -141,13 +141,15 @@ export function BimPanel (props: {
       }
 
       {isTrue(props.settings.ui.bimInfoPanel)
-        ? (<BimInfoPanel
-            object={last}
-            vim={props.viewerState.vim}
-            elements={filteredElements}
-            full={isFalse(props.settings.ui.bimTreePanel)}
-            bimInfoRef={props.bimInfoRef}
-          />)
+        ? (<div className='vim-bim-lower-container vc-absolute vc-top-[50%] vc-bottom-0 vc-bottom vc-left-0 vc-right-0'>
+            <BimInfoPanel
+              object={last}
+              vim={props.viewerState.vim}
+              elements={filteredElements}
+              full={isFalse(props.settings.ui.bimTreePanel)}
+              bimInfoRef={props.bimInfoRef}
+            />
+          </div>)
         : null}
     </div>
   )

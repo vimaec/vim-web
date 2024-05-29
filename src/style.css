@@ -111,13 +111,21 @@ input[type='search']::-webkit-search-cancel-button {
 
 @container (width > 0px){
   .vim-side-panel-content {
-    font-size: min(5cqmin, 0.8rem);
+    font-size: min(5.5cqmin, 0.8rem);
+    left: min(5cqmin, 1rem);
+    right: min(5cqmin, 1rem);
+    top:0px;
+    bottom:0px;
   }
+  .vim-side-panel-nav{
+    height: min(6cqmin, 1.5rem);;
+  }
+
   .vc-title{
     font-weight: bold;
     text-transform: uppercase;
-    font-size: min(4.5cqmin, 0.70rem);
-    line-height: 1;
+    font-size: min(5cqmin, 0.70rem);
+    line-height: min(12cqmin, 2rem);
   }
   .vim-help-blocker{
     gap:min(3cqh, 1rem)
@@ -165,7 +173,15 @@ input[type='search']::-webkit-search-cancel-button {
   .vim-loading-widget, .vim-loading-widget::after{
     height: min(5cqmin, 1rem);;
   }
-
+  .vim-bim-lower-content{
+    gap: min(3cqmin, 1.5rem);
+  } 
+  .vim-bim-header-entry{
+    line-height: min(10cqmin, 1.5rem);
+  }
+  .vim-bim-body-entry{
+    line-height: min(10cqmin, 2rem);
+  }
   .vim-bim-tree .rct-tree-item-title-container {
     height: min(10cqmin, 2rem);
   }
@@ -173,19 +189,29 @@ input[type='search']::-webkit-search-cancel-button {
     width: min(6cqmin, 1rem);
     height: min(6cqmin, 1rem);
   }
-  .vim-bim-upper{
-    gap: min(3cqmin, 1rem);
+  .vim-bim-tree .rct-tree-item-arrow {
+    width: min(6cqmin, 1rem);
   }
+  .vim-bim-tree .rct-tree-item-arrow:has(svg):before {
+    background-size: min(8cqmin, 1rem);
+  }
+
   .vim-bim-actions{
     height: min(8cqmin, 2rem);
   }
   .vim-settings-checkbox{
-    height: min(8cqmin, 1rem);;
+    height: min(8cqmin, 1rem);
     width: min(8cqmin, 1rem);
   }
   .vim-settings-textbox{
-    height: min(8cqmin, 1.5rem);;
+    height: min(8cqmin, 1.5rem);
   }
+  
+
+  .vim-group-collapse-button{
+    height: min(6cqmin, 1.5rem);
+  }
+ 
 }
 
 .vim-settings-textbox{
@@ -238,24 +264,24 @@ input[type='search']::-webkit-search-cancel-button {
 
 /* Treeview Arrow */
 .vim-bim-tree .rct-tree-item-arrow {
-  width: 20px;
-  margin-bottom: 4px;
   flex-shrink: 0;
+  display: flex;
 }
 
-.rct-tree-item-arrow:has(svg) svg path {
+.vim-bim-tree .rct-tree-item-arrow:has(svg) svg path {
   opacity: 0;
 }
 
-.rct-tree-item-arrow:has(svg):before {
+
+.vim-bim-tree .rct-tree-item-arrow:has(svg):before {
   content: '';
+  background-position: center;
+  background-repeat: no-repeat;
   background-image: url("data:image/svg+xml,%3Csvg id='Arrow' xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Crect id='frame' width='20' height='20' fill='%238a8d95' opacity='0'/%3E%3Cpath id='icon' d='M100.072,70.536l-3.987,3.987a.938.938,0,0,1-1.6-.663V65.886a.938.938,0,0,1,1.6-.663l3.987,3.987A.937.937,0,0,1,100.072,70.536Z' transform='translate(-87.104 -59.873)' fill='%238a8d95'/%3E%3C/svg%3E%0A");
-  height: 20px;
-  width: 20px;
   position: relative;
   display: block;
-  top: 8px;
-  left: -4px;
+  height: 20px;
+  width: 20px;
   transition: 0.3s;
 }
 
@@ -305,9 +331,7 @@ input[type='search']::-webkit-search-cancel-button {
 .rct-tree-item-button {
   display: flex !important;
   justify-content: space-between !important;
-  margin-left: 4px;
   margin-right: 8px;
-  border-radius: 0px;
 }
 
 .rct-tree-item-visibility {

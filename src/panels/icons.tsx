@@ -88,9 +88,9 @@ export function undo ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function close ({ height, width, fill }: IconOptions) {
+export function close ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
         fill={fill}
         d="m150.627 128 68.686-68.687c6.249-6.248 6.249-16.379 0-22.627-6.248-6.249-16.379-6.249-22.627 0l-68.687 68.686-68.686-68.685c-6.248-6.249-16.379-6.249-22.627 0-6.249 6.248-6.249 16.379 0 22.627l68.686 68.687-68.685 68.686c-6.249 6.248-6.249 16.379 0 22.627 6.248 6.249 16.379 6.249 22.627 0l68.687-68.686 68.687 68.686c6.248 6.249 16.379 6.249 22.627 0 6.249-6.248 6.249-16.379 0-22.627L150.629 128Z"
