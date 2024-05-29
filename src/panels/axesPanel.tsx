@@ -148,11 +148,11 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
   return (
     <div
       className={
-        'vim-axes-panel vc-absolute vc-overflow-hidden vc-z-20 vc-flex vc-flex-col vc-border vc-border-white vc-opacity-50 vc-shadow-lg vc-saturate-0 vc-transition-all hover:vc-opacity-100 hover:vc-saturate-100' +
+        'vim-axes-panel vc-pointer-events-none vc-absolute vc-overflow-hidden vc-z-20 vc-flex vc-flex-col vc-border vc-border-white vc-opacity-50 vc-shadow-lg vc-saturate-0 vc-transition-all hover:vc-opacity-100 hover:vc-saturate-100' +
         hidden
       }
     >
-      <div ref={gizmoDiv} className='vim-axes-panel-gizmo vc-absolute'/>
+      <div ref={gizmoDiv} className='vim-axes-panel-gizmo vc-absolute vc-pointer-events-auto'/>
       <div className='vim-axes-panel-bar vc-absolute vc-top-[80%] vc-bottom-0 vc-right-0 vc-left-0'>
         {createBar()}
       </div>

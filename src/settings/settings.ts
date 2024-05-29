@@ -160,6 +160,6 @@ export const defaultSettings: ComponentSettings = {
     maximise: true,
 
     loadingBox: true,
-    performance: true
+    performance: false
   }
 }

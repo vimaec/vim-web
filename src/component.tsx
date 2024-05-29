@@ -106,7 +106,7 @@ export function VimComponent (props: {
   const side = useSideState(
     isTrue(settings.value.ui.bimTreePanel) ||
     isTrue(settings.value.ui.bimInfoPanel),
-    480
+    Math.min(props.container.root.clientWidth * 0.25, 480)
   )
   const [contextMenu, setcontextMenu] = useState<contextMenuCustomization>()
   const bimInfoRef = createBimInfoState()

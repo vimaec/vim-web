@@ -112,7 +112,7 @@ export function SidePanel (props: {
         className="vim-side-panel-nav vc-z-30 vc-absolute vc-right-1 vc-top-1 vc-w-4 vc-h-4 vc-text-gray-medium"
         onClick={onNavBtn}
       >
-        {Icons.close({...iconOptions, className: 'vc-max-h-full vc-max-w-full' })}
+        {Icons.close({ ...iconOptions, className: 'vc-max-h-full vc-max-w-full' })}
       </button>
       <div
        className='vim-side-panel-content vc-absolute vc-top-0 vc-bottom-0'>
