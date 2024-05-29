@@ -2,7 +2,7 @@
  * @module viw-webgl-component
  */
 
-import React, { useEffect, useState, useMemo, useRef } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 
 import { BimTree, TreeActionRef } from './bimTree'

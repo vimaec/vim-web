@@ -84,7 +84,7 @@ function MenuHelp (props: {
   )
 }
 
-function closeButton(onButton: () => void) {
+function closeButton (onButton: () => void) {
   return (
     <button
       className="vim-help-close vc-absolute vc-top-[20px] vc-right-[20px] vc-text-white"
@@ -96,7 +96,7 @@ function closeButton(onButton: () => void) {
         fill: 'currentColor'
       })}
     </button>
-  );
+  )
 }
 
 function linkButtons () {
