@@ -68,7 +68,7 @@ function MenuHelp (props: {
         >
           <div className="vim-help-top">
             <h2
-              className="vim-help-title vc-title vc-text-center vc-font-bold vc-uppercase vc-text-white"
+              className="vim-help-title vc-text-center vc-font-bold vc-uppercase vc-text-white"
             >
               Key navigation controls
             </h2>
