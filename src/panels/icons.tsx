@@ -51,9 +51,9 @@ export function help ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function trash ({ height, width, fill }: IconOptions) {
+export function trash ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
         fill={fill}
         d="M117.317 197.644v-95.33c0-5.467-3.715-10.632-9.129-11.395-6.591-.929-12.238 4.163-12.238 10.574v95.329c0 5.468 3.715 10.633 9.129 11.396 6.591.929 12.238-4.163 12.238-10.574ZM160.05 197.644v-95.33c0-5.467-3.715-10.632-9.129-11.395-6.591-.929-12.238 4.163-12.238 10.574v95.329c0 5.468 3.715 10.633 9.129 11.396 6.591.929 12.238-4.163 12.238-10.574ZM232 42.734h-39.68V10.995C192.32 4.923 187.397 0 181.325 0H74.995C68.923 0 64 4.923 64 10.995v31.739H24c-8.837 0-16 7.163-16 16v.05c0 8.837 7.163 16 16 16h208c8.837 0 16-7.163 16-16v-.05c0-8.837-7.163-16-16-16Zm-66.389-14.025v14.025H90.709V28.709a2 2 0 0 1 2-2h70.902a2 2 0 0 1 2 2Z"
@@ -66,9 +66,9 @@ export function trash ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function checkmark ({ height, width, fill }: IconOptions) {
+export function checkmark ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
         fill={fill}
         d="M228.693 61.741c5.379-7.011 4.057-17.055-2.954-22.434-7.01-5.379-17.054-4.057-22.434 2.954l-.008.011L99.864 177.069l-39.607-47.203c-5.68-6.769-15.772-7.652-22.542-1.972s-7.652 15.772-1.972 22.542l52.416 62.467.006.007c.018.021.038.039.056.06.214.252.448.492.681.733.153.159.3.326.458.478s.331.291.497.437c.251.222.5.445.763.648l.062.053c.108.083.225.151.334.231.304.221.608.44.924.638.166.104.335.192.503.289.284.164.567.328.859.473.221.11.447.204.671.303.245.107.487.219.736.313.268.103.54.188.812.275.214.069.428.142.645.202.293.081.588.144.884.208.206.044.411.093.619.129.294.051.589.085.884.12.219.026.437.055.656.071.275.021.55.026.825.033.245.006.489.015.735.009.246-.005.491-.024.736-.042.274-.018.548-.036.821-.068.22-.026.437-.065.654-.101.293-.047.585-.094.876-.158.207-.045.41-.103.615-.157.292-.076.584-.152.873-.245.215-.069.425-.152.637-.23.267-.099.535-.196.798-.31.245-.105.483-.228.723-.346.219-.108.44-.211.656-.331.286-.158.562-.334.839-.511.163-.104.328-.199.488-.31.307-.211.603-.444.896-.678.106-.085.219-.157.324-.245.021-.018.039-.038.06-.056.253-.215.492-.449.733-.681.159-.153.326-.301.478-.458.152-.159.292-.332.438-.498.221-.25.444-.5.647-.761.017-.022.037-.041.054-.063L228.693 61.741Z"
@@ -77,9 +77,9 @@ export function checkmark ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function undo ({ height, width, fill }: IconOptions) {
+export function undo ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
         fill={fill}
         d="M167.055,76.799H56.971l27.112-27.112c4.687-4.687,4.687-12.285,0-16.971h0c-4.686-4.687-12.284-4.687-16.97,0L19.515,80.313c-4.686,4.687-4.686,12.285,0,16.971h0s0,0,0,0l47.598,47.598c4.686,4.686,12.284,4.686,16.97,0s4.687-12.284,0-16.971l-27.112-27.113h111.029c12.742,0,24.774,5.015,33.879,14.121,9.106,9.105,14.121,21.138,14.121,33.879s-5.015,24.774-14.121,33.879c-9.105,9.106-21.138,14.121-33.879,14.121h-60c-6.627,0-12,5.373-12,12h0c0,6.627,5.373,12,12,12h60c39.925,0,72.531-32.933,71.994-72.975-.531-39.538-33.397-71.025-72.938-71.025Z"
@@ -99,9 +99,9 @@ export function close ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function home ({ height, width, fill }: IconOptions) {
+export function home ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
       <path
         fill={fill}
@@ -111,9 +111,9 @@ export function home ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function fullsScreen ({ height, width, fill }: IconOptions) {
+export function fullsScreen ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
         fill={fill}
         d="M136,36c0,6.627,5.373,12,12,12h43.03s-51.515,51.515-51.515,51.515c-4.686,4.687-4.686,12.284,0,16.971,4.686,4.686,12.284,4.686,16.971,0l51.515-51.515v43.029c0,6.627,5.373,12,12,12,6.627,0,12-5.373,12-12V36c0-3.071-1.172-6.142-3.515-8.485-2.343-2.343-5.414-3.515-8.485-3.515h-72c-6.627,0-12,5.373-12,12Z"
@@ -126,9 +126,9 @@ export function fullsScreen ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function minimize ({ height, width, fill }: IconOptions) {
+export function minimize ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
       <path
         fill={fill}
@@ -138,9 +138,9 @@ export function minimize ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function treeView ({ height, width, fill }: IconOptions) {
+export function treeView ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
         fill={fill}
         d="M160 140h17.834c5.097 16.228 20.256 28 38.166 28 22.091 0 40-17.909 40-40s-17.909-40-40-40c-17.91 0-33.069 11.772-38.166 28H160V52h17.834C182.931 68.228 198.09 80 216 80c22.091 0 40-17.909 40-40S238.091 0 216 0c-17.91 0-33.069 11.772-38.166 28H156c-11 0-20 9-20 20v68h-24V92c0-11-9-20-20-20H20C9 72 0 81 0 92v72c0 11 9 20 20 20h72c11 0 20-9 20-20v-24h24v68c0 11 9 20 20 20h21.834c5.097 16.228 20.256 28 38.166 28 22.091 0 40-17.909 40-40s-17.909-40-40-40c-17.91 0-33.069 11.772-38.166 28H160v-64Zm56-28c8.822 0 16 7.178 16 16s-7.178 16-16 16-16-7.178-16-16 7.178-16 16-16Zm0-88c8.822 0 16 7.178 16 16s-7.178 16-16 16-16-7.178-16-16 7.178-16 16-16ZM88 160H24V96h64v64Zm128 40c8.822 0 16 7.178 16 16s-7.178 16-16 16-16-7.178-16-16 7.178-16 16-16Z"
@@ -148,9 +148,9 @@ export function treeView ({ height, width, fill }: IconOptions) {
     </svg>
   )
 }
-export function more ({ height, width, fill }: IconOptions) {
+export function more ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg fill={fill} height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} fill={fill} height={height} width={width} viewBox="0 0 256 256">
       <path
         fill={fill}
         d="M48,156c-15.438,0-28-12.562-28-28s12.562-28,28-28,28,12.562,28,28-12.562,28-28,28Z"
@@ -183,18 +183,18 @@ export function collapse ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function arrowLeft ({ height, width, fill }: IconOptions) {
+export function arrowLeft ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
       <path d="m161.905 202.207.019-.017c6.547-5.937 7.04-16.057 1.102-22.602L118.457 128l44.569-51.588c5.938-6.546 5.444-16.666-1.102-22.602l-.019-.017c-6.545-5.935-16.662-5.442-22.599 1.102l-54.33 62.348c-5.536 6.103-5.536 15.411 0 21.514l54.33 62.348c5.936 6.544 16.054 7.038 22.599 1.102Z" />
     </svg>
   )
 }
 
-export function fullArrowLeft ({ height, width, fill }: IconOptions) {
+export function fullArrowLeft ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
       <circle cx="128" cy="32" r="16" />
       <circle cx="128" cy="224" r="16" />
@@ -245,9 +245,9 @@ export function hidden ({ height, width, fill, className = '' }: IconOptions) {
 }
 
 // Camera
-export function orbit ({ height, width, fill = '' }: IconOptions) {
+export function orbit ({ height, width, fill = '', className}: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
       <path
         fill={fill}
@@ -262,9 +262,9 @@ export function orbit ({ height, width, fill = '' }: IconOptions) {
   )
 }
 
-export function look ({ height, width, fill }: IconOptions) {
+export function look ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
       <path
         fill={fill}
@@ -274,9 +274,9 @@ export function look ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function perspective ({ height, width, fill }: IconOptions) {
+export function perspective ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
       <path
         fill={fill}
@@ -286,9 +286,9 @@ export function perspective ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function orthographic ({ height, width, fill }: IconOptions) {
+export function orthographic ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
       <path
         fill={fill}
@@ -298,9 +298,9 @@ export function orthographic ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function camera ({ height, width, fill }: IconOptions) {
+export function camera ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
       <path
         fill={fill}
@@ -311,9 +311,9 @@ export function camera ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function pan ({ height, width, fill }: IconOptions) {
+export function pan ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
       <path
         fill={fill}
@@ -323,9 +323,9 @@ export function pan ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function zoom ({ height, width, fill }: IconOptions) {
+export function zoom ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
         fill={fill}
         id="Path_15078"
@@ -335,9 +335,9 @@ export function zoom ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function frameRect ({ height, width, fill }: IconOptions) {
+export function frameRect ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z"></path>
       <rect
         fill={fill}
@@ -431,9 +431,9 @@ export function frameRect ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function frameSelection ({ height, width, fill }: IconOptions) {
+export function frameSelection ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
         fill={fill}
         d="M32,52c.032-11.032,8.968-19.968,20-20h28c4.418,0,8-3.582,8-8v-8c0-4.418-3.582-8-8-8h-28c-24.289,.027-43.973,19.711-44,44v28c0,4.418,3.582,8,8,8h8c4.418,0,8-3.582,8-8v-28Z"
@@ -461,9 +461,9 @@ export function frameSelection ({ height, width, fill }: IconOptions) {
 // Isolation
 
 // Measure
-export function toggleIsolation ({ height, width, fill }: IconOptions) {
+export function toggleIsolation ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
       <path
         fill={fill}
@@ -478,9 +478,9 @@ export function toggleIsolation ({ height, width, fill }: IconOptions) {
 }
 
 // Measure
-export function measure ({ height, width, fill }: IconOptions) {
+export function measure ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
       <path
         fill={fill}
@@ -491,9 +491,9 @@ export function measure ({ height, width, fill }: IconOptions) {
 }
 
 // Section Box
-export function sectionBox ({ height, width, fill }: IconOptions) {
+export function sectionBox ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
         fill={fill}
         d="m110.051 2.173-92.41 53.253a16.213 16.213 0 0 0-8.125 14.047V175.98a16.215 16.215 0 0 0 8.125 14.047l95.112 54.792c1.354.78 3.047-.195 3.047-1.756V121.339l105.613-60.862c1.354-.78 1.354-2.731 0-3.512L126.301 2.173a16.278 16.278 0 0 0-16.25 0ZM95.488 211.458l-65.659-37.82V82.577l65.66 37.82v91.062Zm10.266-107.741L40.096 65.898l78.08-44.996 65.66 37.819-78.081 44.996Z"
@@ -506,9 +506,9 @@ export function sectionBox ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function sectionBoxClip ({ height, width, fill }: IconOptions) {
+export function sectionBoxClip ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
       <rect fill={fill} width="32" height="24" x="170" y="33" rx="10" ry="10" />
       <rect
@@ -542,9 +542,9 @@ export function sectionBoxClip ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function sectionBoxNoClip ({ height, width, fill }: IconOptions) {
+export function sectionBoxNoClip ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
       <path
         fill={fill}
@@ -554,9 +554,9 @@ export function sectionBoxNoClip ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function sectionBoxReset ({ height, width, fill }: IconOptions) {
+export function sectionBoxReset ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
       <path
         fill={fill}
@@ -565,9 +565,9 @@ export function sectionBoxReset ({ height, width, fill }: IconOptions) {
     </svg>
   )
 }
-export function sectionBoxShrink ({ height, width, fill }: IconOptions) {
+export function sectionBoxShrink ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg height={height} width={width} viewBox="0 0 256 256">
+    <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <g data-name="FRAMES">
         <path fill="none" d="M0 0h256v256H0z" data-name="frame" />
       </g>
@@ -581,9 +581,9 @@ export function sectionBoxShrink ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function ghost ({ height, width, fill }: IconOptions) {
+export function ghost ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg width={height} height={width} viewBox="0 0 20 20">
+    <svg className={className} width={height} height={width} viewBox="0 0 20 20">
       <g data-name="ICONS">
         <path
           d="M7.19 6.4955C6.47991 6.4955 5.90428 7.45488 5.90428 8.63837C5.90428 9.82186 6.47991 10.7812 7.19 10.7812C7.90009 10.7812 8.47572 9.82186 8.47572 8.63837C8.47572 7.45488 7.90009 6.4955 7.19 6.4955Z"
@@ -602,9 +602,9 @@ export function ghost ({ height, width, fill }: IconOptions) {
   )
 }
 
-export function ghostDead ({ height, width, fill }: IconOptions) {
+export function ghostDead ({ height, width, fill, className }: IconOptions) {
   return (
-    <svg width={height} height={width} viewBox="0 0 20 20">
+    <svg className={className} width={height} height={width} viewBox="0 0 20 20">
       <g data-name="ICONS">
         <path
           d="M1.66666 8.07787C1.66666 3.63566 5.30128 0.00103311 9.74341 0.000854492C14.1856 0.000854492 17.8205 3.63557 17.8205 8.07787V18.0778C17.8205 19.1355 17.2053 20.0009 15.8975 20.0009C15.2239 20.0009 14.763 19.7968 14.316 19.5989C13.8951 19.4126 13.4865 19.2317 12.9243 19.2317C12.3744 19.2317 11.9508 19.4047 11.5056 19.5867C11.0122 19.7883 10.492 20.0009 9.74359 20.0009C9.03329 20.0009 8.60419 19.8094 8.17411 19.6176C7.74206 19.4248 7.30903 19.2317 6.58896 19.2317C5.8541 19.2317 5.42941 19.4328 5.01441 19.6294C4.61796 19.8172 4.23037 20.0009 3.58968 20.0009C2.27835 20.0009 1.66666 19.1355 1.66666 18.0778V8.07787ZM13.5284 6.73466L12.7791 7.48395L12.0298 6.73466C11.8705 6.57529 11.6615 6.49556 11.4526 6.49556C11.2437 6.49556 11.0347 6.57529 10.8754 6.73466C10.5566 7.05341 10.5566 7.57028 10.8754 7.88912L11.6246 8.63841L10.8754 9.38769C10.5566 9.70644 10.5566 10.2233 10.8754 10.5421C11.0347 10.7015 11.2437 10.7813 11.4526 10.7813C11.6615 10.7813 11.8705 10.7015 12.0298 10.5421L12.7791 9.79286L13.5284 10.5421C13.6878 10.7015 13.8967 10.7813 14.1056 10.7813C14.3145 10.7813 14.5235 10.7015 14.6828 10.5421C15.0016 10.2234 15.0016 9.70653 14.6828 9.38769L13.9336 8.63841L14.6828 7.88912C15.0016 7.57028 15.0016 7.05341 14.6828 6.73466C14.5235 6.57529 14.3145 6.49556 14.1056 6.49556C13.8967 6.49556 13.6878 6.57529 13.5284 6.73466ZM7.45699 6.73466L6.70771 7.48395L5.95842 6.73466C5.79905 6.57529 5.59012 6.49556 5.38119 6.49556C5.17227 6.49556 4.96334 6.57529 4.80396 6.73466C4.48522 7.05341 4.48522 7.57028 4.80396 7.88912L5.55325 8.63841L4.80396 9.38769C4.48522 9.70644 4.48522 10.2233 4.80396 10.5421C4.96334 10.7015 5.17227 10.7813 5.38119 10.7813C5.59012 10.7813 5.79905 10.7015 5.95842 10.5421L6.70771 9.79286L7.45699 10.5421C7.61636 10.7015 7.82529 10.7813 8.03422 10.7813C8.24315 10.7813 8.45207 10.7015 8.61145 10.5421C8.9302 10.2234 8.9302 9.70653 8.61145 9.38769L7.86216 8.63841L8.61145 7.88912C8.9302 7.57028 8.9302 7.05341 8.61145 6.73466C8.45207 6.57529 8.24315 6.49556 8.03422 6.49556C7.82529 6.49556 7.61636 6.57529 7.45699 6.73466Z"

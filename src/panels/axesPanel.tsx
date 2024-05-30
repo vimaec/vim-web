@@ -153,7 +153,7 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
       }
     >
       <div ref={gizmoDiv} className='vim-axes-panel-gizmo vc-absolute vc-pointer-events-auto'/>
-      <div className='vim-axes-panel-bar vc-absolute vc-top-[80%] vc-bottom-0 vc-right-0 vc-left-0'>
+      <div className='vim-axes-panel-bar vc-absolute vc-top-[75%] vc-bottom-0 vc-right-0 vc-left-0'>
         {createBar()}
       </div>
     </div>

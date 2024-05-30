@@ -52,8 +52,8 @@ export function ControlBar (props: {
   }, [])
 
   return <div style={{
-    gap: 'min(10px, 1%)',
-    bottom: 'min(64px, 2%)'
+    gap: 'min(10px, 2%)',
+    bottom: 'min(36px, 10%)'
     // For some reason this causes the ui to flicker. Disabled for now.
     // opacity: show ? 1 : 0,
   }}
