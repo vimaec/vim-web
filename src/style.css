@@ -145,11 +145,11 @@ input[type='search']::-webkit-search-cancel-button {
   }
   
   .vim-control-bar-button {
-    height: min(6cqmin, 2.5rem);
-    width: min(6cqmin, 2.5rem);
+    height: min(8cqmin, 2.5rem);
+    width: min(8cqmin, 2.5rem);
   }
   .vim-control-bar-section {
-    gap: min(3cqmin, 0.75rem)
+    gap: min(2cqmin, 0.5rem)
   }
   .vim-axes-panel{
     border-radius: min(3cqmin, 1rem);
