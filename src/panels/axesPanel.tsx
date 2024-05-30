@@ -8,6 +8,7 @@ import { ComponentCamera } from '../helpers/camera'
 import { anyUiAxesButton, isTrue } from '../settings/settings'
 import { SettingsState } from '../settings/settingsState'
 import { VIM } from '../component'
+import { whenAllTrue, whenTrue } from '../helpers/utils'
 
 /**
  * Memoized version of the AxesPanelMemo.
@@ -115,11 +116,6 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
     </button>
   )
 
-  const createButton = (button: JSX.Element, condition: boolean = true) => {
-    if (!condition) return null
-    return button
-  }
-
   const hidden = isTrue(props.settings.value.ui.axesPanel) ? '' : ' vc-hidden'
 
   const createBar = () => {
@@ -131,16 +127,12 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
     }
     return (
       <div className="vim-axes-panel-buttons vc-absolute vc-inset-0 vc-pointer-events-auto vc-order-2 vc-flex vc-items-center vc-justify-evenly vc-bg-white">
-        {createButton(
-          btnOrtho,
-          props.settings.value.capacity.useOrthographicCamera &&
-            isTrue(props.settings.value.ui.orthographic)
-        )}
-        {createButton(btnHome, isTrue(props.settings.value.ui.resetCamera))}
-        {createButton(
-          btnIsolation,
-          isTrue(props.settings.value.ui.enableGhost)
-        )}
+        {whenAllTrue([
+          props.settings.value.capacity.useOrthographicCamera,
+          props.settings.value.ui.orthographic
+        ], btnOrtho)}
+        {whenTrue(props.settings.value.ui.resetCamera, btnHome)}
+        {whenTrue(props.settings.value.ui.enableGhost, btnIsolation)}
       </div>
     )
   }

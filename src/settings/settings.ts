@@ -18,10 +18,10 @@ export type RecursivePartial<T> = {
  * Restricted: is false and cannot be changed by the user.
  */
 export type UserBoolean = boolean | 'AlwaysTrue' | 'AlwaysFalse'
-export function isTrue (value:UserBoolean) {
+export function isTrue (value:UserBoolean | boolean) {
   return value === true || value === 'AlwaysTrue'
 }
-export function isFalse (value:UserBoolean) {
+export function isFalse (value:UserBoolean | boolean) {
   return value === false || value === 'AlwaysFalse'
 }
 

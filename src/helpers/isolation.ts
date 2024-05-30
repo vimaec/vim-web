@@ -210,14 +210,14 @@ export class Isolation {
     })
   }
 
-  getMaterial(settings: ComponentSettings, isolate: boolean){
-    if(settings.peformance.useFastMaterial){
+  getMaterial (settings: ComponentSettings, isolate: boolean) {
+    if (settings.peformance.useFastMaterial) {
       return this._viewer.materials.simple
     }
-    if(!settings.isolation.useIsolationMaterial){
+    if (!settings.isolation.useIsolationMaterial) {
       return undefined
     }
-    if(!isolate){
+    if (!isolate) {
       return undefined
     }
     return this._viewer.materials.isolation
@@ -271,6 +271,4 @@ function setsEqual<T> (set1: Set<T>, set2: Set<T>): boolean {
   }
 
   return true
-  
 }
-

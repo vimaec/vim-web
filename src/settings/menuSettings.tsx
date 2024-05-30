@@ -74,22 +74,26 @@ export function MenuSettings (props: {
     </div>
   }
 
+  function settingsSubtitle (title: string) {
+    return (
+      <h3 className="vc-subtitle">{title}</h3>
+    )
+  }
+
   return (
     <div
       className='vc-absolute vc-inset-0'>
-      <h2 className="vc-title vc-mb-6">
-        Display Settings
-      </h2>
-      <div className="vim-settings vc-absolute vc-top-4 vc-left-0 vc-bottom-0 vc-right-0 vc-overflow-y-auto">
-        <h3 className="vc-mt-2 vc-font-bold">Inputs</h3>
+        <h3 className="vc-title">Settings </h3>
+      <div className="vim-settings vc-absolute vc-top-6 vc-left-0 vc-bottom-0 vc-right-0 vc-overflow-y-auto">
+        {settingsSubtitle('Inputs')}
         {settingsBox(
           'Scroll Speed',
           '[0.1,10]',
           n => VIM.THREE.MathUtils.clamp(n, 0.1, 10),
           s => props.viewer.inputs.mouse.scrollSpeed,
-          (s, v) => props.viewer.inputs.mouse.scrollSpeed = v
+          (s, v) => { props.viewer.inputs.mouse.scrollSpeed = v }
         )}
-        <h3 className="vc-mt-2 vc-font-bold">Materials</h3>
+        {settingsSubtitle('Materials')}
         {settingsToggle(
           'Use Isolation Material',
           (settings) => settings.isolation.useIsolationMaterial,
@@ -110,13 +114,13 @@ export function MenuSettings (props: {
             }
           }
         )}
-        <h3 className="vc-mt-2 vc-font-bold">Scene</h3>
+        {settingsSubtitle('Scene')}
         {settingsToggle(
           'Show Ground Plane',
           (_) => props.viewer.environment.groundPlane.visible,
-          (_, value) => props.viewer.environment.groundPlane.visible = value
+          (_, value) => { props.viewer.environment.groundPlane.visible = value }
         )}
-        <h3 className="vc-mt-2 vc-font-bold">Panels</h3>
+        {settingsSubtitle('Panels')}
         {settingsToggle(
           'Show Logo',
           (settings) => settings.ui.logo,
@@ -147,7 +151,7 @@ export function MenuSettings (props: {
           (settings) => settings.ui.loadingBox,
           (settings, value) => (settings.ui.loadingBox = value)
         )}
-        <h3 className="vc-mt-2 vc-font-bold">Axes</h3>
+        {settingsSubtitle('Axes')}
         {settingsToggle(
           'Show Orthographic Button',
           (settings) => settings.ui.orthographic,
@@ -163,7 +167,7 @@ export function MenuSettings (props: {
           (settings) => settings.ui.enableGhost,
           (settings, value) => (settings.ui.enableGhost = value)
         )}
-        <h3 className="vc-mt-2 vc-font-bold">Cursors</h3>
+        {settingsSubtitle('Cursors')}
         {settingsToggle(
           'Show Orbit Button',
           (settings) => settings.ui.orbit,
@@ -194,7 +198,7 @@ export function MenuSettings (props: {
           (settings) => settings.ui.zoomToFit,
           (settings, value) => (settings.ui.zoomToFit = value)
         )}
-        <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Tool</h3>
+        {settingsSubtitle('Tools')}
         {settingsToggle(
           'Show Sectioning Mode Button ',
           (settings) => settings.ui.sectioningMode,
@@ -210,7 +214,7 @@ export function MenuSettings (props: {
           (settings) => settings.ui.toggleIsolation,
           (settings, value) => (settings.ui.toggleIsolation = value)
         )}
-        <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Settings</h3>
+        {settingsSubtitle('Settings')}
         {settingsToggle(
           'Show Project Inspector Button',
           (settings) => settings.ui.projectInspector,

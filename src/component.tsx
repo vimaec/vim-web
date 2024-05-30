@@ -37,6 +37,7 @@ import { useViewerState } from './viewerState'
 import { LogoMemo } from './panels/logo'
 import { VimComponentRef } from './vimComponentRef'
 import { createBimInfoState } from './bim/bimInfoData'
+import { whenTrue } from './helpers/utils'
 
 export * as VIM from 'vim-webgl-viewer/'
 export const THREE = VIM.THREE
@@ -73,13 +74,6 @@ export function createVimComponent (
     />
   )
   return { container, reactRoot, viewer }
-}
-
-export function Test () {
-  useEffect(() => {
-    console.log('Test')
-  })
-  return <div className='Test'>Test</div>
 }
 
 /**
@@ -188,12 +182,7 @@ export function VimComponent (props: {
       <div className="vim-performance-div" ref={performanceRef}></div>
       <Overlay viewer={props.viewer} side={side}></Overlay>
       <MenuHelpMemo help={help} settings={settings.value} side={side} />
-      {isTrue(settings.value.ui.logo) ? <LogoMemo /> : null}
-      {isTrue(settings.value.ui.loadingBox)
-        ? (
-        <LoadingBoxMemo loader={loader.current} content={msg} />
-          )
-        : null}
+      {whenTrue(settings.value.ui.loadingBox, <LoadingBoxMemo loader={loader.current} content={msg} />)}
       <SidePanelMemo
         container={props.container}
         viewer={props.viewer}
@@ -202,6 +191,7 @@ export function VimComponent (props: {
       />
       <RestOfScreen side={side} content={() => {
         return <>
+        {whenTrue(settings.value.ui.logo, <LogoMemo/>)}
         <ControlBar
           viewer={props.viewer}
           camera={camera}

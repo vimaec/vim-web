@@ -127,6 +127,12 @@ input[type='search']::-webkit-search-cancel-button {
     font-size: min(5cqmin, 0.70rem);
     line-height: min(12cqmin, 2rem);
   }
+  .vc-subtitle{
+    font-weight: bold;
+    font-size: min(5cqmin, 0.70rem);
+    line-height: min(8cqmin, 1.5rem);
+  }
+
   .vim-help-blocker{
     gap:min(3cqh, 1rem)
   }

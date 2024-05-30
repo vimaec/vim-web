@@ -12,7 +12,8 @@ import { ComponentCamera } from '../helpers/camera'
 import { Grouping, toTreeData } from './bimTreeData'
 import { ViewerState } from '../viewerState'
 import { AugmentedElement } from '../helpers/element'
-import { ComponentSettings, isFalse, isTrue } from '../settings/settings'
+import { ComponentSettings, isFalse } from '../settings/settings'
+import { whenAllTrue, whenTrue } from '../helpers/utils'
 import { BimInfoPanel } from './bimInfoPanel'
 import { BimInfoPanelRef } from './bimInfoData'
 
@@ -133,15 +134,16 @@ export function BimPanel (props: {
           )}
       {
         // Divider if needed.
-        isTrue(props.settings.ui.bimTreePanel) &&
-        isTrue(props.settings.ui.bimInfoPanel) &&
-        props.viewerState.elements.length > 0
-          ? divider()
-          : null
+        whenAllTrue([
+          props.settings.ui.bimTreePanel,
+          props.settings.ui.bimInfoPanel,
+          props.viewerState.elements.length > 0
+        ],
+        divider())
       }
 
-      {isTrue(props.settings.ui.bimInfoPanel)
-        ? (<div className='vim-bim-lower-container vc-absolute vc-top-[50%] vc-bottom-0 vc-bottom vc-left-0 vc-right-0'>
+      {whenTrue(props.settings.ui.bimInfoPanel,
+        <div className='vim-bim-lower-container vc-absolute vc-top-[50%] vc-bottom-0 vc-bottom vc-left-0 vc-right-0'>
             <BimInfoPanel
               object={last}
               vim={props.viewerState.vim}
@@ -149,8 +151,7 @@ export function BimPanel (props: {
               full={isFalse(props.settings.ui.bimTreePanel)}
               bimInfoRef={props.bimInfoRef}
             />
-          </div>)
-        : null}
+          </div>)}
     </div>
   )
 }
