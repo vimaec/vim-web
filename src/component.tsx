@@ -160,7 +160,7 @@ export function VimComponent (props: {
 
   const sidePanel = () => (
     <>
-      <OptionalBimPanel
+      {<OptionalBimPanel
         viewer={props.viewer}
         camera={camera}
         viewerState={viewerState}
@@ -169,7 +169,7 @@ export function VimComponent (props: {
         treeRef={treeRef}
         settings={settings.value}
         bimInfoRef={bimInfoRef}
-      />
+      />}
       <MenuSettings
         visible={side.getContent() === 'settings'}
         viewer={props.viewer}

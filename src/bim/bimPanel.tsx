@@ -13,10 +13,13 @@ import { Grouping, toTreeData } from './bimTreeData'
 import { ViewerState } from '../viewerState'
 import { AugmentedElement } from '../helpers/element'
 import { ComponentSettings, isFalse } from '../settings/settings'
-import { whenAllTrue, whenTrue } from '../helpers/utils'
+import { whenAllTrue, whenSomeTrue, whenTrue } from '../helpers/utils'
 import { BimInfoPanel } from './bimInfoPanel'
 import { BimInfoPanelRef } from './bimInfoData'
 
+// Not sure why I need this,
+// when I inline this method in component.tsx it causes an error.
+// The error appears only in JSFiddle when the module is directly imported in a script tag.
 export function OptionalBimPanel (props: {
   viewer: VIM.Viewer
   camera: ComponentCamera
@@ -27,13 +30,10 @@ export function OptionalBimPanel (props: {
   treeRef: React.MutableRefObject<TreeActionRef>
   bimInfoRef: BimInfoPanelRef
 }) {
-  if (
-    (isFalse(props.settings.ui.bimTreePanel) &&
-     isFalse(props.settings.ui.bimInfoPanel))
-  ) {
-    return null
-  }
-  return React.createElement(BimPanel, props)
+  return whenSomeTrue([
+    props.settings.ui.bimTreePanel,
+    props.settings.ui.bimInfoPanel],
+  React.createElement(BimPanel, props))
 }
 
 /**
@@ -105,13 +105,15 @@ export function BimPanel (props: {
 
   const last =
     props.viewerState.selection[props.viewerState.selection.length - 1]
-  const full = isFalse(props.settings.ui.bimInfoPanel)
+  const fullTree = isFalse(props.settings.ui.bimInfoPanel)
+  const fullInfo = isFalse(props.settings.ui.bimTreePanel)
+
   return (
-    <div className={`vim-bim-panel vc-inset-0 vc-absolute vc-h-full vc-w-full ${full ? 'full-tree' : ''} ${props.visible ? '' : 'vc-hidden'}`}>
+    <div className={`vim-bim-panel vc-inset-0 vc-absolute vc-h-full vc-w-full ${fullTree ? 'full-tree' : ''} ${props.visible ? '' : 'vc-hidden'}`}>
       {isFalse(props.settings.ui.bimTreePanel)
         ? null
         : (
-        <div className={`vim-bim-upper vc-flex vc-flex-col vc-absolute vc-w-full ${full ? 'vc-h-full' : 'vc-h-[49%]'} ${props.viewerState.elements.length > 0 ? '' : 'vc-hidden'}`}>
+        <div className={`vim-bim-upper vc-flex vc-flex-col vc-absolute vc-w-full ${fullTree ? 'vc-h-full' : 'vc-h-[49%]'} ${props.viewerState.elements.length > 0 ? '' : 'vc-hidden'}`}>
           <h2
             className="vim-bim-upper-title vc-title vc-text-xs vc-font-bold vc-uppercase">
             Project Inspector
@@ -141,17 +143,16 @@ export function BimPanel (props: {
         ],
         divider())
       }
-
       {whenTrue(props.settings.ui.bimInfoPanel,
-        <div className='vim-bim-lower-container vc-absolute vc-top-[50%] vc-bottom-0 vc-bottom vc-left-0 vc-right-0'>
-            <BimInfoPanel
-              object={last}
-              vim={props.viewerState.vim}
-              elements={filteredElements}
-              full={isFalse(props.settings.ui.bimTreePanel)}
-              bimInfoRef={props.bimInfoRef}
-            />
-          </div>)}
+        <div className={`vim-bim-lower-container vc-absolute ${fullInfo ? 'vc-top-0' : 'vc-top-[50%]'} vc-bottom-0 vc-bottom vc-left-0 vc-right-0`}>
+          <BimInfoPanel
+            object={last}
+            vim={props.viewerState.vim}
+            elements={filteredElements}
+            full={isFalse(props.settings.ui.bimTreePanel)}
+            bimInfoRef={props.bimInfoRef}
+          />
+        </div>)}
     </div>
   )
 }

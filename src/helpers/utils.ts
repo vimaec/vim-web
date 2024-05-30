@@ -13,5 +13,13 @@ export function whenAllTrue (value: (UserBoolean| boolean)[], element: JSX.Eleme
 }
 
 export function whenAllFalse (value: (UserBoolean| boolean)[], element: JSX.Element) {
-  return value.every(isTrue) ? element : null
+  return value.every(isFalse) ? element : null
+}
+
+export function whenSomeTrue (value: (UserBoolean| boolean)[], element: JSX.Element) {
+  return value.some(isTrue) ? element : null
+}
+
+export function whenSomeFalse (value: (UserBoolean| boolean)[], element: JSX.Element) {
+  return value.some(isFalse) ? element : null
 }
