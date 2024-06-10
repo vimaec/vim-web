@@ -32,7 +32,6 @@ export function useHelp (): HelpState {
   return useMemo(() => ({ visible, setVisible }), [visible, setVisible])
 }
 
-
 /**
  * JSX Memoized version of MenuHelp.
  */
@@ -55,53 +54,48 @@ function MenuHelp (props: {
   return (
     <>
       <div
-        className="vim-help-overlay vc-absolute vc-inset-0 vc-z-40 vc-flex vc-h-full vc-w-full vc-items-center vc-justify-center vc-bg-black/80"
+        className="vim-help-overlay vc-absolute vc-inset-0 vc-z-40 vc-flex vc-h-full vc-w-full vc-items-center vc-justify-center vc-bg-black/90"
         onClick={onCloseBtn}
         onContextMenu={(event) => {
           event.preventDefault()
         }}
-      >
+      > {closeButton(onCloseBtn)}
         <div
-          className="vim-help-blocker vc-flex vc-flex-col vc-py-5"
+          className="vim-help-blocker vc-gap-4 vc-justify-center vc-max-w-[900px] vc-w-[90%] vc-h-[80%] vc-absolute vc-p-5 vc-flex vc-flex-col"
           onClick={(e) => {
             e.stopPropagation()
           }}
         >
-          <div className="vim-help vc-mb-8 vc-flex vc-justify-between">
+          <div className="vim-help-top">
             <h2
-              className="vim-help-title vc-text-sm vc-font-bold vc-uppercase vc-text-white"
-              style={{
-                marginLeft: props.side.getWidth(),
-                maxWidth: `calc(100% - ${props.side.getWidth()}px)`
-              }}
+              className="vim-help-title vc-text-center vc-font-bold vc-uppercase vc-text-white"
             >
               Key navigation controls
             </h2>
-            <button
-              className="vim-help-close vc-text-white"
-              onClick={onCloseBtn}
-            >
-              {Icons.close({
-                height: '20px',
-                width: '20px',
-                fill: 'currentColor'
-              })}
-            </button>
           </div>
-          <div className="">
             <img
-              className="vim-help-img vc-2xl:w-[50vw] vc-mx-auto vc-mb-8"
+              className="vim-help-img vc-min-h-0"
               src={helpImage}
-              style={{
-                marginLeft: props.side.getWidth(),
-                maxWidth: `calc(100% - ${props.side.getWidth()}px)`
-              }}
             ></img>
-          </div>
           {props.settings.capacity.canFollowUrl ? linkButtons() : null}
         </div>
       </div>
     </>
+  )
+}
+
+function closeButton (onButton: () => void) {
+  return (
+    <button
+      className="vim-help-close vc-absolute vc-top-[20px] vc-right-[20px] vc-text-white"
+      onClick={onButton}
+    >
+      {Icons.close({
+        height: '20px',
+        width: '20px',
+        fill: 'currentColor'
+      })}
+    </button>
   )
 }
 
@@ -113,19 +107,25 @@ function linkButtons () {
     window.open(urlSupport)
   }
 
+  const text = (text: string) => {
+    return <div className="vc-overflow-hidden vc-whitespace-nowrap vc-text-clip vc-uppercase vc-font-bold">{text}</div>
+  }
+
+  const hover = 'hover:vc-border-primary-royal hover:vc-bg-primary-royal hover:vc-text-white'
+  const shape = 'vc-rounded-full vc-border vc-border-white'
   return (
-    <div className="vc-flex vc-justify-end">
+    <div
+    className="vim-help-bottom vc-flex vc-gap-4 vc-justify-center vc-min-w-0 vc-min-h-0">
       <button
-        className="vc-hover:border-primary-royal vc-hover:bg-primary-royal vc-mr-4 vc-rounded-full vc-border vc-border-white vc-py-2 vc-px-8 vc-text-xs vc-font-bold vc-uppercase vc-text-white"
+        className={`vim-help-button ${hover} ${shape} vc-text-white`}
         onClick={onControlsBtn}
       >
-        Full Control List
+        {text('Full Control List')}
       </button>
       <button
-        className="vc-rounded-full vc-border vc-border-white vc-bg-white vc-py-2 vc-px-8 vc-text-xs vc-font-bold vc-uppercase vc-text-primary hover:vc-border-primary-royal hover:vc-bg-primary-royal hover:vc-text-white"
+        className= {`vim-help-button ${hover} ${shape} vc-bg-white vc-text-primary`}
         onClick={onHelpBtn}
-      >
-        Help Center
+      >{text('Help Center')}
       </button>
     </div>
   )

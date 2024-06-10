@@ -4,7 +4,6 @@
 
 import { UserBoolean, ComponentSettings, RecursivePartial, PartialComponentSettings } from './settings'
 
-
 export function getLocalComponentSettings (settings: PartialComponentSettings = {}) {
   try {
     const json = localStorage.getItem('component.settings')
@@ -17,7 +16,7 @@ export function getLocalComponentSettings (settings: PartialComponentSettings = 
   }
 }
 
-export function saveSettingsToLocal(value: ComponentSettings){
+export function saveSettingsToLocal (value: ComponentSettings) {
   try {
     const save = removePermission(value)
     localStorage.setItem('component.settings', JSON.stringify(save))
@@ -45,10 +44,10 @@ function removePermission (settings: ComponentSettings) {
   const clone = structuredClone(settings)
   for (const k of Object.keys(clone.ui)) {
     const u = clone.ui as any
-    if(u[k] as UserBoolean === 'AlwaysTrue'){
+    if (u[k] as UserBoolean === 'AlwaysTrue') {
       u[k] = true
     }
-    if(u[k] as UserBoolean === 'AlwaysFalse'){
+    if (u[k] as UserBoolean === 'AlwaysFalse') {
       u[k] = false
     }
     u[k] = u[k] === true

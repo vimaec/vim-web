@@ -57,7 +57,7 @@ export function BimSearch (props: {
   }
 
   return (
-    <div className="vim-bim-search vc-relative vc-mb-4 vc-flex vc-items-center">
+    <div className="vim-bim-search vc-relative vc-flex vc-items-center">
       <svg
         className="search-icon -vc-mr-4 vc-text-gray-light"
         xmlns="http://www.w3.org/2000/svg"
@@ -93,7 +93,7 @@ export function BimSearch (props: {
 
       {props.count !== undefined && text
         ? (
-        <div className="search-count vc-absolute vc-right-8 vc-rounded-full vc-bg-primary-royal vc-py-1 vc-px-2 vc-text-xs vc-font-bold vc-text-white">
+        <div className="search-count vc-absolute vc-right-8 vc-rounded-full vc-bg-primary-royal vc-py-0.5 vc-px-2 vc-title vc-font-bold vc-text-white">
           {props.count}
         </div>
           )

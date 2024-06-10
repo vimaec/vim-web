@@ -54,20 +54,16 @@ export function useSettings (
   )
 }
 
-
-function validateSettings(settings: ComponentSettings){
-  if(settings.peformance.useFastMaterial && settings.isolation.useIsolationMaterial){
+function validateSettings (settings: ComponentSettings) {
+  if (settings.peformance.useFastMaterial && settings.isolation.useIsolationMaterial) {
     settings.peformance.useFastMaterial = false
   }
 }
-
 
 /**
  * Apply given vim component settings to the given viewer.
  */
 export function applySettings (viewer: VIM.Viewer, settings: ComponentSettings) {
-  
-
   // Show/Hide performance gizmo
   const performance = document.getElementsByClassName('vim-performance-div')[0]
   if (performance) {
@@ -79,10 +75,10 @@ export function applySettings (viewer: VIM.Viewer, settings: ComponentSettings) 
   }
 
   viewer.vims.forEach((v) => {
-    if(settings.peformance.useFastMaterial && v.scene.material === undefined){
+    if (settings.peformance.useFastMaterial && v.scene.material === undefined) {
       v.scene.material = viewer.materials.simple
     }
-    if(!settings.peformance.useFastMaterial && v.scene.material === viewer.materials.simple){
+    if (!settings.peformance.useFastMaterial && v.scene.material === viewer.materials.simple) {
       v.scene.material = undefined
     }
   })

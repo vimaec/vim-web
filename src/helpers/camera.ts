@@ -12,7 +12,7 @@ export class ComponentCamera {
   constructor (viewer: VIM.Viewer) {
     this._viewer = viewer
   }
-  
+
   /**
    * Resets the camera to its initial position.
    */
@@ -41,20 +41,20 @@ export class ComponentCamera {
     const box = this._viewer.selection.getBoundingBox()
 
     if (box && this._viewer.gizmos.section.box.intersectsBox(box)) {
-      var movement = duration === 0
+      const movement = duration === 0
         ? this._viewer.camera.snap()
         : this._viewer.camera.lerp(duration)
       movement.frame(box)
     }
   }
 
-/**
+  /**
  * Frames all visible objects in the scene.
  * @param source Optional VIM to specify the source of objects to frame.
  * @param duration Duration of the camera movement animation (default: 1).
  */
   frameVisibleObjects (source?: VIM.Vim, duration = 1) {
-    var movement = duration === 0
+    const movement = duration === 0
       ? this._viewer.camera.snap()
       : this._viewer.camera.lerp(duration)
 
@@ -68,7 +68,7 @@ export class ComponentCamera {
    * @returns The bounding box of all visible objects.
    */
   getVisibleBoundingBox (source?: VIM.Vim) {
-    let box: THREE.Box3
+    let box: VIM.THREE.Box3
 
     const vimBoxUnion = (vim: VIM.Vim) => {
       for (const obj of vim.getObjects()) {

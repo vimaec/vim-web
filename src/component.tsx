@@ -10,7 +10,7 @@ import 'vim-webgl-viewer/dist/style.css'
 
 import * as VIM from 'vim-webgl-viewer/'
 import { AxesPanelMemo } from './panels/axesPanel'
-import { ControlBar } from './panels/controlBar'
+import { ControlBar, RestOfScreen } from './controlbar/controlBar'
 import { LoadingBoxMemo, MsgInfo, ComponentLoader } from './panels/loading'
 import { OptionalBimPanel } from './bim/bimPanel'
 import {
@@ -24,25 +24,29 @@ import { useSideState } from './sidePanel/sideState'
 import { MenuSettings } from './settings/menuSettings'
 import { MenuToastMemo } from './panels/toast'
 import { Overlay } from './panels/overlay'
-import { addPerformanceCounter} from './panels/performance'
+import { addPerformanceCounter } from './panels/performance'
 import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
 import { CursorManager } from './helpers/cursor'
-import { PartialComponentSettings, isTrue} from './settings/settings'
-import { useSettings} from './settings/settingsState'
+import { PartialComponentSettings, isTrue } from './settings/settings'
+import { useSettings } from './settings/settingsState'
 import { Isolation } from './helpers/isolation'
 import { ComponentCamera } from './helpers/camera'
 import { TreeActionRef } from './bim/bimTree'
 import { VimComponentContainer, createContainer } from './container'
-import { useViewerState} from './viewerState'
-import  {LogoMemo} from './panels/logo'
+import { useViewerState } from './viewerState'
+import { LogoMemo } from './panels/logo'
 import { VimComponentRef } from './vimComponentRef'
+import { createBimInfoState } from './bim/bimInfoData'
+import { whenTrue } from './helpers/utils'
 
 export * as VIM from 'vim-webgl-viewer/'
 export const THREE = VIM.THREE
 export * as ContextMenu from './panels/contextMenu'
+export * as BimInfo from './bim/bimInfoData'
 export * from './vimComponentRef'
-export {getLocalComponentSettings as getLocalSettings} from './settings/settingsStorage'
-export {type ComponentSettings as Settings, type PartialComponentSettings as PartialSettings, defaultSettings} from './settings/settings'
+export { getLocalComponentSettings as getLocalSettings } from './settings/settingsStorage'
+export { type ComponentSettings as Settings, type PartialComponentSettings as PartialSettings, defaultSettings } from './settings/settings'
+export * from './container'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.
@@ -58,7 +62,8 @@ export function createVimComponent (
   viewerSettings: VIM.PartialViewerSettings = {}
 ) {
   const viewer = new VIM.Viewer(viewerSettings)
-  container = container ?? createContainer(viewer)
+  container = container ?? createContainer()
+  viewer.viewport.reparent(container.gfx)
   const reactRoot = createRoot(container.ui)
   reactRoot.render(
     <VimComponent
@@ -87,18 +92,19 @@ export function VimComponent (props: {
   const camera = useMemo(() => new ComponentCamera(props.viewer), [])
   const cursor = useMemo(() => new CursorManager(props.viewer), [])
   const loader = useRef(new ComponentLoader(props.viewer))
-  const settings = useSettings(props.viewer, props.settings)
+  const settings = useSettings(props.viewer, props.settings ?? {})
 
   const [isolation] = useState(() => new Isolation(props.viewer, camera, settings.value))
   useEffect(() => isolation.applySettings(settings.value), [settings])
-  useEffect(() => settings.update((s) =>s), [loader.current.loadCount])
 
   const side = useSideState(
     isTrue(settings.value.ui.bimTreePanel) ||
     isTrue(settings.value.ui.bimInfoPanel),
-    480
+    Math.min(props.container.root.clientWidth * 0.25, 340)
   )
   const [contextMenu, setcontextMenu] = useState<contextMenuCustomization>()
+  const bimInfoRef = createBimInfoState()
+
   const help = useHelp()
   const viewerState = useViewerState(props.viewer)
   const [msg, setMsg] = useState<MsgInfo>()
@@ -116,6 +122,7 @@ export function VimComponent (props: {
     cursor.register()
 
     // Setup custom input scheme
+    props.viewer.viewport.canvas.tabIndex = 0
     props.viewer.inputs.scheme = new ComponentInputScheme(
       props.viewer,
       camera,
@@ -140,7 +147,8 @@ export function VimComponent (props: {
       message: {
         show: (message: string, info: string) => setMsg({ message, info }),
         hide: () => setMsg(undefined)
-      }
+      },
+      bimInfo: bimInfoRef
     })
 
     // Clean up
@@ -152,7 +160,7 @@ export function VimComponent (props: {
 
   const sidePanel = () => (
     <>
-      <OptionalBimPanel
+      {<OptionalBimPanel
         viewer={props.viewer}
         camera={camera}
         viewerState={viewerState}
@@ -160,7 +168,8 @@ export function VimComponent (props: {
         isolation={isolation}
         treeRef={treeRef}
         settings={settings.value}
-      />
+        bimInfoRef={bimInfoRef}
+      />}
       <MenuSettings
         visible={side.getContent() === 'settings'}
         viewer={props.viewer}
@@ -173,32 +182,32 @@ export function VimComponent (props: {
       <div className="vim-performance-div" ref={performanceRef}></div>
       <Overlay viewer={props.viewer} side={side}></Overlay>
       <MenuHelpMemo help={help} settings={settings.value} side={side} />
-      {isTrue(settings.value.ui.logo) ? <LogoMemo /> : null}
-      {isTrue(settings.value.ui.loadingBox)
-        ? (
-        <LoadingBoxMemo loader={loader.current} content={msg} />
-          )
-        : null}
-      <ControlBar
-        viewer={props.viewer}
-        camera={camera}
-        help={help}
-        side={side}
-        isolation={isolation}
-        cursor={cursor}
-        settings={settings.value}
-      />
-      <AxesPanelMemo
-        viewer={props.viewer}
-        camera={camera}
-        settings={settings}
-      />
+      {whenTrue(settings.value.ui.loadingBox, <LoadingBoxMemo loader={loader.current} content={msg} />)}
       <SidePanelMemo
         container={props.container}
         viewer={props.viewer}
         side={side}
         content={sidePanel}
       />
+      <RestOfScreen side={side} content={() => {
+        return <>
+        {whenTrue(settings.value.ui.logo, <LogoMemo/>)}
+        <ControlBar
+          viewer={props.viewer}
+          camera={camera}
+          help={help}
+          side={side}
+          isolation={isolation}
+          cursor={cursor}
+          settings={settings.value}
+        />
+        <AxesPanelMemo
+          viewer={props.viewer}
+          camera={camera}
+          settings={settings}
+        />
+      </>
+      }}/>
 
       <VimContextMenuMemo
         viewer={props.viewer}

@@ -2,11 +2,10 @@
  * @module viw-webgl-component
  */
 
-import React, { ReactEventHandler } from 'react'
+import React from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import { UserBoolean, ComponentSettings } from './settings'
-import { SettingsState} from './settingsState'
-import ReactTooltip from 'react-tooltip'
+import { SettingsState } from './settingsState'
 
 /**
  * JSX Component to interact with settings.
@@ -28,7 +27,7 @@ export function MenuSettings (props: {
           type="checkbox"
           checked={state}
           onChange={action}
-          className="vc-checked:bg-primary-royal vc-mr-2 vc-h-[18px] vc-w-[18px] vc-rounded vc-border vc-border-gray-medium "
+          className="vim-settings-checkbox vc-checked:bg-primary-royal vc-mr-2 vc-rounded vc-border vc-border-gray-medium "
         ></input>{' '}
         {label}
       </label>
@@ -50,72 +49,78 @@ export function MenuSettings (props: {
     })
   }
 
-  const settingsBox = ( label: string,
+  const settingsBox = (label: string,
     info: string,
+    transform : (value:number) => number,
     getter: (settings: ComponentSettings) => number,
-    setter: (settings: ComponentSettings, b: number) => void) =>{
-
+    setter: (settings: ComponentSettings, b: number) => void) => {
     const value = getter(props.settings.value).toString()
     const update = (event: React.FocusEvent<HTMLInputElement, Element>) => {
       const str = event.target.value
       const n = Number.parseFloat(str)
-      if (Number.isNaN(n)){
+      if (Number.isNaN(n)) {
         event.target.value = getter(props.settings.value).toString()
-      }
-      else{
-        props.settings.update(s => setter(s, n))
+      } else {
+        const value = transform(n)
+        event.target.value = value.toString()
+        props.settings.update(s => setter(s, value))
       }
     }
 
-    return <div className="container vc-py-1">
+    return <div className="vc-box-input vc-my-1">
       <label htmlFor="textbox" className='vc-w-3 vc-h-2'>{label}:</label>
-      <input type="text" placeholder={value} className='vc-w-10 vc-h-6 vc-ml-1' onBlur={e => update(e)}/>
+      <input type="text" placeholder={value} className='vim-settings-textbox vc-w-14 vc-ml-1 vc-p-1' onBlur={e => update(e)}/>
       <label htmlFor="textbox" className='vc-w-3 vc-h-2 vc-text-gray vc-ml-1'>{info}</label>
     </div>
+  }
 
+  function settingsSubtitle (title: string) {
+    return (
+      <h3 className="vc-subtitle">{title}</h3>
+    )
   }
 
   return (
-    <>
-      <h2 className="vc-mb-6 vc-text-xs vc-font-bold vc-uppercase">
-        Display Settings
-      </h2>
-      <div className="vim-settings vc-m-1 vc-max-h-[95%] vc-overflow-y-auto">
-        <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Inputs</h3>
+    <div
+      className='vc-absolute vc-inset-0'>
+        <h3 className="vc-title">Settings </h3>
+      <div className="vim-settings vc-absolute vc-top-6 vc-left-0 vc-bottom-0 vc-right-0 vc-overflow-y-auto">
+        {settingsSubtitle('Inputs')}
         {settingsBox(
-          "Scroll Speed",
-          "[0.1,10]",
+          'Scroll Speed',
+          '[0.1,10]',
+          n => VIM.THREE.MathUtils.clamp(n, 0.1, 10),
           s => props.viewer.inputs.mouse.scrollSpeed,
-          (s,v) => props.viewer.inputs.mouse.scrollSpeed = v
+          (s, v) => { props.viewer.inputs.mouse.scrollSpeed = v }
         )}
-        <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Materials</h3>
+        {settingsSubtitle('Materials')}
         {settingsToggle(
           'Use Isolation Material',
           (settings) => settings.isolation.useIsolationMaterial,
           (settings, value) => {
             settings.isolation.useIsolationMaterial = value
-            if(settings.peformance.useFastMaterial && value){
+            if (settings.peformance.useFastMaterial && value) {
               settings.peformance.useFastMaterial = false
-            } 
-          } 
+            }
+          }
         )}
         {settingsToggle(
           'Use Performance Material',
           (settings) => settings.peformance.useFastMaterial,
           (settings, value) => {
             settings.peformance.useFastMaterial = value
-            if(settings.isolation.useIsolationMaterial && value){
+            if (settings.isolation.useIsolationMaterial && value) {
               settings.isolation.useIsolationMaterial = false
-            } 
-          } 
+            }
+          }
         )}
-        <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Scene</h3>
+        {settingsSubtitle('Scene')}
         {settingsToggle(
           'Show Ground Plane',
           (_) => props.viewer.environment.groundPlane.visible,
-          (_, value) => props.viewer.environment.groundPlane.visible = value
+          (_, value) => { props.viewer.environment.groundPlane.visible = value }
         )}
-        <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Panels</h3>
+        {settingsSubtitle('Panels')}
         {settingsToggle(
           'Show Logo',
           (settings) => settings.ui.logo,
@@ -146,7 +151,7 @@ export function MenuSettings (props: {
           (settings) => settings.ui.loadingBox,
           (settings, value) => (settings.ui.loadingBox = value)
         )}
-        <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Axes</h3>
+        {settingsSubtitle('Axes')}
         {settingsToggle(
           'Show Orthographic Button',
           (settings) => settings.ui.orthographic,
@@ -162,7 +167,7 @@ export function MenuSettings (props: {
           (settings) => settings.ui.enableGhost,
           (settings, value) => (settings.ui.enableGhost = value)
         )}
-        <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Cursors</h3>
+        {settingsSubtitle('Cursors')}
         {settingsToggle(
           'Show Orbit Button',
           (settings) => settings.ui.orbit,
@@ -193,7 +198,7 @@ export function MenuSettings (props: {
           (settings) => settings.ui.zoomToFit,
           (settings, value) => (settings.ui.zoomToFit = value)
         )}
-        <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Tool</h3>
+        {settingsSubtitle('Tools')}
         {settingsToggle(
           'Show Sectioning Mode Button ',
           (settings) => settings.ui.sectioningMode,
@@ -209,7 +214,7 @@ export function MenuSettings (props: {
           (settings) => settings.ui.toggleIsolation,
           (settings, value) => (settings.ui.toggleIsolation = value)
         )}
-        <h3 className="vc-mt-2 vc-text-xs vc-font-bold">Settings</h3>
+        {settingsSubtitle('Settings')}
         {settingsToggle(
           'Show Project Inspector Button',
           (settings) => settings.ui.projectInspector,
@@ -231,6 +236,6 @@ export function MenuSettings (props: {
           (settings, value) => (settings.ui.maximise = value)
         )}
       </div>
-    </>
+    </div>
   )
 }

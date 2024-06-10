@@ -2,7 +2,6 @@
  * @module viw-webgl-component
  */
 
-
 import * as VIM from 'vim-webgl-viewer'
 import * as BIM from 'vim-format'
 
@@ -37,7 +36,7 @@ export async function getElements (vim: VIM.Vim) {
   })) as AugmentedElement[]
 
   const real = result.filter(e => vim.getObjectFromElement(e.index).hasMesh)
-  
+
   return real as AugmentedElement[]
 }
 

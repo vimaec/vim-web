@@ -2,21 +2,24 @@
  * @module viw-webgl-component
  */
 
-import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 
 import { BimTree, TreeActionRef } from './bimTree'
-import { BimDocumentDetails, BimObjectDetails } from './bimDetails'
-import { BimDocumentHeader, BimObjectHeader } from './bimHeader'
 import { BimSearch } from './bimSearch'
 import { Isolation } from '../helpers/isolation'
 import { ComponentCamera } from '../helpers/camera'
 import { Grouping, toTreeData } from './bimTreeData'
 import { ViewerState } from '../viewerState'
 import { AugmentedElement } from '../helpers/element'
-import { ComponentSettings, isFalse, isTrue } from '../settings/settings'
+import { ComponentSettings, isFalse } from '../settings/settings'
+import { whenAllTrue, whenSomeTrue, whenTrue } from '../helpers/utils'
+import { BimInfoPanel } from './bimInfoPanel'
+import { BimInfoPanelRef } from './bimInfoData'
 
-
+// Not sure why I need this,
+// when I inline this method in component.tsx it causes an error.
+// The error appears only in JSFiddle when the module is directly imported in a script tag.
 export function OptionalBimPanel (props: {
   viewer: VIM.Viewer
   camera: ComponentCamera
@@ -25,14 +28,12 @@ export function OptionalBimPanel (props: {
   visible: boolean
   settings: ComponentSettings
   treeRef: React.MutableRefObject<TreeActionRef>
+  bimInfoRef: BimInfoPanelRef
 }) {
-  if (
-    (isFalse(props.settings.ui.bimTreePanel) &&
-     isFalse(props.settings.ui.bimInfoPanel)) 
-  ) {
-    return null
-  }
-  return React.createElement(BimPanel, props)
+  return whenSomeTrue([
+    props.settings.ui.bimTreePanel,
+    props.settings.ui.bimInfoPanel],
+  React.createElement(BimPanel, props))
 }
 
 /**
@@ -52,10 +53,11 @@ export function BimPanel (props: {
   visible: boolean
   settings: ComponentSettings
   treeRef: React.MutableRefObject<TreeActionRef>
+  bimInfoRef: BimInfoPanelRef
 }) {
   const [filter, setFilter] = useState('')
-  const [grouping, setGrouping] = useState<Grouping>('Family')
-  
+  const [grouping] = useState<Grouping>('Family')
+
   // Filter elements with meshes using search term.
   const filteredElements = useMemo(() => {
     if (!props.viewerState.elements) return
@@ -89,9 +91,9 @@ export function BimPanel (props: {
   useEffect(() => {
     const unsubscribe = props.isolation.onChanged.subscribe(
       (source: string) => {
-        if (source !== 'tree' && source !== 'search'){
+        if (source !== 'tree' && source !== 'search') {
           setFilter('')
-        } 
+        }
       }
     )
 
@@ -103,12 +105,17 @@ export function BimPanel (props: {
 
   const last =
     props.viewerState.selection[props.viewerState.selection.length - 1]
-  const full = isFalse(props.settings.ui.bimInfoPanel)
+  const fullTree = isFalse(props.settings.ui.bimInfoPanel)
+  const fullInfo = isFalse(props.settings.ui.bimTreePanel)
+
   return (
-    <div className={`vim-bim-panel ${full ? "full-tree" : ""} ${props.visible ? '' : 'vc-hidden'}`}>
-      {isFalse(props.settings.ui.bimTreePanel) ? null : (
-        <div className={`vim-bim-upper ${full ? "vc-h-screen" : "vc-h-1/2"} ${props.viewerState.elements.length > 0 ? '' : 'vc-hidden'}`}>
-          <h2 className="vim-bim-upper-title vc-mb-6 vc-text-xs vc-font-bold vc-uppercase">
+    <div className={`vim-bim-panel vc-inset-0 vc-absolute vc-h-full vc-w-full ${fullTree ? 'full-tree' : ''} ${props.visible ? '' : 'vc-hidden'}`}>
+      {isFalse(props.settings.ui.bimTreePanel)
+        ? null
+        : (
+        <div className={`vim-bim-upper vc-flex vc-flex-col vc-absolute vc-w-full ${fullTree ? 'vc-h-full' : 'vc-h-[49%]'} ${props.viewerState.elements.length > 0 ? '' : 'vc-hidden'}`}>
+          <h2
+            className="vim-bim-upper-title vc-title vc-text-xs vc-font-bold vc-uppercase">
             Project Inspector
           </h2>
           <BimSearch
@@ -117,108 +124,41 @@ export function BimPanel (props: {
             setFilter={setFilter}
             count={filteredElements?.length}
           />
-          <select
-            hidden={true} // Object selection doesnt work well when grouping changes.
-            className="vim-bim-grouping"
-            onChange={(e) => setGrouping(e.target.value as Grouping)}
-          >
-            <option value={'Family'}>Family</option>
-            <option value={'Level'}>Level</option>
-            <option value={'Workset'}>Workset</option>
-          </select>
-          <select
-            // hidden={true}
-            className="vim-bim-actions"
-            onChange={(e) => {
-              switch (e.target.value) {
-                case 'show':
-                  props.treeRef.current?.showAll()
-                  e.target.value = ''
-                  break
-                case 'hide':
-                  props.treeRef.current?.hideAll()
-                  e.target.value = ''
-                  break
-                case 'collapse':
-                  props.treeRef.current?.collapseAll()
-                  e.target.value = ''
-                  break
-              }
-            }}
-          >
-            <option value={''}>...</option>
-            <option value={'show'}>Show All</option>
-            <option value={'hide'}>Hide All</option>
-            <option value={'collapse'}>Collapse All</option>
-          </select>
-
-          <BimTree
-            actionRef={props.treeRef}
-            viewer={props.viewer}
-            camera={props.camera}
-            objects={props.viewerState.selection}
-            isolation={props.isolation}
-            treeData={tree}
-          />
-        </div>
-      )}
-
+            <BimTree
+              actionRef={props.treeRef}
+              viewer={props.viewer}
+              camera={props.camera}
+              objects={props.viewerState.selection}
+              isolation={props.isolation}
+              treeData={tree}
+            />
+          </div>
+          )}
       {
         // Divider if needed.
-        isTrue(props.settings.ui.bimTreePanel) &&
-        isTrue(props.settings.ui.bimInfoPanel) &&
-        props.viewerState.elements.length >0
-          ? divider()
-          : null
+        whenAllTrue([
+          props.settings.ui.bimTreePanel,
+          props.settings.ui.bimInfoPanel,
+          props.viewerState.elements.length > 0
+        ],
+        divider())
       }
-
-      {isTrue(props.settings.ui.bimInfoPanel)
-        ? bimInfo(last, props.viewerState.vim, filteredElements, isFalse(props.settings.ui.bimTreePanel))
-        : null}
+      {whenTrue(props.settings.ui.bimInfoPanel,
+        <div className={`vim-bim-lower-container vc-absolute ${fullInfo ? 'vc-top-0' : 'vc-top-[50%]'} vc-bottom-0 vc-bottom vc-left-0 vc-right-0`}>
+          <BimInfoPanel
+            object={last}
+            vim={props.viewerState.vim}
+            elements={filteredElements}
+            full={isFalse(props.settings.ui.bimTreePanel)}
+            bimInfoRef={props.bimInfoRef}
+          />
+        </div>)}
     </div>
   )
 }
 
 function divider () {
-  return <hr className="-vc-mx-6 vc-mb-5 vc-border-gray-divider" />
-}
-
-function bimInfo (
-  object: VIM.Object,
-  vim: VIM.Vim,
-  elements: AugmentedElement[],
-  full : boolean
-) {
-  const objectHeader = object ? React.createElement(BimObjectHeader, {
-    elements,
-    object,
-  }) : null
-
-  const objectDetails = object ? React.createElement(BimObjectDetails, {
-    object,
-  }) : null
-
-  const docHeader = !object ? React.createElement(BimDocumentHeader,{
-    vim,
-  }) : null
-
-  const docDetails = !object ? React.createElement(BimDocumentDetails,{
-    vim
-  }) : null
-
-  return (
-    <>
-      <h2 className="vc-mb-4 vc-text-xs vc-font-bold vc-uppercase">
-      Bim Inspector
-      </h2>
-      <div className={`vim-bim-lower ${full ?"vc-h-screen" : "vc-h-1/2"} vc-overflow-y-auto vc-overflow-x-hidden`}>
-        {objectHeader}
-        {objectDetails}
-        {docHeader}
-        {docDetails}
-      </div>
-    </>
-  )
+  return <hr style={{ top: '50%' }} className="divider vc-absolute vc-w-full vc-border-gray-divider" />
 }
 
 function filterElements (

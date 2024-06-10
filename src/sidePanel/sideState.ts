@@ -5,8 +5,10 @@
 import { useMemo, useRef, useState } from 'react'
 
 export type SideContent = 'none' | 'bim' | 'settings' | 'logs'
+const MIN_WIDTH = 160
 
 export type SideState = {
+  minWidth: number
   toggleContent: (content: SideContent) => void
   popContent: () => void
   getNav: () => 'back' | 'close'
@@ -27,11 +29,12 @@ export function useSideState (
   useInspector: boolean,
   defaultWidth: number
 ): SideState {
+  const w = Math.max(MIN_WIDTH, defaultWidth)
   const [side, setSide] = useState<SideContent[]>(['bim'])
-  const [hasBim, _setHasBim] = useState<boolean>(false)
-  const [width, _setWidth] = useState<number>(defaultWidth)
+  const [, _setHasBim] = useState<boolean>(false)
+  const [width, _setWidth] = useState<number>(w)
   const sideRef = useRef(side)
-  const widthRef = useRef(width)
+  const widthRef = useRef(w)
   const hasBimRef = useRef(false)
 
   const toggleContent = (content: SideContent) => {
@@ -79,6 +82,7 @@ export function useSideState (
 
   return useMemo(
     () => ({
+      minWidth: MIN_WIDTH,
       setHasBim,
       setContent,
       getContent,
@@ -87,7 +91,7 @@ export function useSideState (
       getNav,
       getWidth,
       setWidth
-    }),
+    } as SideState),
     [side, width]
   )
 }

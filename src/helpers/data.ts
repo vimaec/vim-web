@@ -2,7 +2,6 @@
  * @module viw-webgl-component
  */
 
-
 /**
  * Recursive Tree implemented as a recursive map.
  */

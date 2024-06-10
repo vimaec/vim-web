@@ -47,7 +47,7 @@ export function BimTree (props: {
   const [selectedItems, setSelectedItems] = useState<number[]>([])
   const [focusedItem, setFocusedItem] = useState<number>()
   const [doubleClick] = useState(new DoubleClickManager())
-  const [version, setVersion] = useState(0)
+  const [, setVersion] = useState(0)
   const focus = useRef<number>(0)
   const div = useRef<HTMLDivElement>()
 
@@ -89,7 +89,7 @@ export function BimTree (props: {
 
   // Scroll view so that element is visible, if needed.
   useEffect(() => {
-    if (props.treeData && objects.length === 1) {
+    if (props.treeData && objects.length === 1 && div.current) {
       scrollToSelection(div.current)
       const [first] = props.viewer.selection.objects
       focus.current = props.treeData.getNodeFromElement(first.element)
@@ -136,15 +136,18 @@ export function BimTree (props: {
 
   return (
     <div
-      className="vim-bim-tree vc-mb-5"
+      className="vim-bim-tree vc-mt-2  vc-flex-1 vc-flex vc-w-full vc-min-h-0"
       ref={div}
       tabIndex={0}
       onFocus={() => (props.viewer.inputs.keyboard.arrowsEnabled = false)}
       onBlur={() => (props.viewer.inputs.keyboard.arrowsEnabled = true)}
     >
       <ControlledTreeEnvironment
+        renderDepthOffset={div.current ? Math.min(div.current.clientWidth * 0.04, 10) : 10 }
         items={props.treeData.nodes}
+
         getItemTitle={(item) => (item as VimTreeNode).title}
+        showLiveDescription={false}
         viewState={{
           'tree-bim': {
             focusedItem,
