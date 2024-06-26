@@ -1,7 +1,6 @@
 /**
  * @module public-api
  */
-import React from 'react'
 
 /**
  * Basic HTML structure that the webgl component expects
@@ -24,16 +23,20 @@ export type VimComponentContainer = {
 
 /**
  * Creates a default container for the vim component around a vim viewer
+ * The element is created if not provided. The element will be made position:absolute.
  * @element optional HTML element to use as root
- * @styling whether to apply default fullscreen styling to the container. Default is true.
  */
 export function createContainer (element?: HTMLElement): VimComponentContainer {
   // fullscreen root
-  const root = element ?? document.createElement('div')
-  root.classList.add('vim-component')
-  if (element === undefined) {
-    root.classList.add('vc-absolute', 'vc-inset-0')
+  let root = element
+  if (root === undefined) {
+    root = document.createElement('div')
+    document.body.append(root)
+    root.classList.add('vc-inset-0')
   }
+  // UI relies on absolute positioning
+  root.style.position = 'absolute'
+  root.classList.add('vim-component')
 
   // container for viewer canvases
   const gfx = document.createElement('div')
@@ -45,23 +48,6 @@ export function createContainer (element?: HTMLElement): VimComponentContainer {
 
   root.append(gfx)
   root.append(ui)
-  document.body.append(root)
 
   return { root, ui, gfx }
-}
-
-export function VimContainer (styling: boolean = true) {
-  const rootName = ' vim-component' +
-    (styling ? ' vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full' : '')
-
-  const gfxName = 'vim-gfx' +
-    (styling ? ' vc-absolute vc-top-0 vc-left-0 vc-h-full vc-w-full' : '')
-
-  const uiName = 'vim-ui' +
-    (styling ? 'vc-top-0 vc-left-0 vc-h-full vc-w-full' : '')
-
-  return <div className={rootName}>
-    <div className={gfxName}/>
-    <div className={uiName}></div>
-  </div>
 }

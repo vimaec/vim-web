@@ -1,3 +1,12 @@
+/* eslint-disable no-unused-vars */
+
+const {
+  scopedPreflightStyles,
+  isolateInsideOfContainer,
+  isolateOutsideOfContainer,
+  isolateForComponents
+} = require('tailwindcss-scoped-preflight')
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   prefix: 'vc-',
@@ -52,5 +61,12 @@ module.exports = {
     },
     extend: {}
   },
-  plugins: [require('@tailwindcss/forms')]
+  plugins: [
+    /** Makes it so we still tailwind preflight utils, but they only apply to vim-component
+     * https://github.com/Roman86/tailwindcss-scoped-preflight
+     */
+    scopedPreflightStyles({
+      isolationStrategy: isolateInsideOfContainer('.vim-component')
+    })
+  ]
 }
