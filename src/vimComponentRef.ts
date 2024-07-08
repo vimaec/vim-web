@@ -105,4 +105,6 @@ export type VimComponentRef = {
    * API To interact with the BIM info panel.
    */
   bimInfo: BimInfoPanelRef
+
+  dispose: () => void
 }

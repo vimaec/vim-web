@@ -38,6 +38,7 @@ import { LogoMemo } from './panels/logo'
 import { VimComponentRef } from './vimComponentRef'
 import { createBimInfoState } from './bim/bimInfoData'
 import { whenTrue } from './helpers/utils'
+import { DeferredPromise } from './helpers/deferredPromise'
 
 export * as VIM from 'vim-webgl-viewer/'
 export const THREE = VIM.THREE
@@ -56,24 +57,39 @@ export * from './container'
  * @returns An object containing the resulting container, reactRoot, and viewer.
  */
 export function createVimComponent (
-  onMount: (component: VimComponentRef) => void,
   container?: VimComponentContainer,
   componentSettings: PartialComponentSettings = {},
   viewerSettings: VIM.PartialViewerSettings = {}
-) {
+) : Promise<VimComponentRef> {
+  const promise = new DeferredPromise<VimComponentRef>()
+
+  // Create the viewer and container
   const viewer = new VIM.Viewer(viewerSettings)
   container = container ?? createContainer()
   viewer.viewport.reparent(container.gfx)
+
+  // Create the React root
   const reactRoot = createRoot(container.ui)
+
+  // Patch the component to clean up after itself
+  const patchRef = (cmp : VimComponentRef) => {
+    cmp.dispose = () => {
+      viewer.dispose()
+      container.dispose()
+      reactRoot.unmount()
+    }
+    return cmp
+  }
+
   reactRoot.render(
     <VimComponent
-      container={{ root: container.root, gfx: container.gfx, ui: container.ui }}
-      onMount={onMount}
+      container = {container}
       viewer={viewer}
+      onMount = {(cmp : VimComponentRef) => promise.resolve(patchRef(cmp))}
       settings={componentSettings}
     />
   )
-  return { container, reactRoot, viewer }
+  return promise
 }
 
 /**
@@ -148,7 +164,8 @@ export function VimComponent (props: {
         show: (message: string, info: string) => setMsg({ message, info }),
         hide: () => setMsg(undefined)
       },
-      bimInfo: bimInfoRef
+      bimInfo: bimInfoRef,
+      dispose: () => {}
     })
 
     // Clean up
