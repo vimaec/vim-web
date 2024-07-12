@@ -1,10 +1,8 @@
 
 import {
   createVimComponent,
-  VimComponentRef,
   getLocalSettings,
-  THREE,
-  VIM
+  THREE
 } from './component'
 
 // Parse URL
@@ -14,12 +12,9 @@ const url = params.has('vim')
   ? params.get('vim')
   : null
 
-for(let i =0; i < 10; i++){
-  createVimComponent(undefined, getLocalSettings(), VIM.getViewerSettingsFromUrl(window.location.search))
-  .then(cmp => loadVim(cmp))
-}
-
-async function loadVim (cmp: VimComponentRef) {
+demo()
+async function demo () {
+  const cmp = await createVimComponent(undefined, getLocalSettings())
   const time = Date.now()
 
   const vim = await cmp.loader.open(
@@ -35,4 +30,5 @@ async function loadVim (cmp: VimComponentRef) {
   console.log(`Loading completed in ${((Date.now() - time) / 1000).toFixed(2)} seconds`)
   globalThis.THREE = THREE
   globalThis.component = cmp
+  globalThis.vim = vim
 }
