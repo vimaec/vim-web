@@ -93,7 +93,7 @@ export function BimSearch (props: {
 
       {props.count !== undefined && text
         ? (
-        <div className="search-count vc-absolute vc-right-8 vc-rounded-full vc-bg-primary-royal vc-py-0.5 vc-px-2 vc-title vc-font-bold vc-text-white">
+        <div className="search-count vc-absolute vc-right-8 vc-rounded-full vc-bg-primary-royal vc-py-0.5 vc-px-2 vc-font-bold vc-text-white">
           {props.count}
         </div>
           )

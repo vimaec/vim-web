@@ -1,6 +1,6 @@
 {
   "name": "vim-webgl-component",
-  "version": "0.3.7",
+  "version": "0.3.9",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "files": [
     "dist"
@@ -32,7 +32,6 @@
     "@types/react-dom": "^18.0.9",
     "@types/three": "^0.146.0",
     "@typescript-eslint/eslint-plugin": "^5.36.2",
-    "@tailwindcss/forms": "0.5.3",
     "autoprefixer": "10.4.5",
     "eslint": "^8.23.1",
     "eslint-config-prettier": "^8.5.0",
@@ -47,26 +46,27 @@
     "prettier": "^2.7.1",
     "prettier-plugin-tailwindcss": "^0.1.13",
     "tailwindcss": "^3.2.4",
-    "typescript": "^4.9.3",
-    "vite": "^3.2.5",
     "typedoc": "^0.23.21",
-    "typedoc-plugin-merge-modules": "^4.0.1"
+    "typedoc-plugin-merge-modules": "^4.0.1",
+    "typescript": "^4.9.3",
+    "vite": "^3.2.5"
   },
   "bundleDependencies": [
     "vim-webgl-viewer"
   ],
   "dependencies": {
-    "vim-webgl-viewer": "2.0.4-dev.0",
     "@firefox-devtools/react-contextmenu": "^5.1.0",
     "jsx": "^0.9.89",
     "re-resizable": "^6.9.9",
     "react-complex-tree": "^2.0.0",
     "react-tooltip": "^4.2.21",
-    "stats-js": "^1.0.1"
+    "stats-js": "^1.0.1",
+    "tailwindcss-scoped-preflight": "^3.2.8",
+    "vim-webgl-viewer": "2.0.4-dev.0"
   },
   "peerDependencies": {
-    "react-dom": "^18.2.0",
-    "react": "^18.2.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "keywords": [
     "3d",
