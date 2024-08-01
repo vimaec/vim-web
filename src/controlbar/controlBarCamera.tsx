@@ -10,7 +10,7 @@ import {
   ComponentSettings,
   isTrue
 } from '../settings/settings'
-import { createButton } from './controlBarButton'
+import { createButton, IControlBarButtonItem, stdStyle } from './controlBarButton'
 import { createSection } from './controlBarSection'
 
 export function TabCamera (props: {viewer: VIM.Viewer, camera: ComponentCamera; settings: ComponentSettings }) {
@@ -34,52 +34,60 @@ export function TabCamera (props: {viewer: VIM.Viewer, camera: ComponentCamera; 
     setMode(next)
   }
 
-  const btnOrbit = createButton(
-    () => isTrue(props.settings.ui.orbit),
-    'Orbit',
-    () => onModeBtn('orbit'),
-    Icons.orbit,
-    () => mode === 'orbit'
-  )
-  const btnLook = createButton(
-    () => isTrue(props.settings.ui.lookAround),
-    'Look Around',
-    () => onModeBtn('look'),
-    Icons.look,
-    () => mode === 'look'
-  )
-  const btnPan = createButton(
-    () => isTrue(props.settings.ui.pan),
-    'Pan',
-    () => onModeBtn('pan'),
-    Icons.pan,
-    () => mode === 'pan'
-  )
-  const btnZoom = createButton(
-    () => isTrue(props.settings.ui.zoom),
-    'Zoom',
-    () => onModeBtn('zoom'),
-    Icons.zoom,
-    () => mode === 'zoom'
-  )
-  const btnFrameRect = createButton(
-    () => isTrue(props.settings.ui.zoomWindow),
-    'Zoom Window',
-    () => {
-      onModeBtn('rect')
-      viewer.gizmos.section.visible = false
-      viewer.gizmos.section.interactive = false
+  const buttons : IControlBarButtonItem[] = [
+    {
+      enabled: () => isTrue(props.settings.ui.orbit),
+      tip: 'Orbit',
+      action: () => onModeBtn('orbit'),
+      icon: Icons.orbit,
+      isOn: () => mode === 'orbit',
+      style: stdStyle
     },
-    Icons.frameRect,
-    () => mode === 'rect'
-  )
-  const btnFrame = createButton(
-    () => isTrue(props.settings.ui.zoomToFit),
-    'Zoom to Fit',
-    () => props.camera.frameContext(),
-    Icons.frameSelection,
-    () => false
-  )
+    {
+      enabled: () => isTrue(props.settings.ui.lookAround),
+      tip: 'Look Around',
+      action: () => onModeBtn('look'),
+      icon: Icons.look,
+      isOn: () => mode === 'look',
+      style: stdStyle
+    },
+    {
+      enabled: () => isTrue(props.settings.ui.pan),
+      tip: 'Pan',
+      action: () => onModeBtn('pan'),
+      icon: Icons.pan,
+      isOn: () => mode === 'pan',
+      style: stdStyle
+    },
+    {
+      enabled: () => isTrue(props.settings.ui.zoom),
+      tip: 'Zoom',
+      action: () => onModeBtn('zoom'),
+      icon: Icons.zoom,
+      isOn: () => mode === 'zoom',
+      style: stdStyle
+    },
+    {
+      enabled: () => isTrue(props.settings.ui.zoomWindow),
+      tip: 'Zoom Window',
+      action: () => {
+        onModeBtn('rect')
+        viewer.gizmos.section.visible = false
+        viewer.gizmos.section.interactive = false
+      },
+      icon: Icons.frameRect,
+      isOn: () => mode === 'rect',
+      style: stdStyle
+    },
+    {
+      enabled: () => isTrue(props.settings.ui.zoomToFit),
+      tip: 'Zoom to Fit',
+      action: () => props.camera.frameContext(),
+      icon: Icons.frameSelection,
+      isOn: () => false,
+      style: stdStyle
+    }
+  ]
 
-  return createSection('white', [btnOrbit, btnLook, btnPan, btnZoom, btnFrameRect, btnFrame])
+  return createSection('white', buttons.map(b => createButton(b)))
 }

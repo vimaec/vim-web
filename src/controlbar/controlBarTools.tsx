@@ -12,7 +12,7 @@ import {
   ComponentSettings, isTrue
 } from '../settings/settings'
 import { loopMeasure } from '../helpers/measureLoop'
-import { createBlueButton, createButton } from './controlBarButton'
+import { createButton, stdStyle, blueStyle, IControlBarButtonItem } from './controlBarButton'
 import { createSection } from './controlBarSection'
 
 /* TAB TOOLS */
@@ -91,83 +91,74 @@ export function TabTools (props: {
     onMeasureBtn()
   }
 
-  const btnSection = createButton(
-    () => isTrue(props.settings.ui.sectioningMode),
-    'Sectioning Mode',
-    onSectionBtn,
-    Icons.sectionBox
-  )
-
-  const btnMeasure = createButton(
-    () => isTrue(props.settings.ui.measuringMode),
-    'Measuring Mode',
-    onMeasureBtn,
-    Icons.measure
-  )
-
-  const btnIsolation = createButton(
-    () => isTrue(props.settings.ui.toggleIsolation),
-    'Toggle Isolation',
-    () => {
-      props.isolation.toggleIsolation('controlBar')
+  const toolButtons : IControlBarButtonItem[] = [
+    {
+      enabled: () => isTrue(props.settings.ui.sectioningMode),
+      tip: 'Sectioning Mode',
+      action: onSectionBtn,
+      icon: Icons.sectionBox,
+      style: stdStyle
     },
-    Icons.toggleIsolation
-  )
+    {
+      enabled: () => isTrue(props.settings.ui.measuringMode),
+      tip: 'Measuring Mode',
+      action: onMeasureBtn,
+      icon: Icons.measure,
+      style: stdStyle
+    },
+    {
+      enabled: () => isTrue(props.settings.ui.toggleIsolation),
+      tip: 'Toggle Isolation',
+      action: () => props.isolation.toggleIsolation('controlBar'),
+      icon: Icons.toggleIsolation,
+      style: stdStyle
+    }
+  ]
 
-  const toolsTab = createSection('white', [btnSection, btnMeasure, btnIsolation])
+  const toolsTab = createSection('white', toolButtons.map(b => createButton(b)))
+  const buttonsMeasure : IControlBarButtonItem[] = [
+    {
+      tip: 'Delete',
+      action: onMeasureDeleteBtn,
+      icon: Icons.trash,
+      style: blueStyle
+    },
+    {
+      tip: 'Done',
+      action: onMeasureBtn,
+      icon: Icons.checkmark,
+      style: blueStyle
+    }
+  ]
+  const measureTab = createSection('blue', buttonsMeasure.map(b => createButton(b)))
+  const sectionButtons : IControlBarButtonItem[] = [
+    {
+      tip: 'Reset Section Box',
+      action: onResetSectionBtn,
+      icon: Icons.sectionBoxReset,
+      style: blueStyle
+    },
+    {
+      tip: 'Shrink to Selection',
+      action: () => viewer.gizmos.section.fitBox(viewer.selection.getBoundingBox()),
+      icon: Icons.sectionBoxShrink,
+      style: blueStyle
+    },
+    {
+      tip: section.clip ? 'Clip Section Box' : 'Ignore Section Box',
+      action: section.clip ? onSectionClip : onSectionNoClip,
+      icon: section.clip ? Icons.sectionBoxClip : Icons.sectionBoxNoClip,
+      style: blueStyle
+    },
+    {
+      tip: 'Done',
+      action: onSectionBtn,
+      icon: Icons.checkmark,
+      style: blueStyle
+    }
+  ]
 
-  const btnMeasureDelete = createBlueButton(
-    () => true,
-    'Delete',
-    onMeasureDeleteBtn,
-    Icons.trash
-  )
-  const btnMeasureConfirm = createBlueButton(
-    () => true,
-    'Done',
-    onMeasureBtn,
-    Icons.checkmark
-  )
-  const measureTab = createSection('blue', [btnMeasureDelete, btnMeasureConfirm])
-
-  const btnSectionReset = createBlueButton(
-    () => true,
-    'Reset Section Box',
-    onResetSectionBtn,
-    Icons.sectionBoxReset
-  )
-  const btnSectionShrink = createBlueButton(
-    () => true,
-    'Shrink to Selection',
-    () => viewer.gizmos.section.fitBox(viewer.selection.getBoundingBox()),
-    Icons.sectionBoxShrink
-  )
-
-  const btnSectionClip = createBlueButton(
-    () => true,
-    'Apply Section Box',
-    onSectionClip,
-    Icons.sectionBoxNoClip
-  )
-  const btnSectionNoClip = createBlueButton(
-    () => true,
-    'Ignore Section Box',
-    onSectionNoClip,
-    Icons.sectionBoxClip
-  )
-  const btnSectionConfirm = createBlueButton(
-    () => true,
-    'Done',
-    onSectionBtn,
-    Icons.checkmark
-  )
-
-  const sectionTab = createSection('blue', [
-    btnSectionReset,
-    btnSectionShrink,
-    section.clip ? btnSectionNoClip : btnSectionClip,
-    btnSectionConfirm
-  ])
+  const sectionTab = createSection('blue', sectionButtons.map(b => createButton(b)))
 
   // There is a weird bug with tooltips not working properly
   // if measureTab or sectionTab do not have the same number of buttons as toolstab

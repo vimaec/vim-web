@@ -9,7 +9,7 @@ import { HelpState } from '../panels/help'
 import {
   ComponentSettings, isTrue
 } from '../settings/settings'
-import { createButton } from './controlBarButton'
+import { createButton, IControlBarButtonItem, stdStyle } from './controlBarButton'
 import { createSection } from './controlBarSection'
 import { FullScreenObserver } from '../helpers/fullScreenObserver'
 
@@ -40,48 +40,46 @@ export function TabSettings (props: {
     props.side.toggleContent('settings')
   }
 
-  const btnTreeView = createButton(
-    () => isTrue(props.settings.ui.projectInspector),
-    'Project Inspector',
-    onTreeViewBtn,
-    Icons.treeView,
-    () => props.side.getContent() === 'bim'
-  )
-  const btnSettings = createButton(
-    () => isTrue(props.settings.ui.settings),
-    'Settings',
-    onSettingsBtn,
-    Icons.settings,
-    () => props.side.getContent() === 'settings'
-  )
-
-  const btnHelp = createButton(
-    () => isTrue(props.settings.ui.help),
-    'Help',
-    onHelpBtn,
-    Icons.help,
-    () => props.help.visible
-  )
-
-  const btnFullScreen = createButton(
-    () =>
-      isTrue(props.settings.ui.maximise) &&
-      props.settings.capacity.canGoFullScreen,
-    fullScreen ? 'Fullscreen' : 'Minimize',
-    () => {
-      if (fullScreen) {
-        document.exitFullscreen()
-      } else {
-        document.body.requestFullscreen()
-      }
+  const buttons : IControlBarButtonItem[] = [
+    {
+      enabled: () => isTrue(props.settings.ui.projectInspector) && (
+        isTrue(props.settings.ui.bimTreePanel) ||
+        isTrue(props.settings.ui.bimInfoPanel)),
+      tip: 'Project Inspector',
+      action: onTreeViewBtn,
+      icon: Icons.treeView,
+      style: stdStyle
     },
-    fullScreen ? Icons.minimize : Icons.fullsScreen
-  )
+    {
+      enabled: () => isTrue(props.settings.ui.settings),
+      tip: 'Settings',
+      action: onSettingsBtn,
+      icon: Icons.settings,
+      style: stdStyle
+    },
+    {
+      enabled: () => isTrue(props.settings.ui.help),
+      tip: 'Help',
+      action: onHelpBtn,
+      icon: Icons.help,
+      style: stdStyle
+    },
+    {
+      enabled: () =>
+        isTrue(props.settings.ui.maximise) &&
+        props.settings.capacity.canGoFullScreen,
+      tip: fullScreen ? 'Minimize' : 'Fullscreen',
+      action: () => {
+        if (fullScreen) {
+          document.exitFullscreen()
+        } else {
+          document.body.requestFullscreen()
+        }
+      },
+      icon: fullScreen ? Icons.minimize : Icons.fullsScreen,
+      style: stdStyle
+    }
+  ]
 
-  const tree = isTrue(props.settings.ui.bimTreePanel) ||
-      isTrue(props.settings.ui.bimInfoPanel)
-    ? btnTreeView
-    : null
-
-  return createSection('white', [tree, btnSettings, btnHelp, btnFullScreen])
+  return createSection('white', buttons.map(b => createButton(b)))
 }
