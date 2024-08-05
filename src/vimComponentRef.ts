@@ -4,12 +4,13 @@
 
 import * as VIM from 'vim-webgl-viewer/'
 import { ComponentLoader } from './panels/loading'
-import { contextMenuCustomization } from './panels/contextMenu'
+import { ContextMenuCustomization } from './panels/contextMenu'
 import { ComponentSettings } from './settings/settings'
 import { Isolation } from './helpers/isolation'
 import { ComponentCamera } from './helpers/camera'
 import { VimComponentContainer } from './container'
 import { BimInfoPanelRef } from './bim/bimInfoData'
+import { ControlBarCustomization, elementIds } from './controlbar/controlBar'
 
 /**
 * Settings API managing settings applied to the component.
@@ -37,7 +38,15 @@ export type ContextMenuRef = {
   * Defines a callback function to dynamically customize the context menu.
   * @param customization The configuration object specifying the customization options for the context menu.
   */
-  customize : (customization: contextMenuCustomization) => void
+  customize : (customization: ContextMenuCustomization) => void
+ }
+
+export type ControlBarRef = {
+  /**
+  * Defines a callback function to dynamically customize the control bar.
+  * @param customization The configuration object specifying the customization options for the control bar.
+  */
+  customize : (customization: ControlBarCustomization) => void
  }
 
 /**
@@ -85,6 +94,11 @@ export type VimComponentRef = {
   * Context menu API managing the content and behavior of the context menu.
   */
   contextMenu : ContextMenuRef
+
+    /**
+  * Context menu API managing the content and behavior of the context menu.
+  */
+    controlBar : ControlBarRef
 
   /**
   * Settings API managing settings applied to the component.

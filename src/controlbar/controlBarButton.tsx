@@ -1,17 +1,18 @@
 import React from 'react'
 
 const btnStyle = 'vim-control-bar-button vc-rounded-full vc-items-center vc-justify-center vc-flex vc-transition-all hover:vc-scale-110'
-export function stdStyle (on: boolean) {
+export function buttonDefaultStyle (on: boolean) {
   return on
     ? btnStyle + ' vc-text-primary'
     : btnStyle + ' vc-text-gray-medium'
 }
 
-export function blueStyle (on: boolean) {
+export function buttonBlueStyle (on: boolean) {
   return btnStyle + ' vc-text-white'
 }
 
 export interface IControlBarButtonItem {
+  id: string,
   enabled?: (() => boolean) | undefined
   tip: string
   action: () => void
@@ -25,7 +26,7 @@ export function createButton (button: IControlBarButtonItem) {
   const style = button.style(button.isOn?.())
 
   return (
-    <button data-tip={button.tip} onClick={button.action} className={style} type="button">
+    <button key={button.id} data-tip={button.tip} onClick={button.action} className={style} type="button">
       {button.icon({ height: '20', width: '20', fill: 'currentColor', className: 'vc-max-h-[80%]' })}
     </button>
   )

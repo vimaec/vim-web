@@ -10,11 +10,12 @@ import 'vim-webgl-viewer/dist/style.css'
 
 import * as VIM from 'vim-webgl-viewer/'
 import { AxesPanelMemo } from './panels/axesPanel'
-import { ControlBar, RestOfScreen } from './controlbar/controlBar'
+import { ControlBar, ControlBarCustomization } from './controlbar/controlBar'
+import { RestOfScreen } from './controlbar/restOfScreen'
 import { LoadingBoxMemo, MsgInfo, ComponentLoader } from './panels/loading'
 import { OptionalBimPanel } from './bim/bimPanel'
 import {
-  contextMenuCustomization,
+  ContextMenuCustomization,
   showContextMenu,
   VimContextMenuMemo
 } from './panels/contextMenu'
@@ -44,6 +45,8 @@ export * as VIM from 'vim-webgl-viewer/'
 export const THREE = VIM.THREE
 export * as ContextMenu from './panels/contextMenu'
 export * as BimInfo from './bim/bimInfoData'
+export * as ControlBar from './controlbar/controlBar'
+export * as Icons from './panels/icons'
 export * from './vimComponentRef'
 export { getLocalComponentSettings as getLocalSettings } from './settings/settingsStorage'
 export { type ComponentSettings as Settings, type PartialComponentSettings as PartialSettings, defaultSettings } from './settings/settings'
@@ -118,7 +121,8 @@ export function VimComponent (props: {
     isTrue(settings.value.ui.bimInfoPanel),
     Math.min(props.container.root.clientWidth * 0.25, 340)
   )
-  const [contextMenu, setcontextMenu] = useState<contextMenuCustomization>()
+  const [contextMenu, setcontextMenu] = useState<ContextMenuCustomization>()
+  const [controlBar, setControlBar] = useState<ControlBarCustomization>()
   const bimInfoRef = createBimInfoState()
 
   const help = useHelp()
@@ -159,6 +163,9 @@ export function VimComponent (props: {
       settings,
       contextMenu: {
         customize: (v) => setcontextMenu(() => v)
+      },
+      controlBar: {
+        customize: (v) => setControlBar(() => v)
       },
       message: {
         show: (message: string, info: string) => setMsg({ message, info }),
@@ -217,6 +224,7 @@ export function VimComponent (props: {
           isolation={isolation}
           cursor={cursor}
           settings={settings.value}
+          customization={controlBar}
         />
         <AxesPanelMemo
           viewer={props.viewer}

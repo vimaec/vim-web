@@ -89,29 +89,28 @@ export function anyUiAxesButton (settings: ComponentSettings) {
 
 export function anyUiCursorButton (settings: ComponentSettings) {
   return (
-    settings.ui.orbit ||
-    settings.ui.lookAround ||
-    settings.ui.pan ||
-    settings.ui.zoom ||
-    settings.ui.zoomWindow ||
-    settings.ui.zoomToFit
+    isTrue(settings.ui.orbit) ||
+    isTrue(settings.ui.lookAround) ||
+    isTrue(settings.ui.pan) ||
+    isTrue(settings.ui.zoom) ||
+    isTrue(settings.ui.zoomWindow) ||
+    isTrue(settings.ui.zoomToFit)
   )
 }
-
 export function anyUiToolButton (settings: ComponentSettings) {
   return (
-    settings.ui.sectioningMode ||
-    settings.ui.measuringMode ||
-    settings.ui.toggleIsolation
+    isTrue(settings.ui.sectioningMode) ||
+    isTrue(settings.ui.measuringMode) ||
+    isTrue(settings.ui.toggleIsolation)
   )
 }
 
 export function anyUiSettingButton (settings: ComponentSettings) {
   return (
-    settings.ui.projectInspector ||
-    settings.ui.settings ||
-    settings.ui.help ||
-    settings.ui.maximise
+    isTrue(settings.ui.projectInspector) ||
+    isTrue(settings.ui.settings) ||
+    isTrue(settings.ui.help) ||
+    isTrue(settings.ui.maximise)
   )
 }
 

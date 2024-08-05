@@ -1,10 +1,20 @@
 import React from 'react'
+import { createButton, IControlBarButtonItem } from './controlBarButton'
 
-export function createSection (theme: 'white' | 'blue', elements : (JSX.Element | null)[]) {
-  const bg = theme === 'white' ? 'vc-bg-white' : 'vc-bg-primary'
-  const style = 'vc-flex vc-items-center vc-rounded-full vc-mb-2 vc-px-2 vc-shadow-md'
+const sectionStyle = 'vc-flex vc-items-center vc-rounded-full vc-mb-2 vc-px-2 vc-shadow-md'
+export const sectionDefaultStyle = sectionStyle + ' vc-bg-white'
+export const sectionBlueStyle = sectionStyle + ' vc-bg-primary'
 
-  return <div className={`${bg} vim-control-bar-section ${style}`}>
-      {...elements}
+export interface IControlBarSection {
+  id: string,
+  enable? : (() => boolean) | undefined
+  buttons: IControlBarButtonItem[]
+  style: string
+}
+
+export function createSection (section: IControlBarSection) {
+  if (section.enable !== undefined && !section.enable()) return null
+  return <div key={section.id} className={`vim-control-bar-section ${section.style}`}>
+      {section.buttons.map(b => createButton(b))}
     </div>
 }
