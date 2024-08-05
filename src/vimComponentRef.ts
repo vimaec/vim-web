@@ -10,7 +10,7 @@ import { Isolation } from './helpers/isolation'
 import { ComponentCamera } from './helpers/camera'
 import { VimComponentContainer } from './container'
 import { BimInfoPanelRef } from './bim/bimInfoData'
-import { ControlBarCustomization, elementIds } from './controlbar/controlBar'
+import { ControlBarCustomization } from './controlbar/controlBar'
 
 /**
 * Settings API managing settings applied to the component.
