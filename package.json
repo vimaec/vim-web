@@ -62,7 +62,7 @@
     "react-tooltip": "^4.2.21",
     "stats-js": "^1.0.1",
     "tailwindcss-scoped-preflight": "^3.2.8",
-    "vim-webgl-viewer": "2.0.4-dev.0"
+    "vim-webgl-viewer": "2.0.5-dev.3"
   },
   "peerDependencies": {
     "react": "^18.2.0",
