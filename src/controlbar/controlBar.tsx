@@ -228,9 +228,9 @@ export function ControlBar (props: {
       },
       {
         id: elementIds.buttonSectionBoxClip,
-        tip: section.clip ? 'Clip Section Box' : 'Ignore Section Box',
+        tip: section.clip ? 'Ignore Section Box' : 'Clip Section Box',
         action: () => section.toggleClip(),
-        icon: section.clip ? Icons.sectionBoxClip : Icons.sectionBoxNoClip,
+        icon: section.clip ? Icons.sectionBoxIgnore : Icons.sectionBoxClip,
         style: buttonBlueStyle
       },
       {
