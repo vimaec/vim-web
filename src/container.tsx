@@ -19,6 +19,8 @@ export type VimComponentContainer = {
    * Div to hold viewer canvases and ui
    */
   gfx: HTMLDivElement
+
+  dispose: () => void
 }
 
 /**
@@ -49,5 +51,17 @@ export function createContainer (element?: HTMLElement): VimComponentContainer {
   root.append(gfx)
   root.append(ui)
 
-  return { root, ui, gfx }
+  const dispose = () => {
+    if (element === undefined) {
+      // We own the element, so we remove it
+      root.remove()
+    } else {
+      root.classList.remove('vim-component')
+      // We don't own the element, so we just remove our children
+      gfx.remove()
+      ui.remove()
+    }
+  }
+
+  return { root, ui, gfx, dispose }
 }

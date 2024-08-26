@@ -61,7 +61,7 @@ export const contextMenuElementIds = {
 /**
  * Represents a button in the context menu. It can't be clicked triggering given action.
  */
-export type contextMenuButton = {
+export interface IContextMenuButton {
   id: string
   label: string
   keyboard: string
@@ -72,18 +72,19 @@ export type contextMenuButton = {
 /**
  * Represents a divider in the context menu. It can't be clicked.
  */
-export type contextMenuDivider = {
+export interface IContextMenuDivider {
   id: string
   enabled: boolean
 }
-export type contextMenuElement = contextMenuButton | contextMenuDivider
+
+export type ContextMenuElement = IContextMenuButton | IContextMenuDivider
 
 /**
  * A map function that changes the context menu.
  */
-export type contextMenuCustomization = (
-  e: contextMenuElement[]
-) => contextMenuElement[]
+export type ContextMenuCustomization = (
+  e: ContextMenuElement[]
+) => ContextMenuElement[]
 
 /**
  * Memoized version of VimContextMenu.
@@ -99,7 +100,7 @@ export function VimContextMenu (props: {
   help: HelpState
   isolation: Isolation
   selection: VIM.IObject[]
-  customization?: (e: contextMenuElement[]) => contextMenuElement[]
+  customization?: (e: ContextMenuElement[]) => ContextMenuElement[]
   treeRef: React.MutableRefObject<TreeActionRef>
 }) {
   const viewer = props.viewer
@@ -207,7 +208,7 @@ export function VimContextMenu (props: {
     viewer.gizmos.section.fitBox(viewer.selection.getBoundingBox())
   }
 
-  const createButton = (button: contextMenuButton) => {
+  const createButton = (button: IContextMenuButton) => {
     if (!button.enabled) return null
     return (
       <MenuItem
@@ -220,7 +221,7 @@ export function VimContextMenu (props: {
       </MenuItem>
     )
   }
-  const createDivider = (divider: contextMenuDivider) => {
+  const createDivider = (divider: IContextMenuDivider) => {
     return divider.enabled
       ? (
       <MenuItem
@@ -237,7 +238,7 @@ export function VimContextMenu (props: {
   const measuring = !!viewer.gizmos.measure.stage
   const isolated = ArrayEquals(props.selection, props.isolation.current())
 
-  let elements: contextMenuElement[] = [
+  let elements: ContextMenuElement[] = [
     {
       id: contextMenuElementIds.showControls,
       label: 'Show Controls',
