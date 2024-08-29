@@ -29,7 +29,7 @@ export function useSettings (
     const next = { ...settings } // Shallow copy
     updater(next)
     validateSettings(next)
-    saveSettingsToLocal(settings)
+    saveSettingsToLocal(next)
     setSettings(next)
     onUpdate.current?.(next)
   }
