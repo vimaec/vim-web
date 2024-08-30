@@ -542,7 +542,7 @@ export function sectionBoxClip ({ height, width, fill, className }: IconOptions)
   )
 }
 
-export function sectionBoxNoClip ({ height, width, fill, className }: IconOptions) {
+export function sectionBoxIgnore ({ height, width, fill, className }: IconOptions) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />

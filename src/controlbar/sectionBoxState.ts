@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import ReactTooltip from 'react-tooltip'
 import * as VIM from 'vim-webgl-viewer/'
 
@@ -10,6 +10,7 @@ export type SectionState = {
 export function getSectionBoxState (viewer: VIM.Viewer) {
   const sectionGizmo = viewer.gizmos.section
 
+  const first = useRef(true)
   const [section, setSection] = useState<SectionState>({
     clip: sectionGizmo.clip,
     active: sectionGizmo.visible && sectionGizmo.interactive
@@ -42,6 +43,11 @@ export function getSectionBoxState (viewer: VIM.Viewer) {
 
     sectionGizmo.interactive = next
     sectionGizmo.visible = next
+
+    if (next && first.current) {
+      sectionGizmo.fitBox(viewer.renderer.getBoundingBox())
+      first.current = false
+    }
   }
 
   return {
