@@ -54,9 +54,9 @@ export * from './container'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.
- * @param onMount A callback function triggered when the component is ready. The returned ref is the main way to interact with the component.
  * @param container An optional container object. If none is provided, a container will be created.
- * @param settings Component settings.
+ * @param componentSettings UI Component settings.
+*  @param viewerSettings Viewer settings.
  * @returns An object containing the resulting container, reactRoot, and viewer.
  */
 export function createVimComponent (
