@@ -29,7 +29,7 @@ export type Data = {
  * @data The data to customize.
  * @source The VIM.Object or VIM.Vim from which the data was pulled.
  */
-export type DataCustomization = (data: Data, source: VIM.Vim | VIM.Object) => Promise<Data>
+export type DataCustomization = (data: Data, source: VIM.Vim | VIM.Object3D) => Promise<Data>
 
 /**
  * Rendering customization function for the BIM info panel.

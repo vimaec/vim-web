@@ -21,7 +21,7 @@ export type TreeActionRef = {
   showAll: () => void
   hideAll: () => void
   collapseAll: () => void
-  selectSiblings: (element: VIM.IObject) => void
+  selectSiblings: (element: VIM.Object3D) => void
 }
 
 /**
@@ -35,12 +35,12 @@ export function BimTree (props: {
   actionRef: React.MutableRefObject<TreeActionRef>
   viewer: VIM.Viewer
   camera: CameraHelpers
-  objects: VIM.IObject[]
+  objects: VIM.Object3D[]
   isolation: Isolation
   treeData: BimTreeData
 }) {
   // Data state
-  const [objects, setObjects] = useState<VIM.IObject[]>([])
+  const [objects, setObjects] = useState<VIM.Object3D[]>([])
 
   // Tree state
   const [expandedItems, setExpandedItems] = useState<number[]>([])
@@ -62,7 +62,7 @@ export function BimTree (props: {
       collapseAll: () => {
         setExpandedItems([])
       },
-      selectSiblings: (object: VIM.Object) => {
+      selectSiblings: (object: VIM.Object3D) => {
         const element = object.element
         const node = props.treeData.getNodeFromElement(element)
         const siblings = props.treeData.getSiblings(node)
@@ -299,7 +299,7 @@ function updateViewerSelection (
   nodes: number[],
   operation: 'add' | 'remove' | 'set'
 ) {
-  const objects: VIM.Object[] = []
+  const objects: VIM.Object3D[] = []
   nodes.forEach((n) => {
     const item = tree.nodes[n]
     const element = item.data.index

@@ -1,6 +1,6 @@
 {
   "name": "vim-webgl-component",
-  "version": "0.3.11",
+  "version": "0.3.12",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "files": [
     "dist"
@@ -61,7 +61,7 @@
     "react-tooltip": "^4.2.21",
     "stats-js": "^1.0.1",
     "tailwindcss-scoped-preflight": "^3.2.8",
-    "vim-webgl-viewer": "2.0.5"
+    "vim-webgl-viewer": "2.0.7"
   },
   "peerDependencies": {
     "react": "^18.2.0",
