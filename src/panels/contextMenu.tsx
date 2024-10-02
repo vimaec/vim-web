@@ -99,10 +99,14 @@ export function VimContextMenu (props: {
   camera: ComponentCamera
   help: HelpState
   isolation: Isolation
-  selection: VIM.IObject[]
+  selection: VIM.Object3D[]
   customization?: (e: ContextMenuElement[]) => ContextMenuElement[]
   treeRef: React.MutableRefObject<TreeActionRef>
 }) {
+  const getSelection = () => {
+    return [...props.viewer.selection.objects].filter(o => o.type === 'Object3D') as VIM.Object3D[]
+  }
+
   const viewer = props.viewer
   const camera = props.camera
   const [section, setSection] = useState<{
@@ -158,7 +162,7 @@ export function VimContextMenu (props: {
 
   const onSelectionIsolateBtn = (e: ClickCallback) => {
     props.isolation.isolate(
-      [...viewer.selection.objects],
+      getSelection(),
       'contextMenu'
     )
     props.viewer.selection.clear()
@@ -166,18 +170,18 @@ export function VimContextMenu (props: {
   }
 
   const onSelectSimilarBtn = (e: ClickCallback) => {
-    const o = [...viewer.selection.objects][0]
+    const o = getSelection()[0]
     props.treeRef.current.selectSiblings(o)
     e.stopPropagation()
   }
 
   const onSelectionHideBtn = (e: ClickCallback) => {
-    props.isolation.hide([...viewer.selection.objects], 'contextMenu')
+    props.isolation.hide(getSelection(), 'contextMenu')
     e.stopPropagation()
   }
 
   const onSelectionShowBtn = (e: ClickCallback) => {
-    props.isolation.show([...viewer.selection.objects], 'contextMenu')
+    props.isolation.show(getSelection(), 'contextMenu')
     e.stopPropagation()
   }
 

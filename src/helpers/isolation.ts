@@ -16,11 +16,11 @@ export class Isolation {
   private _viewer: VIM.Viewer
 
   private _settings: ComponentSettings
-  private _isolation: VIM.IObject[]
-  private _lastIsolation: VIM.IObject[]
+  private _isolation: VIM.Object3D[]
+  private _lastIsolation: VIM.Object3D[]
 
   private _camera: ComponentCamera
-  private _references = new Map<VIM.Vim, Set<VIM.IObject> | 'always'>()
+  private _references = new Map<VIM.Vim, Set<VIM.Object3D> | 'always'>()
 
   private _onChanged = new SimpleEventDispatcher<string>()
   /** Signal dispatched when the isolation set changes. */
@@ -52,7 +52,7 @@ export class Isolation {
    * @param vim The VIM for which reference objects are being set.
    * @param reference An array of reference objects or the string 'always' to indicate permanent reference.
    */
-  setReference (vim: VIM.Vim, reference: VIM.Object[] | 'always') {
+  setReference (vim: VIM.Vim, reference: VIM.Object3D[] | 'always') {
     const value = reference === 'always' ? reference : new Set(reference)
     this._references.set(vim, value)
   }
@@ -95,7 +95,7 @@ export class Isolation {
    * @param source The source of isolation.
    * @returns True if isolation occurs; otherwise, false.
    */
-  isolate (objects: VIM.IObject[], source: string) {
+  isolate (objects: VIM.Object3D[], source: string) {
     if (!this._settings.isolation.enable) return
 
     if (this._isolation) {
@@ -115,7 +115,7 @@ export class Isolation {
    */
   toggleIsolation (source: string) {
     if (!this._settings.isolation.enable) return
-    const selection = [...this._viewer.selection.objects]
+    const selection = [...this._viewer.selection.objects].filter(o => o.type === 'Object3D') as VIM.Object3D[]
 
     if (this._isolation) {
       this._lastIsolation = this._isolation
@@ -157,11 +157,11 @@ export class Isolation {
    * @param objects An array of objects to be removed from isolation.
    * @param source The source of the removal operation.
    */
-  hide (objects: VIM.IObject[], source: string) {
+  hide (objects: VIM.Object3D[], source: string) {
     if (!this._settings.isolation.enable) return
     const selection = new Set(objects)
     const initial = this._isolation ?? this._viewer.vims[0].getObjects()
-    const result: VIM.IObject[] = []
+    const result: VIM.Object3D[] = []
     for (const obj of initial) {
       if (!selection.has(obj)) result.push(obj)
     }
@@ -176,7 +176,7 @@ export class Isolation {
    * @param objects An array of objects to be added to isolation.
    * @param source The source of the addition operation.
    */
-  show (objects: VIM.IObject[], source: string) {
+  show (objects: VIM.Object3D[], source: string) {
     if (!this._settings.isolation.enable) return
     const isolation = this._isolation ?? []
     objects.forEach((o) => isolation.push(o))
@@ -226,7 +226,7 @@ export class Isolation {
   private _isolate (
     viewer: VIM.Viewer,
     settings: ComponentSettings,
-    objects: VIM.IObject[]
+    objects: VIM.Object3D[]
   ) {
     let useIsolation = false
     if (!objects) {

@@ -8,7 +8,7 @@ import { AugmentedElement, getElements } from './helpers/element'
 
 export type ViewerState = {
   vim: VIM.Vim
-  selection: VIM.Object[]
+  selection: VIM.Object3D[]
   elements: AugmentedElement[]
 }
 
@@ -16,11 +16,12 @@ export function useViewerState (viewer: VIM.Viewer) {
   const getVim = () => {
     return viewer.selection.vim ?? viewer.vims[0]
   }
+  const getSelection = () => {
+    return [...viewer.selection.objects].filter(o => o.type === 'Object3D') as VIM.Object3D[]
+  }
 
   const [vim, setVim] = useState<VIM.Vim>(getVim())
-  const [selection, setSelection] = useState<VIM.IObject[]>([
-    ...viewer.selection.objects
-  ])
+  const [selection, setSelection] = useState<VIM.Object3D[]>(getSelection())
   const [elements, setElements] = useState<AugmentedElement[]>([])
   const vimConnection = useRef<() =>void>()
 
@@ -29,7 +30,8 @@ export function useViewerState (viewer: VIM.Viewer) {
     const subLoad = viewer.onVimLoaded.subscribe(() => setVim(getVim()))
     const subSelect = viewer.selection.onValueChanged.subscribe(() => {
       setVim(getVim())
-      setSelection([...viewer.selection.objects])
+      // Only architectural objects are supported
+      setSelection(getSelection())
     })
 
     // Clean up
