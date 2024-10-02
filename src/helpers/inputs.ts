@@ -31,6 +31,12 @@ export class ComponentInputs implements VIM.InputScheme {
     this._sideState = sideState
   }
 
+  private _getSelection = () => {
+    return [...this._viewer.selection.objects].filter(
+      (o) => o.type === 'Architectural'
+    ) as VIM.Object3D[]
+  }
+
   onMainAction (hit: InputAction): void {
     this._default.onMainAction(hit)
   }
@@ -75,13 +81,13 @@ export class ComponentInputs implements VIM.InputScheme {
         const visible = objs.findIndex((o) => o.visible) >= 0
         if (visible) {
           this._isolation.hide(
-            [...this._viewer.selection.objects],
+            this._getSelection(),
             'keyboard'
           )
           this._viewer.selection.clear()
         } else {
           this._isolation.show(
-            [...this._viewer.selection.objects],
+            this._getSelection(),
             'keyboard'
           )
         }
