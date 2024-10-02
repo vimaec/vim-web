@@ -115,7 +115,7 @@ export class Isolation {
    */
   toggleIsolation (source: string) {
     if (!this._settings.isolation.enable) return
-    const selection = [...this._viewer.selection.objects].filter(o => o.type === 'Architectural') as VIM.Object3D[]
+    const selection = [...this._viewer.selection.objects].filter(o => o.type === 'Object3D') as VIM.Object3D[]
 
     if (this._isolation) {
       this._lastIsolation = this._isolation

@@ -17,7 +17,7 @@ export function useViewerState (viewer: VIM.Viewer) {
     return viewer.selection.vim ?? viewer.vims[0]
   }
   const getSelection = () => {
-    return [...viewer.selection.objects].filter(o => o.type === 'Architectural') as VIM.Object3D[]
+    return [...viewer.selection.objects].filter(o => o.type === 'Object3D') as VIM.Object3D[]
   }
 
   const [vim, setVim] = useState<VIM.Vim>(getVim())

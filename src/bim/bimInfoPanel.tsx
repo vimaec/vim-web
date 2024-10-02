@@ -17,7 +17,7 @@ export function BimInfoPanel (props : {
     bimInfoRef: BimInfoPanelRef
   }
 ) {
-  const target = props.object?.type === 'Architectural' ? props.object : undefined
+  const target = props.object?.type === 'Object3D' ? props.object : undefined
   useEffect(() => {
     ReactTooltip.rebuild()
   })

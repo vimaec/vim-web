@@ -33,7 +33,7 @@ export class ComponentInputs implements VIM.InputScheme {
 
   private _getSelection = () => {
     return [...this._viewer.selection.objects].filter(
-      (o) => o.type === 'Architectural'
+      (o) => o.type === 'Object3D'
     ) as VIM.Object3D[]
   }
 
