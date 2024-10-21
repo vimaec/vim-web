@@ -12,7 +12,7 @@ import * as VIM from 'vim-webgl-viewer/'
 import { AxesPanelMemo } from './panels/axesPanel'
 import { ControlBar, ControlBarCustomization } from './controlbar/controlBar'
 import { RestOfScreen } from './controlbar/restOfScreen'
-import { LoadingBoxMemo, MsgInfo, ComponentLoader } from './panels/loading'
+import { LoadingBoxMemo, MsgInfo } from './panels/loading'
 import { OptionalBimPanel } from './bim/bimPanel'
 import {
   ContextMenuCustomization,
@@ -40,6 +40,7 @@ import { VimComponentRef } from './vimComponentRef'
 import { createBimInfoState } from './bim/bimInfoData'
 import { whenTrue } from './helpers/utils'
 import { DeferredPromise } from './helpers/deferredPromise'
+import { ComponentLoader } from './helpers/loading'
 
 export * as VIM from 'vim-webgl-viewer/'
 export const THREE = VIM.THREE
