@@ -155,6 +155,11 @@ export function VimComponent (props: {
     const subContext =
       props.viewer.inputs.onContextMenu.subscribe(showContextMenu)
 
+    // Patch load
+    loader.current.onProgress.sub(p => setMsg({ progress: p.loaded }))
+    loader.current.onError.sub((e) => setMsg({ progress: e }))
+    loader.current.onDone.sub(() => setMsg(null))
+
     props.onMount({
       container: props.container,
       viewer: props.viewer,
@@ -207,7 +212,7 @@ export function VimComponent (props: {
       <div className="vim-performance-div" ref={performanceRef}></div>
       <Overlay viewer={props.viewer} side={side}></Overlay>
       <MenuHelpMemo help={help} settings={settings.value} side={side} />
-      {whenTrue(settings.value.ui.loadingBox, <LoadingBoxMemo loader={loader.current} content={msg} />)}
+      {whenTrue(settings.value.ui.loadingBox, <LoadingBoxMemo content={msg} />)}
       <SidePanelMemo
         container={props.container}
         viewer={props.viewer}
