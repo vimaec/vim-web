@@ -18,7 +18,6 @@ export function getSectionBoxState (viewer: VIM.Viewer) {
 
   // On First Render
   useEffect(() => {
-    sectionGizmo.clip = true
     const subSection = sectionGizmo.onStateChanged.subscribe(() =>
       setSection({
         clip: sectionGizmo.clip,
@@ -45,6 +44,7 @@ export function getSectionBoxState (viewer: VIM.Viewer) {
     sectionGizmo.visible = next
 
     if (next && first.current) {
+      sectionGizmo.clip = true
       sectionGizmo.fitBox(viewer.renderer.getBoundingBox())
       first.current = false
     }
