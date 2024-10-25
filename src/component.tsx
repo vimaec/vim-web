@@ -48,6 +48,7 @@ export * as ContextMenu from './panels/contextMenu'
 export * as BimInfo from './bim/bimInfoData'
 export * as ControlBar from './controlbar/controlBar'
 export * as Icons from './panels/icons'
+export * from './helpers/loadRequest'
 export * from './vimComponentRef'
 export { getLocalComponentSettings as getLocalSettings } from './settings/settingsStorage'
 export { type ComponentSettings as Settings, type PartialComponentSettings as PartialSettings, defaultSettings } from './settings/settings'
@@ -128,7 +129,7 @@ export function VimComponent (props: {
 
   const help = useHelp()
   const viewerState = useViewerState(props.viewer)
-  const [msg, setMsg] = useState<MsgInfo>()
+  const [msg, setMsg] = useState<MsgInfo | undefined>()
   const treeRef = useRef<TreeActionRef>()
   const performanceRef = useRef<HTMLDivElement>(null)
 
@@ -158,7 +159,7 @@ export function VimComponent (props: {
     // Patch load
     loader.current.onProgress.sub(p => setMsg({ progress: p.loaded }))
     loader.current.onError.sub((e) => setMsg({ progress: e }))
-    loader.current.onDone.sub(() => setMsg(null))
+    loader.current.onDone.sub(() => setMsg(undefined))
 
     props.onMount({
       container: props.container,

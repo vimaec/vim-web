@@ -15,20 +15,33 @@ const url = params.has('vim')
 demo()
 async function demo () {
   const cmp = await createVimComponent(undefined, getLocalSettings())
-  const time = Date.now()
 
-  const vim = await cmp.loader.open(
-    url ?? 'https://vim02.azureedge.net/samples/residence.v1.2.75.vim',
-    // url ?? 'https://vim02.azureedge.net/samples/skanska.vim',
-    // url ?? 'https://vim02.azureedge.net/samples/residence.v1.2.75.vimx',
+  const request = await cmp.loader.request(
+    {
+      url: 'https://saas-api-dev.vimaec.com/api/public/8A12977A-E69B-42DC-D05B-08DCE88D23C7/2024.10.11',
+      headers: {
+        Authorization: 'yJSkyCvwpksvnajChA64ofKQS2KnB24ADHENUYKYTZFZc4SzcWa5WPwJNzTvrsZ8sv8SL8R69c92TUThFkLi1YsvpGxnZFExWs5mbQisuWyhBPAXosSEUhPXyUaXHHBJ'
+      }
+    },
     {
       progressive: true,
       rotation: new THREE.Vector3(270, 0, 0)
     }
   )
 
-  console.log(`Loading completed in ${((Date.now() - time) / 1000).toFixed(2)} seconds`)
+  for await (const progress of request.getProgress()) {
+    console.log(`Downloading Vim (${(progress.loaded / 1000).toFixed(0)} kb)`)
+  }
+
+  const result = await request.getResult()
+  if (result.isError()) {
+    console.error('Error loading vim', result.error)
+    return
+  }
+
+  cmp.loader.add(result.result)
+
   globalThis.THREE = THREE
   globalThis.component = cmp
-  globalThis.vim = vim
+  globalThis.vim = result.result
 }
