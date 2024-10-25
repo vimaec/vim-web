@@ -32,7 +32,7 @@ export type MsgInfo = {
  * @param msg2 - The second message to compare.
  * @returns True if all properties are equal, false otherwise.
  */
-function MsgEquals (msg1: MsgInfo, msg2: MsgInfo): boolean {
+function msgEquals (msg1: MsgInfo, msg2: MsgInfo): boolean {
   if (!msg1 && !msg2) return true
   if (!msg1 || !msg2) return false
   return (
@@ -42,13 +42,18 @@ function MsgEquals (msg1: MsgInfo, msg2: MsgInfo): boolean {
   )
 }
 
+function msgEmpty (msg: MsgInfo) {
+  if (!msg) return true
+  return (msg.info ?? msg.message ?? msg.progress) === undefined
+}
+
 /**
  * Memoized version of the LoadingBox component.
  * Prevents unnecessary re-renders by comparing previous and next props using MsgEquals.
  */
 export const LoadingBoxMemo = React.memo(
   LoadingBox,
-  (prev, next) => MsgEquals(prev.content, next.content)
+  (prev, next) => msgEquals(prev.content, next.content)
 )
 
 /**
@@ -63,7 +68,7 @@ function LoadingBox (props: { content?: MsgInfo }) {
   }, [props.content])
 
   // If no content is provided, render nothing.
-  if (!props.content) return null
+  if (msgEmpty(props.content)) return null
 
   return (
     <div

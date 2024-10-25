@@ -5,9 +5,9 @@
 import * as VIM from 'vim-webgl-viewer/'
 import { SimpleEventDispatcher } from 'ste-simple-events'
 import { SignalDispatcher } from 'ste-signals'
+import { LoadRequest } from './loadRequest'
 
-export type LoadSettings = VIM.VimPartialSettings &
-{
+type AddSettings = {
   /**
    * Controls whether to frame the camera on a vim everytime it is updated.
    * Default: true
@@ -20,6 +20,8 @@ export type LoadSettings = VIM.VimPartialSettings &
    */
   loadEmpty?: boolean
 }
+
+export type OpenSettings = VIM.VimPartialSettings & AddSettings
 
 /**
  * Provides functionality for asynchronously opening sources and tracking progress.
@@ -66,22 +68,63 @@ export class ComponentLoader {
    * Receives progress logs as input.
    */
   async open (
-    source: string | ArrayBuffer,
-    settings: LoadSettings,
+    source: VIM.RequestSource,
+    settings: OpenSettings,
     onProgress?: (p: VIM.IProgressLogs) => void
   ) {
-    let vim : VIM.Vim
-    try {
-      vim = await VIM.open(source, settings, (p) => {
-        onProgress?.(p)
-        this._onProgress.dispatch(p)
-      })
-    } catch (e) {
-      console.log('Error loading vim', e)
-      this._onError.dispatch(e.toString())
-      return
+    const request = await VIM.request(source, settings)
+
+    for await (const progress of request.getProgress()) {
+      onProgress?.(progress)
+      this._onProgress.dispatch(progress)
     }
 
+    const result = await request.getResult()
+    if (result.isError()) {
+      console.log('Error loading vim', result.error)
+      this._onError.dispatch(result.error)
+      return
+    }
+    const vim = result.result
+
+    this._onDone.dispatch()
+    return vim
+  }
+
+  /**
+   * Creates a new load request for the provided source and settings.
+   * @param source The url to the vim file or a buffer of the file.
+   * @param settings Settings to apply to vim file.
+   * @returns A new load request instance to track progress and get result.
+   */
+  request (source: VIM.RequestSource,
+    settings: VIM.VimPartialSettings) {
+    return new LoadRequest({
+      onProgress: (p) => this._onProgress.dispatch(p),
+      onError: (e) => this._onError.dispatch(e),
+      onDone: () => this._onDone.dispatch()
+    }, source, settings)
+  }
+
+  /*
+    * Adds a vim to the viewer and initializes it.
+    * @param vim Vim to add to the viewer.
+    * @param settings Optional settings to apply to the vim.
+    */
+  add (vim: VIM.Vim, settings: AddSettings = {}) {
+    this.initVim(vim, settings)
+  }
+
+  /**
+   * Removes the vim from the viewer and disposes it.
+   * @param vim Vim to remove from the viewer.
+   */
+  remove (vim: VIM.Vim) {
+    this._viewer.remove(vim)
+    vim.dispose()
+  }
+
+  private initVim (vim : VIM.Vim, settings: AddSettings) {
     this._viewer.add(vim)
     vim.onLoadingUpdate.subscribe(() => {
       this._viewer.gizmos.loading.visible = vim.isLoading
@@ -93,16 +136,5 @@ export class ComponentLoader {
     if (settings.loadEmpty !== true) {
       vim.loadAll()
     }
-    this._onDone.dispatch()
-    return vim
-  }
-
-  /**
-   * Removes the vim from the viewer and disposes it.
-   * @param vim Vim to remove from the viewer.
-   */
-  close (vim: VIM.Vim) {
-    this._viewer.remove(vim)
-    vim.dispose()
   }
 }
