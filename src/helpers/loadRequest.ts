@@ -1,6 +1,5 @@
 import * as VIM from 'vim-webgl-viewer/'
 import { DeferredPromise } from './deferredPromise'
-import { RequestResult } from './requestResult'
 
 type RequestCallbacks = {
   onProgress: (p: VIM.IProgressLogs) => void
@@ -70,7 +69,7 @@ export class LoadRequest {
     }
   }
 
-  async getResult (): Promise<RequestResult<VIM.Vim>> {
+  async getResult () {
     await this._completionPromise
     return this._request.getResult()
   }
