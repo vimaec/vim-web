@@ -15,19 +15,24 @@ const url = params.has('vim')
 demo()
 async function demo () {
   const cmp = await createVimComponent(undefined, getLocalSettings())
-  const time = Date.now()
 
-  const vim = await cmp.loader.open(
-    url ?? 'https://vim02.azureedge.net/samples/residence.v1.2.75.vim',
-    // url ?? 'https://vim02.azureedge.net/samples/skanska.vim',
-    // url ?? 'https://vim02.azureedge.net/samples/residence.v1.2.75.vimx',
-    {
-      progressive: true,
-      rotation: new THREE.Vector3(270, 0, 0)
-    }
-  )
+  const request = await cmp.loader.request({
+    url: url ?? 'https://vimdevelopment01storage.blob.core.windows.net/samples/Wolford_Residence.r2025.vim'
+  }, {
+    rotation: new THREE.Vector3(270, 0, 0)
+  })
 
-  console.log(`Loading completed in ${((Date.now() - time) / 1000).toFixed(2)} seconds`)
+  for await (const progress of request.getProgress()) {
+    console.log(`Downloading Vim (${(progress.loaded / 1000).toFixed(0)} kb)`)
+  }
+  const result = await request.getResult()
+  if (result.isError()) {
+    console.error(result.error)
+    return
+  }
+  const vim = result.result
+  cmp.loader.add(vim)
+
   globalThis.THREE = THREE
   globalThis.component = cmp
   globalThis.vim = vim

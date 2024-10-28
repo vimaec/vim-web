@@ -12,7 +12,7 @@ import * as VIM from 'vim-webgl-viewer/'
 import { AxesPanelMemo } from './panels/axesPanel'
 import { ControlBar, ControlBarCustomization } from './controlbar/controlBar'
 import { RestOfScreen } from './controlbar/restOfScreen'
-import { LoadingBoxMemo, MsgInfo, ComponentLoader } from './panels/loading'
+import { LoadingBoxMemo, MsgInfo } from './panels/loading'
 import { OptionalBimPanel } from './bim/bimPanel'
 import {
   ContextMenuCustomization,
@@ -40,6 +40,7 @@ import { VimComponentRef } from './vimComponentRef'
 import { createBimInfoState } from './bim/bimInfoData'
 import { whenTrue } from './helpers/utils'
 import { DeferredPromise } from './helpers/deferredPromise'
+import { ComponentLoader } from './helpers/loading'
 
 export * as VIM from 'vim-webgl-viewer/'
 export const THREE = VIM.THREE
@@ -47,6 +48,7 @@ export * as ContextMenu from './panels/contextMenu'
 export * as BimInfo from './bim/bimInfoData'
 export * as ControlBar from './controlbar/controlBar'
 export * as Icons from './panels/icons'
+export * from './helpers/loadRequest'
 export * from './vimComponentRef'
 export { getLocalComponentSettings as getLocalSettings } from './settings/settingsStorage'
 export { type ComponentSettings as Settings, type PartialComponentSettings as PartialSettings, defaultSettings } from './settings/settings'
@@ -127,7 +129,7 @@ export function VimComponent (props: {
 
   const help = useHelp()
   const viewerState = useViewerState(props.viewer)
-  const [msg, setMsg] = useState<MsgInfo>()
+  const [msg, setMsg] = useState<MsgInfo | undefined>()
   const treeRef = useRef<TreeActionRef>()
   const performanceRef = useRef<HTMLDivElement>(null)
 
@@ -153,6 +155,11 @@ export function VimComponent (props: {
     // Register context menu
     const subContext =
       props.viewer.inputs.onContextMenu.subscribe(showContextMenu)
+
+    // Patch load
+    loader.current.onProgress.sub(p => setMsg({ progress: p.loaded }))
+    loader.current.onError.sub((e) => setMsg({ progress: e }))
+    loader.current.onDone.sub(() => setMsg(undefined))
 
     props.onMount({
       container: props.container,
@@ -206,7 +213,7 @@ export function VimComponent (props: {
       <div className="vim-performance-div" ref={performanceRef}></div>
       <Overlay viewer={props.viewer} side={side}></Overlay>
       <MenuHelpMemo help={help} settings={settings.value} side={side} />
-      {whenTrue(settings.value.ui.loadingBox, <LoadingBoxMemo loader={loader.current} content={msg} />)}
+      {whenTrue(settings.value.ui.loadingBox, <LoadingBoxMemo content={msg} />)}
       <SidePanelMemo
         container={props.container}
         viewer={props.viewer}
