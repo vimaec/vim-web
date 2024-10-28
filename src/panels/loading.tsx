@@ -2,175 +2,182 @@
  * @module viw-webgl-component
  */
 
-import React, { useEffect, useState } from 'react'
-import * as VIM from 'vim-webgl-viewer/'
+import React, { useEffect } from 'react'
 import { setComponentBehind } from '../helpers/html'
 import * as Icons from './icons'
-import { SimpleEventDispatcher } from 'ste-simple-events'
-import { SignalDispatcher } from 'ste-signals'
 
-type Progress = 'processing' | number | string
+/**
+ * Type representing the progress of an operation.
+ * - `'processing'`: Indicates that processing is ongoing.
+ * - `number`: Represents the progress in bytes.
+ * - `string`: Represents an error message.
+ */
+type Progress = 'processing' | number | string;
 
-export type MsgInfo = { message: string; info: string }
+/**
+ * Interface for message information displayed in the LoadingBox.
+ * @property message - Optional main message text.
+ * @property info - Optional additional information or tooltip text.
+ * @property progress - The progress of an operation.
+ */
+export type MsgInfo = {
+  message?: string;
+  info?: string;
+  progress?: Progress;
+};
 
-export type LoadSettings = VIM.VimPartialSettings &
-{
-  /**
-   * Controls whether to frame the camera on a vim everytime it is updated.
-   * Default: true
-   */
-  autoFrame?: boolean
+/**
+ * Compares two MsgInfo objects for equality.
+ * @param msg1 - The first message to compare.
+ * @param msg2 - The second message to compare.
+ * @returns True if all properties are equal, false otherwise.
+ */
+function msgEquals (msg1: MsgInfo, msg2: MsgInfo): boolean {
+  if (!msg1 && !msg2) return true
+  if (!msg1 || !msg2) return false
+  return (
+    msg1.message === msg2.message &&
+    msg1.info === msg2.info &&
+    msg1.progress === msg2.progress
+  )
+}
 
-  /**
-   * Controls whether to initially load the vim content or not.
-   * Default: false
-   */
-  loadEmpty?: boolean
+function msgEmpty (msg: MsgInfo) {
+  if (!msg) return true
+  return (msg.info ?? msg.message ?? msg.progress) === undefined
 }
 
 /**
- * Memoized version of Loading Box
+ * Memoized version of the LoadingBox component.
+ * Prevents unnecessary re-renders by comparing previous and next props using MsgEquals.
  */
-export const LoadingBoxMemo = React.memo(LoadingBox)
+export const LoadingBoxMemo = React.memo(
+  LoadingBox,
+  (prev, next) => msgEquals(prev.content, next.content)
+)
 
 /**
- * Provides functionality for asynchronously opening sources and tracking progress.
- * Includes event emitters for progress updates and completion notifications.
+ * LoadingBox component that displays a loading message or other messages.
+ * @param props - Component props containing optional content.
+ * @returns The LoadingBox component or null if no content is provided.
  */
-export class ComponentLoader {
-  private _viewer : VIM.Viewer
-
-  constructor (viewer : VIM.Viewer) {
-    this._viewer = viewer
-  }
-
-  /**
-   * Event emitter for progress updates.
-   */
-  get onProgress () {
-    return this._onProgress.asEvent()
-  }
-
-  private _onProgress = new SimpleEventDispatcher<VIM.IProgressLogs>()
-
-  /**
-   * Event emitter for completion notifications.
-   */
-  get onDone () {
-    return this._onDone.asEvent()
-  }
-
-  private _onDone = new SignalDispatcher()
-
-  /**
-   * Asynchronously opens a vim at source, applying the provided settings.
-   * @param source The source to open, either as a string or ArrayBuffer.
-   * @param settings Partial settings to apply to the opened source.
-   * @param onProgress Optional callback function to track progress during opening.
-   * Receives progress logs as input.
-   */
-  async open (
-    source: string | ArrayBuffer,
-    settings: LoadSettings,
-    onProgress?: (p: VIM.IProgressLogs) => void
-  ) {
-    const vim = await VIM.open(source, settings, (p) => {
-      onProgress?.(p)
-      this._onProgress.dispatch(p)
-    })
-    this._viewer.add(vim)
-    vim.onLoadingUpdate.subscribe(() => {
-      this._viewer.gizmos.loading.visible = vim.isLoading
-      if (settings.autoFrame !== false && !vim.isLoading) {
-        this._viewer.camera.snap().frame(vim)
-        this._viewer.camera.save()
-      }
-    })
-    if (settings.loadEmpty !== true) {
-      vim.loadAll()
-    }
-    this._onDone.dispatch()
-    return vim
-  }
-
-  /**
-   * Removes the vim from the viewer and disposes it.
-   * @param vim Vim to remove from the viewer.
-   */
-  close (vim: VIM.Vim) {
-    this._viewer.remove(vim)
-    vim.dispose()
-  }
-}
-
-/**
- * Loading box JSX Component that can also be used to show messages.
- */
-function LoadingBox (props: { loader: ComponentLoader, content: MsgInfo }) {
-  const [progress, setProgress] = useState<Progress>()
-
-  // Patch load
+function LoadingBox (props: { content?: MsgInfo }) {
+  // Side effect to set the component behind state based on content presence.
   useEffect(() => {
-    props.loader.onProgress.sub(p => setProgress(p.loaded))
-    props.loader.onDone.sub(() => setProgress(null))
-  }, [])
+    setComponentBehind(props.content !== undefined)
+  }, [props.content])
 
-  useEffect(() => {
-    setComponentBehind(progress !== undefined)
-  }, [progress])
+  // If no content is provided, render nothing.
+  if (msgEmpty(props.content)) return null
 
-  const msg = props.content?.message ?? formatProgress(progress)
-
-  if (!msg) return null
   return (
     <div
       className="vim-loading-container vc-absolute vc-inset-0 vc-z-40 vc-flex vc-items-center vc-justify-center vc-bg-overflow vc-backdrop-blur"
       onContextMenu={(event) => event.preventDefault()}
     >
       <div className="vim-loading-box vc-flex vc-box-content vc-gap-2 vc-flex-col vc-max-w-[320px] vc-max-h-[60px] vc-w-[72%] vc-h-[50%] vc-self-center vc-rounded vc-bg-white vc-px-5 vc-py-4 vc-shadow-lg">
-        <h1
-          className={`vim-loading-title vc-w-full vc-text-gray-medium ${
-            props.content?.info ? 'vc-text-center' : ''
-          }`}
-        >
-          {' '}
-          {msg}{' '}
-          <span data-tip={props.content?.info}>
-            {props.content?.info
-              ? Icons.help({
-                height: '16',
-                width: '16',
-                fill: 'currentColor',
-                className: 'vc-inline'
-              })
-              : null}{' '}
-          </span>
-        </h1>
-        {props.content?.message
-          ? null
-          : (
-          <span className="vim-loading-widget"></span>
-            )}
+        {Content(props.content)}
+        {Gizmo(props.content)}
       </div>
     </div>
   )
 }
 
-function formatProgress (progress: Progress) {
-  return progress === 'processing'
-    ? (
-        'Processing'
-      )
-    : typeof progress === 'number'
-      ? (
-    <div className="vc-flex vc-w-full vc-justify-between">
-      <span>Loading...</span>
-      <span>{Math.round(progress / 1000000)} MB</span>
-    </div>
-        )
-      : typeof progress === 'string'
-        ? (
-    `Error: ${progress}`
-          )
-        : undefined
+/**
+ * Gizmo component that displays a loading widget if progress is a number.
+ * @param info - Message information containing progress.
+ * @returns A loading widget or null if progress is not a number.
+ */
+function Gizmo (info: MsgInfo) {
+  // Only render the gizmo if progress is a number (indicating loading progress).
+  if (typeof info.progress !== 'number') return null
+  return <div className="vim-loading-widget"></div>
+}
+
+/**
+ * Content component that displays the main content based on the provided info.
+ * @param info - Message information.
+ * @returns The content component with appropriate styling.
+ */
+function Content (info: MsgInfo) {
+  // Determine the class for centering text based on the progress type.
+  const center =
+    typeof info.progress === 'number' ? '' : 'vc-text-center vc-my-auto'
+
+  return (
+    <h1
+      className={`vim-loading-title vc-w-full vc-text-gray-medium ${center}`}
+    >
+      {Text(info)}
+    </h1>
+  )
+}
+
+/**
+ * Text component that renders the appropriate text based on the provided info.
+ * @param info - Message information.
+ * @returns The text component displaying status messages or errors.
+ */
+function Text (info: MsgInfo) {
+  // Handle the 'processing' state.
+  if (info.progress === 'processing') {
+    return 'Processing'
+  }
+
+  // Handle numeric progress (loading with progress indicator).
+  if (typeof info.progress === 'number') {
+    return (
+      <div className="vc-flex vc-w-full vc-justify-between">
+        <span>Loading...</span>
+        <span>{formatMBs(info.progress)} MB</span>
+      </div>
+    )
+  }
+
+  // Handle error state when progress is a string (other than 'processing').
+  if (typeof info.progress === 'string') {
+    return (
+      <>
+        {'Error Loading Vim File'}
+        {InfoBtn(info.progress)}
+      </>
+    )
+  }
+
+  // Default case: display the message and optional info button.
+  return (
+    <>
+      {info.message}
+      {InfoBtn(info.info)}
+    </>
+  )
+}
+
+/**
+ * InfoBtn component that displays an information button with a tooltip.
+ * @param message - The tooltip message to display.
+ * @returns An info button or null if no message is provided.
+ */
+function InfoBtn (message: string | undefined) {
+  if (!message) return null
+  return (
+    <span className="vc-ml-1" data-tip={message}>
+      {Icons.help({
+        height: '16',
+        width: '16',
+        fill: 'currentColor',
+        className: 'vc-inline'
+      })}
+    </span>
+  )
+}
+
+/**
+ * Formats bytes to megabytes with two decimal places.
+ * @param bytes - The number of bytes to format.
+ * @returns The formatted megabytes as a string.
+ */
+function formatMBs (bytes: number): string {
+  const BYTES_IN_MB = 1_000_000
+  return (bytes / BYTES_IN_MB).toFixed(2)
 }

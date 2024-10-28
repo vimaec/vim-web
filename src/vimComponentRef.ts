@@ -3,7 +3,6 @@
  */
 
 import * as VIM from 'vim-webgl-viewer/'
-import { ComponentLoader } from './panels/loading'
 import { ContextMenuCustomization } from './panels/contextMenu'
 import { ComponentSettings } from './settings/settings'
 import { Isolation } from './helpers/isolation'
@@ -11,6 +10,7 @@ import { ComponentCamera } from './helpers/camera'
 import { VimComponentContainer } from './container'
 import { BimInfoPanelRef } from './bim/bimInfoData'
 import { ControlBarCustomization } from './controlbar/controlBar'
+import { ComponentLoader } from './helpers/loading'
 
 /**
 * Settings API managing settings applied to the component.
