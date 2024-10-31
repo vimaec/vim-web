@@ -12,9 +12,9 @@ import React, { useEffect, useState } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
 import { Isolation } from '../helpers/isolation'
 import { ComponentCamera } from '../helpers/camera'
-import { HelpState } from './help'
 import { ArrayEquals } from '../helpers/data'
 import { TreeActionRef } from '../bim/bimTree'
+import { ModalRef } from './modal'
 
 export const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
 export type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -97,11 +97,11 @@ export const VimContextMenuMemo = React.memo(VimContextMenu)
 export function VimContextMenu (props: {
   viewer: VIM.Viewer
   camera: ComponentCamera
-  help: HelpState
+  modal: ModalRef
   isolation: Isolation
   selection: VIM.Object3D[]
   customization?: (e: ContextMenuElement[]) => ContextMenuElement[]
-  treeRef: React.MutableRefObject<TreeActionRef>
+  treeRef: React.MutableRefObject<TreeActionRef | undefined>
 }) {
   const getSelection = () => {
     return [...props.viewer.selection.objects].filter(o => o.type === 'Object3D') as VIM.Object3D[]
@@ -146,7 +146,7 @@ export function VimContextMenu (props: {
   }, [])
 
   const onShowControlsBtn = (e: ClickCallback) => {
-    props.help.setVisible(true)
+    props.modal.help()
     e.stopPropagation()
   }
 
@@ -246,7 +246,6 @@ export function VimContextMenu (props: {
     {
       id: contextMenuElementIds.showControls,
       label: 'Show Controls',
-      keyboard: 'F1',
       action: onShowControlsBtn,
       enabled: true
     },

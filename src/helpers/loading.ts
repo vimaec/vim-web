@@ -23,12 +23,19 @@ type AddSettings = {
 
 export type OpenSettings = VIM.VimPartialSettings & AddSettings
 
+export type LoadingError = {
+  url: string
+  error: string
+}
+
 /**
  * Provides functionality for asynchronously opening sources and tracking progress.
  * Includes event emitters for progress updates and completion notifications.
  */
 export class ComponentLoader {
   private _viewer : VIM.Viewer
+
+  class
 
   constructor (viewer : VIM.Viewer) {
     this._viewer = viewer
@@ -46,7 +53,7 @@ export class ComponentLoader {
   /**
    * Event emitter for error notifications.
    */
-  private _onError = new SimpleEventDispatcher<string>()
+  private _onError = new SimpleEventDispatcher<LoadingError>()
   get onError () {
     return this._onError.asEvent()
   }
@@ -82,7 +89,10 @@ export class ComponentLoader {
     const result = await request.getResult()
     if (result.isError()) {
       console.log('Error loading vim', result.error)
-      this._onError.dispatch(result.error)
+      this._onError.dispatch({
+        url: source.url,
+        error: result.error
+      })
       return
     }
     const vim = result.result

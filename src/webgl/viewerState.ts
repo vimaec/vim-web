@@ -4,7 +4,7 @@
 
 import { useEffect, useState, useMemo, useRef } from 'react'
 import * as VIM from 'vim-webgl-viewer/'
-import { AugmentedElement, getElements } from './helpers/element'
+import { AugmentedElement, getElements } from '../helpers/element'
 
 export type ViewerState = {
   vim: VIM.Vim
@@ -12,7 +12,7 @@ export type ViewerState = {
   elements: AugmentedElement[]
 }
 
-export function useViewerState (viewer: VIM.Viewer) {
+export function useViewerState (viewer: VIM.Viewer) : ViewerState {
   const getVim = () => {
     return viewer.selection.vim ?? viewer.vims[0]
   }
@@ -22,7 +22,7 @@ export function useViewerState (viewer: VIM.Viewer) {
 
   const [vim, setVim] = useState<VIM.Vim>(getVim())
   const [selection, setSelection] = useState<VIM.Object3D[]>(getSelection())
-  const [elements, setElements] = useState<AugmentedElement[]>([])
+  const [elements, setElements] = useState<AugmentedElement[] | undefined>([])
   const vimConnection = useRef<() =>void>()
 
   useEffect(() => {

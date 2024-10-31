@@ -5,54 +5,53 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { createRoot } from 'react-dom/client'
 import ReactTooltip from 'react-tooltip'
-import './style.css'
+import '../style.css'
 import 'vim-webgl-viewer/dist/style.css'
 
 import * as VIM from 'vim-webgl-viewer/'
-import { AxesPanelMemo } from './panels/axesPanel'
-import { ControlBar, ControlBarCustomization } from './controlbar/controlBar'
-import { RestOfScreen } from './controlbar/restOfScreen'
-import { LoadingBoxMemo, MsgInfo } from './panels/loading'
-import { OptionalBimPanel } from './bim/bimPanel'
+import { AxesPanelMemo } from '../panels/axesPanel'
+import { ControlBar, ControlBarCustomization } from '../controlbar/controlBar'
+import { RestOfScreen } from '../controlbar/restOfScreen'
+import { OptionalBimPanel } from '../bim/bimPanel'
 import {
   ContextMenuCustomization,
   showContextMenu,
   VimContextMenuMemo
-} from './panels/contextMenu'
-import { MenuHelpMemo, useHelp } from './panels/help'
-import { SidePanelMemo } from './sidePanel/sidePanel'
-import { useSideState } from './sidePanel/sideState'
-import { MenuSettings } from './settings/menuSettings'
-import { MenuToastMemo } from './panels/toast'
-import { Overlay } from './panels/overlay'
-import { addPerformanceCounter } from './panels/performance'
-import { ComponentInputs as ComponentInputScheme } from './helpers/inputs'
-import { CursorManager } from './helpers/cursor'
-import { PartialComponentSettings, isTrue } from './settings/settings'
-import { useSettings } from './settings/settingsState'
-import { Isolation } from './helpers/isolation'
-import { ComponentCamera } from './helpers/camera'
-import { TreeActionRef } from './bim/bimTree'
-import { VimComponentContainer, createContainer } from './container'
+} from '../panels/contextMenu'
+import { SidePanelMemo } from '../sidePanel/sidePanel'
+import { useSideState } from '../sidePanel/sideState'
+import { MenuSettings } from '../settings/menuSettings'
+import { MenuToastMemo } from '../panels/toast'
+import { Overlay } from '../panels/overlay'
+import { addPerformanceCounter } from '../panels/performance'
+import { ComponentInputs as ComponentInputScheme } from '../helpers/inputs'
+import { CursorManager } from '../helpers/cursor'
+import { PartialComponentSettings, isTrue } from '../settings/settings'
+import { useSettings } from '../settings/settingsState'
+import { Isolation } from '../helpers/isolation'
+import { ComponentCamera } from '../helpers/camera'
+import { TreeActionRef } from '../bim/bimTree'
+import { VimComponentContainer, createContainer } from '../container'
 import { useViewerState } from './viewerState'
-import { LogoMemo } from './panels/logo'
-import { VimComponentRef } from './vimComponentRef'
-import { createBimInfoState } from './bim/bimInfoData'
-import { whenTrue } from './helpers/utils'
-import { DeferredPromise } from './helpers/deferredPromise'
-import { ComponentLoader } from './helpers/loading'
+import { LogoMemo } from '../panels/logo'
+import { VimComponentRef } from '../vimComponentRef'
+import { createBimInfoState } from '../bim/bimInfoData'
+import { whenTrue } from '../helpers/utils'
+import { DeferredPromise } from '../helpers/deferredPromise'
+import { ComponentLoader } from '../helpers/loading'
+import { Modal, useModal } from '../panels/modal'
 
 export * as VIM from 'vim-webgl-viewer/'
 export const THREE = VIM.THREE
-export * as ContextMenu from './panels/contextMenu'
-export * as BimInfo from './bim/bimInfoData'
-export * as ControlBar from './controlbar/controlBar'
-export * as Icons from './panels/icons'
-export * from './helpers/loadRequest'
-export * from './vimComponentRef'
-export { getLocalComponentSettings as getLocalSettings } from './settings/settingsStorage'
-export { type ComponentSettings as Settings, type PartialComponentSettings as PartialSettings, defaultSettings } from './settings/settings'
-export * from './container'
+export * as ContextMenu from '../panels/contextMenu'
+export * as BimInfo from '../bim/bimInfoData'
+export * as ControlBar from '../controlbar/controlBar'
+export * as Icons from '../panels/icons'
+export * from '../helpers/loadRequest'
+export * from '../vimComponentRef'
+export { getLocalComponentSettings as getLocalSettings } from '../settings/settingsStorage'
+export { type ComponentSettings as Settings, type PartialComponentSettings as PartialSettings, defaultSettings } from '../settings/settings'
+export * from '../container'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.
@@ -127,9 +126,8 @@ export function VimComponent (props: {
   const [controlBar, setControlBar] = useState<ControlBarCustomization>()
   const bimInfoRef = createBimInfoState()
 
-  const help = useHelp()
   const viewerState = useViewerState(props.viewer)
-  const [msg, setMsg] = useState<MsgInfo | undefined>()
+  const modal = useModal(settings.value.capacity.canFollowUrl)
   const treeRef = useRef<TreeActionRef>()
   const performanceRef = useRef<HTMLDivElement>(null)
 
@@ -139,7 +137,9 @@ export function VimComponent (props: {
 
   // On first render
   useEffect(() => {
-    addPerformanceCounter(performanceRef.current)
+    if (performanceRef.current) {
+      addPerformanceCounter(performanceRef.current)
+    }
 
     cursor.register()
 
@@ -157,9 +157,20 @@ export function VimComponent (props: {
       props.viewer.inputs.onContextMenu.subscribe(showContextMenu)
 
     // Patch load
-    loader.current.onProgress.sub(p => setMsg({ progress: p.loaded }))
-    loader.current.onError.sub((e) => setMsg({ progress: e }))
-    loader.current.onDone.sub(() => setMsg(undefined))
+    loader.current.onProgress.sub(p => modal.loading({
+      type: 'loading',
+      progress: p.loaded,
+      mode: 'bytes'
+    }))
+    loader.current.onError.sub((e) => modal.message({
+      type: 'message',
+      title: 'Loading Error',
+      url: e.url,
+      message: 'Could not download or open the file at the provided url.',
+      footer: 'Visit our support page',
+      link: 'https://support.vimaec.com/en/'
+    }))
+    loader.current.onDone.sub(() => modal.close())
 
     props.onMount({
       container: props.container,
@@ -174,10 +185,7 @@ export function VimComponent (props: {
       controlBar: {
         customize: (v) => setControlBar(() => v)
       },
-      message: {
-        show: (message: string, info: string) => setMsg({ message, info }),
-        hide: () => setMsg(undefined)
-      },
+      modal,
       bimInfo: bimInfoRef,
       dispose: () => {}
     })
@@ -212,8 +220,7 @@ export function VimComponent (props: {
     <>
       <div className="vim-performance-div" ref={performanceRef}></div>
       <Overlay viewer={props.viewer} side={side}></Overlay>
-      <MenuHelpMemo help={help} settings={settings.value} side={side} />
-      {whenTrue(settings.value.ui.loadingBox, <LoadingBoxMemo content={msg} />)}
+      {whenTrue(settings.value.ui.loadingBox, <Modal state={modal} />)}
       <SidePanelMemo
         container={props.container}
         viewer={props.viewer}
@@ -226,7 +233,7 @@ export function VimComponent (props: {
         <ControlBar
           viewer={props.viewer}
           camera={camera}
-          help={help}
+          modal={modal}
           side={side}
           isolation={isolation}
           cursor={cursor}
@@ -244,7 +251,7 @@ export function VimComponent (props: {
       <VimContextMenuMemo
         viewer={props.viewer}
         camera={camera}
-        help={help}
+        modal={modal}
         isolation={isolation}
         selection={viewerState.selection}
         customization={contextMenu}

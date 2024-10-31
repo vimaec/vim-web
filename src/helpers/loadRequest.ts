@@ -1,9 +1,10 @@
 import * as VIM from 'vim-webgl-viewer/'
 import { DeferredPromise } from './deferredPromise'
+import { LoadingError } from './loading'
 
 type RequestCallbacks = {
   onProgress: (p: VIM.IProgressLogs) => void
-  onError: (e: string) => void
+  onError: (e: LoadingError) => void
   onDone: () => void
 }
 
@@ -11,6 +12,7 @@ type RequestCallbacks = {
  * Class to handle loading a request.
  */
 export class LoadRequest {
+  readonly source
   private _callbacks : RequestCallbacks
   private _request: VIM.VimRequest
 
@@ -21,8 +23,8 @@ export class LoadRequest {
   private _completionPromise = new DeferredPromise<void>()
 
   constructor (callbacks: RequestCallbacks, source: VIM.RequestSource, settings: VIM.VimPartialSettings) {
+    this.source = source
     this._callbacks = callbacks
-
     this.startRequest(source, settings)
   }
 
@@ -52,7 +54,10 @@ export class LoadRequest {
   }
 
   private onError (error: string) {
-    this._callbacks.onError(error)
+    this._callbacks.onError({
+      url: this.source.url,
+      error
+    })
     this.end()
   }
 
