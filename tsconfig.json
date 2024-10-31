@@ -10,5 +10,5 @@
     "allowSyntheticDefaultImports": true,
     "jsx": "react"
   },
-  "files": ["src/component.tsx", "src/module.d.ts"]
+  "files": ["src/webgl/component.tsx", "src/module.d.ts"]
 }

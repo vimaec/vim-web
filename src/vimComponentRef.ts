@@ -11,7 +11,7 @@ import { VimComponentContainer } from './container'
 import { BimInfoPanelRef } from './bim/bimInfoData'
 import { ControlBarCustomization } from './controlbar/controlBar'
 import { ComponentLoader } from './helpers/loading'
-
+import { ModalRef } from './panels/modal'
 /**
 * Settings API managing settings applied to the component.
 */
@@ -49,21 +49,17 @@ export type ControlBarRef = {
   customize : (customization: ControlBarCustomization) => void
  }
 
-/**
-* Message API to interact with the loading box.
-*/
-export type MessageRef = {
+export type HelpRef = {
   /**
-   * Displays the provided content as a modal loading message.
-   * @param content The content to be displayed.
-   * @param info Optional additional information.
+   * Displays the help message.
+   * @param value Boolean value to show or hide the help message.
    */
-  show(content : string, info?: string)
+  show(value: boolean)
 
   /**
-   * Hides the current loading message.
+   * Returns the current state of the help message.
    */
-  hide()
+  isShow()
  }
 
 /**
@@ -98,7 +94,7 @@ export type VimComponentRef = {
     /**
   * Context menu API managing the content and behavior of the context menu.
   */
-    controlBar : ControlBarRef
+  controlBar : ControlBarRef
 
   /**
   * Settings API managing settings applied to the component.
@@ -108,7 +104,7 @@ export type VimComponentRef = {
   /**
   * Message API to interact with the loading box.
   */
-  message : MessageRef
+  modal : ModalRef
 
   /**
   * Camera API to interact with the viewer camera at a higher level.

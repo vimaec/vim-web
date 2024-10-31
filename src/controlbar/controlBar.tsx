@@ -8,7 +8,7 @@ import * as VIM from 'vim-webgl-viewer/'
 import { ComponentCamera } from '../helpers/camera'
 import { CursorManager } from '../helpers/cursor'
 import { Isolation } from '../helpers/isolation'
-import { HelpState } from '../panels/help'
+// import { HelpState } from '../panels/help'
 import {
   ComponentSettings,
   anyUiCursorButton,
@@ -25,6 +25,7 @@ import { getPointerState } from './pointerState'
 import { getFullScreenState } from './fullScreenState'
 import { getSectionBoxState } from './sectionBoxState'
 import { getMeasureState } from './measureState'
+import { ModalRef } from '../panels/modal'
 
 export { buttonDefaultStyle, buttonBlueStyle } from './controlBarButton'
 export { sectionDefaultStyle, sectionBlueStyle } from './controlBarSection'
@@ -81,12 +82,12 @@ export const elementIds = {
 export function ControlBar (props: {
   viewer: VIM.Viewer
   camera: ComponentCamera
-  help: HelpState
+  modal: ModalRef
   side: SideState
   isolation: Isolation
   cursor: CursorManager
   settings: ComponentSettings
-  customization: ControlBarCustomization
+  customization: ControlBarCustomization | undefined
 }) {
   const pointer = getPointerState(props.viewer)
   const fullScreen = getFullScreenState()
@@ -190,7 +191,7 @@ export function ControlBar (props: {
         id: elementIds.buttonHelp,
         enabled: () => isTrue(props.settings.ui.help),
         tip: 'Help',
-        action: () => props.help.setVisible(!props.help.visible),
+        action: () => props.modal.help(),
         icon: Icons.help,
         style: buttonDefaultStyle
       },

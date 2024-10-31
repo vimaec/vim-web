@@ -7,6 +7,7 @@ import { InputAction } from 'vim-webgl-viewer/dist/types/vim-webgl-viewer/raycas
 import { SideState } from '../sidePanel/sideState'
 import { Isolation } from './isolation'
 import { ComponentCamera } from './camera'
+import { HelpRef } from '../vimComponentRef'
 
 /**
  * Custom viewer input scheme for the vim component
@@ -17,6 +18,7 @@ export class ComponentInputs implements VIM.InputScheme {
   private _default: VIM.InputScheme
   private _isolation: Isolation
   private _sideState: SideState
+  private _help: HelpRef
 
   constructor (
     viewer: VIM.Viewer,
@@ -74,7 +76,6 @@ export class ComponentInputs implements VIM.InputScheme {
         }
         break
       }
-
       case VIM.KEYS.KEY_V: {
         if (this._viewer.selection.count === 0) return
         const objs = [...this._viewer.selection.objects]

@@ -3,7 +3,7 @@ import {
   createVimComponent,
   getLocalSettings,
   THREE
-} from './component'
+} from './webgl/webglComponent'
 
 // Parse URL
 const params = new URLSearchParams(window.location.search)
@@ -25,6 +25,7 @@ async function demo () {
   for await (const progress of request.getProgress()) {
     console.log(`Downloading Vim (${(progress.loaded / 1000).toFixed(0)} kb)`)
   }
+  //request.abort()
   const result = await request.getResult()
   if (result.isError()) {
     console.error(result.error)

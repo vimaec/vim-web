@@ -10,7 +10,7 @@ import { BimSearch } from './bimSearch'
 import { Isolation } from '../helpers/isolation'
 import { ComponentCamera } from '../helpers/camera'
 import { Grouping, toTreeData } from './bimTreeData'
-import { ViewerState } from '../viewerState'
+import { ViewerState } from '../webgl/viewerState'
 import { AugmentedElement } from '../helpers/element'
 import { ComponentSettings, isFalse } from '../settings/settings'
 import { whenAllTrue, whenSomeTrue, whenTrue } from '../helpers/utils'
@@ -27,7 +27,7 @@ export function OptionalBimPanel (props: {
   isolation: Isolation
   visible: boolean
   settings: ComponentSettings
-  treeRef: React.MutableRefObject<TreeActionRef>
+  treeRef: React.MutableRefObject<TreeActionRef | undefined>
   bimInfoRef: BimInfoPanelRef
 }) {
   return whenSomeTrue([
@@ -52,7 +52,7 @@ export function BimPanel (props: {
   isolation: Isolation
   visible: boolean
   settings: ComponentSettings
-  treeRef: React.MutableRefObject<TreeActionRef>
+  treeRef: React.MutableRefObject<TreeActionRef | undefined>
   bimInfoRef: BimInfoPanelRef
 }) {
   const [filter, setFilter] = useState('')
