@@ -11,19 +11,6 @@
 - [Medium Model Demo - Medical Tower](https://vimaec.github.io/vim-webgl-app/release?vim=https://vim02.azureedge.net/samples/skanska.vim)
 - [Large Model Demo - Stadium](https://vimaec.github.io/vim-webgl-app/release?vim=https://vim02.azureedge.net/samples/stadium.vim) (_Warning_: slow download times)
 
-## JSFiddle
-- [JsFiddle - Hello World](https://jsfiddle.net/simon_vimaec/2khmqy9v/)
-- [JsFiddle - Simple](https://jsfiddle.net/simon_vimaec/kmc7Lftw/)
-- [JsFiddle - Isolation](https://jsfiddle.net/simon_vimaec/72xbfa4p/)
-- [JsFiddle - Message](https://jsfiddle.net/simon_vimaec/bh17u03t/)
-- [JsFiddle - Custom Inputs](https://jsfiddle.net/simon_vimaec/k0w4erjn/)
-- [JsFiddle - Custom Context Menu](https://jsfiddle.net/simon_vimaec/7marsfwj/)
-- [JsFiddle - Custom Camera](https://jsfiddle.net/simon_vimaec/2x0noetj/)
-- [JsFiddle - Custom Loading](https://jsfiddle.net/simon_vimaec/3g2epmf1/)
-- [JsFiddle - Embedding](https://jsfiddle.net/simon_vimaec/8y321skn/)
-- [JsFiddle - Custom Bim Info](https://jsfiddle.net/simon_vimaec/abzg9jcL/)
-
-
 # Overview
 
 The VIM Webgl Component is a React ui implementation for the [Vim WebGL Viewer]([https://jsfiddle.net/simon_vimaec/2khmqy9v/](https://github.com/vimaec/vim-webgl-viewer)).
