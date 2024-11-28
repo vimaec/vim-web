@@ -1,40 +1,69 @@
+import React from 'react'
+import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom'
+import { createRoot } from 'react-dom/client'
+import { WebglHome } from './pages/webgl/00_home'
+import { WebglAccessToken } from './pages/webgl/01_accessToken'
+import { ultraPages } from './pages/ultra/ultraPageIndex'
 
-import {
-  createVimComponent,
-  getLocalSettings,
-  THREE
-} from './webgl/webglComponent'
+const webglPages = [
+  { path: '/webgl', component: <WebglHome /> },
+  { path: '/webgl/accessToken', component: <WebglAccessToken /> }
+]
 
-// Parse URL
-const params = new URLSearchParams(window.location.search)
-// Edge server doesn't serve http ranges properly
-const url = params.has('vim')
-  ? params.get('vim')
-  : null
-
-demo()
-async function demo () {
-  const cmp = await createVimComponent(undefined, getLocalSettings())
-
-  const request = await cmp.loader.request({
-    url: url ?? 'https://vimdevelopment01storage.blob.core.windows.net/samples/Wolford_Residence.r2025.vim'
-  }, {
-    rotation: new THREE.Vector3(270, 0, 0)
-  })
-
-  for await (const progress of request.getProgress()) {
-    console.log(`Downloading Vim (${(progress.loaded / 1000).toFixed(0)} kb)`)
+function findPage (path: string) {
+  const webglIndex = webglPages.findIndex(page => page.path === path)
+  if (webglIndex >= 0) {
+    return { source: webglPages, index: webglIndex }
   }
-  //request.abort()
-  const result = await request.getResult()
-  if (result.isError()) {
-    console.error(result.error)
-    return
+  const ultraIndex = ultraPages.findIndex(page => page.path === path)
+  if (ultraIndex >= 0) {
+    return { source: ultraPages, index: ultraIndex }
   }
-  const vim = result.result
-  cmp.loader.add(vim)
-
-  globalThis.THREE = THREE
-  globalThis.component = cmp
-  globalThis.vim = vim
+  return undefined
 }
+
+function Navigation () {
+  const navigate = useNavigate()
+  const pageInfo = findPage(window.location.pathname)
+  if (!pageInfo) {
+    return null
+  }
+
+  const handleNext = () => {
+    const nextIndex = (pageInfo.index + 1) % pageInfo.source.length
+    navigate(pageInfo.source[nextIndex].path)
+  }
+
+  const handlePrev = () => {
+    const prevIndex = (pageInfo.index - 1 + pageInfo.source.length) % pageInfo.source.length
+    navigate(pageInfo.source[prevIndex].path)
+  }
+
+  return (
+    <div className='navigation vc-fixed vc-top-0 vc-left-1/2 vc--translate-x-1/2 vc-z-50'>
+      <button onClick={handlePrev}>Previous</button>
+      <button onClick={handleNext}>Next</button>
+    </div>
+  )
+}
+
+function App () {
+  return (
+    <Router>
+      <Navigation />
+        <Routes>
+        {ultraPages.map((page, index) => (
+            <Route key={index} path={page.path} element={page.component} />
+        ))}
+        {webglPages.map((page, index) => (
+            <Route key={index} path={page.path} element={page.component} />
+        ))}
+      </Routes>
+    </Router>
+  )
+}
+
+const container = document.getElementById('root')
+if (!container) throw new Error('No container found')
+const root = createRoot(container) // createRoot(container!) if you use TypeScript
+root.render(<App/>)

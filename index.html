@@ -1,22 +1,24 @@
-<!-- This is an index.html used for development by the VITE server only, it is not used for deployment -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <link rel="stylesheet" href="./src/style.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
     <meta charset="UTF-8" />
-    <link rel="icon" href="./src/assets/favicon.ico" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>VIM Viewer</title>
+    <link rel="stylesheet" href="./src/package/style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+      html, body, #root {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
   </head>
   <body>
+    <div id="root"></div>
     <script type="module" src="./src/main.tsx"></script>
   </body>
 </html>
