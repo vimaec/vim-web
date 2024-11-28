@@ -6,7 +6,7 @@ export default defineConfig({
     sourcemap: true,
     lib: {
       formats: ['iife', 'es'],
-      entry: resolve(__dirname, 'src/component.tsx'),
+      entry: resolve(__dirname, 'src/package/index.ts'),
       name: 'VIMReact'
     },
     rollupOptions: {
