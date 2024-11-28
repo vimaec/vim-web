@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { createWebglComponent } from '../../package/webgl/webglComponent'
 import { THREE } from 'vim-webgl-viewer'
 import { LocalTextBox } from '../localTextBox'
-import * as Urls from '../../urls'
+import * as Urls from '../devUrls'
 
 export function WebglAccessToken () {
   const containerRef = useRef<HTMLDivElement>(null)

@@ -1,6 +1,6 @@
 import { Vim } from 'vim-ultra-viewer'
 import { UltraComponentRef, createUltraComponent } from '../../package/ultra/ultraComponent'
-import * as Urls from '../../urls'
+import * as Urls from '../devUrls'
 import { useRef, useEffect, RefObject } from 'react'
 
 export function useUltra (div: RefObject<HTMLDivElement>, onCreated: (ultra: UltraComponentRef) => void) {

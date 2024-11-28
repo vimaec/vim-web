@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { createWebglComponent } from '../../package/webgl/webglComponent'
 import { THREE } from 'vim-webgl-viewer'
-import * as Urls from '../../urls'
+import * as Urls from '../devUrls'
 
 export function WebglHome () {
   const div = useRef<HTMLDivElement>(null)

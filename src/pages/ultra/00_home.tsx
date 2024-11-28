@@ -2,7 +2,7 @@ import React, { useRef } from 'react'
 import { useUltra } from './ultraPageUtils'
 import { UltraComponentRef } from '../../package/ultra/ultraComponent'
 import * as ULTRA from 'vim-ultra-viewer'
-import * as Urls from '../../urls'
+import * as Urls from '../devUrls'
 
 export function UltraHome () {
   const div = useRef<HTMLDivElement>(null)
