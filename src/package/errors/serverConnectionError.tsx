@@ -1,7 +1,7 @@
 import React from 'react'
 import { MessageBoxProps } from '../panels/messageBox'
 import * as style from './errorStyle'
-import * as Urls from '../../urls'
+import * as Urls from '../urls'
 import { isLocalUrl } from './errorUtils'
 
 export function serverConnectionError (url: string): MessageBoxProps {
