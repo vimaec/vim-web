@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { useUltra } from './ultraPageUtils'
-import { UltraComponentRef } from '../../package/ultra/ultraComponent'
+import { UltraReact } from '../../vim-web/vimWebIndex'
 
 export function UltraDownloadError () {
   const div = useRef<HTMLDivElement>(null)
@@ -13,7 +13,7 @@ export function UltraDownloadError () {
   )
 }
 
-async function badURL (ultra: UltraComponentRef) {
+async function badURL (ultra: UltraReact.UltraComponentRef) {
   await ultra.viewer.connect()
   ultra.load('https://invalidURL.vim')
 }

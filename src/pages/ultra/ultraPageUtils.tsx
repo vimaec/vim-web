@@ -1,13 +1,12 @@
-import { Vim } from 'vim-ultra-viewer'
-import { UltraComponentRef, createUltraComponent } from '../../package/ultra/ultraComponent'
+import { UltraReact, UltraViewer } from '../../vim-web/vimWebIndex'
 import * as Urls from '../devUrls'
 import { useRef, useEffect, RefObject } from 'react'
 
-export function useUltra (div: RefObject<HTMLDivElement>, onCreated: (ultra: UltraComponentRef) => void) {
-  const cmp = useRef<UltraComponentRef>()
+export function useUltra (div: RefObject<HTMLDivElement>, onCreated: (ultra: UltraReact.UltraComponentRef) => void) {
+  const cmp = useRef<UltraReact.UltraComponentRef>()
   useEffect(() => {
     // Create component
-    createUltraComponent(div.current!).then((c) => {
+    UltraReact.createUltraComponent(div.current!).then((c) => {
       cmp.current = c
       onCreated(cmp.current!)
     })
@@ -19,7 +18,7 @@ export function useUltra (div: RefObject<HTMLDivElement>, onCreated: (ultra: Ult
   }, [])
 }
 
-export function useUltraWithTower (div: RefObject<HTMLDivElement>, onCreated: (ultra: UltraComponentRef, towers: Vim) => void) {
+export function useUltraWithTower (div: RefObject<HTMLDivElement>, onCreated: (ultra: UltraReact.UltraComponentRef, towers: UltraViewer.Vim) => void) {
   useUltraWithModel(
     div,
     Urls.medicalTower,
@@ -27,7 +26,7 @@ export function useUltraWithTower (div: RefObject<HTMLDivElement>, onCreated: (u
   )
 }
 
-export function useUltraWithWolford (div: RefObject<HTMLDivElement>, onCreated: (ultra: UltraComponentRef, towers: Vim) => void) {
+export function useUltraWithWolford (div: RefObject<HTMLDivElement>, onCreated: (ultra: UltraReact.UltraComponentRef, towers: UltraViewer.Vim) => void) {
   useUltraWithModel(
     div,
     Urls.residence,
@@ -38,7 +37,7 @@ export function useUltraWithWolford (div: RefObject<HTMLDivElement>, onCreated: 
 function useUltraWithModel (
   div: RefObject<HTMLDivElement>,
   modelUrl: string,
-  onCreated: (ultra: UltraComponentRef, towers: Vim) => void
+  onCreated: (ultra: UltraReact.UltraComponentRef, towers: UltraViewer.Vim) => void
 ) {
   useUltra(div, async (ultra) => {
     await ultra.viewer.connect()

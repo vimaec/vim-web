@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
-import { createWebglComponent } from '../../package/webgl/webglComponent'
-import { THREE } from 'vim-webgl-viewer'
+import { WebglReact } from '../../vim-web/vimWebIndex'
+import * as THREE from 'three'
 import { LocalTextBox } from '../localTextBox'
 import * as Urls from '../devUrls'
 
@@ -32,7 +32,7 @@ export function WebglAccessToken () {
 }
 
 async function createComponent (div: HTMLDivElement, url: string, token: string) {
-  const webgl = await createWebglComponent(div)
+  const webgl = await WebglReact.createWebglComponent(div)
   const request = webgl.loader.request(
     {
       url,
