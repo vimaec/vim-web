@@ -1,7 +1,6 @@
 import React, { useRef } from 'react'
 import { useUltra } from './ultraPageUtils'
-import { UltraComponentRef } from '../../package/ultra/ultraComponent'
-import * as ULTRA from 'vim-ultra-viewer'
+import { UltraReact } from '../../vim-web/vimWebIndex'
 import * as Urls from '../devUrls'
 
 export function UltraHome () {
@@ -15,11 +14,10 @@ export function UltraHome () {
   )
 }
 
-async function loadFile (ultra: UltraComponentRef) {
+async function loadFile (ultra: UltraReact.UltraComponentRef) {
   await ultra.viewer.connect()
   const request = ultra.load(Urls.residence)
   await request.getResult()
   ultra.viewer.camera.frameAll(0)
   globalThis.ultra = ultra
-  globalThis.ULTRA = ULTRA
 }

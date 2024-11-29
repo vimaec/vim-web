@@ -1,6 +1,5 @@
 import React, { useRef } from 'react'
-import { UltraComponentRef } from '../../package/ultra/ultraComponent'
-import { Vim } from 'vim-ultra-viewer'
+import { UltraReact, UltraViewer } from '../../vim-web/vimWebIndex'
 import { useUltraWithTower } from './ultraPageUtils'
 import { generateRandomIndices } from './testUtils'
 
@@ -16,7 +15,7 @@ export function UltraCamera () {
   )
 }
 
-async function framing (ultra: UltraComponentRef, tower: Vim) {
+async function framing (ultra: UltraReact.UltraComponentRef, tower: UltraViewer.Vim) {
   // Wait for the user to get ready
   await new Promise(resolve => setTimeout(resolve, 2000))
 
@@ -54,7 +53,7 @@ async function framing (ultra: UltraComponentRef, tower: Vim) {
   ultra.viewer.camera.frameVim(tower, indices, 1)
 }
 
-function highlight (tower: Vim, indices: number[]) {
+function highlight (tower: UltraViewer.Vim, indices: number[]) {
   tower.show('all')
   tower.highlight(indices)
 }
