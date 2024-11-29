@@ -257,7 +257,7 @@ export function BimTree (props: {
           )
         }}
       >
-        <Tree treeId="tree-bim" rootItem="0" treeLabel="Tree Example" />
+        <Tree treeId="tree-bim" rootItem="0" />
       </ControlledTreeEnvironment>
     </div>
   )
