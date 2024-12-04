@@ -22,12 +22,12 @@
     "dev": "vite --host --config vite.config.website.js",
     "build:libs": "vite build --config vite.config.libs.js && npm run declarations:libs",
     "package:libs": "npm run build:libs && npm publish",
-    "declarations:libs": "tsc --declaration --emitDeclarationOnly --outdir ./dist/types",
+    "declarations:libs": "tsc --project tsconfig.libs.json --declaration --emitDeclarationOnly --outdir ./dist/types",
     "documentation:libs": "typedoc --entryPoints src/vim-web/vimWebIndex.ts --entryPointStrategy expand --out docs/api --excludeProtected --excludeExternals --excludePrivate",
     "build:website": "vite build --config vite.config.website.js && npm run documentation:libs",
     "serve:website": "http-server ./docs/site/ -o",
     "commit:website": "git add docs && git commit -m 'Update docs'",
-    "eslint": "eslint --ext .js,.ts src --fix"
+    "eslint": "eslint --ext .js,.ts,.tsx src --fix"
   },
   "devDependencies": {
     "@types/dom-webcodecs": "^0.1.13",
@@ -38,10 +38,10 @@
     "autoprefixer": "^10.4.20",
     "eslint": "^8.23.1",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-config-standard-with-typescript": "^22.0.0",
-    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-promise": "^6.0.1",
     "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.0.0",
     "postcss": "^8.4.49",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.9",
