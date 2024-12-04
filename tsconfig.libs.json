@@ -15,5 +15,5 @@
 
     "strict": false
   },
-  "include": ["src/**/*"]
+  "include": ["src/vim-web/**/*"]
 }
