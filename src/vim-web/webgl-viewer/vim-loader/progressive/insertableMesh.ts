@@ -7,7 +7,7 @@ import { G3d, G3dMesh, G3dMaterial } from 'vim-format'
 import { InsertableGeometry } from './insertableGeometry'
 import { InsertableSubmesh } from './insertableSubmesh'
 import { G3dMeshOffsets } from './g3dOffsets'
-import { Vim } from '../../vim-loader/vim'
+import { Vim } from '../vim'
 import { ViewerMaterials } from '../materials/viewerMaterials'
 
 export class InsertableMesh {

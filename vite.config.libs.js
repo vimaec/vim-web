@@ -19,13 +19,5 @@ export default defineConfig({
       }
     },
     minify: false
-  },
-  define: {
-    // Ensure Node.js-like globals are not included
-    global: 'undefined'
-  },
-  optimizeDeps: {
-    // Ensure no Node.js polyfills are pre-bundled
-    exclude: ['@types/node']
   }
 })

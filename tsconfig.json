@@ -14,7 +14,6 @@
     "moduleResolution": "Node",
 
     "strict": false,
-
   },
   "files": ["src/vim-web/vimWebIndex.ts", "src/vim-web/module.d.ts"]
 }
