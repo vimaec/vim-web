@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { Vim } from '../../vim-loader/vim'
+import { Vim } from '../vim'
 import { InstancedSubmesh } from './instancedSubmesh'
 import { G3d, G3dMesh } from 'vim-format'
 

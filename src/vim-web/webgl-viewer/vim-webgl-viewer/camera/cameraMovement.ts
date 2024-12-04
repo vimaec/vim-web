@@ -4,7 +4,7 @@
 
 import { Camera } from './camera'
 import { Object3D } from '../../vim-loader/object3D'
-import { SelectableObject } from '../../vim-webgl-viewer/selection'
+import { SelectableObject } from '../selection'
 import * as THREE from 'three'
 import { GizmoMarker } from '../gizmos/markers/gizmoMarker'
 import { Vim } from '../../vim-loader/vim'

@@ -1,9 +1,9 @@
 import React from 'react'
-import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Routes, useNavigate, Navigate } from 'react-router-dom'
 import { createRoot } from 'react-dom/client'
-import { WebglHome } from './pages/webgl/00_home'
-import { WebglAccessToken } from './pages/webgl/01_accessToken'
-import { ultraPages } from './pages/ultra/ultraPageIndex'
+import { WebglHome } from './webgl/00_home'
+import { WebglAccessToken } from './webgl/01_accessToken'
+import { ultraPages } from './ultra/ultraPageIndex'
 
 const webglPages = [
   { path: '/webgl', component: <WebglHome /> },
@@ -58,6 +58,8 @@ function App () {
         {webglPages.map((page, index) => (
             <Route key={index} path={page.path} element={page.component} />
         ))}
+        {/* Default page */}
+        <Route path="*" element={<Navigate to="/webgl" replace />} />
       </Routes>
     </Router>
   )
