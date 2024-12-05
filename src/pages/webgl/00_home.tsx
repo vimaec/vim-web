@@ -1,12 +1,12 @@
 import React, { useEffect, useRef } from 'react'
-import { createWebglComponent } from '../../package/webgl/webglComponent'
-import { THREE } from 'vim-webgl-viewer'
-import * as Urls from '../../urls'
+import { WebglReact } from '../../vim-web/vimWebIndex'
+import * as THREE from 'three'
+import * as Urls from '../devUrls'
 
 export function WebglHome () {
   const div = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    createComponent(div.current!)
+    void createComponent(div.current)
   }, [])
 
   return (
@@ -15,7 +15,7 @@ export function WebglHome () {
 }
 
 async function createComponent (div: HTMLDivElement) {
-  const webgl = await createWebglComponent(div)
+  const webgl = await WebglReact.createWebglComponent(div)
   const request = webgl.loader.request(
     { url: Urls.residence },
     { rotation: new THREE.Vector3(270, 0, 0) }

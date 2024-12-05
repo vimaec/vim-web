@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react'
-import { createWebglComponent } from '../../package/webgl/webglComponent'
-import { THREE } from 'vim-webgl-viewer'
+import { WebglReact } from '../../vim-web/vimWebIndex'
+import * as THREE from 'three'
 import { LocalTextBox } from '../localTextBox'
-import * as Urls from '../../urls'
+import * as Urls from '../devUrls'
 
 export function WebglAccessToken () {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -10,7 +10,7 @@ export function WebglAccessToken () {
   const tokenInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    createComponent(containerRef.current!, urlInputRef.current!.value, tokenInputRef.current!.value)
+    createComponent(containerRef.current, urlInputRef.current.value, tokenInputRef.current.value)
   }, [])
 
   return (
@@ -18,13 +18,13 @@ export function WebglAccessToken () {
       <LocalTextBox
         ref={urlInputRef}
         label="URL"
-        storageKey="vim-webgl-component/01_accessToken/url"
+        storageKey="vim-web/01_accessToken/url"
         defaultValue={Urls.residenceWithAccessToken}
       />
       <LocalTextBox
         ref={tokenInputRef}
         label="Access Token"
-        storageKey="vim-webgl-component/01_accessToken/token"
+        storageKey="vim-web/01_accessToken/token"
       />
       <div ref={containerRef} className='vc-inset-0 vc-top-[150px] vc-absolute'/>
     </div>
@@ -32,7 +32,7 @@ export function WebglAccessToken () {
 }
 
 async function createComponent (div: HTMLDivElement, url: string, token: string) {
-  const webgl = await createWebglComponent(div)
+  const webgl = await WebglReact.createWebglComponent(div)
   const request = webgl.loader.request(
     {
       url,

@@ -34,3 +34,5 @@ export const LocalTextBox = forwardRef<HTMLInputElement, LocalTextBoxProps>((pro
     </div>
   )
 })
+
+LocalTextBox.displayName = 'LocalTextBox'
