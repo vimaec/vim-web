@@ -1,14 +1,11 @@
 import React from 'react'
 import { BrowserRouter, Route, Routes, useNavigate, Navigate } from 'react-router-dom'
 import { createRoot } from 'react-dom/client'
-import { WebglHome } from './webgl/00_home'
-import { WebglAccessToken } from './webgl/01_accessToken'
-import { ultraPages } from './ultra/ultraPageIndex'
 
-const webglPages = [
-  { path: '/webgl', component: <WebglHome /> },
-  { path: '/webgl/accessToken', component: <WebglAccessToken /> }
-]
+import { ultraPages } from './ultra/ultraPageIndex'
+import { webglPages } from './webgl/webglPageIndex'
+
+
 
 function findPage (path: string) {
 
@@ -37,6 +34,10 @@ function Navigation () {
     void navigate(pageInfo.source[nextIndex].path)
   }
 
+  const handleSource = () => {
+    window.open(pageInfo.source[pageInfo.index].page, '_blank');
+  }
+
   const handlePrev = () => {
     const prevIndex = (pageInfo.index - 1 + pageInfo.source.length) % pageInfo.source.length
     void navigate(pageInfo.source[prevIndex].path)
@@ -45,6 +46,7 @@ function Navigation () {
   return (
     <div className='navigation vc-fixed vc-top-0 vc-left-1/2 vc--translate-x-1/2 vc-z-50'>
       <button onClick={handlePrev}>Previous</button>
+      <button onClick={handleSource}>{"<Source>"}</button>
       <button onClick={handleNext}>Next</button>
     </div>
   )

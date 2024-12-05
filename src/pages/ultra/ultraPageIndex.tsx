@@ -13,18 +13,20 @@ import { UltraIblLock } from './10_iblLock'
 import { UltraGhostColor } from './11_ghostColor'
 import { UltraResize } from './12_resize'
 
+export const gitRoot = 'https://github.com/vimaec/vim-web/tree/main/src/pages/ultra'
+
 export const ultraPages = [
-  { path: '/ultra', component: <UltraHome /> },
-  { path: '/ultra/connection_error', component: <UltraConnectionError /> },
-  { path: '/ultra/download_error', component: <UltraDownloadError /> },
-  { path: '/ultra/open_error', component: <UltraOpenError /> },
-  { path: '/ultra/load_error', component: <UltraLoadError /> },
-  { path: '/ultra/abort_error', component: <UltraAbortError /> },
-  { path: '/ultra/colors', component: <UltraColors /> },
-  { path: '/ultra/node_effects', component: <UltraNodeEffects /> },
-  { path: '/ultra/camera', component: <UltraCamera /> },
-  { path: '/ultra/background', component: <UltraBackground /> },
-  { path: '/ultra/ibl_lock', component: <UltraIblLock /> },
-  { path: '/ultra/ghost_color', component: <UltraGhostColor /> },
-  { path: '/ultra/resize', component: <UltraResize /> }
+  { path: '/ultra', page: gitRoot+'/00_home.tsx', component: <UltraHome /> },
+  { path: '/ultra/connection_error', page: gitRoot+'/01_connectionError.tsx', component: <UltraConnectionError /> },
+  { path: '/ultra/download_error', page: gitRoot+'/02_downloadError.tsx', component: <UltraDownloadError /> },
+  { path: '/ultra/open_error', page: gitRoot+'/03_openError.tsx', component: <UltraOpenError /> },
+  { path: '/ultra/load_error', page: gitRoot+'/04_loadError.tsx', component: <UltraLoadError /> },
+  { path: '/ultra/abort_error', page: gitRoot+'/05_abortError.tsx', component: <UltraAbortError /> },
+  { path: '/ultra/colors', page: gitRoot+'/06_colors.tsx', component: <UltraColors /> },
+  { path: '/ultra/node_effects', page: gitRoot+'/07_nodeEffects.tsx', component: <UltraNodeEffects /> },
+  { path: '/ultra/camera', page: gitRoot+'/08_camera.tsx', component: <UltraCamera /> },
+  { path: '/ultra/background', page: gitRoot+'/09_background.tsx', component: <UltraBackground /> },
+  { path: '/ultra/ibl_lock', page: gitRoot+'/10_iblLock.tsx', component: <UltraIblLock /> },
+  { path: '/ultra/ghost_color', page: gitRoot+'/11_ghostColor.tsx', component: <UltraGhostColor /> },
+  { path: '/ultra/resize', file: gitRoot+'/12_resize.tsx', component: <UltraResize /> }
 ]
