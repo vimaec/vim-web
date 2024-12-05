@@ -39,7 +39,7 @@ export async function open (
 ) {
   const bfast = source instanceof BFast ? source : new BFast(source)
   const fullSettings = getFullSettings(settings)
-  const type = await determineFileType(bfast, fullSettings)!
+  const type = await determineFileType(bfast, fullSettings)
 
   if (type === 'vim') {
     return loadFromVim(bfast, fullSettings, onProgress)

@@ -6,16 +6,16 @@ export function useUltra (div: RefObject<HTMLDivElement>, onCreated: (ultra: Ult
   const cmp = useRef<UltraReact.UltraComponentRef>()
   useEffect(() => {
     // Create component
-    UltraReact.createUltraComponent(div.current!).then((c) => {
+    void UltraReact.createUltraComponent(div.current).then((c) => {
       cmp.current = c
-      onCreated(cmp.current!)
+      onCreated(cmp.current)
     })
 
     // Clean up
     return () => {
       cmp.current?.dispose()
     }
-  }, [])
+  }, [div, onCreated])
 }
 
 export function useUltraWithTower (div: RefObject<HTMLDivElement>, onCreated: (ultra: UltraReact.UltraComponentRef, towers: UltraViewer.Vim) => void) {
@@ -39,14 +39,19 @@ function useUltraWithModel (
   modelUrl: string,
   onCreated: (ultra: UltraReact.UltraComponentRef, towers: UltraViewer.Vim) => void
 ) {
-  useUltra(div, async (ultra) => {
+  const load = async (ultra: UltraReact.UltraComponentRef) => {
     await ultra.viewer.connect()
-    const request = await ultra.load(modelUrl)
+    const request = ultra.load(modelUrl)
     const result = await request.getResult()
     if (result.isSuccess) {
-      ultra.viewer.camera.frameAll(0)
+      await ultra.viewer.camera.frameAll(0)
       const towers = result.vim
       onCreated(ultra, towers)
     }
+  }
+
+
+  useUltra(div, (ultra) => {
+    void load(ultra)
   })
 }

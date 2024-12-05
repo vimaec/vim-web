@@ -54,7 +54,7 @@ export class ColorManager {
         result[i] = this._hexToColor.get(color.hex)!
       } else if (hexToIndices.has(color.hex)) {
         // If the color is being created, add the index to the list
-        hexToIndices.get(color.hex)!.push(i)
+        hexToIndices.get(color.hex).push(i)
       } else {
         // If the color is new, add it to the list to be created
         toCreate.push(color)
@@ -68,7 +68,7 @@ export class ColorManager {
 
     for (let i = 0; i < colors.length; i++) {
       const color = toCreate[i]
-      const indices = hexToIndices.get(color.hex)!
+      const indices = hexToIndices.get(color.hex)
       for (const index of indices) {
         result[index] = colors[i]
       }

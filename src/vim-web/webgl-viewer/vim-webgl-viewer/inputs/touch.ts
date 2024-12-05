@@ -175,13 +175,13 @@ export class TouchHandler extends InputHandler {
 
   private onTouchEnd = (event: any) => {
     if (this.isSingleTouch() && this._touchStart && this._touch) {
-      const touchDurationMs = Date.now() - this._touchStartTime!
+      const touchDurationMs = Date.now() - this._touchStartTime
       const length = this._touch.distanceTo(this._touchStart)
       if (
         touchDurationMs < this.TAP_DURATION_MS &&
         length < this.TAP_MAX_MOVE_PIXEL
       ) {
-        this.onTap(this._touch!)
+        this.onTap(this._touch)
       }
     }
     this.reset()

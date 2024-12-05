@@ -93,7 +93,7 @@ export class GizmoOrbit {
     }
 
     clearTimeout(this._timeout)
-    this._gizmos!.visible = show
+    this._gizmos.visible = show
     // Hide after one second since last request
     if (show) {
       this._timeout = setTimeout(() => {
@@ -129,8 +129,8 @@ export class GizmoOrbit {
     this._opacity = opacity
     this._opacityAlways = opacityAlways
     if (!this._gizmos) return
-    this._material!.opacity = opacity
-    this._materialAlways!.opacity = opacityAlways
+    this._material.opacity = opacity
+    this._materialAlways.opacity = opacityAlways
   }
 
   /**
@@ -140,8 +140,8 @@ export class GizmoOrbit {
   setColor (color: THREE.Color) {
     this._color = color
     if (!this._gizmos) return
-    this._material!.color = color
-    this._materialAlways!.color = color
+    this._material.color = color
+    this._materialAlways.color = color
   }
 
   private applySettings (settings: ViewerSettings) {

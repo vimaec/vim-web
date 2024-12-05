@@ -94,7 +94,7 @@ export function getFullSettings (options?: VimPartialSettings) {
     ? deepmerge(defaultConfig, options, undefined)
     : defaultConfig
 
-  merge.transparency = Transparency.isValid(merge.transparency!)
+  merge.transparency = Transparency.isValid(merge.transparency)
     ? merge.transparency
     : 'all'
 

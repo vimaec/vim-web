@@ -387,7 +387,7 @@ export type PartialViewerSettings = RecursivePartial<ViewerSettings>
 export function getViewerSettings (settings?: PartialViewerSettings) {
   return settings
     ? (deepmerge(defaultViewerSettings, settings, { arrayMerge: combineMerge, isMergeableObject: isPlainObject }) as ViewerSettings)
-    : (defaultViewerSettings as ViewerSettings)
+    : (defaultViewerSettings)
 }
 
 //  https://www.npmjs.com/package/deepmerge#arraymerge-example-combine-arrays

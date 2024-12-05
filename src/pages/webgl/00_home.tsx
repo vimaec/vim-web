@@ -6,7 +6,7 @@ import * as Urls from '../devUrls'
 export function WebglHome () {
   const div = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    createComponent(div.current!)
+    void createComponent(div.current)
   }, [])
 
   return (

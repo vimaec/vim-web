@@ -27,7 +27,7 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
   const resize = useRef<ResizeObserver>()
 
   useEffect(() => {
-    const gizmo = gizmoDiv.current!
+    const gizmo = gizmoDiv.current
     resize.current = new ResizeObserver(() => {
       viewer.gizmos.axes.resize(gizmo.clientWidth)
       // Remove default styling of the axes

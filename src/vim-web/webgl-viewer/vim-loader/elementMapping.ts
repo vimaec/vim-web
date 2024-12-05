@@ -35,7 +35,7 @@ export class ElementMapping {
   private _instanceMeshes: Int32Array
   private _elementToInstances: Map<number, number[]>
   private _elementIds: BigInt64Array
-  private _elementIdToElements: Map<BigInt, number[]>
+  private _elementIdToElements: Map<bigint, number[]>
 
   constructor (
     instances: number[],
@@ -48,10 +48,10 @@ export class ElementMapping {
       this._instanceToElement.set(i, instanceToElement[i])
     )
     this._elementToInstances = ElementMapping.invertMap(
-      this._instanceToElement!
+      this._instanceToElement
     )
     this._elementIds = elementIds
-    this._elementIdToElements = ElementMapping.invertArray(elementIds!)
+    this._elementIdToElements = ElementMapping.invertArray(elementIds)
     this._instanceMeshes = instanceMeshes
   }
 
@@ -61,8 +61,8 @@ export class ElementMapping {
 
     return new ElementMapping(
       Array.from(g3d.instanceNodes),
-      instanceToElement!,
-      elementIds!,
+      instanceToElement,
+      elementIds,
       g3d.instanceMeshes
     )
   }
@@ -131,7 +131,7 @@ export class ElementMapping {
    * Returns a map where data[i] -> i
    */
   private static invertArray (data: BigInt64Array) {
-    const result = new Map<BigInt, number[]>()
+    const result = new Map<bigint, number[]>()
     for (let i = 0; i < data.length; i++) {
       const value = data[i]
       const list = result.get(value)

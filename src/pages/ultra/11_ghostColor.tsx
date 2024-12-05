@@ -5,8 +5,8 @@ import { useUltraWithWolford } from './ultraPageUtils'
 export function UltraGhostColor () {
   const div = useRef<HTMLDivElement>(null)
 
-  useUltraWithWolford(div, async (ultra, tower) => {
-    await toggleLock(ultra, tower)
+  useUltraWithWolford(div, (ultra, _tower) => {
+    void toggleLock(ultra, _tower)
   })
 
   return (

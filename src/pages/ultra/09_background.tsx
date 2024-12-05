@@ -5,8 +5,9 @@ import { useUltraWithWolford } from './ultraPageUtils'
 export function UltraBackground () {
   const div = useRef<HTMLDivElement>(null)
 
-  useUltraWithWolford(div, async (ultra, tower) => {
-    await changeBackground(ultra, tower)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  useUltraWithWolford(div, (ultra, _tower) => {
+    void changeBackground(ultra)
   })
 
   return (
@@ -14,7 +15,7 @@ export function UltraBackground () {
   )
 }
 
-async function changeBackground (ultra: UltraReact.UltraComponentRef, tower: UltraViewer.Vim) {
+async function changeBackground (ultra: UltraReact.UltraComponentRef) {
   const r = ultra.viewer.renderer
   r.backgroundColor = new UltraViewer.RGBA(0, 0, 0, 0)
 

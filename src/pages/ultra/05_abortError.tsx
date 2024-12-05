@@ -5,7 +5,7 @@ import * as Urls from '../devUrls'
 export function UltraAbortError () {
   const div = useRef<HTMLDivElement>(null)
   useUltra(div, (ultra) => {
-    abortLoad(ultra)
+    void abortLoad(ultra)
   })
 
   return (

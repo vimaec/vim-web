@@ -104,7 +104,7 @@ export function VimContextMenu (props: {
   treeRef: React.MutableRefObject<TreeActionRef | undefined>
 }) {
   const getSelection = () => {
-    return [...props.viewer.selection.objects].filter(o => o.type === 'Object3D') as WebglViewer.Object3D[]
+    return [...props.viewer.selection.objects].filter(o => o.type === 'Object3D')
   }
 
   const viewer = props.viewer

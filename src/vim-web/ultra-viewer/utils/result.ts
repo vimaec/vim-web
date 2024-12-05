@@ -21,13 +21,13 @@ export class Result<T, E> {
     if (this.isError()) {
       throw new Error("Tried to get value from an error result");
     }
-    return this.value as T;
+    return this.value;
   }
 
   getError(): E {
     if (this.isOk()) {
       throw new Error("Tried to get error from a successful result");
     }
-    return this.error as E;
+    return this.error;
   }
 }

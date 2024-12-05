@@ -28,11 +28,9 @@ module.exports = {
   ],
   rules: {
     'no-use-before-define': 'off',
-    '@typescript-eslint/no-use-before-define': ['error'],
-    // Add any additional custom rules here
   },
   globals: {
     JSX: true
   },
-  ignorePatterns: ['postcss.config.js', '.eslintrc.js']
+  ignorePatterns: ['postcss.config.js', '.eslintrc.js', 'vite.config.website.js', 'vite.config.libs.js' ]
 }

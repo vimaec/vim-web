@@ -57,7 +57,7 @@ export class LoadRequest implements ILoadRequest {
 
   async getResult () : Promise<LoadError | LoadSuccess> {
     await this._completionPromise
-    return this._result!
+    return this._result
   }
 
   onProgress (progress: number) {

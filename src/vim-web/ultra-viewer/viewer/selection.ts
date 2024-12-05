@@ -121,8 +121,8 @@ export class ViewerSelection implements IViewerSelection {
     }
 
     nodes.forEach((n) => {
-      if (!nodeSet!.has(n)) {
-        nodeSet!.add(n);
+      if (!nodeSet.has(n)) {
+        nodeSet.add(n);
         // Immediately highlight the node
         vim.highlight([n]);
       }
@@ -142,8 +142,8 @@ export class ViewerSelection implements IViewerSelection {
     const nodes = Array.isArray(node) ? node : [node];
 
     nodes.forEach((n) => {
-      if (nodeSet!.has(n)) {
-        nodeSet!.delete(n);
+      if (nodeSet.has(n)) {
+        nodeSet.delete(n);
         // Immediately unhighlight the node
         vim.removeHighlight([n], 'visible');
       }

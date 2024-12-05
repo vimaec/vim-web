@@ -44,7 +44,7 @@ export function groupBy<K, V> (array: V[], selector: (o: V) => K) {
   array.forEach((a) => {
     const key = selector(a)
     if (!result.has(key)) result.set(key, [])
-    result.get(key)!.push(a)
+    result.get(key).push(a)
   })
   return result
 }

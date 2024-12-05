@@ -6,8 +6,8 @@ import { generateRandomIndices } from './testUtils'
 export function UltraCamera () {
   const div = useRef<HTMLDivElement>(null)
 
-  useUltraWithTower(div, async (ultra, tower) => {
-    await framing(ultra, tower)
+  useUltraWithTower(div, (ultra, tower) => {
+    void framing(ultra, tower)
   })
 
   return (
@@ -25,15 +25,14 @@ async function framing (ultra: UltraReact.UltraComponentRef, tower: UltraViewer.
 
     // Test frameVim with 5 indices
     console.log('Framing 5 random indices')
-    ultra.viewer.camera.frameVim(tower, indices, 1).then((position) => {
-      console.log('Saving position')
-      ultra.viewer.camera.save(position)
-    })
+    const position = await ultra.viewer.camera.frameVim(tower, indices, 1)
+    console.log('Saving position')
+    ultra.viewer.camera.save(position)
     await new Promise(resolve => setTimeout(resolve, 2000))
 
     // Test frameVim with all
     console.log('Framing whole model')
-    ultra.viewer.camera.frameVim(tower, 'all', 1)
+    await ultra.viewer.camera.frameVim(tower, 'all', 1)
     await new Promise(resolve => setTimeout(resolve, 2000))
 
     // Restore the saved camera position
@@ -43,14 +42,14 @@ async function framing (ultra: UltraReact.UltraComponentRef, tower: UltraViewer.
 
     // Test frameAll
     console.log('Framing whole scene')
-    ultra.viewer.camera.frameAll(1)
+    await ultra.viewer.camera.frameAll(1)
     await new Promise(resolve => setTimeout(resolve, 2000))
   }
 
   // Test frameVim with a large number of indices
   const indices = generateRandomIndices(80_000, 120_000)
   highlight(tower, indices)
-  ultra.viewer.camera.frameVim(tower, indices, 1)
+  await ultra.viewer.camera.frameVim(tower, indices, 1)
 }
 
 function highlight (tower: UltraViewer.Vim, indices: number[]) {
