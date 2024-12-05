@@ -23,7 +23,7 @@
     "build:libs": "vite build --config vite.config.libs.js && npm run declarations:libs",
     "package:libs": "npm run build:libs && npm publish",
     "declarations:libs": "tsc --project tsconfig.libs.json --declaration --emitDeclarationOnly --outdir ./dist/types",
-    "documentation:libs": "typedoc --entryPoints src/vim-web/vimWebIndex.ts --entryPointStrategy expand --out docs/api --excludeProtected --excludeExternals --excludePrivate",
+    "documentation:libs": "typedoc --cacheBust false --entryPoints src/vim-web/vimWebIndex.ts --entryPointStrategy expand --out docs/api --excludeProtected --excludeExternals --excludePrivate",
     "build:website": "vite build --config vite.config.website.js && cp ./docs/index.html ./docs/404.html",
     "serve:website": "vite preview --outDir docs",
     "commit:website": "git add docs && git commit -m 'Update docs'",
