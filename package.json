@@ -1,22 +1,22 @@
 {
-  "name": "vim-webgl-component",
+  "name": "vim-web",
   "version": "0.3.23",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "files": [
     "dist"
   ],
-  "main": "./dist/vim-webgl-component.iife.js",
+  "main": "./dist/vim-web.iife.js",
   "types": "./dist/types/index.d.ts",
-  "module": "./dist/vim-webgl-component.mjs",
-  "homepage": "https://github.com/vimaec/vim-webgl-component.git",
+  "module": "./dist/vim-web.mjs",
+  "homepage": "https://github.com/vimaec/vim-web.git",
   "bugs": {
-    "url": "https://github.com/vimaec/vim-webgl-component/issues"
+    "url": "https://github.com/vimaec/vim-web/issues"
   },
   "license": "MIT",
   "author": "VIM <hello@vimaec.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vimaec/vim-webgl-component.git"
+    "url": "https://github.com/vimaec/vim-web.git"
   },
   "scripts": {
     "dev": "vite --host --config vite.config.website.js",

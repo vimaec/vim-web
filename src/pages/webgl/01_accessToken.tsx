@@ -18,13 +18,13 @@ export function WebglAccessToken () {
       <LocalTextBox
         ref={urlInputRef}
         label="URL"
-        storageKey="vim-webgl-component/01_accessToken/url"
+        storageKey="vim-web/01_accessToken/url"
         defaultValue={Urls.residenceWithAccessToken}
       />
       <LocalTextBox
         ref={tokenInputRef}
         label="Access Token"
-        storageKey="vim-webgl-component/01_accessToken/token"
+        storageKey="vim-web/01_accessToken/token"
       />
       <div ref={containerRef} className='vc-inset-0 vc-top-[150px] vc-absolute'/>
     </div>

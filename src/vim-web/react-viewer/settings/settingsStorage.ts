@@ -1,5 +1,5 @@
 /**
- * @module viw-webgl-component
+ * @module viw-webgl-react
  */
 
 import { UserBoolean, ComponentSettings, RecursivePartial, PartialComponentSettings } from './settings'
