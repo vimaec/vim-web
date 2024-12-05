@@ -97,7 +97,7 @@ export class ObjectAttribute<T> {
 
     const start = sub.meshStart
     const end = sub.meshEnd
-    const indices = sub.three.geometry.index!
+    const indices = sub.three.geometry.index
 
     for (let i = start; i < end; i++) {
       const v = indices.getX(i)

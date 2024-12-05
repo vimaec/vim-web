@@ -7,7 +7,7 @@ import { UserBoolean, ComponentSettings, RecursivePartial, PartialComponentSetti
 export function getLocalComponentSettings (settings: PartialComponentSettings = {}) {
   try {
     const json = localStorage.getItem('component.settings')
-    const previous = JSON.parse(json!) as ComponentSettings
+    const previous = JSON.parse(json) as ComponentSettings
     applyPermission(previous, settings)
     return previous ?? {}
   } catch (e) {

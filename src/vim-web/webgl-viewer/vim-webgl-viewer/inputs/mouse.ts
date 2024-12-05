@@ -46,8 +46,8 @@ export class MouseHandler extends InputHandler {
 
   // State
   private _buttonDown: Button
-  private _hasMouseMoved: Boolean = false
-  private _hasCameraMoved: Boolean = false
+  private _hasMouseMoved: boolean = false
+  private _hasCameraMoved: boolean = false
 
   private _idleTimeout: ReturnType<typeof setTimeout> | undefined
   private _idlePosition: THREE.Vector2 | undefined

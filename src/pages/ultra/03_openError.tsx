@@ -5,7 +5,7 @@ import { UltraReact } from '../../vim-web/vimWebIndex'
 export function UltraOpenError () {
   const div = useRef<HTMLDivElement>(null)
   useUltra(div, (ultra) => {
-    badPath(ultra)
+    void badPath(ultra)
   })
 
   return (

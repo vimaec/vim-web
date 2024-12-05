@@ -233,7 +233,7 @@ export class StandardSubmesh {
   get meshEnd () {
     return this.index + 1 < this.mesh.submeshes.length
       ? this.mesh.submeshes[this.index + 1]
-      : this.three.geometry.index!.count
+      : this.three.geometry.index.count
   }
 
   /**

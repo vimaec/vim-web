@@ -5,7 +5,7 @@ import { UltraReact } from '../../vim-web/vimWebIndex'
 export function UltraConnectionError () {
   const div = useRef<HTMLDivElement>(null)
   useUltra(div, (ultra) => {
-    badConnection(ultra)
+    void badConnection(ultra)
   })
 
   return (
@@ -14,5 +14,5 @@ export function UltraConnectionError () {
 }
 
 async function badConnection (ultra: UltraReact.UltraComponentRef) {
-  ultra.viewer.connect('ws:/invalidServer')
+  await ultra.viewer.connect('ws:/invalidServer')
 }

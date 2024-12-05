@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter as Router, Route, Routes, useNavigate, Navigate } from 'react-router-dom'
+import { BrowserRouter, Route, Routes, useNavigate, Navigate } from 'react-router-dom'
 import { createRoot } from 'react-dom/client'
 import { WebglHome } from './webgl/00_home'
 import { WebglAccessToken } from './webgl/01_accessToken'
@@ -31,12 +31,12 @@ function Navigation () {
 
   const handleNext = () => {
     const nextIndex = (pageInfo.index + 1) % pageInfo.source.length
-    navigate(pageInfo.source[nextIndex].path)
+    void navigate(pageInfo.source[nextIndex].path)
   }
 
   const handlePrev = () => {
     const prevIndex = (pageInfo.index - 1 + pageInfo.source.length) % pageInfo.source.length
-    navigate(pageInfo.source[prevIndex].path)
+    void navigate(pageInfo.source[prevIndex].path)
   }
 
   return (
@@ -49,7 +49,7 @@ function Navigation () {
 
 function App () {
   return (
-    <Router>
+    <BrowserRouter basename="/">
       <Navigation />
         <Routes>
         {ultraPages.map((page, index) => (
@@ -61,7 +61,7 @@ function App () {
         {/* Default page */}
         <Route path="*" element={<Navigate to="/webgl" replace />} />
       </Routes>
-    </Router>
+    </BrowserRouter>
   )
 }
 

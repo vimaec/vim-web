@@ -6,7 +6,7 @@ import * as Urls from '../devUrls'
 export function UltraLoadError () {
   const div = useRef<HTMLDivElement>(null)
   useUltra(div, (ultra) => {
-    test(ultra)
+    void test(ultra)
   })
 
   return (

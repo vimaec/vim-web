@@ -37,7 +37,7 @@ export async function getElements (vim: VIM.Vim) {
 
   const real = result.filter(e => vim.getObjectFromElement(e.index).hasMesh)
 
-  return real as AugmentedElement[]
+  return real
 }
 
 async function getFamilyTypeNameMap (document: BIM.VimDocument) {

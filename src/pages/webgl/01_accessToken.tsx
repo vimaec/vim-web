@@ -10,7 +10,7 @@ export function WebglAccessToken () {
   const tokenInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    createComponent(containerRef.current!, urlInputRef.current!.value, tokenInputRef.current!.value)
+    createComponent(containerRef.current, urlInputRef.current.value, tokenInputRef.current.value)
   }, [])
 
   return (

@@ -66,7 +66,7 @@ export class ColorAttribute {
       'color'
     ) as THREE.BufferAttribute
 
-    const indices = sub.three.geometry.index!
+    const indices = sub.three.geometry.index
 
     // Save colors to be able to reset.
     if (sub instanceof InsertableSubmesh) {
@@ -106,7 +106,7 @@ export class ColorAttribute {
       'color'
     ) as THREE.BufferAttribute
 
-    const indices = sub.three.geometry.index!
+    const indices = sub.three.geometry.index
     let mergedIndex = sub.meshStart
 
     const g3d = this.vim.g3d
@@ -133,7 +133,7 @@ export class ColorAttribute {
     const previous = sub.popColors()
     if (previous === undefined) return
 
-    const indices = sub.three.geometry.index!
+    const indices = sub.three.geometry.index
     const colors = sub.three.geometry.getAttribute(
       'color'
     ) as THREE.BufferAttribute

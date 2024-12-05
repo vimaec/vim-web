@@ -118,7 +118,7 @@ export class Vim {
    * @returns The updated load request.
    */
   private async _load(url: string, result: LoadRequest): Promise<LoadRequest> {
-    let handle = await this._getHandle(url, result);
+    const handle = await this._getHandle(url, result);
     if(result.isCompleted || handle === INVALID_HANDLE) {
       return result
     }
@@ -359,7 +359,7 @@ export class Vim {
 
     // Process 'all' nodes first
     if (this._pendingNodeStateChanges.has('all')) {
-      const state = this._pendingNodeStateChanges.get('all')!;
+      const state = this._pendingNodeStateChanges.get('all');
       this.callRPCForState(state, 'all');
       this._pendingNodeStateChanges.delete('all');
     }
@@ -371,7 +371,7 @@ export class Vim {
         if (!nodesByState.has(state)) {
           nodesByState.set(state, []);
         }
-        nodesByState.get(state)!.push(node as number);
+        nodesByState.get(state).push(node);
       }
     }
 

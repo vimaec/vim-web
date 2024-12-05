@@ -271,13 +271,13 @@ export class SocketClient {
    */
   private _onClose (_event?: Event): void {
     clearTimeout(this._connectionTimeout)
-    this._disconnect({ status: 'error', error: 'connection', serverUrl: this._connectingUrl! })
+    this._disconnect({ status: 'error', error: 'connection', serverUrl: this._connectingUrl })
     this._logger.log('WebSocket closed.')
 
     this._logger.log('Attempting to reconnect in 5 seconds')
     this._reconnectTimeout = setTimeout(() => {
       this.updateState({ status: 'connecting' })
-      this.connect(this._connectingUrl!)
+      this.connect(this._connectingUrl)
     }, 5000)
   }
 

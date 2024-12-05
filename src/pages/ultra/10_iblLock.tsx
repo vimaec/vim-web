@@ -5,8 +5,9 @@ import { useUltraWithWolford } from './ultraPageUtils'
 export function UltraIblLock () {
   const div = useRef<HTMLDivElement>(null)
 
-  useUltraWithWolford(div, async (ultra, tower) => {
-    await toggleLock(ultra, tower)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  useUltraWithWolford(div, (ultra, _tower) => {
+    void toggleLock(ultra)
   })
 
   return (
@@ -14,10 +15,11 @@ export function UltraIblLock () {
   )
 }
 
-async function toggleLock (ultra: UltraReact.UltraComponentRef, tower: UltraViewer.Vim) {
+async function toggleLock (ultra: UltraReact.UltraComponentRef) {
   ultra.viewer.renderer.backgroundBlur = 0
   ultra.viewer.renderer.backgroundColor = new UltraViewer.RGBA(0, 0, 0, 0)
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     ultra.viewer.renderer.lockIblRotation = !ultra.viewer.renderer.lockIblRotation
     await new Promise(resolve => setTimeout(resolve, 3000))

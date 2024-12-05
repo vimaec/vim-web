@@ -5,8 +5,8 @@ import { useUltraWithTower } from './ultraPageUtils'
 export function UltraColors () {
   const div = useRef<HTMLDivElement>(null)
 
-  useUltraWithTower(div, async (ultra, tower) => {
-    await createColors(ultra, tower)
+  useUltraWithTower(div, (ultra, tower) => {
+    void createColors(ultra, tower)
   })
 
   return (

@@ -6,7 +6,7 @@ import * as Urls from '../devUrls'
 export function UltraHome () {
   const div = useRef<HTMLDivElement>(null)
   useUltra(div, (ultra) => {
-    loadFile(ultra)
+    void loadFile(ultra)
   })
 
   return (
@@ -18,6 +18,6 @@ async function loadFile (ultra: UltraReact.UltraComponentRef) {
   await ultra.viewer.connect()
   const request = ultra.load(Urls.residence)
   await request.getResult()
-  ultra.viewer.camera.frameAll(0)
+  void ultra.viewer.camera.frameAll(0)
   globalThis.ultra = ultra
 }
