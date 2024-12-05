@@ -59,8 +59,8 @@ function App () {
             <Route key={index} path={page.path} element={page.component} />
         ))}
         {/* Default page */}
-        <Route path="*" element={<Navigate to="/webgl" replace />} />
-        <Route key="api" path="/api"  element={<ApiDocs />} />
+        <Route path="*" element={<Navigate to="/webgl"/>} />
+        <Route key="api" path="/api" element={<ApiDocs />} />
       </Routes>
     </BrowserRouter>
   )
