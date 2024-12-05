@@ -1,5 +1,5 @@
 /**
- * @module viw-webgl-component
+ * @module viw-webgl-react
  */
 
 import Stats from 'stats-js'

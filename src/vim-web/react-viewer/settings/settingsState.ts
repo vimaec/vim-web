@@ -1,5 +1,5 @@
 /**
- * @module viw-webgl-component
+ * @module viw-webgl-react
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
