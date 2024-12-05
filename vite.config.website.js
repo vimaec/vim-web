@@ -6,7 +6,7 @@ export default defineConfig({
   // The root is the src/pages directory
   plugins: [react()],
   root: 'src/pages',
-  base: '/', // Ensure the correct base URL for your app
+  base: '/vim-web/', // Ensure the correct base URL for your app
   build: {
     // Source maps are needed for debugging
     sourcemap: true,
