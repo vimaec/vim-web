@@ -11,6 +11,7 @@ const webglPages = [
 ]
 
 function findPage (path: string) {
+
   const webglIndex = webglPages.findIndex(page => page.path === path)
   if (webglIndex >= 0) {
     return { source: webglPages, index: webglIndex }
@@ -23,8 +24,10 @@ function findPage (path: string) {
 }
 
 function Navigation () {
+  console.log('Navigation')
   const navigate = useNavigate()
-  const pageInfo = findPage(window.location.pathname)
+  const path = window.location.pathname.replace("/vim-web", '')
+  const pageInfo = findPage(path)
   if (!pageInfo) {
     return null
   }
@@ -51,7 +54,7 @@ function App () {
   return (
     <BrowserRouter basename="/vim-web/">
       <Navigation />
-        <Routes>
+      <Routes>
         {ultraPages.map((page, index) => (
             <Route key={index} path={page.path} element={page.component} />
         ))}
