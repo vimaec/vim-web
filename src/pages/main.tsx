@@ -60,10 +60,23 @@ function App () {
         ))}
         {/* Default page */}
         <Route path="*" element={<Navigate to="/webgl" replace />} />
+        <Route key="api" path="/api"  element={<ApiDocs />} />
       </Routes>
     </BrowserRouter>
   )
 }
+
+function ApiDocs() {
+  return (
+    <div style={{ height: '100vh', width: '100%' }}>
+      <iframe
+        src="/api/index.html"
+        style={{ height: '100%', width: '100%', border: 'none' }}
+        title="API Docs"
+      ></iframe>
+    </div>
+  );
+} 
 
 const container = document.getElementById('root')
 if (!container) throw new Error('No container found')
