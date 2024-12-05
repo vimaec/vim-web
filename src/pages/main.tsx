@@ -49,7 +49,7 @@ function Navigation () {
 
 function App () {
   return (
-    <BrowserRouter basename="/">
+    <BrowserRouter basename="/vim-web/">
       <Navigation />
         <Routes>
         {ultraPages.map((page, index) => (

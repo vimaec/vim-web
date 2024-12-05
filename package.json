@@ -24,7 +24,7 @@
     "package:libs": "npm run build:libs && npm publish",
     "declarations:libs": "tsc --project tsconfig.libs.json --declaration --emitDeclarationOnly --outdir ./dist/types",
     "documentation:libs": "typedoc --entryPoints src/vim-web/vimWebIndex.ts --entryPointStrategy expand --out docs/api --excludeProtected --excludeExternals --excludePrivate",
-    "build:website": "vite build --config vite.config.website.js && npm run documentation:libs",
+    "build:website": "vite build --config vite.config.website.js && cp /docs/index.html /docs/404.html",
     "serve:website": "vite preview --outDir docs",
     "commit:website": "git add docs && git commit -m 'Update docs'",
     "eslint": "eslint --ext .js,.ts,.tsx src --fix"
