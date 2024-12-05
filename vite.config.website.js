@@ -11,7 +11,7 @@ export default defineConfig({
     // Source maps are needed for debugging
     sourcemap: true,
     // because the root is we need to make the path relative to the repo
-    outDir: '../../docs/site',
+    outDir: '../../docs',
     emptyOutDir: true,
 
     // minify: false, Uncomment to help with debugging
