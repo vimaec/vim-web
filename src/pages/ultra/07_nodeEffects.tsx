@@ -1,13 +1,12 @@
 import React, { useRef } from 'react'
-import { UltraComponentRef } from '../../package/ultra/ultraComponent'
-import { Vim } from 'vim-ultra-viewer'
+import { UltraReact, UltraViewer } from '../../vim-web/vimWebIndex'
 import { useUltraWithTower } from './ultraPageUtils'
 
 export function UltraNodeEffects () {
   const div = useRef<HTMLDivElement>(null)
 
-  useUltraWithTower(div, async (ultra, tower) => {
-    await changeState(ultra, tower)
+  useUltraWithTower(div, (ultra, tower) => {
+    void changeState(ultra, tower)
   })
 
   return (
@@ -15,7 +14,8 @@ export function UltraNodeEffects () {
   )
 }
 
-async function changeState (ultra: UltraComponentRef, tower: Vim) {
+async function changeState (ultra: UltraReact.UltraComponentRef, tower: UltraViewer.Vim) {
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const indices = Array.from({ length: 200000 }, (_, i) => i)
     tower.highlight(indices)

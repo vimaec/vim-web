@@ -1,14 +1,12 @@
 import React, { useRef } from 'react'
-import { UltraComponentRef } from '../../package/ultra/ultraComponent'
-import * as ULTRA from 'vim-ultra-viewer'
-import { Vim } from 'vim-ultra-viewer'
+import { UltraViewer, UltraReact } from '../../vim-web/vimWebIndex'
 import { useUltraWithTower } from './ultraPageUtils'
 
 export function UltraColors () {
   const div = useRef<HTMLDivElement>(null)
 
-  useUltraWithTower(div, async (ultra, tower) => {
-    await createColors(ultra, tower)
+  useUltraWithTower(div, (ultra, tower) => {
+    void createColors(ultra, tower)
   })
 
   return (
@@ -16,11 +14,11 @@ export function UltraColors () {
   )
 }
 
-async function createColors (ultra: UltraComponentRef, tower: Vim) {
+async function createColors (ultra: UltraReact.UltraComponentRef, tower: UltraViewer.Vim) {
   const randomColors = new Array<number>(200000)
     .fill(0)
     .map(() => Math.floor(Math.random() * 0xFFFFFFFF))
-    .map(i => new ULTRA.RGBA32(i))
+    .map(i => new UltraViewer.RGBA32(i))
 
   // Create server side colors
   const colors = await ultra.viewer.colors.getColors(randomColors)
