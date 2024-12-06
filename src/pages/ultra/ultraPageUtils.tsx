@@ -1,4 +1,4 @@
-import { UltraReact, UltraViewer } from '../../vim-web/vimWebIndex'
+import { UltraReact, UltraViewer } from '../../vim-web'
 import * as Urls from '../devUrls'
 import { useRef, useEffect, RefObject } from 'react'
 

@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { UltraReact, UltraViewer } from '../../vim-web/vimWebIndex'
+import { UltraReact, UltraViewer } from '../../vim-web'
 import { useUltraWithTower } from './ultraPageUtils'
 
 export function UltraNodeEffects () {
