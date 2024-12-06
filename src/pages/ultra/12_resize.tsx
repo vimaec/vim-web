@@ -1,5 +1,5 @@
 import React, { RefObject, useRef } from 'react'
-import { UltraReact, UltraViewer } from '../../vim-web/vimWebIndex'
+import { UltraReact, UltraViewer } from '../../vim-web'
 import { useUltraWithWolford } from './ultraPageUtils'
 
 // Define resolution table with different aspect ratios and sizes

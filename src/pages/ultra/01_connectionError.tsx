@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { useUltra } from './ultraPageUtils'
-import { UltraReact } from '../../vim-web/vimWebIndex'
+import { UltraReact } from '../../vim-web'
 
 export function UltraConnectionError () {
   const div = useRef<HTMLDivElement>(null)

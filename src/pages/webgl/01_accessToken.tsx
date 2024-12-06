@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { WebglReact } from '../../vim-web/vimWebIndex'
+import { WebglReact } from '../../vim-web'
 import * as THREE from 'three'
 import { LocalTextBox } from '../localTextBox'
 import * as Urls from '../devUrls'
