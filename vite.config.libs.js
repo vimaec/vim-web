@@ -7,7 +7,7 @@ export default defineConfig({
     sourcemap: true,
     lib: {
       formats: ['iife', 'es'],
-      entry: resolve(__dirname, 'src/vim-web/vimWebIndex.ts'),
+      entry: resolve(__dirname, 'src/vim-web/index.ts'),
       name: 'VIMReact'
     },
     rollupOptions: {
