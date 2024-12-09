@@ -16,7 +16,7 @@
 - [Medium - Medical Tower](https://vimaec.github.io/vim-web/ultra?vim=https://vim.azureedge.net/samples/skanska.vim)
 - [Small - Stadium](https://vimaec.github.io/vim-web/ultra?vim=https://vim.azureedge.net/samples/stadium.vim)
 
-You can find detailed camera controls here:  
+You can find the camera controls detailed here:  
 https://docs.vimaec.com/docs/vim-cloud/webgl-navigation-and-controls-guide
 
 # Overview
