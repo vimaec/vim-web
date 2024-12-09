@@ -1,4 +1,4 @@
-name: Build Pages
+name: Build Pages on commit in main
 
 on:
   push:

@@ -1,4 +1,4 @@
-name: Build Libs
+name: Build Libs on PR Commit
 
 on:
   pull_request:
