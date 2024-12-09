@@ -27,8 +27,8 @@
     "documentation:libs": "typedoc --entryPoints src/vim-web/index.ts --entryPointStrategy expand --out docs/api --excludeProtected --excludeExternals --excludePrivate",
     "build:website": "vite build --config vite.config.website.js && npm run copy:website && npm run documentation:libs && npm run commit:website",
     "serve:website": "vite preview --outDir docs",
-    "commit:website": "git add .\\docs && git commit -m Update docs",
-    "copy:website": "copy .\\docs\\index.html .\\docs\\404.html",
+    "commit:website": "git add docs && git commit -m Build website[ci skip]",
+    "copy:website": "node scripts/copyIndex.js",
     "eslint": "eslint --ext .js,.ts,.tsx src --fix"
   },
   "devDependencies": {
@@ -44,6 +44,7 @@
     "eslint-plugin-promise": "^6.0.1",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.0.0",
+    "fs-extra": "^11.2.0",
     "postcss": "^8.4.49",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.9",
