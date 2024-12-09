@@ -1,79 +1,80 @@
-# Vim Webgl Component
+# VIM WebGL Component
 
-# Documentation
+## Documentation
 
-[API Documentation](https://vimaec.github.io/vim-web/api/)
+Explore the full [API Documentation](https://vimaec.github.io/vim-web/api/).
 
-# Live Demo
+## Live Demo
 
-### Webgl
-- [Small - Residence](https://vimaec.github.io/vim-web/webgl)
-- [Medium - Medical Tower](https://vimaec.github.io/vim-web/webgl?vim=https://vim.azureedge.net/samples/skanska.vim)
-- [Small - Stadium](https://vimaec.github.io/vim-web/webgl?vim=https://vim.azureedge.net/samples/stadium.vim)
+### WebGL Viewer
+- **[Small - Residence](https://vimaec.github.io/vim-web/webgl)**
+- **[Medium - Medical Tower](https://vimaec.github.io/vim-web/webgl?vim=https://vim.azureedge.net/samples/skanska.vim)**
+- **[Small - Stadium](https://vimaec.github.io/vim-web/webgl?vim=https://vim.azureedge.net/samples/stadium.vim)**
 
-### Ultra
-- [Small - Residence](https://vimaec.github.io/vim-web/ultra)
-- [Medium - Medical Tower](https://vimaec.github.io/vim-web/ultra?vim=https://vim.azureedge.net/samples/skanska.vim)
-- [Small - Stadium](https://vimaec.github.io/vim-web/ultra?vim=https://vim.azureedge.net/samples/stadium.vim)
+### Ultra Viewer
+- **[Small - Residence](https://vimaec.github.io/vim-web/ultra)**
+- **[Medium - Medical Tower](https://vimaec.github.io/vim-web/ultra?vim=https://vim.azureedge.net/samples/skanska.vim)**
+- **[Small - Stadium](https://vimaec.github.io/vim-web/ultra?vim=https://vim.azureedge.net/samples/stadium.vim)**
 
-You can find the camera controls detailed here:  [Camera Controls](https://docs.vimaec.com/docs/vim-cloud/webgl-navigation-and-controls-guide)
+Find detailed camera controls here: [Camera Controls](https://docs.vimaec.com/docs/vim-cloud/webgl-navigation-and-controls-guide).
 
-# Overview
+## Overview
 
-The Vim-Web Repo has four main constituents which can be divided in 2 layers:
+The **VIM-Web** repository consists of four primary components, divided into two layers:
+
 ### Core Viewers
-- **Webgl Viewer :** A webgl viewer for the vim format with no ui featuring, outlines, ghosting, sectionning and more.
-- **Ultra Viewer :** A client viewer for the VIM Ultra Render Server featuring unparalled scale and performance.
+- **WebGL Viewer:** A WebGL-based viewer for the VIM format. Includes features like outlines, ghosting, and sectioning, but without UI components.
+- **Ultra Viewer:** A high-performance viewer for the VIM Ultra Render Server, optimized for scale and speed.
+
 ### React Viewers
-- **WebglComponent :** A react based wrapper for the the core wegbl viewer providing interactive ui and a bim explorer.
-- **UltraComponent :** A react based wrapper for the the core ultra viewer providing ui for the current state.
+- **WebGL Component:** A React-based wrapper for the WebGL viewer, providing interactive UI elements and a BIM explorer.
+- **Ultra Component:** A React-based wrapper for the Ultra viewer, featuring a UI for real-time interactions.
 
-## VIM
+## VIM Format
 
-The VIM file format is a high-performance 3D scene format that supports rich BIM data, and can be easily extended to support other relational or non-relation data sets.
-Unlike IFC the VIM format is already tessellated, and ready to render. This results in very fast load times.
-More information on the vim format can be found here: https://github.com/vimaec/vim
+The **VIM** file format is a high-performance 3D scene format that supports rich BIM data. It can also be extended to accommodate other relational and non-relational datasets. Unlike **IFC**, the VIM format is pre-tessellated, allowing for rapid loading and rendering.
+
+Learn more about the VIM format here: [VIM GitHub Repository](https://github.com/vimaec/vim).
 
 ### Built With
-
-- [VIM Webgl Viewer](https://github.com/vimaec/vim-webgl-viewer)
-- [react.js](https://reactjs.org/)
+- [VIM WebGL Viewer](https://github.com/vimaec/vim-webgl-viewer)
+- [React.js](https://reactjs.org/)
 
 ## Getting Started
 
-1. Clone the project.
-2. Open the project in VS Code.
-3. Install packages by running npm install.
-4. Run the dev command to start a live test server.
+Follow these steps to get started with the project:
 
-Make sure you have a recent version of NodeJS installed as Vite requires it.
+1. Clone the repository.
+2. Open the project in **VS Code**.
+3. Install the dependencies: `npm install`.
+4. Start the development server: `npm run dev`.
 
-## Repo organization
+> **Note:** Ensure you have a recent version of **Node.js** installed, as required by Vite.
 
-**./docs:** the root folder for the GitHub pages. These are built by running the build:website script.  
-**./dist:** built package destined to npm ends up here. Built using the build:libs script.  
-**./src/pages:** source code for the demo pages published on github pages.  
-**./src/vim-web:** source code to build and publish vim-web into an npm package.  
-**./src/core-viewers/webgl:** source code for the webgl core viewer. Originaly https://github.com/vimaec/vim-webgl-viewer  
-**./src/core-viewers/ultra:** source code for the ultra core viewer.  
-**./src/react-viewers/webgl:** source code for the webgl react component. Originaly https://github.com/vimaec/vim-webgl-component  
-**./src/react-viewers/ultra:** source code for the ultra react component.   
+## Repository Organization
 
+- **`./docs`:** Root folder for GitHub Pages, built using the `build:website` script.
+- **`./dist`:** Contains the built package for npm, created with the `build:libs` script.
+- **`./src/pages`:** Source code for the demo pages published on GitHub Pages.
+- **`./src/vim-web`:** Source code for building and publishing the vim-web npm package.
+- **`./src/core-viewers/webgl`:** Source code for the WebGL core viewer. Based on [vim-webgl-viewer](https://github.com/vimaec/vim-webgl-viewer).
+- **`./src/core-viewers/ultra`:** Source code for the Ultra core viewer.
+- **`./src/react-viewers/webgl`:** Source code for the WebGL React component. Based on [vim-webgl-component](https://github.com/vimaec/vim-webgl-component).
+- **`./src/react-viewers/ultra`:** Source code for the Ultra React component.
 
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Distributed under the **MIT License**. See `LICENSE.txt` for more details.
 
 ## Contact
 
-- Simon Roberge - simon.roberge@vimaec.com
-- Martin Ashton - martin.ashton@vimaec.com
+- **Simon Roberge** - [simon.roberge@vimaec.com](mailto:simon.roberge@vimaec.com)
+- **Martin Ashton** - [martin.ashton@vimaec.com](mailto:martin.ashton@vimaec.com)
 
 ## Acknowledgments
 
-Thanks to these great packages and more:
-
+Special thanks to these packages and more:
 - [react-complex-tree](https://github.com/lukasbach/react-complex-tree)
 - [re-resizable](https://github.com/bokuweb/re-resizable)
 - [react-tooltip](https://github.com/ReactTooltip/react-tooltip)
-- [strongly typed events](https://github.com/KeesCBakker/Strongly-Typed-Events-for-TypeScript#readme)
+- [Strongly Typed Events](https://github.com/KeesCBakker/Strongly-Typed-Events-for-TypeScript#readme)
