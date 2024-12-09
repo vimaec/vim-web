@@ -17,7 +17,7 @@ export function WebglHome () {
 async function createComponent (div: HTMLDivElement) {
   const webgl = await WebglReact.createWebglComponent(div)
   const request = webgl.loader.request(
-    { url: Urls.residence },
+    { url: getPathFromUrl() ?? Urls.residence },
     { rotation: new THREE.Vector3(270, 0, 0) }
   )
 
@@ -26,4 +26,10 @@ async function createComponent (div: HTMLDivElement) {
     webgl.loader.add(result.result)
     webgl.camera.frameVisibleObjects()
   }
+}
+
+
+function getPathFromUrl () {
+  const params = new URLSearchParams(window.location.search)
+  return params.get('vim') ?? undefined
 }
