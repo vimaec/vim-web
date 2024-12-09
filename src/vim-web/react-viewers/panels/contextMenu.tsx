@@ -16,8 +16,8 @@ import { ArrayEquals } from '../helpers/data'
 import { TreeActionRef } from '../bim/bimTree'
 import { ModalRef } from './modal'
 
-export const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
-export type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
+const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
+type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
 
 export function showContextMenu (
   position: { x: number; y: number } | undefined
@@ -195,6 +195,7 @@ export function VimContextMenu (props: {
     e.stopPropagation()
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const onSectionToggleBtn = (e: ClickCallback) => {
     viewer.gizmos.section.clip = !viewer.gizmos.section.clip
   }
@@ -204,10 +205,12 @@ export function VimContextMenu (props: {
     e.stopPropagation()
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const onMeasureDeleteBtn = (e: ClickCallback) => {
     viewer.gizmos.measure.abort()
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const onFitSectionToSelectionBtn = (e: ClickCallback) => {
     const box = viewer.selection.getBoundingBox()
     if (box) {

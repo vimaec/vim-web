@@ -5,7 +5,7 @@
 /**
  * Basic HTML structure that the webgl component expects
  */
-export type VimComponentContainer = {
+export type Container = {
   /**
    * Root of the viewer, all component ui should have this as an acestor.
    */
@@ -28,7 +28,7 @@ export type VimComponentContainer = {
  * The element is created if not provided. The element will be made position:absolute.
  * @element optional HTML element to use as root
  */
-export function createContainer (element?: HTMLElement): VimComponentContainer {
+export function createContainer (element?: HTMLElement): Container {
   // fullscreen root
   let root = element
   if (root === undefined) {

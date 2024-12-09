@@ -7,7 +7,7 @@ import { ContextMenuCustomization } from '../panels/contextMenu'
 import { ComponentSettings } from '../settings/settings'
 import { Isolation } from '../helpers/isolation'
 import { ComponentCamera } from '../helpers/camera'
-import { VimComponentContainer } from '../container'
+import { Container } from '../container'
 import { BimInfoPanelRef } from '../bim/bimInfoData'
 import { ControlBarCustomization } from '../controlbar/controlBar'
 import { ComponentLoader } from './webglLoading'
@@ -33,34 +33,45 @@ export type SettingsRef = {
 
 }
 
+/**
+ * Reference to manage context menu functionality in the component.
+ */
 export type ContextMenuRef = {
   /**
-  * Defines a callback function to dynamically customize the context menu.
-  * @param customization The configuration object specifying the customization options for the context menu.
-  */
-  customize : (customization: ContextMenuCustomization) => void
- }
+   * Defines a callback function to dynamically customize the context menu.
+   * @param customization The configuration object specifying the customization options for the context menu.
+   */
+  customize: (customization: ContextMenuCustomization) => void
+}
 
+/**
+ * Reference to manage control bar functionality in the component.
+ */
 export type ControlBarRef = {
   /**
-  * Defines a callback function to dynamically customize the control bar.
-  * @param customization The configuration object specifying the customization options for the control bar.
-  */
-  customize : (customization: ControlBarCustomization) => void
- }
+   * Defines a callback function to dynamically customize the control bar.
+   * @param customization The configuration object specifying the customization options for the control bar.
+   */
+  customize: (customization: ControlBarCustomization) => void
+}
 
+/**
+ * Reference to manage help message functionality in the component.
+ */
 export type HelpRef = {
   /**
    * Displays the help message.
    * @param value Boolean value to show or hide the help message.
+   * @returns void
    */
-  show(value: boolean)
+  show(value: boolean): void
 
   /**
    * Returns the current state of the help message.
+   * @returns boolean indicating if help message is currently shown
    */
-  isShow()
- }
+  isShow(): boolean
+}
 
 /**
  * Root-level API of the Vim component.
@@ -69,46 +80,46 @@ export type VimComponentRef = {
   /**
    * HTML structure containing the component.
    */
-  container: VimComponentContainer
+  container: Container
 
   /**
-  * Vim WebGL viewer around which the WebGL component is built.
-  */
+   * Vim WebGL viewer around which the WebGL component is built.
+   */
   viewer: VIM.Viewer
 
   /**
-  * Vim WebGL loader to download VIMs.
-  */
+   * Vim WebGL loader to download VIMs.
+   */
   loader: ComponentLoader
 
   /**
-  * Isolation API managing isolation state in the component.
-  */
+   * Isolation API managing isolation state in the component.
+   */
   isolation: Isolation
 
   /**
-  * Context menu API managing the content and behavior of the context menu.
-  */
-  contextMenu : ContextMenuRef
-
-    /**
-  * Context menu API managing the content and behavior of the context menu.
-  */
-  controlBar : ControlBarRef
+   * Context menu API managing the content and behavior of the context menu.
+   */
+  contextMenu: ContextMenuRef
 
   /**
-  * Settings API managing settings applied to the component.
-  */
+   * Control bar API managing the content and behavior of the control bar.
+   */
+  controlBar: ControlBarRef
+
+  /**
+   * Settings API managing settings applied to the component.
+   */
   settings: SettingsRef
 
   /**
-  * Message API to interact with the loading box.
-  */
-  modal : ModalRef
+   * Message API to interact with the loading box.
+   */
+  modal: ModalRef
 
   /**
-  * Camera API to interact with the viewer camera at a higher level.
-  */
+   * Camera API to interact with the viewer camera at a higher level.
+   */
   camera: ComponentCamera
 
   /**
@@ -116,5 +127,8 @@ export type VimComponentRef = {
    */
   bimInfo: BimInfoPanelRef
 
+  /**
+   * Cleans up and releases resources used by the component.
+   */
   dispose: () => void
 }

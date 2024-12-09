@@ -2,7 +2,7 @@
 
 import * as Ultra from '../../core-viewers/ultra/index'
 import React, { useEffect } from 'react'
-import { VimComponentContainer, createContainer } from '../container'
+import { Container, createContainer } from '../container'
 import { createRoot } from 'react-dom/client'
 import { DeferredPromise } from '../helpers/deferredPromise'
 import { Overlay } from '../panels/overlay'
@@ -24,7 +24,7 @@ export type UltraComponentRef = {
  * @returns An object containing the resulting container, reactRoot, and viewer.
  */
 export function createUltraComponent (
-  container?: VimComponentContainer | HTMLElement
+  container?: Container | HTMLElement
 ) : Promise<UltraComponentRef> {
   const promise = new DeferredPromise<UltraComponentRef>()
   const cmpContainer = container instanceof HTMLElement
@@ -64,7 +64,7 @@ export function createUltraComponent (
  * @param settings Optional settings for configuring the Vim component's behavior.
  */
 export function UltraComponent (props: {
-  container: VimComponentContainer
+  container: Container
   viewer: Ultra.Viewer
   onMount: (component: UltraComponentRef) => void}) {
   const modal = useModal(true)

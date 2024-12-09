@@ -7,7 +7,7 @@ import * as VIM from '../../core-viewers/webgl/index'
 import * as Icons from '../panels/icons'
 import { SideState } from './sideState'
 import { Enable, Resizable } from 're-resizable'
-import { VimComponentContainer } from '../container'
+import { Container } from '../container'
 
 const MAX_WIDTH = 0.75
 
@@ -20,7 +20,7 @@ export const SidePanelMemo = React.memo(SidePanel)
  * JSX Component for collapsible and resizable side panel.
  */
 export function SidePanel (props: {
-  container: VimComponentContainer
+  container: Container
   side: SideState
   viewer: VIM.Viewer
   content: () => JSX.Element
