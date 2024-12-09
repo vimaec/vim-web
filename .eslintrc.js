@@ -32,5 +32,10 @@ module.exports = {
   globals: {
     JSX: true
   },
-  ignorePatterns: ['postcss.config.js', '.eslintrc.js', 'vite.config.website.js', 'vite.config.libs.js' ]
+  ignorePatterns: [
+    'postcss.config.cjs',
+    '.eslintrc.js',
+    'vite.config.website.js',
+    'vite.config.libs.js'
+  ]
 }
