@@ -1,7 +1,8 @@
 {
   "name": "vim-web",
-  "version": "0.3.23",
+  "version": "0.3.27-dev.2",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
+  "type": "module",
   "files": [
     "dist"
   ],
