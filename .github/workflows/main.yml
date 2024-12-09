@@ -1,4 +1,4 @@
-name: Build Libs
+name: Build Libs on commit
 
 on:
   pull_request:
