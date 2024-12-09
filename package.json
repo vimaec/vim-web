@@ -26,8 +26,8 @@
     "declarations:libs": "tsc --project tsconfig.libs.json --declaration --emitDeclarationOnly --outdir ./dist/types",
     "documentation:libs": "typedoc --entryPoints src/vim-web/index.ts --entryPointStrategy expand --out docs/api --excludeProtected --excludeExternals --excludePrivate",
     "build:website": "vite build --config vite.config.website.js && npm run copy:website && npm run documentation:libs && npm run commit:website",
-    "serve:website": "vite preview --outDir docs",
-    "commit:website": "git add docs && git commit -m 'Build website[ci skip]'",
+    "serve:website": "vite preview --outDir docs",  
+    "commit:website": "git add docs && git commit -m 'Build website[ci skip]' && git push",
     "copy:website": "node scripts/copyIndex.js",
     "eslint": "eslint --ext .js,.ts,.tsx src --fix"
   },
