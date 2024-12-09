@@ -16,8 +16,13 @@ export function UltraHome () {
 
 async function loadFile (ultra: UltraReact.UltraComponentRef) {
   await ultra.viewer.connect()
-  const request = ultra.load(Urls.residence)
+  const request = ultra.load(getPathFromUrl() ?? Urls.residence)
   await request.getResult()
   void ultra.viewer.camera.frameAll(0)
   globalThis.ultra = ultra
+}
+
+function getPathFromUrl () {
+  const params = new URLSearchParams(window.location.search)
+  return params.get('vim') ?? undefined
 }
