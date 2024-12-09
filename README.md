@@ -1,8 +1,11 @@
 # VIM WebGL Component
 
-## Documentation
+### Documentation
 
 Explore the full [API Documentation](https://vimaec.github.io/vim-web/api/).
+
+### Package
+https://www.npmjs.com/package/vim-web
 
 ## Live Demo
 
