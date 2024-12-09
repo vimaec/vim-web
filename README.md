@@ -1,60 +1,83 @@
-# Vim Webgl Component
+# VIM WebGL Component
 
-# Documentation
+### Documentation
 
-[API Documentation](https://vimaec.github.io/vim-web/api/)
+Explore the full [API Documentation](https://vimaec.github.io/vim-web/api/).
 
-# Live Demo
+### Package
+https://www.npmjs.com/package/vim-web
 
-## Web
-- [Small Model Demo - Residence](https://vimaec.github.io/vim-webgl-app/release?vim=https://vim02.azureedge.net/samples/residence.v1.2.75.vim)
-- [Medium Model Demo - Medical Tower](https://vimaec.github.io/vim-webgl-app/release?vim=https://vim02.azureedge.net/samples/skanska.vim)
-- [Large Model Demo - Stadium](https://vimaec.github.io/vim-webgl-app/release?vim=https://vim02.azureedge.net/samples/stadium.vim) (_Warning_: slow download times)
+## Live Demo
 
-# Overview
+### WebGL Viewer
+- **[Small - Residence](https://vimaec.github.io/vim-web/webgl)**
+- **[Medium - Medical Tower](https://vimaec.github.io/vim-web/webgl?vim=https://vim.azureedge.net/samples/skanska.vim)**
+- **[Small - Stadium](https://vimaec.github.io/vim-web/webgl?vim=https://vim.azureedge.net/samples/stadium.vim)**
 
-The VIM Webgl Component is a React ui implementation for the [Vim WebGL Viewer]([https://jsfiddle.net/simon_vimaec/2khmqy9v/](https://github.com/vimaec/vim-webgl-viewer)).
+### Ultra Viewer
+- **[Small - Residence](https://vimaec.github.io/vim-web/ultra)**
+- **[Medium - Medical Tower](https://vimaec.github.io/vim-web/ultra?vim=https://vim.azureedge.net/samples/skanska.vim)**
+- **[Small - Stadium](https://vimaec.github.io/vim-web/ultra?vim=https://vim.azureedge.net/samples/stadium.vim)**
 
-## Intents
+Find detailed camera controls here: [Camera Controls](https://docs.vimaec.com/docs/vim-cloud/webgl-navigation-and-controls-guide).
 
-- Provide a smooth online user experience while browsing complex bim data.
-- Test and demonstrate the capabilities of the underlying vim-webgl-viewer.
-- Be easy to use, extend and customize for other developpers.
+## Overview
 
-## VIM
+The **VIM-Web** repository consists of four primary components, divided into two layers:
 
-The VIM file format is a high-performance 3D scene format that supports rich BIM data, and can be easily extended to support other relational or non-relation data sets.
-Unlike IFC the VIM format is already tessellated, and ready to render. This results in very fast load times. Unlike glTF the VIM format is faster to load, scales better, and has a consistent structure for relational BIM data.
-More information on the vim format can be found here: https://github.com/vimaec/vim
+### Core Viewers
+- **WebGL Viewer:** A WebGL-based viewer for the VIM format. Includes features like outlines, ghosting, and sectioning, but without UI components.
+- **Ultra Viewer:** A high-performance viewer for the VIM Ultra Render Server, optimized for scale and speed.
+
+### React Viewers
+- **WebGL Component:** A React-based wrapper for the WebGL viewer, providing interactive UI elements and a BIM explorer.
+- **Ultra Component:** A React-based wrapper for the Ultra viewer, featuring a UI for real-time interactions.
+
+## VIM Format
+
+The **VIM** file format is a high-performance 3D scene format that supports rich BIM data. It can also be extended to accommodate other relational and non-relational datasets. Unlike **IFC**, the VIM format is pre-tessellated, allowing for rapid loading and rendering.
+
+Learn more about the VIM format here: [VIM GitHub Repository](https://github.com/vimaec/vim).
 
 ### Built With
-
-- [VIM Webgl Viewer](https://github.com/vimaec/vim-webgl-viewer)
-- [react.js](https://reactjs.org/)
+- [VIM WebGL Viewer](https://github.com/vimaec/vim-webgl-viewer)
+- [React.js](https://reactjs.org/)
 
 ## Getting Started
 
-1. Clone the project.
-2. Open the project in VS Code.
-3. Install packages by running npm install.
-4. Run the dev command to start a live test server.
+Follow these steps to get started with the project:
 
-Make sure you have a recent version of NodeJS installed as Vite requires it.
+1. Clone the repository.
+2. Open the project in **VS Code**.
+3. Install the dependencies: `npm install`.
+4. Start the development server: `npm run dev`.
+
+> **Note:** Ensure you have a recent version of **Node.js** installed, as required by Vite.
+
+## Repository Organization
+
+- **`./docs`:** Root folder for GitHub Pages, built using the `build:website` script.
+- **`./dist`:** Contains the built package for npm, created with the `build:libs` script.
+- **`./src/pages`:** Source code for the demo pages published on GitHub Pages.
+- **`./src/vim-web`:** Source code for building and publishing the vim-web npm package.
+- **`./src/core-viewers/webgl`:** Source code for the WebGL core viewer. Based on [vim-webgl-viewer](https://github.com/vimaec/vim-webgl-viewer).
+- **`./src/core-viewers/ultra`:** Source code for the Ultra core viewer.
+- **`./src/react-viewers/webgl`:** Source code for the WebGL React component. Based on [vim-webgl-component](https://github.com/vimaec/vim-webgl-component).
+- **`./src/react-viewers/ultra`:** Source code for the Ultra React component.
 
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Distributed under the **MIT License**. See `LICENSE.txt` for more details.
 
 ## Contact
 
-- Simon Roberge - simon.roberge@vimaec.com
-- Martin Ashton - martin.ashton@vimaec.com
+- **Simon Roberge** - [simon.roberge@vimaec.com](mailto:simon.roberge@vimaec.com)
+- **Martin Ashton** - [martin.ashton@vimaec.com](mailto:martin.ashton@vimaec.com)
 
 ## Acknowledgments
 
-Thanks to these great packages and more:
-
+Special thanks to these packages and more:
 - [react-complex-tree](https://github.com/lukasbach/react-complex-tree)
 - [re-resizable](https://github.com/bokuweb/re-resizable)
 - [react-tooltip](https://github.com/ReactTooltip/react-tooltip)
-- [strongly typed events](https://github.com/KeesCBakker/Strongly-Typed-Events-for-TypeScript#readme)
+- [Strongly Typed Events](https://github.com/KeesCBakker/Strongly-Typed-Events-for-TypeScript#readme)
