@@ -7,14 +7,14 @@
 # Live Demo
 
 ### Webgl
-- [Small Webgl Demo - Residence](https://vimaec.github.io/vim-web/webgl)
-- [Medium Webgl Demo - Medical Tower](https://vimaec.github.io/vim-web/webgl?vim=https://vim.azureedge.net/samples/skanska.vim)
-- [Small Webgl Demo - Stadium](https://vimaec.github.io/vim-web/webgl?vim=https://vim.azureedge.net/samples/stadium.vim)
+- [Small - Residence](https://vimaec.github.io/vim-web/webgl)
+- [Medium - Medical Tower](https://vimaec.github.io/vim-web/webgl?vim=https://vim.azureedge.net/samples/skanska.vim)
+- [Small - Stadium](https://vimaec.github.io/vim-web/webgl?vim=https://vim.azureedge.net/samples/stadium.vim)
 
 ### Ultra
-- [Small Ultra Demo - Residence](https://vimaec.github.io/vim-web/ultra)
-- [Medium Ultra Demo - Medical Tower](https://vimaec.github.io/vim-web/ultra?vim=https://vim.azureedge.net/samples/skanska.vim)
-- [Small Ultra Demo - Stadium](https://vimaec.github.io/vim-web/ultra?vim=https://vim.azureedge.net/samples/stadium.vim)
+- [Small - Residence](https://vimaec.github.io/vim-web/ultra)
+- [Medium - Medical Tower](https://vimaec.github.io/vim-web/ultra?vim=https://vim.azureedge.net/samples/skanska.vim)
+- [Small - Stadium](https://vimaec.github.io/vim-web/ultra?vim=https://vim.azureedge.net/samples/stadium.vim)
 
 You can find detailed camera controls here:  
 https://docs.vimaec.com/docs/vim-cloud/webgl-navigation-and-controls-guide
