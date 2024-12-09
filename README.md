@@ -21,12 +21,12 @@ You can find the camera controls detailed here:  [Camera Controls](https://docs.
 # Overview
 
 The Vim-Web Repo has four main constituents which can be divided in 2 layers:
-Core Viewers:
-- Webgl Viewer : A webgl viewer for the vim format with no ui featuring, outlines, ghosting, sectionning and more.
-- Ultra Viewer : A client viewer for the VIM Ultra Render Server featuring unparalled scale and performance.
-React Viewers:
-- WebglComponent : A react based wrapper for the the core wegbl viewer providing interactive ui and a bim explorer.
-- UltraComponent : A react based wrapper for the the core ultra viewer providing ui for the current state.
+### Core Viewers
+- **Webgl Viewer :** A webgl viewer for the vim format with no ui featuring, outlines, ghosting, sectionning and more.
+- **Ultra Viewer :** A client viewer for the VIM Ultra Render Server featuring unparalled scale and performance.
+### React Viewers
+- **WebglComponent :** A react based wrapper for the the core wegbl viewer providing interactive ui and a bim explorer.
+- **UltraComponent :** A react based wrapper for the the core ultra viewer providing ui for the current state.
 
 ## VIM
 
@@ -50,14 +50,14 @@ Make sure you have a recent version of NodeJS installed as Vite requires it.
 
 ## Repo organization
 
-./docs - the root folder for the GitHub pages. These are built by running the build:website script.
-./dist - built package destined to npm ends up here. Built using the build:libs script.
-./src/pages - the source code for the demo pages published on github pages. 
-./src/vim-web - the source code to build and publish vim-web into an npm package.
-./src/core-viewers/webgl - the source code for the webgl core viewer. Originaly https://github.com/vimaec/vim-webgl-viewer
-./src/core-viewers/ultra - the source code for the ultra core viewer.
-./src/react-viewers/webgl - the source code for the webgl react component. Originaly https://github.com/vimaec/vim-webgl-component
-./src/react-viewers/ultra -  the source code for the ultra react component.  
+**./docs:** the root folder for the GitHub pages. These are built by running the build:website script.  
+**./dist:** built package destined to npm ends up here. Built using the build:libs script.  
+**./src/pages:** source code for the demo pages published on github pages.  
+**./src/vim-web:** source code to build and publish vim-web into an npm package.  
+**./src/core-viewers/webgl:** source code for the webgl core viewer. Originaly https://github.com/vimaec/vim-webgl-viewer  
+**./src/core-viewers/ultra:** source code for the ultra core viewer.  
+**./src/react-viewers/webgl:** source code for the webgl react component. Originaly https://github.com/vimaec/vim-webgl-component  
+**./src/react-viewers/ultra:** source code for the ultra react component.   
 
 
 ## License
