@@ -1,10 +1,12 @@
 /**
  * @module viw-webgl-react
+ * Contains settings and type definitions for the Vim web component
  */
 
 /**
  * Makes all fields optional recursively
- * https://stackoverflow.com/questions/41980195/recursive-partialt-in-typescript
+ * @template T - The type to make recursively partial
+ * @returns A type with all nested properties made optional
  */
 export type RecursivePartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[]
@@ -13,20 +15,34 @@ export type RecursivePartial<T> = {
     ? RecursivePartial<T[P]>
     : T[P]
 }
+
 /**
- * true, false or restricted
- * Restricted: is false and cannot be changed by the user.
+ * Represents a boolean value that can also be locked to always true or false
+ * @typedef {boolean | 'AlwaysTrue' | 'AlwaysFalse'} UserBoolean
  */
 export type UserBoolean = boolean | 'AlwaysTrue' | 'AlwaysFalse'
+
+/**
+ * Checks if a UserBoolean value is effectively true
+ * @param {UserBoolean | boolean} value - The value to check
+ * @returns {boolean} True if the value is true or 'AlwaysTrue'
+ */
 export function isTrue (value:UserBoolean | boolean) {
   return value === true || value === 'AlwaysTrue'
 }
+
+/**
+ * Checks if a UserBoolean value is effectively false
+ * @param {UserBoolean | boolean} value - The value to check
+ * @returns {boolean} True if the value is false or 'AlwaysFalse'
+ */
 export function isFalse (value:UserBoolean | boolean) {
   return value === false || value === 'AlwaysFalse'
 }
 
 /**
- * Vim component settings, can either be set at component intialization or by user using UI.
+ * Complete settings configuration for the Vim component
+ * @interface ComponentSettings
  */
 export type ComponentSettings = {
   peformance: {
@@ -78,8 +94,16 @@ export type ComponentSettings = {
   }
 }
 
+/**
+ * Partial version of ComponentSettings where all properties are optional
+ */
 export type PartialComponentSettings = RecursivePartial<ComponentSettings>
 
+/**
+ * Checks if any axes-related UI buttons are enabled
+ * @param {ComponentSettings} settings - The component settings to check
+ * @returns {boolean} True if any axes buttons are enabled
+ */
 export function anyUiAxesButton (settings: ComponentSettings) {
   return (
     settings.ui.orthographic ||
@@ -88,6 +112,11 @@ export function anyUiAxesButton (settings: ComponentSettings) {
   )
 }
 
+/**
+ * Checks if any cursor-related UI buttons are enabled
+ * @param {ComponentSettings} settings - The component settings to check
+ * @returns {boolean} True if any cursor buttons are enabled
+ */
 export function anyUiCursorButton (settings: ComponentSettings) {
   return (
     isTrue(settings.ui.orbit) ||
@@ -98,6 +127,12 @@ export function anyUiCursorButton (settings: ComponentSettings) {
     isTrue(settings.ui.zoomToFit)
   )
 }
+
+/**
+ * Checks if any tool-related UI buttons are enabled
+ * @param {ComponentSettings} settings - The component settings to check
+ * @returns {boolean} True if any tool buttons are enabled
+ */
 export function anyUiToolButton (settings: ComponentSettings) {
   return (
     isTrue(settings.ui.sectioningMode) ||
@@ -106,6 +141,11 @@ export function anyUiToolButton (settings: ComponentSettings) {
   )
 }
 
+/**
+ * Checks if any settings-related UI buttons are enabled
+ * @param {ComponentSettings} settings - The component settings to check
+ * @returns {boolean} True if any settings buttons are enabled
+ */
 export function anyUiSettingButton (settings: ComponentSettings) {
   return (
     isTrue(settings.ui.projectInspector) ||
@@ -115,6 +155,11 @@ export function anyUiSettingButton (settings: ComponentSettings) {
   )
 }
 
+/**
+ * Default settings configuration for the Vim component
+ * @constant
+ * @type {ComponentSettings}
+ */
 export const defaultSettings: ComponentSettings = {
   peformance: {
     useFastMaterial: false

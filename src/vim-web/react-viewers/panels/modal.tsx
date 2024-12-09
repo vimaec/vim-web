@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import MessageBox, { MessageBoxProps, MessageBoxPropsTyped } from './messageBox'
 import { LoadingBox, LoadingBoxProps, LoadingBoxPropsTyped } from './loadingBox'
 import { HelpProps, HelpPropsTyped, MenuHelp } from './help'
-import { Icons } from '../webgl/webglComponent'
+import * as Icons from './icons'
 
 export type ModalProps = MessageBoxProps | LoadingBoxProps | HelpProps
 export type ModalPropsTyped = (MessageBoxPropsTyped | LoadingBoxPropsTyped | HelpPropsTyped) & {

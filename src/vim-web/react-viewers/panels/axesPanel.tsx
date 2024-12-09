@@ -3,11 +3,11 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react'
+import * as VIM from '../../core-viewers/webgl/index'
 import * as Icons from './icons'
 import { ComponentCamera } from '../helpers/camera'
 import { anyUiAxesButton, isTrue } from '../settings/settings'
 import { SettingsState } from '../settings/settingsState'
-import { VIM } from '../webgl/webglComponent'
 import { whenAllTrue, whenTrue } from '../helpers/utils'
 
 /**

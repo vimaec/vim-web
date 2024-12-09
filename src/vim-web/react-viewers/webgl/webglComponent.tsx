@@ -5,8 +5,6 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { createRoot } from 'react-dom/client'
 import ReactTooltip from 'react-tooltip'
-import '../style.css'
-import '../../core-viewers/webgl/style.css'
 
 import * as VIM from '../../core-viewers/webgl/index'
 import { AxesPanelMemo } from '../panels/axesPanel'
@@ -31,27 +29,15 @@ import { useSettings } from '../settings/settingsState'
 import { Isolation } from '../helpers/isolation'
 import { ComponentCamera } from '../helpers/camera'
 import { TreeActionRef } from '../bim/bimTree'
-import { VimComponentContainer, createContainer } from '../container'
+import { Container, createContainer } from '../container'
 import { useViewerState } from './viewerState'
 import { LogoMemo } from '../panels/logo'
 import { VimComponentRef } from './webglComponentRef'
-import { createBimInfoState } from '../bim/bimInfoData'
+import { useBimInfo } from '../bim/bimInfoData'
 import { whenTrue } from '../helpers/utils'
 import { DeferredPromise } from '../helpers/deferredPromise'
 import { ComponentLoader } from './webglLoading'
 import { Modal, useModal } from '../panels/modal'
-
-export * as VIM from '../../core-viewers/webgl/index'
-export * as THREE from 'three'
-export * as ContextMenu from '../panels/contextMenu'
-export * as BimInfo from '../bim/bimInfoData'
-export * as ControlBar from '../controlbar/controlBar'
-export * as Icons from '../panels/icons'
-export * from '../helpers/loadRequest'
-export * from './webglComponentRef'
-export { getLocalComponentSettings as getLocalSettings } from '../settings/settingsStorage'
-export { type ComponentSettings as Settings, type PartialComponentSettings as PartialSettings, defaultSettings } from '../settings/settings'
-export * from '../container'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.
@@ -61,7 +47,7 @@ export * from '../container'
  * @returns An object containing the resulting container, reactRoot, and viewer.
  */
 export function createWebglComponent (
-  container?: VimComponentContainer | HTMLElement,
+  container?: Container | HTMLElement,
   componentSettings: PartialComponentSettings = {},
   viewerSettings: VIM.PartialViewerSettings = {}
 ) : Promise<VimComponentRef> {
@@ -108,7 +94,7 @@ export function createWebglComponent (
  * @param settings Optional settings for configuring the Vim component's behavior.
  */
 export function VimComponent (props: {
-  container: VimComponentContainer
+  container: Container
   viewer: VIM.Viewer
   onMount: (component: VimComponentRef) => void
   settings?: PartialComponentSettings
@@ -130,7 +116,7 @@ export function VimComponent (props: {
   )
   const [contextMenu, setcontextMenu] = useState<ContextMenuCustomization>()
   const [controlBar, setControlBar] = useState<ControlBarCustomization>()
-  const bimInfoRef = createBimInfoState()
+  const bimInfoRef = useBimInfo()
 
   const viewerState = useViewerState(props.viewer)
   const treeRef = useRef<TreeActionRef>()
