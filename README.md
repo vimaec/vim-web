@@ -6,11 +6,12 @@
 
 # Live Demo
 
-## Web
+### Webgl
 - [Small Webgl Demo - Residence](https://vimaec.github.io/vim-web/webgl)
 - [Medium Webgl Demo - Medical Tower](https://vimaec.github.io/vim-web/webgl?vim=https://vim.azureedge.net/samples/skanska.vim)
 - [Small Webgl Demo - Stadium](https://vimaec.github.io/vim-web/webgl?vim=https://vim.azureedge.net/samples/stadium.vim)
 
+### Ultra
 - [Small Ultra Demo - Residence](https://vimaec.github.io/vim-web/ultra)
 - [Medium Ultra Demo - Medical Tower](https://vimaec.github.io/vim-web/ultra?vim=https://vim.azureedge.net/samples/skanska.vim)
 - [Small Ultra Demo - Stadium](https://vimaec.github.io/vim-web/ultra?vim=https://vim.azureedge.net/samples/stadium.vim)
