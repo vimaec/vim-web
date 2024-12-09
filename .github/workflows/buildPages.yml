@@ -15,4 +15,4 @@ jobs:
         run: echo "Skipping this workflow run."
 
       - name: Build Pages
-        run: build:website
+        run: npm run build:website
