@@ -1,4 +1,4 @@
-# VIM WebGL Component
+# VIM WebGL Component 
 
 ### Documentation
 
