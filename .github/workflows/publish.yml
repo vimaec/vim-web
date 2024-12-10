@@ -2,7 +2,10 @@ name: Manually publish to npm
 
 on:
   workflow_dispatch: # Enables manual triggering
-
+      inputs:
+        flutter_version:
+          description: 'Package Version'
+          required: true
 jobs:
   build:
     runs-on: ubuntu-latest
