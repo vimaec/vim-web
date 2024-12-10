@@ -23,9 +23,9 @@
   "scripts": {
     "dev": "vite --host --config vite.config.website.js",
     "eslint": "eslint --ext .js,.ts,.tsx src --fix",
-    "release-patch:vim-web": "npm version patch && npm run release-current",
-    "release-minor:vim-web": "npm version minor && npm run release-current",
-    "release-major:vim-web": "npm version major && npm run release-current",
+    "release-patch": "npm version patch && npm run release-current",
+    "release-minor": "npm version minor && npm run release-current",
+    "release-major": "npm version major && npm run release-current",
     "release-current": "npm run build:all && npm run commit:website && npm publish",
     "build:all": "npm run build:website && npm run build:libs",
     "build:libs": "vite build --config vite.config.libs.js && npm run declarations:libs",
