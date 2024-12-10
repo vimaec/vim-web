@@ -4,7 +4,7 @@ on:
   workflow_dispatch: # Enables manual triggering
       inputs:
         flutter_version:
-          description: 'Framework version'
+          description: 'Package Version'
           required: true
 
 jobs:
