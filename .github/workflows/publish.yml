@@ -1,11 +1,11 @@
 name: Manually publish to npm
 
 on:
-  workflow_dispatch: # Enables manual triggering
-      inputs:
-        package_version:
-          description: 'Package Version'
-          required: true
+  workflow_dispatch:
+    inputs:
+      package_version:
+        description: 'Package Version'
+        required: true
 
 jobs:
   build:
@@ -13,15 +13,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Debug changed files
-        run: |
-          echo "Changed files:"
-          git status --short
-          git diff --name-only
-
-      - name: Debug package.json contents
-        run: cat package.json
 
       - name: Setup Node
         uses: actions/setup-node@v2
@@ -32,29 +23,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Debug changed files
-        run: |
-          echo "Changed files:"
-          git status --short
-          git diff --name-only
-
-      - name: Debug package.json contents
-        run: cat package.json
-
       - name: Build Libs
         run: npm run build:libs
 
-      - name: Debug changed files
-        run: |
-          echo "Changed files:"
-          git status --short
-          git diff --name-only
-
-      - name: Debug changed files
-        run: |
-          echo "Changed files:"
-          git status --short
-          git diff --name-only
+      - name: Ensure clean working directory
+        run: git reset --hard
 
       - name: Publish package on NPM 📦
         run: npm version ${{ github.event.inputs.package_version }}
