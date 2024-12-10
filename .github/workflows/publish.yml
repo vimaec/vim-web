@@ -35,9 +35,14 @@ jobs:
         run: git reset --hard
 
       - name: Publish package on NPM 📦
-        run: npm version ${{ github.event.inputs.package_version }}
+        run: npm version ${{ github.event.inputs.package_version }} --message "v${{ github.event.inputs.package_version }} [ci-skip]"
 
       - name: Publish package on NPM 📦
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.VIM_NPM_PUSH }}
+
+      - name: Pushing commit
+        run: git push
+
+
