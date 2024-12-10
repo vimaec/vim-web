@@ -38,6 +38,9 @@ jobs:
           git status --short
           git diff --name-only
 
+      - name: Debug package.json contents
+        run: cat package.json
+
       - name: Build Libs
         run: npm run build:libs
 
