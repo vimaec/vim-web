@@ -1,11 +1,12 @@
 {
   "name": "vim-web",
-  "version": "0.3.27",
+  "version": "0.3.28",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "type": "module",
   "files": [
     "dist"
   ],
+  "readme": "README.md",
   "main": "./dist/vim-web.iife.js",
   "types": "./dist/types/index.d.ts",
   "module": "./dist/vim-web.mjs",
