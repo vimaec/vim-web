@@ -14,6 +14,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Debug changed files
+        run: |
+          echo "Changed files:"
+          git status --short
+          git diff --name-only
+
       - name: Setup Node
         uses: actions/setup-node@v2
         with:
@@ -23,8 +29,20 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Debug changed files
+        run: |
+          echo "Changed files:"
+          git status --short
+          git diff --name-only
+
       - name: Build Libs
         run: npm run build:libs
+
+      - name: Debug changed files
+        run: |
+          echo "Changed files:"
+          git status --short
+          git diff --name-only
 
       - name: Debug changed files
         run: |
