@@ -34,7 +34,7 @@
     "documentation:libs": "typedoc --entryPoints src/vim-web/index.ts --entryPointStrategy expand --out docs/api --excludeProtected --excludeExternals --excludePrivate",
     "build:website": "vite build --config vite.config.website.js && node scripts/copyIndex.js && npm run documentation:libs && npm run commit:website",
     "serve:website": "vite preview --outDir docs",
-    "commit:website": "git add docs && git commit -m 'Build website[ci skip]' && git push"
+    "commit:website": "git add docs && git commit -m BuildWebsite && git push"
   },
   "devDependencies": {
     "@types/dom-webcodecs": "^0.1.13",
