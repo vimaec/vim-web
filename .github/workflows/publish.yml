@@ -26,6 +26,12 @@ jobs:
       - name: Build Libs
         run: npm run build:libs
 
+      - name: Debug changed files
+        run: |
+          echo "Changed files:"
+          git status --short
+          git diff --name-only
+
       - name: Publish package on NPM 📦
         run: npm version ${{ github.event.inputs.package_version }}
 
