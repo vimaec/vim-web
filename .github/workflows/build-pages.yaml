@@ -1,9 +1,7 @@
-name: Build Pages on commit in main
+name: Manually build pages
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   build:
