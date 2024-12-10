@@ -20,6 +20,9 @@ jobs:
           git status --short
           git diff --name-only
 
+      - name: Debug package.json contents
+        run: cat package.json
+
       - name: Setup Node
         uses: actions/setup-node@v2
         with:
