@@ -1,6 +1,6 @@
 {
   "name": "vim-web",
-  "version": "0.3.31",
+  "version": "0.3.32",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "type": "module",
   "files": [
@@ -23,18 +23,15 @@
   "scripts": {
     "dev": "vite --host --config vite.config.website.js",
     "eslint": "eslint --ext .js,.ts,.tsx src --fix",
-
     "release-patch:vim-web": "npm version patch && npm run release-current",
     "release-minor:vim-web": "npm version minor && npm run release-current",
     "release-major:vim-web": "npm version major && npm run release-current",
     "release-current": "npm run build:all && npm run commit:website && npm publish",
     "build:all": "npm run build:website && npm run build:libs",
-
     "build:libs": "vite build --config vite.config.libs.js && npm run declarations:libs",
     "package:libs": "npm run build:libs && npm publish",
     "declarations:libs": "tsc --project tsconfig.libs.json --declaration --emitDeclarationOnly --outdir ./dist/types",
     "documentation:libs": "typedoc --entryPoints src/vim-web/index.ts --entryPointStrategy expand --out docs/api --excludeProtected --excludeExternals --excludePrivate",
-    
     "build:website": "vite build --config vite.config.website.js && node scripts/copyIndex.js && npm run documentation:libs && npm run commit:website",
     "serve:website": "vite preview --outDir docs",
     "commit:website": "git add docs && git commit -m 'Build website[ci skip]' && git push"
