@@ -9,7 +9,7 @@
   "readme": "README.md",
   "main": "./dist/vim-web.iife.js",
   "types": "./dist/types/index.d.ts",
-  "module": "./dist/vim-web.mjs",
+  "module": "./dist/vim-web.js",
   "homepage": "https://github.com/vimaec/vim-web.git",
   "bugs": {
     "url": "https://github.com/vimaec/vim-web/issues"
