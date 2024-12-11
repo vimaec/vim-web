@@ -2,14 +2,14 @@
  * @module viw-webgl-react
  */
 
-import * as VIM from '../../core-viewers/webgl/index'
+import { WebglViewer, THREE } from '../../index'
 
 /**
  * Wraps the webgl viewer and provide higher level methods
  */
 export class ComponentCamera {
-  private _viewer: VIM.Viewer
-  constructor (viewer: VIM.Viewer) {
+  private _viewer: WebglViewer.Viewer
+  constructor (viewer: WebglViewer.Viewer) {
     this._viewer = viewer
   }
 
@@ -53,7 +53,7 @@ export class ComponentCamera {
  * @param source Optional VIM to specify the source of objects to frame.
  * @param duration Duration of the camera movement animation (default: 1).
  */
-  frameVisibleObjects (source?: VIM.Vim, duration = 1) {
+  frameVisibleObjects (source?: WebglViewer.Vim, duration = 1) {
     const movement = duration === 0
       ? this._viewer.camera.snap()
       : this._viewer.camera.lerp(duration)
@@ -67,10 +67,10 @@ export class ComponentCamera {
    * @param source Optional VIM to specify the source of visible objects.
    * @returns The bounding box of all visible objects.
    */
-  getVisibleBoundingBox (source?: VIM.Vim) {
-    let box: VIM.THREE.Box3
+  getVisibleBoundingBox (source?: WebglViewer.Vim) {
+    let box: THREE.Box3
 
-    const vimBoxUnion = (vim: VIM.Vim) => {
+    const vimBoxUnion = (vim: WebglViewer.Vim) => {
       for (const obj of vim.getObjects()) {
         if (!obj.visible) continue
         const b = obj.getBoundingBox()
