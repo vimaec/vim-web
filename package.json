@@ -1,6 +1,6 @@
 {
   "name": "vim-web",
-  "version": "0.3.34",
+  "version": "0.3.35-dev.0",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "type": "module",
   "files": [
