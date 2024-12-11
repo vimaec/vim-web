@@ -32,11 +32,17 @@ jobs:
       - name: Release Patch
         if: ${{ github.event.inputs.release_type == 'patch' }}
         run: npm run release:patch
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.VIM_NPM_PUSH }}
 
       - name: Release Minor
         if: ${{ github.event.inputs.release_type == 'minor' }}
         run: npm run release:minor
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.VIM_NPM_PUSH }}
 
       - name: Release Major
         if: ${{ github.event.inputs.release_type == 'major' }}
         run: npm run release:major
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.VIM_NPM_PUSH }}
