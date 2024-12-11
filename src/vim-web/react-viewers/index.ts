@@ -1,8 +1,10 @@
 import './style.css'
-export * as Webgl from './webgl/webglComponent'
-export * as Ultra from './ultra/ultraComponent'
+export * as WebglReact from './webgl/index'
+export * as UltraReact from './ultra/index'
 export * as ErrorStyle from './errors/errorStyle'
 export * as Errors from './errors/errors'
 export * as Urls from './urls'
+export * as Icons from './panels/icons'
 export type { MessageBoxProps } from './panels/messageBox'
 export * from './container'
+
