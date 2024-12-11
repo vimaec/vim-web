@@ -1,0 +1,51 @@
+name: Manual release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: "Select the release type"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  build:
+    if: ${{ !contains(github.event.head_commit.message, '[ci-skip]') }} # Prevents job execution
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Git user
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+
+      - name: Authenticate to NPM
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.VIM_NPM_PUSH }}" > ~/.npmrc
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Release Patch
+        if: ${{ github.event.inputs.release_type == 'patch' }}
+        run: npm run release-patch
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.VIM_NPM_PUSH }}
+
+      - name: Release Minor
+        if: ${{ github.event.inputs.release_type == 'minor' }}
+        run: npm run release-minor
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.VIM_NPM_PUSH }}
+
+      - name: Release Major
+        if: ${{ github.event.inputs.release_type == 'major' }}
+        run: npm run release-major
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.VIM_NPM_PUSH }}
