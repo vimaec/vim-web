@@ -21,7 +21,6 @@ export default defineConfig({
 
         // Keep style.css name
         assetFileNames: (assetInfo) => {
-          console.log(assetInfo)
           if (assetInfo.names[0] === 'vim-web.css') {
             return 'style.css'; // Keep name
           }
