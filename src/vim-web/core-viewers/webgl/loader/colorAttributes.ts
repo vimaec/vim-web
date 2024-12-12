@@ -87,8 +87,7 @@ export class ColorAttribute {
       colors.setXYZ(v, color.r, color.g, color.b)
     }
     colors.needsUpdate = true
-    colors.updateRange.offset = 0
-    colors.updateRange.count = -1
+    colors.clearUpdateRanges()  
   }
 
   /**
@@ -125,8 +124,7 @@ export class ColorAttribute {
       }
     }
     colors.needsUpdate = true
-    colors.updateRange.offset = 0
-    colors.updateRange.count = -1
+    colors.clearUpdateRanges()
   }
 
   private resetMergedInsertableColor (sub: InsertableSubmesh) {
@@ -146,8 +144,7 @@ export class ColorAttribute {
     }
 
     colors.needsUpdate = true
-    colors.updateRange.offset = 0
-    colors.updateRange.count = -1
+    colors.clearUpdateRanges()
   }
 
   /**
@@ -164,8 +161,7 @@ export class ColorAttribute {
       colors.setXYZ(sub.index, color.r, color.g, color.b)
       // Set attributes dirty
       colors.needsUpdate = true
-      colors.updateRange.offset = 0
-      colors.updateRange.count = -1
+      colors.clearUpdateRanges()
     }
   }
 

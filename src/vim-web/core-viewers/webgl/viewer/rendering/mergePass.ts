@@ -2,7 +2,7 @@
  * @module viw-webgl-viewer/rendering
  */
 
-import THREE from 'three'
+import * as THREE from 'three'
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass'
 import { ViewerMaterials } from '../../loader/materials/viewerMaterials'
 import { MergeMaterial } from '../../loader/materials/mergeMaterial'
