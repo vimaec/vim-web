@@ -74,8 +74,7 @@ export class ObjectAttribute<T> {
     }
     attribute.setX(sub.index, number)
     attribute.needsUpdate = true
-    attribute.updateRange.offset = 0
-    attribute.updateRange.count = -1
+    attribute.clearUpdateRanges()
   }
 
   private applyMerged (sub: MergedSubmesh, number: number) {
@@ -104,7 +103,6 @@ export class ObjectAttribute<T> {
       attribute.setX(v, number)
     }
     attribute.needsUpdate = true
-    attribute.updateRange.offset = 0
-    attribute.updateRange.count = -1
+    attribute.clearUpdateRanges()
   }
 }

@@ -22,12 +22,12 @@ export function createTransparent () {
  * @returns {THREE.MeshPhongMaterial} A new instance of MeshPhongMaterial with transparency.
  */
 export function createBasicOpaque () {
-  return new THREE.MeshPhongMaterial({
-    color: 0xcccccc,
+  return new THREE.MeshLambertMaterial({
     vertexColors: true,
     flatShading: true,
     side: THREE.DoubleSide,
-    shininess: 20
+
+    //shininess: 20
   })
 }
 
@@ -38,7 +38,7 @@ export function createBasicOpaque () {
 export function createBasicTransparent () {
   const mat = createBasicOpaque()
   mat.transparent = true
-  mat.shininess = 70
+  //mat.shininess = 70
   return mat
 }
 
@@ -46,7 +46,7 @@ export function createBasicTransparent () {
  * Material used for both opaque and tranparent surfaces of a VIM model.
  */
 export class StandardMaterial {
-  material: THREE.MeshPhongMaterial
+  material: THREE.Material
   uniforms: ShaderUniforms | undefined
 
   // Parameters
@@ -57,20 +57,22 @@ export class StandardMaterial {
   _sectionStrokeFallof: number = 0.75
   _sectionStrokeColor: THREE.Color = new THREE.Color(0xf6f6f6)
 
-  constructor (material: THREE.MeshPhongMaterial) {
+  constructor (material: THREE.Material) {
     this.material = material
     this.patchShader(material)
   }
 
   get color () {
-    if (this.material instanceof THREE.MeshPhongMaterial) {
+    if (this.material instanceof THREE.MeshLambertMaterial) {
       return this.material.color
     }
     return new THREE.Color(0xffffff)
   }
 
   set color (color: THREE.Color) {
-    this.material.color = color
+    if (this.material instanceof THREE.MeshLambertMaterial) {
+      this.material.color = color
+    }
   }
 
   get focusIntensity () {
