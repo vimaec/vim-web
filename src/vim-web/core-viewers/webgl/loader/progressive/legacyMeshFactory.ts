@@ -28,19 +28,30 @@ export class VimMeshFactory {
    * Adds all instances from subset to the scene
    */
   public add (subset: G3dSubset) {
-    const uniques = subset.filterUniqueMeshes()
-    const nonUniques = subset.filterNonUniqueMeshes()
+    //const uniques = subset.filterByCount((count) => count <= 1)
+    //const nonUniques = subset.filterByCount((count) => count > 1)
+    /*
+    const chunks = subset.chunks(1000000)
 
+    for (const chunk of chunks) {
+      this.addMergedMesh(this._scene, chunk)
+    }
+    console.log('Chunk count', chunks.length)
+    */
     // Create and add meshes to scene
-    this.addInstancedMeshes(this._scene, nonUniques)
-    this.addMergedMesh(this._scene, uniques)
+    // this.addInstancedMeshes(this._scene, nonUniques)
+    this.addMergedMesh(this._scene, subset)
   }
 
   private addMergedMesh (scene: Scene, subset: G3dSubset) {
     const opaque = this.createMergedMesh(subset, 'opaque', false)
     const transparents = this.createMergedMesh(subset, 'transparent', true)
+  
     scene.addMesh(opaque)
     scene.addMesh(transparents)
+
+    console.log('opaque', opaque.geometry.geometry.getIndex().count)
+    console.log('transparents', transparents.geometry.geometry.getIndex().count)
   }
 
   private createMergedMesh (

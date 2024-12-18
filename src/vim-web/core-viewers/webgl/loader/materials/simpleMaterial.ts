@@ -18,7 +18,6 @@ export function createSimpleMaterial () {
       fillColor: { value: new THREE.Vector3(0, 0, 0) }
     },
     vertexColors: true,
-    //  transparent: true,
     clipping: true,
     vertexShader: /* glsl */ `
 
@@ -70,7 +69,7 @@ export function createSimpleMaterial () {
           vColor.xyz = colored * instanceColor.xyz + (1.0f - colored) * color.xyz;
         #endif
 
-        gl_Position.z = -10.0f;
+        gl_Position.z = -0.1;
         
         // LIGHTING
         vPosition = vec3(mvPosition ) / mvPosition .w;

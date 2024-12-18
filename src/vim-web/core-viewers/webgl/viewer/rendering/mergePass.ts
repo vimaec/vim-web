@@ -21,6 +21,7 @@ export class MergePass extends Pass {
     this._material = materials?.merge ?? new MergeMaterial()
     this._fsQuad.material = this._material.material
     this._material.sourceA = source
+    this.needsSwap = true
   }
 
   dispose () {
@@ -45,5 +46,6 @@ export class MergePass extends Pass {
       renderer.setRenderTarget(writeBuffer)
       this._fsQuad.render(renderer)
     }
+    
   }
 }
