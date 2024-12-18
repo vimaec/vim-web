@@ -13,6 +13,7 @@ export class TransferPass extends Pass {
   private _fsQuad: FullScreenQuad
   private _uniforms: { [uniform: string]: THREE.IUniform<any> }
 
+
   constructor (sceneTexture: THREE.Texture) {
     super()
 
@@ -23,6 +24,15 @@ export class TransferPass extends Pass {
     this._uniforms.source.value = sceneTexture
     this.needsSwap = false
   }
+
+  get source () {
+    return this._uniforms.source.value
+  }
+
+  set source (value: THREE.Texture) {
+    this._uniforms.source.value = value
+  }
+
 
   dispose () {
     this._fsQuad.dispose()
