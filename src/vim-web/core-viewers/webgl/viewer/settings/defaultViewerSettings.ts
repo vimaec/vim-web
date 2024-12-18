@@ -89,9 +89,10 @@ export const defaultViewerSettings: ViewerSettings = {
       strokeColor: new THREE.Color(0xf6f6f6)
     },
     outline: {
-      intensity: 3,
-      falloff: 3,
-      blur: 2,
+      antialias: false,
+      intensity: 2,
+      falloff: 5,
+      blur: 8,
       color: new THREE.Color(0x00ffff)
     }
   },
