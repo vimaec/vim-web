@@ -101,12 +101,13 @@ export class Renderer implements IRenderer {
 
     this.renderer = new THREE.WebGLRenderer({
       canvas: viewport.canvas,
-      antialias: true,
-      precision: 'highp', // 'lowp', 'mediump', 'highp'
+      antialias: false,
+      precision: 'highp', 
       alpha: true,
       stencil: false,
       powerPreference: 'high-performance',
-      logarithmicDepthBuffer: true
+      logarithmicDepthBuffer: true,
+
     })
 
     this.onDemand = settings.rendering.onDemand

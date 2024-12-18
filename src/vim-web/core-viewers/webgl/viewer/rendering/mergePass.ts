@@ -24,6 +24,15 @@ export class MergePass extends Pass {
     this.needsSwap = true
   }
 
+
+  get source () {
+    return this._material.sourceA
+  }
+
+  set source (value: THREE.Texture) {
+    this._material.sourceA = value
+  }
+
   dispose () {
     this._fsQuad.dispose()
   }
