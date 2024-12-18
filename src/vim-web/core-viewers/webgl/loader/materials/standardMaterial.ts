@@ -23,10 +23,11 @@ export function createTransparent () {
  */
 export function createBasicOpaque () {
   return new THREE.MeshLambertMaterial({
+    color: 0xcccccc,
     vertexColors: true,
     flatShading: true,
     side: THREE.DoubleSide,
-
+    
     //shininess: 20
   })
 }
