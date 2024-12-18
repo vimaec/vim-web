@@ -13,10 +13,19 @@ export default defineConfig({
     rollupOptions: {
       external: ['react', 'react-dom'],
       output: {
+        // Save react and react-dom as globals so they can be provided as external dependencies
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM'
-        }
+        },
+
+        // Keep style.css name
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.names[0] === 'vim-web.css') {
+            return 'style.css'; // Keep name
+          }
+          return assetInfo.names[0];
+        },
       }
     },
     minify: false

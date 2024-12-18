@@ -16,7 +16,7 @@ export function MessageBox (props: {value: MessageBoxProps}) {
   const p = props.value
   if (!p.title || !p.body) return null
   return (
-    <div className="vim-message-box vc-p-6 vc-max-w-[424px] vc-w-[80%] vc-bg-white vc-rounded-md vc-shadow-message vc-shadow-[0px_4px_16px_rgba(33,39,51,0.5)] vc-font-roboto vc-w-full">
+    <div className="vim-message-box vc-p-6 vc-max-h-[80%] vc-max-w-[80%] vc-w-[424px] vc-bg-white vc-rounded-md vc-shadow-message vc-shadow-[0px_4px_16px_rgba(33,39,51,0.5)] vc-font-roboto">
       {/* Header Section */}
       <div className="vc-flex vc-justify-between vc-items-center">
         {title(p.title)}
@@ -34,7 +34,7 @@ export function MessageBox (props: {value: MessageBoxProps}) {
 }
 
 function title (title: string) {
-  return <h2 className="vc-font-bold vc-text-[20pt] vc-text-[#212733]">{title}</h2>
+  return <h2 className="vc-font-bold vc-text-xl vc-text-[#212733]">{title}</h2>
 }
 
 function closeBtn (onClose: () => void) {
@@ -56,13 +56,13 @@ function body (content: string | JSX.Element) {
 
 function footer (content: string | JSX.Element) {
   if (content === undefined) return null
-  return <div className="vc-flex vc-justify-start vc-mt-[3rem]">
+  return <div className="vim-footer vc-justify-start vc-mt-6">
     {content}
   </div>
 }
 
 function divider () {
-  return <div className="vc-border-b vc-border-[#DFDFE1] vc-my-6"></div>
+  return <div className="vim-divider vc-border-b vc-border-[#DFDFE1] vc-my-6"></div>
 }
 
 export default MessageBox

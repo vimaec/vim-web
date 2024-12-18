@@ -67,7 +67,7 @@ export class CameraLight {
   ) {
     this._camera = camera
     this.position = options.position.clone()
-    this.light = new THREE.DirectionalLight(options.color, options.intensity)
+    this.light = new THREE.DirectionalLight(options.color, options.intensity * Math.PI)
     this.followCamera = options.followCamera
   }
 

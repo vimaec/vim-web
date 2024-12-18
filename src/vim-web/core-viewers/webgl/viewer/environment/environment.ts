@@ -38,11 +38,12 @@ export class Environment {
   readonly skybox: Skybox
 
   constructor (camera:ICamera, renderer: Renderer, viewerMaterials: ViewerMaterials, settings: ViewerSettings) {
-    this._camera = camera
+    this._camera = camera 
     this._renderer = renderer
 
     this.groundPlane = new GroundPlane(settings)
     this.skyLight = this.createSkyLight(settings)
+    this.skyLight.castShadow = false
     this.skybox = new Skybox(camera, renderer, viewerMaterials, settings)
     this.sunLights = this.createSunLights(settings)
 
@@ -59,13 +60,15 @@ export class Environment {
 
   private createSkyLight (settings: ViewerSettings): THREE.HemisphereLight {
     const { skyColor, groundColor, intensity } = settings.skylight
-    return new THREE.HemisphereLight(skyColor, groundColor, intensity)
+    return new THREE.HemisphereLight(skyColor, groundColor, intensity * Math.PI)
   }
 
   private createSunLights (settings: ViewerSettings): ReadonlyArray<CameraLight> {
-    return settings.sunlights.map((s) =>
-      new CameraLight(this._camera, s)
-    )
+    return settings.sunlights.map((s) => {
+      const light = new CameraLight(this._camera, s)
+      light.light.castShadow = false
+      return light
+    })
   }
 
   private addObjectsToRenderer (): void {

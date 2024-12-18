@@ -9,15 +9,15 @@ export const vcRoboto = 'vc-font-[\'Roboto\',sans-serif]'
 
 export function footer (url: string) {
   return (
-    <span className={`vc-text-[12.8px] vc-font-normal ${vcColorSecondary}`}>
+    <p className={`vc-text-xs vc-font-normal ${vcColorSecondary}`}>
       More troubleshooting tips can be found{' '}
       {link(url, 'here')}
-    </span>
+    </p>
   )
 }
 
 export function mainText (text: JSX.Element) {
-  return <p className={`vc-text-base ${vcColorPrimary} vc-mb-4 vc-font-normal`}>
+  return <p className={`vim-main-text vc-text-base ${vcColorPrimary} vc-mb-4 vc-font-normal`}>
     {text}
   </p>
 }
@@ -31,7 +31,7 @@ export function bold (text: string) {
 }
 
 export function subTitle (title: string) {
-  return <span className={`vc-text-base vc-font-bold ${vcColorPrimary}`}>{title}</span>
+  return <p className={`vc-text-base vc-mb-1 vc-font-bold ${vcColorPrimary}`}>{title}</p>
 }
 
 export function dotList (elements: (JSX.Element | string)[]) {
@@ -61,7 +61,7 @@ export function bullet (label: string, value: string) {
 }
 
 export function link (url: string, text: string) {
-  return <a href={url} className={vcLink}>
+  return <a href={url} target="_blank" className={vcLink}>
     {text}
   </a>
 }

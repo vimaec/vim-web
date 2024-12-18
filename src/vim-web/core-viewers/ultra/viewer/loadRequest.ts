@@ -44,6 +44,9 @@ export class LoadRequest implements ILoadRequest {
   }
 
   async * getProgress () {
+    //Always yield 0 initially
+    yield 0
+
     if (this._result !== undefined) {
       yield this._progress
       return

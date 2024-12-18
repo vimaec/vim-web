@@ -16,7 +16,7 @@ import { GizmoMarkers } from './gizmos/markers/gizmoMarkers'
  * Type alias for THREE intersection array
  */
 export type ThreeIntersectionList = THREE.Intersection<
-  THREE.Object3D<THREE.Event>
+  THREE.Object3D<THREE.Object3DEventMap>
 >[]
 
 export type ActionType = 'main' | 'double' | 'idle'

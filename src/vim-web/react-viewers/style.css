@@ -99,7 +99,48 @@
   container-type: size;
 }
 
+.vim-modal {
+  container-type: size;
+}
+
 @container (width > 0px){
+  .vim-message-box .vc-text-xs{
+    font-size: min(5.5cqmin, 0.8rem);
+    line-height: min(6.5cqmin, 1rem);
+  }
+  .vim-message-box .vc-text-sm{
+    font-size: min(6cqmin, 0.875rem);
+    line-height: min(6.5cqmin, 1rem);
+  }
+  .vim-message-box .vc-text-base{
+    font-size: min(6.5cqmin, 1rem);
+    line-height: min(7cqmin, 1.15rem);
+  }
+  .vim-message-box .vc-text-lg{
+    font-size: min(7cqmin, 1.15rem);
+    line-height: min(7.5cqmin, 1.25rem);
+  }
+  .vim-message-box .vc-text-xl{
+    font-size: min(7.5cqmin, 1.25rem);
+    line-height: min(8cqmin, 1.35rem);
+  }
+  .vim-message-box {
+    padding: min(6cqmin, 1.5rem);
+  }
+
+  .vim-message-box .vim-divider{
+    margin-top: min(6cqmin, 1.5rem);
+    margin-bottom: min(6cqmin, 1.5rem);
+  }
+
+  .vim-message-box .vim-footer{
+    margin-top: min(6cqmin, 1.5rem);
+  }
+
+  .vim-message-box .vim-main-text{
+    margin-bottom: min(6cqmin, 1.5rem);
+  }
+
   .vim-side-panel-content {
     font-size: min(5.5cqmin, 0.8rem);
     left: min(5cqmin, 1rem);

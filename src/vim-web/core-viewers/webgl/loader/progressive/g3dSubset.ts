@@ -61,6 +61,34 @@ export class G3dSubset {
     }
   }
 
+  chunks(count: number): G3dSubset[] {
+    const chunks: G3dSubset[] = []
+    let currentSize = 0
+    let currentInstances: number[] = []
+    for(let i = 0; i < this.getMeshCount(); i++) {
+      
+      // Get mesh size and instances
+      const meshSize = this.getMeshIndexCount(i, 'all')
+      const instances = this.getMeshInstances(i)
+      currentSize += meshSize
+      currentInstances.push(...instances)
+
+      // Push chunk if size is reached
+      if(currentSize > count) {
+        chunks.push(new G3dSubset(this._source, currentInstances))
+        currentInstances = []
+        currentSize = 0
+      } 
+    }
+    
+    // Don't forget remaining instances
+    if (currentInstances.length > 0) {
+      chunks.push(new G3dSubset(this._source, currentInstances))
+    }
+    
+    return chunks
+  }
+  /**
   /**
    * Returns total instance count in subset.
    */
@@ -159,7 +187,7 @@ export class G3dSubset {
    * Returns a new subset that only contains unique meshes.
    */
   filterUniqueMeshes () {
-    return this.filterByCount((count) => count === 1)
+    return this.filterByCount((count) => count <3)
   }
 
   /**
@@ -194,10 +222,10 @@ export class G3dSubset {
    * Returns a new subset that only contains non-unique meshes.
    */
   filterNonUniqueMeshes () {
-    return this.filterByCount((count) => count > 1)
+    return this.filterByCount((count) => count > 3)
   }
 
-  private filterByCount (predicate: (i: number) => boolean) {
+  filterByCount (predicate: (i: number) => boolean) {
     const set = new Set<number>()
     this._meshInstances.forEach((instances, i) => {
       if (predicate(instances.length)) {

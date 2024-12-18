@@ -62,9 +62,9 @@ export class InsertableGeometry {
       colorSize
     )
 
-    this._indexAttribute.count = 0
-    this._vertexAttribute.count = 0
-    this._colorAttribute.count = 0
+    // this._indexAttribute.count = 0
+    // this._vertexAttribute.count = 0
+    // this._colorAttribute.count = 0
 
     this.geometry = new THREE.BufferGeometry()
     this.geometry.setIndex(this._indexAttribute)
@@ -302,9 +302,8 @@ export class InsertableGeometry {
     const indexEnd = this.offsets.getIndexOffset(this._updateEndMesh)
 
     // updated indices
-    this._indexAttribute.updateRange.offset = indexStart
-    this._indexAttribute.updateRange.count = indexEnd - indexStart
-    this._indexAttribute.count = indexEnd
+    this._indexAttribute.addUpdateRange(indexStart, indexEnd - indexStart)
+    //this._indexAttribute.count = indexEnd
     this._indexAttribute.needsUpdate = true
 
     // Compute vertex update range
@@ -313,17 +312,14 @@ export class InsertableGeometry {
 
     // update vertices
     const vSize = this._vertexAttribute.itemSize
-    this._vertexAttribute.updateRange.offset = vertexStart * vSize
-    this._vertexAttribute.updateRange.count = (vertexEnd - vertexStart) * vSize
-    this._vertexAttribute.count = vertexEnd
+    this._vertexAttribute.addUpdateRange(vertexStart * vSize,(vertexEnd - vertexStart) * vSize)
+    // this._vertexAttribute.count = vertexEnd
     this._vertexAttribute.needsUpdate = true
 
     // update colors
     const cSize = this._colorAttribute.itemSize
-    this._colorAttribute.updateRange.offset = vertexStart * cSize
-    this._colorAttribute.updateRange.count = (vertexEnd - vertexStart) * cSize
-
-    this._colorAttribute.count = vertexEnd
+    this._colorAttribute.addUpdateRange(vertexStart * cSize, (vertexEnd - vertexStart) * cSize)
+    // this._colorAttribute.count = vertexEnd
     this._colorAttribute.needsUpdate = true
 
     if (this._computeBoundingBox) {

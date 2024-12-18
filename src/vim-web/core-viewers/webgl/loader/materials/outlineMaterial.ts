@@ -13,6 +13,7 @@ export class OutlineMaterial {
     | undefined
 
   private _resolution: THREE.Vector2
+  private _precision: number = 1
 
   constructor (
     options?: Partial<{
@@ -30,19 +31,29 @@ export class OutlineMaterial {
     this.camera = options?.camera
   }
 
+  get precision () {
+    return this._precision
+  }
+
+  set precision (value: number) {
+    this._precision = value
+    this.resolution = this._resolution
+  }
+
   get resolution () {
     return this._resolution
   }
 
   set resolution (value: THREE.Vector2) {
     this.material.uniforms.screenSize.value.set(
-      value?.x ?? 1,
-      value?.y ?? 1,
-      1 / (value?.x ?? 1),
-      1 / (value?.y ?? 1)
+      value.x * this._precision,
+      value.y * this._precision,
+      1 / (value.x * this._precision),
+      1 / (value.y * this._precision)
     )
 
     this._resolution = value
+    this.material.uniformsNeedUpdate = true
   }
 
   get camera () {
@@ -52,9 +63,10 @@ export class OutlineMaterial {
   set camera (
     value: THREE.PerspectiveCamera | THREE.OrthographicCamera | undefined
   ) {
+    this._camera = value
     this.material.uniforms.cameraNear.value = value?.near ?? 1
     this.material.uniforms.cameraFar.value = value?.far ?? 1000
-    this._camera = value
+    this.material.uniformsNeedUpdate = true
   }
 
   get strokeBlur () {
@@ -63,6 +75,7 @@ export class OutlineMaterial {
 
   set strokeBlur (value: number) {
     this.material.uniforms.strokeBlur.value = value
+    this.material.uniformsNeedUpdate = true
   }
 
   get strokeBias () {
@@ -71,6 +84,7 @@ export class OutlineMaterial {
 
   set strokeBias (value: number) {
     this.material.uniforms.strokeBias.value = value
+    this.material.uniformsNeedUpdate = true
   }
 
   get strokeMultiplier () {
@@ -79,6 +93,7 @@ export class OutlineMaterial {
 
   set strokeMultiplier (value: number) {
     this.material.uniforms.strokeMultiplier.value = value
+    this.material.uniformsNeedUpdate = true
   }
 
   get color () {
@@ -87,6 +102,7 @@ export class OutlineMaterial {
 
   set color (value: THREE.Color) {
     this.material.uniforms.outlineColor.value.set(value)
+    this.material.uniformsNeedUpdate = true
   }
 
   get sceneBuffer () {
@@ -95,6 +111,7 @@ export class OutlineMaterial {
 
   set sceneBuffer (value: THREE.Texture) {
     this.material.uniforms.sceneBuffer.value = value
+    this.material.uniformsNeedUpdate = true
   }
 
   get depthBuffer () {
@@ -103,6 +120,7 @@ export class OutlineMaterial {
 
   set depthBuffer (value: THREE.Texture) {
     this.material.uniforms.depthBuffer.value = value
+    this.material.uniformsNeedUpdate = true
   }
 
   dispose () {
@@ -115,6 +133,7 @@ export class OutlineMaterial {
  */
 export function createOutlineMaterial () {
   return new THREE.ShaderMaterial({
+    lights: false,
     uniforms: {
       // Input buffers
       sceneBuffer: { value: null },

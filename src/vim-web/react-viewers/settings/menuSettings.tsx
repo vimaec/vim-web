@@ -6,6 +6,7 @@ import React from 'react'
 import * as VIM from '../../core-viewers/webgl/index'
 import { UserBoolean, ComponentSettings } from './settings'
 import { SettingsState } from './settingsState'
+import { WebglViewer, THREE } from '../..'
 
 /**
  * JSX Component to interact with settings.
@@ -89,7 +90,7 @@ export function MenuSettings (props: {
         {settingsBox(
           'Scroll Speed',
           '[0.1,10]',
-          n => VIM.THREE.MathUtils.clamp(n, 0.1, 10),
+          n => THREE.MathUtils.clamp(n, 0.1, 10),
           s => props.viewer.inputs.mouse.scrollSpeed,
           (s, v) => { props.viewer.inputs.mouse.scrollSpeed = v }
         )}

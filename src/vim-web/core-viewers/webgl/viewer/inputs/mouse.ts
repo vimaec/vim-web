@@ -129,6 +129,7 @@ export class MouseHandler extends InputHandler {
   }
 
   private onMouseIdle = (position: THREE.Vector2 | undefined) => {
+    return
     if (this._buttonDown || !position) return
     const action = new InputAction('idle', 'none', position, this.raycaster)
     this._viewer.inputs.IdleAction(action)
