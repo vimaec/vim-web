@@ -2,7 +2,7 @@
  * @module viw-webgl-viewer/rendering
  */
 
-import THREE from 'three'
+import * as THREE from 'three'
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass'
 import { createTransferMaterial } from '../../loader/materials/transferMaterial'
 
@@ -13,6 +13,7 @@ export class TransferPass extends Pass {
   private _fsQuad: FullScreenQuad
   private _uniforms: { [uniform: string]: THREE.IUniform<any> }
 
+
   constructor (sceneTexture: THREE.Texture) {
     super()
 
@@ -21,7 +22,17 @@ export class TransferPass extends Pass {
     this._fsQuad.material = mat
     this._uniforms = mat.uniforms
     this._uniforms.source.value = sceneTexture
+    this.needsSwap = false
   }
+
+  get source () {
+    return this._uniforms.source.value
+  }
+
+  set source (value: THREE.Texture) {
+    this._uniforms.source.value = value
+  }
+
 
   dispose () {
     this._fsQuad.dispose()
@@ -41,7 +52,7 @@ export class TransferPass extends Pass {
       renderer.setRenderTarget(null)
       this._fsQuad.render(renderer)
     } else {
-      renderer.setRenderTarget(writeBuffer)
+      renderer.setRenderTarget(readBuffer)
       this._fsQuad.render(renderer)
     }
   }

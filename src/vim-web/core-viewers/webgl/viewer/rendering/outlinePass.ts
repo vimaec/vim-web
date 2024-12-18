@@ -17,16 +17,15 @@ export class OutlinePass extends Pass {
   material: OutlineMaterial
 
   constructor (
-    sceneBuffer: THREE.Texture,
     camera: THREE.PerspectiveCamera | THREE.OrthographicCamera,
     material?: OutlineMaterial
   ) {
     super()
 
     this.material = material ?? new OutlineMaterial()
-    this.material.sceneBuffer = sceneBuffer
     this.material.camera = camera
     this._fsQuad = new FullScreenQuad(this.material.material)
+    this.needsSwap = true
   }
 
   setSize (width: number, height: number) {
@@ -56,6 +55,7 @@ export class OutlinePass extends Pass {
     const depthBufferValue = writeBuffer.depthBuffer
     writeBuffer.depthBuffer = false
     this.material.depthBuffer = readBuffer.depthTexture
+    this.material.sceneBuffer = readBuffer.texture
 
     // 2. Draw the outlines using the depth texture and normal texture
     // and combine it with the scene color

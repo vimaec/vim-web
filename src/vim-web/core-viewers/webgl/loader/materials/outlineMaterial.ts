@@ -13,15 +13,21 @@ export class OutlineMaterial {
     | undefined
 
   private _resolution: THREE.Vector2
+  private _precision: number = 1
+  private _antialias: boolean = false
 
   constructor (
     options?: Partial<{
       sceneBuffer: THREE.Texture
       resolution: THREE.Vector2
+      precision: number
+      antialias: boolean
       camera: THREE.PerspectiveCamera | THREE.OrthographicCamera
     }>
   ) {
     this.material = createOutlineMaterial()
+    this._antialias = options?.antialias ?? false
+    this._precision = options?.precision ?? 1
     this._resolution = options?.resolution ?? new THREE.Vector2(1, 1)
     this.resolution = this._resolution
     if (options?.sceneBuffer) {
@@ -30,21 +36,53 @@ export class OutlineMaterial {
     this.camera = options?.camera
   }
 
+  /**
+   * Enable antialiasing for the outline.
+   * This is actually applied in the rendering composer.
+   */
+  get antialias () {
+    return this._antialias
+  }
+
+  set antialias (value: boolean) {
+    this._antialias = value
+    this.material.uniformsNeedUpdate = true
+  }
+
+  /**
+   * Precision of the outline. This is used to scale the resolution of the outline.
+   */
+  get precision () {
+    return this._precision
+  }
+
+  set precision (value: number) {
+    this._precision = value
+    this.resolution = this._resolution
+  }
+
+  /**
+   * Resolution of the outline. This should match the resolution of screen.
+   */
   get resolution () {
     return this._resolution
   }
 
   set resolution (value: THREE.Vector2) {
     this.material.uniforms.screenSize.value.set(
-      value?.x ?? 1,
-      value?.y ?? 1,
-      1 / (value?.x ?? 1),
-      1 / (value?.y ?? 1)
+      value.x * this._precision,
+      value.y * this._precision,
+      1 / (value.x * this._precision),
+      1 / (value.y * this._precision)
     )
 
     this._resolution = value
+    this.material.uniformsNeedUpdate = true
   }
 
+  /**
+   * Camera used to render the outline.
+   */
   get camera () {
     return this._camera
   }
@@ -52,59 +90,87 @@ export class OutlineMaterial {
   set camera (
     value: THREE.PerspectiveCamera | THREE.OrthographicCamera | undefined
   ) {
+    this._camera = value
     this.material.uniforms.cameraNear.value = value?.near ?? 1
     this.material.uniforms.cameraFar.value = value?.far ?? 1000
-    this._camera = value
+    this.material.uniformsNeedUpdate = true
   }
 
+  /**
+   * Blur of the outline. This is used to smooth the outline.
+   */
   get strokeBlur () {
     return this.material.uniforms.strokeBlur.value
   }
 
   set strokeBlur (value: number) {
     this.material.uniforms.strokeBlur.value = value
+    this.material.uniformsNeedUpdate = true
   }
 
+  /**
+   * Bias of the outline. This is used to control the strength of the outline.
+   */
   get strokeBias () {
     return this.material.uniforms.strokeBias.value
   }
 
   set strokeBias (value: number) {
     this.material.uniforms.strokeBias.value = value
+    this.material.uniformsNeedUpdate = true
   }
 
+  /**
+   * Multiplier of the outline. This is used to control the strength of the outline.
+   */
   get strokeMultiplier () {
     return this.material.uniforms.strokeMultiplier.value
   }
 
   set strokeMultiplier (value: number) {
     this.material.uniforms.strokeMultiplier.value = value
+    this.material.uniformsNeedUpdate = true
   }
 
+  /**
+   * Color of the outline.
+   */
   get color () {
     return this.material.uniforms.outlineColor.value
   }
 
   set color (value: THREE.Color) {
     this.material.uniforms.outlineColor.value.set(value)
+    this.material.uniformsNeedUpdate = true
   }
 
+  /**
+   * Scene buffer used to render the outline.
+   */
   get sceneBuffer () {
     return this.material.uniforms.sceneBuffer.value
   }
 
   set sceneBuffer (value: THREE.Texture) {
     this.material.uniforms.sceneBuffer.value = value
+    this.material.uniformsNeedUpdate = true
   }
 
+  /**
+   * Depth buffer used to render the outline.
+   */
   get depthBuffer () {
     return this.material.uniforms.depthBuffer.value
   }
 
   set depthBuffer (value: THREE.Texture) {
     this.material.uniforms.depthBuffer.value = value
+    this.material.uniformsNeedUpdate = true
   }
 
+  /**
+   * Dispose of the outline material.
+   */
   dispose () {
     this.material.dispose()
   }
@@ -115,6 +181,7 @@ export class OutlineMaterial {
  */
 export function createOutlineMaterial () {
   return new THREE.ShaderMaterial({
+    lights: false,
     uniforms: {
       // Input buffers
       sceneBuffer: { value: null },

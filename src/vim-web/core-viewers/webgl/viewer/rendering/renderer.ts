@@ -49,12 +49,18 @@ export class Renderer implements IRenderer {
   private _skipAntialias: boolean
 
   private _needsUpdate: boolean
+  
   private _onSceneUpdate = new SignalDispatcher()
   private _onBoxUpdated = new SignalDispatcher()
   private _sceneUpdated = false
 
   // 3GB
   private maxMemory = 3 * Math.pow(10, 9)
+
+  /**
+   * Indicates whether the scene should be re-rendered on change only.
+   */
+  onDemand: boolean
 
   /**
    * Indicates whether the scene needs to be re-rendered.
@@ -96,13 +102,15 @@ export class Renderer implements IRenderer {
     this.renderer = new THREE.WebGLRenderer({
       canvas: viewport.canvas,
       antialias: true,
-      precision: 'highp', // 'lowp', 'mediump', 'highp'
+      precision: 'highp', 
       alpha: true,
       stencil: false,
       powerPreference: 'high-performance',
-      logarithmicDepthBuffer: true
+      logarithmicDepthBuffer: true,
+
     })
 
+    this.onDemand = settings.rendering.onDemand
     this.textRenderer = this._viewport.textRenderer
     this.textEnabled = true
 
@@ -113,7 +121,6 @@ export class Renderer implements IRenderer {
       materials,
       camera
     )
-    this._composer.onDemand = settings.rendering.onDemand
 
     this.section = new RenderingSection(this, this._materials)
 
@@ -219,11 +226,9 @@ export class Renderer implements IRenderer {
     }
 
     this._composer.outlines = this._scene.hasOutline()
-    this._composer.render(
-      this.needsUpdate,
-      this.antialias && !this.skipAntialias && !this._camera.hasMoved
-    )
-
+    if(this.needsUpdate || !this.onDemand) {
+      this._composer.render()
+    }
     this._needsUpdate = false
     this.skipAntialias = false
 

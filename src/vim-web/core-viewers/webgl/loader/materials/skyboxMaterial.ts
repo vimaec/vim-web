@@ -40,6 +40,7 @@ export class SkyboxMaterial extends THREE.ShaderMaterial {
     groundColor: THREE.Color = new THREE.Color(0.8, 0.7, 0.5),
     sharpness: number = 2) {
     super({
+      depthWrite: false,
       uniforms: {
         skyColor: { value: skyColor },
         groundColor: { value: groundColor },

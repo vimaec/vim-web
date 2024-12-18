@@ -15,7 +15,7 @@ export function createBoxes (boxes: THREE.Box3[]) {
     return new THREE.Matrix4().compose(center, quaternion, size)
   })
 
-  const cube = new THREE.BoxBufferGeometry(1, 1, 1)
+  const cube = new THREE.BoxGeometry(1, 1, 1)
   const mat = new THREE.MeshBasicMaterial({
     transparent: true,
     opacity: 0.2,

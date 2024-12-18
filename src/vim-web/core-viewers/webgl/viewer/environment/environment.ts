@@ -59,7 +59,7 @@ export class Environment {
 
   private createSkyLight (settings: ViewerSettings): THREE.HemisphereLight {
     const { skyColor, groundColor, intensity } = settings.skylight
-    return new THREE.HemisphereLight(skyColor, groundColor, intensity)
+    return new THREE.HemisphereLight(skyColor, groundColor, intensity * Math.PI)
   }
 
   private createSunLights (settings: ViewerSettings): ReadonlyArray<CameraLight> {
