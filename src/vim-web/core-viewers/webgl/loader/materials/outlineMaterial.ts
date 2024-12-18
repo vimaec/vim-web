@@ -14,15 +14,20 @@ export class OutlineMaterial {
 
   private _resolution: THREE.Vector2
   private _precision: number = 1
+  private _antialias: boolean = false
 
   constructor (
     options?: Partial<{
       sceneBuffer: THREE.Texture
       resolution: THREE.Vector2
+      precision: number
+      antialias: boolean
       camera: THREE.PerspectiveCamera | THREE.OrthographicCamera
     }>
   ) {
     this.material = createOutlineMaterial()
+    this._antialias = options?.antialias ?? false
+    this._precision = options?.precision ?? 1
     this._resolution = options?.resolution ?? new THREE.Vector2(1, 1)
     this.resolution = this._resolution
     if (options?.sceneBuffer) {
@@ -31,6 +36,22 @@ export class OutlineMaterial {
     this.camera = options?.camera
   }
 
+  /**
+   * Enable antialiasing for the outline.
+   * This is actually applied in the rendering composer.
+   */
+  get antialias () {
+    return this._antialias
+  }
+
+  set antialias (value: boolean) {
+    this._antialias = value
+    this.material.uniformsNeedUpdate = true
+  }
+
+  /**
+   * Precision of the outline. This is used to scale the resolution of the outline.
+   */
   get precision () {
     return this._precision
   }
@@ -40,6 +61,9 @@ export class OutlineMaterial {
     this.resolution = this._resolution
   }
 
+  /**
+   * Resolution of the outline. This should match the resolution of screen.
+   */
   get resolution () {
     return this._resolution
   }
@@ -56,6 +80,9 @@ export class OutlineMaterial {
     this.material.uniformsNeedUpdate = true
   }
 
+  /**
+   * Camera used to render the outline.
+   */
   get camera () {
     return this._camera
   }
@@ -69,6 +96,9 @@ export class OutlineMaterial {
     this.material.uniformsNeedUpdate = true
   }
 
+  /**
+   * Blur of the outline. This is used to smooth the outline.
+   */
   get strokeBlur () {
     return this.material.uniforms.strokeBlur.value
   }
@@ -78,6 +108,9 @@ export class OutlineMaterial {
     this.material.uniformsNeedUpdate = true
   }
 
+  /**
+   * Bias of the outline. This is used to control the strength of the outline.
+   */
   get strokeBias () {
     return this.material.uniforms.strokeBias.value
   }
@@ -87,6 +120,9 @@ export class OutlineMaterial {
     this.material.uniformsNeedUpdate = true
   }
 
+  /**
+   * Multiplier of the outline. This is used to control the strength of the outline.
+   */
   get strokeMultiplier () {
     return this.material.uniforms.strokeMultiplier.value
   }
@@ -96,6 +132,9 @@ export class OutlineMaterial {
     this.material.uniformsNeedUpdate = true
   }
 
+  /**
+   * Color of the outline.
+   */
   get color () {
     return this.material.uniforms.outlineColor.value
   }
@@ -105,6 +144,9 @@ export class OutlineMaterial {
     this.material.uniformsNeedUpdate = true
   }
 
+  /**
+   * Scene buffer used to render the outline.
+   */
   get sceneBuffer () {
     return this.material.uniforms.sceneBuffer.value
   }
@@ -114,6 +156,9 @@ export class OutlineMaterial {
     this.material.uniformsNeedUpdate = true
   }
 
+  /**
+   * Depth buffer used to render the outline.
+   */
   get depthBuffer () {
     return this.material.uniforms.depthBuffer.value
   }
@@ -123,6 +168,9 @@ export class OutlineMaterial {
     this.material.uniformsNeedUpdate = true
   }
 
+  /**
+   * Dispose of the outline material.
+   */
   dispose () {
     this.material.dispose()
   }
