@@ -21,6 +21,7 @@ export class TransferPass extends Pass {
     this._fsQuad.material = mat
     this._uniforms = mat.uniforms
     this._uniforms.source.value = sceneTexture
+    this.needsSwap = false
   }
 
   dispose () {
@@ -41,7 +42,7 @@ export class TransferPass extends Pass {
       renderer.setRenderTarget(null)
       this._fsQuad.render(renderer)
     } else {
-      renderer.setRenderTarget(writeBuffer)
+      renderer.setRenderTarget(readBuffer)
       this._fsQuad.render(renderer)
     }
   }

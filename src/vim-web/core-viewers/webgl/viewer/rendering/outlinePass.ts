@@ -27,6 +27,7 @@ export class OutlinePass extends Pass {
     this.material.sceneBuffer = sceneBuffer
     this.material.camera = camera
     this._fsQuad = new FullScreenQuad(this.material.material)
+    this.needsSwap = true
   }
 
   setSize (width: number, height: number) {
