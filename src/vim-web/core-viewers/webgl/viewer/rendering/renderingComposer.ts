@@ -135,7 +135,6 @@ export class RenderingComposer {
 
     // Setup outline pass using the selection render result
     this._outlinePass = new OutlinePass(
-      this._outlineTarget.texture,
       this._camera,
       this._materials.outline
     )

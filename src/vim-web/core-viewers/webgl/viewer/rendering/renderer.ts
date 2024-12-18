@@ -101,7 +101,7 @@ export class Renderer implements IRenderer {
 
     this.renderer = new THREE.WebGLRenderer({
       canvas: viewport.canvas,
-      antialias: false,
+      antialias: true,
       precision: 'highp', 
       alpha: true,
       stencil: false,

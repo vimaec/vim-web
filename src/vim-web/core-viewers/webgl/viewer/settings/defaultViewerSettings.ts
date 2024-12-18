@@ -73,7 +73,7 @@ export const defaultViewerSettings: ViewerSettings = {
   ],
   materials: {
     standard: {
-      color: new THREE.Color(0x999999)
+      color: new THREE.Color(0xcccccc)
     },
     highlight: {
       color: new THREE.Color(0x6ad2ff),
@@ -89,10 +89,10 @@ export const defaultViewerSettings: ViewerSettings = {
       strokeColor: new THREE.Color(0xf6f6f6)
     },
     outline: {
-      antialias: false,
-      intensity: 2,
-      falloff: 5,
-      blur: 8,
+      antialias: true,
+      intensity: 3,
+      falloff: 3,
+      blur: 2,
       color: new THREE.Color(0x00ffff)
     }
   },
