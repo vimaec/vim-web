@@ -1,5 +1,5 @@
 import { IInputs, Inputs } from './inputs/inputs'
-import { ClientState, SocketClient } from './socketClient'
+import { ClientError, ClientState, SocketClient } from './socketClient'
 import { Decoder, IDecoder } from './decoder'
 import { DecoderWithWorker } from './decoderWithWorker'
 import { Vim } from './vim'
@@ -125,7 +125,7 @@ export class Viewer {
    */
   constructor (canvas: HTMLCanvasElement, logger?: ILogger) {
     this._logger = logger ?? defaultLogger
-    this._socketClient = new SocketClient(this._logger)
+    this._socketClient = new SocketClient(this._logger, () => this.validateConnection())
 
     this.rpc = new RpcSafeClient(new RpcClient(this._socketClient))
 
@@ -161,7 +161,6 @@ export class Viewer {
    * Initializes components and checks for API version compatibility.
    */
   private async onConnect (): Promise<void> {
-    if (!this.checkAPIVersion()) return
     this._renderer.onConnect()
     this._input.onConnect()
     this._camera.onConnect()
@@ -170,7 +169,17 @@ export class Viewer {
     this._decoder.start()
   }
 
-  private async checkAPIVersion () {
+  private async validateConnection (): Promise<ClientError | undefined> {
+    const apiVersionError = await this.checkAPIVersion()
+    if(apiVersionError) return apiVersionError
+
+    const streamError = await this._renderer.validateConnection()
+    if(streamError) return streamError
+
+    return undefined
+  }
+
+  private async checkAPIVersion (): Promise<ClientError | undefined> {
     const version = await this.rpc.RPCGetAPIVersion()
     const localVersion = this.rpc.API_VERSION
 
@@ -183,16 +192,15 @@ export class Viewer {
     const localParsedVersion = parseVersion(localVersion)
 
     if (localParsedVersion.major !== remoteVersion.major) {
-      this._socketClient.disconnect({
+      return {
         status: 'error',
         error: 'compatibility',
         serverUrl: this._socketClient.url ?? '',
         clientVersion: localVersion,
         serverVersion: version
-      })
-      return false
+      }
     }
-    return true
+    return undefined
   }
 
   /**
