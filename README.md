@@ -11,13 +11,13 @@ https://www.npmjs.com/package/vim-web
 
 ### WebGL Viewer
 - **[Small - Residence](https://vimaec.github.io/vim-web/webgl)**
-- **[Medium - Medical Tower](https://vimaec.github.io/vim-web/webgl?vim=https://vim.azureedge.net/samples/skanska.vim)**
-- **[Small - Stadium](https://vimaec.github.io/vim-web/webgl?vim=https://vim.azureedge.net/samples/stadium.vim)**
+- **[Medium - Medical Tower](https://vimaec.github.io/vim-web/webgl?vim=https://vim.azureedge.net/samples/Medical_Tower.vim)**
+- **[Small - Stadium](https://vimaec.github.io/vim-web/webgl?vim=https://vim.azureedge.net/samples/Mirvac.vim)**
 
 ### Ultra Viewer
 - **[Small - Residence](https://vimaec.github.io/vim-web/ultra)**
-- **[Medium - Medical Tower](https://vimaec.github.io/vim-web/ultra?vim=https://vim.azureedge.net/samples/skanska.vim)**
-- **[Small - Stadium](https://vimaec.github.io/vim-web/ultra?vim=https://vim.azureedge.net/samples/stadium.vim)**
+- **[Medium - Medical Tower](https://vimaec.github.io/vim-web/ultra?vim=https://vim.azureedge.net/samples/Medical_Tower.vim)**
+- **[Small - Stadium](https://vimaec.github.io/vim-web/ultra?vim=https://vim.azureedge.net/samples/Mirvac.vim)**
 
 Find detailed camera controls here: [Camera Controls](https://docs.vimaec.com/docs/vim-cloud/webgl-navigation-and-controls-guide).
 
