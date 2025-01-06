@@ -16,8 +16,9 @@ export function WebglHome () {
 
 async function createComponent (div: HTMLDivElement) {
   const webgl = await WebglReact.createWebglComponent(div)
+  const url = getPathFromUrl() ?? Urls.residence
   const request = webgl.loader.request(
-    { url: getPathFromUrl() ?? Urls.residence },
+    { url },
     { rotation: new THREE.Vector3(270, 0, 0) }
   )
 
