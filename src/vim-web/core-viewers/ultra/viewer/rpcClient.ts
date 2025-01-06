@@ -1,6 +1,6 @@
 import type { SocketClient } from './socketClient'
 import { Marshal, HitCheckResult, VimStatus } from './marshal'
-import { Box3, RGBA, RGBA32, Segment, Vector2, Vector3 } from '../utils/math3d'
+import { Box3, RGBA, RGBA32, Segment, Vector2, Vector3, Matrix44 } from '../utils/math3d'
 
 // RPC Generated Constants
 
@@ -34,11 +34,25 @@ export const materialHandles : MaterialHandle[] = [
 export class RpcClient {
   private readonly _messenger: SocketClient
 
+  get url(): string {
+    return this._messenger.url
+  }
+
   constructor (_messenger: SocketClient) {
     this._messenger = _messenger
   }
+  
   // RPC Generated Code
-  readonly API_VERSION = "4.0.0"
+  readonly API_VERSION = "5.0.0"
+
+  RPCAddNodeFlags(componentHandle: number, nodes: number[], flags: number): void {
+    const marshal = new Marshal();
+    marshal.writeString("RPCAddNodeFlags");
+    marshal.writeUInt(componentHandle);
+    marshal.writeArrayOfUInt(nodes);
+    marshal.writeUInt(flags);
+    this._messenger.sendRPC(marshal);
+  }
 
   RPCClearMaterialOverrides(componentHandle: number): void {
     const marshal = new Marshal();
@@ -159,6 +173,14 @@ export class RpcClient {
     marshal.writeString("RPCGetCameraPosition");
     const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readSegment(); 
+    return ret;
+  }
+
+  async RPCGetIblRotation(): Promise<Matrix44> {
+    const marshal = new Marshal();
+    marshal.writeString("RPCGetIblRotation");
+    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const ret = returnMarshal.readMatrix44(); 
     return ret;
   }
 
@@ -339,6 +361,15 @@ export class RpcClient {
     return ret;
   }
 
+  RPCRemoveNodeFlags(componentHandle: number, nodes: number[], flags: number): void {
+    const marshal = new Marshal();
+    marshal.writeString("RPCRemoveNodeFlags");
+    marshal.writeUInt(componentHandle);
+    marshal.writeArrayOfUInt(nodes);
+    marshal.writeUInt(flags);
+    this._messenger.sendRPC(marshal);
+  }
+
   RPCSetAspectRatio(width: number, height: number): void {
     const marshal = new Marshal();
     marshal.writeString("RPCSetAspectRatio");
@@ -366,6 +397,13 @@ export class RpcClient {
     const marshal = new Marshal();
     marshal.writeString("RPCSetGhostColor");
     marshal.writeRGBA(ghostColor);
+    this._messenger.sendRPC(marshal);
+  }
+
+  RPCSetIblRotation(transform: Matrix44): void {
+    const marshal = new Marshal();
+    marshal.writeString("RPCSetIblRotation");
+    marshal.writeMatrix44(transform);
     this._messenger.sendRPC(marshal);
   }
 
@@ -428,7 +466,7 @@ export class RpcClient {
     this._messenger.sendRPC(marshal);
   }
 
-  RPCStartScene(toneMappingWhitePoint: number, hdrScale: number, hdrBackgroundScale: number, hdrBackgroundSaturation: number, backgroundBlur: number, backgroundColor: RGBA): void {
+  async RPCStartScene(toneMappingWhitePoint: number, hdrScale: number, hdrBackgroundScale: number, hdrBackgroundSaturation: number, backgroundBlur: number, backgroundColor: RGBA): Promise<boolean> {
     const marshal = new Marshal();
     marshal.writeString("RPCStartScene");
     marshal.writeFloat(toneMappingWhitePoint);
@@ -437,7 +475,9 @@ export class RpcClient {
     marshal.writeFloat(hdrBackgroundSaturation);
     marshal.writeFloat(backgroundBlur);
     marshal.writeRGBA(backgroundColor);
-    this._messenger.sendRPC(marshal);
+    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const ret = returnMarshal.readBoolean(); 
+    return ret;
   }
 
   RPCTriggerRenderDocCapture(): void {

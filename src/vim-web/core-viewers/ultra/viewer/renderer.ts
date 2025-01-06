@@ -1,6 +1,7 @@
 import { RGBA } from "../utils/math3d";
 import { Validation } from "../utils/validation";
 import { defaultSceneSettings, RpcSafeClient, SceneSettings } from "./rpcSafeClient";
+import { ClientError, ClientStreamError } from "./socketClient";
 
 /**
  * Render settings that extend SceneSettings with additional rendering-specific properties
@@ -58,11 +59,27 @@ export class Renderer implements IRenderer {
   }
 
   /**
+   * Validates the connection to the server by attempting to start a scene.
+   * @returns A promise that resolves to a ClientStreamError if the connection fails, or undefined if successful.
+   */
+  async validateConnection() : Promise<ClientStreamError | undefined>{
+    const success = await this._rpc.RPCStartScene(this._settings)
+    if(success) return undefined
+
+    const error = await this._rpc.RPCGetLastError()
+    return {
+      status: 'error',
+      error: 'stream',
+      serverUrl: this._rpc.url,
+      details: error
+    }
+  }
+
+  /**
    * Initializes the renderer when connection is established
    * Sets up initial scene settings, ghost color, and IBL rotation
    */
   onConnect(){
-    this._rpc.RPCStartScene(this._settings)
     this._rpc.RPCSetGhostColor(this._settings.ghostColor)
     this._rpc.RPCLockIblRotation(this._settings.lockIblRotation)
   }

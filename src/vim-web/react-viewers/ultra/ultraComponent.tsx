@@ -7,7 +7,7 @@ import { createRoot } from 'react-dom/client'
 import { DeferredPromise } from '../helpers/deferredPromise'
 import { Overlay } from '../panels/overlay'
 import { Modal, ModalRef, useModal } from '../panels/modal'
-import { getErrorMessage, getRequestErrorMessage } from './ultraErrors'
+import { getErrorMessage, getRequestErrorMessage } from './errors/ultraErrors'
 
 export type UltraComponentRef = {
   viewer : Ultra.Viewer

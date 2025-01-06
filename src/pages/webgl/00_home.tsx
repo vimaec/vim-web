@@ -24,8 +24,9 @@ async function createComponent (div: HTMLDivElement, viewerRef: React.MutableRef
   viewerRef.current = viewer
   globalThis.viewer = viewer
 
+  const url = getPathFromUrl() ?? Urls.residence
   const request = viewer.loader.request(
-    { url: getPathFromUrl() ?? Urls.residence },
+    { url },
     { rotation: new THREE.Vector3(270, 0, 0) }
   )
 

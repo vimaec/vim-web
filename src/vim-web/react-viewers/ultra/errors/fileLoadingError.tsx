@@ -1,7 +1,7 @@
 import React from 'react'
-import { MessageBoxProps } from '../panels/messageBox'
-import * as style from './errorStyle'
-import * as Urls from '../urls'
+import { MessageBoxProps } from '../../panels/messageBox'
+import * as style from '../../errors/errorStyle'
+import * as Urls from '../../urls'
 
 export function serverFileLoadingError (url: string): MessageBoxProps {
   return {
