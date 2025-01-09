@@ -291,6 +291,8 @@ export class StandardMaterial {
           #endif  
         `
         )
+        console.log(shader.vertexShader)
+        console.log(shader.fragmentShader)
     }
   }
 }
