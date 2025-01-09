@@ -19,7 +19,7 @@ export function createTransparent () {
 
 /**
  * Creates a new instance of the default loader opaque material.
- * @returns {THREE.MeshPhongMaterial} A new instance of MeshPhongMaterial with transparency.
+ * @returns {THREE.MeshLambertMaterial} A new instance of MeshLambertMaterial with transparency.
  */
 export function createBasicOpaque () {
   return new THREE.MeshLambertMaterial({
@@ -245,18 +245,20 @@ export class StandardMaterial {
         )
         // FRAGMENT IMPLEMENTATION
         .replace(
-          '#include <output_fragment>',
+          '#include <opaque_fragment>',
           `
           // VISIBILITY
-          if (vIgnore > 0.0f)
+          if (vIgnore > 0.0f){
             discard;
+          }
+
          
           // COLORING
           // vColored == 1 -> Vertex Color * light 
           // vColored == 0 -> Phong Color 
           float d = length(outgoingLight);
           gl_FragColor = vec4(vColored * vColor.xyz * d + (1.0f - vColored) * outgoingLight.xyz, diffuseColor.a);
-
+          
           // FOCUS
           gl_FragColor = mix(gl_FragColor, vec4(focusColor,1.0f), vHighlight * focusIntensity);
           
