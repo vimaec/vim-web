@@ -1,6 +1,6 @@
 {
   "name": "vim-web",
-  "version": "0.3.39-dev.0",
+  "version": "0.3.39",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "type": "module",
   "files": [
@@ -9,7 +9,7 @@
   "readme": "README.md",
   "main": "./dist/vim-web.iife.js",
   "types": "./dist/types/index.d.ts",
-  "module": "./dist/vim-web.mjs",
+  "module": "./dist/vim-web.js",
   "homepage": "https://github.com/vimaec/vim-web.git",
   "bugs": {
     "url": "https://github.com/vimaec/vim-web/issues"
@@ -62,7 +62,7 @@
   },
   "dependencies": {
     "@firefox-devtools/react-contextmenu": "^5.1.1",
-    "@types/three": "0.143.0",
+    "@types/three": "0.170.0",
     "@vitejs/plugin-react": "^4.3.4",
     "deepmerge": "^4.3.1",
     "is-plain-object": "^5.0.0",
@@ -73,7 +73,7 @@
     "ste-events": "^3.0.11",
     "ste-signals": "^3.0.11",
     "ste-simple-events": "^3.0.11",
-    "three": "0.143.0",
+    "three": "0.171.0",
     "vim-format": "1.0.14"
   },
   "peerDependencies": {

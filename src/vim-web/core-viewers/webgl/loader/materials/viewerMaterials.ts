@@ -122,6 +122,7 @@ export class ViewerMaterials {
     this.outlineFalloff = settings.materials.outline.falloff
     this.outlineBlur = settings.materials.outline.blur
     this.outlineColor = settings.materials.outline.color
+    // outline.antialias is applied in the rendering composer
   }
 
   /**
@@ -303,6 +304,15 @@ export class ViewerMaterials {
   set outlineColor (value: THREE.Color) {
     if (this.merge.color === value) return
     this.merge.color = value
+    this._onUpdate.dispatch()
+  }
+
+  get outlineAntialias () {
+    return this.outline.antialias
+  }
+
+  set outlineAntialias (value: boolean) {
+    this.outline.antialias = value
     this._onUpdate.dispatch()
   }
 

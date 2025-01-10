@@ -1,3 +1,7 @@
+// This can eventually all be replaced with the three.js types
+
+export { Matrix4 as Matrix44 } from 'three'
+
 export class Vector3 {
   x: number
   y: number

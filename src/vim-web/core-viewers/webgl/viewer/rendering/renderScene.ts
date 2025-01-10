@@ -19,6 +19,11 @@ export class RenderScene {
   private _boundingBox: THREE.Box3 | undefined
   private _memory = 0
   private _2dCount = 0
+  private _material: THREE.Material | undefined
+
+  get models() {
+    return this._vimScenes.flatMap((s) => s.meshes)
+  }
 
   constructor () {
     this.scene = new THREE.Scene()
@@ -30,11 +35,11 @@ export class RenderScene {
 
   has2dObjects () {
     return this._2dCount > 0
-  }
+  } 
 
   hasOutline () {
     for (const s of this._vimScenes) {
-      if (s.hasOutline) return true
+      if (s.hasOutline()) return true
     }
     return false
   }
@@ -131,6 +136,18 @@ export class RenderScene {
     this.scene.clear()
     this._boundingBox = undefined
     this._memory = 0
+  }
+
+  get material() {
+    return this._material
+  }
+  set material(material: THREE.Material) {
+    this._material = material
+    this._vimScenes.forEach((s) => {
+      s.meshes.forEach((m) => {
+        m.mesh.material = material
+      })
+    })
   }
 
   private addScene (scene: Scene) {

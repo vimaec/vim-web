@@ -46,6 +46,7 @@ export class ComponentLoader {
    */
   onProgress (p: VIM.IProgressLogs) {
     this._modal.loading({
+      message: 'Loading in WebGL Mode',
       progress: p.loaded,
       mode: 'bytes'
     })

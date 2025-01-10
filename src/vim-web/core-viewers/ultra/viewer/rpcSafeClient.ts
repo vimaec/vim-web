@@ -51,6 +51,10 @@ export class RpcSafeClient {
   private readonly rpc: RpcClient
   private readonly batchSize: number
 
+  get url(): string {
+    return this.rpc.url
+  }
+
   constructor(rpc: RpcClient, batchSize: number = defaultBatchSize) {
     this.rpc = rpc
     this.batchSize = batchSize
@@ -67,16 +71,19 @@ export class RpcSafeClient {
    * @param settings - Optional partial scene settings to override defaults
    * @remarks If no settings are provided, default values will be used
    */
-  RPCStartScene(settings?: Partial<SceneSettings>) {
+  async RPCStartScene(settings?: Partial<SceneSettings>): Promise<boolean> {
     const s = { ...defaultSceneSettings, ...(settings ?? {}) }
 
-    this.rpc.RPCStartScene(
-      Validation.clamp01(s.toneMappingWhitePoint),
-      Validation.min0(s.hdrScale),
-      Validation.clamp01(s.hdrBackgroundScale),
-      Validation.clamp01(s.hdrBackgroundSaturation),
-      Validation.clamp01(s.backGroundBlur),
-      Validation.clampRGBA01(s.backgroundColor)
+    return await this.safeCall( 
+      () => this.rpc.RPCStartScene(
+        Validation.clamp01(s.toneMappingWhitePoint),
+        Validation.min0(s.hdrScale),
+        Validation.clamp01(s.hdrBackgroundScale),
+        Validation.clamp01(s.hdrBackgroundSaturation),
+        Validation.clamp01(s.backGroundBlur),
+        Validation.clampRGBA01(s.backgroundColor)
+      ),
+      false
     )
   }
 

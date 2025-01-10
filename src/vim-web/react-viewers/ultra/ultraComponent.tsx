@@ -7,7 +7,7 @@ import { createRoot } from 'react-dom/client'
 import { DeferredPromise } from '../helpers/deferredPromise'
 import { Overlay } from '../panels/overlay'
 import { Modal, ModalRef, useModal } from '../panels/modal'
-import { getErrorMessage, getRequestErrorMessage } from './ultraErrors'
+import { getErrorMessage, getRequestErrorMessage } from './errors/ultraErrors'
 
 export type UltraComponentRef = {
   viewer : Ultra.Viewer
@@ -86,7 +86,7 @@ function updateModal (modal: ModalRef, state: Ultra.ClientState) {
   }
   if (state.status === 'connecting') {
     if (modal.current === undefined || modal.current.type === 'loading') {
-      modal.loading({ message: 'Connecting to server...' })
+      modal.loading({ message: 'Connecting to VIM Ultra server...' })
     }
   }
   if (state.status === 'error') {
@@ -129,6 +129,6 @@ function ToRef (viewer: Ultra.Viewer, modal: ModalRef): UltraComponentRef {
 async function updateProgress (request: Ultra.ILoadRequest, modal: ModalRef) {
   for await (const progress of request.getProgress()) {
     if (request.isCompleted) break
-    modal.loading({ message: 'Loading File...', progress })
+    modal.loading({ message: 'Loading File in VIM Ultra mode', progress })
   }
 }
