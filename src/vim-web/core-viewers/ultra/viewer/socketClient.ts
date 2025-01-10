@@ -6,11 +6,14 @@ import { ControllablePromise, IPromise, ResolvedPromise } from '../utils/promise
 import { SimpleEventDispatcher } from 'ste-simple-events'
 import { isWebSocketUrl } from '../utils/url'
 
-export type ClientState = ClientStateConnecting | ClientStateConnected | ClientStateDisconnected | ClientError
-export type ClientError = ClientStateCompatibilityError | ClientStateConnectionError // | other types of errors
+export type ClientState = ClientStateConnecting | ClientStateConnected | ClientStateDisconnected | ClientStateValidating | ClientError
+export type ClientError = ClientStateCompatibilityError | ClientStateConnectionError | ClientStreamError// | other types of errors
 
 export type ClientStateConnecting = {
   status: 'connecting'
+}
+export type ClientStateValidating = {
+  status: 'validating'
 }
 export type ClientStateConnected = {
   status: 'connected'
@@ -30,6 +33,13 @@ export type ClientStateConnectionError = {
   status: 'error'
   error: 'connection'
   serverUrl: string
+}
+
+export type ClientStreamError = {
+  status: 'error'
+  error: 'stream'
+  serverUrl: string
+  details: string
 }
 
 export enum FrameType {
@@ -56,12 +66,11 @@ export class SocketClient {
 
   private _socket: WebSocket | undefined
 
-  private readonly _queue: ArrayBuffer[] = []
   private readonly _pendingRPCs = new Map<number, { resolve:(data: Marshal) => void, reject: (error: any) => void }>()
   private _rpcCallId: number = 0
   private _reconnectTimeout : ReturnType<typeof setTimeout> | undefined
   private _connectionTimeout: ReturnType<typeof setTimeout> | undefined
-
+  private _validateConnection: () => Promise<ClientError | undefined>
   /**
    * Callback function to handle incoming video frames.
    * @param msg - The video frame message received from the server.
@@ -110,11 +119,13 @@ export class SocketClient {
   /**
    * Constructs a new Messenger instance.
    * @param logger - The logger for logging messages.
+   * @param checks - checks to perform before returning connection.
    */
-  constructor (logger: ILogger) {
+  constructor (logger: ILogger, validateConnection: () => Promise<ClientError | undefined>) {
     this._logger = logger
     this._rpcCallId = 0
     this._streamLogger = new StreamLogger(logger)
+    this._validateConnection = validateConnection
   }
 
   /**
@@ -170,9 +181,9 @@ export class SocketClient {
    * Handles the disconnection logic, stopping logging and clearing the socket.
    */
   private _disconnect (error?: ClientError): void {
+    console.log('disconnect', error)
     clearTimeout(this._reconnectTimeout)
     clearTimeout(this._connectionTimeout)
-    this._queue.length = 0
     this._streamLogger.stopLogging()
     this._clearSocket()
     this._clearPendingRPCs()
@@ -251,17 +262,21 @@ export class SocketClient {
    * @param _ - The event object (unused).
    */
   private async _onOpen (_: Event): Promise<void> {
+    // Clear connection timeout
     clearTimeout(this._connectionTimeout)
-    this._streamLogger.startLoggging()
-    this._logger.log('Connected to ' + this._socket?.url)
+    this.updateState({ status: 'validating' })
 
-    // Send any queued messages
-    for (const message of this._queue) {
-      this._socket?.send(message)
+    // Validate connection
+    const issues = await this._validateConnection()
+    if (issues !== undefined) {
+      this._disconnect(issues)
+      return
     }
-    this._queue.length = 0
 
+    // Connection is valid, send pending RPCs and update state
+    this._logger.log('Connected to ' + this._socket?.url)
     this.updateState({ status: 'connected' })
+    this._streamLogger.startLoggging()
     this._connectPromise.resolve()
   }
 
@@ -286,12 +301,20 @@ export class SocketClient {
    * @param data - The ArrayBuffer containing the binary data to send.
    */
   public sendBinary (data: ArrayBuffer): void {
-    if (this.state.status === 'connecting') {
-      this._queue.push(data)
-    } else if (this.state.status === 'connected') {
-      this._socket?.send(data)
-    } else if (this.state.status === 'disconnected') {
-      // this._logger.log('Cannot send data when disconnected')
+    switch (this.state.status){
+      case 'validating':
+      case 'connected':
+        this._socket?.send(data)
+        return
+      case 'disconnected':
+        this._logger.log('Cannot send data when disconnected')
+        return
+      case 'connecting':
+        this._logger.log('Cannot send data when connecting')
+        return
+      case 'error':
+        this._logger.log('Cannot send data when in error state')
+        return
     }
   }
 

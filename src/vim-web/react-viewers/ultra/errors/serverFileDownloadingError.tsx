@@ -1,11 +1,11 @@
 import React from 'react'
-import { MessageBoxProps } from '../panels/messageBox'
-import * as style from './errorStyle'
-import * as Urls from '../urls'
-import { isFilePathOrUri } from './errorUtils'
+import { MessageBoxProps } from '../../panels/messageBox'
+import * as style from '../../errors/errorStyle'
+import * as Urls from '../../urls'
+import { isFilePathOrUri } from '../../errors/errorUtils'
 import { fileOpeningError } from './fileOpeningError'
 
-export function fileDownloadingError (url : string, server?: string): MessageBoxProps {
+export function serverFileDownloadingError (url : string, server?: string): MessageBoxProps {
   if (isFilePathOrUri(url)) {
     return fileOpeningError(url)
   }

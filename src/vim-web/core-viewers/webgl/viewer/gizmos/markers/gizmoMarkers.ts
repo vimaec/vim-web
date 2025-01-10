@@ -24,7 +24,7 @@ export class GizmoMarkers {
   }
 
   private createMesh (previous : THREE.InstancedMesh, capacity : number, count: number) {
-    const geometry = previous?.geometry ?? new THREE.SphereBufferGeometry(1, 8, 8)
+    const geometry = previous?.geometry ?? new THREE.SphereGeometry(1, 8, 8)
 
     const mat = previous?.material ?? new StandardMaterial(new THREE.MeshPhongMaterial({
       color: 0x999999,

@@ -2,7 +2,7 @@
  * Don't modify this file, the RPC generated code depends on its interface.
  */
 
-import { Box3, RGB, RGBA, RGBA32, Segment, Vector2, Vector3 } from "../utils/math3d";
+import { Box3, RGB, RGBA, RGBA32, Segment, Vector2, Vector3, Matrix44 } from "../utils/math3d";
 
 export type HitCheckResult = {
   vimHandle: number;         // uint32_t equivalent
@@ -56,6 +56,42 @@ export class Marshal {
     this.ensureCapacity(data.byteLength)
     new Uint8Array(this.buffer, this.writeOffset).set(new Uint8Array(data))
     this.writeOffset += data.byteLength
+  }
+  // -------------------- Matrix44 Methods --------------------
+
+  public writeMatrix44(data: Matrix44): void {
+    this.ensureCapacity(4 * 4 * 4)
+    this.writeArray(data.toArray(), 4, (element) => {
+      this.writeFloat(element)
+    })
+  }
+
+  public readMatrix44(): Matrix44 {
+    //  First row
+    const m00 = this.readFloat()
+    const m01 = this.readFloat()
+    const m02 = this.readFloat()
+    const m03 = this.readFloat()
+
+    //  Second row
+    const m10 = this.readFloat()
+    const m11 = this.readFloat()
+    const m12 = this.readFloat()
+    const m13 = this.readFloat()
+
+    //  Third row
+    const m20 = this.readFloat()
+    const m21 = this.readFloat()
+    const m22 = this.readFloat()
+    const m23 = this.readFloat()
+
+    //  Fourth row
+    const m30 = this.readFloat()
+    const m31 = this.readFloat()
+    const m32 = this.readFloat()
+    const m33 = this.readFloat()
+
+    return new Matrix44(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33)
   }
 
   // -------------------- Boolean Methods --------------------
@@ -132,7 +168,6 @@ export class Marshal {
     this.readOffset += length
     return textDecoder.decode(stringData)
   }
- 
 
   // -------------------- HitCheckResult Methods --------------------
 

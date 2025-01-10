@@ -28,12 +28,15 @@ export class VimMeshFactory {
    * Adds all instances from subset to the scene
    */
   public add (subset: G3dSubset) {
-    const uniques = subset.filterUniqueMeshes()
-    const nonUniques = subset.filterNonUniqueMeshes()
+    const uniques = subset.filterByCount((count) => count <= 5)
+    const nonUniques = subset.filterByCount((count) => count > 5)
 
     // Create and add meshes to scene
     this.addInstancedMeshes(this._scene, nonUniques)
-    this.addMergedMesh(this._scene, uniques)
+    const chunks = uniques.chunks(4_000_000)
+    for(const chunk of chunks) {
+      this.addMergedMesh(this._scene, chunk)
+    }
   }
 
   private addMergedMesh (scene: Scene, subset: G3dSubset) {
@@ -61,8 +64,8 @@ export class VimMeshFactory {
   }
 
   private addInstancedMeshes (scene: Scene, subset: G3dSubset) {
-    const count2 = subset.getMeshCount()
-    for (let m = 0; m < count2; m++) {
+    const count = subset.getMeshCount()
+    for (let m = 0; m < count; m++) {
       const mesh = subset.getSourceMesh(m)
       const instances =
         subset.getMeshInstances(m) ?? this.g3d.meshInstances[mesh]
