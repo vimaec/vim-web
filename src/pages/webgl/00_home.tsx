@@ -5,13 +5,8 @@ import * as Urls from '../devUrls'
 
 export function WebglHome () {
   const div = useRef<HTMLDivElement>(null)
-  const viewer = useRef<WebglReact.Refs.VimComponentRef>()
-
   useEffect(() => {
-    void createComponent(div.current, viewer)
-    return () => {
-      viewer.current?.dispose()
-    }
+    void createComponent(div.current)
   }, [])
 
   return (
@@ -19,23 +14,21 @@ export function WebglHome () {
   )
 }
 
-async function createComponent (div: HTMLDivElement, viewerRef: React.MutableRefObject<WebglReact.Refs.VimComponentRef | undefined>) {
-  const viewer = await WebglReact.createWebglComponent(div)
-  viewerRef.current = viewer
-  globalThis.viewer = viewer
-
+async function createComponent (div: HTMLDivElement) {
+  const webgl = await WebglReact.createWebglComponent(div)
   const url = getPathFromUrl() ?? Urls.residence
-  const request = viewer.loader.request(
+  const request = webgl.loader.request(
     { url },
     { rotation: new THREE.Vector3(270, 0, 0) }
   )
 
   const result = await request.getResult()
   if (result.isSuccess()) {
-    viewer.loader.add(result.result)
-    viewer.camera.frameVisibleObjects()
+    webgl.loader.add(result.result)
+    webgl.camera.frameVisibleObjects()
   }
 }
+
 
 function getPathFromUrl () {
   const params = new URLSearchParams(window.location.search)
