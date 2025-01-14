@@ -19,7 +19,7 @@ export type RenderSettings = SceneSettings & {
 export const defaultRenderSettings: RenderSettings = {
   ...defaultSceneSettings,
   lockIblRotation: true,
-  ghostColor: new RGBA(0.7, 0.62, 0.66, 0.005)
+  ghostColor: new RGBA(14/255, 14/255, 14/255, 1/255)
 }
 
 /**

@@ -107,7 +107,7 @@ export class ComponentLoader {
    * @returns A new load request instance to track progress and get result.
    */
   request (source: VIM.RequestSource,
-    settings: VIM.VimPartialSettings) {
+    settings?: VIM.VimPartialSettings) {
     return new LoadRequest({
       onProgress: (p) => this.onProgress(p),
       onError: (e) => this.onError(e),

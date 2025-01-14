@@ -22,13 +22,13 @@ export class LoadRequest {
   private _isDone: boolean = false
   private _completionPromise = new DeferredPromise<void>()
 
-  constructor (callbacks: RequestCallbacks, source: VIM.RequestSource, settings: VIM.VimPartialSettings) {
+  constructor (callbacks: RequestCallbacks, source: VIM.RequestSource, settings?: VIM.VimPartialSettings) {
     this.source = source
     this._callbacks = callbacks
     this.startRequest(source, settings)
   }
 
-  private async startRequest (source: VIM.RequestSource, settings: VIM.VimPartialSettings) {
+  private async startRequest (source: VIM.RequestSource, settings?: VIM.VimPartialSettings) {
     this._request = await VIM.request(source, settings)
     for await (const progress of this._request.getProgress()) {
       this.onProgress(progress)
