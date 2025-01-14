@@ -21,7 +21,6 @@ function findPage (path: string) {
 }
 
 function Navigation () {
-  console.log('Navigation')
   const navigate = useNavigate()
   const path = window.location.pathname.replace("/vim-web", '')
   const pageInfo = findPage(path)
