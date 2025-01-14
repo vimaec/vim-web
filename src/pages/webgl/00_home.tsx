@@ -5,8 +5,10 @@ import * as Urls from '../devUrls'
 
 export function WebglHome () {
   const div = useRef<HTMLDivElement>(null)
+  const cmp = useRef<WebglReact.Refs.VimComponentRef>()
   useEffect(() => {
-    void createComponent(div.current)
+    createComponent(div.current, cmp)
+    return () => cmp.current?.dispose()
   }, [])
 
   return (
@@ -14,8 +16,11 @@ export function WebglHome () {
   )
 }
 
-async function createComponent (div: HTMLDivElement) {
+async function createComponent (div: HTMLDivElement, ref: React.MutableRefObject<WebglReact.Refs.VimComponentRef>) {
   const webgl = await WebglReact.createWebglComponent(div)
+  ref.current = webgl
+  globalThis.viewer = webgl
+
   const url = getPathFromUrl() ?? Urls.residence
   const request = webgl.loader.request(
     { url },
