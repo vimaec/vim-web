@@ -9,6 +9,7 @@ import * as THREE from 'three'
  */
 export function createMaskMaterial () {
   return new THREE.ShaderMaterial({
+    side: THREE.DoubleSide,
     uniforms: {},
     clipping: true,
     vertexShader: `

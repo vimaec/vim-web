@@ -1,6 +1,6 @@
 {
   "name": "vim-web",
-  "version": "0.3.39",
+  "version": "0.3.40",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "type": "module",
   "files": [
@@ -74,7 +74,7 @@
     "ste-signals": "^3.0.11",
     "ste-simple-events": "^3.0.11",
     "three": "0.171.0",
-    "vim-format": "1.0.14"
+    "vim-format": "1.0.15-dev.5"
   },
   "peerDependencies": {
     "react": "^18.3.1",
