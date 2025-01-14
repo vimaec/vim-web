@@ -15,7 +15,7 @@ function body (url: string): JSX.Element {
   return (
     <div className={style.vcRoboto}>
       {style.mainText(<>
-        Oops, it appears that there’s an {style.bold('error starting a stream on the VIM Ulta Server')}.
+        Oops, it appears that there’s an {style.bold('error starting a stream on the VIM Ultra Server')}.
         Please check the following conditions to get back up and running quickly.
       </>)}
       {style.subTitle('Troubleshooting tips:')}
