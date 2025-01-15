@@ -58,6 +58,16 @@ export class BoxInputs {
     this.reg(canvas, 'pointerdown', this.onMouseDown.bind(this))
     this.reg(canvas, 'pointermove', this.onMouseMove.bind(this))
     this.reg(canvas, 'pointerup', this.onMouseUp.bind(this))
+    this.reg(canvas, 'pointerleave', this.onPointerLeave.bind(this))
+  }
+
+  onPointerLeave(event: PointerEvent){
+    if(this.capturedId !== undefined){
+      return
+    }
+
+    this.faceNormal.set(0,0,0)
+    this.onFaceEnter?.(this.faceNormal)
   }
 
   capturePointer (pointerId: number) {

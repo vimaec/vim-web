@@ -41,7 +41,7 @@ function useUltraWithModel (
 ) {
   const load = async (ultra: UltraReact.UltraComponentRef) => {
     await ultra.viewer.connect()
-    const request = ultra.load(modelUrl)
+    const request = ultra.load({url:modelUrl})
     const result = await request.getResult()
     if (result.isSuccess) {
       await ultra.viewer.camera.frameAll(0)

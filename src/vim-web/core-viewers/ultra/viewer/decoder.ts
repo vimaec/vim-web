@@ -178,7 +178,12 @@ export class Decoder implements IDecoder {
         this._logger.error('Error decoding video chunk: ', e)
       }
     }
-    this._firstDecoded = true
+
+    if(!this._firstDecoded)
+    {
+      this._firstDecoded = true
+      this._logger.log('First frame decoded')
+    }
   }
 
   /**
