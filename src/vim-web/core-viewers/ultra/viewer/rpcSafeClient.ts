@@ -526,7 +526,7 @@ export class RpcSafeClient {
 
     // Run
     return await this.safeCall(
-      () => this.rpc.RPCLoadVimURL(source.url, source.authToken),
+      () => this.rpc.RPCLoadVimURL(source.url, source.authToken ?? ""),
       INVALID_HANDLE
     )
   }
