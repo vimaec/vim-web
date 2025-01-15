@@ -40,8 +40,8 @@ export const defaultViewerSettings: ViewerSettings = {
   background: { color: new THREE.Color(0xc1c2c6) },
   skybox: {
     enable: true,
-    skyColor: new THREE.Color(0xe6f4fa), // Light sky blue pastel
-    groundColor: new THREE.Color(0xdfdfe1), // Light earthy brown pastel
+    skyColor: new THREE.Color(0xffffff), // white
+    groundColor: new THREE.Color(0xf6f6f6), // less white
     sharpness: 2
   },
   groundPlane: {
