@@ -1,24 +1,24 @@
-import React from 'react'
+import * as Ultra from '../../../core-viewers/ultra'
 import { MessageBoxProps } from '../../panels/messageBox'
 import * as style from '../../errors/errorStyle'
 import * as Urls from '../../urls'
 import { isFilePathOrUri } from '../../errors/errorUtils'
 import { fileOpeningError } from './fileOpeningError'
 
-export function serverFileDownloadingError (url : string, server?: string): MessageBoxProps {
+export function serverFileDownloadingError (url : string, authToken?: string, server?: string): MessageBoxProps {
   if (isFilePathOrUri(url)) {
     return fileOpeningError(url)
   }
 
   return {
     title: 'File Downloading Error',
-    body: body(server, url),
+    body: body(server, authToken, server),
     footer: style.footer(Urls.support),
     canClose: false
   }
 }
 
-function body (server : string, url : string) {
+function body (url : string, server: string, authToken?: string): JSX.Element {
   return (
     <div className={style.vcRoboto}>
       {style.mainText(<>
@@ -28,7 +28,8 @@ function body (server : string, url : string) {
       {style.subTitle('Error details:')}
       {style.dotList([
         server ? style.bullet('VIM ULTRA Server:', server) : null,
-        style.bullet('File URL:', url)
+        style.bullet('File URL:', url),
+        authToken ? style.bullet('Auth Token:', authToken) : null
       ])}
       {style.subTitle('Troubleshooting tips:')}
       {style.numList([

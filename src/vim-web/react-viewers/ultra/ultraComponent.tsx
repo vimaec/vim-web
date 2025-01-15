@@ -13,7 +13,7 @@ export type UltraComponentRef = {
   viewer : Ultra.Viewer
   modal: ModalRef
   dispose: () => void
-  load(url: string): Ultra.ILoadRequest
+  load(url: Ultra.VimSource): Ultra.ILoadRequest
 }
 
 /**
@@ -97,8 +97,8 @@ function updateModal (modal: ModalRef, state: Ultra.ClientState) {
 
 function ToRef (viewer: Ultra.Viewer, modal: ModalRef): UltraComponentRef {
   // Load a file from the server
-  function load (url: string): Ultra.ILoadRequest {
-    const request = viewer.loadVim(url)
+  function load (source: Ultra.VimSource): Ultra.ILoadRequest {
+    const request = viewer.loadVim(source)
 
     // We don't want to block the main thread to get progress updates
     void updateProgress(request, modal)
@@ -107,7 +107,7 @@ function ToRef (viewer: Ultra.Viewer, modal: ModalRef): UltraComponentRef {
     void request.getResult().then(
       result => {
         if (result.isError) {
-          modal.message(getRequestErrorMessage(url, result.error))
+          modal.message(getRequestErrorMessage(source, result.error))
           return
         }
         if (result.isSuccess) {

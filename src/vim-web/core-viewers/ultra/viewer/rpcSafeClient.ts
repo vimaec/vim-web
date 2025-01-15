@@ -7,6 +7,11 @@ import { INVALID_HANDLE } from "./viewer"
 
 const defaultBatchSize = 10000
 
+export type VimSource = {
+  url: string;
+  authToken? : string;
+}
+
 export type VimLoadingState = {
   status: VimLoadingStatus;
   progress: number;
@@ -53,6 +58,10 @@ export class RpcSafeClient {
 
   get url(): string {
     return this.rpc.url
+  }
+
+  get connected(): boolean {
+    return this.rpc.connected
   }
 
   constructor(rpc: RpcClient, batchSize: number = defaultBatchSize) {
@@ -489,18 +498,18 @@ export class RpcSafeClient {
 
   /**
    * Loads a VIM file from the local filesystem.
-   * @param fileName - The path to the VIM file (supports file:// protocol)
+   * @param source - The path to the VIM file (supports file:// protocol)
    * @returns Promise resolving to the handle of the loaded VIM component
    * @throws {Error} If the filename is invalid or empty
    */
-  async RPCLoadVim(fileName: string): Promise<number> {
+  async RPCLoadVim(source: VimSource): Promise<number> {
     // Validation
-    if (!Validation.isNonEmptyString(fileName)) return INVALID_HANDLE
-    fileName = fileName.replace("file:///", "file://")
+    if (!Validation.isNonEmptyString(source.url)) return INVALID_HANDLE
+    const url = source.url.replace("file:///", "file://")
 
     // Run
     return await this.safeCall(
-      () => this.rpc.RPCLoadVim(fileName),
+      () => this.rpc.RPCLoadVim(url),
       INVALID_HANDLE
     )
   }
@@ -511,13 +520,13 @@ export class RpcSafeClient {
    * @returns Promise resolving to the handle of the loaded VIM component
    * @throws {Error} If the URL is invalid
    */
-  async RPCLoadVimURL(url: string): Promise<number> {
+  async RPCLoadVimURL(source: VimSource): Promise<number> {
     // Validation
-    if (!Validation.isURL(url)) return INVALID_HANDLE
+    if (!Validation.isURL(source.url)) return INVALID_HANDLE
 
     // Run
     return await this.safeCall(
-      () => this.rpc.RPCLoadVimURL(url, ""),
+      () => this.rpc.RPCLoadVimURL(source.url, source.authToken ?? ""),
       INVALID_HANDLE
     )
   }

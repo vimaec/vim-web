@@ -9,7 +9,7 @@ import { ILogger, defaultLogger } from './logger'
 import { IViewport, Viewport } from './viewport'
 import { ColorManager } from './colorManager'
 import { Camera, ICamera } from './camera'
-import { RpcSafeClient } from './rpcSafeClient'
+import { RpcSafeClient, VimSource } from './rpcSafeClient'
 import { ISimpleEvent } from 'ste-simple-events'
 import { ViewerSelection } from './selection'
 import { IReadonlyVimCollection, VimCollection } from './vimCollection'
@@ -131,10 +131,10 @@ export class Viewer {
 
     this._canvas = canvas
     this._vims = new VimCollection()
-    this._viewport = new Viewport(canvas, this.rpc)
+    this._viewport = new Viewport(canvas, this.rpc, this._logger)
     this._decoder = new Decoder(canvas, this._logger)
     this._selection = new ViewerSelection(this.rpc, this._vims)
-    this._renderer = new Renderer(this.rpc)
+    this._renderer = new Renderer(this.rpc, this._logger)
     this.colors = new ColorManager(this.rpc)
     this._camera = new Camera(this.rpc)
     this._input = new Inputs(canvas, this.rpc, this._selection, this._camera, this._renderer)
@@ -192,6 +192,7 @@ export class Viewer {
     const localParsedVersion = parseVersion(localVersion)
 
     if (localParsedVersion.major !== remoteVersion.major) {
+      this._logger.error('Major version mismatch', { local: localParsedVersion, remote: remoteVersion })
       return {
         status: 'error',
         error: 'compatibility',
@@ -200,6 +201,8 @@ export class Viewer {
         serverVersion: version
       }
     }
+
+    this._logger.log('API version check passed', { local: localParsedVersion, remote: remoteVersion })
     return undefined
   }
 
@@ -233,17 +236,17 @@ export class Viewer {
 
   /**
    * Requests the server to load the given URL or file path.
-   * @param path - The path or URL to the VIM file.
+   * @param source - The path or URL to the VIM file.
    * @returns A load request object that can be used to wait for the load to complete.
    */
-  loadVim (path: string): ILoadRequest {
-    if (typeof path !== 'string' || path.trim() === '') {
+  loadVim (source: VimSource): ILoadRequest {
+    if (typeof source.url !== 'string' || source.url.trim() === '') {
       const request = new LoadRequest()
       request.error('loadingError', 'Invalid path')
       return request
     }
 
-    const vim = new Vim(this.rpc, this.colors, path, this._logger)
+    const vim = new Vim(this.rpc, this.colors, source, this._logger)
     this._vims.add(vim)
     const request = vim.connect()
     request.getResult().then((result) => {

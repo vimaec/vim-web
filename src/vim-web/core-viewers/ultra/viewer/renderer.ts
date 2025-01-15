@@ -1,5 +1,6 @@
 import { RGBA } from "../utils/math3d";
 import { Validation } from "../utils/validation";
+import { ILogger } from "./logger";
 import { defaultSceneSettings, RpcSafeClient, SceneSettings } from "./rpcSafeClient";
 import { ClientError, ClientStreamError } from "./socketClient";
 
@@ -41,6 +42,7 @@ export interface IRenderer {
  */
 export class Renderer implements IRenderer {
   private _rpc: RpcSafeClient
+  private _logger : ILogger
   private _settings: RenderSettings
   
   private _animationFrame: number | undefined = undefined;
@@ -53,8 +55,9 @@ export class Renderer implements IRenderer {
    * @param rpc - RPC client for communication with the rendering backend
    * @param settings - Optional partial render settings to override defaults
    */
-  constructor(rpc: RpcSafeClient, settings: Partial<RenderSettings> = {}){
+  constructor(rpc: RpcSafeClient, logger: ILogger, settings: Partial<RenderSettings> = {}){
     this._rpc = rpc
+    this._logger = logger
     this._settings = {...defaultRenderSettings, ...settings}
   }
 
@@ -64,9 +67,13 @@ export class Renderer implements IRenderer {
    */
   async validateConnection() : Promise<ClientStreamError | undefined>{
     const success = await this._rpc.RPCStartScene(this._settings)
-    if(success) return undefined
+    if(success) {
+      this._logger.log('Scene stream started successfully')
+      return undefined
+    }
 
     const error = await this._rpc.RPCGetLastError()
+    this._logger.error('Failed to start scene stream', error)
     return {
       status: 'error',
       error: 'stream',

@@ -38,6 +38,10 @@ export class RpcClient {
     return this._messenger.url
   }
 
+  get connected(): boolean {
+    return this._messenger.state.status === 'connected'
+  }	
+
   constructor (_messenger: SocketClient) {
     this._messenger = _messenger
   }
