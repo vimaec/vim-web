@@ -32,10 +32,10 @@ export class Inputs extends InputHandler implements IInputs {
     this._inputsMouse = new InputMouse(this._canvas, this._rpc, selection, camera)
     this._inputsTouch = new InputTouch(this._canvas, this._rpc)
     this._keyboard = new InputKeyboard(this._rpc, selection, camera, this)
-    this.register()
   }
 
   onConnect(){
+    this.register()
     this._rpc.RPCSetMoveSpeed(this._moveSpeed)
   }
 
