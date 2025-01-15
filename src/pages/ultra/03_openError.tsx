@@ -15,5 +15,5 @@ export function UltraOpenError () {
 
 async function badPath (ultra: UltraReact.UltraComponentRef) {
   await ultra.viewer.connect()
-  ultra.load('C:/Users/username/Downloads/invalid.vim')
+  ultra.load({url:'C:/Users/username/Downloads/invalid.vim'})
 }

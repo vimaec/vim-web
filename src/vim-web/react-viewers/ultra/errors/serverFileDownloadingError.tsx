@@ -5,20 +5,20 @@ import * as Urls from '../../urls'
 import { isFilePathOrUri } from '../../errors/errorUtils'
 import { fileOpeningError } from './fileOpeningError'
 
-export function serverFileDownloadingError (source : Ultra.VimSource, server?: string): MessageBoxProps {
-  if (isFilePathOrUri(source.url)) {
-    return fileOpeningError(source.url)
+export function serverFileDownloadingError (url : string, authToken?: string, server?: string): MessageBoxProps {
+  if (isFilePathOrUri(url)) {
+    return fileOpeningError(url)
   }
 
   return {
     title: 'File Downloading Error',
-    body: body(server, source),
+    body: body(server, authToken, server),
     footer: style.footer(Urls.support),
     canClose: false
   }
 }
 
-function body (server : string, source : Ultra.VimSource) {
+function body (url : string, server: string, authToken?: string): JSX.Element {
   return (
     <div className={style.vcRoboto}>
       {style.mainText(<>
@@ -28,8 +28,8 @@ function body (server : string, source : Ultra.VimSource) {
       {style.subTitle('Error details:')}
       {style.dotList([
         server ? style.bullet('VIM ULTRA Server:', server) : null,
-        style.bullet('File URL:', source.url),
-        style.bullet('Auth Token:', source.authToken)
+        style.bullet('File URL:', url),
+        authToken ? style.bullet('Auth Token:', authToken) : null``
       ])}
       {style.subTitle('Troubleshooting tips:')}
       {style.numList([

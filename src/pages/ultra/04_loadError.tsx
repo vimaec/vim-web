@@ -16,5 +16,5 @@ export function UltraLoadError () {
 
 async function test (ultra: UltraReact.UltraComponentRef) {
   await ultra.viewer.connect()
-  ultra.load(Urls.notAVim)
+  ultra.load({url:Urls.notAVim})
 }
