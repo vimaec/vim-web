@@ -11,6 +11,7 @@ import React, { useEffect, useRef } from 'react'
 export function Overlay (props: { canvas: HTMLCanvasElement }) {
   const overlay = useRef<HTMLDivElement>(null)
 
+  //Watch and match for cursor on canvas
   useEffect(() => {
     const relay = (
       evnt: string,
@@ -36,7 +37,8 @@ export function Overlay (props: { canvas: HTMLCanvasElement }) {
     relay('pointerdown', (s, e) => new PointerEvent(s, e), false)
     relay('pointermove', (s, e) => new PointerEvent(s, e), false)
     relay('pointerup', (s, e) => new PointerEvent(s, e), false)
-
+    relay('pointerenter', (s, e) => new PointerEvent(s, e))
+    relay('pointerleave', (s, e) => new PointerEvent(s, e))
     relay('touchstart', (s, e) => new TouchEvent(s, e), false)
     relay('touchend', (s, e) => new TouchEvent(s, e), false)
     relay('touchmove', (s, e) => new TouchEvent(s, e), false)
