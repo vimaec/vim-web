@@ -172,7 +172,7 @@ export class SocketClient {
    * Disconnects from the current WebSocket server.
    */
   public disconnect (error?: ClientError): void {
-    this._logger.log('Disconnecting from ' + this._connectingUrl)
+    this._logger.log('Disconnecting from: ', this._connectingUrl)
     this._connectingUrl = undefined
     this._disconnect(error)
   }
@@ -274,7 +274,7 @@ export class SocketClient {
     }
 
     // Connection is valid, send pending RPCs and update state
-    this._logger.log('Connected to ' + this._socket?.url)
+    this._logger.log('Connected to: ', this._socket?.url)
     this.updateState({ status: 'connected' })
     this._streamLogger.startLoggging()
     this._connectPromise.resolve()
