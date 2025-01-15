@@ -29,7 +29,7 @@ function body (url : string, server: string, authToken?: string): JSX.Element {
       {style.dotList([
         server ? style.bullet('VIM ULTRA Server:', server) : null,
         style.bullet('File URL:', url),
-        authToken ? style.bullet('Auth Token:', authToken) : null``
+        authToken ? style.bullet('Auth Token:', authToken) : null
       ])}
       {style.subTitle('Troubleshooting tips:')}
       {style.numList([
