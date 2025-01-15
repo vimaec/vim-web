@@ -286,7 +286,7 @@ export class RpcClient {
     const marshal = new Marshal();
     marshal.writeString("RPCLoadVimURL");
     marshal.writeString(url);
-    marshal.writeString(authToken ?? "");
+    marshal.writeString(authToken);
     const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readUInt(); 
     return ret;
