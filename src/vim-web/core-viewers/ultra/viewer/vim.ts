@@ -3,7 +3,7 @@ import { ColorManager } from './colorManager';
 import { MaterialHandles } from './rpcClient';
 import { INVALID_HANDLE } from './viewer';
 import { LoadRequest } from './loadRequest';
-import { RpcSafeClient, VimLoadingStatus } from './rpcSafeClient';
+import { RpcSafeClient, VimLoadingStatus, VimSource } from './rpcSafeClient';
 import { ILogger } from './logger';
 import { invertMap } from '../utils/array';
 import { isFileURI, isURL } from '../utils/url';
@@ -12,7 +12,7 @@ import { Box3, RGBA32 } from '../utils/math3d';
 type NodeState = 'visible' | 'hidden' | 'ghosted' | 'highlighted';
 
 export class Vim {
-  readonly source: string;
+  readonly source: VimSource;
   private _handle: number = -1;
   private _request: LoadRequest | undefined;
 
@@ -36,7 +36,7 @@ export class Vim {
    * @param source - The source URL or file path of the Vim.
    * @param logger - The logger for logging messages.
    */
-  constructor(rpc: RpcSafeClient, color: ColorManager, source: string, logger: ILogger) {
+  constructor(rpc: RpcSafeClient, color: ColorManager, source: VimSource, logger: ILogger) {
     this._rpc = rpc;
     this.source = source;
     this._colors = color;
@@ -64,17 +64,17 @@ export class Vim {
       return this._request;
     }
 
-    this._logger.log('Loading ' + this.source);
+    this._logger.log('Loading: ', this.source);
     this._request = new LoadRequest();
 
     this._load(this.source, this._request).then(async (request) => {
       const result = await request.getResult();
       if (result.isSuccess) {
-        this._logger.log(`Successfully loaded vim: ${this.source}`);
+        this._logger.log('Successfully loaded vim: ', this.source);
         this.reapplyNodes();
         this.reapplyColors();
       } else {
-        this._logger.log(`Failed to load vim:  ${this.source}`);
+        this._logger.log('Failed to load vim: ', this.source);
       }
     });
 
@@ -113,12 +113,12 @@ export class Vim {
 
   /**
    * Requests for the server to load the given URL or file path.
-   * @param url - The URL or file path to load.
+   * @param source - The URL or file path to load.
    * @param result - The load request object to update.
    * @returns The updated load request.
    */
-  private async _load(url: string, result: LoadRequest): Promise<LoadRequest> {
-    const handle = await this._getHandle(url, result);
+  private async _load(source: VimSource, result: LoadRequest): Promise<LoadRequest> {
+    const handle = await this._getHandle(source, result);
     if(result.isCompleted || handle === INVALID_HANDLE) {
       return result
     }
@@ -126,6 +126,7 @@ export class Vim {
     while (true) {
       try {
         const state = await this._rpc.RPCGetVimLoadingState(handle);
+        this._logger.log('state :', state)
         result.onProgress(state.progress);
         switch (state.status) {
           // Keep waiting for the loading to complete
@@ -166,16 +167,16 @@ export class Vim {
     }
   }
 
-  private async _getHandle(url: string, result: LoadRequest): Promise<number> {
+  private async _getHandle(source: VimSource, result: LoadRequest): Promise<number> {
     let handle = undefined;
     try {
-      if (isURL(url)) {
-        handle = await this._rpc.RPCLoadVimURL(url);
-      } else if (isFileURI(url)) {
-        handle = await this._rpc.RPCLoadVim(url);
+      if (isURL(source.url)) {
+        handle = await this._rpc.RPCLoadVimURL(source);
+      } else if (isFileURI(source.url)) {
+        handle = await this._rpc.RPCLoadVim(source);
       } else {
         console.log('Defaulting to file path');
-        handle = await this._rpc.RPCLoadVim(url);
+        handle = await this._rpc.RPCLoadVim(source);
       }
     } catch (e) {
       result.error('downloadingError', (e as Error).message);
@@ -187,7 +188,7 @@ export class Vim {
       result.error('downloadingError');
       return INVALID_HANDLE
     }
-  
+    console.log('handle :',  handle)
     return handle;
   }
 
