@@ -23,7 +23,7 @@ export function getRequestErrorMessage (source: Ultra.VimSource, error: Ultra.Vi
     case 'downloadingError':
     case 'unknown':
     case 'cancelled':
-      return Errors.serverFileDownloadingError(source)
+      return Errors.serverFileDownloadingError(source.url)
     case 'serverDisconnected':
       return Errors.serverConnectionError(source.url)
   }
