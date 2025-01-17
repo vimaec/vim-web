@@ -1,5 +1,5 @@
 import { IInputs, Inputs } from './inputs/inputs'
-import { ClientError, ClientState, SocketClient } from './socketClient'
+import { ClientError, ClientState, ConnectionSettings, SocketClient } from './socketClient'
 import { Decoder, IDecoder } from './decoder'
 import { DecoderWithWorker } from './decoderWithWorker'
 import { Vim } from './vim'
@@ -15,7 +15,7 @@ import { ViewerSelection } from './selection'
 import { IReadonlyVimCollection, VimCollection } from './vimCollection'
 import { IRenderer, Renderer } from './renderer'
 
-export const DEFAULT_LOCAL_ULTRA_SERVER_URL = 'ws://localhost:8123'
+
 export const INVALID_HANDLE = 0xffffffff
 
 /**
@@ -223,8 +223,8 @@ export class Viewer {
    * @param url - The server URL to connect to. Defaults to 'ws://localhost:8123'.
    * @returns A promise that resolves when the connection is established.
    */
-  async connect (url: string = DEFAULT_LOCAL_ULTRA_SERVER_URL): Promise<void> {
-    await this._socketClient.connect(url)
+  async connect (settings?: ConnectionSettings): Promise<boolean> {
+    return this._socketClient.connect(settings)
   }
 
   /**
