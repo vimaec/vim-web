@@ -6,6 +6,15 @@ import { ControllablePromise, IPromise, ResolvedPromise } from '../utils/promise
 import { SimpleEventDispatcher } from 'ste-simple-events'
 import { isWebSocketUrl } from '../utils/url'
 
+export const DEFAULT_LOCAL_ULTRA_SERVER_URL = 'ws://localhost:8123'
+
+export type ConnectionSettings = {
+  url?: string
+  retries? : number
+  timeout?: number
+  retryDelay?: number
+}
+
 export type ClientState = ClientStateConnecting | ClientStateConnected | ClientStateDisconnected | ClientStateValidating | ClientError
 export type ClientError = ClientStateCompatibilityError | ClientStateConnectionError | ClientStreamError// | other types of errors
 
@@ -70,6 +79,7 @@ export class SocketClient {
   private _rpcCallId: number = 0
   private _reconnectTimeout : ReturnType<typeof setTimeout> | undefined
   private _connectionTimeout: ReturnType<typeof setTimeout> | undefined
+
   private _validateConnection: () => Promise<ClientError | undefined>
   /**
    * Callback function to handle incoming video frames.
@@ -79,6 +89,8 @@ export class SocketClient {
 
   private _state: ClientState = { status: 'disconnected' }
   private _onStatusUpdate = new SimpleEventDispatcher<ClientState>()
+  private _connectPromise: IPromise<boolean> = new ResolvedPromise<boolean>(undefined)
+  private _connectionSettings: ConnectionSettings
 
   /**
    * Event that is triggered when the connection status updates.
@@ -105,15 +117,14 @@ export class SocketClient {
     this._onStatusUpdate.dispatch(state)
   }
 
-  private _connectPromise: IPromise<void> = new ResolvedPromise<void>(undefined)
-  private _connectingUrl: string | undefined
+
 
   /**
    * Gets the URL to which the messenger is currently connecting or connected.
    * @returns The WebSocket URL as a string, or undefined if not set.
    */
   public get url (): string | undefined {
-    return this._connectingUrl
+    return this._connectionSettings?.url
   }
 
   /**
@@ -133,29 +144,43 @@ export class SocketClient {
    * @param url - The WebSocket URL to connect to.
    * @returns A promise that resolves when the connection is established.
    */
-  public connect (url: string): Promise<void> {
+  public connect (settings: ConnectionSettings): Promise<boolean> {
+    settings = {
+      url: settings?.url ?? DEFAULT_LOCAL_ULTRA_SERVER_URL,
+      retries: settings?.retries ?? -1,
+      timeout : settings?.timeout ?? 5000,
+      retryDelay: settings?.retryDelay ?? 5000
+    }
+
+    const url = settings.url
     if (!isWebSocketUrl(url)) {
       this._disconnect({ status: 'error', error: 'connection', serverUrl: url })
       return Promise.reject(new Error(`Invalid WebSocket URL: ${url}`))
     }
-
+    
     if (this._socket) {
       if (this._socket.url === url) {
+        // Return existing connection promise if the URL is the same
         return this._connectPromise.promise
       } else {
+        // Disconnect if the URL is different
         this._clearSocket()
+        this._connectionSettings = undefined
         this._connectPromise.reject('Connection to a different server')
-        this._connectPromise = new ControllablePromise<void>()
       }
-    } else if (this._connectingUrl !== url) {
-      this._connectPromise = new ControllablePromise<void>()
-      this._connectingUrl = url
     }
 
+    // Only create a new promise if the URL is different
+    if(this.url !== url){
+      this._connectPromise = new ControllablePromise<boolean>()
+      this._connectionSettings = settings
+    }
+
+    // Update state and attempt to connect
     this.updateState({ status: 'connecting' })
     try {
       this._socket = new WebSocket(url)
-      this._connectionTimeout = setTimeout(() => this._onClose(), 5000)
+      this._connectionTimeout = setTimeout(() => this._onClose(), settings.timeout)
       this._socket.onopen = (e) => { this._onOpen(e) }
       this._socket.onclose = (e) => { this._onClose(e) }
       this._socket.onerror = (e) => { this._onClose(e) }
@@ -172,8 +197,8 @@ export class SocketClient {
    * Disconnects from the current WebSocket server.
    */
   public disconnect (error?: ClientError): void {
-    this._logger.log('Disconnecting from: ', this._connectingUrl)
-    this._connectingUrl = undefined
+    this._logger.log('Disconnecting from: ', this.url)
+    this._connectionSettings = undefined
     this._disconnect(error)
   }
 
@@ -181,7 +206,7 @@ export class SocketClient {
    * Handles the disconnection logic, stopping logging and clearing the socket.
    */
   private _disconnect (error?: ClientError): void {
-    console.log('disconnect', error)
+    this._logger.log('disconnect', error)
     clearTimeout(this._reconnectTimeout)
     clearTimeout(this._connectionTimeout)
     this._streamLogger.stopLogging()
@@ -273,11 +298,11 @@ export class SocketClient {
       return
     }
 
-    // Connection is valid, send pending RPCs and update state
+    // Connection is valid resolve the connect promise
     this._logger.log('Connected to: ', this._socket?.url)
     this.updateState({ status: 'connected' })
     this._streamLogger.startLoggging()
-    this._connectPromise.resolve()
+    this._connectPromise.resolve(true)
   }
 
   /**
@@ -285,15 +310,27 @@ export class SocketClient {
    * @param _event - The event object.
    */
   private _onClose (_event?: Event): void {
-    clearTimeout(this._connectionTimeout)
-    this._disconnect({ status: 'error', error: 'connection', serverUrl: this._connectingUrl })
+    const connecting = this.state.status === 'connecting' || this.state.status === 'validating'
     this._logger.log('WebSocket closed.')
+    clearTimeout(this._connectionTimeout)
+    this._disconnect({ status: 'error', error: 'connection', serverUrl: this.url })
 
+    if(connecting && this._connectionSettings.retries === 0){
+      this._logger.log('No more retries left')
+      this._connectPromise.resolve(false)
+      return
+    }
+
+    // Retry connection as long as there are retries left
     this._logger.log('Attempting to reconnect in 5 seconds')
     this._reconnectTimeout = setTimeout(() => {
       this.updateState({ status: 'connecting' })
-      this.connect(this._connectingUrl)
-    }, 5000)
+      if(connecting){
+        // Retries only apply in the connecting state
+        this._connectionSettings.retries--
+      }
+      this.connect(this._connectionSettings)
+    }, this._connectionSettings.retryDelay)
   }
 
   /**
