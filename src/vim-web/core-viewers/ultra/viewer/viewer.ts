@@ -14,6 +14,7 @@ import { ISimpleEvent } from 'ste-simple-events'
 import { ViewerSelection } from './selection'
 import { IReadonlyVimCollection, VimCollection } from './vimCollection'
 import { IRenderer, Renderer } from './renderer'
+import { SectionBox } from './sectionBox'
 
 
 export const INVALID_HANDLE = 0xffffffff
@@ -104,6 +105,11 @@ export class Viewer {
   }
 
   /**
+   * The section box API for controlling the section box.
+   */
+  readonly sectionBox : SectionBox
+
+  /**
    * Creates a Viewer instance with a new canvas element appended to the given parent element.
    * @param parent - The parent HTML element to which the canvas will be appended.
    * @param logger - Optional logger for logging messages.
@@ -131,6 +137,7 @@ export class Viewer {
 
     this._canvas = canvas
     this._vims = new VimCollection()
+    
     this._viewport = new Viewport(canvas, this.rpc, this._logger)
     this._decoder = new Decoder(canvas, this._logger)
     this._selection = new ViewerSelection(this.rpc, this._vims)
@@ -138,6 +145,7 @@ export class Viewer {
     this.colors = new ColorManager(this.rpc)
     this._camera = new Camera(this.rpc)
     this._input = new Inputs(canvas, this.rpc, this._selection, this._camera, this._renderer)
+    this.sectionBox = new SectionBox(this.rpc)
 
     // Set up the video frame handler
     this._socketClient.onVideoFrame = (msg) => this._decoder.enqueue(msg)
