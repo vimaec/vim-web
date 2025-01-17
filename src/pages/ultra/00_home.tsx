@@ -15,9 +15,7 @@ export function UltraHome () {
 }
 
 async function loadFile (ultra: UltraReact.UltraComponentRef) {
-  console.log('Start Connection')
   const success = await ultra.viewer.connect()
-  console.log("Connection Success: ", success)
   const request = ultra.load({url:getPathFromUrl() ?? Urls.residence})
   await request.getResult()
   await ultra.viewer.camera.frameAll(0)
