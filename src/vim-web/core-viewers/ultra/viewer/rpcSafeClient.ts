@@ -288,6 +288,19 @@ export class RpcSafeClient {
   }
 
   /*******************************************************************************
+   * SECTION BOX METHODS
+   * Methods for controlling section box visibility and position.
+   ******************************************************************************/
+  RPCEnableSectionBox(enable: boolean): void {
+    this.rpc.RPCEnableSectionBox(enable)
+  }
+
+  RPCSetSectionBox(aabb: Box3): void {
+    if(!Validation.isValidBox(aabb)) return
+    this.rpc.RPCSetSectionBox(aabb)
+  }
+
+  /*******************************************************************************
    * CAMERA AND VIEW METHODS
    * Methods for controlling camera position, movement, framing, and view settings.
    ******************************************************************************/
