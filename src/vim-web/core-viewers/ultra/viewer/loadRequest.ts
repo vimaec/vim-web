@@ -1,5 +1,5 @@
 import { Vim } from './vim'
-import { DeferredPromise } from '../utils/deferredPromise'
+import { ControllablePromise } from '../utils/promise'
 
 export type LoadRequestResult = LoadSuccess | LoadError
 
@@ -34,9 +34,9 @@ export type VimRequestErrorType = 'loadingError' | 'downloadingError' | 'serverD
 
 export class LoadRequest implements ILoadRequest {
   private _progress : number = 0
-  private _progressPromise = new DeferredPromise<void>()
+  private _progressPromise = new ControllablePromise<void>()
 
-  private _completionPromise = new DeferredPromise<void>()
+  private _completionPromise = new ControllablePromise<void>()
   private _result : LoadError | LoadSuccess | undefined
 
   get isCompleted () {
@@ -53,20 +53,20 @@ export class LoadRequest implements ILoadRequest {
     }
 
     while (this._result === undefined) {
-      await this._progressPromise
+      await this._progressPromise.promise
       yield this._progress
     }
   }
 
   async getResult () : Promise<LoadError | LoadSuccess> {
-    await this._completionPromise
+    await this._completionPromise.promise
     return this._result
   }
 
   onProgress (progress: number) {
     this._progress = progress
     this._progressPromise.resolve()
-    this._progressPromise = new DeferredPromise<void>()
+    this._progressPromise = new ControllablePromise<void>()
   }
 
   success (vim: Vim) {
