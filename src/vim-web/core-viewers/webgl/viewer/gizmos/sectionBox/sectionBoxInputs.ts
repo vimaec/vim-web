@@ -4,6 +4,7 @@
 
 import { Viewer } from '../../viewer'
 import * as THREE from 'three'
+import { Handle, Handles } from './sectionBoxGizmo'
 
 /**
  * Defines user interactions with the section box.
@@ -11,11 +12,11 @@ import * as THREE from 'three'
 export class BoxInputs {
   // dependencies
   viewer: Viewer
-  cube: THREE.Object3D
+  handles: Handles
   sharedBox: THREE.Box3
 
   // state
-  faceNormal: THREE.Vector3 = new THREE.Vector3()
+  handle: Handle | undefined
   dragOrigin: THREE.Vector3 = new THREE.Vector3()
   dragpPlane: THREE.Plane = new THREE.Plane()
   mouseDown: boolean | undefined
@@ -23,7 +24,6 @@ export class BoxInputs {
   lastBox: THREE.Box3 = new THREE.Box3()
   unregisters: (() => void)[] = []
   lastMouse : PointerEvent
-  ctrlDown: boolean = false
   capturedId : number | undefined
 
   // Called when mouse enters or leave a face
@@ -33,9 +33,9 @@ export class BoxInputs {
   // Called when the user is done reshaping the box
   onBoxConfirm: ((box: THREE.Box3) => void) | undefined
 
-  constructor (viewer: Viewer, cube: THREE.Object3D, box: THREE.Box3) {
+  constructor (viewer: Viewer, handles: Handles, box: THREE.Box3) {
     this.viewer = viewer
-    this.cube = cube
+    this.handles = handles
     this.sharedBox = box
   }
 
@@ -52,8 +52,6 @@ export class BoxInputs {
   register () {
     if (this.unregister.length > 0) return
     const canvas = this.viewer.viewport.canvas
-    this.reg(window, 'keydown', this.onKey.bind(this))
-    this.reg(window, 'keyup', this.onKey.bind(this))
 
     this.reg(canvas, 'pointerdown', this.onMouseDown.bind(this))
     this.reg(canvas, 'pointermove', this.onMouseMove.bind(this))
@@ -66,8 +64,7 @@ export class BoxInputs {
       return
     }
 
-    this.faceNormal.set(0,0,0)
-    this.onFaceEnter?.(this.faceNormal)
+    this.onFaceEnter?.(this.handle?.forward ?? new THREE.Vector3())
   }
 
   capturePointer (pointerId: number) {
@@ -83,7 +80,6 @@ export class BoxInputs {
   }
 
   unregister () {
-    this.ctrlDown = false
     this.mouseDown = false
     this.releasePointer()
     this.viewer.inputs.registerAll()
@@ -91,12 +87,6 @@ export class BoxInputs {
     this.unregisters.length = 0
   }
 
-  onKey (event: KeyboardEvent) {
-    if (this.ctrlDown !== event.ctrlKey) {
-      this.ctrlDown = event.ctrlKey
-      this.onMouseMove(this.lastMouse)
-    }
-  }
 
   onMouseMove (event: PointerEvent) {
     this.lastMouse = event
@@ -106,29 +96,15 @@ export class BoxInputs {
     }
 
     const hits = this.raycast(
-      new THREE.Vector2(event.offsetX, event.offsetY),
-      this.ctrlDown
+      new THREE.Vector2(event.offsetX, event.offsetY)
     )
-    const hit = hits?.[0]
-    const norm = hit?.face?.normal
-    if (!norm) {
-      if (
-        this.faceNormal.x !== 0 ||
-        this.faceNormal.y !== 0 ||
-        this.faceNormal.z !== 0
-      ) {
-        this.faceNormal.set(0, 0, 0)
-        this.onFaceEnter?.(this.faceNormal)
-      }
-      return
+    const handle = hits?.[0]?.object?.userData.handle
+    if(handle !== this.handle){
+      this.handle?.highlight(false)
+      handle?.highlight(true)
+      this.handle = handle
+      this.onFaceEnter?.(handle?.forward ?? new THREE.Vector3())
     }
-
-    if (this.faceNormal.equals(norm)) {
-      return
-    }
-
-    this.faceNormal = norm
-    this.onFaceEnter?.(this.faceNormal)
   }
 
   onMouseUp (event: PointerEvent) {
@@ -139,8 +115,8 @@ export class BoxInputs {
       if (event.pointerType === 'mouse') {
         this.onMouseMove(event)
       } else {
-        this.faceNormal = new THREE.Vector3()
-        this.onFaceEnter?.(this.faceNormal)
+        this.handle = undefined
+        this.onFaceEnter?.(new THREE.Vector3())
       }
       this.onBoxConfirm?.(this.sharedBox)
     }
@@ -148,23 +124,22 @@ export class BoxInputs {
 
   onMouseDown (event: PointerEvent) {
     const hits = this.raycast(
-      new THREE.Vector2(event.offsetX, event.offsetY),
-      this.ctrlDown
+      new THREE.Vector2(event.offsetX, event.offsetY)
     )
-    const hit = hits?.[0]
-    if (!hit?.face?.normal) return
-
+    const handle = hits?.[0]?.object?.userData?.handle
+    if(!handle) return
+    this.handle = handle
+    
     this.capturePointer(event.pointerId)
 
     this.lastBox.copy(this.sharedBox)
-    this.faceNormal = hit.face.normal
-    this.dragOrigin.copy(hit.point)
-    const dist = hit.point.clone().dot(this.viewer.camera.forward)
+    this.dragOrigin.copy(handle.position)
+    const dist = handle.position.clone().dot(this.viewer.camera.forward)
 
     this.dragpPlane.set(this.viewer.camera.forward, -dist)
     this.mouseDown = true
     this.viewer.inputs.unregisterAll()
-    this.onFaceEnter?.(this.faceNormal)
+    this.onFaceEnter?.(this.handle.forward.clone())
   }
 
   onDrag (event: any) {
@@ -179,8 +154,8 @@ export class BoxInputs {
 
     // We compute the normal-aligned component of the delta between current drag point and origin drag point.
     const delta = point.sub(this.dragOrigin)
-    const amount = delta.dot(this.faceNormal)
-    const box = this.stretch(this.faceNormal, amount)
+    const amount = delta.dot(this.handle.forward)
+    const box = this.stretch(this.handle.forward, amount)
     this.onBoxStretch?.(box)
   }
 
@@ -209,13 +184,8 @@ export class BoxInputs {
     return result
   }
 
-  raycast (position: THREE.Vector2, reverse: boolean) {
+  raycast (position: THREE.Vector2) {
     this.raycaster = this.viewer.raycaster.fromPoint2(position, this.raycaster)
-    if (reverse) {
-      this.raycaster.ray.set(
-        this.raycaster.ray.origin.clone().add(this.raycaster.ray.direction.clone().multiplyScalar(this.viewer.settings.camera.far)),
-        this.raycaster.ray.direction.negate())
-    }
-    return this.raycaster.intersectObject(this.cube)
+    return this.raycaster.intersectObject(this.handles.meshes)
   }
 }

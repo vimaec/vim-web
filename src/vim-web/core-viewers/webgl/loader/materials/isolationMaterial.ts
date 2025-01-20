@@ -18,6 +18,7 @@ export function createIsolationMaterial () {
       fillColor: { value: new THREE.Vector3(0, 0, 0) }
     },
     vertexColors: true,
+    depthWrite: true,
     transparent: true,
     clipping: true,
     vertexShader: /* glsl */ `
@@ -73,9 +74,9 @@ export function createIsolationMaterial () {
 
         // ORDERING
         if(vIgnore > 0.0f){
-          gl_Position.z = 1.0f;
+          //gl_Position.z = 1.0f;
         }else{
-          gl_Position.z = -1.0f;
+          //gl_Position.z = -1.0f;
         }
         
         // LIGHTING

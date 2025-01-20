@@ -4,6 +4,92 @@
 
 import * as THREE from 'three'
 
+export class Handle extends THREE.Mesh {
+  private _color : THREE.Color
+  private _highlightColor : THREE.Color
+  private _forward : THREE.Vector3
+  private HEIGHT = 3
+
+  constructor(forward : THREE.Vector3, height: number, color?: THREE.Color){
+    
+    const geo = new THREE.ConeGeometry(1, height, 12)
+    geo.clearGroups()
+    geo.addGroup(0, Infinity, 0)
+    geo.addGroup(0, Infinity, 1)
+    
+
+    const matBehind = new THREE.MeshBasicMaterial({
+      transparent: true,
+      opacity: 0.5,
+      color: color ?? new THREE.Color(0x000000),
+      depthTest: false,
+      side: THREE.FrontSide
+    })
+    const matAlways = new THREE.MeshBasicMaterial({
+      color: color ?? new THREE.Color(0x000000),
+      side: THREE.FrontSide
+    })
+    super(geo, [matAlways, matBehind])
+    this._forward = forward
+    this._color = color ?? new THREE.Color(0x000000)
+    this._highlightColor =  this._color.clone().lerp(new THREE.Color(0xffffff), 0.90)
+    this.userData.handle = this
+    this.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), forward)
+  }
+
+  setPosition(position : THREE.Vector3){
+    this.position.copy(position).add(this._forward.clone().multiplyScalar(this.HEIGHT/2))
+  }
+
+  get forward(){
+    return this._forward
+  }
+
+  highlight(value: boolean){
+    console.log('highlight', value)
+    this.material[0].color.set(value ? this._highlightColor : this._color)
+    this.material[1].color.set(value ? this._highlightColor : this._color)
+  }
+}
+
+export class Handles{
+  readonly up: Handle
+  readonly down: Handle
+  readonly left: Handle
+  readonly right: Handle
+  readonly front: Handle
+  readonly back: Handle
+
+  readonly meshes : THREE.Group
+
+  constructor(){
+    this.up = new Handle(new THREE.Vector3(0, 1, 0), 3, new THREE.Color(0x00ff00))
+    this.down = new Handle(new THREE.Vector3(0, -1, 0), 3, new THREE.Color(0x00ff00))
+    this.left = new Handle(new THREE.Vector3(-1, 0, 0), 3, new THREE.Color(0xff0000))
+    this.right = new Handle(new THREE.Vector3(1, 0, 0), 3, new THREE.Color(0xff0000))
+    this.front = new Handle(new THREE.Vector3(0, 0, 1), 3, new THREE.Color(0x0000ff))
+    this.back = new Handle(new THREE.Vector3(0, 0, -1), 3, new THREE.Color(0x0000ff))
+
+    this.meshes = new THREE.Group()
+    this.meshes.add(this.up)
+    this.meshes.add(this.down)
+    this.meshes.add(this.left)
+    this.meshes.add(this.right)
+    this.meshes.add(this.front)
+    this.meshes.add(this.back)
+  }
+
+  fitBox(box: THREE.Box3){
+    const center = box.getCenter(new THREE.Vector3())
+    this.up.setPosition(new THREE.Vector3(center.x, box.max.y, center.z))
+    this.down.setPosition(new THREE.Vector3(center.x, box.min.y, center.z))
+    this.left.setPosition(new THREE.Vector3(box.min.x, center.y, center.z))
+    this.right.setPosition(new THREE.Vector3(box.max.x, center.y, center.z))
+    this.front.setPosition(new THREE.Vector3(center.x, center.y, box.max.z))
+    this.back.setPosition(new THREE.Vector3(center.x, center.y, box.min.z))
+  }
+}
+
 /**
  * Defines the thin outline on the edges of the section box.
  */
