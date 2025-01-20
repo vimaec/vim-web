@@ -4,7 +4,7 @@
 
 import { Viewer } from '../../viewer'
 import * as THREE from 'three'
-import { BoxMesh, BoxOutline, BoxHighlight } from './sectionBoxGizmo'
+import { BoxMesh, BoxOutline, BoxHighlight, Handles } from './sectionBoxGizmo'
 import { BoxInputs } from './sectionBoxInputs'
 import { SignalDispatcher } from 'ste-signals'
 import { SimpleEventDispatcher } from 'ste-simple-events'
@@ -20,7 +20,7 @@ export class SectionBox {
   private _inputs: BoxInputs
   private _cube: BoxMesh
   private _outline: BoxOutline
-  private _highlight: BoxHighlight
+  private _handles: Handles
 
   // State
   private _normal: THREE.Vector3
@@ -68,20 +68,19 @@ export class SectionBox {
 
     this._cube = new BoxMesh()
     this._outline = new BoxOutline()
-    this._highlight = new BoxHighlight()
+    this._handles = new Handles()
 
     this.renderer.add(this._cube)
     this.renderer.add(this._outline)
-    this.renderer.add(this._highlight)
+    this.renderer.add(this._handles.meshes)
 
     this._inputs = new BoxInputs(
       viewer,
-      this._cube,
+      this._handles,
       this._viewer.renderer.section.box
     )
     this._inputs.onFaceEnter = (normal) => {
       this._normal = normal
-      if (this.visible) this._highlight.highlight(this.section.box, normal)
       this._onHover.dispatch(normal.x !== 0 || normal.y !== 0 || normal.z !== 0)
       this.renderer.needsUpdate = true
     }
@@ -131,7 +130,6 @@ export class SectionBox {
     if (!this._interactive && value) this._inputs.register()
     if (this._interactive && !value) this._inputs.unregister()
     this._interactive = value
-    this._highlight.visible = false
     this.renderer.needsUpdate = true
     this._onStateChanged.dispatch()
   }
@@ -148,7 +146,6 @@ export class SectionBox {
     this._visible = value
     this._cube.visible = value
     this._outline.visible = value
-    this._highlight.visible = value
     if (value) this.update()
     this.renderer.needsUpdate = true
     this._onStateChanged.dispatch()
@@ -164,6 +161,7 @@ export class SectionBox {
     const b = box.expandByScalar(padding)
     this._cube.fitBox(b)
     this._outline.fitBox(b)
+    this._handles.fitBox(b)
     this.renderer.section.fitBox(b)
     this._onBoxConfirm.dispatch(this.box)
     this.renderer.needsUpdate = true
@@ -174,7 +172,6 @@ export class SectionBox {
    */
   update () {
     this.fitBox(this.section.box, 0)
-    this._highlight.highlight(this.section.box, this._normal)
     this.renderer.needsUpdate = true
   }
 
@@ -184,11 +181,9 @@ export class SectionBox {
   dispose () {
     this.renderer.remove(this._cube)
     this.renderer.remove(this._outline)
-    this.renderer.remove(this._highlight)
 
     this._inputs.unregister()
     this._cube.dispose()
     this._outline.dispose()
-    this._highlight.dispose()
   }
 }

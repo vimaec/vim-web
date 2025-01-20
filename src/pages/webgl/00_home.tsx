@@ -21,7 +21,8 @@ async function createComponent (div: HTMLDivElement, ref: React.MutableRefObject
   ref.current = webgl
   globalThis.viewer = webgl
 
-  const url = getPathFromUrl() ?? Urls.residence
+  //const url = getPathFromUrl() ?? Urls.residence
+  const url = './residence.vim'
   const request = webgl.loader.request(
     { url },
     { rotation: new THREE.Vector3(270, 0, 0) }
