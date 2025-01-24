@@ -121,7 +121,7 @@ export function VimContextMenu (props: {
   }
   const [clipping, setClipping] = useState<boolean>(isClipping())
   const [, setVersion] = useState(0)
-  const hidden = props.isolation.any()
+  const hidden = props.isolation.isActive()
 
   useEffect(() => {
     // Register to selection

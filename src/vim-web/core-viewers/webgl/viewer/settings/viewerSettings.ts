@@ -197,46 +197,6 @@ export type ViewerSettings = {
      */
     sharpness: number
   },
-  /**
-   * Ground plane under the scene options.
-   */
-  groundPlane: {
-    /**
-    * Enables/Disables plane under scene
-    * Default: true
-    */
-    visible: boolean
-
-    /**
-    * Controls how the texture will be retrieved using the texture field.
-    * Default: base64
-    */
-    encoding: TextureEncoding
-
-    /**
-    * Local or remote texture url for plane
-    * Default: Vim halo ground provided with the viewer.
-    */
-    texture: string
-
-    /**
-    * Opacity of the plane
-    * Default: 1
-    */
-    opacity: number
-
-    /**
-    * Color of the plane
-    * Default: THREE.Color(0xff, 0xff, 0xff)
-    */
-    color: THREE.Color
-
-    /**
-    * Size of the ground plane relative to the model
-    * Default: 5
-    */
-    size: number
-  }
 
 /**
 * Object highlight on click options
@@ -264,16 +224,16 @@ materials: {
     opacity: number
   }
   /**
-  * Isolation material options
+  * Ghost material options
   */
-  isolation: {
+  ghost: {
     /**
-    * Isolation material color
+    * Ghost material color
     * Default: rgb(78, 82, 92)
     */
     color: THREE.Color
     /**
-    * Isolation material opacity
+    * Ghost material opacity
     * Default: 0.08
     */
     opacity: number

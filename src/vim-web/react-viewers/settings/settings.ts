@@ -45,12 +45,12 @@ export function isFalse (value:UserBoolean | boolean) {
  * @interface ComponentSettings
  */
 export type ComponentSettings = {
-  peformance: {
+  materials: {
     useFastMaterial: boolean
+    useGhostMaterial: boolean
   }
   isolation: {
     enable: boolean
-    useIsolationMaterial: boolean
   }
   capacity: {
     canFollowUrl: boolean
@@ -161,12 +161,12 @@ export function anyUiSettingButton (settings: ComponentSettings) {
  * @type {ComponentSettings}
  */
 export const defaultSettings: ComponentSettings = {
-  peformance: {
-    useFastMaterial: false
+  materials: {
+    useFastMaterial: false,
+    useGhostMaterial: true
   },
   isolation: {
     enable: true,
-    useIsolationMaterial: true
   },
   capacity: {
     canFollowUrl: true,
