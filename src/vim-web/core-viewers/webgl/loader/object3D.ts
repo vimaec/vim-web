@@ -99,6 +99,13 @@ export class Object3D {
     if (this._visibleAttribute.apply(value)) {
       this.vim.scene.setDirty()
     }
+
+    // Show all involved meshes
+    if(value){
+      this._meshes?.forEach((m) => {
+        m.mesh.mesh.visible = true
+      })
+    }
   }
 
   /**

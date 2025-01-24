@@ -57,8 +57,8 @@ export class Isolation {
    */
   applySettings(settings: ComponentSettings): void {
     this._settings = settings
+    if(!this._settings.isolation.enable) return
     this._viewer.renderer.modelMaterial = this.getMaterial(this._settings, this.isActive())
-    console.log('Isolation.applySettings', this._viewer.renderer.modelMaterial)
   }
 
   /**

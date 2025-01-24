@@ -17,6 +17,9 @@ export class RenderScene {
   // state
   boxUpdated = false
 
+  // public value
+  smallGhostThreshold: number | undefined = 10
+
   private _vimScenes: Scene[] = []
   private _boundingBox: THREE.Box3 | undefined
   private _memory = 0
@@ -83,6 +86,7 @@ export class RenderScene {
   add (target: Scene | THREE.Object3D) {
     if (target instanceof Scene) {
       this.addScene(target)
+      target.material = this._modelMaterial
       return
     }
 
@@ -158,11 +162,15 @@ export class RenderScene {
 
     for(const mesh of this.meshes){
       if(mesh instanceof InstancedMesh){
+        if(this.smallGhostThreshold <= 0){
+          mesh.mesh.visible = true
+          continue
+        }
         // Check if any submesh is visible
         const visible = mesh.getSubmeshes().some((m) => 
           m.object.visible
         )
-        mesh.mesh.visible = !(hide && !visible && mesh.size < 10)
+        mesh.mesh.visible = !(hide && !visible && mesh.size < this.smallGhostThreshold)
       }
     }
   }

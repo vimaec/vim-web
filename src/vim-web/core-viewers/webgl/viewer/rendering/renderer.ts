@@ -60,6 +60,7 @@ export class Renderer implements IRenderer {
    */
   onDemand: boolean
 
+
   /**
    * Indicates whether the scene needs to be re-rendered.
    * Can only be set to true. Cleared on each render.
@@ -177,6 +178,14 @@ export class Renderer implements IRenderer {
     this.needsUpdate = true
     this._renderText = value
     this.textRenderer.domElement.style.display = value ? 'block' : 'none'
+  }
+
+  get smallGhostThreshold(){
+    return this._scene.smallGhostThreshold
+  }
+
+  set smallGhostThreshold(value: number){
+    this._scene.smallGhostThreshold = value
   }
 
   /**

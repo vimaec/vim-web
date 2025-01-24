@@ -48,6 +48,7 @@ export type ComponentSettings = {
   materials: {
     useFastMaterial: boolean
     useGhostMaterial: boolean
+    smallGhostThreshold: number
   }
   isolation: {
     enable: boolean
@@ -163,7 +164,8 @@ export function anyUiSettingButton (settings: ComponentSettings) {
 export const defaultSettings: ComponentSettings = {
   materials: {
     useFastMaterial: false,
-    useGhostMaterial: true
+    useGhostMaterial: true,
+    smallGhostThreshold: 10
   },
   isolation: {
     enable: true,
