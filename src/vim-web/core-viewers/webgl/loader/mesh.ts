@@ -56,7 +56,7 @@ export class Mesh {
   /**
    * initial material.
    */
-  private _material: THREE.Material | THREE.Material[]
+  private _material: ModelMaterial
 
   private constructor (
     mesh: THREE.Mesh,

@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { IRenderer, Scene } from '../../loader/scene'
 import { Viewport } from '../viewport'
 import { RenderScene } from './renderScene'
-import { ViewerMaterials } from '../../loader/materials/viewerMaterials'
+import { ModelMaterial, ViewerMaterials } from '../../loader/materials/viewerMaterials'
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer'
 
 import { Camera } from '../camera/camera'
@@ -46,8 +46,6 @@ export class Renderer implements IRenderer {
   private _materials: ViewerMaterials
   private _renderText: boolean | undefined
 
-  private _skipAntialias: boolean
-
   private _needsUpdate: boolean
   
   private _onSceneUpdate = new SignalDispatcher()
@@ -72,19 +70,6 @@ export class Renderer implements IRenderer {
 
   set needsUpdate (value: boolean) {
     this._needsUpdate = this._needsUpdate || value
-  }
-
-  /**
- * Indicates whether the next render should skip antialiasing.
- * Useful for expensive operations such as the section box.
- * Can only be set to true. Cleared on each render.
- */
-  get skipAntialias () {
-    return this._skipAntialias
-  }
-
-  set skipAntialias (value: boolean) {
-    this._skipAntialias = this._skipAntialias || value
   }
 
   constructor (
@@ -156,6 +141,14 @@ export class Renderer implements IRenderer {
   set background (color: THREE.Color | THREE.Texture) {
     this._scene.scene.background = color
     this.needsUpdate = true
+  }
+
+  get modelMaterial () {
+    return this._scene.modelMaterial
+  }
+
+  set modelMaterial (material: ModelMaterial) {
+    this._scene.modelMaterial = material
   }
 
   /**
@@ -230,7 +223,6 @@ export class Renderer implements IRenderer {
       this._composer.render()
     }
     this._needsUpdate = false
-    this.skipAntialias = false
 
     if (this.textEnabled && this._scene.has2dObjects()) {
       this.textRenderer.render(this._scene.scene, this._camera.three)
