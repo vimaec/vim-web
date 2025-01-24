@@ -151,7 +151,8 @@ export class ViewerMaterials {
    * Determines the opacity of the ghost material.
    */
   get ghostOpacity () {
-    return this.ghost.opacity
+    const mat = this.ghost as THREE.ShaderMaterial
+    return mat.uniforms.opacity.value
   }
 
   set ghostOpacity (opacity: number) {

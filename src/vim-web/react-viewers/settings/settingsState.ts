@@ -66,9 +66,5 @@ export function applySettings (viewer: VIM.Viewer, settings: ComponentSettings) 
       performance.classList.add('vc-hidden')
     }
   }
-  
-  // If isolation is enabled it takes care of managing materials
-  if(!settings.isolation.enable) {
-    viewer.renderer.modelMaterial = settings.materials.useFastMaterial ? viewer.materials.simple : undefined
-  }
+  viewer.renderer.smallGhostThreshold = settings.materials.smallGhostThreshold
 }
