@@ -9,6 +9,7 @@ import { estimateBytesUsed } from 'three/examples/jsm/utils/BufferGeometryUtils'
 import { InsertableMesh } from './progressive/insertableMesh'
 import { InstancedMesh } from './progressive/instancedMesh'
 import { getAverageBoundingBox } from './averageBoundingBox'
+import { ModelMaterial } from './materials/viewerMaterials'
 
 /**
  * Interface for a renderer object, providing methods to add and remove objects from a scene, update bounding boxes, and notify scene updates.
@@ -43,7 +44,7 @@ export class Scene {
   private _averageBoundingBox: THREE.Box3 | undefined
 
   private _instanceToMeshes: Map<number, Submesh[]> = new Map()
-  private _material: THREE.Material | undefined
+  private _material: ModelMaterial
 
   constructor (matrix: THREE.Matrix4) {
     this._matrix = matrix
@@ -223,7 +224,7 @@ export class Scene {
   /**
    * Sets and apply a material override to the scene, set to undefined to remove override.
    */
-  set material (value: THREE.Material | undefined) {
+  set material (value: ModelMaterial) {
     if (this._material === value) return
     this.setDirty()
     this._material = value
