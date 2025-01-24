@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import { floor } from '../../images'
 import { AxesSettings } from '../gizmos/axes/axesSettings'
 import { ViewerSettings } from './viewerSettings'
 
