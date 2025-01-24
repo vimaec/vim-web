@@ -4,9 +4,8 @@
 
 import * as VIM from '../../core-viewers/webgl/index'
 import { SideState } from '../sidePanel/sideState'
-import { Isolation } from './isolation'
 import { ComponentCamera } from './camera'
-import { HelpRef } from '../webgl/webglComponentRef'
+import { Isolation } from './isolation'
 
 /**
  * Custom viewer input scheme for the vim component
@@ -17,7 +16,6 @@ export class ComponentInputs implements VIM.InputScheme {
   private _default: VIM.InputScheme
   private _isolation: Isolation
   private _sideState: SideState
-  private _help: HelpRef
 
   constructor (
     viewer: VIM.Viewer,
@@ -60,7 +58,7 @@ export class ComponentInputs implements VIM.InputScheme {
         return true
       }
       case VIM.KEYS.KEY_I: {
-        this._isolation.toggleIsolation('keyboard')
+        this._isolation.toggle('keyboard')
         return true
       }
 
@@ -69,7 +67,7 @@ export class ComponentInputs implements VIM.InputScheme {
           this._viewer.selection.clear()
           return true
         }
-        if (this._isolation.any()) {
+        if (this._isolation.isActive()) {
           this._isolation.clear('keyboard')
           return true
         }
