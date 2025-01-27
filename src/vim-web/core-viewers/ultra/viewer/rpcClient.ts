@@ -1,4 +1,4 @@
-import type { SocketClient } from './socketClient'
+import type{SocketClient} from './socketClient'
 import { Marshal, HitCheckResult, VimStatus } from './marshal'
 import { Box3, RGBA, RGBA32, Segment, Vector2, Vector3, Matrix44 } from '../utils/math3d'
 
@@ -45,7 +45,6 @@ export class RpcClient {
   constructor (_messenger: SocketClient) {
     this._messenger = _messenger
   }
-  
   // RPC Generated Code
   readonly API_VERSION = "5.0.0"
 
@@ -496,4 +495,5 @@ export class RpcClient {
     marshal.writeUInt(componentHandle);
     this._messenger.sendRPC(marshal);
   }
+
 }

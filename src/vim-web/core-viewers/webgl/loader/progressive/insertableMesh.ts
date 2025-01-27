@@ -8,7 +8,7 @@ import { InsertableGeometry } from './insertableGeometry'
 import { InsertableSubmesh } from './insertableSubmesh'
 import { G3dMeshOffsets } from './g3dOffsets'
 import { Vim } from '../vim'
-import { ViewerMaterials } from '../materials/viewerMaterials'
+import { ModelMaterial, ViewerMaterials } from '../materials/viewerMaterials'
 
 export class InsertableMesh {
   offsets: G3dMeshOffsets
@@ -42,7 +42,7 @@ export class InsertableMesh {
   /**
    * initial material.
    */
-  private _material: THREE.Material | THREE.Material[] | undefined
+  private _material: ModelMaterial
 
   geometry: InsertableGeometry
 
@@ -132,20 +132,17 @@ export class InsertableMesh {
   /**
    * Overrides mesh material, set to undefine to restore initial material.
    */
-  setMaterial (value: THREE.Material) {
+  setMaterial (value: ModelMaterial) {
     if (this._material === value) return
     if (this.ignoreSceneMaterial) return
+    this.mesh.material = value ?? this._material
 
-    if (value) {
-      if (!this._material) {
-        this._material = this.mesh.material
-      }
-      this.mesh.material = value
-    } else {
-      if (this._material) {
-        this.mesh.material = this._material
-        this._material = undefined
-      }
+    // Update material groups
+    this.mesh.geometry.clearGroups()
+    if(value instanceof Array) {
+      value.forEach((m, i) => {
+        this.mesh.geometry.addGroup(0, Infinity, i)
+      })
     }
   }
 }

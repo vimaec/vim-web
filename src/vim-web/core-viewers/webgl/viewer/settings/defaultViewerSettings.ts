@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import { floor } from '../../images'
 import { AxesSettings } from '../gizmos/axes/axesSettings'
 import { ViewerSettings } from './viewerSettings'
 
@@ -44,14 +43,6 @@ export const defaultViewerSettings: ViewerSettings = {
     groundColor: new THREE.Color(0xf6f6f6), // less white
     sharpness: 2
   },
-  groundPlane: {
-    visible: false,
-    encoding: 'base64',
-    texture: floor,
-    opacity: 1,
-    color: new THREE.Color(0xffffff),
-    size: 5
-  },
   skylight: {
     skyColor: new THREE.Color(0xffffff),
     groundColor: new THREE.Color(0xffffff),
@@ -79,9 +70,9 @@ export const defaultViewerSettings: ViewerSettings = {
       color: new THREE.Color(0x6ad2ff),
       opacity: 0.5
     },
-    isolation: {
+    ghost: {
       color: new THREE.Color(0x4E525C),
-      opacity: 0.08
+      opacity: 0.01
     },
     section: {
       strokeWidth: 0.01,

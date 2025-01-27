@@ -1,5 +1,3 @@
-import React from 'react'
-
 const btnStyle = 'vim-control-bar-button vc-rounded-full vc-items-center vc-justify-center vc-flex vc-transition-all hover:vc-scale-110'
 export function buttonDefaultStyle (on: boolean) {
   return on

@@ -43,6 +43,7 @@ export class ObjectAttribute<T> {
   }
 
   apply (value: T) {
+    value ?? this.defaultValue
     if (this._value === value) return false
     this._value = value
     if (!this._meshes) return false
