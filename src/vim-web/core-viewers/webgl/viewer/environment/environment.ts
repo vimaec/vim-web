@@ -6,7 +6,6 @@ import * as THREE from 'three'
 import { ViewerSettings } from '../settings/viewerSettings'
 import { ICamera } from '../camera/camera'
 import { ViewerMaterials } from '../../loader/materials/viewerMaterials'
-import { GroundPlane } from './groundPlane'
 import { Skybox } from './skybox'
 import { Renderer } from '../rendering/renderer'
 import { CameraLight } from './cameraLight'
@@ -27,11 +26,6 @@ export class Environment {
    */
   readonly sunLights: ReadonlyArray<CameraLight>
 
-  /**
-   * The ground plane under the model in the scene.
-   */
-  readonly groundPlane: GroundPlane
-
   /*
    * The skybox in the scene.
    */
@@ -41,12 +35,10 @@ export class Environment {
     this._camera = camera
     this._renderer = renderer
 
-    this.groundPlane = new GroundPlane(settings)
     this.skyLight = this.createSkyLight(settings)
     this.skybox = new Skybox(camera, renderer, viewerMaterials, settings)
     this.sunLights = this.createSunLights(settings)
 
-    this.setupRendererListeners()
     this.addObjectsToRenderer()
   }
 
@@ -54,7 +46,7 @@ export class Environment {
    * Returns all three objects composing the environment
    */
   private getObjects (): ReadonlyArray<THREE.Object3D> {
-    return [this.groundPlane.mesh, this.skyLight, ...this.sunLights.map(l => l.light), this.skybox.mesh]
+    return [this.skyLight, ...this.sunLights.map(l => l.light), this.skybox.mesh]
   }
 
   private createSkyLight (settings: ViewerSettings): THREE.HemisphereLight {
@@ -72,13 +64,6 @@ export class Environment {
     this.getObjects().forEach((o) => this._renderer.add(o))
   }
 
-  private setupRendererListeners (): void {
-    this._renderer.onBoxUpdated.subscribe(() => {
-      const box = this._renderer.getBoundingBox()
-      this.groundPlane.adaptToContent(box)
-    })
-  }
-
   /**
    * Dispose of all resources.
    */
@@ -86,7 +71,6 @@ export class Environment {
     this.getObjects().forEach((o) => this._renderer.remove(o))
     this.sunLights.forEach((s) => s.dispose())
     this.skyLight.dispose()
-    this.groundPlane.dispose()
     this.skybox.dispose()
   }
 }

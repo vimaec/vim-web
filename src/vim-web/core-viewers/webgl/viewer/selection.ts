@@ -126,6 +126,10 @@ export class Selection {
     this._onValueChanged.dispatch()
   }
 
+  any(){
+    return this._objects.size > 0
+  }
+
   /**
    * Returns true if the given object is currently selected.
    * @param {IObject} object The object to check for selection.

@@ -1,52 +1,55 @@
 /**
  * @module vim-loader/materials
+ * This module provides custom materials for visualizing and isolating objects in VIM.
  */
 
 import * as THREE from 'three'
 
 /**
- * Material for isolation mode
- * Non visible item appear as transparent.
- * Visible items are flat shaded with a basic pseudo lighting.
- * Supports object coloring for visible objects.
- * Non-visible objects use fillColor.
+ * Creates a material for isolation mode.
+ *
+ * - **Non-visible items**: Completely excluded from rendering by pushing them out of view.
+ * - **Visible items**: Rendered with flat shading and basic pseudo-lighting.
+ * - **Object coloring**: Supports both instance-based and vertex-based coloring for visible objects.
+ *
+ * This material is optimized for both instanced and merged meshes, with support for clipping planes.
+ *
+ * @returns {THREE.ShaderMaterial} A custom shader material for isolation mode.
  */
 export function createSimpleMaterial () {
   return new THREE.ShaderMaterial({
-    uniforms: {
-      opacity: { value: 0.1 },
-      fillColor: { value: new THREE.Vector3(0, 0, 0) }
-    },
+    side: THREE.DoubleSide,
+    // No uniforms are needed for this shader.
+    uniforms: {},
+    // Enable vertex colors for both instanced and merged meshes.
     vertexColors: true,
-    //  transparent: true,
+    // Enable support for clipping planes.
     clipping: true,
     vertexShader: /* glsl */ `
-
       #include <common>
       #include <logdepthbuf_pars_vertex>
       #include <clipping_planes_pars_vertex>
-        
+
       // VISIBILITY
-      // Instance or vertex attribute to hide objects
-      // Used as instance attribute for instanced mesh and as vertex attribute for merged meshes. 
+      // Determines if an object or vertex should be visible.
+      // Used as an instance attribute for instanced meshes or as a vertex attribute for merged meshes.
       attribute float ignore;
 
-      // Passed to fragment to discard them
-      varying float vIgnore;
+      // LIGHTING
+      // Passes the vertex position to the fragment shader for lighting calculations.
       varying vec3 vPosition;
 
-
       // COLORING
+      // Passes the color of the vertex or instance to the fragment shader.
       varying vec3 vColor;
 
-      // attribute for color override
-      // merged meshes use it as vertex attribute
-      // instanced meshes use it as an instance attribute
+      // Determines whether to use instance color (1.0) or vertex color (0.0).
+      // For merged meshes, this is used as a vertex attribute.
+      // For instanced meshes, this is used as an instance attribute.
       attribute float colored;
 
-      // There seems to be an issue where setting mehs.instanceColor
-      // doesn't properly set USE_INSTANCING_COLOR
-      // so we always use it as a fix
+      // Fix for a known issue where setting mesh.instanceColor does not properly enable USE_INSTANCING_COLOR.
+      // This ensures that instance colors are always used when required.
       #ifndef USE_INSTANCING_COLOR
         attribute vec3 instanceColor;
       #endif
@@ -57,46 +60,56 @@ export function createSimpleMaterial () {
         #include <clipping_planes_vertex>
         #include <logdepthbuf_vertex>
 
-        // VISIBILITY
-        // Set frag ignore from instance or vertex attribute
-        vIgnore = ignore;
+        // If ignore is greater than 0, hide the object by moving it far out of view.
+        if (ignore > 0.0) {
+          gl_Position = vec4(1e20, 1e20, 1e20, 1.0);
+          return;
+        }
 
         // COLORING
+        // Default to the vertex color.
         vColor = color.xyz;
 
-        // colored == 1 -> instance color
-        // colored == 0 -> vertex color
+        // Blend instance and vertex colors based on the colored attribute.
+        // colored == 1.0 -> use instance color.
+        // colored == 0.0 -> use vertex color.
         #ifdef USE_INSTANCING
-          vColor.xyz = colored * instanceColor.xyz + (1.0f - colored) * color.xyz;
+          vColor.xyz = colored * instanceColor.xyz + (1.0 - colored) * color.xyz;
         #endif
 
-        gl_Position.z = -10.0f;
-        
         // LIGHTING
-        vPosition = vec3(mvPosition ) / mvPosition .w;
+        // Pass the model-view position to the fragment shader for lighting calculations.
+        vPosition = vec3(mvPosition) / mvPosition.w;
       }
       `,
     fragmentShader: /* glsl */ `
+      #include <common>
+      #include <logdepthbuf_pars_fragment>
       #include <clipping_planes_pars_fragment>
-      varying float vIgnore;
+
+
+      // Position and color data passed from the vertex shader.
       varying vec3 vPosition;
       varying vec3 vColor;
 
       void main() {
         #include <clipping_planes_fragment>
+        #include <logdepthbuf_fragment>
 
-        if (vIgnore > 0.0f){
-          discard;
-        }
-        else{ 
-          gl_FragColor = vec4(vColor.x, vColor.y, vColor.z, 1.0f);
+        // Set the fragment color to the interpolated vertex or instance color.
+        gl_FragColor = vec4(vColor, 1.0);
 
-          // LIGHTING
-          vec3 normal = normalize( cross(dFdx(vPosition), dFdy(vPosition)) );
-          float light = dot(normal, normalize(vec3(1.4142f, 1.732f, 2.2360f)));
-          light = 0.5 + (light *0.5);
-          gl_FragColor.xyz *= light;
-        }
+        // LIGHTING
+        // Compute a pseudo-normal using screen-space derivatives of the vertex position.
+        vec3 normal = normalize(cross(dFdx(vPosition), dFdy(vPosition)));
+
+        // Apply simple directional lighting.
+        // Normalize the light direction for consistent shading.
+        float light = dot(normal, normalize(vec3(1.4142, 1.732, 2.236)));
+        light = 0.5 + (light * 0.5); // Adjust light intensity to range [0.5, 1.0].
+
+        // Modulate the fragment color by the lighting intensity.
+        gl_FragColor.xyz *= light;
       }
       `
   })

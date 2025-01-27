@@ -5,13 +5,15 @@
 import * as THREE from 'three'
 import { StandardMaterial, createOpaque, createTransparent } from './standardMaterial'
 import { createMaskMaterial } from './maskMaterial'
-import { createIsolationMaterial } from './isolationMaterial'
+import { createGhostMaterial as createGhostMaterial } from './ghostMaterial'
 import { OutlineMaterial } from './outlineMaterial'
 import { ViewerSettings } from '../../viewer/settings/viewerSettings'
 import { MergeMaterial } from './mergeMaterial'
 import { createSimpleMaterial } from './simpleMaterial'
 import { SignalDispatcher } from 'ste-signals'
 import { SkyboxMaterial } from './skyboxMaterial'
+
+export type ModelMaterial = THREE.Material | THREE.Material[] | undefined
 
 /**
  * Defines the materials to be used by the vim loader and allows for material injection.
@@ -50,7 +52,7 @@ export class ViewerMaterials {
   /**
    * Material used to show traces of hidden objects.
    */
-  readonly isolation: THREE.Material
+  readonly ghost: THREE.Material
   /**
    * Material used to filter out what is not selected for selection outline effect.
    */
@@ -83,7 +85,7 @@ export class ViewerMaterials {
     transparent?: StandardMaterial,
     simple?: THREE.Material,
     wireframe?: THREE.LineBasicMaterial,
-    isolation?: THREE.Material,
+    ghost?: THREE.Material,
     mask?: THREE.ShaderMaterial,
     outline?: OutlineMaterial,
     merge?: MergeMaterial,
@@ -93,7 +95,7 @@ export class ViewerMaterials {
     this.transparent = transparent ?? createTransparent()
     this.simple = simple ?? createSimpleMaterial()
     this.wireframe = wireframe ?? createWireframe()
-    this.isolation = isolation ?? createIsolationMaterial()
+    this.ghost = ghost ?? createGhostMaterial()
     this.mask = mask ?? createMaskMaterial()
     this.outline = outline ?? new OutlineMaterial()
     this.merge = merge ?? new MergeMaterial()
@@ -108,8 +110,8 @@ export class ViewerMaterials {
     this.opaque.color = settings.materials.standard.color
     this.transparent.color = settings.materials.standard.color
 
-    this.isolationOpacity = settings.materials.isolation.opacity
-    this.isolationColor = settings.materials.isolation.color
+    this.ghostOpacity = settings.materials.ghost.opacity
+    this.ghostColor = settings.materials.ghost.color
 
     this.wireframeColor = settings.materials.highlight.color
     this.wireframeOpacity = settings.materials.highlight.opacity
@@ -146,29 +148,30 @@ export class ViewerMaterials {
   }
 
   /**
-   * Determines the opacity of the isolation material.
+   * Determines the opacity of the ghost material.
    */
-  get isolationOpacity () {
-    return this.isolation.opacity
+  get ghostOpacity () {
+    const mat = this.ghost as THREE.ShaderMaterial
+    return mat.uniforms.opacity.value
   }
 
-  set isolationOpacity (opacity: number) {
-    const mat = this.isolation as THREE.ShaderMaterial
+  set ghostOpacity (opacity: number) {
+    const mat = this.ghost as THREE.ShaderMaterial
     mat.uniforms.opacity.value = opacity
     mat.uniformsNeedUpdate = true
     this._onUpdate.dispatch()
   }
 
   /**
-   * Determines the color of the isolation material.
+   * Determines the color of the ghost material.
    */
-  get isolationColor (): THREE.Color {
-    const mat = this.isolation as THREE.ShaderMaterial
+  get ghostColor (): THREE.Color {
+    const mat = this.ghost as THREE.ShaderMaterial
     return mat.uniforms.fillColor.value
   }
 
-  set isolationColor (color: THREE.Color) {
-    const mat = this.isolation as THREE.ShaderMaterial
+  set ghostColor (color: THREE.Color) {
+    const mat = this.ghost as THREE.ShaderMaterial
     mat.uniforms.fillColor.value = color
     mat.uniformsNeedUpdate = true
     this._onUpdate.dispatch()
@@ -241,10 +244,11 @@ export class ViewerMaterials {
   set clippingPlanes (value: THREE.Plane[] | undefined) {
     // THREE Materials will break if assigned undefined
     this._clippingPlanes = value
+    this.simple.clippingPlanes = value ?? null
     this.opaque.clippingPlanes = value ?? null
     this.transparent.clippingPlanes = value ?? null
     this.wireframe.clippingPlanes = value ?? null
-    this.isolation.clippingPlanes = value ?? null
+    this.ghost.clippingPlanes = value ?? null
     this.mask.clippingPlanes = value ?? null
     this._onUpdate.dispatch()
   }
@@ -387,7 +391,7 @@ export class ViewerMaterials {
     this.opaque.dispose()
     this.transparent.dispose()
     this.wireframe.dispose()
-    this.isolation.dispose()
+    this.ghost.dispose()
     this.mask.dispose()
     this.outline.dispose()
   }

@@ -6,6 +6,7 @@ import * as THREE from 'three'
 import { Vim } from '../vim'
 import { InstancedSubmesh } from './instancedSubmesh'
 import { G3d, G3dMesh } from 'vim-format'
+import { ModelMaterial } from '../materials/viewerMaterials'
 
 export class InstancedMesh {
   g3dMesh: G3dMesh | G3d
@@ -20,7 +21,9 @@ export class InstancedMesh {
 
   // State
   ignoreSceneMaterial: boolean
-  private _material: THREE.Material | THREE.Material[] | undefined
+  
+  private _material: ModelMaterial
+  readonly size: number = 0
 
   constructor (
     g3d: G3dMesh | G3d,
@@ -40,7 +43,9 @@ export class InstancedMesh {
       g3d instanceof G3dMesh
         ? this.importBoundingBoxes()
         : this.computeBoundingBoxes()
+    this.size = this.boxes[0]?.getSize(new THREE.Vector3()).length() ?? 0
     this.boundingBox = this.computeBoundingBox(this.boxes)
+    this._material = this.mesh.material
   }
 
   get merged () {
@@ -65,20 +70,17 @@ export class InstancedMesh {
     return submeshes
   }
 
-  setMaterial (value: THREE.Material) {
+  setMaterial (value: ModelMaterial) {
     if (this._material === value) return
     if (this.ignoreSceneMaterial) return
+    this.mesh.material = value ?? this._material
 
-    if (value) {
-      if (!this._material) {
-        this._material = this.mesh.material
-      }
-      this.mesh.material = value
-    } else {
-      if (this._material) {
-        this.mesh.material = this._material
-        this._material = undefined
-      }
+    // Update material groups
+    this.mesh.geometry.clearGroups()
+    if(value instanceof Array) {
+      value.forEach((m, i) => {
+        this.mesh.geometry.addGroup(0, Infinity, i)
+      })
     }
   }
 
