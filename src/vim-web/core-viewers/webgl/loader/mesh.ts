@@ -6,6 +6,7 @@ import * as THREE from 'three'
 import { InsertableSubmesh } from './progressive/insertableSubmesh'
 import { Vim } from './vim'
 import { InstancedSubmesh } from './progressive/instancedSubmesh'
+import { ModelMaterial } from './materials/viewerMaterials'
 
 /**
  * Wrapper around THREE.Mesh
@@ -55,7 +56,7 @@ export class Mesh {
   /**
    * initial material.
    */
-  private _material: THREE.Material | THREE.Material[]
+  private _material: ModelMaterial
 
   private constructor (
     mesh: THREE.Mesh,
@@ -67,6 +68,7 @@ export class Mesh {
     this.instances = instance
     this.boxes = boxes
     this.boundingBox = this.unionAllBox(boxes)
+    this._material = mesh.material
   }
 
   static createMerged (
@@ -94,20 +96,17 @@ export class Mesh {
   /**
    * Overrides mesh material, set to undefine to restore initial material.
    */
-  setMaterial (value: THREE.Material) {
+  setMaterial (value: ModelMaterial) {
     if (this._material === value) return
     if (this.ignoreSceneMaterial) return
+    this.mesh.material = value ?? this._material
 
-    if (value) {
-      if (!this._material) {
-        this._material = this.mesh.material
-      }
-      this.mesh.material = value
-    } else {
-      if (this._material) {
-        this.mesh.material = this._material
-        this._material = undefined
-      }
+    // Update material groups
+    this.mesh.geometry.clearGroups()
+    if(value instanceof Array) {
+      value.forEach((m, i) => {
+        this.mesh.geometry.addGroup(0, Infinity, i)
+      })
     }
   }
 

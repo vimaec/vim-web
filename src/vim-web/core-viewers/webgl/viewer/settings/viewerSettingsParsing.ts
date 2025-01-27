@@ -62,14 +62,6 @@ function parseSettingsFromUrl (url: string) {
       groundColor: get('skybox.groundColor', strToColor),
       sharpness: get('skybox.sharpness', Number.parseFloat)
     },
-    groundPlane: {
-      visible: get('groundPlane.visible', strToBool),
-      encoding: get('groundPlane.encoding'),
-      texture: get('groundPlane.texture'),
-      opacity: get('groundPlane.opacity', Number.parseFloat),
-      color: get('groundPlane.color', strToColor),
-      size: get('groundPlane.size', Number.parseFloat)
-    },
     skylight: {
       skyColor: get('skylight.skyColor', strToColor),
       groundColor: get('skylight.groundColor', strToColor),
@@ -97,9 +89,9 @@ function parseSettingsFromUrl (url: string) {
         color: get('materials.highlight.color', strToColor),
         opacity: get('materials.highlight.opacity', Number.parseFloat)
       },
-      isolation: {
-        color: get('materials.isolation.color', strToColor),
-        opacity: get('materials.isolation.opacity', Number.parseFloat)
+      ghost: {
+        color: get('materials.ghost.color', strToColor),
+        opacity: get('materials.ghost.opacity', Number.parseFloat)
       },
       section: {
         strokeWidth: get('materials.section.strokeWidth', Number.parseFloat),
