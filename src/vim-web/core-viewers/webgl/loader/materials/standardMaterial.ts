@@ -27,8 +27,6 @@ export function createBasicOpaque () {
     vertexColors: true,
     flatShading: true,
     side: THREE.DoubleSide,
-    
-    //shininess: 20
   })
 }
 
@@ -39,7 +37,6 @@ export function createBasicOpaque () {
 export function createBasicTransparent () {
   const mat = createBasicOpaque()
   mat.transparent = true
-  //mat.shininess = 70
   return mat
 }
 
