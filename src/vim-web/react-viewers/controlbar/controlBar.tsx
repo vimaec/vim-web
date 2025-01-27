@@ -295,8 +295,8 @@ export function ControlBar (props: {
         id: elementIds.buttonToggleIsolation,
         enabled: () => isTrue(props.settings.ui.toggleIsolation),
         tip: 'Toggle Isolation',
-        action: () => props.isolation.toggleIsolation('controlBar'),
-        icon: Icons.toggleIsolation,
+        action: () => props.isolation.toggle('controlBar'),
+        icon:  Icons.toggleIsolation,
         style: buttonDefaultStyle
       }
     ]

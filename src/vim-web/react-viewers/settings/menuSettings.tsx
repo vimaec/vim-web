@@ -96,30 +96,18 @@ export function MenuSettings (props: {
         )}
         {settingsSubtitle('Materials')}
         {settingsToggle(
-          'Use Isolation Material',
-          (settings) => settings.isolation.useIsolationMaterial,
+          'Use Ghost Material',
+          (settings) => settings.materials.useGhostMaterial,
           (settings, value) => {
-            settings.isolation.useIsolationMaterial = value
-            if (settings.peformance.useFastMaterial && value) {
-              settings.peformance.useFastMaterial = false
-            }
+            settings.materials.useGhostMaterial = value
           }
         )}
         {settingsToggle(
           'Use Performance Material',
-          (settings) => settings.peformance.useFastMaterial,
+          (settings) => settings.materials.useFastMaterial,
           (settings, value) => {
-            settings.peformance.useFastMaterial = value
-            if (settings.isolation.useIsolationMaterial && value) {
-              settings.isolation.useIsolationMaterial = false
-            }
+            settings.materials.useFastMaterial = value
           }
-        )}
-        {settingsSubtitle('Scene')}
-        {settingsToggle(
-          'Show Ground Plane',
-          (_) => props.viewer.environment.groundPlane.visible,
-          (_, value) => { props.viewer.environment.groundPlane.visible = value }
         )}
         {settingsSubtitle('Panels')}
         {settingsToggle(
