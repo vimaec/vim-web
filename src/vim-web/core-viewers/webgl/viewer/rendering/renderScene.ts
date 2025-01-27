@@ -5,6 +5,8 @@
 import * as THREE from 'three'
 import { Scene } from '../../loader/scene'
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer'
+import { ModelMaterial } from '../../loader/materials/viewerMaterials'
+import { InstancedMesh } from '../../loader/progressive/instancedMesh'
 
 /**
  * Wrapper around the THREE scene that tracks bounding box and other information.
@@ -15,13 +17,16 @@ export class RenderScene {
   // state
   boxUpdated = false
 
+  // public value
+  smallGhostThreshold: number | undefined = 10
+
   private _vimScenes: Scene[] = []
   private _boundingBox: THREE.Box3 | undefined
   private _memory = 0
   private _2dCount = 0
-  private _material: THREE.Material | undefined
+  private _modelMaterial: ModelMaterial
 
-  get models() {
+  get meshes() {
     return this._vimScenes.flatMap((s) => s.meshes)
   }
 
@@ -81,6 +86,7 @@ export class RenderScene {
   add (target: Scene | THREE.Object3D) {
     if (target instanceof Scene) {
       this.addScene(target)
+      target.material = this._modelMaterial
       return
     }
 
@@ -138,16 +144,35 @@ export class RenderScene {
     this._memory = 0
   }
 
-  get material() {
-    return this._material
+  get modelMaterial() {
+    return this._modelMaterial
   }
-  set material(material: THREE.Material) {
-    this._material = material
+  set modelMaterial(material: ModelMaterial) {
+    this._modelMaterial = material
     this._vimScenes.forEach((s) => {
-      s.meshes.forEach((m) => {
-        m.mesh.material = material
-      })
+      s.material = material
     })
+
+    // Hide small instances when using ghost material
+    this.updateInstanceMeshVisibility()
+  }
+
+  private updateInstanceMeshVisibility(){
+    const hide = this._modelMaterial?.[1]?.userData.isGhost === true
+
+    for(const mesh of this.meshes){
+      if(mesh instanceof InstancedMesh){
+        if(this.smallGhostThreshold <= 0){
+          mesh.mesh.visible = true
+          continue
+        }
+        // Check if any submesh is visible
+        const visible = mesh.getSubmeshes().some((m) => 
+          m.object.visible
+        )
+        mesh.mesh.visible = !(hide && !visible && mesh.size < this.smallGhostThreshold)
+      }
+    }
   }
 
   private addScene (scene: Scene) {

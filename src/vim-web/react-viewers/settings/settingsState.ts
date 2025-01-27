@@ -28,7 +28,6 @@ export function useSettings (
   const update = function (updater: (s: ComponentSettings) => void) {
     const next = { ...settings } // Shallow copy
     updater(next)
-    validateSettings(next)
     saveSettingsToLocal(next)
     setSettings(next)
     onUpdate.current?.(next)
@@ -54,12 +53,6 @@ export function useSettings (
   )
 }
 
-function validateSettings (settings: ComponentSettings) {
-  if (settings.peformance.useFastMaterial && settings.isolation.useIsolationMaterial) {
-    settings.peformance.useFastMaterial = false
-  }
-}
-
 /**
  * Apply given vim component settings to the given viewer.
  */
@@ -73,14 +66,5 @@ export function applySettings (viewer: VIM.Viewer, settings: ComponentSettings) 
       performance.classList.add('vc-hidden')
     }
   }
-
-  viewer.vims.forEach((v) => {
-    if (settings.peformance.useFastMaterial && v.scene.material === undefined) {
-      v.scene.material = viewer.materials.simple
-    }
-    if (!settings.peformance.useFastMaterial && v.scene.material === viewer.materials.simple) {
-      v.scene.material = undefined
-    }
-  })
-  // Isolation settings are applied in isolation.
+  viewer.renderer.smallGhostThreshold = settings.materials.smallGhostThreshold
 }
