@@ -86,7 +86,7 @@ function updateModal (modal: ModalRef, state: Ultra.ClientState) {
   }
   if (state.status === 'connecting') {
     if (modal.current === undefined || modal.current.type === 'loading') {
-      modal.loading({ message: 'Connecting to VIM Ultra server...' })
+      modal.loading({ message: 'Initializing...' })
     }
   }
   if (state.status === 'error') {
