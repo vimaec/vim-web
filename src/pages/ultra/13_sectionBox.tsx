@@ -1,12 +1,15 @@
-import React, { useRef } from 'react'
+import { useRef } from 'react'
 import { UltraViewer, UltraReact } from '../../vim-web'
-import { useUltraWithTower, useUltraWithWolford } from './ultraPageUtils'
+import { useUltraNoModel, useUltraWithWolford } from './ultraPageUtils'
+import { residence } from '../devUrls'
+import { Box3 } from 'three'
+import { Vector2, Vector3 } from '../../vim-web/core-viewers/ultra'
 
 export function UltraSectionBox () {
   const div = useRef<HTMLDivElement>(null)
 
-  useUltraWithWolford(div, (ultra, tower) => {
-    void createSectionBox(ultra, tower)
+  useUltraNoModel(div, (ultra) => {
+    void createSectionBox(ultra)
   })
 
   return (
@@ -14,6 +17,23 @@ export function UltraSectionBox () {
   )
 }
 
-async function createSectionBox (ultra: UltraReact.UltraComponentRef, tower: UltraViewer.Vim) {
+async function createSectionBox (ultra: UltraReact.UltraComponentRef) {
+
+  await ultra.viewer.connect()
+
   ultra.viewer.sectionBox.enabled = true
+  
+
+  const request = ultra.load({url:residence})
+  const result = await request.getResult()
+  if (result.isSuccess) {
+    await ultra.viewer.camera.frameAll(0)
+    const box = await result.vim.getBoundingBox('all')
+
+    //ultra.viewer.sectionBox.enabled = false
+    //ultra.viewer.sectionBox.enabled = true
+    ultra.viewer.sectionBox.fitBox(box)
+
+
+  }
 }

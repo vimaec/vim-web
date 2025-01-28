@@ -172,7 +172,10 @@ export class Viewer {
     this._renderer.onConnect()
     this._input.onConnect()
     this._camera.onConnect()
+    
     this._vims.getAll().forEach((vim) => vim.connect())
+    this.sectionBox.onConnect() //needs to be called after vims are connected
+
     this._viewport.update()
     this._decoder.start()
   }

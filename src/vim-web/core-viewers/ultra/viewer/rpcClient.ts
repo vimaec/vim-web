@@ -1,5 +1,5 @@
 import type{SocketClient} from './socketClient'
-import { Marshal, HitCheckResult, VimStatus } from './marshal'
+import { Marshal, HitCheckResult, VimStatus, SectionBoxState } from './marshal'
 import { Box3, RGBA, RGBA32, Segment, Vector2, Vector3, Matrix44 } from '../utils/math3d'
 
 // RPC Generated Constants
@@ -38,15 +38,11 @@ export class RpcClient {
     return this._messenger.url
   }
 
-  get connected(): boolean {
-    return this._messenger.state.status === 'connected'
-  }	
-
   constructor (_messenger: SocketClient) {
     this._messenger = _messenger
   }
   // RPC Generated Code
-  readonly API_VERSION = "5.0.0"
+  readonly API_VERSION = "5.0.1"
 
   RPCAddNodeFlags(componentHandle: number, nodes: number[], flags: number): void {
     const marshal = new Marshal();
@@ -103,13 +99,6 @@ export class RpcClient {
     const marshal = new Marshal();
     marshal.writeString("RPCDestroyText");
     marshal.writeUInt(componentHandle);
-    this._messenger.sendRPC(marshal);
-  }
-
-  RPCEnableSectionBox(enable: boolean): void {
-    const marshal = new Marshal();
-    marshal.writeString("RPCEnableSectionBox");
-    marshal.writeBoolean(enable);
     this._messenger.sendRPC(marshal);
   }
 
@@ -171,6 +160,15 @@ export class RpcClient {
     return ret;
   }
 
+  async RPCGetBoundingBoxAll(componentHandle: number): Promise<Box3> {
+    const marshal = new Marshal();
+    marshal.writeString("RPCGetBoundingBoxAll");
+    marshal.writeUInt(componentHandle);
+    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const ret = returnMarshal.readBox3(); 
+    return ret;
+  }
+
   async RPCGetCameraPosition(): Promise<Segment> {
     const marshal = new Marshal();
     marshal.writeString("RPCGetCameraPosition");
@@ -192,6 +190,22 @@ export class RpcClient {
     marshal.writeString("RPCGetLastError");
     const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readString(); 
+    return ret;
+  }
+
+  async RPCGetSceneAABB(): Promise<Box3> {
+    const marshal = new Marshal();
+    marshal.writeString("RPCGetSceneAABB");
+    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const ret = returnMarshal.readBox3(); 
+    return ret;
+  }
+
+  async RPCGetSectionBox(): Promise<SectionBoxState> {
+    const marshal = new Marshal();
+    marshal.writeString("RPCGetSectionBox");
+    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const ret = returnMarshal.readSectionBoxState(); 
     return ret;
   }
 
@@ -438,10 +452,11 @@ export class RpcClient {
     this._messenger.sendRPC(marshal);
   }
 
-  RPCSetSectionBox(aabb: Box3): void {
+  RPCSetSectionBox(state: SectionBoxState): void {
     const marshal = new Marshal();
     marshal.writeString("RPCSetSectionBox");
-    marshal.writeBox3(aabb);
+    marshal.writeSectionBoxState(state);
+    console.log(marshal)
     this._messenger.sendRPC(marshal);
   }
 
