@@ -35,7 +35,9 @@ export class CameraMovementSnap extends CameraMovement {
   }
 
   applyRotation (quaternion: THREE.Quaternion) {
+    console.log('forward before ', this._camera.forward)
     this._camera.quaternion.copy(quaternion)
+    console.log('forward ', this._camera.forward)
     const target = this._camera.forward
       .multiplyScalar(this._camera.orbitDistance)
       .add(this._camera.position)
@@ -64,17 +66,55 @@ export class CameraMovementSnap extends CameraMovement {
     this.set(pos, target)
   }
 
-  set (position: THREE.Vector3, target?: THREE.Vector3) {
-    // apply position
-    const locked = this.lockVector(position, this._camera.position)
-    this._camera.position.copy(locked)
-
-    // apply target and rotation
-    target = target ?? this._camera.target
-    this._camera.target.copy(target)
-    this._camera.camPerspective.camera.lookAt(target)
-    this._camera.camPerspective.camera.up.set(0, 1, 0)
+  set(position: THREE.Vector3, target?: THREE.Vector3) {
+    // Use the existing camera's target if none is provided
+    target = target ?? this._camera.target;
+  
+    // direction = (desired camera position) - (fixed target)
+    const direction = new THREE.Vector3().subVectors(position, target);
+    const dist = direction.length();
+  
+    // If camera and target coincide, skip angle clamping
+    if (dist > 1e-6) {
+      // Angle between direction and "up" (0,0,1) in [0..PI]
+      const up = new THREE.Vector3(0, 0, 1);
+      const angle = direction.angleTo(up);
+  
+      // We'll clamp angle to the range [5°, 175°]
+      const minAngle = THREE.MathUtils.degToRad(5);
+      const maxAngle = THREE.MathUtils.degToRad(175);
+  
+      if (angle < minAngle) {
+        // direction is too close to straight up
+        // rotate 'direction' so angle becomes exactly minAngle
+        const axis = new THREE.Vector3().crossVectors(up, direction).normalize();
+        const delta = minAngle - angle; // positive => rotate away from up
+        direction.applyQuaternion(new THREE.Quaternion().setFromAxisAngle(axis, delta));
+      } else if (angle > maxAngle) {
+        // direction is too close to straight down
+        // rotate 'direction' so angle becomes exactly maxAngle
+        const axis = new THREE.Vector3().crossVectors(up, direction).normalize();
+        const delta = maxAngle - angle; // negative => rotate back toward up
+        direction.applyQuaternion(new THREE.Quaternion().setFromAxisAngle(axis, delta));
+      }
+  
+      // 'direction' now has the same length but is clamped in angle
+      // Recompute the actual camera position
+      position.copy(target).add(direction);
+    }
+  
+    // 2) Pass the adjusted position through your locking logic
+    const lockedPos = this.lockVector(position, this._camera.position);
+    this._camera.position.copy(lockedPos);
+  
+    // 3) The target remains exactly as given
+    this._camera.target.copy(target);
+  
+    // 4) Orient the camera to look at the target, with Z as up
+    this._camera.camPerspective.camera.up.set(0, 0, 1);
+    this._camera.camPerspective.camera.lookAt(target);
   }
+  
 
   private lockVector (position: THREE.Vector3, fallback: THREE.Vector3) {
     const x = this._camera.allowedMovement.x === 0 ? fallback.x : position.x
@@ -91,22 +131,19 @@ export class CameraMovementSnap extends CameraMovement {
       .applyQuaternion(rotation)
       .multiplyScalar(this._camera.orbitDistance)
 
-    return this._camera.target.clone().add(delta)
+    const pos = this._camera.target.clone().add(delta)
+    
+
+    return pos
   }
 
-  predictRotate (angle: THREE.Vector2) {
-    const euler = new THREE.Euler(0, 0, 0, 'YXZ')
-    euler.setFromQuaternion(this._camera.quaternion)
-
-    euler.x += (angle.x * Math.PI) / 180
-    euler.y += (angle.y * Math.PI) / 180
-    euler.z = 0
-
-    // Clamp X rotation to prevent performing a loop.
-    const max = Math.PI * 0.4999
-    euler.x = Math.max(-max, Math.min(max, euler.x))
-
-    const rotation = new THREE.Quaternion().setFromEuler(euler)
-    return rotation
+  predictRotate(angle: THREE.Vector2) {
+    // Create quaternions for rotation around X and Z axes
+    const xQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), (angle.x * Math.PI) / 180)
+    const zQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), (angle.y * Math.PI) / 180)
+    const rotation = this._camera.quaternion.clone();
+    rotation.multiply(xQuat).multiply(zQuat);
+    return rotation;
   }
+  
 }
