@@ -1,5 +1,5 @@
 import { Box3, RGBA, RGBA32, Segment, Vector2, Vector3 } from "../utils/math3d"
-import { HitCheckResult } from "./marshal"
+import { HitCheckResult, SectionBoxState } from "./marshal"
 import { MaterialHandle, RpcClient } from "./rpcClient"
 import { Validation } from "../utils/validation"
 import { batchArray, batchArrays } from "../utils/array"
@@ -58,10 +58,6 @@ export class RpcSafeClient {
 
   get url(): string {
     return this.rpc.url
-  }
-
-  get connected(): boolean {
-    return this.rpc.connected
   }
 
   constructor(rpc: RpcClient, batchSize: number = defaultBatchSize) {
@@ -291,13 +287,18 @@ export class RpcSafeClient {
    * SECTION BOX METHODS
    * Methods for controlling section box visibility and position.
    ******************************************************************************/
-  RPCEnableSectionBox(enable: boolean): void {
-    this.rpc.RPCEnableSectionBox(enable)
+  
+  RPCSetSectionBox(state: SectionBoxState): void {
+    console.log('RPCSetSectionBox', state)
+    if(state.enabled && !Validation.isValidBox(state.box)) return
+    this.rpc.RPCSetSectionBox(state)
   }
 
-  RPCSetSectionBox(aabb: Box3): void {
-    if(!Validation.isValidBox(aabb)) return
-    this.rpc.RPCSetSectionBox(aabb)
+  async RPCGetSectionBox(): Promise<SectionBoxState | undefined> {
+    return await this.safeCall(
+      () => this.rpc.RPCGetSectionBox(),
+      undefined
+    )
   }
 
   /*******************************************************************************
@@ -329,6 +330,13 @@ export class RpcSafeClient {
 
     // Run
     this.rpc.RPCSetCameraPosition(segment, blendTime)
+  }
+
+  async RPCGetBoundingBoxAll(componentHandle: number){
+    return await this.safeCall(
+      () => this.rpc.RPCGetBoundingBoxAll(componentHandle),
+      undefined
+    )
   }
 
   /**

@@ -16,6 +16,14 @@ export type VimStatus = {
   progress: number;  // float equivalent
 }
 
+export type SectionBoxState = {
+  enabled: boolean;       // bool equivalent
+  visible: boolean;       // bool equivalent
+  interactible: boolean;  // bool equivalent
+  clip : boolean;         // bool equivalent
+  box: Box3;              // Box3 equivalent
+}
+
 export type Vector4 = {
   x: number;         // float equivalent
   y: number;         // float equivalent
@@ -57,7 +65,7 @@ export class Marshal {
     new Uint8Array(this.buffer, this.writeOffset).set(new Uint8Array(data))
     this.writeOffset += data.byteLength
   }
-  // -------------------- Matrix44 Methods --------------------
+  // -------------------- Matrix44 -------------------
 
   public writeMatrix44(data: Matrix44): void {
     this.ensureCapacity(4 * 4 * 4)
@@ -94,7 +102,7 @@ export class Marshal {
     return new Matrix44(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33)
   }
 
-  // -------------------- Boolean Methods --------------------
+  // -------------------- Boolean -------------------
 
   public writeBoolean(value: boolean): void {
     this.ensureCapacity(4)
@@ -108,7 +116,7 @@ export class Marshal {
     return value !== 0
   }
 
-  // -------------------- Int Methods --------------------
+  // -------------------- Int -------------------
 
   public writeInt(value: number): void {
     this.ensureCapacity(4)
@@ -122,7 +130,7 @@ export class Marshal {
     return value
   }
 
-  // -------------------- UInt Methods --------------------
+  // -------------------- UInt -------------------
 
   public writeUInt(value: number): void {
     this.ensureCapacity(4)
@@ -136,7 +144,7 @@ export class Marshal {
     return value
   }
 
-  // -------------------- Float Methods --------------------
+  // -------------------- Float -------------------
 
   public writeFloat(value: number): void {
     this.ensureCapacity(4)
@@ -150,7 +158,7 @@ export class Marshal {
     return value
   }
 
-  // -------------------- String Methods --------------------
+  // -------------------- String -------------------
 
   public writeString(value: string): void {
     const textEncoder = new TextEncoder()
@@ -169,7 +177,7 @@ export class Marshal {
     return textDecoder.decode(stringData)
   }
 
-  // -------------------- HitCheckResult Methods --------------------
+  // -------------------- HitCheckResult -------------------
 
   public writeHitCheckResult(data: HitCheckResult): void {
     this.ensureCapacity(4 + 4 + 4 * 3 + 4 * 3)
@@ -194,7 +202,7 @@ export class Marshal {
     }
   }
 
-  // -------------------- VimStatus Methods --------------------
+  // -------------------- VimStatus -------------------
 
   public writeVimStatus(data: VimStatus): void {
     this.ensureCapacity(4 + 4)
@@ -212,7 +220,7 @@ export class Marshal {
     }
   }
 
-  // -------------------- Vector2 Methods --------------------
+  // -------------------- Vector2 -------------------
 
   public writeVector2(data: Vector2): void {
     this.ensureCapacity(4 + 4)
@@ -226,7 +234,7 @@ export class Marshal {
     return new Vector2(x, y)
   }
 
-  // -------------------- Vector3 Methods --------------------
+  // -------------------- Vector3 -------------------
 
   public writeVector3(data: Vector3): void {
     this.ensureCapacity(4 + 4 + 4)
@@ -242,7 +250,7 @@ export class Marshal {
     return new Vector3(x, y, z)
   }
 
-  // -------------------- Vector4 Methods --------------------
+  // -------------------- Vector4 -------------------
 
   public writeVector4(data: Vector4): void {
     this.ensureCapacity(4 + 4 + 4 + 4)
@@ -266,7 +274,7 @@ export class Marshal {
     }
   }
 
-  // -------------------- RGBA Methods --------------------
+  // -------------------- RGBA -------------------
 
   public writeRGBA(color: RGBA): void {
     this.ensureCapacity(4 + 4 + 4 + 4)
@@ -284,7 +292,7 @@ export class Marshal {
     return new RGBA(r, g, b, a)
   }
 
-  // -------------------- RGB Methods --------------------
+  // -------------------- RGB -------------------
 
   public writeRGB(color: RGBA): void {
     this.ensureCapacity(4 + 4 + 4 + 4)
@@ -300,7 +308,7 @@ export class Marshal {
     return new RGB(r, g, b)
   }
 
-  // -------------------- RGBA32 Methods --------------------
+  // -------------------- RGBA32 -------------------
 
   public writeRGBA32(color: RGBA32): void {
     this.ensureCapacity(4)    
@@ -312,7 +320,7 @@ export class Marshal {
     return new RGBA32(hex)
   }
 
-  // -------------------- CameraPositionAndTarget Methods --------------------
+  // -------------------- CameraPositionAndTarget -------------------
 
   public writeSegment(segment: Segment): void {
     this.ensureCapacity(4 * 3 * 2)
@@ -325,7 +333,7 @@ export class Marshal {
     const target = this.readVector3()
     return new Segment(position, target)
   }
-  // -------------------- Box3 Methods --------------------
+  // -------------------- Box3 -------------------
 
   public writeBox3(data: Box3): void {
     this.ensureCapacity(4 * 3 * 2)
@@ -339,8 +347,33 @@ export class Marshal {
 
     return new Box3(min, max)
   }
+  // -------------------- SectionBox -------------------
 
-  // -------------------- Array of Int Methods --------------------
+  public writeSectionBoxState(data: SectionBoxState): void {
+    this.writeBoolean(data.enabled)
+    this.writeBoolean(data.visible)
+    this.writeBoolean(data.interactible)
+    this.writeBoolean(data.clip)
+    this.writeBox3(data.box)
+  }
+
+  public readSectionBoxState(): SectionBoxState {
+    const enabled = this.readBoolean()
+    const visible = this.readBoolean()
+    const interactible = this.readBoolean()
+    const clip = this.readBoolean()
+    const box = this.readBox3()
+
+    return {
+      enabled,
+      visible,
+      interactible,
+      clip,
+      box
+    }
+  }
+
+  // -------------------- Array of Int -------------------
 
   public writeArrayOfInt(values: number[]): void {
     this.writeArray(values, 4, (v) => this.writeInt(v))
@@ -350,7 +383,7 @@ export class Marshal {
     return this.readArray(() => this.readInt())
   }
 
-  // -------------------- Array of UInt Methods --------------------
+  // -------------------- Array of UInt -------------------
 
   public writeArrayOfUInt(values: number[]): void {
     this.writeArray(values, 4, (v) => this.writeUInt(v))
@@ -360,7 +393,7 @@ export class Marshal {
     return this.readArray(() => this.readUInt())
   }
 
-  // -------------------- Array of Float Methods --------------------
+  // -------------------- Array of Float -------------------
 
   public writeArrayOfFloat(values: number[]): void {
     this.writeArray(values, 4, (v) => this.writeFloat(v))
@@ -370,7 +403,7 @@ export class Marshal {
     return this.readArray(() => this.readFloat())
   }
 
-  // -------------------- Array of Bool Methods --------------------
+  // -------------------- Array of Bool -------------------
 
   public writeArrayOfBool(values: boolean[]): void {
     this.writeArray(values, 4, (v) => this.writeBoolean(v))
@@ -379,7 +412,7 @@ export class Marshal {
   public readArrayOfBool(): boolean[] {
     return this.readArray(() => this.readBoolean())
   }
-  // -------------------- Array of RGBA32 Methods --------------------
+  // -------------------- Array of RGBA32 -------------------
 
   public writeArrayOfRGBA32(values: RGBA32[]): void {
     this.writeArray(values, 4, (v) => this.writeRGBA32(v))

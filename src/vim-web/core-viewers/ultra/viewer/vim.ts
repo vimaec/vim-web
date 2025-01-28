@@ -255,11 +255,12 @@ export class Vim {
    * @throws Error if 'all' is passed, as this feature is not supported yet.
    */
   async getBoundingBox(nodes: number[] | 'all'): Promise<Box3 | undefined> {
-    if (nodes === 'all') {
-      throw new Error('Feature not supported yet.');
-    }
     if (!this.connected || nodes.length === 0) {
       return Promise.resolve(undefined);
+    }
+    
+    if (nodes === 'all') {
+      return await this._rpc.RPCGetBoundingBoxAll(this._handle);
     }
 
     return await this._rpc.RPCGetBoundingBox(this._handle, nodes);
