@@ -32,17 +32,21 @@ export const materialHandles : MaterialHandle[] = [
 ]
 
 export class RpcClient {
-  private readonly _messenger: SocketClient
+  private readonly _socket: SocketClient
+
+get connected() : boolean{
+return this._socket.state.status === "connected"
+}
 
   get url(): string {
-    return this._messenger.url
+    return this._socket.url
   }
 
-  constructor (_messenger: SocketClient) {
-    this._messenger = _messenger
+  constructor (_socket: SocketClient) {
+    this._socket = _socket
   }
   // RPC Generated Code
-  readonly API_VERSION = "5.0.1"
+  readonly API_VERSION = "5.1.0"
 
   RPCAddNodeFlags(componentHandle: number, nodes: number[], flags: number): void {
     const marshal = new Marshal();
@@ -50,20 +54,20 @@ export class RpcClient {
     marshal.writeUInt(componentHandle);
     marshal.writeArrayOfUInt(nodes);
     marshal.writeUInt(flags);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCClearMaterialOverrides(componentHandle: number): void {
     const marshal = new Marshal();
     marshal.writeString("RPCClearMaterialOverrides");
     marshal.writeUInt(componentHandle);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCClearScene(): void {
     const marshal = new Marshal();
     marshal.writeString("RPCClearScene");
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   async RPCCreateMaterialInstances(materialHandle: number, smoothness: number, colors: RGBA32[]): Promise<number> {
@@ -72,7 +76,7 @@ export class RpcClient {
     marshal.writeUInt(materialHandle);
     marshal.writeUInt(smoothness);
     marshal.writeArrayOfRGBA32(colors);
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readUInt(); 
     return ret;
   }
@@ -83,7 +87,7 @@ export class RpcClient {
     marshal.writeVector3(position);
     marshal.writeRGBA32(color);
     marshal.writeString(text);
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readUInt(); 
     return ret;
   }
@@ -92,21 +96,21 @@ export class RpcClient {
     const marshal = new Marshal();
     marshal.writeString("RPCDestroyMaterialInstances");
     marshal.writeArrayOfUInt(materialInstanceHandle);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCDestroyText(componentHandle: number): void {
     const marshal = new Marshal();
     marshal.writeString("RPCDestroyText");
     marshal.writeUInt(componentHandle);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   async RPCFrameAll(blendTime: number): Promise<Segment> {
     const marshal = new Marshal();
     marshal.writeString("RPCFrameAll");
     marshal.writeFloat(blendTime);
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readSegment(); 
     return ret;
   }
@@ -116,7 +120,7 @@ export class RpcClient {
     marshal.writeString("RPCFrameBox");
     marshal.writeBox3(box);
     marshal.writeFloat(blendTime);
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readSegment(); 
     return ret;
   }
@@ -127,7 +131,7 @@ export class RpcClient {
     marshal.writeUInt(componentHandle);
     marshal.writeArrayOfUInt(nodes);
     marshal.writeFloat(blendTime);
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readSegment(); 
     return ret;
   }
@@ -137,7 +141,7 @@ export class RpcClient {
     marshal.writeString("RPCFrameVim");
     marshal.writeUInt(componentHandle);
     marshal.writeFloat(blendTime);
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readSegment(); 
     return ret;
   }
@@ -145,7 +149,7 @@ export class RpcClient {
   async RPCGetAPIVersion(): Promise<string> {
     const marshal = new Marshal();
     marshal.writeString("RPCGetAPIVersion");
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readString(); 
     return ret;
   }
@@ -155,7 +159,7 @@ export class RpcClient {
     marshal.writeString("RPCGetBoundingBox");
     marshal.writeUInt(componentHandle);
     marshal.writeArrayOfUInt(nodes);
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readBox3(); 
     return ret;
   }
@@ -164,7 +168,7 @@ export class RpcClient {
     const marshal = new Marshal();
     marshal.writeString("RPCGetBoundingBoxAll");
     marshal.writeUInt(componentHandle);
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readBox3(); 
     return ret;
   }
@@ -172,7 +176,7 @@ export class RpcClient {
   async RPCGetCameraPosition(): Promise<Segment> {
     const marshal = new Marshal();
     marshal.writeString("RPCGetCameraPosition");
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readSegment(); 
     return ret;
   }
@@ -180,7 +184,7 @@ export class RpcClient {
   async RPCGetIblRotation(): Promise<Matrix44> {
     const marshal = new Marshal();
     marshal.writeString("RPCGetIblRotation");
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readMatrix44(); 
     return ret;
   }
@@ -188,7 +192,7 @@ export class RpcClient {
   async RPCGetLastError(): Promise<string> {
     const marshal = new Marshal();
     marshal.writeString("RPCGetLastError");
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readString(); 
     return ret;
   }
@@ -196,7 +200,7 @@ export class RpcClient {
   async RPCGetSceneAABB(): Promise<Box3> {
     const marshal = new Marshal();
     marshal.writeString("RPCGetSceneAABB");
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readBox3(); 
     return ret;
   }
@@ -204,7 +208,7 @@ export class RpcClient {
   async RPCGetSectionBox(): Promise<SectionBoxState> {
     const marshal = new Marshal();
     marshal.writeString("RPCGetSectionBox");
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readSectionBoxState(); 
     return ret;
   }
@@ -213,7 +217,7 @@ export class RpcClient {
     const marshal = new Marshal();
     marshal.writeString("RPCGetVimLoadingState");
     marshal.writeUInt(componentHandle);
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readVimStatus(); 
     return ret;
   }
@@ -223,14 +227,14 @@ export class RpcClient {
     marshal.writeString("RPCGhost");
     marshal.writeUInt(componentHandle);
     marshal.writeArrayOfUInt(nodes);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCGhostAll(componentHandle: number): void {
     const marshal = new Marshal();
     marshal.writeString("RPCGhostAll");
     marshal.writeUInt(componentHandle);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCHide(componentHandle: number, nodes: number[]): void {
@@ -238,7 +242,7 @@ export class RpcClient {
     marshal.writeString("RPCHide");
     marshal.writeUInt(componentHandle);
     marshal.writeArrayOfUInt(nodes);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCHideAABBs(componentHandle: number, nodes: number[]): void {
@@ -246,21 +250,21 @@ export class RpcClient {
     marshal.writeString("RPCHideAABBs");
     marshal.writeUInt(componentHandle);
     marshal.writeArrayOfUInt(nodes);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCHideAll(componentHandle: number): void {
     const marshal = new Marshal();
     marshal.writeString("RPCHideAll");
     marshal.writeUInt(componentHandle);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCHideAllAABBs(componentHandle: number): void {
     const marshal = new Marshal();
     marshal.writeString("RPCHideAllAABBs");
     marshal.writeUInt(componentHandle);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCHighlight(componentHandle: number, nodes: number[]): void {
@@ -268,14 +272,14 @@ export class RpcClient {
     marshal.writeString("RPCHighlight");
     marshal.writeUInt(componentHandle);
     marshal.writeArrayOfUInt(nodes);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCHighlightAll(componentHandle: number): void {
     const marshal = new Marshal();
     marshal.writeString("RPCHighlightAll");
     marshal.writeUInt(componentHandle);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCKeyEvent(keyCode: number, down: boolean): void {
@@ -283,14 +287,14 @@ export class RpcClient {
     marshal.writeString("RPCKeyEvent");
     marshal.writeInt(keyCode);
     marshal.writeBoolean(down);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   async RPCLoadVim(fileName: string): Promise<number> {
     const marshal = new Marshal();
     marshal.writeString("RPCLoadVim");
     marshal.writeString(fileName);
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readUInt(); 
     return ret;
   }
@@ -300,7 +304,7 @@ export class RpcClient {
     marshal.writeString("RPCLoadVimURL");
     marshal.writeString(url);
     marshal.writeString(authToken);
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readUInt(); 
     return ret;
   }
@@ -309,7 +313,7 @@ export class RpcClient {
     const marshal = new Marshal();
     marshal.writeString("RPCLockIblRotation");
     marshal.writeBoolean(lock);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCMouseButtonEvent(mousePos: Vector2, mouseButton: number, down: boolean): void {
@@ -318,7 +322,7 @@ export class RpcClient {
     marshal.writeVector2(mousePos);
     marshal.writeInt(mouseButton);
     marshal.writeBoolean(down);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCMouseDoubleClickEvent(mousePos: Vector2, mouseButton: number): void {
@@ -326,21 +330,21 @@ export class RpcClient {
     marshal.writeString("RPCMouseDoubleClickEvent");
     marshal.writeVector2(mousePos);
     marshal.writeInt(mouseButton);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCMouseMoveEvent(mousePos: Vector2): void {
     const marshal = new Marshal();
     marshal.writeString("RPCMouseMoveEvent");
     marshal.writeVector2(mousePos);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCMouseScrollEvent(scrollValue: number): void {
     const marshal = new Marshal();
     marshal.writeString("RPCMouseScrollEvent");
     marshal.writeInt(scrollValue);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCMouseSelectEvent(mousePos: Vector2, mouseButton: number): void {
@@ -348,7 +352,7 @@ export class RpcClient {
     marshal.writeString("RPCMouseSelectEvent");
     marshal.writeVector2(mousePos);
     marshal.writeInt(mouseButton);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCMoveCameraTo(usePosition: boolean, useTarget: boolean, position: Vector3, target: Vector3, blendTime: number): void {
@@ -359,21 +363,21 @@ export class RpcClient {
     marshal.writeVector3(position);
     marshal.writeVector3(target);
     marshal.writeFloat(blendTime);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCPauseRendering(pause: boolean): void {
     const marshal = new Marshal();
     marshal.writeString("RPCPauseRendering");
     marshal.writeBoolean(pause);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   async RPCPerformHitTest(pos: Vector2): Promise<HitCheckResult> {
     const marshal = new Marshal();
     marshal.writeString("RPCPerformHitTest");
     marshal.writeVector2(pos);
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readHitCheckResult(); 
     return ret;
   }
@@ -384,7 +388,7 @@ export class RpcClient {
     marshal.writeUInt(componentHandle);
     marshal.writeArrayOfUInt(nodes);
     marshal.writeUInt(flags);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCSetAspectRatio(width: number, height: number): void {
@@ -392,14 +396,14 @@ export class RpcClient {
     marshal.writeString("RPCSetAspectRatio");
     marshal.writeUInt(width);
     marshal.writeUInt(height);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCSetCameraMode(orbit: boolean): void {
     const marshal = new Marshal();
     marshal.writeString("RPCSetCameraMode");
     marshal.writeBoolean(orbit);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCSetCameraPosition(state: Segment, blendTime: number): void {
@@ -407,21 +411,21 @@ export class RpcClient {
     marshal.writeString("RPCSetCameraPosition");
     marshal.writeSegment(state);
     marshal.writeFloat(blendTime);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCSetGhostColor(ghostColor: RGBA): void {
     const marshal = new Marshal();
     marshal.writeString("RPCSetGhostColor");
     marshal.writeRGBA(ghostColor);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCSetIblRotation(transform: Matrix44): void {
     const marshal = new Marshal();
     marshal.writeString("RPCSetIblRotation");
     marshal.writeMatrix44(transform);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCSetLighting(toneMappingWhitePoint: number, hdrScale: number, hdrBackgroundScale: number, hdrBackgroundSaturation: number, backgroundBlur: number, backgroundColor: RGBA): void {
@@ -433,7 +437,7 @@ export class RpcClient {
     marshal.writeFloat(hdrBackgroundSaturation);
     marshal.writeFloat(backgroundBlur);
     marshal.writeRGBA(backgroundColor);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCSetMaterialOverrides(componentHandle: number, nodes: number[], materialInstanceHandles: number[]): void {
@@ -442,22 +446,21 @@ export class RpcClient {
     marshal.writeUInt(componentHandle);
     marshal.writeArrayOfUInt(nodes);
     marshal.writeArrayOfUInt(materialInstanceHandles);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCSetMoveSpeed(speed: number): void {
     const marshal = new Marshal();
     marshal.writeString("RPCSetMoveSpeed");
     marshal.writeFloat(speed);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCSetSectionBox(state: SectionBoxState): void {
     const marshal = new Marshal();
     marshal.writeString("RPCSetSectionBox");
     marshal.writeSectionBoxState(state);
-    console.log(marshal)
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCShow(componentHandle: number, nodes: number[]): void {
@@ -465,7 +468,7 @@ export class RpcClient {
     marshal.writeString("RPCShow");
     marshal.writeUInt(componentHandle);
     marshal.writeArrayOfUInt(nodes);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCShowAABBs(componentHandle: number, nodes: number[], colors: RGBA32[]): void {
@@ -474,14 +477,14 @@ export class RpcClient {
     marshal.writeUInt(componentHandle);
     marshal.writeArrayOfUInt(nodes);
     marshal.writeArrayOfRGBA32(colors);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCShowAll(componentHandle: number): void {
     const marshal = new Marshal();
     marshal.writeString("RPCShowAll");
     marshal.writeUInt(componentHandle);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   async RPCStartScene(toneMappingWhitePoint: number, hdrScale: number, hdrBackgroundScale: number, hdrBackgroundSaturation: number, backgroundBlur: number, backgroundColor: RGBA): Promise<boolean> {
@@ -493,7 +496,7 @@ export class RpcClient {
     marshal.writeFloat(hdrBackgroundSaturation);
     marshal.writeFloat(backgroundBlur);
     marshal.writeRGBA(backgroundColor);
-    const returnMarshal = await this._messenger.sendRPCWithReturn(marshal);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readBoolean(); 
     return ret;
   }
@@ -501,14 +504,14 @@ export class RpcClient {
   RPCTriggerRenderDocCapture(): void {
     const marshal = new Marshal();
     marshal.writeString("RPCTriggerRenderDocCapture");
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
   RPCUnloadVim(componentHandle: number): void {
     const marshal = new Marshal();
     marshal.writeString("RPCUnloadVim");
     marshal.writeUInt(componentHandle);
-    this._messenger.sendRPC(marshal);
+    this._socket.sendRPC(marshal);
   }
 
 }

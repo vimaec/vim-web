@@ -60,6 +60,10 @@ export class RpcSafeClient {
     return this.rpc.url
   }
 
+  get connected(): boolean {
+    return this.rpc.connected
+  }
+
   constructor(rpc: RpcClient, batchSize: number = defaultBatchSize) {
     this.rpc = rpc
     this.batchSize = batchSize
@@ -290,7 +294,6 @@ export class RpcSafeClient {
   
   RPCSetSectionBox(state: SectionBoxState): void {
     console.log('RPCSetSectionBox', state)
-    if(state.enabled && !Validation.isValidBox(state.box)) return
     this.rpc.RPCSetSectionBox(state)
   }
 

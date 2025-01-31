@@ -15,7 +15,7 @@ export class StreamLogger {
    * Starts logging the stream metrics.
    */
   startLoggging (): void {
-    this._id = setInterval(() => { this.logMetrics() }, 5000)
+    //this._id = setInterval(() => { this.logMetrics() }, 5000)
   }
 
   /**

@@ -9,13 +9,15 @@ export function useUltra (div: RefObject<HTMLDivElement>, onCreated: (ultra: Ult
     void UltraReact.createUltraComponent(div.current).then((c) => {
       cmp.current = c
       onCreated(cmp.current)
+      globalThis.ultra = cmp.current
     })
 
     // Clean up
     return () => {
+      console.log('disposing')
       cmp.current?.dispose()
     }
-  }, [div, onCreated])
+  }, [])
 }
 
 export function useUltraWithTower (div: RefObject<HTMLDivElement>, onCreated: (ultra: UltraReact.UltraComponentRef, towers: UltraViewer.Vim) => void) {
@@ -38,6 +40,7 @@ export function useUltraNoModel(div: RefObject<HTMLDivElement>, onCreated:  (ult
   useUltra(div, async (ultra) => {
     await ultra.viewer.connect()
     onCreated(ultra)
+    return ultra
   })
 }
 
