@@ -149,6 +149,7 @@ export class Viewer {
 
     // Set up the video frame handler
     this._socketClient.onVideoFrame = (msg) => this._decoder.enqueue(msg)
+    this._socketClient.onCameraPose = (pose) => this._camera.onCameraPose(pose)
 
     // Subscribe to status updates
     this._socketClient.onStatusUpdate.subscribe((state) => {
@@ -222,7 +223,6 @@ export class Viewer {
    * Cleans up resources and stops tracking.
    */
   private onDisconnect (): void {
-    this._camera.stopTracking()
     this._decoder.stop()
     this._decoder.clear()
     this.colors.clear()
@@ -296,6 +296,7 @@ export class Viewer {
     this._viewport.dispose()
     this._decoder.dispose()
     this._input.dispose()
+    this.sectionBox.dispose()
     this._canvas.remove()
     window.onbeforeunload = null
   }

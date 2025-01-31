@@ -1,3 +1,4 @@
+import { SignalDispatcher } from "ste-signals"
 import { Box3 } from "../utils/math3d"
 import { RpcSafeClient } from "./rpcSafeClient"
 
@@ -7,24 +8,72 @@ export class SectionBox {
   private _visible: boolean = true
   private _interactible: boolean = true
   private _clip: boolean = true
-  private _box : Box3 = undefined
-  private _needUpdate: boolean = false
-
-
+  private _box : Box3 = new Box3()
   private _rpc: RpcSafeClient
   
   private _interval: ReturnType<typeof setInterval>
+  private _animationFrame: ReturnType<typeof requestAnimationFrame>
+
+  // Signals
+  private _onUpdate: SignalDispatcher = new SignalDispatcher()
+  get onUpdate(){
+    return this._onUpdate.asEvent()
+  }
+
+  private get needUpdate(): boolean{
+    return this._animationFrame > 0
+  }
 
   constructor(rpc: RpcSafeClient){
     this._rpc = rpc
-    this._interval = setInterval(() => this.update(), 1000)
   }
 
-  onConnect(){
-    //this.enabled = this._enabled
-    if(this._box){
-      //this.fitBox(this._box)
+  async onConnect(){
+    this.push()
+    this._interval = setInterval(() => this.pull(), 1000)
+  }
+
+  scheduleUpdate(){
+    if(this._animationFrame) return
+    this._animationFrame = requestAnimationFrame(() => {
+      this._animationFrame = undefined
+      this.push()
+    })
+  }
+  
+  private async pull(){
+    if(this.needUpdate) return
+    const state = await this._rpc.RPCGetSectionBox()
+
+    // Check if the state has changed
+    let changed = false
+    if(state.enabled !== this._enabled ||
+      state.visible !== this._visible ||
+      state.interactible !== this._interactible ||
+      state.clip !== this._clip ||
+      state.box !== this._box){
+        changed = true
+      }
+
+    this._enabled = state.enabled
+    this._visible = state.visible
+    this._interactible = state.interactible
+    this._clip = state.clip
+    this._box = state.box
+
+    if(changed){
+      this._onUpdate.dispatch()
     }
+  }
+
+  private async push(){
+    await this._rpc.RPCSetSectionBox({
+      enabled: this._enabled,
+      visible: this._visible,
+      interactible: this._interactible,
+      clip: this._clip,
+      box: this._box
+    })
   }
 
   get enabled(): boolean {
@@ -32,7 +81,7 @@ export class SectionBox {
   }
   set enabled(value: boolean) {
     this._enabled = value
-    this._needUpdate = true
+    this.scheduleUpdate()
   }
 
   get visible(): boolean {
@@ -40,7 +89,7 @@ export class SectionBox {
   }
   set visible(value: boolean) {
     this._visible = value
-    this._needUpdate = true
+    this.scheduleUpdate()
   }
 
   get interactible(): boolean {
@@ -49,7 +98,7 @@ export class SectionBox {
 
   set interactible(value: boolean) {
     this._interactible = value
-    this._needUpdate = true
+    this.scheduleUpdate()
   }
 
   get clip(): boolean {
@@ -58,28 +107,21 @@ export class SectionBox {
 
   set clip(value: boolean) {
     this._clip = value
-    this._needUpdate = true
-  }
-
-  private async update(){
-    if(this._needUpdate){
-      this._needUpdate = false
-      await this._rpc.RPCSetSectionBox({
-        enabled: this._enabled,
-        visible: this._visible,
-        interactible: this._interactible,
-        clip: this._clip,
-        box: this._box
-      })
-    }
+    this.scheduleUpdate()
   }
 
   fitBox(box: Box3) {
     this._box = box
-    this._needUpdate = true
+    this.scheduleUpdate()
+  }
+
+  getBox(){
+    return this._box
   }
 
   dispose(){
     clearInterval(this._interval)
+    cancelAnimationFrame(this._animationFrame)
+    this._onUpdate.clear()
   }
 }
