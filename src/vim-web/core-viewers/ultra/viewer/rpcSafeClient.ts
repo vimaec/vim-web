@@ -293,7 +293,6 @@ export class RpcSafeClient {
    ******************************************************************************/
   
   RPCSetSectionBox(state: SectionBoxState): void {
-    console.log('RPCSetSectionBox', state)
     this.rpc.RPCSetSectionBox(state)
   }
 
