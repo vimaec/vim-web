@@ -14,7 +14,6 @@ export function useUltra (div: RefObject<HTMLDivElement>, onCreated: (ultra: Ult
 
     // Clean up
     return () => {
-      console.log('disposing')
       cmp.current?.dispose()
     }
   }, [])

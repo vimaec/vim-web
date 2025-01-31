@@ -35,9 +35,7 @@ export class CameraMovementSnap extends CameraMovement {
   }
 
   applyRotation (quaternion: THREE.Quaternion) {
-    console.log('forward before ', this._camera.forward)
     this._camera.quaternion.copy(quaternion)
-    console.log('forward ', this._camera.forward)
     const target = this._camera.forward
       .multiplyScalar(this._camera.orbitDistance)
       .add(this._camera.position)
