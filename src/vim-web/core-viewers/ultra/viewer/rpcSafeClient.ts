@@ -116,6 +116,13 @@ export class RpcSafeClient {
     this.rpc.RPCLockIblRotation(lock)
   }
 
+  RPCGetSceneAABB(): Promise<Box3 | undefined> {
+    return this.safeCall(
+      () => this.rpc.RPCGetSceneAABB(),
+      undefined
+    )
+  }
+
   /*******************************************************************************
    * NODE VISIBILITY METHODS
    * Methods for controlling node visibility, including show/hide, ghosting,
