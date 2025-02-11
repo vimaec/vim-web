@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils';
+import { Camera, ICamera } from '../../camera/camera';
 export type Axis = 'x' | 'y' | 'z';
 
 export class SectionBoxHandle extends THREE.Mesh {
@@ -11,6 +12,7 @@ export class SectionBoxHandle extends THREE.Mesh {
   private _highlightColor: THREE.Color;
   
   private _materials: THREE.MeshBasicMaterial[];
+  private _camSub : () => void
 
   constructor(axes: Axis, sign: number, size: number, color?: THREE.Color) {
 
@@ -48,6 +50,15 @@ export class SectionBoxHandle extends THREE.Mesh {
     this.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), this._forward);
   }
 
+  trackCamera(camera: ICamera) {
+    const rescale = () => {
+      const size = camera.frustrumSizeAt(this.position);
+      this.scale.set(size.x * 0.005, size.x * 0.005, size.x * 0.005);
+    }
+    this._camSub = camera.onMoved.subscribe(() => rescale());
+    rescale();
+  }
+
   setPosition(position: THREE.Vector3) {
     this.position.copy(position);
   }
@@ -64,6 +75,7 @@ export class SectionBoxHandle extends THREE.Mesh {
   dispose() {
     this.geometry.dispose();
     this._materials.forEach(m => m.dispose());
+    this._camSub?.();
   }
 }
 
