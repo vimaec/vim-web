@@ -1,158 +1,18 @@
-// This can eventually all be replaced with the three.js types
+// We just use relevent types from three.js
+export { Matrix4 as Matrix44, } from 'three'
+export {Vector2, Vector3, Box3} from 'three'
 
-export { Matrix4 as Matrix44 } from 'three'
+import {Vector2, Vector3 } from 'three'
 
-export class Vector3 {
-  x: number
-  y: number
-  z: number
-
-  constructor (x: number = 0, y: number = 0, z: number = 0) {
-    this.x = x
-    this.y = y
-    this.z = z
-  }
-
-  set (x: number, y: number, z: number): this {
-    this.x = x
-    this.y = y
-    this.z = z
-    return this
-  }
-
-  copy (v: Vector3): this {
-    this.x = v.x
-    this.y = v.y
-    this.z = v.z
-    return this
-  }
-
-  add (v: Vector3): this {
-    this.x += v.x
-    this.y += v.y
-    this.z += v.z
-    return this
-  }
-
-  sub (v: Vector3): this {
-    this.x -= v.x
-    this.y -= v.y
-    this.z -= v.z
-    return this
-  }
-
-  multiplyScalar (scalar: number): this {
-    this.x *= scalar
-    this.y *= scalar
-    this.z *= scalar
-    return this
-  }
-
-  min (v: Vector3): this {
-    this.x = Math.min(this.x, v.x)
-    this.y = Math.min(this.y, v.y)
-    this.z = Math.min(this.z, v.z)
-    return this
-  }
-
-  max (v: Vector3): this {
-    this.x = Math.max(this.x, v.x)
-    this.y = Math.max(this.y, v.y)
-    this.z = Math.max(this.z, v.z)
-    return this
-  }
-
-  isValid (): boolean {
-    return Number.isFinite(this.x) && Number.isFinite(this.y) && Number.isFinite(this.z)
-  }
-
-  equals (v: Vector3): boolean {
-    return this.x === v.x && this.y === v.y && this.z === v.z
-  }
-
-  toArray (): number[] {
-    return [this.x, this.y, this.z]
-  }
-}
-
-export class Vector2 {
-  x: number
-  y: number
-
-  constructor (x: number = 0, y: number = 0) {
-    this.x = x
-    this.y = y
-  }
-
-  set (x: number, y: number): this {
-    this.x = x
-    this.y = y
-    return this
-  }
-
-  copy (v: Vector2): this {
-    this.x = v.x
-    this.y = v.y
-    return this
-  }
-
-  add (v: Vector2): this {
-    this.x += v.x
-    this.y += v.y
-    return this
-  }
-
-  sub (v: Vector2): this {
-    this.x -= v.x
-    this.y -= v.y
-    return this
-  }
-
-  multiplyScalar (scalar: number): this {
-    this.x *= scalar
-    this.y *= scalar
-    return this
-  }
-
-  min (v: Vector2): this {
-    this.x = Math.min(this.x, v.x)
-    this.y = Math.min(this.y, v.y)
-    return this
-  }
-
-  max (v: Vector2): this {
-    this.x = Math.max(this.x, v.x)
-    this.y = Math.max(this.y, v.y)
-    return this
-  }
-
-  equals (v: Vector2): boolean {
-    return this.x === v.x && this.y === v.y
-  }
-
-  isValid (): boolean {
-    return Number.isFinite(this.x) && Number.isFinite(this.y)
-  }
-
-  almostEquals (v: Vector2, tolerance : number = Number.EPSILON): boolean {
-    return Math.abs(this.x - v.x) < tolerance && Math.abs(this.y - v.y) < tolerance
-  }
-
-  toArray (): number[] {
-    return [this.x, this.y]
-  }
-
-  distanceTo (v: Vector2): number {
-    const dx = this.x - v.x
-    const dy = this.y - v.y
-    return Math.sqrt(dx * dx + dy * dy)
-  }
-
-  clamp01 (): this {
-    this.x = clamp(this.x, 0, 1)
-    this.y = clamp(this.y, 0, 1)
-    return this
-  }
+/**
+ * Checks if two Vector2 objects are approximately equal.
+ * @param v1 - First Vector2.
+ * @param v2 - Second Vector2.
+ * @param epsilon - Tolerance for floating-point comparisons.
+ * @returns True if vectors are almost equal, false otherwise.
+ */
+export function almostEqual(v1: Vector2, v2: Vector2, epsilon = 1e-6): boolean {
+  return Math.abs(v1.x - v2.x) < epsilon && Math.abs(v1.y - v2.y) < epsilon;
 }
 
 export class Segment {
@@ -181,81 +41,6 @@ export class Segment {
 
   equals (segment: Segment): boolean {
     return this.origin.equals(segment.origin) && this.target.equals(segment.target)
-  }
-}
-
-export class Box3 {
-  min: Vector3
-  max: Vector3
-
-  constructor (min: Vector3 = new Vector3(Infinity, Infinity, Infinity), max: Vector3 = new Vector3(-Infinity, -Infinity, -Infinity)) {
-    this.min = min
-    this.max = max
-  }
-
-  static fromArray (array: number[]): Box3 {
-    return new Box3().set(
-      new Vector3(array[0], array[1], array[2]),
-      new Vector3(array[3], array[4], array[5])
-    )
-  }
-
-  isValid (): boolean {
-    return this.min.x <= this.max.x && this.min.y <= this.max.y && this.min.z <= this.max.z
-  }
-
-  set (min: Vector3, max: Vector3): this {
-    this.min.copy(min)
-    this.max.copy(max)
-    return this
-  }
-
-  setFromPoints (points: Vector3[]): this {
-    this.min.set(Infinity, Infinity, Infinity)
-    this.max.set(-Infinity, -Infinity, -Infinity)
-
-    points.forEach(point => {
-      this.min.min(point)
-      this.max.max(point)
-    })
-
-    return this
-  }
-
-  getCenter (target: Vector3 = new Vector3()): Vector3 {
-    return target.copy(this.min).add(this.max).multiplyScalar(0.5)
-  }
-
-  getSize (target: Vector3 = new Vector3()): Vector3 {
-    return target.copy(this.max).sub(this.min)
-  }
-
-  containsPoint (point: Vector3): boolean {
-    return point.x >= this.min.x && point.x <= this.max.x &&
-             point.y >= this.min.y && point.y <= this.max.y &&
-             point.z >= this.min.z && point.z <= this.max.z
-  }
-
-  intersectsBox (box: Box3): boolean {
-    return !(box.max.x < this.min.x || box.min.x > this.max.x ||
-               box.max.y < this.min.y || box.min.y > this.max.y ||
-               box.max.z < this.min.z || box.min.z > this.max.z)
-  }
-
-  expandByPoint (point: Vector3): this {
-    this.min.min(point)
-    this.max.max(point)
-    return this
-  }
-
-  union (box: Box3): this {
-    this.min.min(box.min)
-    this.max.max(box.max)
-    return this
-  }
-
-  toArray (): number[] {
-    return [this.min.x, this.min.y, this.min.z, this.max.x, this.max.y, this.max.z]
   }
 }
 
