@@ -3,6 +3,7 @@ import { SectionBoxMesh } from './SectionBoxMesh'
 import { SectionBoxOutline } from './sectionBoxOutline'
 import { SectionBoxHandles } from './sectionBoxHandles'
 import { Renderer } from '../../rendering/renderer'
+import { Camera, ICamera } from '../../camera/camera'
 
 export class SectionBoxGizmo
 {
@@ -21,12 +22,12 @@ export class SectionBoxGizmo
       this.handles.visible = value
     }
 
-    constructor(renderer: Renderer)
+    constructor(renderer: Renderer, camera: ICamera)
     {
         this._renderer = renderer
         this.cube = new SectionBoxMesh()
         this.outline = new SectionBoxOutline(new THREE.Color(0x878a91))
-        this.handles = new SectionBoxHandles()
+        this.handles = new SectionBoxHandles(camera)
 
         //this._renderer.add(this.cube)
         this._renderer.add(this.outline)

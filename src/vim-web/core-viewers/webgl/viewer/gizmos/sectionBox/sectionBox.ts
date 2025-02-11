@@ -94,7 +94,7 @@ export class SectionBox {
   constructor(viewer: Viewer) {
     this._viewer = viewer;
 
-    this._gizmos = new SectionBoxGizmo(viewer.renderer);
+    this._gizmos = new SectionBoxGizmo(viewer.renderer, viewer.camera);
     this._inputs = new BoxInputs(
       viewer,
       this._gizmos.handles,

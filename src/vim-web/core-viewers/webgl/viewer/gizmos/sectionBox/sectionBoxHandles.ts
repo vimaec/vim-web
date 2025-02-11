@@ -4,6 +4,7 @@
 
 import * as THREE from 'three'
 import { SectionBoxHandle } from './sectionBoxHandle'
+import { ICamera } from '../../camera/camera'
 
 export class SectionBoxHandles {
   readonly up: SectionBoxHandle
@@ -15,7 +16,7 @@ export class SectionBoxHandles {
 
   readonly meshes : THREE.Group
 
-  constructor(){
+  constructor(camera: ICamera){
     const size = 2
     this.up = new SectionBoxHandle('y', 1, size, new THREE.Color(0x00ff00))
     this.down = new SectionBoxHandle('y', -1, size, new THREE.Color(0x00ff00))
@@ -23,6 +24,13 @@ export class SectionBoxHandles {
     this.right = new SectionBoxHandle('x', 1, size, new THREE.Color(0xff0000))
     this.front = new SectionBoxHandle('z', 1, size, new THREE.Color(0x0000ff))
     this.back = new SectionBoxHandle('z', -1, size, new THREE.Color(0x0000ff))
+
+    this.up.trackCamera(camera)
+    this.down.trackCamera(camera)
+    this.left.trackCamera(camera)
+    this.right.trackCamera(camera)
+    this.front.trackCamera(camera)
+    this.back.trackCamera(camera)
 
     this.meshes = new THREE.Group()
     this.meshes.add(this.up)
