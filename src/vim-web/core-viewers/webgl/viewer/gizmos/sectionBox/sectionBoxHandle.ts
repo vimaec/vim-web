@@ -53,7 +53,7 @@ export class SectionBoxHandle extends THREE.Mesh {
   trackCamera(camera: ICamera) {
     const rescale = () => {
       const size = camera.frustrumSizeAt(this.position);
-      this.scale.set(size.x * 0.005, size.x * 0.005, size.x * 0.005);
+      this.scale.set(size.x * 0.003, size.x * 0.003, size.x * 0.003);
     }
     this._camSub = camera.onMoved.subscribe(() => rescale());
     rescale();

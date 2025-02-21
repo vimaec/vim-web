@@ -1,3 +1,4 @@
+import "./style.css"
 export * from './viewer/viewer'
 export * as utils from './utils/promise'
 export * from './viewer/vim'

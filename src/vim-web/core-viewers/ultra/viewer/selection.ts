@@ -1,3 +1,4 @@
+import { SignalDispatcher } from "ste-signals";
 import { Box3, Vector2, Vector3 } from "../utils/math3d";
 import { RpcSafeClient } from "./rpcSafeClient";
 import { Vim } from "./vim";
@@ -33,6 +34,12 @@ export class ViewerSelection implements IViewerSelection {
   private _rpc: RpcSafeClient;
   private _vims: IReadonlyVimCollection;
   private _selectedNodes: Map<Vim, Set<number>>;
+
+  private _onValueChanged = new SignalDispatcher();
+  get onValueChanged(){
+    return this._onValueChanged.asEvent();
+  }
+
 
   /**
    * Creates a new ViewerSelection instance.
@@ -120,13 +127,19 @@ export class ViewerSelection implements IViewerSelection {
       this._selectedNodes.set(vim, nodeSet);
     }
 
+    let changed = false
     nodes.forEach((n) => {
       if (!nodeSet.has(n)) {
         nodeSet.add(n);
         // Immediately highlight the node
         vim.highlight([n]);
+        changed = true
       }
     });
+
+    if(changed){
+      this._onValueChanged.dispatch();
+    }
   }
 
   /**
@@ -140,17 +153,23 @@ export class ViewerSelection implements IViewerSelection {
     if (!nodeSet) return; // No nodes selected for this Vim
 
     const nodes = Array.isArray(node) ? node : [node];
+    let changed = false
 
     nodes.forEach((n) => {
       if (nodeSet.has(n)) {
         nodeSet.delete(n);
         // Immediately unhighlight the node
         vim.removeHighlight([n], 'visible');
+        changed = true
       }
     });
 
     if (nodeSet.size === 0) {
       this._selectedNodes.delete(vim);
+    }
+
+    if(changed){
+      this._onValueChanged.dispatch();
     }
   }
 
@@ -160,14 +179,20 @@ export class ViewerSelection implements IViewerSelection {
    */
   public clear(vim?: Vim) {
     // Unhighlight all selected nodes
+    let changed = false
     this._selectedNodes.forEach((nodes, v) => {
       if(vim === undefined || v === vim){
         v.removeHighlight(Array.from(nodes), 'visible');
+        changed = true
       }
     });
 
     // Clear the selection map
     this._selectedNodes.clear();
+
+    if(changed){
+      this._onValueChanged.dispatch();
+    }
   }
 
   /**

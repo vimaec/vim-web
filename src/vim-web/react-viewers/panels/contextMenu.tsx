@@ -113,11 +113,11 @@ export function VimContextMenu (props: {
     visible: boolean
     clip: boolean
   }>({
-    visible: viewer.gizmos.section.visible,
-    clip: viewer.gizmos.section.clip
+    visible: viewer.gizmos.sectionBox.visible,
+    clip: viewer.gizmos.sectionBox.clip
   })
   const isClipping = () => {
-    return !viewer.gizmos.section.box.containsBox(viewer.renderer.getBoundingBox())
+    return !viewer.gizmos.sectionBox.box.containsBox(viewer.renderer.getBoundingBox())
   }
   const [clipping, setClipping] = useState<boolean>(isClipping())
   const [, setVersion] = useState(0)
@@ -125,15 +125,15 @@ export function VimContextMenu (props: {
 
   useEffect(() => {
     // Register to selection
-    const subState = viewer.gizmos.section.onStateChanged.subscribe(() => {
+    const subState = viewer.gizmos.sectionBox.onStateChanged.subscribe(() => {
       setSection({
-        visible: viewer.gizmos.section.visible,
-        clip: viewer.gizmos.section.clip
+        visible: viewer.gizmos.sectionBox.visible,
+        clip: viewer.gizmos.sectionBox.clip
       })
     })
 
     // Register to section box
-    const subConfirm = viewer.gizmos.section.onBoxConfirm.subscribe(() =>
+    const subConfirm = viewer.gizmos.sectionBox.onBoxConfirm.subscribe(() =>
       setClipping(isClipping())
     )
 
@@ -197,11 +197,11 @@ export function VimContextMenu (props: {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const onSectionToggleBtn = (e: ClickCallback) => {
-    viewer.gizmos.section.clip = !viewer.gizmos.section.clip
+    viewer.gizmos.sectionBox.clip = !viewer.gizmos.sectionBox.clip
   }
 
   const onSectionResetBtn = (e: ClickCallback) => {
-    viewer.gizmos.section.fitBox(viewer.renderer.getBoundingBox())
+    viewer.gizmos.sectionBox.fitBox(viewer.renderer.getBoundingBox())
     e.stopPropagation()
   }
 
@@ -214,7 +214,7 @@ export function VimContextMenu (props: {
   const onFitSectionToSelectionBtn = (e: ClickCallback) => {
     const box = viewer.selection.getBoundingBox()
     if (box) {
-      viewer.gizmos.section.fitBox(box)
+      viewer.gizmos.sectionBox.fitBox(box)
     }
   }
 
