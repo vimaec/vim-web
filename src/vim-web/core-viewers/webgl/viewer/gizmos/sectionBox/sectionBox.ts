@@ -116,6 +116,11 @@ export class SectionBox {
     // When drag ends, dispatch the final box.
     this._inputs.onBoxConfirm = (box) => this._onBoxConfirm.dispatch(box);
 
+    // Reset section box when the scene is updated
+    viewer.renderer.onBoxUpdated.subscribe(() => {
+      this.fitBox(viewer.renderer.getBoundingBox())
+    })
+
     // Default states
     this.clip = false;
     this.visible = false;
@@ -186,6 +191,7 @@ export class SectionBox {
   set visible(value: boolean) {
     if (value === this._visible) return;
     this._gizmos.visible = value;
+    this._visible = value;
     if (value) {
       this.update();
     }
@@ -204,11 +210,10 @@ export class SectionBox {
    * @param box - The bounding box to match (required).
    * @param padding - The scalar amount by which to expand the bounding box. Default is `1`.
    */
-  public fitBox(box: THREE.Box3, padding = 1): void {
+  public fitBox(box: THREE.Box3): void {
     if (!box) return;
-    const b = box.expandByScalar(padding);
-    this._gizmos.fitBox(b);
-    this.renderer.section.fitBox(b);
+    this._gizmos.fitBox(box);
+    this.renderer.section.fitBox(box);
     this._onBoxConfirm.dispatch(this.box);
     this.renderer.needsUpdate = true;
   }
@@ -219,7 +224,7 @@ export class SectionBox {
    * Call this if the renderer's section box is changed by code outside this class.
    */
   public update(): void {
-    this.fitBox(this.section.box, 0);
+    this.fitBox(this.section.box);
     this.renderer.needsUpdate = true;
   }
 

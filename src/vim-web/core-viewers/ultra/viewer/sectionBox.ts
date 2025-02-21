@@ -4,7 +4,6 @@ import { RpcSafeClient } from "./rpcSafeClient"
 
 export class SectionBox {
 
-  private _enabled: boolean = false
   private _visible: boolean = true
   private _interactible: boolean = true
   private _clip: boolean = true
@@ -47,28 +46,33 @@ export class SectionBox {
 
     // Check if the state has changed
     let changed = false
-    if(state.enabled !== this._enabled ||
-      state.visible !== this._visible ||
+    if(state.visible !== this._visible ||
       state.interactible !== this._interactible ||
       state.clip !== this._clip ||
       state.box !== this._box){
         changed = true
       }
 
-    this._enabled = state.enabled
     this._visible = state.visible
     this._interactible = state.interactible
     this._clip = state.clip
     this._box = state.box
-
+    //console.log("pull", this._box)
     if(changed){
       this._onUpdate.dispatch()
     }
   }
 
   private async push(){
+    console.log({
+      enabled: this._visible,
+      visible: this._visible,
+      interactible: this._interactible,
+      clip: this._clip,
+      box: this._box
+    })
     await this._rpc.RPCSetSectionBox({
-      enabled: this._enabled,
+      enabled: true,
       visible: this._visible,
       interactible: this._interactible,
       clip: this._clip,
@@ -76,13 +80,6 @@ export class SectionBox {
     })
   }
 
-  get enabled(): boolean {
-    return this._enabled
-  }
-  set enabled(value: boolean) {
-    this._enabled = value
-    this.scheduleUpdate()
-  }
 
   get visible(): boolean {
     return this._visible
@@ -92,11 +89,11 @@ export class SectionBox {
     this.scheduleUpdate()
   }
 
-  get interactible(): boolean {
+  get interactive(): boolean {
     return this._interactible
   }
 
-  set interactible(value: boolean) {
+  set interactive(value: boolean) {
     this._interactible = value
     this.scheduleUpdate()
   }

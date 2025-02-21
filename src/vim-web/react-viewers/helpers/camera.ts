@@ -40,7 +40,7 @@ export class ComponentCamera {
     if (this._viewer.selection.count === 0) return
     const box = this._viewer.selection.getBoundingBox()
 
-    if (box && this._viewer.gizmos.section.box.intersectsBox(box)) {
+    if (box && this._viewer.gizmos.sectionBox.box.intersectsBox(box)) {
       const movement = duration === 0
         ? this._viewer.camera.snap()
         : this._viewer.camera.lerp(duration)

@@ -29,7 +29,6 @@ export class SectionBoxGizmo
         this.outline = new SectionBoxOutline(new THREE.Color(0x878a91))
         this.handles = new SectionBoxHandles(camera)
 
-        //this._renderer.add(this.cube)
         this._renderer.add(this.outline)
         this._renderer.add(this.handles.meshes)
         this.visible = false

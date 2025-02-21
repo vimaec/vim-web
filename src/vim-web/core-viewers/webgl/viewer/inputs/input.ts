@@ -70,7 +70,7 @@ export class DefaultInputScheme implements InputScheme {
   }
 
   onIdleAction (hit: InputAction): void {
-    if (!this._viewer.gizmos.section.interactive) {
+    if (!this._viewer.gizmos.sectionBox.interactive) {
       this._viewer.selection.focus(hit?.object)
     }
   }

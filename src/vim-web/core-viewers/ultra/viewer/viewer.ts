@@ -75,6 +75,10 @@ export class Viewer {
     return this._decoder
   }
 
+  get selection (): ViewerSelection {
+    return this._selection
+  }
+
   /**
    * API to create, manage, and destroy colors.
    */
