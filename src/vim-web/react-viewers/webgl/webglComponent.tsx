@@ -9,7 +9,8 @@ import ReactTooltip from 'react-tooltip'
 import * as VIM from '../../core-viewers/webgl/index'
 import { AxesPanelMemo } from '../panels/axesPanel'
 import { ControlBar, ControlBarCustomization } from '../controlbar/controlBar'
-import { RestOfScreen } from '../controlbar/restOfScreen'
+import { useControlBar } from '../state/controlBarState'
+import { RestOfScreen } from '../panels/restOfScreen'
 import { OptionalBimPanel } from '../bim/bimPanel'
 import {
   ContextMenuCustomization,
@@ -38,6 +39,8 @@ import { whenTrue } from '../helpers/utils'
 import { DeferredPromise } from '../helpers/deferredPromise'
 import { ComponentLoader } from './webglLoading'
 import { Modal, useModal } from '../panels/modal'
+import { SectionBoxSettings } from '../panels/sectionBoxSettings'
+import { useWebglSectionBox } from './webglSectionBoxState'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.
@@ -115,12 +118,14 @@ export function VimComponent (props: {
     Math.min(props.container.root.clientWidth * 0.25, 340)
   )
   const [contextMenu, setcontextMenu] = useState<ContextMenuCustomization>()
-  const [controlBar, setControlBar] = useState<ControlBarCustomization>()
+  const [controlBarCustom, setControlBarCustom] = useState<ControlBarCustomization>()
   const bimInfoRef = useBimInfo()
 
   const viewerState = useViewerState(props.viewer)
   const treeRef = useRef<TreeActionRef>()
   const performanceRef = useRef<HTMLDivElement>(null)
+  const sectionBox = useWebglSectionBox(props.viewer)
+  const controlBar = useControlBar(props.viewer, camera, modal, side, isolation, cursor, settings.value, sectionBox, controlBarCustom)
 
   useEffect(() => {
     side.setHasBim(viewerState.vim?.bim !== undefined)
@@ -158,7 +163,7 @@ export function VimComponent (props: {
         customize: (v) => setcontextMenu(() => v)
       },
       controlBar: {
-        customize: (v) => setControlBar(() => v)
+        customize: (v) => setControlBarCustom(() => v)
       },
       modal,
       bimInfo: bimInfoRef,
@@ -206,15 +211,10 @@ export function VimComponent (props: {
         <Overlay canvas={props.viewer.viewport.canvas}></Overlay>
         {whenTrue(settings.value.ui.logo, <LogoMemo/>)}
         <ControlBar
-          viewer={props.viewer}
-          camera={camera}
-          modal={modal}
-          side={side}
-          isolation={isolation}
-          cursor={cursor}
-          settings={settings.value}
-          customization={controlBar}
+          content={controlBar}
+          show={isTrue(settings.value.ui.controlBar)}
         />
+        <SectionBoxSettings state={sectionBox}/>
         <AxesPanelMemo
           viewer={props.viewer}
           camera={camera}

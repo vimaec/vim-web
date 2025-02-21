@@ -4,13 +4,13 @@
 
 import * as THREE from 'three'
 import { Viewer } from '../viewer'
-import { KeyboardHandler, KEYS } from './keyboard'
-import { TouchHandler } from './touch'
-import { MouseHandler } from './mouse'
+import { KeyboardHandler, KEYS } from './keyboardHandler'
+import { TouchHandler } from './touchHandler'
+import { MouseHandler } from './mouseHandler'
 import { InputAction } from '../raycaster'
 import { SignalDispatcher } from 'ste-signals'
 import { SimpleEventDispatcher } from 'ste-simple-events'
-export { KEYS } from './keyboard'
+export { KEYS } from './keyboardHandler'
 
 /** Pointers mode supported by the viewer */
 export type PointerMode = 'orbit' | 'look' | 'pan' | 'zoom' | 'rect'
@@ -70,7 +70,7 @@ export class DefaultInputScheme implements InputScheme {
   }
 
   onIdleAction (hit: InputAction): void {
-    if (!this._viewer.gizmos.section.interactive) {
+    if (!this._viewer.gizmos.sectionBox.interactive) {
       this._viewer.selection.focus(hit?.object)
     }
   }

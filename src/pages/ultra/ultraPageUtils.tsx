@@ -9,13 +9,14 @@ export function useUltra (div: RefObject<HTMLDivElement>, onCreated: (ultra: Ult
     void UltraReact.createUltraComponent(div.current).then((c) => {
       cmp.current = c
       onCreated(cmp.current)
+      globalThis.ultra = cmp.current
     })
 
     // Clean up
     return () => {
       cmp.current?.dispose()
     }
-  }, [div, onCreated])
+  }, [])
 }
 
 export function useUltraWithTower (div: RefObject<HTMLDivElement>, onCreated: (ultra: UltraReact.UltraComponentRef, towers: UltraViewer.Vim) => void) {
@@ -34,24 +35,28 @@ export function useUltraWithWolford (div: RefObject<HTMLDivElement>, onCreated: 
   )
 }
 
+export function useUltraNoModel(div: RefObject<HTMLDivElement>, onCreated:  (ultra: UltraReact.UltraComponentRef) => void){
+  useUltra(div, async (ultra) => {
+    await ultra.viewer.connect()
+    onCreated(ultra)
+    return ultra
+  })
+}
+
 function useUltraWithModel (
   div: RefObject<HTMLDivElement>,
   modelUrl: string,
-  onCreated: (ultra: UltraReact.UltraComponentRef, towers: UltraViewer.Vim) => void
+  onCreated: (ultra: UltraReact.UltraComponentRef, model: UltraViewer.Vim) => void
 ) {
-  const load = async (ultra: UltraReact.UltraComponentRef) => {
-    await ultra.viewer.connect()
-    const request = ultra.load({url:modelUrl})
-    const result = await request.getResult()
-    if (result.isSuccess) {
-      await ultra.viewer.camera.frameAll(0)
-      const towers = result.vim
-      onCreated(ultra, towers)
+    useUltra(div, async (ultra) => {
+      await ultra.viewer.connect()
+      const request = ultra.load({url:modelUrl})
+      const result = await request.getResult()
+      if (result.isSuccess) {
+        await ultra.viewer.camera.frameAll(0)
+        const model = result.vim
+        onCreated(ultra, model)
+      }
     }
-  }
-
-
-  useUltra(div, (ultra) => {
-    void load(ultra)
-  })
+  )
 }

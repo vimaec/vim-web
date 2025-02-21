@@ -1,5 +1,3 @@
-import '../style.css'
-
 export * from './webglComponent'
 export * as ContextMenu from '../panels/contextMenu'
 export * as BimInfo from '../bim/bimInfoData'

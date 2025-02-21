@@ -1,10 +1,11 @@
 import { StreamLogger } from './streamLogger'
 import * as Protocol from './protocol'
-import { Marshal } from './marshal'
+import { Marshal, ReadMarshal } from './marshal'
 import { ILogger } from './logger'
 import { ControllablePromise, IPromise, ResolvedPromise } from '../utils/promise'
 import { SimpleEventDispatcher } from 'ste-simple-events'
 import { isWebSocketUrl } from '../utils/url'
+import { Segment } from '../utils/math3d'
 
 export const DEFAULT_LOCAL_ULTRA_SERVER_URL = 'ws://localhost:8123'
 
@@ -75,7 +76,7 @@ export class SocketClient {
 
   private _socket: WebSocket | undefined
 
-  private readonly _pendingRPCs = new Map<number, { resolve:(data: Marshal) => void, reject: (error: any) => void }>()
+  private readonly _pendingRPCs = new Map<number, { resolve:(data: ReadMarshal) => void, reject: (error: any) => void }>()
   private _rpcCallId: number = 0
   private _reconnectTimeout : ReturnType<typeof setTimeout> | undefined
   private _connectionTimeout: ReturnType<typeof setTimeout> | undefined
@@ -86,6 +87,7 @@ export class SocketClient {
    * @param msg - The video frame message received from the server.
    */
   public onVideoFrame: (msg: Protocol.VideoFrameMessage) => void = () => { }
+  public onCameraPose: (msg: Segment) => void = () => { }
 
   private _state: ClientState = { status: 'disconnected' }
   private _onStatusUpdate = new SimpleEventDispatcher<ClientState>()
@@ -159,7 +161,7 @@ export class SocketClient {
     }
     
     if (this._socket) {
-      if (this._socket.url === url) {
+      if (this._connectionSettings.url === url) {
         // Return existing connection promise if the URL is the same
         return this._connectPromise.promise
       } else {
@@ -249,7 +251,10 @@ export class SocketClient {
         return
 
       case FrameType.CameraPose:
-        // Handle camera pose messages if necessary
+        const m = new ReadMarshal(msg.dataBuffer)
+        if(this.onCameraPose){
+          this.onCameraPose(m.readSegment())
+        }
         return
 
       case FrameType.VideoKeyFrame:
@@ -265,8 +270,7 @@ export class SocketClient {
    * @param buffer - The ArrayBuffer containing the response data.
    */
   private handleRPCResponse (buffer: ArrayBuffer): void {
-    const m = new Marshal()
-    m.writeData(buffer)
+    const m = new ReadMarshal(buffer)
     const callId = m.readUInt()
     // Check if the callId exists in the map
     const pendingRPC = this._pendingRPCs.get(callId)
@@ -360,9 +364,9 @@ export class SocketClient {
    * @param marshal - The Marshal containing the request data.
    * @returns A promise that resolves with the response data.
    */
-  public async sendRPCWithReturn (marshal: Marshal): Promise<Marshal> {
+  public async sendRPCWithReturn (marshal: Marshal): Promise<ReadMarshal> {
     // Create a promise for the RPC call
-    const promise = new Promise<Marshal>((resolve, reject) => {
+    const promise = new Promise<ReadMarshal>((resolve, reject) => {
       // Store the promise handlers along with the callId in the pendingRPCs map
       const callId = this._rpcCallId++
       this._rpcCallId = (this._rpcCallId % Number.MAX_SAFE_INTEGER)

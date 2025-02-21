@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { ICamera } from '../camera/camera'
+import { ICamera } from '../camera/ICamera'
 
 export class CameraLight {
   readonly light : THREE.DirectionalLight

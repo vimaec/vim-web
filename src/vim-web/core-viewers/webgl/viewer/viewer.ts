@@ -6,7 +6,8 @@ import * as THREE from 'three'
 
 // internal
 import { ViewerSettings, getViewerSettings, PartialViewerSettings } from './settings/viewerSettings'
-import { Camera, ICamera } from './camera/camera'
+import { Camera } from './camera/camera'
+import { ICamera } from './camera/ICamera'
 import { Input } from './inputs/input'
 import { Selection } from './selection'
 import { Environment } from './environment/environment'

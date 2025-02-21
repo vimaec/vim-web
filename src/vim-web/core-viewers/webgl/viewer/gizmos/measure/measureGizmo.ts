@@ -11,7 +11,7 @@ import {
   MeasureStyle,
   MeasureElement
 } from './measureHtml'
-import { ICamera } from '../../camera/camera'
+import { ICamera } from '../../camera/ICamera'
 
 /**
  * Wrapper for a two points line drawn using MeshLine

@@ -1,13 +1,22 @@
 
 
 import * as Ultra from '../../core-viewers/ultra/index'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Container, createContainer } from '../container'
 import { createRoot } from 'react-dom/client'
 import { DeferredPromise } from '../helpers/deferredPromise'
 import { Overlay } from '../panels/overlay'
 import { Modal, ModalRef, useModal } from '../panels/modal'
-import { getErrorMessage, getRequestErrorMessage } from './errors/ultraErrors'
+import { getRequestErrorMessage } from './errors/ultraErrors'
+import { updateModal, updateProgress as modalProgress } from './ultraModal'
+import { ControlBar } from '../controlbar/controlBar'
+import { useUltraSectionBox } from './ultraSectionBoxState'
+import { useUltraControlBar } from './ultraControlBarState'
+import { SectionBoxSettings } from '../panels/sectionBoxSettings'
+import { RestOfScreen } from '../panels/restOfScreen'
+import { LogoMemo } from '../panels/logo'
+import { whenTrue } from '../helpers/utils'
+import { useSideState } from '../sidePanel/sideState'
 
 export type UltraComponentRef = {
   viewer : Ultra.Viewer
@@ -30,6 +39,7 @@ export function createUltraComponent (
   const cmpContainer = container instanceof HTMLElement
     ? createContainer(container)
     : container ?? createContainer()
+
   // Create the viewer and container
   const viewer = Ultra.Viewer.createWithCanvas(cmpContainer.gfx)
 
@@ -37,7 +47,7 @@ export function createUltraComponent (
   const reactRoot = createRoot(cmpContainer.ui)
 
   // Patch the component to clean up after itself
-  const patchRef = (cmp : UltraComponentRef) => {
+  const attachDispose = (cmp : UltraComponentRef) => {
     cmp.dispose = () => {
       viewer.dispose()
       cmpContainer.dispose()
@@ -50,7 +60,7 @@ export function createUltraComponent (
     <UltraComponent
       container={cmpContainer}
       viewer={viewer}
-      onMount = {(cmp : UltraComponentRef) => promise.resolve(patchRef(cmp))}
+      onMount = {(cmp : UltraComponentRef) => promise.resolve(attachDispose(cmp))}
     />
   )
   return promise
@@ -67,41 +77,49 @@ export function UltraComponent (props: {
   container: Container
   viewer: Ultra.Viewer
   onMount: (component: UltraComponentRef) => void}) {
+
   const modal = useModal(true)
+  const sectionBox = useUltraSectionBox(props.viewer)
+  const controlBar = useUltraControlBar(props.viewer, sectionBox, _ =>_)
+  const side = useSideState(true, 400)
+  const [_, setSelectState] = useState(0)
+
   useEffect(() => {
     props.viewer.onStateChanged.subscribe(state => updateModal(modal, state))
-    props.onMount(ToRef(props.viewer, modal))
+    props.viewer.selection.onValueChanged.subscribe(() =>{
+      setSelectState(i => (i+1)%2)
+    } )
+    props.onMount(createComponentRef(props.viewer, modal))
   }, [])
 
   return <>
-  <Overlay canvas={props.viewer.viewport.canvas}/>
+  <ControlBar content={controlBar} show={true} />
+  <SectionBoxSettings state={sectionBox} />
+  <RestOfScreen side={side} content={() => {
+    return <>
+    {whenTrue(true, <LogoMemo/>)}
+    <Overlay canvas={props.viewer.viewport.canvas}/>
+    <ControlBar
+      content={controlBar}
+      show={true}
+    />
+    <SectionBoxSettings state={sectionBox}/>
+  </>
+  }}/>
+  
   <Modal state={modal}/>
   </>
 }
 
-function updateModal (modal: ModalRef, state: Ultra.ClientState) {
-  if (state.status === 'connected') {
-    modal.loading(undefined)
-    modal.message(undefined)
-  }
-  if (state.status === 'connecting') {
-    if (modal.current === undefined || modal.current.type === 'loading') {
-      modal.loading({ message: 'Connecting to VIM Ultra server...' })
-    }
-  }
-  if (state.status === 'error') {
-    console.log('Error loading vim', state)
-    modal.message(getErrorMessage(state))
-  }
-}
 
-function ToRef (viewer: Ultra.Viewer, modal: ModalRef): UltraComponentRef {
+
+function createComponentRef (viewer: Ultra.Viewer, modal: ModalRef): UltraComponentRef {
   // Load a file from the server
   function load (source: Ultra.VimSource): Ultra.ILoadRequest {
     const request = viewer.loadVim(source)
 
     // We don't want to block the main thread to get progress updates
-    void updateProgress(request, modal)
+    void modalProgress(request, modal)
 
     // We decorate the request to display manage modal messages
     void request.getResult().then(
@@ -126,9 +144,4 @@ function ToRef (viewer: Ultra.Viewer, modal: ModalRef): UltraComponentRef {
   }
 }
 
-async function updateProgress (request: Ultra.ILoadRequest, modal: ModalRef) {
-  for await (const progress of request.getProgress()) {
-    if (request.isCompleted) break
-    modal.loading({ message: 'Loading File in VIM Ultra mode', progress })
-  }
-}
+

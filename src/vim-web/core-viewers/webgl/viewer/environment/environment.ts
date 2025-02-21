@@ -4,7 +4,7 @@
 
 import * as THREE from 'three'
 import { ViewerSettings } from '../settings/viewerSettings'
-import { ICamera } from '../camera/camera'
+import { ICamera } from '../camera/ICamera'
 import { ViewerMaterials } from '../../loader/materials/viewerMaterials'
 import { Skybox } from './skybox'
 import { Renderer } from '../rendering/renderer'

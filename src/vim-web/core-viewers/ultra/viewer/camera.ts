@@ -88,7 +88,7 @@ export class Camera implements ICamera {
   
   /**
    * Restores the camera to its last tracked position
-   * @param blendTime - Duration of the camera animation in seconds
+   * @param blendTime - Duration of the camera animation in seconds 
    */
   restoreLastPosition(blendTime: number = this._defaultBlendTime){
     if(this._lastPosition?.isValid()){
@@ -102,34 +102,12 @@ export class Camera implements ICamera {
    * Handles camera initialization when connection is established
    */
   onConnect(){
-    this.startTracking()
     this.restoreLastPosition()
   }
 
-  /**
-   * Starts tracking camera position at regular intervals
-   */
-  startTracking(){
-    clearInterval(this._interval)
-    this._interval = setInterval(() => this.update(), 1000)
+  onCameraPose(pose: Segment){
+    this._lastPosition = pose
   }
-
-  /**
-   * Stops tracking camera position
-   */
-  stopTracking(){
-    clearInterval(this._interval)
-    this._interval = undefined
-  }
-
-  /**
-   * Updates the stored camera position
-   * @private
-   */
-  private async update(){
-    this._lastPosition = await this._rpc.RPCGetCameraPosition()
-  }
-
 
   /**
    * Pauses or resumes rendering

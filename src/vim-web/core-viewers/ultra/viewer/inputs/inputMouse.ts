@@ -1,5 +1,5 @@
 import { InputHandler } from "./inputHandler";
-import { Vector2 } from "../../utils/math3d";
+import { Vector2, almostEqual } from "../../utils/math3d";
 import { RpcSafeClient } from "../rpcSafeClient";
 import { ViewerSelection } from "../selection";
 import { ICamera } from "../camera";
@@ -55,7 +55,7 @@ export class InputMouse extends InputHandler {
     if(event.pointerType !== 'mouse') return;
     const pos = this.relativePosition(event);
     
-    if (!this._lastMouseDownPosition.almostEquals(pos, 0.01)){
+    if (!almostEqual(this._lastMouseDownPosition, pos, 0.01)){
       return
     }
     

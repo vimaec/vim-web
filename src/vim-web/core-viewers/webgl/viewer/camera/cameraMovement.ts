@@ -81,41 +81,42 @@ export abstract class CameraMovement {
    * Orbits the camera around its target to align with the given direction.
    * @param {THREE.Vector3} direction - The direction towards which the camera should be oriented.
    */
-  orbitTowards (direction: THREE.Vector3) {
-    const forward = this._camera.forward
+  orbitTowards(direction: THREE.Vector3) {
+    const forward = this._camera.forward;
 
     // Clone to avoid side effect on argument
-    const _direction = direction.clone()
+    const _direction = direction.clone();
 
     // Makes the azimuth be zero for vertical directions
     // This avoids weird spin around the axis.
-    if (_direction.x === 0 && _direction.z === 0) {
-      _direction.x = this._camera.forward.x * 0.001
-      _direction.z = this._camera.forward.z * 0.001
-      _direction.normalize()
+    if (_direction.x === 0 && _direction.y === 0) {
+      _direction.x = this._camera.forward.x * 0.001;
+      _direction.y = this._camera.forward.y * 0.001;
+      _direction.normalize();
     }
 
-    // Remove Y component.
-    const flatForward = forward.clone().setY(0)
-    const flatDirection = _direction.clone().setY(0)
+    // Remove vertical Z component.
+    const flatForward = forward.clone().setZ(0);
+    const flatDirection = _direction.clone().setZ(0);
 
     // Compute angle between vectors on a flat plane.
-    const cross = flatForward.clone().cross(flatDirection)
-    const clockwise = cross.y === 0 ? 1 : Math.sign(cross.y)
-    const azimuth = flatForward.angleTo(flatDirection) * clockwise
+    const cross = flatForward.clone().cross(flatDirection);
+    const clockwise = cross.z === 0 ? 1 : Math.sign(cross.z);
+    const azimuth = flatForward.angleTo(flatDirection) * clockwise;
 
     // Compute the declination angle between the two vectors.
-    const angleForward = flatForward.angleTo(forward) * Math.sign(forward.y)
-    const angleDirection = flatDirection.angleTo(_direction) * Math.sign(_direction.y)
-    const declination = angleForward - angleDirection
+    const angleForward = flatForward.angleTo(forward) * Math.sign(forward.z);
+    const angleDirection = flatDirection.angleTo(_direction) * Math.sign(_direction.z);
+    const declination = angleForward - angleDirection;
 
     // Convert to degrees.
-    const angle = new THREE.Vector2(-declination, azimuth)
-    angle.multiplyScalar(180 / Math.PI)
+    const angle = new THREE.Vector2(-declination, azimuth);
+    angle.multiplyScalar(180 / Math.PI);
 
     // Apply rotation.
-    this.orbit(angle)
-  }
+    this.orbit(angle);
+  } 
+
 
   /**
    * Rotates the camera without moving so that it looks at the specified target.

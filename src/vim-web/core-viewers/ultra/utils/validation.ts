@@ -86,7 +86,8 @@ export class Validation {
   // VECTOR AND GEOMETRY VALIDATIONS
   //= ===========================================================================
   static isValidVector2 (value: Vector2): boolean {
-    if (!value.isValid()) {
+    
+    if (!Number.isFinite(value.x) || !Number.isFinite(value.y)) {
       console.warn('Invalid value: must be a valid Vector2. Aborting operation.')
       return false
     }
@@ -94,10 +95,7 @@ export class Validation {
   }
 
   static isRelativeVector2 (value: Vector2): boolean {
-    if (!value.isValid()) {
-      console.warn('Invalid value: must be a valid Vector2. Aborting operation.')
-      return false
-    }
+    if(!this.isValidVector2(value)) return false
     if (value.x < 0 || value.x > 1 || value.y < 0 || value.y > 1) {
       console.warn('Invalid value: must be a relative Vector2 (0-1, 0-1). Aborting operation.')
       return false
@@ -106,7 +104,7 @@ export class Validation {
   }
 
   static isValidVector3 (value: Vector3): boolean {
-    if (!value.isValid()) {
+    if (!Number.isFinite(value.x) || !Number.isFinite(value.y) || !Number.isFinite(value.z)) {
       console.warn('Invalid Vector3. Aborting operation.')
       return false
     }
@@ -114,7 +112,7 @@ export class Validation {
   }
 
   static isValidBox (box: Box3): boolean {
-    if (!box.isValid()) {
+    if (box.isEmpty()) {
       console.warn('Box is invalid. Min values must be less than max values')
       return false
     }

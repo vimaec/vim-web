@@ -1,8 +1,8 @@
-import { RGBA } from "../utils/math3d";
+import { Box3, RGBA } from "../utils/math3d";
 import { Validation } from "../utils/validation";
 import { ILogger } from "./logger";
 import { defaultSceneSettings, RpcSafeClient, SceneSettings } from "./rpcSafeClient";
-import { ClientError, ClientStreamError } from "./socketClient";
+import { ClientStreamError } from "./socketClient";
 
 /**
  * Render settings that extend SceneSettings with additional rendering-specific properties
@@ -35,6 +35,7 @@ export interface IRenderer {
   hdrBackgroundSaturation: number
   backgroundBlur: number
   backgroundColor: RGBA
+  getBoundingBox(): Promise<Box3 | undefined>
 }
 
 /**
@@ -252,6 +253,10 @@ export class Renderer implements IRenderer {
     this._settings.backgroundColor = value;
     this._updateLighting = true
     this.requestSettingsUpdate();
+  }
+
+  getBoundingBox(): Promise<Box3 | undefined> {
+    return this._rpc.RPCGetSceneAABB()
   }
 
   /**
