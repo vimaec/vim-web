@@ -1,9 +1,9 @@
 // useVimSectionBox.ts
 import * as VIM from '../../core-viewers/webgl/index';
-import { useSharedSectionBox, SectionBoxAdapter, SectionBoxRef } from '../state/sharedSectionBoxState';
+import { useSectionBox, SectionBoxAdapter, SectionBoxRef } from '../state/sectionBoxState';
 
 export function useWebglSectionBox(viewer: VIM.Viewer): SectionBoxRef {
-  const vimAdapter: SectionBoxAdapter<VIM.Viewer> = {
+  const vimAdapter: SectionBoxAdapter = {
     setVisible: (b) => {
       viewer.gizmos.sectionBox.visible = b;
       viewer.gizmos.sectionBox.interactive = b;
@@ -17,5 +17,5 @@ export function useWebglSectionBox(viewer: VIM.Viewer): SectionBoxRef {
     onSelectionChanged: viewer.selection.onValueChanged,
   };
   viewer.gizmos.sectionBox.clip = true
-  return useSharedSectionBox(vimAdapter);
+  return useSectionBox(vimAdapter);
 }

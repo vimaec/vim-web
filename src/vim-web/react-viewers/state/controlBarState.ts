@@ -15,7 +15,7 @@ import * as Icons from '../panels/icons';
 
 import { getPointerState } from './pointerState';
 import { getFullScreenState } from './fullScreenState';
-import { SectionBoxRef } from './sharedSectionBoxState';
+import { SectionBoxRef } from './sectionBoxState';
 import { getMeasureState } from './measureState';
 import { ModalRef } from '../panels/modal';
 
@@ -50,11 +50,6 @@ export const elementIds = {
   // Tools buttons
   buttonSectionBox: 'controlBar.sectionBox',
   buttonMeasure: 'controlBar.measure',
-  
-
-  // Measure buttons
-  buttonMeasureDelete: 'controlBar.measure.delete',
-  buttonMeasureDone: 'controlBar.measure.done',
 
   // Section box buttons
   buttonSectionBoxEnable: 'controlBar.sectionBox.enable',
@@ -73,13 +68,19 @@ export function controlBarSectionBox(
   hasSelection : boolean
 ): ControlBar.IControlBarSection {
 
-
   return {
     id: elementIds.sectionSectionBox,
-    enable: () => section.getEnable(),
+    style: section.getEnable()? ControlBar.sectionNoPadStyle : ControlBar.sectionDefaultStyle,
+    //enable: () => section.getEnable(),
     buttons: [
-
-      controlBarEnableSectionButton(section),
+      {
+        id: elementIds.buttonSectionBoxEnable,
+        tip: 'Enable Section Box',
+        isOn: () => section.getEnable(),
+        style: (on) => ControlBar.buttonExpandStyle(on),
+        action: () => section.setEnable(!section.getEnable()),
+        icon: Icons.sectionBox,
+      },
       {
         id: elementIds.buttonSectionBoxShrinkToSelection,
         tip: 'Fit Section',
@@ -196,52 +197,11 @@ function controlBarPointer(
   };
 }
 
-/**
- * Returns a control bar section for measuring actions.
- */
-function controlBarMeasure(
-  measure: ReturnType<typeof getMeasureState>,
-  section: SectionBoxRef
-): ControlBar.IControlBarSection {
-  return {
-    id: elementIds.sectionMeasure,
-    // Disable measure actions when the section box is visible
-    enable: () => measure.active && !section.getVisible(),
-    style: ControlBar.sectionBlueStyle,
-    buttons: [
-      {
-        id: elementIds.buttonMeasureDelete,
-        tip: 'Delete',
-        action: () => measure.clear(),
-        icon: Icons.trash,
-        style: ControlBar.buttonBlueStyle,
-      },
-      {
-        id: elementIds.buttonMeasureDone,
-        tip: 'Done',
-        action: () => measure.toggle(),
-        icon: Icons.checkmark,
-        style: ControlBar.buttonBlueStyle,
-      },
-    ],
-  };
-}
-
-function controlBarEnableSectionButton(section : SectionBoxRef) : ControlBar.IControlBarButtonItem {
-  return {
-    id: elementIds.buttonSectionBoxEnable,
-    tip: 'Enable Section Box',
-    isOn: () => section.getEnable(),
-    style: (on) => ControlBar.buttonExpandStyle(on),
-    action: () => section.setEnable(!section.getEnable()),
-    icon: Icons.sectionBox,
-  }
-}
-
 function controlBarActions(
   camera: ComponentCamera,
   settings: ComponentSettings,
-  isolation: Isolation
+  isolation: Isolation,
+  measure: ReturnType<typeof getMeasureState>
 ){
   return {
     id: elementIds.sectionActions,
@@ -265,40 +225,19 @@ function controlBarActions(
         icon: Icons.toggleIsolation,
         style: ControlBar.buttonDefaultStyle,
       },
-    ]
-  }
-}
-
-
-/**
- * Returns a control bar section for tool actions.
- */
-function controlBarTools(
-  measure: ReturnType<typeof getMeasureState>,
-  isolation: Isolation,
-  settings: ComponentSettings,
-  section: SectionBoxRef
-): ControlBar.IControlBarSection {
-  return {
-    id: elementIds.sectionTools,
-    enable: () => anyUiToolButton(settings) && !measure.active && !section.getEnable(),
-    style: measure.active
-      ? ControlBar.sectionBlueStyle
-      : ControlBar.sectionDefaultStyle,
-    buttons: [
       {
         id: elementIds.buttonMeasure,
         enabled: () => isTrue(settings.ui.measuringMode),
+        isOn: () => measure.active,
         tip: 'Measuring Mode',
         action: () => measure.toggle(),
         icon: Icons.measure,
         style: ControlBar.buttonDefaultStyle,
       },
-
-      controlBarEnableSectionButton(section),
-    ],
-  };
+    ]
+  }
 }
+
 function controlBarSettings(
   modal: ModalRef,
   side: SideState,
@@ -368,18 +307,14 @@ export function useControlBar(
 ) {
   const measure = getMeasureState(viewer, cursor);
   const pointerSection = controlBarPointer(viewer, camera, settings, section);
-  const actionSection = controlBarActions(camera, settings, isolation);
+  const actionSection = controlBarActions(camera, settings, isolation, measure);
   const sectionBoxSection = controlBarSectionBox(section,viewer.selection.count > 0);
-  const measureSection = controlBarMeasure(measure, section);
-  const toolSections = controlBarTools(measure, isolation, settings, section);
   const settingsSection = controlBarSettings(modal, side, settings);
 
   // Apply user customization (note that pointerSection is added twice per original design)
   let controlBarSections = [
     pointerSection,
     actionSection,
-    toolSections,
-    measureSection, // Optional section
     sectionBoxSection, // Optional section
     settingsSection
   ];

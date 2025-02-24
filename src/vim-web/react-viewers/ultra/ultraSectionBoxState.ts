@@ -1,9 +1,9 @@
 // useUltraSectionBox.ts
 import * as Ultra from '../../core-viewers/ultra/index';
-import { useSharedSectionBox, SectionBoxAdapter, SectionBoxRef } from '../state/sharedSectionBoxState';
+import { useSectionBox, SectionBoxAdapter, SectionBoxRef } from '../state/sectionBoxState';
 
 export function useUltraSectionBox(viewer: Ultra.Viewer): SectionBoxRef {
-  const ultraAdapter: SectionBoxAdapter<Ultra.Viewer> = {
+  const ultraAdapter: SectionBoxAdapter = {
     setVisible: (b) => {
       viewer.sectionBox.visible = b;
       viewer.sectionBox.interactive = b;
@@ -15,5 +15,5 @@ export function useUltraSectionBox(viewer: Ultra.Viewer): SectionBoxRef {
     onSelectionChanged: viewer.selection.onValueChanged,
     onSceneChanged: viewer.vims.onChanged,
   };
-  return useSharedSectionBox(ultraAdapter);
+  return useSectionBox(ultraAdapter);
 }

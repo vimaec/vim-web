@@ -39,7 +39,7 @@ import { whenTrue } from '../helpers/utils'
 import { DeferredPromise } from '../helpers/deferredPromise'
 import { ComponentLoader } from './webglLoading'
 import { Modal, useModal } from '../panels/modal'
-import { SectionBoxSettings } from '../panels/sectionBoxSettings'
+import { SectionBoxPanel } from '../panels/sectionBoxPanel'
 import { useWebglSectionBox } from './webglSectionBoxState'
 
 /**
@@ -214,7 +214,7 @@ export function VimComponent (props: {
           content={controlBar}
           show={isTrue(settings.value.ui.controlBar)}
         />
-        <SectionBoxSettings state={sectionBox}/>
+        <SectionBoxPanel state={sectionBox}/>
         <AxesPanelMemo
           viewer={props.viewer}
           camera={camera}
