@@ -1,8 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { Icons } from ".."
-import { SectionBoxRef } from "../state/sharedSectionBoxState"
+import { SectionBoxRef } from "../state/sectionBoxState"
 
-export function SectionBoxSettings(props: { state: SectionBoxRef }) {
+export function SectionBoxPanel(props: { state: SectionBoxRef }) {
 
 
   // State to hold the position of the panel.
@@ -16,9 +16,28 @@ export function SectionBoxSettings(props: { state: SectionBoxRef }) {
   const panelRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
-      const {top, left} = computePosition(panelRef)
-      setPanelPosition({ top, left })
+    const updatePosition = () => {
+      const { top, left } = computePosition(panelRef);
+      setPanelPosition({ top, left });
+    };
+  
+    // Initial calculation.
+    updatePosition();
+
+    let resizeObserver = null;
+    if (panelRef.current) {
+      resizeObserver = new ResizeObserver(updatePosition);
+      resizeObserver.observe(panelRef.current.parentElement);
+    }
+
+  return () => {
+    if (resizeObserver) {
+      resizeObserver.disconnect();
+    }
+  };
+
   }, [props.state.getOffsetVisible()])
+  
 
   if (!props.state.getOffsetVisible()) return null
 
@@ -28,15 +47,15 @@ export function SectionBoxSettings(props: { state: SectionBoxRef }) {
     label: string,
     field: 'topOffset' | 'sideOffset' | 'bottomOffset'
   ) => (
-    <div className="vim-sectionbox-offsets-entry vc-text-xs vc-flex vc-items-center">
-      <dt className="vc-w-1/2 vc-px-2 vc-py-2 vc-inline">{label}</dt>
-      <dd>
+    <div className="vim-sectionbox-offsets-entry vc-text-xs vc-flex vc-items-center vc-justify-center vc-justify-between vc-my-2">
+      <dt className="vc-w-1/2 vc-inline">{label}</dt>
+      <dd className="vc-w-1/3 vc-inline">
         <input
           id={id}
           type="text"
           value={props.state.getText(field)}
           onChange={(e) => props.state.setText(field, e.target.value)}
-          className="vc-border vc-inline vc-border-gray-300 vc-px-2 vc-py-1 vc-w-24"
+          className="vc-border vc-inline vc-border-gray-300 vc-py-1 vc-w-full vc-px-1"
           onBlur={() => props.state.validate(field)}
         />
       </dd>
@@ -49,22 +68,23 @@ export function SectionBoxSettings(props: { state: SectionBoxRef }) {
     >
       <div
         ref={panelRef}
-        style={{ position: 'absolute', top: panelPosition.top, left: panelPosition.left }}
-        className="vim-sectionbox-offsets vc-pointer-events-auto vc-bg-white vc-min-w-[200px] vc-relative"
+        style={{ position: 'absolute', top: panelPosition.top, left: panelPosition.left, width: 'min(200px, 60%)'}}
+        className="vim-sectionbox-offsets vc-pointer-events-auto vc-bg-white vc-relative"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          className="vc-absolute vc-top-1 vc-right-1 vc-border-none vc-bg-transparent vc-text-sm vc-cursor-pointer"
-          onClick={() => props.state.setOffsetsVisible(false)}
-        >
-          {Icons.close({ height: 12, width: 12, fill: 'currentColor' })}
-        </button>
-        <div>
-          <span className="vim-sectionbox-offsets-title vc-bg-gray-light vc-px-2 vc-mb-2 vc-title vc-block">
+        <div className="vim-sectionbox-header vc-px-2 vc-bg-gray-light vc-flex vc-items-center vc-justify-between ">
+          <span className="vc-flex vim-sectionbox-offsets-title vc-title vc-block">
             Section Box Offsets
           </span>
+          <button
+            className="vc-flex vc-border-none vc-bg-transparent vc-text-sm vc-cursor-pointer"
+            onClick={() => props.state.setOffsetsVisible(false)}
+          >
+            {Icons.close({ height: 12, width: 12, fill: 'currentColor' })}
+          </button>
         </div>
-        <dl className="vc-text-xl vc-text-gray-darker vc-mb-4">
+
+        <dl className="vc-text-xl vc-text-gray-darker vc-mb-2 vc-mx-2 ">
           {renderField('topOffset', 'Top Offset', 'topOffset')}
           {renderField('sideOffseet', 'Side Offset', 'sideOffset')}
           {renderField('bottomOffset', 'Bottom Offset', 'bottomOffset')}

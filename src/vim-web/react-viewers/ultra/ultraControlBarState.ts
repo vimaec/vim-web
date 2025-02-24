@@ -1,6 +1,6 @@
 
 import { ControlBarCustomization } from '../controlbar/controlBar'
-import { SectionBoxRef } from '../state/sharedSectionBoxState'
+import { SectionBoxRef } from '../state/sectionBoxState'
 import { controlBarSectionBox } from '../state/controlBarState'
 import * as Ultra from '../../core-viewers/ultra/index'
 

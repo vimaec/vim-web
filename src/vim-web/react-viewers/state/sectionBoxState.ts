@@ -27,7 +27,7 @@ export interface SectionBoxRef {
   validate: (field: OffsetField) => void;
 }
 
-export interface SectionBoxAdapter<T> {
+export interface SectionBoxAdapter {
   setVisible: (visible: boolean) => void;
   getBox: () => THREE.Box3;
   fitBox: (box: THREE.Box3) => void;
@@ -37,8 +37,8 @@ export interface SectionBoxAdapter<T> {
   onSceneChanged: ISignal;
 }
 
-export function useSharedSectionBox<T>(
-  adapter: SectionBoxAdapter<T>
+export function useSectionBox(
+  adapter: SectionBoxAdapter
 ): SectionBoxRef {
   // Local state.
   const [enable, setEnable] = useState(false);
@@ -54,36 +54,47 @@ export function useSharedSectionBox<T>(
   // The reference box on which the offsets are applied.
   const boxRef = useRef<THREE.Box3>(adapter.getBox());
   
+  // Memoize the computed box.
+  const offsetBox = useMemo(() => offsetsToBox3(offsets), [offsets]);
+
   // Reinitialize section state when enabled/disabled.
   useEffect(() => {
     setVisible(enable);
-    reset();
+    setAuto(false)
+    setOffsetsVisible(false)
+    setOffsets({
+      topOffset: '1',
+      sideOffset: '1',
+      bottomOffset: '1',
+    })
+    void resetBox();
   }, [enable]);
 
+  // Register the selection change listener when auto is enabled.
   useEffect(() => {
-    sectionSelection()
+    if(auto) sectionSelection()
     return auto ? adapter.onSelectionChanged.sub(sectionSelection) : () => {};
   }, [auto]);
 
-  // Compute offsets as a Box3.
+  // Update the box when the offsets change
   useEffect(() => {
     setBox(boxRef.current);
   }, [offsets]);
 
-  // Update the active state (visibility and clipping) on changes.
+  // Show/Hide the section box on visible change.
   useEffect(() => {
     adapter.setVisible(visible);
   }, [visible]);
 
   // Text-related helper functions.
-  const getText = (field: OffsetField) => offsets[field];
   const setText = (field: OffsetField, value: string) =>{
     const result = sanitize(value, false);
     if(result !== undefined){
       setOffsets((prev) => ({ ...prev, [field]: result}));
     }
   }
-    
+  
+  // Validate the offset text input and update the state.
   const validate = (field: OffsetField) =>{
     const result = sanitize(offsets[field], true);
     if(result !== undefined){
@@ -91,46 +102,25 @@ export function useSharedSectionBox<T>(
     }
   }
 
-  const sanitize = (value: string, strict: boolean) => {
-    if(value === '' && !strict) return '';
-    if(value === '-' && !strict) return '-';
-    const num = parseFloat(value);
-    if(isNaN(num)){
-      if (strict) return '1';
-      else return undefined;
-    }
-    return String(num);
-  }
-
-
-
   // Update the box by combining the base box and the computed offsets.
   const setBox = (baseBox: THREE.Box3) => {
     boxRef.current = baseBox;
-    const box = offsetsToBox3(offsets);
-    const newBox = addBox(baseBox, box);
+    const newBox = addBox(baseBox, offsetBox);
     adapter.fitBox(newBox);
   };
 
   // Sets the box to the selection box or the renderer box if no selection.
   const sectionSelection = async () => {
-    const box =
-      (await adapter.getSelectionBox()) ??
-      (await adapter.getRendererBox());
-    setBox(box);
+    try {
+      const box =
+        (await adapter.getSelectionBox()) ??
+        (await adapter.getRendererBox());
+      setBox(box);
+    } catch (e) {
+      console.error(e);
+    }
   }
-
-  const reset = async () => {
-    setAuto(false)
-    setOffsetsVisible(false)
-    setOffsets({
-      topOffset: '1',
-      sideOffset: '1',
-      bottomOffset: '1',})
-    resetBox()
-  }
-
-  // reset to the renderer’s bounding box.
+  
   const resetBox = async () => {
     const box = await adapter.getRendererBox();
     setBox(box);
@@ -145,12 +135,30 @@ export function useSharedSectionBox<T>(
     sectionReset: resetBox,
     getOffsetVisible: () => offsetsVisible,
     setOffsetsVisible,
-    getText,
+    getText : (field: OffsetField) => offsets[field],
     setText,
     getAuto: () => auto,
     setAuto,
     validate,
   };
+}
+
+const sanitize = (value: string, strict: boolean) => {
+  // Special cases for non-strict mode
+  if (!strict) {
+    if (value === '' || value === '-') return value;
+  }
+  
+  // Parse the number
+  const num = parseFloat(value);
+  
+  // Handle invalid numbers
+  if (isNaN(num)) {
+    return strict ? '1' : undefined;
+  }
+  
+  // Valid number
+  return String(num);
 }
 
 

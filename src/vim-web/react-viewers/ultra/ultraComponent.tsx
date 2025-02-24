@@ -12,7 +12,7 @@ import { updateModal, updateProgress as modalProgress } from './ultraModal'
 import { ControlBar } from '../controlbar/controlBar'
 import { useUltraSectionBox } from './ultraSectionBoxState'
 import { useUltraControlBar } from './ultraControlBarState'
-import { SectionBoxSettings } from '../panels/sectionBoxSettings'
+import { SectionBoxPanel } from '../panels/sectionBoxPanel'
 import { RestOfScreen } from '../panels/restOfScreen'
 import { LogoMemo } from '../panels/logo'
 import { whenTrue } from '../helpers/utils'
@@ -93,8 +93,6 @@ export function UltraComponent (props: {
   }, [])
 
   return <>
-  <ControlBar content={controlBar} show={true} />
-  <SectionBoxSettings state={sectionBox} />
   <RestOfScreen side={side} content={() => {
     return <>
     {whenTrue(true, <LogoMemo/>)}
@@ -103,7 +101,7 @@ export function UltraComponent (props: {
       content={controlBar}
       show={true}
     />
-    <SectionBoxSettings state={sectionBox}/>
+    <SectionBoxPanel state={sectionBox}/>
   </>
   }}/>
   
