@@ -299,6 +299,10 @@ export class RpcSafeClient {
    * Methods for controlling section box visibility and position.
    ******************************************************************************/
   
+  RPCEnableSectionBox(enable: boolean): void {
+    this.rpc.RPCEnableSectionBox(enable)
+  }
+
   RPCSetSectionBox(state: SectionBoxState): void {
     this.rpc.RPCSetSectionBox(state)
   }

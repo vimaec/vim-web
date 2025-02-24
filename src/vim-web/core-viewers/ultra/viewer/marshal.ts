@@ -17,7 +17,6 @@ export type VimStatus = {
 }
 
 export type SectionBoxState = {
-  enabled: boolean;       // bool equivalent
   visible: boolean;       // bool equivalent
   interactible: boolean;  // bool equivalent
   clip : boolean;         // bool equivalent
@@ -232,7 +231,6 @@ export class Marshal {
   // -------------------- SectionBox -------------------
 
   public writeSectionBoxState(data: SectionBoxState): void {
-    this.writeBoolean(data.enabled)
     this.writeBoolean(data.visible)
     this.writeBoolean(data.interactible)
     this.writeBoolean(data.clip)
@@ -443,14 +441,12 @@ export class ReadMarshal{
   }
 
   public readSectionBoxState(): SectionBoxState {
-    const enabled = this.readBoolean()
     const visible = this.readBoolean()
     const interactible = this.readBoolean()
     const clip = this.readBoolean()
     const box = this.readBox3()
 
     return {
-      enabled,
       visible,
       interactible,
       clip,

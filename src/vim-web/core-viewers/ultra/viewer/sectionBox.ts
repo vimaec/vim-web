@@ -28,6 +28,7 @@ export class SectionBox {
   }
 
   async onConnect(){
+    this._rpc.RPCEnableSectionBox(true)
     this.push()
     this._interval = setInterval(() => this.pull(), 1000)
   }
@@ -57,22 +58,13 @@ export class SectionBox {
     this._interactible = state.interactible
     this._clip = state.clip
     this._box = state.box
-    //console.log("pull", this._box)
     if(changed){
       this._onUpdate.dispatch()
     }
   }
 
   private async push(){
-    console.log({
-      enabled: this._visible,
-      visible: this._visible,
-      interactible: this._interactible,
-      clip: this._clip,
-      box: this._box
-    })
     await this._rpc.RPCSetSectionBox({
-      enabled: true,
       visible: this._visible,
       interactible: this._interactible,
       clip: this._clip,

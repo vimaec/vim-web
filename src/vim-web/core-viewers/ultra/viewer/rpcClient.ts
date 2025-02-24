@@ -106,6 +106,13 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
+  RPCEnableSectionBox(value: boolean): void {
+    const marshal = new Marshal();
+    marshal.writeString("RPCEnableSectionBox");
+    marshal.writeBoolean(value);
+    this._socket.sendRPC(marshal);
+  }
+
   async RPCFrameAll(blendTime: number): Promise<Segment> {
     const marshal = new Marshal();
     marshal.writeString("RPCFrameAll");
