@@ -7,7 +7,6 @@ import { Box3, Vector3 } from '../../vim-web/core-viewers/ultra/utils/math3d'
 export function UltraSectionBox() {
   const div = useRef(null)
   const ref = useRef<UltraReact.UltraComponentRef>()
-  const [enable, setEnable] = useState(false)
   const [visible, setVisible] = useState(false)
   const [interactible, setInteractible] = useState(false)
   const [clip, setClip] = useState(false)
@@ -31,9 +30,8 @@ export function UltraSectionBox() {
     createSectionBox(ultra);
     ref.current = ultra;
     ultra.viewer.sectionBox.onUpdate.subscribe(() => {
-      setEnable(ultra.viewer.sectionBox.enabled);
       setVisible(ultra.viewer.sectionBox.visible);
-      setInteractible(ultra.viewer.sectionBox.interactible);
+      setInteractible(ultra.viewer.sectionBox.interactive);
       setClip(ultra.viewer.sectionBox.clip);
       setBox(ultra.viewer.sectionBox.getBox());
     });
@@ -42,11 +40,9 @@ export function UltraSectionBox() {
   return (
     <div className='vc-inset-0 vc-absolute'>
       <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000, background: 'white', padding: '10px', borderRadius: '5px' }}>
-        <Checkbox label='Enable' checked={enable} onChange={(value) => { setEnable(value); if (ref.current) ref.current.viewer.sectionBox.enabled = value; }} />
-        <br />
         <Checkbox label='Visible' checked={visible} onChange={(value) => { setVisible(value); if (ref.current) ref.current.viewer.sectionBox.visible = value; }} />
         <br />
-        <Checkbox label='Interactible' checked={interactible} onChange={(value) => { setInteractible(value); if (ref.current) ref.current.viewer.sectionBox.interactible = value; }} />
+        <Checkbox label='Interactible' checked={interactible} onChange={(value) => { setInteractible(value); if (ref.current) ref.current.viewer.sectionBox.interactive = value; }} />
         <br />
         <Checkbox label='Clip' checked={clip} onChange={(value) => { setClip(value); if (ref.current) ref.current.viewer.sectionBox.clip = value; }} />
         <br />
@@ -62,13 +58,14 @@ export function UltraSectionBox() {
   );
 }
 
-async function createSectionBox(ultra) {
+async function createSectionBox(ultra : UltraReact.UltraComponentRef) {
   await ultra.viewer.connect();
+  
   const request = ultra.load({ url: residence });
   const result = await request.getResult();
   if (result.isSuccess) {
     await ultra.viewer.camera.frameAll(0);
-    const box = await result.vim.getBoundingBox('all');
+    const box = await ultra.viewer.renderer.getBoundingBox();
     ultra.viewer.sectionBox.fitBox(box);
   }
 }
