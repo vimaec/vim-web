@@ -12,6 +12,7 @@ import { BimInfoPanelRef } from '../bim/bimInfoData'
 import { ControlBarCustomization } from '../controlbar/controlBar'
 import { ComponentLoader } from './webglLoading'
 import { ModalRef } from '../panels/modal'
+import { SectionBoxRef } from '../state/sectionBoxState'
 /**
 * Settings API managing settings applied to the component.
 */
@@ -96,6 +97,11 @@ export type VimComponentRef = {
    * Isolation API managing isolation state in the component.
    */
   isolation: Isolation
+
+  /**
+   * Section box API managing the section box in the component.
+   */
+  sectionBox: SectionBoxRef
 
   /**
    * Context menu API managing the content and behavior of the context menu.

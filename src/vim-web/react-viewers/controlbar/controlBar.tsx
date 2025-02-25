@@ -9,6 +9,8 @@ import { createSection, IControlBarSection } from './controlBarSection'
 export * from './controlBarSection'
 export * from './controlBarButton'
 export * from './controlBarSection'
+export * from './controlBarIds'
+
 
 /**
  * A map function that changes the context menu.
