@@ -159,6 +159,7 @@ export function VimComponent (props: {
       isolation,
       camera,
       settings,
+      sectionBox,
       contextMenu: {
         customize: (v) => setcontextMenu(() => v)
       },

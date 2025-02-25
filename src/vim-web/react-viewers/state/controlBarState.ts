@@ -7,7 +7,6 @@ import {
   ComponentSettings,
   anyUiCursorButton,
   anyUiSettingButton,
-  anyUiToolButton,
   isTrue,
 } from '../settings/settings';
 import { SideState } from '../sidePanel/sideState';
@@ -21,45 +20,6 @@ import { ModalRef } from '../panels/modal';
 
 import * as ControlBar from '../controlbar/controlBar';
 
-export const elementIds = {
-  // Sections
-  sectionCamera: 'controlBar.sectionCamera',
-  sectionActions: 'controlBar.sectionActions',
-  sectionTools: 'controlBar.sectionTools',
-  sectionSettings: 'controlBar.sectionSettings',
-  sectionMeasure: 'controlBar.sectionMeasure',
-  sectionSectionBox: 'controlBar.sectionSectionBox',
-
-  // Camera buttons
-  buttonCameraOrbit: 'controlBar.camera.orbit',
-  buttonCameraLook: 'controlBarcamera.look',
-  buttonCameraPan: 'controlBar.camera.pan',
-  buttonCameraZoom: 'controlBar.camera.zoom',
-  buttonCameraZoomWindow: 'controlBar.camera.zoomWindow',
-
-  // Settings buttons
-  buttonProjectInspector: 'controlBar.projectInspector',
-  buttonSettings: 'controlBar.settings',
-  buttonHelp: 'controlBar.help',
-  buttonMaximize: 'controlBar.maximize',
-
-  // Action Buttons
-  buttonToggleIsolation: 'controlBar.action.toggleIsolation',
-  buttonZoomToFit: 'controlBar.action.zoomToFit',
-
-  // Tools buttons
-  buttonSectionBox: 'controlBar.sectionBox',
-  buttonMeasure: 'controlBar.measure',
-
-  // Section box buttons
-  buttonSectionBoxEnable: 'controlBar.sectionBox.enable',
-  buttonSectionBoxVisible: 'controlBar.sectionBox.visible',
-  buttonSectionBoxShrinkToSelection: 'controlBar.sectionBox.shrinkToSelection',
-  buttonSectionBoxAuto: 'controlBar.sectionBox.auto',
-  buttonSectionBoxClip: 'controlBar.sectionBox.clip',
-  buttonSectionBoxSettings: 'controlBar.sectionBox.settings',
-};
-
 /**
  * Returns a control bar section for the section box.
  */
@@ -69,12 +29,12 @@ export function controlBarSectionBox(
 ): ControlBar.IControlBarSection {
 
   return {
-    id: elementIds.sectionSectionBox,
+    id: ControlBar.elementIds.sectionSectionBox,
     style: section.getEnable()? ControlBar.sectionNoPadStyle : ControlBar.sectionDefaultStyle,
     //enable: () => section.getEnable(),
     buttons: [
       {
-        id: elementIds.buttonSectionBoxEnable,
+        id: ControlBar.elementIds.buttonSectionBoxEnable,
         tip: 'Enable Section Box',
         isOn: () => section.getEnable(),
         style: (on) => ControlBar.buttonExpandStyle(on),
@@ -82,7 +42,7 @@ export function controlBarSectionBox(
         icon: Icons.sectionBox,
       },
       {
-        id: elementIds.buttonSectionBoxShrinkToSelection,
+        id: ControlBar.elementIds.buttonSectionBoxShrinkToSelection,
         tip: 'Fit Section',
         enabled: () => section.getEnable(),
         isOn: () => hasSelection,
@@ -91,7 +51,7 @@ export function controlBarSectionBox(
         icon: Icons.sectionBoxShrink,
       },
       {
-        id: elementIds.buttonSectionBoxClip,
+        id: ControlBar.elementIds.buttonSectionBoxClip,
         tip: 'Reset Section',
         enabled: () => section.getEnable(),
         style: (on) => ControlBar.buttonDefaultStyle(on),
@@ -99,7 +59,7 @@ export function controlBarSectionBox(
         icon: Icons.sectionBoxReset,
       },
       {
-        id: elementIds.buttonSectionBoxVisible,
+        id: ControlBar.elementIds.buttonSectionBoxVisible,
         tip: 'Show Section Box',
         enabled: () => section.getEnable(),
         isOn: () => section.getVisible(),
@@ -108,7 +68,7 @@ export function controlBarSectionBox(
         icon: Icons.visible,
       },
       {
-        id: elementIds.buttonSectionBoxAuto,
+        id: ControlBar.elementIds.buttonSectionBoxAuto,
         tip: 'Auto Section',
         enabled: () => section.getEnable(),
         isOn: () => section.getAuto(),
@@ -117,7 +77,7 @@ export function controlBarSectionBox(
         icon: Icons.sectionBoxAuto,
       },
       {
-        id: elementIds.buttonSectionBoxSettings,
+        id: ControlBar.elementIds.buttonSectionBoxSettings,
         tip: 'Section Settings',
         enabled: () => section.getEnable(),
         isOn: () => section.getOffsetVisible(),
@@ -141,12 +101,12 @@ function controlBarPointer(
   const pointer = getPointerState(viewer);
 
   return {
-    id: elementIds.sectionCamera,
+    id: ControlBar.elementIds.sectionCamera,
     enable: () => anyUiCursorButton(settings),
     style: ControlBar.sectionDefaultStyle,
     buttons: [
       {
-        id: elementIds.buttonCameraOrbit,
+        id: ControlBar.elementIds.buttonCameraOrbit,
         enabled: () => isTrue(settings.ui.orbit),
         tip: 'Orbit',
         action: () => pointer.onButton('orbit'),
@@ -155,7 +115,7 @@ function controlBarPointer(
         style: ControlBar.buttonDefaultStyle,
       },
       {
-        id: elementIds.buttonCameraLook,
+        id: ControlBar.elementIds.buttonCameraLook,
         enabled: () => isTrue(settings.ui.lookAround),
         tip: 'Look Around',
         action: () => pointer.onButton('look'),
@@ -164,7 +124,7 @@ function controlBarPointer(
         style: ControlBar.buttonDefaultStyle,
       },
       {
-        id: elementIds.buttonCameraPan,
+        id: ControlBar.elementIds.buttonCameraPan,
         enabled: () => isTrue(settings.ui.pan),
         tip: 'Pan',
         action: () => pointer.onButton('pan'),
@@ -173,7 +133,7 @@ function controlBarPointer(
         style: ControlBar.buttonDefaultStyle,
       },
       {
-        id: elementIds.buttonCameraZoom,
+        id: ControlBar.elementIds.buttonCameraZoom,
         enabled: () => isTrue(settings.ui.zoom),
         tip: 'Zoom',
         action: () => pointer.onButton('zoom'),
@@ -182,7 +142,7 @@ function controlBarPointer(
         style: ControlBar.buttonDefaultStyle,
       },
       {
-        id: elementIds.buttonCameraZoomWindow,
+        id: ControlBar.elementIds.buttonCameraZoomWindow,
         enabled: () => isTrue(settings.ui.zoomWindow),
         tip: 'Zoom Window',
         action: () => {
@@ -204,12 +164,12 @@ function controlBarActions(
   measure: ReturnType<typeof getMeasureState>
 ){
   return {
-    id: elementIds.sectionActions,
+    id: ControlBar.elementIds.sectionActions,
     enable: () => true,
     style: ControlBar.sectionDefaultStyle,
     buttons: [
       {
-        id: elementIds.buttonZoomToFit,
+        id: ControlBar.elementIds.buttonZoomToFit,
         enabled: () => isTrue(settings.ui.zoomToFit),
         tip: 'Zoom to Fit',
         action: () => camera.frameContext(),
@@ -218,7 +178,7 @@ function controlBarActions(
         style: ControlBar.buttonDefaultStyle,
       },
       {
-        id: elementIds.buttonToggleIsolation,
+        id: ControlBar.elementIds.buttonToggleIsolation,
         enabled: () => isTrue(settings.ui.toggleIsolation),
         tip: 'Toggle Isolation',
         action: () => isolation.toggle('controlBar'),
@@ -226,7 +186,7 @@ function controlBarActions(
         style: ControlBar.buttonDefaultStyle,
       },
       {
-        id: elementIds.buttonMeasure,
+        id: ControlBar.elementIds.buttonMeasure,
         enabled: () => isTrue(settings.ui.measuringMode),
         isOn: () => measure.active,
         tip: 'Measuring Mode',
@@ -245,12 +205,12 @@ function controlBarSettings(
   const fullScreen = getFullScreenState();
 
   return {
-    id: elementIds.sectionSettings,
+    id: ControlBar.elementIds.sectionSettings,
     enable: () => anyUiSettingButton(settings),
     style: ControlBar.sectionDefaultStyle,
     buttons: [
       {
-        id: elementIds.buttonProjectInspector,
+        id: ControlBar.elementIds.buttonProjectInspector,
         enabled: () => isTrue(settings.ui.projectInspector) && (
           isTrue(settings.ui.bimTreePanel) ||
           isTrue(settings.ui.bimInfoPanel)
@@ -261,7 +221,7 @@ function controlBarSettings(
         style: ControlBar.buttonDefaultStyle
       },
       {
-        id: elementIds.buttonSettings,
+        id: ControlBar.elementIds.buttonSettings,
         enabled: () => isTrue(settings.ui.settings),
         tip: 'Settings',
         action: () => side.toggleContent('settings'),
@@ -269,7 +229,7 @@ function controlBarSettings(
         style: ControlBar.buttonDefaultStyle
       },
       {
-        id: elementIds.buttonHelp,
+        id: ControlBar.elementIds.buttonHelp,
         enabled: () => isTrue(settings.ui.help),
         tip: 'Help',
         action: () => modal.help(true),
@@ -277,7 +237,7 @@ function controlBarSettings(
         style: ControlBar.buttonDefaultStyle
       },
       {
-        id: elementIds.buttonMaximize,
+        id: ControlBar.elementIds.buttonMaximize,
         enabled: () =>
           isTrue(settings.ui.maximise) &&
           settings.capacity.canGoFullScreen,

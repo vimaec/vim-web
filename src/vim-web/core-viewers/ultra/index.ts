@@ -2,7 +2,6 @@ import "./style.css"
 export * from './viewer/viewer'
 export * as utils from './utils/promise'
 export * from './viewer/vim'
-export * from './viewer/vim'
 export * from './utils/math3d'
 export * from './viewer/color'
 export type{ ILoadRequest, VimRequestErrorType } from './viewer/loadRequest'

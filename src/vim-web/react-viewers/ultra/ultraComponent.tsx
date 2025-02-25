@@ -17,11 +17,33 @@ import { RestOfScreen } from '../panels/restOfScreen'
 import { LogoMemo } from '../panels/logo'
 import { whenTrue } from '../helpers/utils'
 import { useSideState } from '../sidePanel/sideState'
+import { SectionBoxRef } from '../state/sectionBoxState'
 
 export type UltraComponentRef = {
+  /**
+   * The Vim viewer instance associated with the component.
+   */
   viewer : Ultra.Viewer
+
+  /**
+   * API to manage the modal dialog.
+   */
   modal: ModalRef
+
+  /**
+   * API to manage the section box.
+   */
+  sectionBox: SectionBoxRef
+
+  /**
+   * Disposes of the component and its resources.
+   */
   dispose: () => void
+
+  /**
+   * Loads a file into the viewer.
+   * @param url The URL of the file to load.
+   */
   load(url: Ultra.VimSource): Ultra.ILoadRequest
 }
 
@@ -89,7 +111,7 @@ export function UltraComponent (props: {
     props.viewer.selection.onValueChanged.subscribe(() =>{
       setSelectState(i => (i+1)%2)
     } )
-    props.onMount(createComponentRef(props.viewer, modal))
+    props.onMount(createComponentRef(props.viewer, modal, sectionBox))
   }, [])
 
   return <>
@@ -111,7 +133,7 @@ export function UltraComponent (props: {
 
 
 
-function createComponentRef (viewer: Ultra.Viewer, modal: ModalRef): UltraComponentRef {
+function createComponentRef (viewer: Ultra.Viewer, modal: ModalRef, sectionBox: SectionBoxRef): UltraComponentRef {
   // Load a file from the server
   function load (source: Ultra.VimSource): Ultra.ILoadRequest {
     const request = viewer.loadVim(source)
@@ -137,9 +159,15 @@ function createComponentRef (viewer: Ultra.Viewer, modal: ModalRef): UltraCompon
   return {
     viewer,
     modal,
+    sectionBox,
     dispose: () => {},
-    load
+    load,
+    
   }
+}
+
+function patchLoad(viewer: Ultra.Viewer) {
+  
 }
 
 
