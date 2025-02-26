@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { Icons } from ".."
 import { SectionBoxRef } from "../state/sectionBoxState"
+import { StateRef } from "../helpers/reactUtils";
 
 export function SectionBoxPanel(props: { state: SectionBoxRef }) {
 
@@ -36,16 +37,16 @@ export function SectionBoxPanel(props: { state: SectionBoxRef }) {
     }
   };
 
-  }, [props.state.getOffsetVisible()])
+  }, [props.state.showOffsetPanel.get()])
   
 
-  if (!props.state.getOffsetVisible()) return null
+  if (!props.state.showOffsetPanel.get()) return null
 
   // Inline method to render a label-textbox pair.
   const renderField = (
     id: string,
     label: string,
-    field: 'topOffset' | 'sideOffset' | 'bottomOffset'
+    field: StateRef<string>
   ) => (
     <div className="vim-sectionbox-offsets-entry vc-text-xs vc-flex vc-items-center vc-justify-center vc-justify-between vc-my-2">
       <dt className="vc-w-1/2 vc-inline">{label}</dt>
@@ -53,10 +54,10 @@ export function SectionBoxPanel(props: { state: SectionBoxRef }) {
         <input
           id={id}
           type="text"
-          value={props.state.getText(field)}
-          onChange={(e) => props.state.setText(field, e.target.value)}
+          value={field.get()}
+          onChange={(e) => field.set(e.target.value)}
           className="vc-border vc-inline vc-border-gray-300 vc-py-1 vc-w-full vc-px-1"
-          onBlur={() => props.state.validate(field)}
+          onBlur={() => field.confirm()}
         />
       </dd>
     </div>
@@ -78,16 +79,16 @@ export function SectionBoxPanel(props: { state: SectionBoxRef }) {
           </span>
           <button
             className="vc-flex vc-border-none vc-bg-transparent vc-text-sm vc-cursor-pointer"
-            onClick={() => props.state.setOffsetsVisible(false)}
+            onClick={() => props.state.showOffsetPanel.set(false)}
           >
             {Icons.close({ height: 12, width: 12, fill: 'currentColor' })}
           </button>
         </div>
 
         <dl className="vc-text-xl vc-text-gray-darker vc-mb-2 vc-mx-2 ">
-          {renderField('topOffset', 'Top Offset', 'topOffset')}
-          {renderField('sideOffseet', 'Side Offset', 'sideOffset')}
-          {renderField('bottomOffset', 'Bottom Offset', 'bottomOffset')}
+          {renderField('topOffset', 'Top Offset', props.state.topOffset)}
+          {renderField('sideOffseet', 'Side Offset', props.state.sideOffset)}
+          {renderField('bottomOffset', 'Bottom Offset', props.state.bottomOffset)}
         </dl>
       </div>
     </div>
