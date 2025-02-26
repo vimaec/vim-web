@@ -1,6 +1,6 @@
 // useVimSectionBox.ts
 import * as VIM from '../../core-viewers/webgl/index';
-import { useSectionBox, SectionBoxAdapter, SectionBoxRef } from '../state/sectionBoxState';
+import {SectionBoxAdapter, SectionBoxRef, useSectionBox } from '../state/sectionBoxState';
 
 export function useWebglSectionBox(viewer: VIM.Viewer): SectionBoxRef {
   const vimAdapter: SectionBoxAdapter = {

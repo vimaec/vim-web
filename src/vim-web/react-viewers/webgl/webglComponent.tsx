@@ -124,6 +124,7 @@ export function VimComponent (props: {
   const viewerState = useViewerState(props.viewer)
   const treeRef = useRef<TreeActionRef>()
   const performanceRef = useRef<HTMLDivElement>(null)
+  
   const sectionBox = useWebglSectionBox(props.viewer)
   const controlBar = useControlBar(props.viewer, camera, modal, side, isolation, cursor, settings.value, sectionBox, controlBarCustom)
 
@@ -159,7 +160,9 @@ export function VimComponent (props: {
       isolation,
       camera,
       settings,
-      sectionBox,
+      get sectionBox(){
+        return sectionBox
+      },
       contextMenu: {
         customize: (v) => setcontextMenu(() => v)
       },

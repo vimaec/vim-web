@@ -23,3 +23,4 @@ export function whenSomeTrue (value: (UserBoolean| boolean)[], element: JSX.Elem
 export function whenSomeFalse (value: (UserBoolean| boolean)[], element: JSX.Element) {
   return value.some(isFalse) ? element : null
 }
+

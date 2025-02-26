@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useLayoutEffect, useMemo, useCallback } fr
 import * as THREE from 'three';
 import { addBox } from '../../core-viewers/webgl/utils/threeUtils';
 import { ISignal } from 'ste-signals';
+import { StateRef, useStateRef } from '../helpers/reactUtils';
 
 export type Offsets = {
   topOffset: string;
@@ -12,19 +13,19 @@ export type Offsets = {
 export type OffsetField = keyof Offsets;
 
 export interface SectionBoxRef {
-  getEnable: () => boolean;
-  setEnable: (enable: boolean) => void;
-  getVisible: () => boolean;
-  setVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  getAuto: () => boolean;
-  setAuto: (auto: boolean) => void;
+  enable: StateRef<boolean>;
+  visible: StateRef<boolean>;
+  auto: StateRef<boolean>;
+
   sectionSelection: () => void;
   sectionReset: () => void;
-  getOffsetVisible: () => boolean;
-  setOffsetsVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  getText: (field: OffsetField) => string;
-  setText: (field: OffsetField, value: string) => void;
-  validate: (field: OffsetField) => void;
+  section: (box : THREE.Box3) => void;
+
+  showOffsetPanel: StateRef<boolean>;
+
+  topOffset: StateRef<string>;
+  sideOffset: StateRef<string>;
+  bottomOffset: StateRef<string>;
 }
 
 export interface SectionBoxAdapter {
@@ -41,69 +42,62 @@ export function useSectionBox(
   adapter: SectionBoxAdapter
 ): SectionBoxRef {
   // Local state.
-  const [enable, setEnable] = useState(false);
-  const [visible, setVisible] = useState(false);
-  const [offsetsVisible, setOffsetsVisible] = useState(false);
-  const [auto, setAuto] = useState(false);
-  const [offsets, setOffsets] = useState<Offsets>({
-    topOffset: '1',
-    sideOffset: '1',
-    bottomOffset: '1',
-  });
+  const enable = useStateRef(false);
+  const visible = useStateRef(false);
+  const showOffsetPanel = useStateRef(false);
+  const auto = useStateRef(false);
+  const topOffset = useStateRef('1');
+  const sideOffset = useStateRef('1');
+  const bottomOffset = useStateRef('1');
 
   // The reference box on which the offsets are applied.
   const boxRef = useRef<THREE.Box3>(adapter.getBox());
+
+  // Reset everything when the enable state changes.
+  enable.useRegister((v) => {
+    visible.set(v);
+    auto.set(false)
+    showOffsetPanel.set(false)
+    topOffset.set('1')
+    sideOffset.set('1')
+    bottomOffset.set('1')
+    void sectionReset();
+  })
+
+  // Setup textbox validation
+  topOffset.useValidate((v) => sanitize(v, false));
+  sideOffset.useValidate((v) => sanitize(v, false));
+  bottomOffset.useValidate((v) => sanitize(v, false));
+
+  // Setup textbox confirmation
+  topOffset.useConfirm((v) => sanitize(v, true));
+  sideOffset.useConfirm((v) => sanitize(v, true));
+  bottomOffset.useConfirm((v) => sanitize(v, true));
   
   // Memoize the computed box.
-  const offsetBox = useMemo(() => offsetsToBox3(offsets), [offsets]);
+  const offsetBox = useMemo(
+    () => offsetsToBox3(topOffset.get(), sideOffset.get(), bottomOffset.get()),
+    [topOffset.get(), sideOffset.get(), bottomOffset.get()]
+  );
 
-  // Reinitialize section state when enabled/disabled.
+  // Update the section box when the offsets change.
+  useEffect(() => section(boxRef.current), [offsetBox]);
+
+  // Setup auto mode and state change.
+  auto.useRegister((v) => {if(v) sectionSelection()})
+
   useEffect(() => {
-    setVisible(enable);
-    setAuto(false)
-    setOffsetsVisible(false)
-    setOffsets({
-      topOffset: '1',
-      sideOffset: '1',
-      bottomOffset: '1',
+    return adapter.onSelectionChanged.sub(() => {
+      if(auto.get()) sectionSelection()
     })
-    void resetBox();
-  }, [enable]);
-
-  // Register the selection change listener when auto is enabled.
-  useEffect(() => {
-    if(auto) sectionSelection()
-    return auto ? adapter.onSelectionChanged.sub(sectionSelection) : () => {};
-  }, [auto]);
-
-  // Update the box when the offsets change
-  useEffect(() => {
-    setBox(boxRef.current);
-  }, [offsets]);
+  }, []);
+  
 
   // Show/Hide the section box on visible change.
-  useEffect(() => {
-    adapter.setVisible(visible);
-  }, [visible]);
-
-  // Text-related helper functions.
-  const setText = (field: OffsetField, value: string) =>{
-    const result = sanitize(value, false);
-    if(result !== undefined){
-      setOffsets((prev) => ({ ...prev, [field]: result}));
-    }
-  }
-  
-  // Validate the offset text input and update the state.
-  const validate = (field: OffsetField) =>{
-    const result = sanitize(offsets[field], true);
-    if(result !== undefined){
-      setOffsets((prev) => ({ ...prev, [field]: result}));
-    }
-  }
+  visible.useRegister((v) => adapter.setVisible(v));
 
   // Update the box by combining the base box and the computed offsets.
-  const setBox = (baseBox: THREE.Box3) => {
+  const section = (baseBox: THREE.Box3) => {
     boxRef.current = baseBox;
     const newBox = addBox(baseBox, offsetBox);
     adapter.fitBox(newBox);
@@ -115,31 +109,28 @@ export function useSectionBox(
       const box =
         (await adapter.getSelectionBox()) ??
         (await adapter.getRendererBox());
-      setBox(box);
+      section(box);
     } catch (e) {
       console.error(e);
     }
   }
   
-  const resetBox = async () => {
+  const sectionReset = async () => {
     const box = await adapter.getRendererBox();
-    setBox(box);
+    section(box);
   };
 
-  return {
-    setEnable,
-    getEnable: () => enable,
-    getVisible: () => visible,
-    setVisible,
+return{
+    enable,
+    visible,
+    auto,
+    showOffsetPanel,
+    topOffset,
+    sideOffset,
+    bottomOffset,
     sectionSelection,
-    sectionReset: resetBox,
-    getOffsetVisible: () => offsetsVisible,
-    setOffsetsVisible,
-    getText : (field: OffsetField) => offsets[field],
-    setText,
-    getAuto: () => auto,
-    setAuto,
-    validate,
+    sectionReset,
+    section,
   };
 }
 
@@ -162,13 +153,13 @@ const sanitize = (value: string, strict: boolean) => {
 }
 
 
-function offsetsToBox3(offsets : Offsets){
-  const getNumber = (field: OffsetField) => {
-    const num = parseFloat(offsets[field]);
+function offsetsToBox3(top: string, side: string, bottom: string): THREE.Box3 {
+  const getNumber = (s: string) => {
+    const num = parseFloat(s);
     return isNaN(num) ? 0 : num;
   };
   return new THREE.Box3(
-    new THREE.Vector3(-getNumber('sideOffset'), -getNumber('sideOffset'), -getNumber('bottomOffset')),
-    new THREE.Vector3(getNumber('sideOffset'), getNumber('sideOffset'), getNumber('topOffset'))
+    new THREE.Vector3(-getNumber(side), -getNumber(side), -getNumber(bottom)),
+    new THREE.Vector3(getNumber(side), getNumber(side), getNumber(top))
   );
 }
