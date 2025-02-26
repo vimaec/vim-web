@@ -73,15 +73,10 @@ export function useSectionBox(
   topOffset.useConfirm((v) => sanitize(v, true));
   sideOffset.useConfirm((v) => sanitize(v, true));
   bottomOffset.useConfirm((v) => sanitize(v, true));
-  
-  // Memoize the computed box.
-  const offsetBox = useMemo(
-    () => offsetsToBox3(topOffset.get(), sideOffset.get(), bottomOffset.get()),
-    [topOffset.get(), sideOffset.get(), bottomOffset.get()]
-  );
 
-  // Update the section box when the offsets change.
-  useEffect(() => section(boxRef.current), [offsetBox]);
+  topOffset.useRegister((v) => section(boxRef.current));
+  sideOffset.useRegister((v) => section(boxRef.current));
+  bottomOffset.useRegister((v) => section(boxRef.current));
 
   // Setup auto mode and state change.
   auto.useRegister((v) => {if(v) sectionSelection()})
@@ -99,7 +94,7 @@ export function useSectionBox(
   // Update the box by combining the base box and the computed offsets.
   const section = (baseBox: THREE.Box3) => {
     boxRef.current = baseBox;
-    const newBox = addBox(baseBox, offsetBox);
+    const newBox = addBox(baseBox, offsetsToBox3(topOffset.get(), sideOffset.get(), bottomOffset.get()));
     adapter.fitBox(newBox);
   };
 
