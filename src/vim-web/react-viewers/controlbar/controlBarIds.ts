@@ -1,7 +1,8 @@
 
-export const elementIds = {
+export const ids = {
   // Sections
   sectionCamera: 'controlBar.sectionCamera',
+  sectionInputs: 'controlBar.sectionInputs',
   sectionActions: 'controlBar.sectionActions',
   sectionTools: 'controlBar.sectionTools',
   sectionSettings: 'controlBar.sectionSettings',
@@ -9,6 +10,7 @@ export const elementIds = {
   sectionSectionBox: 'controlBar.sectionSectionBox',
 
   // Camera buttons
+  buttonCameraAuto: 'controlBar.camera.auto',
   buttonCameraOrbit: 'controlBar.camera.orbit',
   buttonCameraLook: 'controlBarcamera.look',
   buttonCameraPan: 'controlBar.camera.pan',
@@ -34,6 +36,6 @@ export const elementIds = {
   buttonSectionBoxVisible: 'controlBar.sectionBox.visible',
   buttonSectionBoxShrinkToSelection: 'controlBar.sectionBox.shrinkToSelection',
   buttonSectionBoxAuto: 'controlBar.sectionBox.auto',
-  buttonSectionBoxClip: 'controlBar.sectionBox.clip',
+  buttonSectionBoxReset: 'controlBar.sectionBox.reset',
   buttonSectionBoxSettings: 'controlBar.sectionBox.settings',
 };

@@ -4,7 +4,7 @@
 
 import * as VIM from '../../core-viewers/webgl/index'
 import { SideState } from '../sidePanel/sideState'
-import { ComponentCamera } from './camera'
+import { CameraRef } from './camera'
 import { Isolation } from './isolation'
 
 /**
@@ -12,14 +12,14 @@ import { Isolation } from './isolation'
  */
 export class ComponentInputs implements VIM.InputScheme {
   private _viewer: VIM.Viewer
-  private _camera: ComponentCamera
+  private _camera: CameraRef
   private _default: VIM.InputScheme
   private _isolation: Isolation
   private _sideState: SideState
 
   constructor (
     viewer: VIM.Viewer,
-    camera: ComponentCamera,
+    camera: CameraRef,
     isolation: Isolation,
     sideState: SideState
   ) {
@@ -54,7 +54,7 @@ export class ComponentInputs implements VIM.InputScheme {
       }
 
       case VIM.KEYS.KEY_F: {
-        this._camera.frameContext()
+        this._camera.frameSelection.call()
         return true
       }
       case VIM.KEYS.KEY_I: {

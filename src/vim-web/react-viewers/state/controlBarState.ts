@@ -1,5 +1,5 @@
 import * as VIM from '../../core-viewers/webgl/index';
-import { ComponentCamera } from '../helpers/camera';
+import { CameraRef } from '../helpers/camera';
 import { CursorManager } from '../helpers/cursor';
 import { Isolation } from '../helpers/isolation';
 
@@ -29,12 +29,12 @@ export function controlBarSectionBox(
 ): ControlBar.IControlBarSection {
 
   return {
-    id: ControlBar.elementIds.sectionSectionBox,
+    id: ControlBar.ids.sectionSectionBox,
     style: section.enable.get()? ControlBar.sectionNoPadStyle : ControlBar.sectionDefaultStyle,
     //enable: () => section.getEnable(),
     buttons: [
       {
-        id: ControlBar.elementIds.buttonSectionBoxEnable,
+        id: ControlBar.ids.buttonSectionBoxEnable,
         tip: 'Enable Section Box',
         isOn: () => section.enable.get(),
         style: (on) => ControlBar.buttonExpandStyle(on),
@@ -42,24 +42,24 @@ export function controlBarSectionBox(
         icon: Icons.sectionBox,
       },
       {
-        id: ControlBar.elementIds.buttonSectionBoxShrinkToSelection,
+        id: ControlBar.ids.buttonSectionBoxShrinkToSelection,
         tip: 'Fit Section',
         enabled: () => section.enable.get(),
         isOn: () => hasSelection,
         style: (on) => ControlBar.buttonDisableStyle(on),
-        action: () => section.sectionSelection(), 
+        action: () => section.sectionSelection.call(), 
         icon: Icons.sectionBoxShrink,
       },
       {
-        id: ControlBar.elementIds.buttonSectionBoxClip,
+        id: ControlBar.ids.buttonSectionBoxReset,
         tip: 'Reset Section',
         enabled: () => section.enable.get(),
         style: (on) => ControlBar.buttonDefaultStyle(on),
-        action: () => section.sectionReset(), 
+        action: () => section.sectionReset.call(), 
         icon: Icons.sectionBoxReset,
       },
       {
-        id: ControlBar.elementIds.buttonSectionBoxVisible,
+        id: ControlBar.ids.buttonSectionBoxVisible,
         tip: 'Show Section Box',
         enabled: () => section.enable.get(),
         isOn: () => section.visible.get(),
@@ -68,7 +68,7 @@ export function controlBarSectionBox(
         icon: Icons.visible,
       },
       {
-        id: ControlBar.elementIds.buttonSectionBoxAuto,
+        id: ControlBar.ids.buttonSectionBoxAuto,
         tip: 'Auto Section',
         enabled: () => section.enable.get(),
         isOn: () => section.auto.get(),
@@ -77,7 +77,7 @@ export function controlBarSectionBox(
         icon: Icons.sectionBoxAuto,
       },
       {
-        id: ControlBar.elementIds.buttonSectionBoxSettings,
+        id: ControlBar.ids.buttonSectionBoxSettings,
         tip: 'Section Settings',
         enabled: () => section.enable.get(),
         isOn: () => section.showOffsetPanel.get(),
@@ -94,19 +94,19 @@ export function controlBarSectionBox(
  */
 function controlBarPointer(
   viewer: VIM.Viewer,
-  camera: ComponentCamera,
+  camera: CameraRef,
   settings: ComponentSettings,
   section: SectionBoxRef
 ): ControlBar.IControlBarSection {
   const pointer = getPointerState(viewer);
 
   return {
-    id: ControlBar.elementIds.sectionCamera,
+    id: ControlBar.ids.sectionInputs,
     enable: () => anyUiCursorButton(settings),
     style: ControlBar.sectionDefaultStyle,
     buttons: [
       {
-        id: ControlBar.elementIds.buttonCameraOrbit,
+        id: ControlBar.ids.buttonCameraOrbit,
         enabled: () => isTrue(settings.ui.orbit),
         tip: 'Orbit',
         action: () => pointer.onButton('orbit'),
@@ -115,7 +115,7 @@ function controlBarPointer(
         style: ControlBar.buttonDefaultStyle,
       },
       {
-        id: ControlBar.elementIds.buttonCameraLook,
+        id: ControlBar.ids.buttonCameraLook,
         enabled: () => isTrue(settings.ui.lookAround),
         tip: 'Look Around',
         action: () => pointer.onButton('look'),
@@ -124,7 +124,7 @@ function controlBarPointer(
         style: ControlBar.buttonDefaultStyle,
       },
       {
-        id: ControlBar.elementIds.buttonCameraPan,
+        id: ControlBar.ids.buttonCameraPan,
         enabled: () => isTrue(settings.ui.pan),
         tip: 'Pan',
         action: () => pointer.onButton('pan'),
@@ -133,7 +133,7 @@ function controlBarPointer(
         style: ControlBar.buttonDefaultStyle,
       },
       {
-        id: ControlBar.elementIds.buttonCameraZoom,
+        id: ControlBar.ids.buttonCameraZoom,
         enabled: () => isTrue(settings.ui.zoom),
         tip: 'Zoom',
         action: () => pointer.onButton('zoom'),
@@ -142,7 +142,7 @@ function controlBarPointer(
         style: ControlBar.buttonDefaultStyle,
       },
       {
-        id: ControlBar.elementIds.buttonCameraZoomWindow,
+        id: ControlBar.ids.buttonCameraZoomWindow,
         enabled: () => isTrue(settings.ui.zoomWindow),
         tip: 'Zoom Window',
         action: () => {
@@ -158,27 +158,27 @@ function controlBarPointer(
 }
 
 function controlBarActions(
-  camera: ComponentCamera,
+  camera: CameraRef,
   settings: ComponentSettings,
   isolation: Isolation,
   measure: ReturnType<typeof getMeasureState>
 ){
   return {
-    id: ControlBar.elementIds.sectionActions,
+    id: ControlBar.ids.sectionActions,
     enable: () => true,
     style: ControlBar.sectionDefaultStyle,
     buttons: [
       {
-        id: ControlBar.elementIds.buttonZoomToFit,
+        id: ControlBar.ids.buttonZoomToFit,
         enabled: () => isTrue(settings.ui.zoomToFit),
         tip: 'Zoom to Fit',
-        action: () => camera.frameContext(),
+        action: () => camera.frameSelection.call(),
         icon: Icons.frameSelection,
         isOn: () => false,
         style: ControlBar.buttonDefaultStyle,
       },
       {
-        id: ControlBar.elementIds.buttonToggleIsolation,
+        id: ControlBar.ids.buttonToggleIsolation,
         enabled: () => isTrue(settings.ui.toggleIsolation),
         tip: 'Toggle Isolation',
         action: () => isolation.toggle('controlBar'),
@@ -186,7 +186,7 @@ function controlBarActions(
         style: ControlBar.buttonDefaultStyle,
       },
       {
-        id: ControlBar.elementIds.buttonMeasure,
+        id: ControlBar.ids.buttonMeasure,
         enabled: () => isTrue(settings.ui.measuringMode),
         isOn: () => measure.active,
         tip: 'Measuring Mode',
@@ -205,12 +205,12 @@ function controlBarSettings(
   const fullScreen = getFullScreenState();
 
   return {
-    id: ControlBar.elementIds.sectionSettings,
+    id: ControlBar.ids.sectionSettings,
     enable: () => anyUiSettingButton(settings),
     style: ControlBar.sectionDefaultStyle,
     buttons: [
       {
-        id: ControlBar.elementIds.buttonProjectInspector,
+        id: ControlBar.ids.buttonProjectInspector,
         enabled: () => isTrue(settings.ui.projectInspector) && (
           isTrue(settings.ui.bimTreePanel) ||
           isTrue(settings.ui.bimInfoPanel)
@@ -221,7 +221,7 @@ function controlBarSettings(
         style: ControlBar.buttonDefaultStyle
       },
       {
-        id: ControlBar.elementIds.buttonSettings,
+        id: ControlBar.ids.buttonSettings,
         enabled: () => isTrue(settings.ui.settings),
         tip: 'Settings',
         action: () => side.toggleContent('settings'),
@@ -229,7 +229,7 @@ function controlBarSettings(
         style: ControlBar.buttonDefaultStyle
       },
       {
-        id: ControlBar.elementIds.buttonHelp,
+        id: ControlBar.ids.buttonHelp,
         enabled: () => isTrue(settings.ui.help),
         tip: 'Help',
         action: () => modal.help(true),
@@ -237,7 +237,7 @@ function controlBarSettings(
         style: ControlBar.buttonDefaultStyle
       },
       {
-        id: ControlBar.elementIds.buttonMaximize,
+        id: ControlBar.ids.buttonMaximize,
         enabled: () =>
           isTrue(settings.ui.maximise) &&
           settings.capacity.canGoFullScreen,
@@ -250,13 +250,31 @@ function controlBarSettings(
   }
 }
 
+function controlBarCamera(camera: CameraRef){
+  return {
+    id: ControlBar.ids.sectionCamera,
+    enable: () => true,
+    style: ControlBar.sectionDefaultStyle,
+    buttons: [
+      {
+        id: ControlBar.ids.buttonCameraAuto,
+        tip: 'Auto Camera',
+        isOn: () => camera.autoCamera.get(),
+        action: () => camera.autoCamera.set(!camera.autoCamera.get()),
+        icon: Icons.autoCamera,
+        style: ControlBar.buttonDefaultStyle,
+      },
+    ]
+  }
+}
+
 
 /**
  * Combines all control bar sections into one control bar.
  */
 export function useControlBar(
   viewer: VIM.Viewer,
-  camera: ComponentCamera,
+  camera: CameraRef,
   modal: ModalRef,
   side: SideState,
   isolation: Isolation,
@@ -270,11 +288,14 @@ export function useControlBar(
   const actionSection = controlBarActions(camera, settings, isolation, measure);
   const sectionBoxSection = controlBarSectionBox(section,viewer.selection.count > 0);
   const settingsSection = controlBarSettings(modal, side, settings);
+  const cameraSection = controlBarCamera(camera);
+
 
   // Apply user customization (note that pointerSection is added twice per original design)
   let controlBarSections = [
     pointerSection,
     actionSection,
+    cameraSection,
     sectionBoxSection, // Optional section
     settingsSection
   ];
