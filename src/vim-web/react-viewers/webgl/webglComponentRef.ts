@@ -6,7 +6,7 @@ import * as VIM from '../../core-viewers/webgl/index'
 import { ContextMenuCustomization } from '../panels/contextMenu'
 import { ComponentSettings } from '../settings/settings'
 import { Isolation } from '../helpers/isolation'
-import { ComponentCamera } from '../helpers/camera'
+import { CameraRef } from '../helpers/camera'
 import { Container } from '../container'
 import { BimInfoPanelRef } from '../bim/bimInfoData'
 import { ControlBarCustomization } from '../controlbar/controlBar'
@@ -126,7 +126,7 @@ export type VimComponentRef = {
   /**
    * Camera API to interact with the viewer camera at a higher level.
    */
-  camera: ComponentCamera
+  camera: CameraRef
 
   /**
    * API To interact with the BIM info panel.

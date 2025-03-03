@@ -2,90 +2,90 @@
  * @module viw-webgl-react
  */
 
+import { useEffect, useRef } from 'react'
 import { WebglViewer, THREE } from '../../index'
+import { ActionRef, StateRef, useActionRef, useStateRef } from './reactUtils'
+
+export interface CameraRef {
+  autoCamera: StateRef<boolean>
+  reset :ActionRef
+  frameSelection: ActionRef
+  frameVisibleObjects: ActionRef
+}
+
+export function useCamera(viewer: WebglViewer.Viewer){
+  const autoCamera = useStateRef(false)
+  autoCamera.useOnChange((v) => {
+    if (v) {frameSelection.call()}
+  });
+
+  useEffect(() => {
+    viewer.selection.onValueChanged.sub(() => {
+      if (autoCamera.get()) {
+        frameSelection.call()
+      }
+    })
+  },[])
+
+  const reset = useActionRef(() => viewer.camera.lerp(1).reset())
+
+  const frameSelection = useActionRef(() => {
+    if (viewer.selection.count === 0){
+      frameVisibleObjects.call()
+      return
+    }
+
+    const box = viewer.selection.getBoundingBox()
+    if(!box){
+      return
+    }
+
+    box.intersect(viewer.gizmos.sectionBox.box)
+    if(box.isEmpty()) {
+      return
+    }
+        
+    viewer.camera.lerp(1).frame(box)
+  })
+  const frameVisibleObjects = useActionRef(() => {
+    const movement = viewer.camera.lerp(1)
+
+    const box = getVisibleBoundingBox(viewer)
+    movement.frame(box)
+  })
+
+  return {
+    autoCamera,
+    reset,
+    frameSelection,
+    frameVisibleObjects
+  } as CameraRef
+}
+
 
 /**
- * Wraps the webgl viewer and provide higher level methods
+ * Returns the bounding box of all visible objects.
+ * @param source Optional VIM to specify the source of visible objects.
+ * @returns The bounding box of all visible objects.
  */
-export class ComponentCamera {
-  private _viewer: WebglViewer.Viewer
-  constructor (viewer: WebglViewer.Viewer) {
-    this._viewer = viewer
-  }
+function getVisibleBoundingBox (viewer: WebglViewer.Viewer, source?: WebglViewer.Vim) {
+  let box: THREE.Box3
 
-  /**
-   * Resets the camera to its initial position.
-   */
-  reset () {
-    this._viewer.camera.lerp(1).reset()
+  const vimBoxUnion = (vim: WebglViewer.Vim) => {
+    for (const obj of vim.getObjects()) {
+      if (!obj.visible) continue
+      const b = obj.getBoundingBox()
+      if (!b) continue
+      box = box ? box.union(b) : b?.clone()
+    }
   }
-
-  /**
-   * Frames selected elements if there is an active selection; otherwise, frames all visible objects.
-   * @param duration Optional duration of the camera movement animation (default: 1).
-   */
-  frameContext (duration = 1) {
-    if (this._viewer.selection.count > 0) {
-      this.frameSelection(duration)
-    } else {
-      this.frameVisibleObjects(undefined, duration)
+  if (source) {
+    vimBoxUnion(source)
+  } else {
+    for (const vim of viewer.vims) {
+      vimBoxUnion(vim)
     }
   }
 
-  /**
-   * Frames selected elements if there is an active selection; otherwise, does nothing.
-   * @param duration Optional duration of the camera movement animation (default: 1).
-   */
-  frameSelection (duration = 1) {
-    if (this._viewer.selection.count === 0) return
-    const box = this._viewer.selection.getBoundingBox()
-
-    if (box && this._viewer.gizmos.sectionBox.box.intersectsBox(box)) {
-      const movement = duration === 0
-        ? this._viewer.camera.snap()
-        : this._viewer.camera.lerp(duration)
-      movement.frame(box)
-    }
-  }
-
-  /**
- * Frames all visible objects in the scene.
- * @param source Optional VIM to specify the source of objects to frame.
- * @param duration Duration of the camera movement animation (default: 1).
- */
-  frameVisibleObjects (source?: WebglViewer.Vim, duration = 1) {
-    const movement = duration === 0
-      ? this._viewer.camera.snap()
-      : this._viewer.camera.lerp(duration)
-
-    const box = this.getVisibleBoundingBox(source)
-    movement.frame(box)
-  }
-
-  /**
-   * Returns the bounding box of all visible objects.
-   * @param source Optional VIM to specify the source of visible objects.
-   * @returns The bounding box of all visible objects.
-   */
-  getVisibleBoundingBox (source?: WebglViewer.Vim) {
-    let box: THREE.Box3
-
-    const vimBoxUnion = (vim: WebglViewer.Vim) => {
-      for (const obj of vim.getObjects()) {
-        if (!obj.visible) continue
-        const b = obj.getBoundingBox()
-        if (!b) continue
-        box = box ? box.union(b) : b?.clone()
-      }
-    }
-    if (source) {
-      vimBoxUnion(source)
-    } else {
-      for (const vim of this._viewer.vims) {
-        vimBoxUnion(vim)
-      }
-    }
-
-    return box
-  }
+  return box
 }

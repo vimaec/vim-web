@@ -5,6 +5,7 @@ export * as ErrorStyle from './errors/errorStyle'
 export * as Errors from './errors/errors'
 export * as Urls from './urls'
 export * as Icons from './panels/icons'
+export type { ActionRef, ArgActionRef, ArgFuncRef, AsyncFuncRef, FuncRef, StateRef} from './helpers/reactUtils'
 export type { MessageBoxProps } from './panels/messageBox'
 export * from './container'
 

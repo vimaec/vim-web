@@ -29,7 +29,7 @@ async function createComponent (div: HTMLDivElement, ref: React.MutableRefObject
   const result = await request.getResult()
   if (result.isSuccess()) {
     webgl.loader.add(result.result)
-    webgl.camera.frameVisibleObjects()
+    webgl.camera.frameVisibleObjects.call()
   }
 }
 

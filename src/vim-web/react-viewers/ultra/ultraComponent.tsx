@@ -9,7 +9,7 @@ import { Overlay } from '../panels/overlay'
 import { Modal, ModalRef, useModal } from '../panels/modal'
 import { getRequestErrorMessage } from './errors/ultraErrors'
 import { updateModal, updateProgress as modalProgress } from './ultraModal'
-import { ControlBar } from '../controlbar/controlBar'
+import { ControlBar, ControlBarCustomization } from '../controlbar/controlBar'
 import { useUltraSectionBox } from './ultraSectionBoxState'
 import { useUltraControlBar } from './ultraControlBarState'
 import { SectionBoxPanel } from '../panels/sectionBoxPanel'
@@ -17,35 +17,8 @@ import { RestOfScreen } from '../panels/restOfScreen'
 import { LogoMemo } from '../panels/logo'
 import { whenTrue } from '../helpers/utils'
 import { useSideState } from '../sidePanel/sideState'
-import { SectionBoxRef } from '../state/sectionBoxState'
-
-export type UltraComponentRef = {
-  /**
-   * The Vim viewer instance associated with the component.
-   */
-  viewer : Ultra.Viewer
-
-  /**
-   * API to manage the modal dialog.
-   */
-  modal: ModalRef
-
-  /**
-   * API to manage the section box.
-   */
-  sectionBox: SectionBoxRef
-
-  /**
-   * Disposes of the component and its resources.
-   */
-  dispose: () => void
-
-  /**
-   * Loads a file into the viewer.
-   * @param url The URL of the file to load.
-   */
-  load(url: Ultra.VimSource): Ultra.ILoadRequest
-}
+import { UltraComponentRef } from './ultraComponentRef'
+import ReactTooltip from 'react-tooltip'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.
@@ -102,16 +75,28 @@ export function UltraComponent (props: {
 
   const modal = useModal(true)
   const sectionBox = useUltraSectionBox(props.viewer)
-  const controlBar = useUltraControlBar(props.viewer, sectionBox, _ =>_)
+
   const side = useSideState(true, 400)
   const [_, setSelectState] = useState(0)
+  const [controlBarCustom, setControlBarCustom] = useState<ControlBarCustomization>(() => c => c)
+  const controlBar = useUltraControlBar(props.viewer, sectionBox, _ =>_)
+
 
   useEffect(() => {
     props.viewer.onStateChanged.subscribe(state => updateModal(modal, state))
     props.viewer.selection.onValueChanged.subscribe(() =>{
       setSelectState(i => (i+1)%2)
     } )
-    props.onMount(createComponentRef(props.viewer, modal, sectionBox))
+    props.onMount({
+      viewer: props.viewer,
+      modal,
+      sectionBox,
+      dispose: () => {},
+      controlBar: {
+        customize: (v) => setControlBarCustom(() => v)
+      },
+      load: patchLoad(props.viewer, modal)
+    })
   }, [])
 
   return <>
@@ -120,7 +105,7 @@ export function UltraComponent (props: {
     {whenTrue(true, <LogoMemo/>)}
     <Overlay canvas={props.viewer.viewport.canvas}/>
     <ControlBar
-      content={controlBar}
+      content={controlBarCustom(controlBar)}
       show={true}
     />
     <SectionBoxPanel state={sectionBox}/>
@@ -128,14 +113,18 @@ export function UltraComponent (props: {
   }}/>
   
   <Modal state={modal}/>
+  <ReactTooltip
+    multiline={true}
+    arrowColor="transparent"
+    type="light"
+    className="!vc-max-w-xs !vc-border !vc-border-solid !vc-border-gray-medium !vc-bg-white !vc-text-xs !vc-text-gray-darkest !vc-opacity-100 !vc-shadow-[2px_6px_15px_rgba(0,0,0,0.3)] !vc-transition-opacity"
+    delayShow={200}
+  />
   </>
 }
 
-
-
-function createComponentRef (viewer: Ultra.Viewer, modal: ModalRef, sectionBox: SectionBoxRef): UltraComponentRef {
-  // Load a file from the server
-  function load (source: Ultra.VimSource): Ultra.ILoadRequest {
+function patchLoad(viewer: Ultra.Viewer, modal: ModalRef) {
+  return function load (source: Ultra.VimSource): Ultra.ILoadRequest {
     const request = viewer.loadVim(source)
 
     // We don't want to block the main thread to get progress updates
@@ -155,19 +144,6 @@ function createComponentRef (viewer: Ultra.Viewer, modal: ModalRef, sectionBox: 
     )
     return request
   }
-
-  return {
-    viewer,
-    modal,
-    sectionBox,
-    dispose: () => {},
-    load,
-    
-  }
-}
-
-function patchLoad(viewer: Ultra.Viewer) {
-  
 }
 
 
