@@ -18,6 +18,7 @@ export function Overlay (props: { canvas: HTMLCanvasElement }) {
       construct: (s: string, e: Event) => Event,
       preventDefault: boolean = true
     ) => {
+      
       overlay.current?.addEventListener(evnt, (e) => {
         props.canvas.dispatchEvent(construct(evnt, e))
         if (preventDefault) {
@@ -25,7 +26,6 @@ export function Overlay (props: { canvas: HTMLCanvasElement }) {
         }
       })
     }
-
     relay('mousedown', (s, e) => new MouseEvent(s, e))
     relay('mousemove', (s, e) => new MouseEvent(s, e))
     relay('mouseup', (s, e) => new MouseEvent(s, e))

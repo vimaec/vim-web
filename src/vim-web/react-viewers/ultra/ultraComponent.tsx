@@ -19,6 +19,7 @@ import { whenTrue } from '../helpers/utils'
 import { useSideState } from '../sidePanel/sideState'
 import { UltraComponentRef } from './ultraComponentRef'
 import ReactTooltip from 'react-tooltip'
+import { useUltraCamera } from './ultraCameraState'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.
@@ -75,12 +76,12 @@ export function UltraComponent (props: {
 
   const modal = useModal(true)
   const sectionBox = useUltraSectionBox(props.viewer)
+  const camera = useUltraCamera(props.viewer)
 
   const side = useSideState(true, 400)
   const [_, setSelectState] = useState(0)
   const [controlBarCustom, setControlBarCustom] = useState<ControlBarCustomization>(() => c => c)
-  const controlBar = useUltraControlBar(props.viewer, sectionBox, _ =>_)
-
+  const controlBar = useUltraControlBar(props.viewer, sectionBox, camera, _ =>_)
 
   useEffect(() => {
     props.viewer.onStateChanged.subscribe(state => updateModal(modal, state))

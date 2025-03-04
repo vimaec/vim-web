@@ -1,4 +1,4 @@
-import { Box3, Segment } from '../utils/math3d'
+import { Box3, Segment, Vector3 } from '../utils/math3d'
 import { RpcSafeClient } from './rpcSafeClient'
 import { Vim } from './vim'
 
@@ -102,11 +102,16 @@ export class Camera implements ICamera {
    * Handles camera initialization when connection is established
    */
   onConnect(){
+    this.set(new Vector3(-1000, 1000, 1000), new Vector3(0, 0, 0), 0)
     this.restoreLastPosition()
   }
 
   onCameraPose(pose: Segment){
     this._lastPosition = pose
+  }
+
+  set(position: Vector3, target: Vector3, blendTime: number = this._defaultBlendTime){
+    this._rpc.RPCSetCameraPosition(new Segment(position, target), blendTime)
   }
 
   /**
@@ -123,6 +128,7 @@ export class Camera implements ICamera {
    * @returns Promise that resolves when the framing animation is complete
    */
   async frameAll (blendTime: number = this._defaultBlendTime): Promise<Segment | undefined> {
+    console.log('Camera.frameAll')
     const segment = await this._rpc.RPCFrameAll(blendTime)
     this._savedPosition = this._savedPosition ?? segment
     return segment
@@ -134,6 +140,7 @@ export class Camera implements ICamera {
    * @param blendTime - Duration of the camera animation in seconds (defaults to 0.5)
    */
   async frameBox(box: Box3, blendTime: number = this._defaultBlendTime) : Promise<Segment | undefined> {
+    console.log('Camera.frameAll')
     const segment = await this._rpc.RPCFrameBox(box, blendTime)
     this._savedPosition = this._savedPosition ?? segment
     return segment

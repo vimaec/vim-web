@@ -295,6 +295,8 @@ export class Camera implements ICamera {
    * @returns {CameraMovement} The camera movement api.
    */
   lerp (duration: number = 1, force: boolean = false) {
+    if(duration <= 0) return this.snap(force)
+      
     this.stop()
     this._force = force
     this._lerp.init(duration)

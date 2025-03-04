@@ -4,7 +4,7 @@
 
 import * as VIM from '../../core-viewers/webgl/index'
 import { SideState } from '../sidePanel/sideState'
-import { CameraRef } from './camera'
+import { CameraRef } from '../state/cameraState'
 import { Isolation } from './isolation'
 
 /**

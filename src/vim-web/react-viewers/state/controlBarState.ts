@@ -1,5 +1,5 @@
 import * as VIM from '../../core-viewers/webgl/index';
-import { CameraRef } from '../helpers/camera';
+import { CameraRef } from './cameraState';
 import { CursorManager } from '../helpers/cursor';
 import { Isolation } from '../helpers/isolation';
 
@@ -250,7 +250,7 @@ function controlBarSettings(
   }
 }
 
-function controlBarCamera(camera: CameraRef){
+export function controlBarCamera(camera: CameraRef){
   return {
     id: ControlBar.ids.sectionCamera,
     enable: () => true,

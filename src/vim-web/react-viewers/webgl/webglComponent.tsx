@@ -28,7 +28,7 @@ import { CursorManager } from '../helpers/cursor'
 import { PartialComponentSettings, isTrue } from '../settings/settings'
 import { useSettings } from '../settings/settingsState'
 import { Isolation } from '../helpers/isolation'
-import { useCamera } from '../helpers/camera'
+import { useCamera } from '../state/cameraState'
 import { TreeActionRef } from '../bim/bimTree'
 import { Container, createContainer } from '../container'
 import { useViewerState } from './viewerState'
@@ -41,6 +41,7 @@ import { ComponentLoader } from './webglLoading'
 import { Modal, useModal } from '../panels/modal'
 import { SectionBoxPanel } from '../panels/sectionBoxPanel'
 import { useWebglSectionBox } from './webglSectionBoxState'
+import { useWebglCamera } from './webglCameraState'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.
@@ -105,7 +106,7 @@ export function VimComponent (props: {
   const settings = useSettings(props.viewer, props.settings ?? {})
   const modal = useModal(settings.value.capacity.canFollowUrl)
 
-  const camera = useCamera(props.viewer)
+  const camera = useWebglCamera(props.viewer)
   const cursor = useMemo(() => new CursorManager(props.viewer), [])
   const loader = useRef(new ComponentLoader(props.viewer, modal))
 

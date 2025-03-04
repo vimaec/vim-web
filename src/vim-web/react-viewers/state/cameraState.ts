@@ -4,61 +4,65 @@
 
 import { useEffect, useRef } from 'react'
 import { WebglViewer, THREE } from '../../index'
-import { ActionRef, StateRef, useActionRef, useStateRef } from './reactUtils'
+import { ActionRef, AsyncFuncRef, StateRef, useActionRef, useAsyncFuncRef, useFuncRef, useStateRef } from '../helpers/reactUtils'
+import { ISignal } from 'ste-signals'
 
 export interface CameraRef {
   autoCamera: StateRef<boolean>
-  reset :ActionRef
-  frameSelection: ActionRef
-  frameVisibleObjects: ActionRef
+  reset : ActionRef
+  frameSelection: AsyncFuncRef<void>
+  frameScene: AsyncFuncRef<void>
 }
 
-export function useCamera(viewer: WebglViewer.Viewer){
+interface ICameraAdapter {
+  onSelectionChanged: ISignal
+  frameCamera: (box: THREE.Box3, duration: number) => void
+  resetCamera: (duration : number) => void
+  frameAll: (duration: number) => void
+  hasSelection: () => boolean
+  getSelectionBox: () => Promise<THREE.Box3>
+}
+
+export function useCamera(adapter: ICameraAdapter){
   const autoCamera = useStateRef(false)
   autoCamera.useOnChange((v) => {
     if (v) {frameSelection.call()}
   });
 
   useEffect(() => {
-    viewer.selection.onValueChanged.sub(() => {
+    adapter.onSelectionChanged.sub(() => {
       if (autoCamera.get()) {
         frameSelection.call()
       }
     })
   },[])
 
-  const reset = useActionRef(() => viewer.camera.lerp(1).reset())
+  const reset = useActionRef(() => adapter.resetCamera(1))
 
-  const frameSelection = useActionRef(() => {
-    if (viewer.selection.count === 0){
-      frameVisibleObjects.call()
+  const frameSelection = useAsyncFuncRef(async () => {
+    console.log('frameSelection')
+    if (!adapter.hasSelection()){
+      frameScene.call()
       return
     }
 
-    const box = viewer.selection.getBoundingBox()
+    const box = await adapter.getSelectionBox()
     if(!box){
       return
     }
 
-    box.intersect(viewer.gizmos.sectionBox.box)
-    if(box.isEmpty()) {
-      return
-    }
-        
-    viewer.camera.lerp(1).frame(box)
+    adapter.frameCamera(box, 1)
   })
-  const frameVisibleObjects = useActionRef(() => {
-    const movement = viewer.camera.lerp(1)
 
-    const box = getVisibleBoundingBox(viewer)
-    movement.frame(box)
+  const frameScene = useAsyncFuncRef(async () => {
+    adapter.frameAll(1)
   })
 
   return {
     autoCamera,
     reset,
     frameSelection,
-    frameVisibleObjects
+    frameScene
   } as CameraRef
 }
 

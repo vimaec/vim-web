@@ -11,7 +11,7 @@ import {
 import React, { useEffect, useState } from 'react'
 import { WebglViewer } from '../..'
 import { Isolation } from '../helpers/isolation'
-import { ComponentCamera } from '../helpers/camera'
+import { CameraRef } from '../state/cameraState'
 import { ArrayEquals } from '../helpers/data'
 import { TreeActionRef } from '../bim/bimTree'
 import { ModalRef } from './modal'
@@ -96,7 +96,7 @@ export const VimContextMenuMemo = React.memo(VimContextMenu)
  */
 export function VimContextMenu (props: {
   viewer: WebglViewer.Viewer
-  camera: ComponentCamera
+  camera: CameraRef
   modal: ModalRef
   isolation: Isolation
   selection: WebglViewer.Object3D[]
@@ -151,12 +151,12 @@ export function VimContextMenu (props: {
   }
 
   const onCameraResetBtn = (e: ClickCallback) => {
-    camera.reset()
+    camera.reset.call()
     e.stopPropagation()
   }
 
   const onCameraFrameBtn = (e: ClickCallback) => {
-    camera.frameContext()
+    camera.frameSelection.call()
     e.stopPropagation()
   }
 
