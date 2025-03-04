@@ -35,7 +35,6 @@ export interface SectionBoxAdapter {
   getSelectionBox: () => Promise<THREE.Box3 | undefined>;
   getRendererBox: () => Promise<THREE.Box3>;
   onSelectionChanged: ISignal;
-  onSceneChanged: ISignal;
 }
 
 export function useSectionBox(
@@ -88,6 +87,7 @@ export function useSectionBox(
 
   // Register the selection change event for auto section.
   useEffect(() => {
+    adapter.setVisible(false);
     return adapter.onSelectionChanged.sub(() => {
       if(auto.get() && enable.get()) sectionSelection.call()
     })

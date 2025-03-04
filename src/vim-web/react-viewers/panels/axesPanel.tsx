@@ -5,7 +5,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import * as VIM from '../../core-viewers/webgl/index'
 import * as Icons from './icons'
-import { ComponentCamera } from '../helpers/camera'
+import { CameraRef } from '../state/cameraState'
 import { anyUiAxesButton, isTrue } from '../settings/settings'
 import { SettingsState } from '../settings/settingsState'
 import { whenAllTrue, whenTrue } from '../helpers/utils'
@@ -18,7 +18,7 @@ export const AxesPanelMemo = React.memo(AxesPanel)
 /**
  * JSX Component for axes gizmo.
  */
-function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settings: SettingsState }) {
+function AxesPanel (props: { viewer: VIM.Viewer, camera: CameraRef, settings: SettingsState }) {
   const viewer = props.viewer
 
   const [ortho, setOrtho] = useState<boolean>(viewer.camera.orthographic)
@@ -63,7 +63,7 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: ComponentCamera, settin
   }
 
   const onHomeBtn = () => {
-    props.camera.reset()
+    props.camera.reset.call()
   }
 
   const btnStyle =

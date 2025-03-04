@@ -5,6 +5,7 @@ import { useSectionBox, SectionBoxAdapter, SectionBoxRef } from '../state/sectio
 export function useUltraSectionBox(viewer: Ultra.Viewer): SectionBoxRef {
   const ultraAdapter: SectionBoxAdapter = {
     setVisible: (b) => {
+      console.log('SetVisible!', b)
       viewer.sectionBox.visible = b;
       viewer.sectionBox.interactive = b;
     },
@@ -13,7 +14,6 @@ export function useUltraSectionBox(viewer: Ultra.Viewer): SectionBoxRef {
     getSelectionBox: () => viewer.selection.getBoundingBox(),
     getRendererBox: () => viewer.renderer.getBoundingBox(),
     onSelectionChanged: viewer.selection.onValueChanged,
-    onSceneChanged: viewer.vims.onChanged,
   };
   return useSectionBox(ultraAdapter);
 }

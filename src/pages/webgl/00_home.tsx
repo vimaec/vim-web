@@ -23,13 +23,13 @@ async function createComponent (div: HTMLDivElement, ref: React.MutableRefObject
 
   const url = getPathFromUrl() ?? Urls.residence
   const request = webgl.loader.request(
-    { url }
+    { url:'./residence.vim' }
   )
 
   const result = await request.getResult()
   if (result.isSuccess()) {
     webgl.loader.add(result.result)
-    webgl.camera.frameVisibleObjects.call()
+    webgl.camera.frameScene.call()
   }
 }
 

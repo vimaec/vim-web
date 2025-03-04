@@ -28,7 +28,7 @@ export class CameraLerp extends CameraMovement {
 
   init (duration: number) {
     this.cancel()
-    this._duration = duration
+    this._duration = Math.max(duration,0.01)
     this._clock.start()
   }
 
