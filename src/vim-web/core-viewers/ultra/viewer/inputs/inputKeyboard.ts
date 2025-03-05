@@ -62,17 +62,21 @@ export class InputKeyboard extends InputHandler {
     switch (event.key) {
       case 'Escape':
         this._selection.clear();
+        event.preventDefault()
       break
       case 'f':
         this.frameContext();
+        event.preventDefault()
       break
       case 'Home':
         this._camera.restoreSavedPosition();
+        event.preventDefault()
       break
       case ' ':
         this._inputs.mode = this._inputs.mode === InputMode.Orbit
           ? InputMode.Free
           : InputMode.Orbit
+        event.preventDefault()
       break
     }
   }
