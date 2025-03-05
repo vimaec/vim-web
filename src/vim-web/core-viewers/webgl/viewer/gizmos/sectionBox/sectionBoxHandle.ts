@@ -12,6 +12,8 @@ export class SectionBoxHandle extends THREE.Mesh {
   private _highlightColor: THREE.Color;
   
   private _materials: THREE.MeshBasicMaterial[];
+
+  private _camera : ICamera | undefined
   private _camSub : () => void
 
   constructor(axes: Axis, sign: number, size: number, color?: THREE.Color) {
@@ -51,16 +53,20 @@ export class SectionBoxHandle extends THREE.Mesh {
   }
 
   trackCamera(camera: ICamera) {
-    const rescale = () => {
-      const size = camera.frustrumSizeAt(this.position);
-      this.scale.set(size.x * 0.003, size.x * 0.003, size.x * 0.003);
-    }
-    this._camSub = camera.onMoved.subscribe(() => rescale());
-    rescale();
+    this._camera = camera
+    this.update()
+    this._camSub = camera.onMoved.subscribe(() => this.update());
+  }
+
+  update(){
+    if(!this._camera) return;
+    const size = this._camera.frustrumSizeAt(this.position);
+    this.scale.set(size.x * 0.003, size.x * 0.003, size.x * 0.003);
   }
 
   setPosition(position: THREE.Vector3) {
     this.position.copy(position);
+    this.update();
   }
 
   get forward() {
