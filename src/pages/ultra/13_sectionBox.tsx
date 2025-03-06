@@ -8,7 +8,7 @@ export function UltraSectionBox() {
   const div = useRef(null)
   const ref = useRef<UltraReact.UltraComponentRef>()
   const [visible, setVisible] = useState(false)
-  const [interactible, setInteractible] = useState(false)
+  const [interactive, setInteractive] = useState(false)
   const [clip, setClip] = useState(false)
   const [box, setBox] = useState({ min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } })
 
@@ -31,7 +31,7 @@ export function UltraSectionBox() {
     ref.current = ultra;
     ultra.viewer.sectionBox.onUpdate.subscribe(() => {
       setVisible(ultra.viewer.sectionBox.visible);
-      setInteractible(ultra.viewer.sectionBox.interactive);
+      setInteractive(ultra.viewer.sectionBox.interactive);
       setClip(ultra.viewer.sectionBox.clip);
       setBox(ultra.viewer.sectionBox.getBox());
     });
@@ -42,7 +42,7 @@ export function UltraSectionBox() {
       <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000, background: 'white', padding: '10px', borderRadius: '5px' }}>
         <Checkbox label='Visible' checked={visible} onChange={(value) => { setVisible(value); if (ref.current) ref.current.viewer.sectionBox.visible = value; }} />
         <br />
-        <Checkbox label='Interactible' checked={interactible} onChange={(value) => { setInteractible(value); if (ref.current) ref.current.viewer.sectionBox.interactive = value; }} />
+        <Checkbox label='Interactible' checked={interactive} onChange={(value) => { setInteractive(value); if (ref.current) ref.current.viewer.sectionBox.interactive = value; }} />
         <br />
         <Checkbox label='Clip' checked={clip} onChange={(value) => { setClip(value); if (ref.current) ref.current.viewer.sectionBox.clip = value; }} />
         <br />

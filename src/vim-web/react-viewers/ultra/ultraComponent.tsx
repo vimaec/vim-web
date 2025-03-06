@@ -92,6 +92,7 @@ export function UltraComponent (props: {
       viewer: props.viewer,
       modal,
       sectionBox,
+      camera,
       dispose: () => {},
       controlBar: {
         customize: (v) => setControlBarCustom(() => v)

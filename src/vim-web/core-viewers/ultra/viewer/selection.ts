@@ -89,7 +89,7 @@ export class ViewerSelection implements IViewerSelection {
    * @param node - A single node index or array of node indices to select.
    */
   public select(vim: Vim, node: number | number[]) {
-    this.clear()
+    this._clear()
     this.add(vim, node);
   }
 
@@ -179,6 +179,14 @@ export class ViewerSelection implements IViewerSelection {
    */
   public clear(vim?: Vim) {
     // Unhighlight all selected nodes
+    const changed = this._clear(vim);
+
+    if(changed){
+      this._onValueChanged.dispatch();
+    }
+  }
+
+  private _clear(vim?: Vim) {
     let changed = false
     this._selectedNodes.forEach((nodes, v) => {
       if(vim === undefined || v === vim){
@@ -189,10 +197,7 @@ export class ViewerSelection implements IViewerSelection {
 
     // Clear the selection map
     this._selectedNodes.clear();
-
-    if(changed){
-      this._onValueChanged.dispatch();
-    }
+    return changed
   }
 
   /**
@@ -216,7 +221,6 @@ export class ViewerSelection implements IViewerSelection {
    * Should be called when the selection manager is no longer needed.
    */
   public dispose() {
-    this.clear();
-    this._selectedNodes = new Map(); // Clear references
+    this._clear();
   }
 }

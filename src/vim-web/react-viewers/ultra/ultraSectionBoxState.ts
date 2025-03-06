@@ -8,6 +8,7 @@ export function useUltraSectionBox(viewer: Ultra.Viewer): SectionBoxRef {
       console.log('SetVisible!', b)
       viewer.sectionBox.visible = b;
       viewer.sectionBox.interactive = b;
+      viewer.sectionBox.clip = b;
     },
     getBox: () => viewer.sectionBox.getBox().clone(),
     fitBox: (box) => viewer.sectionBox.fitBox(box),
