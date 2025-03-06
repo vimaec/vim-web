@@ -1,5 +1,6 @@
 import * as Ultra from '../../core-viewers/ultra';
 import { ModalRef } from '../panels/modal';
+import { CameraRef } from '../state/cameraState';
 import { SectionBoxRef } from '../state/sectionBoxState';
 
 // TODO: Don't depend on the webgl component
@@ -26,6 +27,12 @@ export type UltraComponentRef = {
    * API to customize the control.
    */
   controlBar: ControlBarRef
+
+  /**
+   * Camera API to interact with the viewer camera at a higher level.
+   */
+  camera: CameraRef
+
 
   /**
    * Disposes of the component and its resources.

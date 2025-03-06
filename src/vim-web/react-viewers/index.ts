@@ -8,4 +8,7 @@ export * as Icons from './panels/icons'
 export type { ActionRef, ArgActionRef, ArgFuncRef, AsyncFuncRef, FuncRef, StateRef} from './helpers/reactUtils'
 export type { MessageBoxProps } from './panels/messageBox'
 export * from './container'
+export { type CameraRef } from './state/cameraState'
+export { type SectionBoxRef } from './state/sectionBoxState'
+export * as ControlBar from './controlbar/controlBar'
 

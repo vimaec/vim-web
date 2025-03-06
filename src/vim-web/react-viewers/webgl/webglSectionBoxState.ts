@@ -7,6 +7,7 @@ export function useWebglSectionBox(viewer: VIM.Viewer): SectionBoxRef {
     setVisible: (b) => {
       viewer.gizmos.sectionBox.visible = b;
       viewer.gizmos.sectionBox.interactive = b;
+      viewer.gizmos.sectionBox.clip = b;
     },
     getBox: () => viewer.gizmos.sectionBox.box.clone(),
     fitBox: (box) => viewer.gizmos.sectionBox.fitBox(box),
@@ -15,6 +16,5 @@ export function useWebglSectionBox(viewer: VIM.Viewer): SectionBoxRef {
     getRendererBox: () => Promise.resolve(viewer.renderer.getBoundingBox()),
     onSelectionChanged: viewer.selection.onValueChanged,
   };
-  viewer.gizmos.sectionBox.clip = true
   return useSectionBox(vimAdapter);
 }

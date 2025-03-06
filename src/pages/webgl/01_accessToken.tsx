@@ -21,7 +21,7 @@ async function createComponent (div: HTMLDivElement, url: string, token: string)
   const result = await request.getResult()
   if (result.isSuccess()) {
     webgl.loader.add(result.result)
-    webgl.camera.frameScene()
+    webgl.camera.frameScene.call()
   }
   return webgl
 }
