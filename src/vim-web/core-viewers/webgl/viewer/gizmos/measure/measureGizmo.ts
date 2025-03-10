@@ -312,7 +312,6 @@ export class MeasureGizmo {
    * Disposes all resources.
    */
   dispose () {
-    console.log('dispose')
     if (this._animId !== undefined) cancelAnimationFrame(this._animId)
 
     this._html.div.remove()
