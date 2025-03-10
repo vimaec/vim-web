@@ -11,6 +11,7 @@ export interface IViewerSelection {
   add(vim: Vim, node: number | number[]): void;
   remove(vim: Vim, node: number | number[]): void;
   clear(vim?: Vim): void;
+  get() : ReadonlyMap<Vim, ReadonlySet<number>>;
 }
 
 /**
@@ -40,6 +41,9 @@ export class ViewerSelection implements IViewerSelection {
     return this._onValueChanged.asEvent();
   }
 
+  get(){
+    return this._selectedNodes as ReadonlyMap<Vim, ReadonlySet<number>>;
+  }
 
   /**
    * Creates a new ViewerSelection instance.

@@ -4,10 +4,12 @@ import {SectionBoxAdapter, SectionBoxRef, useSectionBox } from '../state/section
 
 export function useWebglSectionBox(viewer: VIM.Viewer): SectionBoxRef {
   const vimAdapter: SectionBoxAdapter = {
+    setClip: (b) => {
+      viewer.gizmos.sectionBox.clip = b;
+    },
     setVisible: (b) => {
       viewer.gizmos.sectionBox.visible = b;
       viewer.gizmos.sectionBox.interactive = b;
-      viewer.gizmos.sectionBox.clip = b;
     },
     getBox: () => viewer.gizmos.sectionBox.box.clone(),
     fitBox: (box) => viewer.gizmos.sectionBox.fitBox(box),
