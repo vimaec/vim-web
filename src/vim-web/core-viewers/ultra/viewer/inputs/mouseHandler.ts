@@ -4,6 +4,10 @@ import { RpcSafeClient } from "../rpcSafeClient";
 import { ViewerSelection } from "../selection";
 import { ICamera } from "../camera";
 
+/**
+ * The point of this class is to only capture the pointer when the drag starts instead of on pointerdown.
+ * This is because capturing the pointer on pointerdown prevents double click events from firing.
+ */
 class CaptureStateMachine {
   private _canvas : HTMLCanvasElement
   private state : 'none' | 'capture' | 'captured'
@@ -41,7 +45,7 @@ class CaptureStateMachine {
 }
 
 // Existing InputsMouse class (from previous refactoring)
-export class InputMouse extends InputHandler {
+export class MouseHandler extends InputHandler {
   private readonly _rpc: RpcSafeClient;
   private readonly _canvas: HTMLCanvasElement;
   private _lastMouseDownPosition = new Vector2(0,0);

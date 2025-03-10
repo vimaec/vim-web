@@ -1,6 +1,6 @@
-import { InputMouse } from './inputMouse'
-import { InputTouch } from './InputTouch'
-import { InputKeyboard } from './inputKeyboard'
+import { MouseHandler } from './mouseHandler'
+import { TouchHandler } from './touchHandler'
+import { KeyboardHandler } from './keyboardHandler'
 import { InputMode, RpcSafeClient } from '../rpcSafeClient'
 import { InputHandler } from './inputHandler'
 import { ViewerSelection } from '../selection'
@@ -15,9 +15,9 @@ export interface IInputs {
 export class Inputs extends InputHandler implements IInputs {
   private readonly _rpc: RpcSafeClient
   private readonly _canvas: HTMLCanvasElement
-  private _inputsMouse: InputMouse
-  private _inputsTouch: InputTouch
-  private _keyboard: InputKeyboard
+  private _inputsMouse: MouseHandler
+  private _inputsTouch: TouchHandler
+  private _keyboard: KeyboardHandler
   private _renderer: IRenderer
 
   private _moveSpeed : number = 20
@@ -29,9 +29,9 @@ export class Inputs extends InputHandler implements IInputs {
     this._rpc = rpc
     this._renderer = renderer
     // Initialize InputsMouse and InputsTouch instances
-    this._inputsMouse = new InputMouse(this._canvas, this._rpc, selection, camera)
-    this._inputsTouch = new InputTouch(this._canvas, this._rpc)
-    this._keyboard = new InputKeyboard(this._rpc, selection, camera, this)
+    this._inputsMouse = new MouseHandler(this._canvas, this._rpc, selection, camera)
+    this._inputsTouch = new TouchHandler(this._canvas, this._rpc)
+    this._keyboard = new KeyboardHandler(this._rpc, selection, camera, this)
   }
 
   onConnect(){
