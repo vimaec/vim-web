@@ -20,7 +20,7 @@ export const gitRoot = 'https://github.com/vimaec/vim-web/tree/main/src/pages/ul
 export const ultraPages = [
   { path: '/ultra', page: gitRoot+'/00_home.tsx', component: <UltraHome /> },
   { path: '/ultra/accessToken', page: gitRoot+'/00a_accessToken.tsx', component: <UltraAccessToken /> },
-  { path: '/ultra/connectionRrror', page: gitRoot+'/01_connectionError.tsx', component: <UltraConnectionError /> },
+  { path: '/ultra/connectionError', page: gitRoot+'/01_connectionError.tsx', component: <UltraConnectionError /> },
   { path: '/ultra/downloadError', page: gitRoot+'/02_downloadError.tsx', component: <UltraDownloadError /> },
   { path: '/ultra/openError', page: gitRoot+'/03_openError.tsx', component: <UltraOpenError /> },
   { path: '/ultra/loadError', page: gitRoot+'/04_loadError.tsx', component: <UltraLoadError /> },
