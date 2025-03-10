@@ -128,7 +128,6 @@ export class Camera implements ICamera {
    * @returns Promise that resolves when the framing animation is complete
    */
   async frameAll (blendTime: number = this._defaultBlendTime): Promise<Segment | undefined> {
-    console.log('Camera.frameAll')
     const segment = await this._rpc.RPCFrameAll(blendTime)
     this._savedPosition = this._savedPosition ?? segment
     return segment
@@ -140,7 +139,6 @@ export class Camera implements ICamera {
    * @param blendTime - Duration of the camera animation in seconds (defaults to 0.5)
    */
   async frameBox(box: Box3, blendTime: number = this._defaultBlendTime) : Promise<Segment | undefined> {
-    console.log('Camera.frameAll')
     const segment = await this._rpc.RPCFrameBox(box, blendTime)
     this._savedPosition = this._savedPosition ?? segment
     return segment

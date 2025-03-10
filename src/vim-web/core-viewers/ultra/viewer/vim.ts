@@ -233,15 +233,28 @@ export class Vim {
    * @param nodes - The nodes to remove the highlight from.
    * @param fallback - The state to revert the nodes to.
    */
-  public removeHighlight(nodes: number[], fallback: NodeState): void {
+  public removeHighlight(nodes: number[] | 'all', fallback: NodeState): void {
     const toUpdate: number[] = [];
-    for (const node of nodes) {
-      const state = this._nodeStates.get(node);
-      if (state === 'highlighted') {
-        this._nodeStates.set(node, fallback);
-        toUpdate.push(node);
+
+    if (nodes === 'all') {
+      // Remove all highlighted nodes
+      for (const [node, state] of this._nodeStates.entries()) {
+        if (state === 'highlighted') {
+          this._nodeStates.set(node, fallback);
+          toUpdate.push(node);
+        }
+      }
+    } else{
+      // Remove highlighted nodes in the given list
+      for (const node of nodes) {
+        const state = this._nodeStates.get(node);
+        if (state === 'highlighted') {
+          this._nodeStates.set(node, fallback);
+          toUpdate.push(node);
+        }
       }
     }
+
     if (toUpdate.length > 0) {
       this.scheduleNodeStateChange(toUpdate, fallback);
     }

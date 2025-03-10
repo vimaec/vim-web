@@ -29,6 +29,7 @@ export interface SectionBoxRef {
 }
 
 export interface SectionBoxAdapter {
+  setClip : (b: boolean) => void;
   setVisible: (visible: boolean) => void;
   getBox: () => THREE.Box3;
   fitBox: (box: THREE.Box3) => void;
@@ -51,6 +52,15 @@ export function useSectionBox(
 
   // The reference box on which the offsets are applied.
   const boxRef = useRef<THREE.Box3>(adapter.getBox());
+
+  // One Time Setup
+  useEffect(() => {
+    adapter.setClip(true);
+    adapter.setVisible(false);
+    return adapter.onSelectionChanged.sub(() => {
+      if(auto.get() && enable.get()) sectionSelection.call()
+    })
+  }, []);
 
   // Reset everything when the enable state changes.
   enable.useOnChange((v) => {
@@ -85,13 +95,7 @@ export function useSectionBox(
   // Show/Hide the section box on visible change.
   visible.useOnChange((v) => adapter.setVisible(v));
 
-  // Register the selection change event for auto section.
-  useEffect(() => {
-    adapter.setVisible(false);
-    return adapter.onSelectionChanged.sub(() => {
-      if(auto.get() && enable.get()) sectionSelection.call()
-    })
-  }, []);
+
 
   // Update the box by combining the base box and the computed offsets.
   const section = useArgActionRef((baseBox: THREE.Box3) => {
