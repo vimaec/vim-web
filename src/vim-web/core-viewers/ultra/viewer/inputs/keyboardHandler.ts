@@ -20,7 +20,7 @@ const serverKeys = new Set([
 ])
 
 // New InputsKeyboard class containing all keyboard-related code
-export class InputKeyboard extends InputHandler {
+export class KeyboardHandler extends InputHandler {
   private readonly _rpc: RpcSafeClient;
   private readonly _selection: ViewerSelection
   private _camera: ICamera;

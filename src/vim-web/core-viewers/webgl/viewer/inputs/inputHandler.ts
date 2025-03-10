@@ -5,6 +5,7 @@
 import { Viewer } from '../viewer'
 
 /**
+ * TODO: Use the same code for ULTRA and webgl.
  * Base class for various input handlers.
  * It provides convenience to register to and unregister from events.
  */
