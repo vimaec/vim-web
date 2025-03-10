@@ -61,7 +61,6 @@ export class Viewport {
    * Cleans up resources by removing resize observer and clearing timeouts
    */
   dispose() {
-    console.log('Disposing Viewport')
     this._clearTimeout()
     this._observer.disconnect()
   }

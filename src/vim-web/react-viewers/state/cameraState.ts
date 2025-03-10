@@ -40,7 +40,6 @@ export function useCamera(adapter: ICameraAdapter){
   const reset = useActionRef(() => adapter.resetCamera(1))
 
   const frameSelection = useAsyncFuncRef(async () => {
-    console.log('frameSelection')
     if (!adapter.hasSelection()){
       frameScene.call()
       return

@@ -328,7 +328,6 @@ export class MouseHandler extends InputHandler {
   }
 
   private onDoubleClick = (event: MouseEvent) => {
-    console.log('Double click')
     event.stopImmediatePropagation()
     this.onMouseClick(
       new THREE.Vector2(event.offsetX, event.offsetY),
