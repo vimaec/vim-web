@@ -15,7 +15,7 @@ export function getErrorMessage (state: Ultra.ClientState) {
   }
 }
 
-export function getRequestErrorMessage (source: Ultra.VimSource, error: Ultra.VimRequestErrorType) {
+export function getRequestErrorMessage (serverUrl: string, source: Ultra.VimSource, error: Ultra.VimRequestErrorType, ) {
   console.log(error)
   switch (error) {
     case 'loadingError':
@@ -23,7 +23,7 @@ export function getRequestErrorMessage (source: Ultra.VimSource, error: Ultra.Vi
     case 'downloadingError':
     case 'unknown':
     case 'cancelled':
-      return Errors.serverFileDownloadingError(source.url)
+      return Errors.serverFileDownloadingError(source.url, source.authToken, serverUrl)
     case 'serverDisconnected':
       return Errors.serverConnectionError(source.url)
   }
