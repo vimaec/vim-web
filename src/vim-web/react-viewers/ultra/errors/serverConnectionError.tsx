@@ -23,7 +23,7 @@ function body (url: string, local: boolean): JSX.Element {
       {style.subTitle('Troubleshooting tips:')}
       {style.numList([<>
         Ensure that VIM Ultra{' '}
-        {style.link(Urls.support, 'process is running')}{' '}
+        {style.link(Urls.supportUltra, 'process is running')}{' '}
         at {style.detailText(url)}
       </>,
       'Check your internet connection.',

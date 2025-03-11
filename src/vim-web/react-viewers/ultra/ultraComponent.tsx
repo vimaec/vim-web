@@ -136,7 +136,7 @@ function patchLoad(viewer: Ultra.Viewer, modal: ModalRef) {
     void request.getResult().then(
       result => {
         if (result.isError) {
-          modal.message(getRequestErrorMessage(source, result.error))
+          modal.message(getRequestErrorMessage(viewer.serverUrl, source, result.error))
           return
         }
         if (result.isSuccess) {

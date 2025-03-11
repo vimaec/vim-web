@@ -12,13 +12,13 @@ export function serverFileDownloadingError (url : string, authToken?: string, se
 
   return {
     title: 'File Downloading Error',
-    body: body(server, authToken, server),
+    body: body(url, authToken, server),
     footer: style.footer(Urls.support),
     canClose: false
   }
 }
 
-function body (url : string, server: string, authToken?: string): JSX.Element {
+function body (url : string, authToken?: string, server?: string): JSX.Element {
   return (
     <div className={style.vcRoboto}>
       {style.mainText(<>

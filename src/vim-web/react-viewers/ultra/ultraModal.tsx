@@ -1,5 +1,5 @@
 import { ModalRef } from "../panels/modal"
-import { getErrorMessage, getRequestErrorMessage } from './errors/ultraErrors'
+import { getErrorMessage } from './errors/ultraErrors'
 import * as Ultra from '../../core-viewers/ultra/index'
 
 export function updateModal (modal: ModalRef, state: Ultra.ClientState) {
