@@ -4,9 +4,9 @@ import { RpcSafeClient } from "./rpcSafeClient"
 
 export class SectionBox {
 
-  private _visible: boolean = true
-  private _interactible: boolean = true
-  private _clip: boolean = true
+  private _visible: boolean = false
+  private _interactible: boolean = false
+  private _clip: boolean = false
   private _box : Box3 = new Box3()
   private _rpc: RpcSafeClient
   
