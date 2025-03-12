@@ -55,8 +55,8 @@ export function useSectionBox(
 
   // One Time Setup
   useEffect(() => {
-    adapter.setClip(true);
     adapter.setVisible(false);
+    adapter.setClip(false);
     return adapter.onSelectionChanged.sub(() => {
       if(auto.get() && enable.get()) sectionSelection.call()
     })
@@ -64,6 +64,7 @@ export function useSectionBox(
 
   // Reset everything when the enable state changes.
   enable.useOnChange((v) => {
+    adapter.setClip(v);
     visible.set(v);
     showOffsetPanel.set(false)
     
