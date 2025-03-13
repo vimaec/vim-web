@@ -246,7 +246,7 @@ export class Camera implements ICamera {
 
   set defaultForward (value: THREE.Vector3) {
     if (value.x === 0 && value.y === 0 && value.z === 0) {
-      this._defaultForward.set(1, -1, 1).normalize()
+      this._defaultForward.set(1, -1, -1).normalize()
     } else {
       this._defaultForward.copy(value).normalize()
     }
@@ -258,6 +258,8 @@ export class Camera implements ICamera {
 
   constructor (scene: RenderScene, viewport: Viewport, settings: ViewerSettings) {
     this.camPerspective = new PerspectiveWrapper(new THREE.PerspectiveCamera())
+    this.camPerspective.camera.up = new THREE.Vector3(0, 0, 1)
+    this.camPerspective.camera.lookAt(new THREE.Vector3(0, 1, 0))
 
     this.camOrthographic = new OrthographicWrapper(
       new THREE.OrthographicCamera()
@@ -293,6 +295,8 @@ export class Camera implements ICamera {
    * @returns {CameraMovement} The camera movement api.
    */
   lerp (duration: number = 1, force: boolean = false) {
+    if(duration <= 0) return this.snap(force)
+      
     this.stop()
     this._force = force
     this._lerp.init(duration)

@@ -110,6 +110,16 @@
 }
 
 @container (width > 0px){
+  .vim-sectionbox-offsets .vc-text-xs{
+    font-size: min(5.5cqmin, 0.8rem);
+    line-height: min(6.5cqmin, 1rem);
+  }
+
+  .vim-sectionbox-offsets .vim-sectionbox-offsets-entry{
+    margin-top: min(3.0cqmin, 0.5rem);
+    margin-bottom: min(3.0cqmin, 0.5rem);
+  }
+
   .vim-message-box .vc-text-xs{
     font-size: min(5.5cqmin, 0.8rem);
     line-height: min(6.5cqmin, 1rem);

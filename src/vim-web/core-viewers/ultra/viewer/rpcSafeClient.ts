@@ -1,5 +1,5 @@
 import { Box3, RGBA, RGBA32, Segment, Vector2, Vector3 } from "../utils/math3d"
-import { HitCheckResult } from "./marshal"
+import { HitCheckResult, SectionBoxState } from "./marshal"
 import { MaterialHandle, RpcClient } from "./rpcClient"
 import { Validation } from "../utils/validation"
 import { batchArray, batchArrays } from "../utils/array"
@@ -114,6 +114,13 @@ export class RpcSafeClient {
 
   RPCLockIblRotation(lock: boolean): void {
     this.rpc.RPCLockIblRotation(lock)
+  }
+
+  RPCGetSceneAABB(): Promise<Box3 | undefined> {
+    return this.safeCall(
+      () => this.rpc.RPCGetSceneAABB(),
+      undefined
+    )
   }
 
   /*******************************************************************************
@@ -288,6 +295,26 @@ export class RpcSafeClient {
   }
 
   /*******************************************************************************
+   * SECTION BOX METHODS
+   * Methods for controlling section box visibility and position.
+   ******************************************************************************/
+  
+  RPCEnableSectionBox(enable: boolean): void {
+    this.rpc.RPCEnableSectionBox(enable)
+  }
+
+  RPCSetSectionBox(state: SectionBoxState): void {
+    this.rpc.RPCSetSectionBox(state)
+  }
+
+  async RPCGetSectionBox(): Promise<SectionBoxState | undefined> {
+    return await this.safeCall(
+      () => this.rpc.RPCGetSectionBox(),
+      undefined
+    )
+  }
+
+  /*******************************************************************************
    * CAMERA AND VIEW METHODS
    * Methods for controlling camera position, movement, framing, and view settings.
    ******************************************************************************/
@@ -316,6 +343,13 @@ export class RpcSafeClient {
 
     // Run
     this.rpc.RPCSetCameraPosition(segment, blendTime)
+  }
+
+  async RPCGetBoundingBoxAll(componentHandle: number){
+    return await this.safeCall(
+      () => this.rpc.RPCGetBoundingBoxAll(componentHandle),
+      undefined
+    )
   }
 
   /**

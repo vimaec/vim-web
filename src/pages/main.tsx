@@ -1,10 +1,8 @@
-import React from 'react'
 import { BrowserRouter, Route, Routes, useNavigate, Navigate } from 'react-router-dom'
 import { createRoot } from 'react-dom/client'
 
 import { ultraPages } from './ultra/ultraPageIndex'
 import { webglPages } from './webgl/webglPageIndex'
-
 
 
 function findPage (path: string) {

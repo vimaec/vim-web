@@ -232,6 +232,7 @@ export class Selection {
   private clearOnNewVim (vim: Vim) {
     if (this._vim) {
       if (this._vim !== vim) {
+        // TODO: Support multi vim selection, use same Selection Code as for Ultra
         console.log('Cross vim selection. Clearing selection.')
         this._objects.clear()
         this._vim = vim

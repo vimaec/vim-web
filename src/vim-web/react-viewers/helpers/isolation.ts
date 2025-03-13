@@ -1,6 +1,6 @@
 import * as VIM from '../../core-viewers/webgl/index'
 import { ComponentSettings } from '../settings/settings'
-import { ComponentCamera } from './camera'
+import { CameraRef } from '../state/cameraState'
 import { SimpleEventDispatcher, ISimpleEvent } from 'ste-simple-events'
 
 //TODO Isolation.enable should hide buttons and shortcuts
@@ -16,7 +16,7 @@ export class Isolation {
   private _viewer: VIM.Viewer
   private _settings: ComponentSettings
   private _isolation: VIM.Object3D[] = []
-  private _camera: ComponentCamera
+  private _camera: CameraRef
 
   private _onChanged = new SimpleEventDispatcher<string>()
 
@@ -40,7 +40,7 @@ export class Isolation {
    * @param camera - A component that handles camera control and framing.
    * @param settings - The settings that control isolation and material usage.
    */
-  constructor(viewer: VIM.Viewer, camera: ComponentCamera, settings: ComponentSettings) {
+  constructor(viewer: VIM.Viewer, camera: CameraRef, settings: ComponentSettings) {
     this._viewer = viewer
     this._camera = camera
     this.applySettings(settings)
@@ -89,7 +89,7 @@ export class Isolation {
     if(!this._settings.isolation.enable) return
     this._isolation = objects ?? []
     this._apply(source)
-    this._camera.frameVisibleObjects()
+    this._camera.frameScene.call()
   }
 
   /**
@@ -105,7 +105,7 @@ export class Isolation {
     if(!this._settings.isolation.enable) return
     this._isolation = [...this._viewer.selection.objects].filter(o => o.type === 'Object3D')
     this._apply(source)
-    this._camera.frameVisibleObjects()
+    this._camera.frameScene.call()
     this._viewer.selection.clear()
   }
 
