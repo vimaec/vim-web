@@ -1,3 +1,4 @@
+import { ISignal, SignalDispatcher } from "ste-signals";
 import { Vim } from "./vim";
 
 export interface IReadonlyVimCollection {
@@ -5,10 +6,15 @@ export interface IReadonlyVimCollection {
   getAll(): ReadonlyArray<Vim>;
   getAt(index: number): Vim | undefined
   count: number;
+  onChanged: ISignal;
 }
 
 export class VimCollection implements IReadonlyVimCollection {
   private _vims: Vim[];
+  private _onChanged = new SignalDispatcher();
+  get onChanged() {
+    return this._onChanged.asEvent();
+  } 
 
   constructor() {
     this._vims = [];
@@ -26,6 +32,7 @@ export class VimCollection implements IReadonlyVimCollection {
     // Check if the Vim is already in the collection to prevent duplicates
     if (!this._vims.some(v => v.handle === vim.handle)) {
       this._vims.push(vim);
+      this._onChanged.dispatch();
     }
   }
 
@@ -34,7 +41,11 @@ export class VimCollection implements IReadonlyVimCollection {
    * @param vim - The Vim instance to remove.
    */
   public remove(vim: Vim): void {
+    const count = this._vims.length;
     this._vims = this._vims.filter(v => v.handle !== vim.handle);
+    if (this._vims.length !== count) {
+      this._onChanged.dispatch();
+    }
   }
 
   /**

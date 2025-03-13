@@ -2,7 +2,7 @@ import { Vector2 } from "../../utils/math3d";
 import { InputHandler } from "./inputHandler";
 import { RpcSafeClient } from "../rpcSafeClient";
 
-export class InputTouch extends InputHandler {
+export class TouchHandler extends InputHandler {
   private readonly _rpc: RpcSafeClient;
   private readonly _canvas: HTMLCanvasElement;
   private _lastTouchStartPosition = new Vector2(0, 0);

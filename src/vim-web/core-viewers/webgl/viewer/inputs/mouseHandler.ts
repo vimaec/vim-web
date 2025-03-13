@@ -285,11 +285,13 @@ export class MouseHandler extends InputHandler {
 
   private onMouseUp = (event: MouseEvent) => {
     event.stopImmediatePropagation()
+    event.preventDefault()
+    
     const btn = this.getButton(event)
     if (btn === this._buttonDown) return // the active button is still down.
 
     this._viewer.gizmos.rectangle.visible = false
-    event.preventDefault()
+
     if (!this._buttonDown) return
 
     if (

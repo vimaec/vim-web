@@ -8,7 +8,7 @@ import * as VIM from '../../core-viewers/webgl/index'
 import { BimTree, TreeActionRef } from './bimTree'
 import { BimSearch } from './bimSearch'
 import { Isolation } from '../helpers/isolation'
-import { ComponentCamera } from '../helpers/camera'
+import { CameraRef } from '../state/cameraState'
 import { Grouping, toTreeData } from './bimTreeData'
 import { ViewerState } from '../webgl/viewerState'
 import { AugmentedElement } from '../helpers/element'
@@ -22,7 +22,7 @@ import { BimInfoPanelRef } from './bimInfoData'
 // The error appears only in JSFiddle when the module is directly imported in a script tag.
 export function OptionalBimPanel (props: {
   viewer: VIM.Viewer
-  camera: ComponentCamera
+  camera: CameraRef
   viewerState: ViewerState
   isolation: Isolation
   visible: boolean
@@ -47,7 +47,7 @@ export function OptionalBimPanel (props: {
  */
 export function BimPanel (props: {
   viewer: VIM.Viewer
-  camera: ComponentCamera
+  camera: CameraRef
   viewerState: ViewerState
   isolation: Isolation
   visible: boolean

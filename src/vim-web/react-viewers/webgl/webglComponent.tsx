@@ -9,7 +9,8 @@ import ReactTooltip from 'react-tooltip'
 import * as VIM from '../../core-viewers/webgl/index'
 import { AxesPanelMemo } from '../panels/axesPanel'
 import { ControlBar, ControlBarCustomization } from '../controlbar/controlBar'
-import { RestOfScreen } from '../controlbar/restOfScreen'
+import { useControlBar } from '../state/controlBarState'
+import { RestOfScreen } from '../panels/restOfScreen'
 import { OptionalBimPanel } from '../bim/bimPanel'
 import {
   ContextMenuCustomization,
@@ -22,12 +23,12 @@ import { MenuSettings } from '../settings/menuSettings'
 import { MenuToastMemo } from '../panels/toast'
 import { Overlay } from '../panels/overlay'
 import { addPerformanceCounter } from '../panels/performance'
-import { ComponentInputs as ComponentInputScheme } from '../helpers/inputs'
+import { ComponentInputs as ComponentInputScheme } from '../helpers/componentInputs'
 import { CursorManager } from '../helpers/cursor'
 import { PartialComponentSettings, isTrue } from '../settings/settings'
 import { useSettings } from '../settings/settingsState'
 import { Isolation } from '../helpers/isolation'
-import { ComponentCamera } from '../helpers/camera'
+import { useCamera } from '../state/cameraState'
 import { TreeActionRef } from '../bim/bimTree'
 import { Container, createContainer } from '../container'
 import { useViewerState } from './viewerState'
@@ -38,6 +39,9 @@ import { whenTrue } from '../helpers/utils'
 import { DeferredPromise } from '../helpers/deferredPromise'
 import { ComponentLoader } from './webglLoading'
 import { Modal, useModal } from '../panels/modal'
+import { SectionBoxPanel } from '../panels/sectionBoxPanel'
+import { useWebglSectionBox } from './webglSectionBoxState'
+import { useWebglCamera } from './webglCameraState'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.
@@ -102,7 +106,7 @@ export function VimComponent (props: {
   const settings = useSettings(props.viewer, props.settings ?? {})
   const modal = useModal(settings.value.capacity.canFollowUrl)
 
-  const camera = useMemo(() => new ComponentCamera(props.viewer), [])
+  const camera = useWebglCamera(props.viewer)
   const cursor = useMemo(() => new CursorManager(props.viewer), [])
   const loader = useRef(new ComponentLoader(props.viewer, modal))
 
@@ -115,12 +119,15 @@ export function VimComponent (props: {
     Math.min(props.container.root.clientWidth * 0.25, 340)
   )
   const [contextMenu, setcontextMenu] = useState<ContextMenuCustomization>()
-  const [controlBar, setControlBar] = useState<ControlBarCustomization>()
+  const [controlBarCustom, setControlBarCustom] = useState<ControlBarCustomization>()
   const bimInfoRef = useBimInfo()
 
   const viewerState = useViewerState(props.viewer)
   const treeRef = useRef<TreeActionRef>()
   const performanceRef = useRef<HTMLDivElement>(null)
+  
+  const sectionBox = useWebglSectionBox(props.viewer)
+  const controlBar = useControlBar(props.viewer, camera, modal, side, isolation, cursor, settings.value, sectionBox, controlBarCustom)
 
   useEffect(() => {
     side.setHasBim(viewerState.vim?.bim !== undefined)
@@ -154,11 +161,14 @@ export function VimComponent (props: {
       isolation,
       camera,
       settings,
+      get sectionBox(){
+        return sectionBox
+      },
       contextMenu: {
         customize: (v) => setcontextMenu(() => v)
       },
       controlBar: {
-        customize: (v) => setControlBar(() => v)
+        customize: (v) => setControlBarCustom(() => v)
       },
       modal,
       bimInfo: bimInfoRef,
@@ -206,15 +216,10 @@ export function VimComponent (props: {
         <Overlay canvas={props.viewer.viewport.canvas}></Overlay>
         {whenTrue(settings.value.ui.logo, <LogoMemo/>)}
         <ControlBar
-          viewer={props.viewer}
-          camera={camera}
-          modal={modal}
-          side={side}
-          isolation={isolation}
-          cursor={cursor}
-          settings={settings.value}
-          customization={controlBar}
+          content={controlBar}
+          show={isTrue(settings.value.ui.controlBar)}
         />
+        <SectionBoxPanel state={sectionBox}/>
         <AxesPanelMemo
           viewer={props.viewer}
           camera={camera}

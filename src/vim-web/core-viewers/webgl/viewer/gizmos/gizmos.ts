@@ -26,7 +26,7 @@ export class Gizmos {
   /**
    * The section box gizmo.
    */
-  readonly section: SectionBox
+  readonly sectionBox: SectionBox
 
   /**
    * The loading indicator gizmo.
@@ -56,7 +56,7 @@ export class Gizmos {
   constructor (viewer: Viewer, camera : Camera) {
     this.viewer = viewer
     this._measure = new Measure(viewer)
-    this.section = new SectionBox(viewer)
+    this.sectionBox = new SectionBox(viewer)
     this.loading = new GizmoLoading(viewer)
     this.orbit = new GizmoOrbit(
       viewer.renderer,
@@ -80,7 +80,7 @@ export class Gizmos {
   dispose () {
     this.viewer.viewport.canvas.parentElement?.removeChild(this.axes.canvas)
     this._measure.clear()
-    this.section.dispose()
+    this.sectionBox.dispose()
     this.loading.dispose()
     this.orbit.dispose()
     this.rectangle.dispose()

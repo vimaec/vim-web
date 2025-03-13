@@ -1,16 +1,57 @@
 import { InputHandler } from "./inputHandler";
-import { Vector2 } from "../../utils/math3d";
+import { Vector2, almostEqual } from "../../utils/math3d";
 import { RpcSafeClient } from "../rpcSafeClient";
 import { ViewerSelection } from "../selection";
 import { ICamera } from "../camera";
 
+/**
+ * The point of this class is to only capture the pointer when the drag starts instead of on pointerdown.
+ * This is because capturing the pointer on pointerdown prevents double click events from firing.
+ */
+class CaptureStateMachine {
+  private _canvas : HTMLCanvasElement
+  private state : 'none' | 'capture' | 'captured'
+  private id: number
+
+  constructor(canvas: HTMLCanvasElement){
+    this._canvas = canvas
+    this.state = 'none'
+    this.id = -1
+  }
+
+  onPointerDown(event: PointerEvent): void {
+    if(this.state ==='captured'){
+      this._canvas.releasePointerCapture(this.id)
+    }
+    
+    this.id = event.pointerId
+    this.state = 'captured'
+  }
+
+  onPointerMove(event: PointerEvent){
+    if(this.state === 'capture'){
+      this._canvas.setPointerCapture(this.id)
+      this.state = 'captured'
+    }
+  }
+
+  onPointerUp(event: PointerEvent){
+    if(this.state === 'captured'){
+      this._canvas.releasePointerCapture(this.id)
+      this.state = 'none'
+      this.id = -1
+    }
+  }
+}
+
 // Existing InputsMouse class (from previous refactoring)
-export class InputMouse extends InputHandler {
+export class MouseHandler extends InputHandler {
   private readonly _rpc: RpcSafeClient;
   private readonly _canvas: HTMLCanvasElement;
   private _lastMouseDownPosition = new Vector2(0,0);
   private _selection: ViewerSelection;
   private _camera: ICamera;
+  private _capture : CaptureStateMachine
 
   constructor(canvas: HTMLCanvasElement, rpc: RpcSafeClient, selection: ViewerSelection, camera: ICamera) {
     super()
@@ -18,36 +59,38 @@ export class InputMouse extends InputHandler {
     this._rpc = rpc;
     this._selection = selection;
     this._camera = camera;
+    this._capture = new CaptureStateMachine(canvas)
   }
 
    register(): void {
     // Register mouse events
-    this.reg<PointerEvent>(this._canvas, 'pointerdown', e => { this.handlePointerDown(e); });
-    this.reg<PointerEvent>(this._canvas, 'pointerup', e => { this.handlePointerUp(e); });
-    this.reg<PointerEvent>(this._canvas, 'pointermove', e => { this.handlePointerMove(e); });
-    this.reg<WheelEvent>(this._canvas, 'wheel', e => { this.handleMouseScroll(e); });
-    this.reg<MouseEvent>(this._canvas, 'dblclick', e => { this.handleDoubleClick(e); });
+    this.reg<PointerEvent>(this._canvas, 'pointerdown', e => { this.onPointerDown(e); });
+    this.reg<PointerEvent>(this._canvas, 'pointerup', e => { this.onPointerUp(e); });
+    this.reg<PointerEvent>(this._canvas, 'pointermove', e => { this.onPointerMove(e); });
+    this.reg<WheelEvent>(this._canvas, 'wheel', e => { this.onMouseScroll(e); });
+    this.reg<MouseEvent>(this._canvas, 'dblclick', e => { this.onDoubleClick(e); });
   }
 
   dispose(): void {
     this.unregister();
   }
 
-  private handlePointerDown(event: PointerEvent): void {
-    if(event.pointerType !== 'mouse') return;
+  private onPointerDown(event: PointerEvent): void {
+    if(event.pointerType !== 'mouse') return; // We don't handle touch yet
+
     const pos = this.relativePosition(event);
     this._rpc.RPCMouseButtonEvent(pos, event.button, true);
     this._lastMouseDownPosition = pos;
-    this._canvas.setPointerCapture(event.pointerId); // Capture the pointer
+    this._capture.onPointerDown(event)
     event.preventDefault();
   }
 
-  private handlePointerUp(event: PointerEvent): void {
+  private onPointerUp(event: PointerEvent): void {
     if(event.pointerType !== 'mouse') return;
     const pos = this.relativePosition(event);
     this._rpc.RPCMouseButtonEvent(pos, event.button, false);
     this.handleMouseClick(event);
-    this._canvas.releasePointerCapture(event.pointerId); // Release the pointer capture
+    this._capture.onPointerUp(event)
     event.preventDefault();
   }
 
@@ -55,7 +98,7 @@ export class InputMouse extends InputHandler {
     if(event.pointerType !== 'mouse') return;
     const pos = this.relativePosition(event);
     
-    if (!this._lastMouseDownPosition.almostEquals(pos, 0.01)){
+    if (!almostEqual(this._lastMouseDownPosition, pos, 0.01)){
       return
     }
     
@@ -73,23 +116,27 @@ export class InputMouse extends InputHandler {
     }
   }
 
-  private handlePointerMove(event: PointerEvent): void {
+  private onPointerMove(event: PointerEvent): void {
     if(event.pointerType !== 'mouse') return;
     this._canvas.focus();
+    this._capture.onPointerMove(event)
     const pos = this.relativePosition(event);
     this._rpc.RPCMouseMoveEvent(pos);
   }
 
-  private async handleDoubleClick(event: MouseEvent): Promise<void> {
+  private async onDoubleClick(event: MouseEvent): Promise<void> {
     const pos = this.relativePosition(event);
     const hit = await this._selection.hitTest(pos);
     if(hit){
       this._camera.frameVim(hit.vim, [hit.nodeIndex], 1);
+    }else{
+      this._camera.frameAll(1);
     }
+
     event.preventDefault();
   }
 
-  private handleMouseScroll(event: WheelEvent): void {
+  private onMouseScroll(event: WheelEvent): void {
     this._rpc.RPCMouseScrollEvent(Math.sign(event.deltaY));
     event.preventDefault();
   }

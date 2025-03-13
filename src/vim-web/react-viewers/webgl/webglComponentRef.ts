@@ -6,12 +6,13 @@ import * as VIM from '../../core-viewers/webgl/index'
 import { ContextMenuCustomization } from '../panels/contextMenu'
 import { ComponentSettings } from '../settings/settings'
 import { Isolation } from '../helpers/isolation'
-import { ComponentCamera } from '../helpers/camera'
+import { CameraRef } from '../state/cameraState'
 import { Container } from '../container'
 import { BimInfoPanelRef } from '../bim/bimInfoData'
 import { ControlBarCustomization } from '../controlbar/controlBar'
 import { ComponentLoader } from './webglLoading'
 import { ModalRef } from '../panels/modal'
+import { SectionBoxRef } from '../state/sectionBoxState'
 /**
 * Settings API managing settings applied to the component.
 */
@@ -98,6 +99,11 @@ export type VimComponentRef = {
   isolation: Isolation
 
   /**
+   * Section box API managing the section box in the component.
+   */
+  sectionBox: SectionBoxRef
+
+  /**
    * Context menu API managing the content and behavior of the context menu.
    */
   contextMenu: ContextMenuRef
@@ -120,7 +126,7 @@ export type VimComponentRef = {
   /**
    * Camera API to interact with the viewer camera at a higher level.
    */
-  camera: ComponentCamera
+  camera: CameraRef
 
   /**
    * API To interact with the BIM info panel.

@@ -1,3 +1,4 @@
+import { SignalDispatcher } from "ste-signals";
 import { Box3, Vector2, Vector3 } from "../utils/math3d";
 import { RpcSafeClient } from "./rpcSafeClient";
 import { Vim } from "./vim";
@@ -10,6 +11,7 @@ export interface IViewerSelection {
   add(vim: Vim, node: number | number[]): void;
   remove(vim: Vim, node: number | number[]): void;
   clear(vim?: Vim): void;
+  get() : ReadonlyMap<Vim, ReadonlySet<number>>;
 }
 
 /**
@@ -33,6 +35,15 @@ export class ViewerSelection implements IViewerSelection {
   private _rpc: RpcSafeClient;
   private _vims: IReadonlyVimCollection;
   private _selectedNodes: Map<Vim, Set<number>>;
+
+  private _onValueChanged = new SignalDispatcher();
+  get onValueChanged(){
+    return this._onValueChanged.asEvent();
+  }
+
+  get(){
+    return this._selectedNodes as ReadonlyMap<Vim, ReadonlySet<number>>;
+  }
 
   /**
    * Creates a new ViewerSelection instance.
@@ -82,7 +93,7 @@ export class ViewerSelection implements IViewerSelection {
    * @param node - A single node index or array of node indices to select.
    */
   public select(vim: Vim, node: number | number[]) {
-    this.clear()
+    this._clear()
     this.add(vim, node);
   }
 
@@ -120,13 +131,19 @@ export class ViewerSelection implements IViewerSelection {
       this._selectedNodes.set(vim, nodeSet);
     }
 
+    let changed = false
     nodes.forEach((n) => {
       if (!nodeSet.has(n)) {
         nodeSet.add(n);
         // Immediately highlight the node
         vim.highlight([n]);
+        changed = true
       }
     });
+
+    if(changed){
+      this._onValueChanged.dispatch();
+    }
   }
 
   /**
@@ -140,17 +157,23 @@ export class ViewerSelection implements IViewerSelection {
     if (!nodeSet) return; // No nodes selected for this Vim
 
     const nodes = Array.isArray(node) ? node : [node];
+    let changed = false
 
     nodes.forEach((n) => {
       if (nodeSet.has(n)) {
         nodeSet.delete(n);
         // Immediately unhighlight the node
         vim.removeHighlight([n], 'visible');
+        changed = true
       }
     });
 
     if (nodeSet.size === 0) {
       this._selectedNodes.delete(vim);
+    }
+
+    if(changed){
+      this._onValueChanged.dispatch();
     }
   }
 
@@ -160,14 +183,25 @@ export class ViewerSelection implements IViewerSelection {
    */
   public clear(vim?: Vim) {
     // Unhighlight all selected nodes
+    const changed = this._clear(vim);
+
+    if(changed){
+      this._onValueChanged.dispatch();
+    }
+  }
+
+  private _clear(vim?: Vim) {
+    let changed = false
     this._selectedNodes.forEach((nodes, v) => {
       if(vim === undefined || v === vim){
         v.removeHighlight(Array.from(nodes), 'visible');
+        changed = true
       }
     });
 
     // Clear the selection map
     this._selectedNodes.clear();
+    return changed
   }
 
   /**
@@ -191,7 +225,6 @@ export class ViewerSelection implements IViewerSelection {
    * Should be called when the selection manager is no longer needed.
    */
   public dispose() {
-    this.clear();
-    this._selectedNodes = new Map(); // Clear references
+    this._clear();
   }
 }

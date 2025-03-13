@@ -11,7 +11,7 @@ import {
   MeasureStyle,
   MeasureElement
 } from './measureHtml'
-import { ICamera } from '../../camera/camera'
+import { ICamera } from '../../camera/ICamera'
 
 /**
  * Wrapper for a two points line drawn using MeshLine
@@ -205,12 +205,12 @@ export class MeasureGizmo {
     const yz = this.screenDist(this._lineY.position, this._lineZ.position)
 
     let conflicts = 0
-    if (lx !== undefined && lx < 0.1) conflicts++
-    if (ly !== undefined && ly < 0.1) conflicts++
-    if (lz !== undefined && lz < 0.1) conflicts++
-    if (xy !== undefined && xy < 0.1) conflicts++
-    if (xz !== undefined && xz < 0.1) conflicts++
-    if (yz !== undefined && yz < 0.1) conflicts++
+    if (lx !== undefined && lx < 0.3) conflicts++
+    if (ly !== undefined && ly < 0.3) conflicts++
+    if (lz !== undefined && lz < 0.3) conflicts++
+    if (xy !== undefined && xy < 0.3) conflicts++
+    if (xz !== undefined && xz < 0.3) conflicts++
+    if (yz !== undefined && yz < 0.3) conflicts++
 
     const collapse = conflicts > 1
     this._label.visible = collapse
@@ -248,6 +248,7 @@ export class MeasureGizmo {
       this._line.mesh.visible = false
       this._line.label.visible = false
     }
+    this._label.visible = false
     this._viewer.renderer.needsUpdate = true
   }
 
@@ -313,6 +314,7 @@ export class MeasureGizmo {
   dispose () {
     if (this._animId !== undefined) cancelAnimationFrame(this._animId)
 
+    this._html.div.remove()
     this._viewer.renderer.remove(this._group)
 
     this._startMarker.dispose()

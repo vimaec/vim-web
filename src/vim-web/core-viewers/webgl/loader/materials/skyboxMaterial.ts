@@ -76,7 +76,7 @@ export class SkyboxMaterial extends THREE.ShaderMaterial {
 
         void main() {
           // Define the up vector
-          vec3 up = vec3(0.0, 1.0, 0.0);
+          vec3 up = vec3(0.0, 0.0, 1.0);
 
           // Calculate the direction from the pixel to the camera
           vec3 directionToCamera = normalize(vCameraPosition - vPosition);

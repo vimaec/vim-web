@@ -11,7 +11,7 @@ import {
 import React, { useEffect, useState } from 'react'
 import { WebglViewer } from '../..'
 import { Isolation } from '../helpers/isolation'
-import { ComponentCamera } from '../helpers/camera'
+import { CameraRef } from '../state/cameraState'
 import { ArrayEquals } from '../helpers/data'
 import { TreeActionRef } from '../bim/bimTree'
 import { ModalRef } from './modal'
@@ -96,7 +96,7 @@ export const VimContextMenuMemo = React.memo(VimContextMenu)
  */
 export function VimContextMenu (props: {
   viewer: WebglViewer.Viewer
-  camera: ComponentCamera
+  camera: CameraRef
   modal: ModalRef
   isolation: Isolation
   selection: WebglViewer.Object3D[]
@@ -109,40 +109,12 @@ export function VimContextMenu (props: {
 
   const viewer = props.viewer
   const camera = props.camera
-  const [section, setSection] = useState<{
-    visible: boolean
-    clip: boolean
-  }>({
-    visible: viewer.gizmos.section.visible,
-    clip: viewer.gizmos.section.clip
-  })
-  const isClipping = () => {
-    return !viewer.gizmos.section.box.containsBox(viewer.renderer.getBoundingBox())
-  }
-  const [clipping, setClipping] = useState<boolean>(isClipping())
   const [, setVersion] = useState(0)
   const hidden = props.isolation.isActive()
 
   useEffect(() => {
-    // Register to selection
-    const subState = viewer.gizmos.section.onStateChanged.subscribe(() => {
-      setSection({
-        visible: viewer.gizmos.section.visible,
-        clip: viewer.gizmos.section.clip
-      })
-    })
-
-    // Register to section box
-    const subConfirm = viewer.gizmos.section.onBoxConfirm.subscribe(() =>
-      setClipping(isClipping())
-    )
-
     // force re-render and reevalution of isolation.
     props.isolation.onChanged.subscribe(() => setVersion((v) => v + 1))
-    return () => {
-      subState()
-      subConfirm()
-    }
   }, [])
 
   const onShowControlsBtn = (e: ClickCallback) => {
@@ -151,12 +123,12 @@ export function VimContextMenu (props: {
   }
 
   const onCameraResetBtn = (e: ClickCallback) => {
-    camera.reset()
+    camera.reset.call()
     e.stopPropagation()
   }
 
   const onCameraFrameBtn = (e: ClickCallback) => {
-    camera.frameContext()
+    camera.frameSelection.call()
     e.stopPropagation()
   }
 
@@ -185,37 +157,14 @@ export function VimContextMenu (props: {
     e.stopPropagation()
   }
 
-  const onSelectionClearBtn = (e: ClickCallback) => {
-    viewer.selection.clear()
-    e.stopPropagation()
-  }
-
   const onShowAllBtn = (e: ClickCallback) => {
     props.isolation.clear('contextMenu')
     e.stopPropagation()
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onSectionToggleBtn = (e: ClickCallback) => {
-    viewer.gizmos.section.clip = !viewer.gizmos.section.clip
-  }
-
-  const onSectionResetBtn = (e: ClickCallback) => {
-    viewer.gizmos.section.fitBox(viewer.renderer.getBoundingBox())
-    e.stopPropagation()
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const onMeasureDeleteBtn = (e: ClickCallback) => {
     viewer.gizmos.measure.abort()
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onFitSectionToSelectionBtn = (e: ClickCallback) => {
-    const box = viewer.selection.getBoundingBox()
-    if (box) {
-      viewer.gizmos.section.fitBox(box)
-    }
   }
 
   const createButton = (button: IContextMenuButton) => {
@@ -265,10 +214,10 @@ export function VimContextMenu (props: {
     },
     {
       id: contextMenuElementIds.zoomToFit,
-      label: 'Zoom to Fit',
+      label: 'Focus Camera',
       keyboard: 'F',
       action: onCameraFrameBtn,
-      enabled: true
+      enabled: hasSelection
     },
     {
       id: contextMenuElementIds.dividerSelection,
@@ -302,14 +251,6 @@ export function VimContextMenu (props: {
       action: onSelectionShowBtn,
       enabled: hasSelection && !hasVisibleSelection
     },
-
-    {
-      id: contextMenuElementIds.clearSelection,
-      label: 'Clear Selection',
-      keyboard: 'Esc',
-      action: onSelectionClearBtn,
-      enabled: hasSelection
-    },
     {
       id: contextMenuElementIds.showAll,
       label: 'Show All',
@@ -324,31 +265,6 @@ export function VimContextMenu (props: {
       keyboard: '',
       action: onMeasureDeleteBtn,
       enabled: measuring
-    },
-    {
-      id: contextMenuElementIds.dividerSection,
-      enabled: clipping || section.visible
-    },
-    {
-      id: contextMenuElementIds.ignoreSection,
-      label: section.clip ? 'Ignore Section Box' : 'Apply Section Box',
-      keyboard: '',
-      action: onSectionToggleBtn,
-      enabled: clipping
-    },
-    {
-      id: contextMenuElementIds.resetSection,
-      label: 'Reset Section Box',
-      keyboard: '',
-      action: onSectionResetBtn,
-      enabled: clipping
-    },
-    {
-      id: contextMenuElementIds.fitSectionToSelection,
-      label: 'Fit Section Box to Selection',
-      keyboard: '',
-      action: onFitSectionToSelectionBtn,
-      enabled: section.visible && hasSelection
     }
   ]
   elements = props.customization?.(elements) ?? elements
