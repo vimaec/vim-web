@@ -321,7 +321,7 @@ export class ViewerMaterials {
   }
 
   /**
-   * Size of the blur convolution on the selection outline effect.
+   * Size of the blur convolution on the selection outline effect. Minimum 2.
    */
   get outlineBlur () {
     return this.outline.strokeBlur
@@ -329,7 +329,7 @@ export class ViewerMaterials {
 
   set outlineBlur (value: number) {
     if (this.outline.strokeBlur === value) return
-    this.outline.strokeBlur = value
+    this.outline.strokeBlur = Math.max(value, 2)
     this._onUpdate.dispatch()
   }
 
