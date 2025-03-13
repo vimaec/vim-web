@@ -165,8 +165,15 @@ export abstract class CameraMovement {
   protected frameSphere (sphere: THREE.Sphere, forward?: THREE.Vector3) {
     const direction = this.getNormalizedDirection(forward)
     // Compute best distance to frame sphere
-    const fov = (this._camera.camPerspective.camera.fov * Math.PI) / 180
-    const dist = (sphere.radius * 1.2) / Math.tan(fov / 2)
+    const frustrum = this._camera.frustrumSizeAt(sphere.center) // lets use this in our calculation instead, mr
+
+    const vFov = (this._camera.camPerspective.camera.fov * Math.PI) / 180
+    const vDist = (sphere.radius * 1.2) / Math.tan(vFov / 2)
+
+    const hFov = vFov * this._camera.camPerspective.camera.aspect
+    const hDist = (sphere.radius * 1.2) / Math.tan(hFov / 2)
+
+    const dist = Math.max(vDist, hDist)
     const safeDist = Math.max(dist, this._camera.camPerspective.camera.near * 2)
 
     const pos = direction.multiplyScalar(-safeDist).add(sphere.center)
