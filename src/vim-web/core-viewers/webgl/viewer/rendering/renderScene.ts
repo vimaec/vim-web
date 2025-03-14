@@ -58,10 +58,10 @@ export class RenderScene {
    * Returns the bounding box encompasing all rendererd objects.
    * @param target box in which to copy result, a new instance is created if undefined.
    */
-  getBoundingBox (target: THREE.Box3 = new THREE.Box3()) {
+  getBoundingBox (target: THREE.Box3 = new THREE.Box3()) : THREE.Box3 | undefined {
     return this._boundingBox
       ? target.copy(this._boundingBox)
-      : target.set(new THREE.Vector3(-1, -1, -1), new THREE.Vector3(1, 1, 1))
+      : undefined
   }
 
   /**

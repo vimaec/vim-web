@@ -100,6 +100,7 @@ export function useSectionBox(
 
   // Update the box by combining the base box and the computed offsets.
   const section = useArgActionRef((baseBox: THREE.Box3) => {
+    if(baseBox === undefined) return
     boxRef.current = baseBox;
     const newBox = addBox(baseBox, offsetsToBox3(topOffset.get(), sideOffset.get(), bottomOffset.get()));
     adapter.fitBox(newBox);
