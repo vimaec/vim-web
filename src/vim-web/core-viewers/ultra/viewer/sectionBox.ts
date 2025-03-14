@@ -1,6 +1,7 @@
 import { SignalDispatcher } from "ste-signals"
 import { Box3 } from "../utils/math3d"
 import { RpcSafeClient } from "./rpcSafeClient"
+import { safeBox } from "../../webgl/utils/threeUtils"
 
 export class SectionBox {
 
@@ -103,7 +104,12 @@ export class SectionBox {
     this.scheduleUpdate()
   }
 
+  /**
+   * Fits the given box, invalid dimensions will be reversed.
+   * @param box - The new bounding box.
+   */
   fitBox(box: Box3) {
+    box = safeBox(box)
     this._box = box
     this.scheduleUpdate()
   }
