@@ -42,7 +42,7 @@ export function WebglLocalFile () {
         vwgl.loader.add(vim)
       } finally {
         vwgl.modal.loading(undefined)
-        vwgl.camera.frameVisibleObjects()
+        vwgl.camera.frameScene.call()
       }
     }
     reader.readAsArrayBuffer(file)
