@@ -8,6 +8,7 @@ import { BoxInputs } from './sectionBoxInputs';
 import { SignalDispatcher } from 'ste-signals';
 import { SimpleEventDispatcher } from 'ste-simple-events';
 import { SectionBoxGizmo } from './sectionBoxGizmo';
+import { safeBox } from '../../../utils/threeUtils';
 
 /**
  * Manages a section box gizmo, serving as a proxy between the renderer and the user.
@@ -116,11 +117,6 @@ export class SectionBox {
     // When drag ends, dispatch the final box.
     this._inputs.onBoxConfirm = (box) => this._onBoxConfirm.dispatch(box);
 
-    // Reset section box when the scene is updated
-    viewer.renderer.onBoxUpdated.subscribe(() => {
-      this.fitBox(viewer.renderer.getBoundingBox())
-    })
-
     // Default states
     this.clip = false;
     this.visible = false;
@@ -212,6 +208,8 @@ export class SectionBox {
    */
   public fitBox(box: THREE.Box3): void {
     if (!box) return;
+    box = safeBox(box);
+    
     this._gizmos.fitBox(box);
     this.renderer.section.fitBox(box);
     this._onBoxConfirm.dispatch(this.box);
