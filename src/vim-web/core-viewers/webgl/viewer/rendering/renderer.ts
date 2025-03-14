@@ -193,7 +193,7 @@ export class Renderer implements IRenderer {
    * @param target - Box in which to copy the result. A new instance is created if undefined.
    * @returns The bounding box encompassing all rendered objects.
    */
-  getBoundingBox (target: THREE.Box3 = new THREE.Box3()) {
+  getBoundingBox (target: THREE.Box3 = new THREE.Box3()) : THREE.Box3 | undefined {
     return this._scene.getBoundingBox(target)
   }
 
