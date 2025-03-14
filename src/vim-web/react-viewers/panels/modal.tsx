@@ -63,7 +63,7 @@ export function Modal (props: {state: ModalRef}) {
 
   if (state.current === undefined) return null
   return <div
-    className="vim-modal vc-absolute vc-inset-0 vc-z-40 vc-flex vc-items-center vc-justify-center vc-bg-overflow vc-bg-gray"
+    className="vim-modal vc-absolute vc-inset-0 vc-z-40 vc-flex vc-items-center vc-justify-center vc-bg-gray"
     onClick={props.state.current?.canClose ? () => state.current?.onClose?.() : () => {}}
     onContextMenu={(event) => event.preventDefault()}
   >
