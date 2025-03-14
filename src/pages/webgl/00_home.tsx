@@ -23,7 +23,7 @@ async function createComponent (div: HTMLDivElement, ref: React.MutableRefObject
 
   const url = getPathFromUrl() ?? Urls.residence
   const request = webgl.loader.request(
-    { url:'./residence.vim' }
+    { url }
   )
 
   const result = await request.getResult()
