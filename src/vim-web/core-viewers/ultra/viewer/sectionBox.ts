@@ -1,6 +1,7 @@
 import { SignalDispatcher } from "ste-signals"
 import { Box3 } from "../utils/math3d"
 import { RpcSafeClient } from "./rpcSafeClient"
+import { safeBox } from "../../webgl/utils/threeUtils"
 
 export class SectionBox {
 
@@ -12,6 +13,7 @@ export class SectionBox {
   
   private _interval: ReturnType<typeof setInterval>
   private _animationFrame: ReturnType<typeof requestAnimationFrame>
+  private _pullId = 0
 
   // Signals
   private _onUpdate: SignalDispatcher = new SignalDispatcher()
@@ -34,6 +36,7 @@ export class SectionBox {
   }
 
   scheduleUpdate(){
+    this._pullId++
     if(this._animationFrame) return
     this._animationFrame = requestAnimationFrame(() => {
       this._animationFrame = undefined
@@ -43,19 +46,21 @@ export class SectionBox {
   
   private async pull(){
     if(this.needUpdate) return
+    const id = this._pullId
     const state = await this._rpc.RPCGetSectionBox()
+    if (id !== this._pullId) return // ignore outdated responses
 
     // Check if the state has changed
     let changed = false
     if(state.visible !== this._visible ||
-      state.interactible !== this._interactible ||
+      state.interactive !== this._interactible ||
       state.clip !== this._clip ||
       state.box !== this._box){
         changed = true
       }
 
     this._visible = state.visible
-    this._interactible = state.interactible
+    this._interactible = state.interactive
     this._clip = state.clip
     this._box = state.box
     if(changed){
@@ -66,7 +71,7 @@ export class SectionBox {
   private async push(){
     await this._rpc.RPCSetSectionBox({
       visible: this._visible,
-      interactible: this._interactible,
+      interactive: this._interactible,
       clip: this._clip,
       box: this._box
     })
@@ -99,7 +104,12 @@ export class SectionBox {
     this.scheduleUpdate()
   }
 
+  /**
+   * Fits the given box, invalid dimensions will be reversed.
+   * @param box - The new bounding box.
+   */
   fitBox(box: Box3) {
+    box = safeBox(box)
     this._box = box
     this.scheduleUpdate()
   }
