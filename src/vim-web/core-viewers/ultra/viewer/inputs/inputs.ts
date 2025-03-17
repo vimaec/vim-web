@@ -2,7 +2,7 @@ import { MouseHandler } from './mouseHandler'
 import { TouchHandler } from './touchHandler'
 import { KeyboardHandler } from './keyboardHandler'
 import { InputMode, RpcSafeClient } from '../rpcSafeClient'
-import { InputHandler } from './inputHandler'
+import { InputHandler } from "../../../shared/inputHandler";
 import { ViewerSelection } from '../selection'
 import { ICamera } from '../camera'
 import { IRenderer } from '../renderer'
@@ -14,7 +14,6 @@ export interface IInputs {
 
 export class Inputs extends InputHandler implements IInputs {
   private readonly _rpc: RpcSafeClient
-  private readonly _canvas: HTMLCanvasElement
   private _inputsMouse: MouseHandler
   private _inputsTouch: TouchHandler
   private _keyboard: KeyboardHandler
@@ -24,14 +23,13 @@ export class Inputs extends InputHandler implements IInputs {
   private _mode: InputMode = InputMode.Orbit
 
   constructor (canvas: HTMLCanvasElement, rpc: RpcSafeClient, selection: ViewerSelection, camera: ICamera, renderer: IRenderer) {
-    super()
-    this._canvas = canvas
+    super(canvas)
     this._rpc = rpc
     this._renderer = renderer
     // Initialize InputsMouse and InputsTouch instances
     this._inputsMouse = new MouseHandler(this._canvas, this._rpc, selection, camera)
     this._inputsTouch = new TouchHandler(this._canvas, this._rpc)
-    this._keyboard = new KeyboardHandler(this._rpc, selection, camera, this)
+    this._keyboard = new KeyboardHandler(this._canvas, this._rpc, selection, camera, this)
   }
 
   onConnect(){

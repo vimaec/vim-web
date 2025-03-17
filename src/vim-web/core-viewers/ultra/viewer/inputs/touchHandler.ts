@@ -1,18 +1,16 @@
 import { Vector2 } from "../../utils/math3d";
-import { InputHandler } from "./inputHandler";
+import { InputHandler } from "../../../shared/inputHandler";
 import { RpcSafeClient } from "../rpcSafeClient";
 
 export class TouchHandler extends InputHandler {
   private readonly _rpc: RpcSafeClient;
-  private readonly _canvas: HTMLCanvasElement;
   private _lastTouchStartPosition = new Vector2(0, 0);
 
     // Add these properties to your InputTouch class
   private _initialTouchDistance: number | undefined;
 
   constructor(canvas: HTMLCanvasElement, rpc: RpcSafeClient) {
-    super();
-    this._canvas = canvas;
+    super(canvas);
     this._rpc = rpc;
   }
 

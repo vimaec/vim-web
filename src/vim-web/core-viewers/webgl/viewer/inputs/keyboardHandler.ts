@@ -3,7 +3,8 @@
  */
 
 import * as THREE from 'three'
-import { InputHandler } from './inputHandler'
+import { InputHandler } from '../../../shared/inputHandler'
+import { WebglViewer } from '../../../..'
 
 /**
  * Key values for viewer
@@ -106,6 +107,7 @@ const KeySet = new Set(Object.values(KEYS))
 export class KeyboardHandler extends InputHandler {
   // Settings
   private SHIFT_MULTIPLIER: number = 3.0
+  private _viewer : WebglViewer.Viewer
 
   // State
   isUpPressed: boolean = false
@@ -118,10 +120,15 @@ export class KeyboardHandler extends InputHandler {
   isCtrlPressed: boolean = false
   arrowsEnabled: boolean = true
 
+  constructor (viewer: WebglViewer.Viewer) {
+    super(viewer.viewport.canvas)
+    this._viewer = viewer
+  }
+
   protected override addListeners (): void {
-    this.reg(document, 'keydown', (e) => this.onKeyDown(e))
-    this.reg(document, 'keyup', (e) => this.onKeyUp(e))
-    this.reg(this._viewer.viewport.canvas, 'focusout', () => this.reset())
+    this.reg(document, 'keydown', (e : KeyboardEvent) => this.onKeyDown(e))
+    this.reg(document, 'keyup', (e : KeyboardEvent) => this.onKeyUp(e))
+    this.reg(this._canvas, 'focusout', () => this.reset())
     this.reg(window, 'resize', () => this.reset())
   }
 

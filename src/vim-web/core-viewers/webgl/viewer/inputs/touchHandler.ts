@@ -3,9 +3,10 @@
  */
 
 import * as THREE from 'three'
-import { InputHandler } from './inputHandler'
+import { InputHandler } from '../../../shared/inputHandler'
 import { InputAction } from '../raycaster'
 import { Viewer } from '../viewer'
+import { WebglViewer } from '../../../..'
 
 /**
  * Manages user touch inputs.
@@ -16,6 +17,7 @@ export class TouchHandler extends InputHandler {
   private readonly TAP_MAX_MOVE_PIXEL = 5
   private readonly ZOOM_SPEED = 1
   private readonly MOVE_SPEED = 100
+  private readonly _viewer: WebglViewer.Viewer
 
   /**
    * Speed factor for rotation movements
@@ -28,7 +30,8 @@ export class TouchHandler extends InputHandler {
   orbitSpeed = 1
 
   constructor (viewer: Viewer) {
-    super(viewer)
+    super(viewer.viewport.canvas)
+    this._viewer = viewer
     this.rotateSpeed = viewer.settings.camera.controls.rotateSpeed
     this.orbitSpeed = viewer.settings.camera.controls.orbitSpeed
   }

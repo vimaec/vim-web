@@ -1,8 +1,9 @@
 import { ICamera } from "../camera";
 import { InputMode, RpcSafeClient } from "../rpcSafeClient";
 import { ViewerSelection } from "../selection";
-import { InputHandler } from "./inputHandler";
+import { InputHandler } from "../../../shared/inputHandler";
 import { Inputs } from "./inputs";
+import { Viewport } from "../viewport";
 
 const serverKeys = new Set([
   "ArrowDown",
@@ -25,8 +26,8 @@ export class KeyboardHandler extends InputHandler {
   private readonly _selection: ViewerSelection
   private _camera: ICamera;
   private _inputs: Inputs;
-  constructor(rpc: RpcSafeClient, selection: ViewerSelection, camera: ICamera, inputs: Inputs) {
-    super();
+  constructor(canvas: HTMLCanvasElement, rpc: RpcSafeClient, selection: ViewerSelection, camera: ICamera, inputs: Inputs) {
+    super(canvas);
     this._rpc = rpc;
     this._selection = selection;
     this._camera = camera;
