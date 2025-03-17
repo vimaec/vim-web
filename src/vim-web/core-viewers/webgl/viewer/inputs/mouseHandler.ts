@@ -3,9 +3,10 @@
  */
 
 import * as THREE from 'three'
-import { InputHandler } from './inputHandler'
+import { InputHandler } from '../../../shared/inputHandler'
 import { InputAction } from '../raycaster'
 import { Viewer } from '../viewer'
+import { WebglViewer } from '../../../..'
 
 type Button = 'main' | 'middle' | 'right' | undefined
 type Modifier = 'ctrl' | 'shift' | 'none'
@@ -14,6 +15,7 @@ type Modifier = 'ctrl' | 'shift' | 'none'
  */
 export class MouseHandler extends InputHandler {
   private readonly _idleDelayMs = 150
+  private readonly _viewer : WebglViewer.Viewer
 
   /**
    * The speed factor for zoom movements using the scroll wheel.
@@ -56,7 +58,8 @@ export class MouseHandler extends InputHandler {
   private _downPosition: THREE.Vector2 | undefined
 
   constructor (viewer: Viewer) {
-    super(viewer)
+    super(viewer.viewport.canvas)
+    this._viewer = viewer
     this.rotateSpeed = viewer.settings.camera.controls.rotateSpeed
     this.orbitSpeed = viewer.settings.camera.controls.orbitSpeed
     this.scrollSpeed = viewer.settings.camera.controls.scrollSpeed
@@ -97,7 +100,7 @@ export class MouseHandler extends InputHandler {
 
     // Disable right click menu
     this.reg(this.canvas, 'contextmenu', (e) => e.preventDefault())
-    this._unregisters.push(
+    this._disconnect.push(
       this.camera.onMoved.subscribe(() => this.onCameraMoved())
     )
   }

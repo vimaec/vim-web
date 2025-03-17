@@ -1,4 +1,4 @@
-import { InputHandler } from "./inputHandler";
+import { InputHandler } from "../../../shared/inputHandler";
 import { Vector2, almostEqual } from "../../utils/math3d";
 import { RpcSafeClient } from "../rpcSafeClient";
 import { ViewerSelection } from "../selection";
@@ -47,15 +47,13 @@ class CaptureStateMachine {
 // Existing InputsMouse class (from previous refactoring)
 export class MouseHandler extends InputHandler {
   private readonly _rpc: RpcSafeClient;
-  private readonly _canvas: HTMLCanvasElement;
   private _lastMouseDownPosition = new Vector2(0,0);
   private _selection: ViewerSelection;
   private _camera: ICamera;
   private _capture : CaptureStateMachine
 
   constructor(canvas: HTMLCanvasElement, rpc: RpcSafeClient, selection: ViewerSelection, camera: ICamera) {
-    super()
-    this._canvas = canvas;
+    super(canvas)
     this._rpc = rpc;
     this._selection = selection;
     this._camera = camera;
