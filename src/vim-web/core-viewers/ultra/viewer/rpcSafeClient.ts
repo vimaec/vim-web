@@ -304,7 +304,11 @@ export class RpcSafeClient {
   }
 
   RPCSetSectionBox(state: SectionBoxState): void {
-    this.rpc.RPCSetSectionBox(state)
+    this.rpc.RPCSetSectionBox(
+      {
+        ...state,
+        box: state.box ?? new Box3(new Vector3(), new Vector3())
+      })
   }
 
   async RPCGetSectionBox(): Promise<SectionBoxState | undefined> {

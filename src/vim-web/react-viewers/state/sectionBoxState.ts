@@ -19,7 +19,8 @@ export interface SectionBoxRef {
 
   sectionSelection: AsyncFuncRef<void>;
   sectionReset: AsyncFuncRef<void>;
-  section: ArgActionRef<THREE.Box3>;
+  sectionBox: ArgActionRef<THREE.Box3>;
+  getBox: () => THREE.Box3;
 
   showOffsetPanel: StateRef<boolean>;
 
@@ -32,7 +33,7 @@ export interface SectionBoxAdapter {
   setClip : (b: boolean) => void;
   setVisible: (visible: boolean) => void;
   getBox: () => THREE.Box3;
-  fitBox: (box: THREE.Box3) => void;
+  setBox: (box: THREE.Box3) => void;
   getSelectionBox: () => Promise<THREE.Box3 | undefined>;
   getRendererBox: () => Promise<THREE.Box3>;
   onSelectionChanged: ISignal;
@@ -86,9 +87,9 @@ export function useSectionBox(
   bottomOffset.useConfirm((v) => sanitize(v, true));
 
   // Update the section box on offset change.
-  topOffset.useOnChange((v) => section.call(boxRef.current));
-  sideOffset.useOnChange((v) => section.call(boxRef.current));
-  bottomOffset.useOnChange((v) => section.call(boxRef.current));
+  topOffset.useOnChange((v) => sectionBox.call(boxRef.current));
+  sideOffset.useOnChange((v) => sectionBox.call(boxRef.current));
+  bottomOffset.useOnChange((v) => sectionBox.call(boxRef.current));
 
   // Section selection on auto mode enabled.
   auto.useOnChange((v) => {if(v) sectionSelection.call()})
@@ -99,11 +100,11 @@ export function useSectionBox(
 
 
   // Update the box by combining the base box and the computed offsets.
-  const section = useArgActionRef((baseBox: THREE.Box3) => {
+  const sectionBox = useArgActionRef((baseBox: THREE.Box3) => {
     if(baseBox === undefined) return
     boxRef.current = baseBox;
     const newBox = addBox(baseBox, offsetsToBox3(topOffset.get(), sideOffset.get(), bottomOffset.get()));
-    adapter.fitBox(newBox);
+    adapter.setBox(newBox);
   });
 
   // Sets the box to the selection box or the renderer box if no selection.
@@ -112,7 +113,7 @@ export function useSectionBox(
       const box =
         (await adapter.getSelectionBox()) ??
         (await adapter.getRendererBox());
-      section.call(box);
+        sectionBox.call(box);
     } catch (e) {
       console.error(e);
     }
@@ -120,7 +121,7 @@ export function useSectionBox(
   
   const sectionReset = useFuncRef(async () => {
     const box = await adapter.getRendererBox();
-    section.call(box);
+    sectionBox.call(box);
   });
 
   return {
@@ -133,7 +134,8 @@ export function useSectionBox(
     bottomOffset,
     sectionSelection,
     sectionReset,
-    section,
+    sectionBox,
+    getBox: () => adapter.getBox()
   }
 }
 
