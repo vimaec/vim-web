@@ -23,7 +23,7 @@ import { MenuSettings } from '../settings/menuSettings'
 import { MenuToastMemo } from '../panels/toast'
 import { Overlay } from '../panels/overlay'
 import { addPerformanceCounter } from '../panels/performance'
-import { ComponentInputs as ComponentInputScheme } from '../helpers/componentInputs'
+import { WebglInputs as WebglInputScheme } from './webgInputs'
 import { CursorManager } from '../helpers/cursor'
 import { PartialComponentSettings, isTrue } from '../settings/settings'
 import { useSettings } from '../settings/settingsState'
@@ -106,7 +106,8 @@ export function VimComponent (props: {
   const settings = useSettings(props.viewer, props.settings ?? {})
   const modal = useModal(settings.value.capacity.canFollowUrl)
 
-  const camera = useWebglCamera(props.viewer)
+  const sectionBox = useWebglSectionBox(props.viewer)
+  const camera = useWebglCamera(props.viewer, sectionBox)
   const cursor = useMemo(() => new CursorManager(props.viewer), [])
   const loader = useRef(new ComponentLoader(props.viewer, modal))
 
@@ -126,7 +127,7 @@ export function VimComponent (props: {
   const treeRef = useRef<TreeActionRef>()
   const performanceRef = useRef<HTMLDivElement>(null)
   
-  const sectionBox = useWebglSectionBox(props.viewer)
+  
   const controlBar = useControlBar(props.viewer, camera, modal, side, isolation, cursor, settings.value, sectionBox, controlBarCustom)
 
   useEffect(() => {
@@ -143,7 +144,7 @@ export function VimComponent (props: {
 
     // Setup custom input scheme
     props.viewer.viewport.canvas.tabIndex = 0
-    props.viewer.inputs.scheme = new ComponentInputScheme(
+    props.viewer.inputs.scheme = new WebglInputScheme(
       props.viewer,
       camera,
       isolation,
