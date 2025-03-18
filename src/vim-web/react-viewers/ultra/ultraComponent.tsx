@@ -76,7 +76,7 @@ export function UltraComponent (props: {
 
   const modal = useModal(true)
   const sectionBox = useUltraSectionBox(props.viewer)
-  const camera = useUltraCamera(props.viewer)
+  const camera = useUltraCamera(props.viewer, sectionBox)
 
   const side = useSideState(true, 400)
   const [_, setSelectState] = useState(0)
