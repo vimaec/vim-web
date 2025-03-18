@@ -18,9 +18,11 @@ interface ICameraAdapter {
   onSelectionChanged: ISignal
   frameCamera: (box: THREE.Box3, duration: number) => void
   resetCamera: (duration : number) => void
-  frameAll: (duration: number) => void
   hasSelection: () => boolean
   getSelectionBox: () => Promise<THREE.Box3>
+  getSceneBox: () => Promise<THREE.Box3>
+  getSectionBox: () => THREE.Box3
+  isSectionBoxEnabled: () => boolean
 }
 
 export function useCamera(adapter: ICameraAdapter){
@@ -40,21 +42,17 @@ export function useCamera(adapter: ICameraAdapter){
   const reset = useActionRef(() => adapter.resetCamera(1))
 
   const frameSelection = useAsyncFuncRef(async () => {
+    
     if (!adapter.hasSelection()){
       frameScene.call()
       return
     }
 
-    const box = await adapter.getSelectionBox()
-    if(!box){
-      return
-    }
-
-    adapter.frameCamera(box, 1)
+    frameBox(adapter, () => adapter.getSelectionBox())
   })
 
   const frameScene = useAsyncFuncRef(async () => {
-    adapter.frameAll(1)
+    frameBox(adapter, () => adapter.getSceneBox())
   })
 
   return {
@@ -65,30 +63,22 @@ export function useCamera(adapter: ICameraAdapter){
   } as CameraRef
 }
 
+// Extracted common method to get the box, intersect with section (if available),
+// and then frame the camera.
+async function frameBox(adapter: ICameraAdapter, getBox: () => Promise<THREE.Box3 | null>): Promise<void> {
+  const box = await getBox();
+  if (!box) return;
 
-/**
- * Returns the bounding box of all visible objects.
- * @param source Optional VIM to specify the source of visible objects.
- * @returns The bounding box of all visible objects.
- */
-function getVisibleBoundingBox (viewer: WebglViewer.Viewer, source?: WebglViewer.Vim) {
-  let box: THREE.Box3
-
-  const vimBoxUnion = (vim: WebglViewer.Vim) => {
-    for (const obj of vim.getObjects()) {
-      if (!obj.visible) continue
-      const b = obj.getBoundingBox()
-      if (!b) continue
-      box = box ? box.union(b) : b?.clone()
+  if(adapter.isSectionBoxEnabled()){
+    const section = adapter.getSectionBox();
+    if (section) {
+      box.intersect(section);
     }
-  }
-  if (source) {
-    vimBoxUnion(source)
-  } else {
-    for (const vim of viewer.vims) {
-      vimBoxUnion(vim)
+
+    if(box.isEmpty()){
+      box.copy(section)
     }
   }
 
-  return box
+  adapter.frameCamera(box, 1);
 }

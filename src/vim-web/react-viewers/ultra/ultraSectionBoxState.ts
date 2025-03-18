@@ -11,8 +11,8 @@ export function useUltraSectionBox(viewer: Ultra.Viewer): SectionBoxRef {
       viewer.sectionBox.visible = b;
       viewer.sectionBox.interactive = b;
     },
-    getBox: () => viewer.sectionBox.getBox().clone(),
-    fitBox: (box) => viewer.sectionBox.fitBox(box),
+    getBox: () => viewer.sectionBox.getBox(),
+    setBox: (box) => viewer.sectionBox.fitBox(box),
     getSelectionBox: () => viewer.selection.getBoundingBox(),
     getRendererBox: () => viewer.renderer.getBoundingBox(),
     onSelectionChanged: viewer.selection.onValueChanged,
