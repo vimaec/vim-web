@@ -5,12 +5,12 @@
 import * as VIM from '../../core-viewers/webgl/index'
 import { SideState } from '../sidePanel/sideState'
 import { CameraRef } from '../state/cameraState'
-import { Isolation } from './isolation'
+import { Isolation } from '../helpers/isolation'
 
 /**
  * Custom viewer input scheme for the vim component
  */
-export class ComponentInputs implements VIM.InputScheme {
+export class UltraInputs implements VIM.InputScheme {
   private _viewer: VIM.Viewer
   private _camera: CameraRef
   private _default: VIM.InputScheme
