@@ -3,10 +3,14 @@
  */
 
 import * as THREE from 'three'
-import { InputHandler } from '../../../shared/inputHandler'
-import { InputAction } from '../raycaster'
-import { Viewer } from '../viewer'
+import { InputHandler } from './inputHandler';
+import { InputAction } from './inputAction';
 import { WebglViewer } from '../../../..'
+
+export interface ITouchSettings{
+  rotateSpeed: number
+  orbitSpeed : number
+}
 
 /**
  * Manages user touch inputs.
@@ -17,7 +21,12 @@ export class TouchHandler extends InputHandler {
   private readonly TAP_MAX_MOVE_PIXEL = 5
   private readonly ZOOM_SPEED = 1
   private readonly MOVE_SPEED = 100
-  private readonly _viewer: WebglViewer.Viewer
+
+  onTap: (position: THREE.Vector2) => void
+  onDoubleTap: (position: THREE.Vector2) => void 
+  onDrag: (delta: THREE.Vector2) => void
+  onDoubleDrag: (delta: THREE.Vector2) => void
+  onPinchOrSpread: (delta: number) => void
 
   /**
    * Speed factor for rotation movements
@@ -29,19 +38,10 @@ export class TouchHandler extends InputHandler {
    */
   orbitSpeed = 1
 
-  constructor (viewer: Viewer) {
-    super(viewer.viewport.canvas)
-    this._viewer = viewer
-    this.rotateSpeed = viewer.settings.camera.controls.rotateSpeed
-    this.orbitSpeed = viewer.settings.camera.controls.orbitSpeed
-  }
-
-  private get camera () {
-    return this._viewer.camera
-  }
-
-  private get viewport () {
-    return this._viewer.viewport
+  constructor (canvas: HTMLCanvasElement, settings: ITouchSettings) {
+    super(canvas)
+    //this.rotateSpeed = settings.rotateSpeed
+    //this.orbitSpeed = settings.orbitSpeed
   }
 
   // State
@@ -53,30 +53,25 @@ export class TouchHandler extends InputHandler {
   private _touchStart: THREE.Vector2 | undefined
 
   protected override addListeners (): void {
-    const canvas = this.viewport.canvas
-    this.reg(canvas, 'touchstart', this.onTouchStart)
-    this.reg(canvas, 'touchend', this.onTouchEnd)
-    this.reg(canvas, 'touchmove', this.onTouchMove)
+    this.reg(this._canvas, 'touchstart', this.onTouchStart)
+    this.reg(this._canvas, 'touchend', this.onTouchEnd)
+    this.reg(this._canvas, 'touchmove', this.onTouchMove)
   }
 
   override reset = () => {
     this._touch = this._touch1 = this._touch2 = this._touchStartTime = undefined
   }
 
-  private onTap = (position: THREE.Vector2) => {
+  private _onTap = (position: THREE.Vector2) => {
     const time = Date.now()
     const double =
       this._lastTapMs && time - this._lastTapMs < this.DOUBLE_TAP_DELAY_MS
     this._lastTapMs = time
 
-    const action = new InputAction(
-      double ? 'double' : 'main',
-      'none',
-      position,
-      this._viewer.raycaster
-    )
-
-    this._viewer.inputs.MainAction(action)
+    if(double)
+      this._onTap?.(position)
+    else
+      this.onDoubleTap?.(position)
   }
 
   private onTouchStart = (event: any) => {
@@ -105,6 +100,7 @@ export class TouchHandler extends InputHandler {
     return rotation
   }
 
+  /*
   private onDrag = (delta: THREE.Vector2) => {
     if (this._viewer.inputs.pointerActive === 'orbit') {
       this.camera.snap().orbit(this.toRotation(delta, this.orbitSpeed))
@@ -112,12 +108,16 @@ export class TouchHandler extends InputHandler {
       this.camera.snap().rotate(this.toRotation(delta, this.rotateSpeed))
     }
   }
+    */
 
+  /*
   private onDoubleDrag = (delta: THREE.Vector2) => {
     const move = delta.clone().multiplyScalar(this.MOVE_SPEED)
     this.camera.snap().move2(move, 'XY')
   }
+    */
 
+  /*
   private onPinchOrSpread = (delta: number) => {
     if (this._viewer.inputs.pointerActive === 'orbit') {
       this.camera.snap().zoom(1 + delta * this.ZOOM_SPEED)
@@ -125,6 +125,7 @@ export class TouchHandler extends InputHandler {
       this.camera.snap().move1(delta * this.ZOOM_SPEED, 'Z')
     }
   }
+    */
 
   private onTouchMove = (event: any) => {
     event.preventDefault()
@@ -133,7 +134,7 @@ export class TouchHandler extends InputHandler {
 
     if (event.touches.length === 1) {
       const pos = this.touchToVector(event.touches[0])
-      const size = this.viewport.getSize()
+      const size = this.getCanvasSize()
       const delta = pos
         .clone()
         .sub(this._touch)
@@ -149,7 +150,7 @@ export class TouchHandler extends InputHandler {
       const p1 = this.touchToVector(event.touches[0])
       const p2 = this.touchToVector(event.touches[1])
       const p = this.average(p1, p2)
-      const size = this.viewport.getSize()
+      const size = this.getCanvasSize()
       const moveDelta = this._touch
         .clone()
         .sub(p)
@@ -184,7 +185,7 @@ export class TouchHandler extends InputHandler {
         touchDurationMs < this.TAP_DURATION_MS &&
         length < this.TAP_MAX_MOVE_PIXEL
       ) {
-        this.onTap(this._touch)
+        this._onTap(this._touch)
       }
     }
     this.reset()
@@ -206,4 +207,12 @@ export class TouchHandler extends InputHandler {
   private average (p1: THREE.Vector2, p2: THREE.Vector2): THREE.Vector2 {
     return p1.clone().lerp(p2, 0.5)
   }
+
+    /**
+     * Returns the pixel size of the canvas.
+     * @returns {THREE.Vector2} The pixel size of the canvas.
+     */
+    getCanvasSize () {
+      return new THREE.Vector2(this._canvas.clientWidth, this._canvas.clientHeight)
+    }
 }

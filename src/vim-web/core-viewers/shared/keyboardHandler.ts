@@ -4,107 +4,211 @@
 
 import * as THREE from 'three';
 import { InputHandler } from './inputHandler';
-import { WebglViewer } from '../../../..';
+
+const MOVEMENT_KEYS = new Set<string>([
+  'KeyD', 'ArrowRight', // Move right
+  'KeyA', 'ArrowLeft',  // Move left
+  'KeyW', 'ArrowUp',    // Move forward
+  'KeyS', 'ArrowDown',  // Move backward
+  'KeyE',               // Move up
+  'KeyQ'                // Move down
+])
+
+
 
 /**
- * Modern KeyboardHandler: manages keyboard events using a stateful pattern.
+ * KeyboardHandler
+ * 
+ * A modern keyboard handler that manages keyboard events using a stateful pattern.
+ * It supports separate handlers for key down, key up, and continuous key pressed events.
+ * The handler calculates a movement vector based on currently pressed keys.
  */
 export class KeyboardHandler extends InputHandler {
-  // Speed multiplier when shift is pressed.
+
+  /**
+   * Callback invoked whenever the calculated movement vector is updated.
+   */
+  public onMove: (value: THREE.Vector3) => void;
+  public onKeyUp: (code: string) => boolean;
+  public onKeyDown: (code: string) => boolean;
+
+
+  /**
+   * Speed multiplier applied when the Shift key is held.
+   * @private
+   */
   private readonly SHIFT_MULTIPLIER: number = 3.0;
-  
-  // A Set to track currently pressed keys by their event.code values.
+
+
+  /**
+   * Set of currently pressed key codes.
+   * @private
+   */
   private pressedKeys: Set<string> = new Set();
 
-  private pressed(key: string): boolean {
-    return this.pressedKeys.has(key);
-  }
+  /**
+   * Map of key down event handlers (invoked once on key down).
+   * @private
+   */
+  private keyDownHandlers: Map<string, () => void> = new Map();
 
-  constructor(private viewer: WebglViewer.Viewer) {
-    super(viewer.viewport.canvas);
+  /**
+   * Map of key up event handlers (invoked once on key up).
+   * @private
+   */
+  private keyUpHandlers: Map<string, () => void> = new Map();
+
+  /**
+   * Creates an instance of KeyboardHandler.
+   * @param canvas The HTMLCanvasElement to attach keyboard events to.
+   */
+  constructor(canvas: HTMLCanvasElement) {
+    super(canvas);
     // Ensure the canvas can receive focus.
     this._canvas.tabIndex = 0;
     this.addListeners();
+    this.registerMovementHandlers()
   }
 
+  /**
+   * Registers the necessary keyboard event listeners.
+   * @protected
+   */
   protected override addListeners(): void {
     // Listen for keyboard events on the canvas.
-    this.reg(this._canvas, 'keydown', this.onKeyDown);
-    this.reg(this._canvas, 'keyup', this.onKeyUp);
+    this.reg(this._canvas, 'keydown', this._onKeyDown);
+    this.reg(this._canvas, 'keyup', this._onKeyUp);
+
     // Reset state when focus is lost or on window resize.
     this.reg(this._canvas, 'focusout', () => this.reset());
     this.reg(window, 'resize', () => this.reset());
   }
+  
+  private registerMovementHandlers(): void {
+    const movementKeys = [
+      'KeyD', 'ArrowRight', // Move right
+      'KeyA', 'ArrowLeft',  // Move left
+      'KeyW', 'ArrowUp',    // Move forward
+      'KeyS', 'ArrowDown',  // Move backward
+      'KeyE',               // Move up
+      'KeyQ',               // Move down
+      'ShiftLeft', 'ShiftRight' // Speed boost
+    ];
+  
+    // Register movement keys for both key down and key up
+    movementKeys.forEach(key => {
+      this.registerKeyDown(key, () => this.applyMove());
+      this.registerKeyUp(key, () => this.applyMove());
+    });
+  }
 
+  /**
+   * Checks if a key is currently pressed.
+   * @param key The event.code of the key.
+   * @returns {boolean} True if the key is pressed, false otherwise.
+   * @private
+   */
+    isKeyPressed(key: string): boolean {
+      return this.pressedKeys.has(key);
+    }
+
+  /**
+   * Resets the handler state by clearing all pressed keys and recalculating movement.
+   * @override
+   */
   override reset(): void {
     this.pressedKeys.clear();
     this.applyMove();
   }
 
-  // Use arrow functions to ensure the correct context.
-  private onKeyDown = (event: KeyboardEvent): void => {
-    this.pressedKeys.add(event.code);
-
-    // Prevent default behavior for movement/modifier keys.
-    if (this.shouldPreventDefault(event.code)) {
-      event.preventDefault();
-    }
-
-    // Update movement based on the new state.
-    this.applyMove();
-  };
-
-  private onKeyUp = (event: KeyboardEvent): void => {
-    this.pressedKeys.delete(event.code);
-
-    // Optionally trigger one-off key actions on keyup.
-    if (this.viewer.inputs.KeyAction && this.viewer.inputs.KeyAction(event.code)) {
-      event.preventDefault();
-    }
-    if (this.shouldPreventDefault(event.code)) {
-      event.preventDefault();
-    }
-
-    this.applyMove();
-  };
-
   /**
-   * Determine if the default action should be prevented for specific keys.
+   * Registers a handler for a key down event.
+   * @param keyCode The event.code of the key.
+   * @param handler Callback invoked on key down.
    */
-  private shouldPreventDefault(code: string): boolean {
-    const keysToPrevent = new Set([
-      'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-      'KeyW', 'KeyA', 'KeyS', 'KeyD',
-      'KeyQ', 'KeyE',
-      'ShiftLeft', 'ShiftRight',
-      'ControlLeft', 'ControlRight'
-    ]);
-    return keysToPrevent.has(code);
+  public registerKeyDown(keyCode: string, handler: () => void): void {
+    this.keyDownHandlers.set(keyCode, handler);
   }
 
   /**
-   * Calculate and apply the movement vector based on currently pressed keys.
+   * Registers a handler for a key up event.
+   * @param keyCode The event.code of the key.
+   * @param handler Callback invoked on key up.
+   */
+  public registerKeyUp(keyCode: string, handler: () => void): void {
+    this.keyUpHandlers.set(keyCode, handler);
+  }
+
+  /**
+   * Internal key down event handler.
+   * @param event The KeyboardEvent object.
+   * @private
+   */
+  private _onKeyDown = (event: KeyboardEvent): void => {
+    this.pressedKeys.add(event.code);
+
+    // Invoke the registered key down handler, if any.
+    const downHandler = this.keyDownHandlers.get(event.code);
+    if (downHandler) {
+      downHandler();
+      event.preventDefault();
+    }
+
+     // Key is not registered, call the onKeyDown callback if defined.
+    if(this.onKeyDown?.(event.code) ?? false){
+      event.preventDefault();
+    }
+  };
+
+  /**
+   * Internal key up event handler.
+   * @param event The KeyboardEvent object.
+   * @private
+   */
+  private _onKeyUp = (event: KeyboardEvent): void => {
+    this.pressedKeys.delete(event.code);
+
+    // Invoke the registered key up handler, if any.
+    const upHandler = this.keyUpHandlers.get(event.code);
+    if (upHandler) {
+      upHandler();
+      event.preventDefault();
+    }
+
+    // Key is not registered, call the onKeyUp callback if defined.
+    if(this.onKeyUp?.(event.code) ?? false){
+      event.preventDefault();
+    }
+  };
+
+  /**
+   * Calculates and applies the movement vector based on currently pressed keys.
+   * Also calls any continuous key pressed handlers for keys that are held down.
+   * @private
    */
   private applyMove(): void {
-    // Horizontal movement: right (D/ArrowRight) minus left (A/ArrowLeft).
-    const moveX = (this.pressed('KeyD') || this.pressed('ArrowRight') ? 1 : 0)
-                - (this.pressed('KeyA') || this.pressed('ArrowLeft') ? 1 : 0);
-
-    // Forward/backward movement: forward (W/ArrowUp) minus backward (S/ArrowDown).
-    const moveZ = (this.pressed('KeyW') || this.pressed('ArrowUp') ? 1 : 0)
-                - (this.pressed('KeyS') || this.pressed('ArrowDown') ? 1 : 0);
     
-    // Vertical movement: up (E) minus down (Q).
-    const moveY = (this.pressed('KeyE') ? 1 : 0)
-                - (this.pressed('KeyQ') ? 1 : 0);
+    // Calculate horizontal movement: right (D/ArrowRight) minus left (A/ArrowLeft).
+    const moveX = (this.isKeyPressed('KeyD') || this.isKeyPressed('ArrowRight') ? 1 : 0)
+                - (this.isKeyPressed('KeyA') || this.isKeyPressed('ArrowLeft') ? 1 : 0);
 
+    // Calculate forward/backward movement: forward (W/ArrowUp) minus backward (S/ArrowDown).
+    const moveZ = (this.isKeyPressed('KeyW') || this.isKeyPressed('ArrowUp') ? 1 : 0)
+                - (this.isKeyPressed('KeyS') || this.isKeyPressed('ArrowDown') ? 1 : 0);
+    
+    // Calculate vertical movement: up (E) minus down (Q).
+    const moveY = (this.isKeyPressed('KeyE') ? 1 : 0)
+                - (this.isKeyPressed('KeyQ') ? 1 : 0);
+
+    // Create the movement vector.
     let move = new THREE.Vector3(moveX, moveY, moveZ);
-
+    
     // Apply speed multiplier if Shift is held.
-    if (this.pressed('ShiftLeft') || this.pressed('ShiftRight')) {
+    if (this.isKeyPressed('ShiftLeft') || this.isKeyPressed('ShiftRight')) {
       move.multiplyScalar(this.SHIFT_MULTIPLIER);
     }
 
-    this.viewer.camera.localVelocity = move;
+    // Call the onMove callback if defined.
+    this.onMove?.(move);
   }
 }

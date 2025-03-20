@@ -1,7 +1,7 @@
 import { Box3, RGB, RGBA, Segment, Vector2, Vector3 } from './math3d'
 import { isURL } from './url'
 import { MaterialHandle, materialHandles } from '../viewer/rpcClient'
-import { INVALID_HANDLE } from '../viewer/viewer'
+import { INVALID_HANDLE } from '../viewer/ultraCoreViewer'
 
 export class Validation {
   //= ===========================================================================

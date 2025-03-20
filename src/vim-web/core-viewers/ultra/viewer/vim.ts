@@ -1,7 +1,7 @@
 import { ColorHandle } from './color';
 import { ColorManager } from './colorManager';
 import { MaterialHandles } from './rpcClient';
-import { INVALID_HANDLE } from './viewer';
+import { INVALID_HANDLE } from './ultraCoreViewer';
 import { LoadRequest } from './loadRequest';
 import { RpcSafeClient, VimLoadingStatus, VimSource } from './rpcSafeClient';
 import { ILogger } from './logger';

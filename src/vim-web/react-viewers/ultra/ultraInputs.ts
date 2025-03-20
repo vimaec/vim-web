@@ -25,7 +25,7 @@ export class UltraInputs implements VIM.InputScheme {
   ) {
     this._viewer = viewer
     this._camera = camera
-    this._default = new VIM.DefaultInputScheme(viewer)
+    //this._default = new VIM.DefaultInputScheme(viewer)
     this._isolation = isolation
     this._sideState = sideState
   }

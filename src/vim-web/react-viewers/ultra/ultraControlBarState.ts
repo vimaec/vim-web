@@ -10,7 +10,7 @@ export { buttonDefaultStyle, buttonBlueStyle } from '../controlbar/controlBarBut
 export { sectionDefaultStyle, sectionBlueStyle } from '../controlbar/controlBarSection'
 
 export function useUltraControlBar (
-  viewer: Ultra.Viewer,
+  viewer: Ultra.UltraCoreViewer,
   section: SectionBoxRef,
   camera: CameraRef,
   customization: ControlBarCustomization | undefined
