@@ -8,7 +8,6 @@ import * as THREE from 'three'
 import { ViewerSettings, getViewerSettings, PartialViewerSettings } from './settings/viewerSettings'
 import { Camera } from './camera/camera'
 import { ICamera } from './camera/ICamera'
-import { Input } from './inputs/input'
 import { Selection } from './selection'
 import { Environment } from './environment/environment'
 import { Raycaster } from './raycaster'
@@ -21,6 +20,8 @@ import { Renderer } from './rendering/renderer'
 import { ISignal, SignalDispatcher } from 'ste-signals'
 import { ViewerMaterials } from '../loader/materials/viewerMaterials'
 import { Vim } from '../loader/vim'
+import { Input2 } from '../../shared/input2'
+import { webglInput } from './webglInputs'
 
 /**
  * Viewer and loader for vim files.
@@ -50,7 +51,7 @@ export class Viewer {
   /**
    * The interface for manipulating default viewer inputs.
    */
-  readonly inputs: Input
+  readonly inputs: Input2
 
   /**
    * The interface for performing raycasting into the scene to find objects.
@@ -110,7 +111,7 @@ export class Viewer {
       this.settings
     )
 
-    this.inputs = new Input(this)
+    this.inputs = webglInput(this)
     this.gizmos = new Gizmos(this, this._camera)
     this.materials.applySettings(this.settings)
 
@@ -126,7 +127,7 @@ export class Viewer {
       this.renderer
     )
 
-    this.inputs.registerAll()
+    this.inputs.init()
 
     // Start Loop
     this.animate()

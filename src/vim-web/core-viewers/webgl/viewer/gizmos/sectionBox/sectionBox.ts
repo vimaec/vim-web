@@ -129,12 +129,11 @@ export class SectionBox {
   // -------------------------------------------------------------------------
 
   /**
-   * The shared bounding box that defines the section region.
-   * 
-   * To programmatically update the box, see {@link fitBox}.
+   * Returns a copy of the current section box.
+   * To programmatically update the box, see {@link setBox}.
    */
-  get box(): THREE.Box3 {
-    return this.section.box;
+  getBox(): THREE.Box3 {
+    return this.section.box?.clone();
   }
 
   /**
@@ -206,13 +205,13 @@ export class SectionBox {
    * @param box - The bounding box to match (required).
    * @param padding - The scalar amount by which to expand the bounding box. Default is `1`.
    */
-  public fitBox(box: THREE.Box3): void {
+  public setBox(box: THREE.Box3): void {
     if (!box) return;
     box = safeBox(box);
     
     this._gizmos.fitBox(box);
     this.renderer.section.fitBox(box);
-    this._onBoxConfirm.dispatch(this.box);
+    this._onBoxConfirm.dispatch(box);
     this.renderer.needsUpdate = true;
   }
 
@@ -222,7 +221,7 @@ export class SectionBox {
    * Call this if the renderer's section box is changed by code outside this class.
    */
   public update(): void {
-    this.fitBox(this.section.box);
+    this.setBox(this.section.box);
     this.renderer.needsUpdate = true;
   }
 

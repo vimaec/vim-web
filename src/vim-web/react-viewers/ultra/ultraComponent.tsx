@@ -37,7 +37,7 @@ export function createUltraComponent (
     : container ?? createContainer()
 
   // Create the viewer and container
-  const viewer = Ultra.Viewer.createWithCanvas(cmpContainer.gfx)
+  const viewer = Ultra.UltraCoreViewer.createWithCanvas(cmpContainer.gfx)
 
   // Create the React root
   const reactRoot = createRoot(cmpContainer.ui)
@@ -71,12 +71,12 @@ export function createUltraComponent (
  */
 export function UltraComponent (props: {
   container: Container
-  viewer: Ultra.Viewer
+  viewer: Ultra.UltraCoreViewer
   onMount: (component: UltraComponentRef) => void}) {
 
   const modal = useModal(true)
   const sectionBox = useUltraSectionBox(props.viewer)
-  const camera = useUltraCamera(props.viewer)
+  const camera = useUltraCamera(props.viewer, sectionBox)
 
   const side = useSideState(true, 400)
   const [_, setSelectState] = useState(0)
@@ -125,7 +125,7 @@ export function UltraComponent (props: {
   </>
 }
 
-function patchLoad(viewer: Ultra.Viewer, modal: ModalRef) {
+function patchLoad(viewer: Ultra.UltraCoreViewer, modal: ModalRef) {
   return function load (source: Ultra.VimSource): Ultra.ILoadRequest {
     const request = viewer.loadVim(source)
 

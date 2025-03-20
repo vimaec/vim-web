@@ -157,7 +157,7 @@ function controlBarPointer(
   };
 }
 
-function controlBarActions(
+export function controlBarActions(
   camera: CameraRef,
   settings: ComponentSettings,
   isolation: Isolation,
@@ -171,7 +171,7 @@ function controlBarActions(
       {
         id: ControlBar.ids.buttonZoomToFit,
         enabled: () => isTrue(settings.ui.zoomToFit),
-        tip: 'Zoom to Fit',
+        tip: 'Frame Camera',
         action: () => camera.frameSelection.call(),
         icon: Icons.frameSelection,
         isOn: () => false,

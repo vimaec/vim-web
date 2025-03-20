@@ -1,5 +1,5 @@
 import "./style.css"
-export * from './viewer/viewer'
+export * from './viewer/ultraCoreViewer'
 export * as utils from './utils/promise'
 export * from './viewer/vim'
 export * from './utils/math3d'

@@ -9,8 +9,7 @@ export * from './loader/progressive/vimRequest'
 export * from './loader/progressive/vimx'
 export * from './viewer/viewer'
 export * from './loader/geometry'
-export type { PointerMode, InputScheme } from './viewer/inputs/input'
-export { DefaultInputScheme, KEYS } from './viewer/inputs/input'
+
 
 export * from './viewer/settings/viewerSettings'
 export * from './viewer/settings/viewerSettingsParsing'

@@ -89,11 +89,6 @@ export interface ICamera {
   get isLerping(): boolean;
 
   /**
-   * The camera speed factor.
-   */
-  speed: number;
-
-  /**
    * The current or target velocity of the camera.
    */
   localVelocity: THREE.Vector3;
