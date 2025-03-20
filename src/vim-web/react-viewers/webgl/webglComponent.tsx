@@ -144,12 +144,14 @@ export function VimComponent (props: {
 
     // Setup custom input scheme
     props.viewer.viewport.canvas.tabIndex = 0
+    /*
     props.viewer.inputs.scheme = new WebglInputScheme(
       props.viewer,
       camera,
       isolation,
       side
     )
+      */
 
     // Register context menu
     const subContext =

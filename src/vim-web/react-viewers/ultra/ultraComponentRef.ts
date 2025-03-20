@@ -11,7 +11,7 @@ export type UltraComponentRef = {
   /**
    * The Vim viewer instance associated with the component.
    */
-  viewer: Ultra.Viewer;
+  viewer: Ultra.UltraCoreViewer;
 
   /**
    * API to manage the modal dialog.
