@@ -20,8 +20,8 @@ import { Renderer } from './rendering/renderer'
 import { ISignal, SignalDispatcher } from 'ste-signals'
 import { ViewerMaterials } from '../loader/materials/viewerMaterials'
 import { Vim } from '../loader/vim'
-import { Input2 } from '../../shared/input2'
-import { webglInput } from './webglInputs'
+import { CoreInputHandler } from '../../shared/coreInputHandler'
+import { webglInputAdapter } from './webglInputsAdapter'
 
 /**
  * Viewer and loader for vim files.
@@ -51,7 +51,7 @@ export class Viewer {
   /**
    * The interface for manipulating default viewer inputs.
    */
-  readonly inputs: Input2
+  readonly inputs: CoreInputHandler
 
   /**
    * The interface for performing raycasting into the scene to find objects.
@@ -111,7 +111,7 @@ export class Viewer {
       this.settings
     )
 
-    this.inputs = webglInput(this)
+    this.inputs = webglInputAdapter(this)
     this.gizmos = new Gizmos(this, this._camera)
     this.materials.applySettings(this.settings)
 

@@ -9,6 +9,7 @@ export * from './loader/progressive/vimRequest'
 export * from './loader/progressive/vimx'
 export * from './viewer/viewer'
 export * from './loader/geometry'
+export * from '../shared/coreInputHandler'
 
 
 export * from './viewer/settings/viewerSettings'
@@ -20,7 +21,7 @@ export {
   InputAction
 } from './viewer/raycaster'
 
-export { type SelectableObject } from './viewer/selection'
+export { type SelectableObject, Selection } from './viewer/selection'
 export * from './loader/progressive/insertableMesh'
 export * from './loader/progressive/g3dSubset'
 export * from './loader/geometry'

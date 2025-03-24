@@ -1,5 +1,5 @@
 import { InputHandler } from "./inputHandler";
-import { Vector2, almostEqual } from "./../ultra/utils/math3d"; // TODO Move up
+import { Vector2, almostEqual } from "../utils/math3d"; // TODO Move up
 import * as THREE from 'three';
 
 type DragCallback = (delta: Vector2, button: number) => void;
@@ -24,8 +24,7 @@ export class MouseHandler extends InputHandler {
     this._dragHandler = new DragHandler(canvas, (delta: Vector2, button:number) => this.onDrag(delta, button));
   }
 
-  register(): void {
-    // Register mouse events
+  protected addListeners(): void {
     this.reg<PointerEvent>(this._canvas, 'pointerdown', e => { this.onPointerDown(e); });
     this.reg<PointerEvent>(this._canvas, 'pointerup', e => { this.onPointerUp(e); });
     this.reg<PointerEvent>(this._canvas, 'pointermove', e => { this.onPointerMove(e); });

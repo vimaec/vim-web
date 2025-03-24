@@ -1,5 +1,5 @@
-import { Box3, RGBA } from "../utils/math3d";
-import { Validation } from "../utils/validation";
+import { Box3, RGBA } from "../../utils/math3d";
+import { Validation } from "./validation";
 import { ILogger } from "./logger";
 import { defaultSceneSettings, RpcSafeClient, SceneSettings } from "./rpcSafeClient";
 import { ClientStreamError } from "./socketClient";

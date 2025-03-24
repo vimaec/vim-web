@@ -91,8 +91,8 @@ export function MenuSettings (props: {
           'Scroll Speed',
           '[0.1,10]',
           n => THREE.MathUtils.clamp(n, 0.1, 10),
-          s => props.viewer.inputs.mouse.scrollSpeed,
-          (s, v) => { props.viewer.inputs.mouse.scrollSpeed = v }
+          s => props.viewer.inputs.scrollSpeed,
+          (s, v) => { props.viewer.inputs.scrollSpeed = v }
         )}
         {settingsSubtitle('Materials')}
         {settingsToggle(

@@ -1,5 +1,5 @@
 import { SignalDispatcher } from "ste-signals";
-import { Box3, Vector2, Vector3 } from "../utils/math3d";
+import { Box3, Vector2, Vector3 } from "../../utils/math3d";
 import { RpcSafeClient } from "./rpcSafeClient";
 import { Vim } from "./vim";
 import { IReadonlyVimCollection } from "./vimCollection";

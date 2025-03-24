@@ -1,5 +1,5 @@
 import { Vim } from './vim'
-import { ControllablePromise } from '../utils/promise'
+import { ControllablePromise } from '../../utils/promise'
 
 export type LoadRequestResult = LoadSuccess | LoadError
 

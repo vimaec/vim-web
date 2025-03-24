@@ -1,8 +1,8 @@
-import { Box3, RGBA, RGBA32, Segment, Vector2, Vector3 } from "../utils/math3d"
+import { Box3, RGBA, RGBA32, Segment, Vector2, Vector3 } from "../../utils/math3d"
 import { HitCheckResult, SectionBoxState } from "./marshal"
 import { MaterialHandle, RpcClient } from "./rpcClient"
-import { Validation } from "../utils/validation"
-import { batchArray, batchArrays } from "../utils/array"
+import { Validation } from "./validation"
+import { batchArray, batchArrays } from "../../utils/array"
 import { INVALID_HANDLE } from "./ultraCoreViewer"
 
 const defaultBatchSize = 10000

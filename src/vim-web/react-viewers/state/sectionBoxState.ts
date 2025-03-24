@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useLayoutEffect, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
-import { addBox } from '../../core-viewers/webgl/utils/threeUtils';
+import { addBox } from '../../core-viewers/utils/threeUtils';
 import { ISignal } from 'ste-signals';
 import { ActionRef, ArgActionRef, AsyncFuncRef, StateRef, useArgActionRef, useFuncRef, useStateRef } from '../helpers/reactUtils';
 

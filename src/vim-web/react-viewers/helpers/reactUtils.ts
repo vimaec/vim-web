@@ -58,6 +58,7 @@ export function useStateRef<T>(initialValue: T) {
 
 export interface ActionRef {
   call(): void
+  get(): () => void
   set(func: () => void): void
 }
 
@@ -67,9 +68,13 @@ export function useActionRef(action: () => void): ActionRef {
     call() {
       ref?.current()
     },
+    get() {
+      return ref.current
+    },
     set(func: () => void) {
       ref.current = func
     }
+
   }
 }
 

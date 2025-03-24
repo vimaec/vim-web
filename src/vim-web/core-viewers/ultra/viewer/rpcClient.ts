@@ -1,6 +1,6 @@
 import type{SocketClient} from './socketClient'
 import { Marshal, HitCheckResult, VimStatus, SectionBoxState } from './marshal'
-import { Box3, RGBA, RGBA32, Segment, Vector2, Vector3, Matrix44 } from '../utils/math3d'
+import { Box3, RGBA, RGBA32, Segment, Vector2, Vector3, Matrix44 } from '../../utils/math3d'
 
 // RPC Generated Constants
 

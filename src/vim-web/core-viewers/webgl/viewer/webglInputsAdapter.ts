@@ -1,9 +1,9 @@
-import { InputAdapter, Input2 } from "../../shared/input2"
+import { InputAdapter, CoreInputHandler } from "../../shared/coreInputHandler"
 import { Viewer } from "./viewer"
 import * as THREE from 'three'
 
-export function webglInput(viewer: Viewer) {
-  return new Input2(
+export function webglInputAdapter(viewer: Viewer) {
+  return new CoreInputHandler(
     viewer.viewport.canvas,
     createAdapter(viewer),
     viewer.settings.camera.controls
@@ -46,10 +46,6 @@ function createAdapter(viewer: Viewer ) : InputAdapter {
     },
     selectAtPointer: (pos: THREE.Vector2, add: boolean) => {
       //TODO: This logic should happen in shared code
-      const size = viewer.viewport.getSize()
-      pos.multiply(size)
-
-
       const pointer = viewer.raycaster.raycast2(pos)
       if(add){
         viewer.selection.add(pointer.object)
@@ -60,9 +56,6 @@ function createAdapter(viewer: Viewer ) : InputAdapter {
     },
     frameAtPointer: (pos: THREE.Vector2) => {
       //TODO: This logic should happen in shared code
-      const size = viewer.viewport.getSize()
-      pos.multiply(size)
-
       const pointer = viewer.raycaster.raycast2(pos)
       viewer.camera.lerp(0.75).frame(pointer.object)
     },
