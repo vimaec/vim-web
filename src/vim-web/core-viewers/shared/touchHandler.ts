@@ -4,13 +4,6 @@
 
 import * as THREE from 'three'
 import { InputHandler } from './inputHandler';
-import { InputAction } from './inputAction';
-import { WebglViewer } from '../../../..'
-
-export interface ITouchSettings{
-  rotateSpeed: number
-  orbitSpeed : number
-}
 
 /**
  * Manages user touch inputs.
@@ -28,20 +21,8 @@ export class TouchHandler extends InputHandler {
   onDoubleDrag: (delta: THREE.Vector2) => void
   onPinchOrSpread: (delta: number) => void
 
-  /**
-   * Speed factor for rotation movements
-   */
-  rotateSpeed = 1
-
-  /**
-   * Speed factor for orbit movements
-   */
-  orbitSpeed = 1
-
-  constructor (canvas: HTMLCanvasElement, settings: ITouchSettings) {
+  constructor (canvas: HTMLCanvasElement) {
     super(canvas)
-    //this.rotateSpeed = settings.rotateSpeed
-    //this.orbitSpeed = settings.orbitSpeed
   }
 
   // State

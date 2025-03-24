@@ -23,7 +23,7 @@ import { MenuSettings } from '../settings/menuSettings'
 import { MenuToastMemo } from '../panels/toast'
 import { Overlay } from '../panels/overlay'
 import { addPerformanceCounter } from '../panels/performance'
-import { WebglInputs as WebglInputScheme } from './webgInputs'
+import { applyWebglBindings } from './webgInputsBindings'
 import { CursorManager } from '../helpers/cursor'
 import { PartialComponentSettings, isTrue } from '../settings/settings'
 import { useSettings } from '../settings/settingsState'
@@ -144,14 +144,7 @@ export function VimComponent (props: {
 
     // Setup custom input scheme
     props.viewer.viewport.canvas.tabIndex = 0
-    /*
-    props.viewer.inputs.scheme = new WebglInputScheme(
-      props.viewer,
-      camera,
-      isolation,
-      side
-    )
-      */
+    applyWebglBindings(props.viewer, camera, isolation, side)
 
     // Register context menu
     const subContext =

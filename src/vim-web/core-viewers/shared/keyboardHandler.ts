@@ -5,16 +5,7 @@
 import * as THREE from 'three';
 import { InputHandler } from './inputHandler';
 
-const MOVEMENT_KEYS = new Set<string>([
-  'KeyD', 'ArrowRight', // Move right
-  'KeyA', 'ArrowLeft',  // Move left
-  'KeyW', 'ArrowUp',    // Move forward
-  'KeyS', 'ArrowDown',  // Move backward
-  'KeyE',               // Move up
-  'KeyQ'                // Move down
-])
-
-
+type CallbackMode = 'replace' | 'append' | 'prepend';
 
 /**
  * KeyboardHandler
@@ -97,8 +88,8 @@ export class KeyboardHandler extends InputHandler {
   
     // Register movement keys for both key down and key up
     movementKeys.forEach(key => {
-      this.registerKeyDown(key, () => this.applyMove());
-      this.registerKeyUp(key, () => this.applyMove());
+      this.registerKeyDown(key, 'replace', () => this.applyMove());
+      this.registerKeyUp(key, 'replace', () => this.applyMove());
     });
   }
 
@@ -123,21 +114,33 @@ export class KeyboardHandler extends InputHandler {
 
   /**
    * Registers a handler for a key down event.
-   * @param keyCode The event.code of the key.
+   * @param code The event.code of the key.
    * @param handler Callback invoked on key down.
    */
-  public registerKeyDown(keyCode: string, handler: () => void): void {
-    this.keyDownHandlers.set(keyCode, handler);
+  public registerKeyDown(code: string, mode: CallbackMode, handler: () => void): void {
+    this.registerKey(this.keyDownHandlers, code, mode, handler);
   }
 
   /**
    * Registers a handler for a key up event.
-   * @param keyCode The event.code of the key.
+   * @param code The event.code of the key.
    * @param handler Callback invoked on key up.
    */
-  public registerKeyUp(keyCode: string, handler: () => void): void {
-    this.keyUpHandlers.set(keyCode, handler);
+  public registerKeyUp(code: string, mode: CallbackMode, handler: () => void): void {
+    this.registerKey(this.keyUpHandlers, code, mode, handler);
   }
+
+  private registerKey(map: Map<string, () => void>, code: string, mode: CallbackMode, callback: () => void){
+    mode = map.has(code) ? mode : 'replace'
+  
+    const previous = map.get(code)
+    const next = mode === 'replace' ? callback
+      : mode === 'prepend' ? () => {callback(); previous()}
+      : mode === 'append' ? () => {previous(); callback()}
+      : undefined
+    map.set(code, next)
+  }
+  
 
   /**
    * Internal key down event handler.

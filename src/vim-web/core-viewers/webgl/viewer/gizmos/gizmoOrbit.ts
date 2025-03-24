@@ -5,7 +5,7 @@ import * as THREE from 'three'
 import { Renderer } from '../rendering/renderer'
 import { Camera } from '../camera/camera'
 import { ViewerSettings } from '../settings/viewerSettings'
-import { Input } from '../inputs/input'
+import { CoreInputHandler } from '../../../shared/coreInputHandler'
 
 /**
  * Manages the camera target gizmo
@@ -14,7 +14,7 @@ export class GizmoOrbit {
   // Dependencies
   private _renderer: Renderer
   private _camera: Camera
-  private _inputs: Input
+  private _inputs: CoreInputHandler
 
   // Settings
   private _size: number = 1
@@ -39,7 +39,7 @@ export class GizmoOrbit {
   constructor (
     renderer: Renderer,
     camera: Camera,
-    input: Input,
+    input: CoreInputHandler,
     settings: ViewerSettings
   ) {
     this._renderer = renderer

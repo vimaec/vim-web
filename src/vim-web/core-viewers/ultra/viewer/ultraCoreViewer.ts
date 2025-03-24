@@ -14,8 +14,8 @@ import { ViewerSelection } from './selection'
 import { IReadonlyVimCollection, VimCollection } from './vimCollection'
 import { IRenderer, Renderer } from './renderer'
 import { SectionBox } from './sectionBox'
-import { Input2 } from '../../shared/input2'	
-import { ultraCoreInput } from './ultraInputs'
+import { CoreInputHandler } from '../../shared/coreInputHandler'	
+import { ultraInputAdapter } from './ultraInputsAdapter'
 
 
 export const INVALID_HANDLE = 0xffffffff
@@ -27,7 +27,7 @@ export const INVALID_HANDLE = 0xffffffff
 export class UltraCoreViewer {
   private readonly _decoder: Decoder | DecoderWithWorker
   private readonly _socketClient: SocketClient
-  private readonly _input: Input2
+  private readonly _input: CoreInputHandler
   private readonly _logger: ILogger
   private readonly _canvas: HTMLCanvasElement
   private readonly _renderer : Renderer
@@ -149,7 +149,7 @@ export class UltraCoreViewer {
     this._renderer = new Renderer(this.rpc, this._logger)
     this.colors = new ColorManager(this.rpc)
     this._camera = new Camera(this.rpc)
-    this._input = ultraCoreInput(this)
+    this._input = ultraInputAdapter(this)
     this.sectionBox = new SectionBox(this.rpc)
 
     // Set up the video frame handler

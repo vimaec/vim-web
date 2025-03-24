@@ -1,4 +1,4 @@
-import { InputAdapter, Input2 } from "../../shared/input2"
+import { InputAdapter, CoreInputHandler } from "../../shared/coreInputHandler"
 import { UltraCoreViewer } from "./ultraCoreViewer"
 import * as THREE from 'three'
 
@@ -22,8 +22,8 @@ const CODE_TO_KEYCODE: Record<string, number> = {
 
 export default CODE_TO_KEYCODE;
 
-export function ultraCoreInput(viewer: UltraCoreViewer) {
-  return new Input2(
+export function ultraInputAdapter(viewer: UltraCoreViewer) {
+  return new CoreInputHandler(
     viewer.viewport.canvas,
     createAdapter(viewer),
   )
@@ -33,7 +33,7 @@ function createAdapter(viewer: UltraCoreViewer ) : InputAdapter {
   return {
 
     init: () => {
-      console.log('Ultra Input Init')
+      viewer.rpc.RPCSetMoveSpeed(10)
     },
     orbitCamera: (value: THREE.Vector2) => {
       console.log('orbitCamera')
@@ -49,22 +49,39 @@ function createAdapter(viewer: UltraCoreViewer ) : InputAdapter {
     },
 
     resetCamera: () => {
-      console.log('resetCamera')
+      viewer.camera.restoreSavedPosition()
     },
     clearSelection: () => {
       viewer.selection.clear()
     },
     frameCamera: () => {
-      console.log('frameCamera')
+      frameContext(viewer)
     },
-    selectAtPointer: (pos: THREE.Vector2, add: boolean) => {
-      console.log('selectAtPointer')
+    selectAtPointer: async (pos: THREE.Vector2, add: boolean) => {
+      console.log('selectAtPointer', pos, add)
+      const hit = await viewer.selection.hitTest(pos);
+      console.log('hit', hit)
+      if(!hit){
+        viewer.selection.clear();
+        return
+      }
+  
+      if(add) {
+        viewer.selection.toggle(hit.vim, hit.nodeIndex);
+      }
+      else{
+        viewer.selection.select(hit.vim, hit.nodeIndex);
+      }
     },
-    frameAtPointer: (pos: THREE.Vector2) => {
-      console.log('frameAtPointer')
+    frameAtPointer: async (pos: THREE.Vector2) => {
+      const hit = await viewer.selection.hitTest(pos);
+      if(hit){
+        viewer.camera.frameVim(hit.vim, [hit.nodeIndex], 1);
+      }else{
+        viewer.camera.frameAll(1);
+      }
     },
     zoom: (value: number) => {
-      console.log('zoom', value)
       viewer.rpc.RPCMouseScrollEvent(value >= 1 ? 1 : -1)
     },
     moveCamera: (value : THREE.Vector3) => {
@@ -92,7 +109,20 @@ function createAdapter(viewer: UltraCoreViewer ) : InputAdapter {
     mouseMove: (pos: THREE.Vector2) => {
       viewer.rpc.RPCMouseMoveEvent(pos)
     },
-
   }
 }
 
+
+async function frameContext(viewer: UltraCoreViewer) {
+  if (viewer.selection.count > 0) {
+    frameSelection(viewer);
+  } else {
+    viewer.camera.frameAll();
+  }
+}
+
+async function frameSelection(viewer: UltraCoreViewer) {
+  const box = await viewer.selection.getBoundingBox();
+  if (!box) return;
+  viewer.camera.frameBox(box);
+}

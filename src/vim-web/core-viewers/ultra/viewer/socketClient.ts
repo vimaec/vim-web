@@ -2,10 +2,10 @@ import { StreamLogger } from './streamLogger'
 import * as Protocol from './protocol'
 import { Marshal, ReadMarshal } from './marshal'
 import { ILogger } from './logger'
-import { ControllablePromise, IPromise, ResolvedPromise } from '../utils/promise'
+import { ControllablePromise, IPromise, ResolvedPromise } from '../../utils/promise'
 import { SimpleEventDispatcher } from 'ste-simple-events'
-import { isWebSocketUrl } from '../utils/url'
-import { Segment } from '../utils/math3d'
+import { isWebSocketUrl } from '../../utils/url'
+import { Segment } from '../../utils/math3d'
 
 export const DEFAULT_LOCAL_ULTRA_SERVER_URL = 'ws://localhost:8123'
 

@@ -8,7 +8,7 @@ import { BoxInputs } from './sectionBoxInputs';
 import { SignalDispatcher } from 'ste-signals';
 import { SimpleEventDispatcher } from 'ste-simple-events';
 import { SectionBoxGizmo } from './sectionBoxGizmo';
-import { safeBox } from '../../../utils/threeUtils';
+import { safeBox } from '../../../../utils/threeUtils';
 
 /**
  * Manages a section box gizmo, serving as a proxy between the renderer and the user.

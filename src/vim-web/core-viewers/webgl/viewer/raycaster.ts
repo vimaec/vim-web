@@ -126,6 +126,14 @@ export class Raycaster {
    * @param {THREE.Vector2} position - The screen position for raycasting.
    */
   raycast2 (position: THREE.Vector2) {
+    if(position.x < 0 || position.y < 0){
+      console.error('Invalid position for raycasting')
+      return new RaycastResult([])
+    }
+    
+    position.x *= position.x < 1 ? this._viewport.getSize().x : 1
+    position.y *= position.y < 1 ? this._viewport.getSize().y : 1
+
     this._raycaster = this.fromPoint2(position, this._raycaster)
     let hits = this._raycaster.intersectObjects(this._scene.scene.children)
     hits = this.filterHits(hits)
