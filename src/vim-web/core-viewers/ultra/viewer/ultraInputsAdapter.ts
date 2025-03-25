@@ -36,16 +36,16 @@ function createAdapter(viewer: UltraCoreViewer ) : InputAdapter {
       viewer.rpc.RPCSetMoveSpeed(10)
     },
     orbitCamera: (value: THREE.Vector2) => {
-      console.log('orbitCamera')
+      // handled server side
     },
     rotateCamera: (value: THREE.Vector2) => {
-      console.log('rotateCamera')
+      // handled server side
     },
     panCamera: (value: THREE.Vector2) => {
-      console.log('panCamera')
+      // handled server side
     },
     toggleOrthographic: () => {
-      console.log('toggleOrthographic')
+      console.log('toggleOrthographic. Not supported yet')
     },
 
     resetCamera: () => {
@@ -58,9 +58,7 @@ function createAdapter(viewer: UltraCoreViewer ) : InputAdapter {
       frameContext(viewer)
     },
     selectAtPointer: async (pos: THREE.Vector2, add: boolean) => {
-      console.log('selectAtPointer', pos, add)
       const hit = await viewer.selection.hitTest(pos);
-      console.log('hit', hit)
       if(!hit){
         viewer.selection.clear();
         return
@@ -85,7 +83,7 @@ function createAdapter(viewer: UltraCoreViewer ) : InputAdapter {
       viewer.rpc.RPCMouseScrollEvent(value >= 1 ? 1 : -1)
     },
     moveCamera: (value : THREE.Vector3) => {
-      console.log('moveCamera')
+      // handled server side
     },
 
     keyDown: (code: string) => {

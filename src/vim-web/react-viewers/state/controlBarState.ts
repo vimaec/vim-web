@@ -55,7 +55,7 @@ export function controlBarSectionBox(
         tip: 'Reset Section',
         enabled: () => section.enable.get(),
         style: (on) => ControlBar.buttonDefaultStyle(on),
-        action: () => section.sectionReset.call(), 
+        action: () => section.sectionScene.call(), 
         icon: Icons.sectionBoxReset,
       },
       {

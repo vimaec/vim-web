@@ -17,9 +17,7 @@ export * from './viewer/settings/viewerSettingsParsing'
 export * from './viewer/settings/defaultViewerSettings'
 
 export {
-  RaycastResult as HitTestResult,
-  InputAction
-} from './viewer/raycaster'
+  RaycastResult as HitTestResult} from './viewer/raycaster'
 
 export { type SelectableObject, Selection } from './viewer/selection'
 export * from './loader/progressive/insertableMesh'

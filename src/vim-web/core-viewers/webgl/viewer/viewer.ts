@@ -21,7 +21,7 @@ import { ISignal, SignalDispatcher } from 'ste-signals'
 import { ViewerMaterials } from '../loader/materials/viewerMaterials'
 import { Vim } from '../loader/vim'
 import { CoreInputHandler } from '../../shared/coreInputHandler'
-import { webglInputAdapter } from './webglInputsAdapter'
+import { webglInputHandler } from './webglInputsAdapter'
 
 /**
  * Viewer and loader for vim files.
@@ -111,7 +111,7 @@ export class Viewer {
       this.settings
     )
 
-    this.inputs = webglInputAdapter(this)
+    this.inputs = webglInputHandler(this)
     this.gizmos = new Gizmos(this, this._camera)
     this.materials.applySettings(this.settings)
 
@@ -121,7 +121,6 @@ export class Viewer {
     // Input and Selection
     this.selection = new Selection(this.materials)
     this.raycaster = new Raycaster(
-      this.viewport,
       this._camera,
       scene,
       this.renderer

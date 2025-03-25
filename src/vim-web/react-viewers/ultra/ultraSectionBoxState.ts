@@ -10,12 +10,15 @@ export function useUltraSectionBox(viewer: Ultra.UltraCoreViewer): SectionBoxRef
     setVisible: (b) => {
       viewer.sectionBox.visible = b;
       viewer.sectionBox.interactive = b;
-    },
+    }, 
     getBox: () => viewer.sectionBox.getBox(),
     setBox: (box) => viewer.sectionBox.fitBox(box),
-    getSelectionBox: () => viewer.selection.getBoundingBox(),
-    getRendererBox: () => viewer.renderer.getBoundingBox(),
     onSelectionChanged: viewer.selection.onValueChanged,
+
+
+    getSelectionBox: () => viewer.selection.getBoundingBox(),
+    getSceneBox: () => viewer.renderer.getBoundingBox(),
+
   };
   return useSectionBox(ultraAdapter);
 }
