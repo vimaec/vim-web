@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useLayoutEffect, useMemo, useCallback } fr
 import * as THREE from 'three';
 import { addBox } from '../../core-viewers/utils/threeUtils';
 import { ISignal } from 'ste-signals';
-import { ActionRef, ArgActionRef, AsyncFuncRef, StateRef, useArgActionRef, useFuncRef, useStateRef } from '../helpers/reactUtils';
+import { ActionRef, ArgActionRef, AsyncFuncRef, StateRef, useArgActionRef, useAsyncFuncRef, useFuncRef, useStateRef } from '../helpers/reactUtils';
 
 export type Offsets = {
   topOffset: string;
@@ -18,7 +18,7 @@ export interface SectionBoxRef {
   auto: StateRef<boolean>;
 
   sectionSelection: AsyncFuncRef<void>;
-  sectionReset: AsyncFuncRef<void>;
+  sectionScene: AsyncFuncRef<void>;
   sectionBox: ArgActionRef<THREE.Box3>;
   getBox: () => THREE.Box3;
 
@@ -27,6 +27,9 @@ export interface SectionBoxRef {
   topOffset: StateRef<string>;
   sideOffset: StateRef<string>;
   bottomOffset: StateRef<string>;
+
+  getSelectionBox: AsyncFuncRef<THREE.Box3 | undefined>;
+  getSceneBox: AsyncFuncRef<THREE.Box3>;
 }
 
 export interface SectionBoxAdapter {
@@ -34,9 +37,11 @@ export interface SectionBoxAdapter {
   setVisible: (visible: boolean) => void;
   getBox: () => THREE.Box3;
   setBox: (box: THREE.Box3) => void;
-  getSelectionBox: () => Promise<THREE.Box3 | undefined>;
-  getRendererBox: () => Promise<THREE.Box3>;
   onSelectionChanged: ISignal;
+
+  // Allow to override these at the component level
+  getSelectionBox: () => Promise<THREE.Box3 | undefined>;
+  getSceneBox: () => Promise<THREE.Box3>;
 }
 
 export function useSectionBox(
@@ -53,6 +58,8 @@ export function useSectionBox(
 
   // The reference box on which the offsets are applied.
   const boxRef = useRef<THREE.Box3>(adapter.getBox());
+  const getSelectionBox = useAsyncFuncRef(adapter.getSelectionBox);
+  const getSceneBox = useAsyncFuncRef(adapter.getSceneBox);
 
   // One Time Setup
   useEffect(() => {
@@ -73,7 +80,7 @@ export function useSectionBox(
       sectionSelection.call();
     }
     else{
-      sectionReset.call();
+      sectionScene.call();
     }
   })
 
@@ -97,8 +104,6 @@ export function useSectionBox(
   // Show/Hide the section box on visible change.
   visible.useOnChange((v) => adapter.setVisible(v));
 
-
-
   // Update the box by combining the base box and the computed offsets.
   const sectionBox = useArgActionRef((baseBox: THREE.Box3) => {
     if(baseBox === undefined) return
@@ -109,18 +114,12 @@ export function useSectionBox(
 
   // Sets the box to the selection box or the renderer box if no selection.
   const sectionSelection = useFuncRef(async () => {
-    try {
-      const box =
-        (await adapter.getSelectionBox()) ??
-        (await adapter.getRendererBox());
-        sectionBox.call(box);
-    } catch (e) {
-      console.error(e);
-    }
+    const box = (await getSelectionBox.call()) ?? (await getSceneBox.call());
+    sectionBox.call(box);
   })
   
-  const sectionReset = useFuncRef(async () => {
-    const box = await adapter.getRendererBox();
+  const sectionScene = useFuncRef(async () => {
+    const box = await getSceneBox.call();
     sectionBox.call(box);
   });
 
@@ -133,9 +132,13 @@ export function useSectionBox(
     sideOffset,
     bottomOffset,
     sectionSelection,
-    sectionReset,
+    sectionScene,
     sectionBox,
-    getBox: () => adapter.getBox()
+    getBox: () => adapter.getBox(),
+
+    // TODO - Remove these from here, it should be overriden at the component level.
+    getSceneBox: getSceneBox,
+    getSelectionBox,
   }
 }
 

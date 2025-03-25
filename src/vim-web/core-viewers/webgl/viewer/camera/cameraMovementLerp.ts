@@ -27,15 +27,12 @@ export class CameraLerp extends CameraMovement {
   }
 
   init (duration: number) {
-    console.log('init lerp')
     this.cancel()
-    this._duration = Math.max(duration,0.01)
+    this._duration = Math.max(duration, 0.01)
     this._clock.start()
   }
 
   cancel () {
-    console.log('cancel')
-    //console.trace()
     this._clock.stop()
     this.onProgress = undefined
   }

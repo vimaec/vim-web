@@ -50,11 +50,8 @@ export class BoxInputs {
   /** The box state before the current drag. */
   private _lastBox: THREE.Box3 = new THREE.Box3();
 
-  /** A collection of unregister callbacks for event listeners. */
-  private _unregisters: (() => void)[] = [];
-
-  /** The ID of the pointer that is captured, if any. */
-  private _capturedPointerId: number | undefined;
+  /** A callback to restore the original input listeners after unregistering. */
+  private _restoreOriginalInputs: () => void;
 
   // -------------------------------------------------------------------------
   // Callbacks
@@ -104,13 +101,40 @@ export class BoxInputs {
    * If already registered, it does nothing.
    */
   public register(): void {
-    if (this._unregisters.length > 0) return;
-    const canvas = this._viewer.viewport.canvas;
+    if(this._restoreOriginalInputs) return; // Don't register twice
 
-    this.reg(canvas, 'pointerdown', (e) => this.onMouseDown(e));
-    this.reg(canvas, 'pointermove', (e) => this.onMouseMove(e));
-    this.reg(canvas, 'pointerup', (e) => this.onMouseUp(e));
-    this.reg(canvas, 'pointerleave', (e) => this.onPointerLeave(e));
+    const mouse = this._viewer.inputs.mouse;
+
+    const up = mouse.onButtonUp
+    const down = mouse.onButtonDown
+    const move = mouse.onMouseMove
+    const drag = mouse.onDrag
+
+    this._restoreOriginalInputs = () => {
+      mouse.onButtonUp = up
+      mouse.onButtonDown = down
+      mouse.onMouseMove = move
+      mouse.onDrag = drag
+    }
+
+    mouse.onButtonUp = (pos, btn) => {
+      up(pos, btn)
+      this.onMouseUp(pos)
+    }
+    mouse.onButtonDown = (pos, btn) => {
+      down(pos, btn)
+      this.onMouseDown(pos)
+    }
+
+    mouse.onMouseMove = (pos) => {
+      move(pos)
+      this.onMouseMove(pos)
+    }
+
+    mouse.onDrag = (pos, btn) => {
+      if(this._handle) return
+      drag(pos, btn)
+    }
   }
 
   /**
@@ -122,72 +146,13 @@ export class BoxInputs {
     this._handle?.highlight(false);
     this._handle = undefined;
 
-    this.releasePointer();
-    this._viewer.inputs.registerAll();
-    this._unregisters.forEach((unreg) => unreg());
-    this._unregisters.length = 0;
-  }
-
-  /**
-   * Indicates if a pointer is currently captured for dragging.
-   */
-  public get pointerCaptured(): boolean {
-    return this._capturedPointerId !== undefined;
+    this._restoreOriginalInputs?.();
+    this._restoreOriginalInputs = undefined
   }
 
   // -------------------------------------------------------------------------
   // Private Methods
   // -------------------------------------------------------------------------
-
-  /**
-   * A helper method to attach an event listener and store its unregister callback.
-   * 
-   * @param handler - The DOM element or Window to attach the listener to.
-   * @param type - The pointer event type, e.g. 'pointerdown'.
-   * @param listener - The event handler function.
-   */
-  private reg(
-    handler: HTMLElement | Window,
-    type: string,
-    listener: (event: PointerEvent) => void
-  ): void {
-    handler.addEventListener(type, listener);
-    this._unregisters.push(() => handler.removeEventListener(type, listener));
-  }
-
-  /**
-   * Called when the pointer leaves the canvas. If not dragging,
-   * invokes {@link onFaceEnter} to indicate no active handle is hovered.
-   * 
-   * @param event - The pointerleave event.
-   */
-  private onPointerLeave(event: PointerEvent): void {
-    // Leave face unless we are dragging
-    if (!this.pointerCaptured) {
-      this.onFaceEnter?.(this._handle?.forward ?? new THREE.Vector3());
-    }
-  }
-
-  /**
-   * Sets pointer capture on the canvas for a specific pointer (ID).
-   * 
-   * @param pointerId - The pointer ID to capture.
-   */
-  private capturePointer(pointerId: number): void {
-    this.releasePointer();
-    this._viewer.viewport.canvas.setPointerCapture(pointerId);
-    this._capturedPointerId = pointerId;
-  }
-
-  /**
-   * Releases any captured pointer on the canvas, if present.
-   */
-  private releasePointer(): void {
-    if (this.pointerCaptured) {
-      this._viewer.viewport.canvas.releasePointerCapture(this._capturedPointerId!);
-      this._capturedPointerId = undefined;
-    }
-  }
 
   /**
    * Handles pointer movement events.
@@ -196,14 +161,14 @@ export class BoxInputs {
    * 
    * @param event - The pointermove event.
    */
-  private onMouseMove(event: PointerEvent): void {
+  private onMouseMove(position: THREE.Vector2): void {
     if (this._mouseDown) {
-      this.onDrag(event);
+      this.onDrag(position);
       return;
     }
 
-    const hits = this.raycast(new THREE.Vector2(event.offsetX, event.offsetY));
-    const handle = hits?.[0]?.object?.userData.handle;
+    const hits = this.raycast(position);
+    const handle = hits?.[0]?.object?.userData?.handle;
     if (handle !== this._handle) {
       this._handle?.highlight(false);
       handle?.highlight(true);
@@ -217,20 +182,15 @@ export class BoxInputs {
    * 
    * @param event - The pointerup event.
    */
-  private onMouseUp(event: PointerEvent): void {
-    this.releasePointer();
-    if (this._mouseDown) {
-      this._mouseDown = false;
-      this._viewer.inputs.registerAll();
-      // If mouse, update hover state one last time; if touch, clear handle.
-      if (event.pointerType === 'mouse') {
-        this.onMouseMove(event);
-      } else {
-        this._handle = undefined;
-        this.onFaceEnter?.(new THREE.Vector3());
-      }
-      this.onBoxConfirm?.(this._sharedBox);
-    }
+  private onMouseUp(position: THREE.Vector2): void {
+    if(!this._mouseDown) return;
+    this._mouseDown = false;
+
+    //this._viewer.inputs.registerAll();
+    // If mouse, update hover state one last time; if touch, clear handle.
+    this.onMouseMove(position);
+
+    this.onBoxConfirm?.(this._sharedBox);
   }
 
   /**
@@ -238,13 +198,11 @@ export class BoxInputs {
    * 
    * @param event - The pointerdown event.
    */
-  private onMouseDown(event: PointerEvent): void {
-    const hits = this.raycast(new THREE.Vector2(event.offsetX, event.offsetY));
+  private onMouseDown(position: THREE.Vector2): void {
+    const hits = this.raycast(position);
     const handle = hits?.[0]?.object?.userData?.handle;
     if (!handle) return;
     this._handle = handle;
-
-    this.capturePointer(event.pointerId);
 
     // Prepare for drag
     this._lastBox.copy(this._sharedBox);
@@ -253,7 +211,6 @@ export class BoxInputs {
 
     this._dragPlane.set(this._viewer.camera.forward, -dist);
     this._mouseDown = true;
-    this._viewer.inputs.unregisterAll();
     this.onFaceEnter?.(this._handle.forward.clone());
   }
 
@@ -263,16 +220,16 @@ export class BoxInputs {
    * 
    * @param event - The pointermove event while dragging.
    */
-  private onDrag(event: PointerEvent): void {
+  private onDrag(position: THREE.Vector2): void {
     if (!this._handle) return;
 
     // Intersection on the drag plane
     const point =
-      this.raycastPlane(new THREE.Vector2(event.offsetX, event.offsetY)) ??
+      this.raycastPlane(position) ??
       this._dragOrigin.clone();
 
     // Delta in plane space, projected along the handle forward
-    const delta = point.sub(this._dragOrigin);
+    const delta = point.sub(this._dragOrigin);  
     const amount = delta.dot(this._handle.forward);
 
     // Create an updated box with the stretch

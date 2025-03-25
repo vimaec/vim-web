@@ -118,7 +118,7 @@ export class Measure implements IMeasure {
     this._previousOnClick = this._viewer.inputs.mouse.onClick
     this._viewer.inputs.mouse.onClick = (pos, ctrl) => {
       
-      const hit = this._viewer.raycaster.raycast2(pos)
+      const hit = this._viewer.raycaster.raycastFromScreen(pos)
       if(!hit.isHit) return
       switch (this._stage) {
         case 'ready':
