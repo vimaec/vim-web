@@ -264,6 +264,44 @@ export function hidden ({ height, width, fill, className = '' }: IconOptions) {
 }
 
 // Camera
+export function frameScene({ height, width, fill, className }: IconOptions) {
+  return (
+    <svg
+      className={className}
+      height={height}
+      width={width}
+      viewBox="0 0 256 256"
+    >
+      <path fill="none" d="M0 0h256v256H0z" />
+      <path
+        fill={fill}
+        d="M236,12H20C9,12,0,21,0,32V224c0,11,9,20,20,20H236c11,0,20-9,20-20V32c0-11-9-20-20-20Zm-4,200c0,4.418-3.582,8-8,8H32c-4.418,0-8-3.582-8-8V44c0-4.418,3.582-8,8-8H224c4.418,0,8,3.582,8,8V212Z"
+      />
+      <path
+        fill={fill}
+        d="M210,204h-42c-6.627,0-12-5.373-12-12h0c0-6.627,5.373-12,12-12h24s0-24,0-24c0-6.627,5.373-12,12-12h0
+           c6.627,0,12,5.373,12,12v42c0,3.314-2.686,6-6,6Z"
+      />
+      <path
+        fill={fill}
+        d="M40,198v-42c0-6.627,5.373-12,12-12h0c6.627,0,12,5.373,12,12v24s24,0,24,0
+           c6.627,0,12,5.373,12,12h0c0,6.627-5.373,12-12,12H46c-3.314,0-6-2.686-6-6Z"
+      />
+      <path
+        fill={fill}
+        d="M46,52h42c6.627,0,12,5.373,12,12h0c0,6.627-5.373,12-12,12h-24s0,24,0,24
+           c0,6.627-5.373,12-12,12h0c-6.627,0-12-5.373-12-12V58c0-3.314,2.686-6,6-6Z"
+      />
+      <path
+        fill={fill}
+        d="M216,58v42c0,6.627-5.373,12-12,12h0c-6.627,0-12-5.373-12-12v-24s-24,0-24,0
+           c-6.627,0-12-5.373-12-12h0c0-6.627,5.373-12,12-12h42c3.314,0,6,2.686,6,6Z"
+      />
+    </svg>
+  );
+}
+
+
 export function autoCamera ({ height, width, fill = '', className }: IconOptions) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
