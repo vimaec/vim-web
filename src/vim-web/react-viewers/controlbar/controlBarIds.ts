@@ -10,7 +10,11 @@ export const ids = {
   sectionSectionBox: 'controlBar.sectionSectionBox',
 
   // Camera buttons
+  buttonCameraFrameSelection: 'controlBar.camera.frameSelection',
+  buttonCameraFrameScene: 'controlBar.camera.frameScene',
   buttonCameraAuto: 'controlBar.camera.auto',
+
+  // Camera Control buttons
   buttonCameraOrbit: 'controlBar.camera.orbit',
   buttonCameraLook: 'controlBarcamera.look',
   buttonCameraPan: 'controlBar.camera.pan',
@@ -25,7 +29,7 @@ export const ids = {
 
   // Action Buttons
   buttonToggleIsolation: 'controlBar.action.toggleIsolation',
-  buttonZoomToFit: 'controlBar.action.zoomToFit',
+  
 
   // Tools buttons
   buttonSectionBox: 'controlBar.sectionBox',
@@ -34,8 +38,9 @@ export const ids = {
   // Section box buttons
   buttonSectionBoxEnable: 'controlBar.sectionBox.enable',
   buttonSectionBoxVisible: 'controlBar.sectionBox.visible',
-  buttonSectionBoxShrinkToSelection: 'controlBar.sectionBox.shrinkToSelection',
+
+  buttonSectionBoxToSelection: 'controlBar.sectionBox.sectionSelection',
+  buttonSectionBoxToScene: 'controlBar.sectionBox.sectionScene',
   buttonSectionBoxAuto: 'controlBar.sectionBox.auto',
-  buttonSectionBoxReset: 'controlBar.sectionBox.reset',
   buttonSectionBoxSettings: 'controlBar.sectionBox.settings',
 };

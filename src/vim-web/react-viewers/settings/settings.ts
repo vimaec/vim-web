@@ -80,7 +80,10 @@ export type ComponentSettings = {
     pan: UserBoolean
     zoom: UserBoolean
     zoomWindow: UserBoolean
-    zoomToFit: UserBoolean
+
+    autoCamera : UserBoolean
+    frameSelection: UserBoolean
+    frameScene: UserBoolean
 
     // Control bar - tools
     sectioningMode: UserBoolean
@@ -124,8 +127,7 @@ export function anyUiCursorButton (settings: ComponentSettings) {
     isTrue(settings.ui.lookAround) ||
     isTrue(settings.ui.pan) ||
     isTrue(settings.ui.zoom) ||
-    isTrue(settings.ui.zoomWindow) ||
-    isTrue(settings.ui.zoomToFit)
+    isTrue(settings.ui.zoomWindow)
   )
 }
 
@@ -196,7 +198,11 @@ export const defaultSettings: ComponentSettings = {
     pan: true,
     zoom: true,
     zoomWindow: true,
-    zoomToFit: true,
+
+    // Control bar - camera
+    autoCamera: true,
+    frameScene: true,
+    frameSelection: true,
 
     // Control bar - tools
     sectioningMode: true,
