@@ -26,7 +26,6 @@ async function createComponent (div: HTMLDivElement, ref: React.MutableRefObject
   const request = webgl.loader.request(
     { url }
   )
-  webgl.sectionBox.enable.set(true)
   const result = await request.getResult()
   if (result.isSuccess()) {
     webgl.loader.add(result.result)
