@@ -150,7 +150,6 @@
     }
 
     get moveSpeed () {
-      console.log('get moveSpeed', this._moveSpeed)
       return this._moveSpeed
     }
 
