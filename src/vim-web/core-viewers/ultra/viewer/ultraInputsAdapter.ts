@@ -55,7 +55,11 @@ function createAdapter(viewer: UltraCoreViewer ) : InputAdapter {
       viewer.selection.clear()
     },
     frameCamera: () => {
-      frameContext(viewer)
+      if (viewer.selection.count > 0) {
+        frameSelection(viewer);
+      } else {
+        viewer.camera.frameAll();
+      }
     },
     selectAtPointer: async (pos: THREE.Vector2, add: boolean) => {
       const hit = await viewer.selection.hitTest(pos);
@@ -107,15 +111,6 @@ function createAdapter(viewer: UltraCoreViewer ) : InputAdapter {
     mouseMove: (pos: THREE.Vector2) => {
       viewer.rpc.RPCMouseMoveEvent(pos)
     },
-  }
-}
-
-
-async function frameContext(viewer: UltraCoreViewer) {
-  if (viewer.selection.count > 0) {
-    frameSelection(viewer);
-  } else {
-    viewer.camera.frameAll();
   }
 }
 
