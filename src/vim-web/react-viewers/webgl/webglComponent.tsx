@@ -41,6 +41,7 @@ import { Modal, useModal } from '../panels/modal'
 import { SectionBoxPanel } from '../panels/sectionBoxPanel'
 import { useWebglSectionBox } from './webglSectionBoxState'
 import { useWebglCamera } from './webglCameraState'
+import { useViewerInput } from '../state/viewerInputs'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.
@@ -109,6 +110,7 @@ export function VimComponent (props: {
   const camera = useWebglCamera(props.viewer, sectionBox)
   const cursor = useMemo(() => new CursorManager(props.viewer), [])
   const loader = useRef(new ComponentLoader(props.viewer, modal))
+  useViewerInput(props.viewer.inputs, camera)
 
   const [isolation] = useState(() => new Isolation(props.viewer, camera, settings.value))
   useEffect(() => isolation.applySettings(settings.value), [settings])

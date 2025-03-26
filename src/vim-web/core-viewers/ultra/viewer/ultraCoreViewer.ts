@@ -150,6 +150,7 @@ export class UltraCoreViewer {
     this.colors = new ColorManager(this.rpc)
     this._camera = new Camera(this.rpc)
     this._input = ultraInputAdapter(this)
+
     this.sectionBox = new SectionBox(this.rpc)
 
     // Set up the video frame handler

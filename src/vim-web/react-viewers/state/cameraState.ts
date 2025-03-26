@@ -40,6 +40,7 @@ export function useCamera(adapter: ICameraAdapter, section: SectionBoxRef){
         frameSelection.call()
       }
     }
+    
     // Reframe on section box change.
     section.sectionSelection.append(refresh)
     section.sectionScene.append(refresh)

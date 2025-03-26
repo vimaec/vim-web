@@ -36,7 +36,6 @@ function createAdapter(viewer: Viewer ) : InputAdapter {
       viewer.selection.clear()
     },
     frameCamera: () => {
-      console.log('frameCamera')
       if(viewer.selection.count > 0){
         viewer.camera.lerp(0.75).frame(viewer.selection.getBoundingBox())
       }
