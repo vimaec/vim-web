@@ -5,7 +5,7 @@
 import * as THREE from 'three'
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer'
 import { MeshLine, MeshLineMaterial } from '../../../utils/meshLine'
-import { Viewer } from '../../viewer'
+import { WebglCoreViewer } from '../../webglCoreViewer'
 import {
   createMeasureElement,
   MeasureStyle,
@@ -141,7 +141,7 @@ class MeasureMarker {
  * Reprents all graphical elements associated with a measure.
  */
 export class MeasureGizmo {
-  private _viewer: Viewer
+  private _viewer: WebglCoreViewer
   private _startMarker: MeasureMarker
   private _endMarker: MeasureMarker
   private _line: MeasureLine
@@ -153,7 +153,7 @@ export class MeasureGizmo {
   private _html: MeasureElement
   private _animId: number | undefined
 
-  constructor (viewer: Viewer) {
+  constructor (viewer: WebglCoreViewer) {
     this._viewer = viewer
     const canvasSize = this._viewer.viewport.getSize()
 

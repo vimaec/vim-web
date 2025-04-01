@@ -4,13 +4,13 @@
 
 import * as THREE from 'three'
 import { ViewerMaterials } from '../../loader/materials/viewerMaterials'
-import { Renderer } from './renderer'
+import { WebglCoreRenderer } from './webglCoreRenderer'
 
 /**
  * Manages a section box from renderer clipping planes
  */
 export class RenderingSection {
-  private _renderer: Renderer
+  private _renderer: WebglCoreRenderer
 
   private _materials: ViewerMaterials
   private _active: boolean = true
@@ -38,7 +38,7 @@ export class RenderingSection {
     this.minZ
   ]
 
-  constructor (renderer: Renderer, materials: ViewerMaterials) {
+  constructor (renderer: WebglCoreRenderer, materials: ViewerMaterials) {
     this._renderer = renderer
     this._materials = materials
   }

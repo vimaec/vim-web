@@ -4,10 +4,10 @@
 
 import { Camera } from './camera'
 import { Object3D } from '../../loader/object3D'
-import { SelectableObject } from '../selection'
+import { SelectableObject } from '../webglCoreSelection'
 import * as THREE from 'three'
 import { GizmoMarker } from '../gizmos/markers/gizmoMarker'
-import { Vim } from '../../loader/vim'
+import { WebglVim } from '../../loader/vim'
 
 export abstract class CameraMovement {
   protected _camera: Camera
@@ -138,17 +138,17 @@ export abstract class CameraMovement {
 
   /**
    * Sets the camera's orientation and position to focus on the specified target.
-   * @param {IObject | Vim | THREE.Sphere | THREE.Box3 | 'all' | undefined} target - The target object, or 'all' to frame all objects.
+   * @param {IObject | WebglVim | THREE.Sphere | THREE.Box3 | 'all' | undefined} target - The target object, or 'all' to frame all objects.
    * @param {THREE.Vector3} [forward] - Optional forward direction after framing.
    */
   frame (
-    target: SelectableObject | Vim | THREE.Sphere | THREE.Box3 | 'all' | undefined,
+    target: SelectableObject | WebglVim | THREE.Sphere | THREE.Box3 | 'all' | undefined,
     forward?: THREE.Vector3
   ): void {
     if ((target instanceof GizmoMarker) || (target instanceof Object3D)) {
       target = target.getBoundingBox()
     }
-    if ((target instanceof Vim)) {
+    if ((target instanceof WebglVim)) {
       target = target.scene.getAverageBoundingBox()
     }
     if (target === 'all') {

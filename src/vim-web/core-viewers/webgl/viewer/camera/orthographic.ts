@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { ViewerSettings } from '../settings/viewerSettings'
+import { WebglCoreViewerSettings } from '../settings/webglCoreViewerSettings'
 
 export class OrthographicWrapper {
   camera: THREE.OrthographicCamera
@@ -19,7 +19,7 @@ export class OrthographicWrapper {
     )
   }
 
-  applySettings (settings: ViewerSettings) {
+  applySettings (settings: WebglCoreViewerSettings) {
     this.camera.zoom = settings.camera.zoom
     this.camera.near = -settings.camera.far
     this.camera.far = settings.camera.far

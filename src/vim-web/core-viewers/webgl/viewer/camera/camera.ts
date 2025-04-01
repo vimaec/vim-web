@@ -4,8 +4,8 @@
 
 import * as THREE from 'three'
 
-import { Viewport } from '../viewport'
-import { ViewerSettings } from '../settings/viewerSettings'
+import { WeglCoreViewport } from '../webglCoreViewport'
+import { WebglCoreViewerSettings } from '../settings/webglCoreViewerSettings'
 import { RenderScene } from '../rendering/renderScene'
 import { clamp } from 'three/src/math/MathUtils'
 import { ISignal, SignalDispatcher } from 'ste-signals'
@@ -138,7 +138,7 @@ export class Camera implements ICamera {
   camPerspective: PerspectiveWrapper
   camOrthographic: OrthographicWrapper
 
-  private _viewport: Viewport
+  private _viewport: WeglCoreViewport
   _scene: RenderScene // make private again
   private _lerp: CameraLerp
   private _movement: CameraMovementSnap
@@ -249,7 +249,7 @@ export class Camera implements ICamera {
   // Settings
   private _velocityBlendFactor: number = 0.0001
 
-  constructor (scene: RenderScene, viewport: Viewport, settings: ViewerSettings) {
+  constructor (scene: RenderScene, viewport: WeglCoreViewport, settings: WebglCoreViewerSettings) {
     this.camPerspective = new PerspectiveWrapper(new THREE.PerspectiveCamera())
     this.camPerspective.camera.up = new THREE.Vector3(0, 0, 1)
     this.camPerspective.camera.lookAt(new THREE.Vector3(0, 1, 0))
@@ -378,7 +378,7 @@ export class Camera implements ICamera {
     return this._target
   }
 
-  applySettings (settings: ViewerSettings) {
+  applySettings (settings: WebglCoreViewerSettings) {
     // Camera
 
     this.defaultForward = settings.camera.forward

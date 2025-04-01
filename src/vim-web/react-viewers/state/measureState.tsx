@@ -1,9 +1,9 @@
 import ReactTooltip from 'react-tooltip'
 import { useRef, useState } from 'react'
-import { WebglViewer, THREE } from '../../index'
+import { THREE, WebglCoreViewer } from '../../index'
 import { CursorManager, pointerToCursor } from '../helpers/cursor'
 
-export function getMeasureState (viewer: WebglViewer.Viewer, cursor: CursorManager) {
+export function getMeasureState (viewer: WebglCoreViewer, cursor: CursorManager) {
   const measuringRef = useRef<boolean>(false)
   const activeRef = useRef<boolean>(false)
   const [active, setActive] = useState(measuringRef.current)

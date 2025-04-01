@@ -1,4 +1,4 @@
-import { Viewer } from '../viewer'
+import { WebglCoreViewer } from '../webglCoreViewer'
 import { GizmoAxes } from './axes/gizmoAxes'
 import { GizmoLoading } from './gizmoLoading'
 import { GizmoOrbit } from './gizmoOrbit'
@@ -12,7 +12,7 @@ import { Camera } from '../camera/camera'
  * Represents a collection of gizmos used for various visualization and interaction purposes within the viewer.
  */
 export class Gizmos {
-  private readonly viewer: Viewer
+  private readonly viewer: WebglCoreViewer
 
   /**
    * The interface to start and manage measure tool interaction.
@@ -53,7 +53,7 @@ export class Gizmos {
    */
   readonly markers: GizmoMarkers
 
-  constructor (viewer: Viewer, camera : Camera) {
+  constructor (viewer: WebglCoreViewer, camera : Camera) {
     this.viewer = viewer
     this._measure = new Measure(viewer)
     this.sectionBox = new SectionBox(viewer)

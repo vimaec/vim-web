@@ -1,4 +1,4 @@
-import { InputAdapter, CoreInputHandler } from "../../shared/coreInputHandler"
+import { CoreInputAdapter, CoreInputHandler } from "../../shared/coreInputHandler"
 import { UltraCoreViewer } from "./ultraCoreViewer"
 import * as THREE from 'three'
 
@@ -29,7 +29,7 @@ export function ultraInputAdapter(viewer: UltraCoreViewer) {
   )
 }
 
-function createAdapter(viewer: UltraCoreViewer ) : InputAdapter {
+function createAdapter(viewer: UltraCoreViewer ) : CoreInputAdapter {
   return {
 
     init: () => {

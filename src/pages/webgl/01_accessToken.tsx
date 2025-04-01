@@ -7,7 +7,7 @@ export function WebglAccessToken () {
 }
 
 async function createComponent (div: HTMLDivElement, url: string, token: string) {
-  const webgl = await WebglReact.createWebglComponent(div)
+  const webgl = await WebglReact.createWebglViewer(div)
   const request = webgl.loader.request(
     {
       url,

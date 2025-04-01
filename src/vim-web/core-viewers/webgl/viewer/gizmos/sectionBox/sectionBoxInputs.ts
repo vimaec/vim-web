@@ -2,7 +2,7 @@
  * @module viw-webgl-viewer/gizmos/sectionBox
  */
 
-import { Viewer } from '../../viewer';
+import { WebglCoreViewer } from '../../webglCoreViewer';
 import * as THREE from 'three';
 import { SectionBoxHandles } from './sectionBoxHandles';
 import { Axis, SectionBoxHandle } from './sectionBoxHandle';
@@ -20,7 +20,7 @@ export class BoxInputs {
   // -------------------------------------------------------------------------
 
   /** The parent Viewer controlling the scene. */
-  private _viewer: Viewer;
+  private _viewer: WebglCoreViewer;
 
   /** The handles mesh group containing the draggable cones/faces. */
   private _handles: SectionBoxHandles;
@@ -82,11 +82,11 @@ export class BoxInputs {
   /**
    * Creates a new BoxInputs instance for pointer-driven box resizing.
    * 
-   * @param viewer - The parent {@link Viewer} that renders the scene.
+   * @param viewer - The parent {@link WebglCoreViewer} that renders the scene.
    * @param handles - A {@link SectionBoxHandles} instance containing the draggable mesh handles.
    * @param box - The shared bounding box (`Box3`) that will be updated by dragging.
    */
-  constructor(viewer: Viewer, handles: SectionBoxHandles, box: THREE.Box3) {
+  constructor(viewer: WebglCoreViewer, handles: SectionBoxHandles, box: THREE.Box3) {
     this._viewer = viewer;
     this._handles = handles;
     this._sharedBox = box;

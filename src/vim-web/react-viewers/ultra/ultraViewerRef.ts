@@ -4,10 +4,10 @@ import { CameraRef } from '../state/cameraState';
 import { SectionBoxRef } from '../state/sectionBoxState';
 
 // TODO: Don't depend on the webgl component
-import {ControlBarRef} from '../webgl/webglComponentRef'
+import {ControlBarRef} from '../webgl/webglViewerRef'
 
 
-export type UltraComponentRef = {
+export type UltraViewerRef = {
   /**
    * The Vim viewer instance associated with the component.
    */

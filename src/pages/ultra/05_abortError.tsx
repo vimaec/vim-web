@@ -13,7 +13,7 @@ export function UltraAbortError () {
   )
 }
 
-async function abortLoad (ultra: UltraReact.UltraComponentRef) {
+async function abortLoad (ultra: UltraReact.UltraViewerRef) {
   await ultra.viewer.connect()
   const request = ultra.load({url:Urls.residence})
   request.abort()

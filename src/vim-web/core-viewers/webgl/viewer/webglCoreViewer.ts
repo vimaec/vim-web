@@ -5,48 +5,48 @@
 import * as THREE from 'three'
 
 // internal
-import { ViewerSettings, getViewerSettings, PartialViewerSettings } from './settings/viewerSettings'
+import { WebglCoreViewerSettings, getViewerSettings, PartialWebglCoreViewerSettings } from './settings/webglCoreViewerSettings'
 import { Camera } from './camera/camera'
 import { ICamera } from './camera/ICamera'
-import { Selection } from './selection'
+import { WebglCoreSelection } from './webglCoreSelection'
 import { Environment } from './environment/environment'
-import { Raycaster } from './raycaster'
+import { WeglCoreRaycaster } from './webglCoreRaycaster'
 import { RenderScene } from './rendering/renderScene'
-import { Viewport } from './viewport'
+import { WeglCoreViewport } from './webglCoreViewport'
 import { Gizmos } from './gizmos/gizmos'
 
 // loader
-import { Renderer } from './rendering/renderer'
+import { WebglCoreRenderer } from './rendering/webglCoreRenderer'
 import { ISignal, SignalDispatcher } from 'ste-signals'
-import { ViewerMaterials } from '../loader/materials/viewerMaterials'
-import { Vim } from '../loader/vim'
+import { WebglCoreMaterials } from '../loader/materials/webglCoreMaterials'
+import { WebglVim } from '../loader/vim'
 import { CoreInputHandler } from '../../shared/coreInputHandler'
-import { webglInputHandler } from './webglInputsAdapter'
+import { createWebglCoreInputAdapter } from './webglCoreInputsAdapter'
 
 /**
  * Viewer and loader for vim files.
  */
-export class Viewer {
+export class WebglCoreViewer {
   /**
    * The settings configuration used by the viewer.
    */
-  readonly settings: ViewerSettings
+  readonly settings: WebglCoreViewerSettings
 
   /**
    * The renderer used by the viewer for rendering scenes.
    */
-  readonly renderer: Renderer
+  readonly renderer: WebglCoreRenderer
 
   /**
    * The interface for managing the HTML canvas viewport.
    */
 
-  readonly viewport: Viewport
+  readonly viewport: WeglCoreViewport
 
   /**
    * The interface for managing viewer selection.
    */
-  readonly selection: Selection
+  readonly selection: WebglCoreSelection
 
   /**
    * The interface for manipulating default viewer inputs.
@@ -56,12 +56,12 @@ export class Viewer {
   /**
    * The interface for performing raycasting into the scene to find objects.
    */
-  readonly raycaster: Raycaster
+  readonly raycaster: WeglCoreRaycaster
 
   /**
    * The materials used by the viewer to render the vims.
    */
-  readonly materials: ViewerMaterials
+  readonly materials: WebglCoreMaterials
 
   /**
    * The environment of the viewer, including the ground plane and lights.
@@ -91,19 +91,19 @@ export class Viewer {
   private _clock = new THREE.Clock()
 
   // State
-  private _vims = new Set<Vim>()
+  private _vims = new Set<WebglVim>()
   private _onVimLoaded = new SignalDispatcher()
   private _updateId: number
 
-  constructor (settings?: PartialViewerSettings) {
+  constructor (settings?: PartialWebglCoreViewerSettings) {
     this.settings = getViewerSettings(settings)
 
-    this.materials = ViewerMaterials.getInstance()
+    this.materials = WebglCoreMaterials.getInstance()
 
     const scene = new RenderScene()
-    this.viewport = new Viewport(this.settings)
+    this.viewport = new WeglCoreViewport(this.settings)
     this._camera = new Camera(scene, this.viewport, this.settings)
-    this.renderer = new Renderer(
+    this.renderer = new WebglCoreRenderer(
       scene,
       this.viewport,
       this.materials,
@@ -111,7 +111,7 @@ export class Viewer {
       this.settings
     )
 
-    this.inputs = webglInputHandler(this)
+    this.inputs = createWebglCoreInputAdapter(this)
     this.gizmos = new Gizmos(this, this._camera)
     this.materials.applySettings(this.settings)
 
@@ -119,8 +119,8 @@ export class Viewer {
     this.environment = new Environment(this.camera, this.renderer, this.materials, this.settings)
 
     // Input and Selection
-    this.selection = new Selection(this.materials)
-    this.raycaster = new Raycaster(
+    this.selection = new WebglCoreSelection(this.materials)
+    this.raycaster = new WeglCoreRaycaster(
       this._camera,
       scene,
       this.renderer
@@ -150,7 +150,7 @@ export class Viewer {
 
   /**
    * Retrieves an array containing all currently loaded Vim objects.
-   * @returns {Vim[]} An array of all Vim objects currently loaded in the viewer.
+   * @returns {WebglVim[]} An array of all Vim objects currently loaded in the viewer.
    */
   get vims () {
     return [...this._vims]
@@ -165,10 +165,10 @@ export class Viewer {
 
   /**
    * Adds a Vim object to the renderer, triggering the appropriate actions and dispatching events upon successful addition.
-   * @param {Vim} vim - The Vim object to add to the renderer.
+   * @param {WebglVim} vim - The Vim object to add to the renderer.
    * @throws {Error} If the Vim object is already added or if loading the Vim would exceed maximum geometry memory.
    */
-  add (vim: Vim) {
+  add (vim: WebglVim) {
     if (this._vims.has(vim)) {
       throw new Error('Vim cannot be added again, unless removed first.')
     }
@@ -184,10 +184,10 @@ export class Viewer {
 
   /**
    * Unloads the given Vim object from the viewer, updating the scene and triggering necessary actions.
-   * @param {Vim} vim - The Vim object to remove from the viewer.
+   * @param {WebglVim} vim - The Vim object to remove from the viewer.
    * @throws {Error} If attempting to remove a Vim object that is not present in the viewer.
    */
-  remove (vim: Vim) {
+  remove (vim: WebglVim) {
     if (!this._vims.has(vim)) {
       throw new Error('Cannot remove missing vim from viewer.')
     }

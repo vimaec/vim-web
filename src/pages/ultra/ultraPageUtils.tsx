@@ -2,11 +2,11 @@ import { UltraReact, UltraViewer } from '../../vim-web'
 import * as Urls from '../devUrls'
 import { useRef, useEffect, RefObject } from 'react'
 
-export function useUltra (div: RefObject<HTMLDivElement>, onCreated: (ultra: UltraReact.UltraComponentRef) => void) {
-  const cmp = useRef<UltraReact.UltraComponentRef>()
+export function useUltra (div: RefObject<HTMLDivElement>, onCreated: (ultra: UltraReact.UltraViewerRef) => void) {
+  const cmp = useRef<UltraReact.UltraViewerRef>()
   useEffect(() => {
     // Create component
-    void UltraReact.createUltraComponent(div.current).then((c) => {
+    void UltraReact.createUltraViewer(div.current).then((c) => {
       cmp.current = c
       onCreated(cmp.current)
       globalThis.ultra = cmp.current
@@ -19,7 +19,7 @@ export function useUltra (div: RefObject<HTMLDivElement>, onCreated: (ultra: Ult
   }, [])
 }
 
-export function useUltraWithTower (div: RefObject<HTMLDivElement>, onCreated: (ultra: UltraReact.UltraComponentRef, towers: UltraViewer.Vim) => void) {
+export function useUltraWithTower (div: RefObject<HTMLDivElement>, onCreated: (ultra: UltraReact.UltraViewerRef, towers: UltraViewer.UltraVim) => void) {
   useUltraWithModel(
     div,
     Urls.medicalTower,
@@ -27,7 +27,7 @@ export function useUltraWithTower (div: RefObject<HTMLDivElement>, onCreated: (u
   )
 }
 
-export function useUltraWithWolford (div: RefObject<HTMLDivElement>, onCreated: (ultra: UltraReact.UltraComponentRef, towers: UltraViewer.Vim) => void) {
+export function useUltraWithWolford (div: RefObject<HTMLDivElement>, onCreated: (ultra: UltraReact.UltraViewerRef, towers: UltraViewer.UltraVim) => void) {
   useUltraWithModel(
     div,
     Urls.residence,
@@ -35,7 +35,7 @@ export function useUltraWithWolford (div: RefObject<HTMLDivElement>, onCreated: 
   )
 }
 
-export function useUltraNoModel(div: RefObject<HTMLDivElement>, onCreated:  (ultra: UltraReact.UltraComponentRef) => void){
+export function useUltraNoModel(div: RefObject<HTMLDivElement>, onCreated:  (ultra: UltraReact.UltraViewerRef) => void){
   useUltra(div, async (ultra) => {
     await ultra.viewer.connect()
     onCreated(ultra)
@@ -46,7 +46,7 @@ export function useUltraNoModel(div: RefObject<HTMLDivElement>, onCreated:  (ult
 function useUltraWithModel (
   div: RefObject<HTMLDivElement>,
   modelUrl: string,
-  onCreated: (ultra: UltraReact.UltraComponentRef, model: UltraViewer.Vim) => void
+  onCreated: (ultra: UltraReact.UltraViewerRef, model: UltraViewer.UltraVim) => void
 ) {
     useUltra(div, async (ultra) => {
       await ultra.viewer.connect()

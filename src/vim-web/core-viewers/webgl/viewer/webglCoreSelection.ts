@@ -3,8 +3,8 @@
  */
 
 import * as THREE from 'three'
-import { Vim } from '../loader/vim'
-import { ViewerMaterials } from '../loader/materials/viewerMaterials'
+import { WebglVim } from '../loader/vim'
+import { WebglCoreMaterials } from '../loader/materials/webglCoreMaterials'
 import { SignalDispatcher } from 'ste-signals'
 import { GizmoMarker } from './gizmos/markers/gizmoMarker'
 import { Object3D } from '../loader/object3D'
@@ -15,21 +15,21 @@ export type SelectableObject = Object3D | GizmoMarker
  * Provides selection behaviour for the viewer
  * Supports multi-selection as long as all objects are from the same vim.
  */
-export class Selection {
+export class WebglCoreSelection {
   // dependencies
-  private _materials: ViewerMaterials
+  private _materials: WebglCoreMaterials
 
   // State
   private _objects = new Set<SelectableObject>()
   private _focusedObject: SelectableObject | undefined
-  private _vim: Vim | undefined
+  private _vim: WebglVim | undefined
   private _lastFocusTime: number = Date.now()
 
   // Disposable State
   private _onValueChanged = new SignalDispatcher()
   private _unsub: (() => void)[] = []
 
-  constructor (materials: ViewerMaterials) {
+  constructor (materials: WebglCoreMaterials) {
     this._materials = materials
   }
 
@@ -229,7 +229,7 @@ export class Selection {
     this._unsub.length = 0
   }
 
-  private clearOnNewVim (vim: Vim) {
+  private clearOnNewVim (vim: WebglVim) {
     if (this._vim) {
       if (this._vim !== vim) {
         // TODO: Support multi vim selection, use same Selection Code as for Ultra

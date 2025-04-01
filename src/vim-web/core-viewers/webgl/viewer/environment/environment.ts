@@ -3,17 +3,17 @@
  */
 
 import * as THREE from 'three'
-import { ViewerSettings } from '../settings/viewerSettings'
+import { WebglCoreViewerSettings } from '../settings/webglCoreViewerSettings'
 import { ICamera } from '../camera/ICamera'
 import { ViewerMaterials } from '../../loader/materials/viewerMaterials'
 import { Skybox } from './skybox'
-import { Renderer } from '../rendering/renderer'
+import { WebglCoreRenderer } from '../rendering/webglCoreRenderer'
 import { CameraLight } from './cameraLight'
 /**
  * Manages ground plane and lights that are part of the THREE.Scene to render but not part of the Vims.
  */
 export class Environment {
-  private readonly _renderer: Renderer
+  private readonly _renderer: WebglCoreRenderer
   private readonly _camera: ICamera
 
   /**
@@ -31,7 +31,7 @@ export class Environment {
    */
   readonly skybox: Skybox
 
-  constructor (camera:ICamera, renderer: Renderer, viewerMaterials: ViewerMaterials, settings: ViewerSettings) {
+  constructor (camera:ICamera, renderer: WebglCoreRenderer, viewerMaterials: ViewerMaterials, settings: WebglCoreViewerSettings) {
     this._camera = camera
     this._renderer = renderer
 
@@ -49,12 +49,12 @@ export class Environment {
     return [this.skyLight, ...this.sunLights.map(l => l.light), this.skybox.mesh]
   }
 
-  private createSkyLight (settings: ViewerSettings): THREE.HemisphereLight {
+  private createSkyLight (settings: WebglCoreViewerSettings): THREE.HemisphereLight {
     const { skyColor, groundColor, intensity } = settings.skylight
     return new THREE.HemisphereLight(skyColor, groundColor, intensity * Math.PI)
   }
 
-  private createSunLights (settings: ViewerSettings): ReadonlyArray<CameraLight> {
+  private createSunLights (settings: WebglCoreViewerSettings): ReadonlyArray<CameraLight> {
     return settings.sunlights.map((s) =>
       new CameraLight(this._camera, s)
     )

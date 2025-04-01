@@ -6,7 +6,7 @@ import React from 'react'
 import * as VIM from '../../core-viewers/webgl/index'
 import { UserBoolean, ComponentSettings } from './settings'
 import { SettingsState } from './settingsState'
-import { WebglViewer, THREE } from '../..'
+import { THREE } from '../..'
 
 /**
  * JSX Component to interact with settings.
@@ -16,7 +16,7 @@ import { WebglViewer, THREE } from '../..'
  * @returns
  */
 export function MenuSettings (props: {
-  viewer: VIM.Viewer
+  viewer: VIM.WebglCoreViewer
   settings: SettingsState
   visible: boolean
 }) {

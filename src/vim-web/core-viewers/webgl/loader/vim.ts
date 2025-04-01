@@ -23,7 +23,7 @@ type VimFormat = 'vim' | 'vimx'
  * Represents a container for the built three.js meshes and the vim data from which they were constructed.
  * Facilitates high-level scene manipulation by providing access to objects.
  */
-export class Vim {
+export class WebglVim {
   /**
    * Indicates whether the vim was opened from a vim or vimx file.
    */

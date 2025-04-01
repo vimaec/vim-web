@@ -17,7 +17,7 @@ import { RestOfScreen } from '../panels/restOfScreen'
 import { LogoMemo } from '../panels/logo'
 import { whenTrue } from '../helpers/utils'
 import { useSideState } from '../sidePanel/sideState'
-import { UltraComponentRef } from './ultraComponentRef'
+import { UltraViewerRef } from './ultraViewerRef'
 import ReactTooltip from 'react-tooltip'
 import { useUltraCamera } from './ultraCameraState'
 import { useViewerInput } from '../state/viewerInputs'
@@ -29,10 +29,10 @@ import { useViewerInput } from '../state/viewerInputs'
 *  @param viewerSettings Viewer settings.
  * @returns An object containing the resulting container, reactRoot, and viewer.
  */
-export function createUltraComponent (
+export function createUltraViewer (
   container?: Container | HTMLElement
-) : Promise<UltraComponentRef> {
-  const promise = new DeferredPromise<UltraComponentRef>()
+) : Promise<UltraViewerRef> {
+  const promise = new DeferredPromise<UltraViewerRef>()
   const cmpContainer = container instanceof HTMLElement
     ? createContainer(container)
     : container ?? createContainer()
@@ -44,7 +44,7 @@ export function createUltraComponent (
   const reactRoot = createRoot(cmpContainer.ui)
 
   // Patch the component to clean up after itself
-  const attachDispose = (cmp : UltraComponentRef) => {
+  const attachDispose = (cmp : UltraViewerRef) => {
     cmp.dispose = () => {
       viewer.dispose()
       cmpContainer.dispose()
@@ -54,10 +54,10 @@ export function createUltraComponent (
   }
 
   reactRoot.render(
-    <UltraComponent
+    <UltraViewer
       container={cmpContainer}
       viewer={viewer}
-      onMount = {(cmp : UltraComponentRef) => promise.resolve(attachDispose(cmp))}
+      onMount = {(cmp : UltraViewerRef) => promise.resolve(attachDispose(cmp))}
     />
   )
   return promise
@@ -70,10 +70,10 @@ export function createUltraComponent (
  * @param onMount A callback function triggered when the component is mounted. Receives a reference to the Vim component.
  * @param settings Optional settings for configuring the Vim component's behavior.
  */
-export function UltraComponent (props: {
+export function UltraViewer (props: {
   container: Container
   viewer: Ultra.UltraCoreViewer
-  onMount: (component: UltraComponentRef) => void}) {
+  onMount: (component: UltraViewerRef) => void}) {
 
   const modal = useModal(true)
   const sectionBox = useUltraSectionBox(props.viewer)

@@ -5,9 +5,9 @@
 import { SignalDispatcher } from 'ste-signals'
 import * as THREE from 'three'
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer'
-import { ViewerSettings } from './settings/viewerSettings'
+import { WebglCoreViewerSettings } from './settings/webglCoreViewerSettings'
 
-export class Viewport {
+export class WeglCoreViewport {
   /**
    *  HTML Canvas on which the model is rendered
    */
@@ -40,10 +40,10 @@ export class Viewport {
 
   /**
    * Constructs a new instance of the class with the provided settings.
-   * @param {ViewerSettings} settings The settings object defining viewer configurations.
+   * @param {WebglCoreViewerSettings} settings The settings object defining viewer configurations.
    */
-  constructor (settings: ViewerSettings) {
-    const { canvas, owned } = Viewport.getOrCreateCanvas(settings.canvas.id)
+  constructor (settings: WebglCoreViewerSettings) {
+    const { canvas, owned } = WeglCoreViewport.getOrCreateCanvas(settings.canvas.id)
     this.canvas = canvas
     this.textRenderer = this.createTextRenderer()
     this._ownedCanvas = owned

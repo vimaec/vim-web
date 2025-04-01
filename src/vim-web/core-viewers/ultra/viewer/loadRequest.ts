@@ -1,4 +1,4 @@
-import { Vim } from './vim'
+import { UltraVim } from './vim'
 import { ControllablePromise } from '../../utils/promise'
 
 export type LoadRequestResult = LoadSuccess | LoadError
@@ -6,8 +6,8 @@ export type LoadRequestResult = LoadSuccess | LoadError
 export class LoadSuccess {
   readonly isError = false
   readonly isSuccess = true
-  readonly vim: Vim
-  constructor (vim: Vim) {
+  readonly vim: UltraVim
+  constructor (vim: UltraVim) {
     this.vim = vim
   }
 }
@@ -69,7 +69,7 @@ export class LoadRequest implements ILoadRequest {
     this._progressPromise = new ControllablePromise<void>()
   }
 
-  success (vim: Vim) {
+  success (vim: UltraVim) {
     this._result = new LoadSuccess(vim)
     this._progress = 1
     this._progressPromise.resolve()

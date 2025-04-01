@@ -5,7 +5,7 @@ import {
   VimSettings
 } from '../vimSettings'
 
-import { Vim } from '../vim'
+import { WebglVim } from '../vim'
 import { Scene } from '../scene'
 import { Vimx } from './vimx'
 
@@ -99,7 +99,7 @@ async function loadFromVimX (
 
   const builder = new VimxSubsetBuilder(vimx, scene)
 
-  const vim = new Vim(
+  const vim = new WebglVim(
     vimx.header,
     undefined,
     undefined,
@@ -151,7 +151,7 @@ async function loadFromVim (
 
   // Return legacy vim
   const builder = new VimSubsetBuilder(factory)
-  const vim = new Vim(
+  const vim = new WebglVim(
     header,
     doc,
     g3d,

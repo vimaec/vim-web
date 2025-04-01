@@ -6,7 +6,7 @@
 import * as THREE from 'three'
 
 // Vim
-import { Vim } from './vim'
+import { WebglVim } from './vim'
 import { IElement, VimHelpers } from 'vim-format'
 import { ObjectAttribute } from './objectAttributes'
 import { ColorAttribute } from './colorAttributes'
@@ -34,7 +34,7 @@ export class Object3D {
   /**
    * The vim object from which this object came from.
    */
-  readonly vim: Vim
+  readonly vim: WebglVim
 
   /**
    * The bim element index associated with this object.
@@ -59,6 +59,11 @@ export class Object3D {
    */
   get hasMesh () {
     return (this._meshes?.length ?? 0) > 0
+  }
+
+  get isRoom(){
+    const instance = this.instances[0] ?? -1
+    return this.vim.g3d.getInstanceHasFlag(instance, 1)
   }
 
   /**
@@ -126,13 +131,13 @@ export class Object3D {
 
   /**
    * Constructs a new instance of Object.
-   * @param {Vim} vim The Vim instance.
+   * @param {WebglVim} vim The Vim instance.
    * @param {number} element The element index.
    * @param {number[] | undefined} instances An optional array of instance numbers.
    * @param {Submesh[] | undefined} meshes An optional array of submeshes.
    */
   constructor (
-    vim: Vim,
+    vim: WebglVim,
     element: number,
     instances: number[] | undefined,
     meshes: Submesh[] | undefined

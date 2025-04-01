@@ -1,4 +1,4 @@
-  import { Viewer } from '../webgl/viewer/viewer'
+  import { WebglCoreViewer } from '../webgl/viewer/webglCoreViewer'
   import { TouchHandler } from './touchHandler'
   import { MouseHandler } from './mouseHandler'
   import { KeyboardHandler } from './keyboardHandler'
@@ -9,7 +9,7 @@
 
   export type PointerMode = 'orbit' | 'look' | 'pan' | 'zoom' | 'rect'
 
-  export interface InputAdapter{
+  export interface CoreInputAdapter{
     init: () => void
 
     toggleOrthographic: () => void
@@ -68,9 +68,9 @@
     private _onPointerOverrideChanged = new SignalDispatcher()
     private _onPointerModeChanged = new SignalDispatcher()
     private _onSettingsChanged = new SignalDispatcher()
-    private _adapter : InputAdapter
+    private _adapter : CoreInputAdapter
 
-    constructor (canvas: HTMLCanvasElement, adapter: InputAdapter, settings: Partial<InputSettings> = {}) {
+    constructor (canvas: HTMLCanvasElement, adapter: CoreInputAdapter, settings: Partial<InputSettings> = {}) {
       super(canvas)
       this._adapter = adapter
 

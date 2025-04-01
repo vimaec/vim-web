@@ -4,7 +4,7 @@
 
 import * as THREE from 'three'
 import { Mesh, Submesh } from './mesh'
-import { Vim } from './vim'
+import { WebglVim } from './vim'
 import { estimateBytesUsed } from 'three/examples/jsm/utils/BufferGeometryUtils'
 import { InsertableMesh } from './progressive/insertableMesh'
 import { InstancedMesh } from './progressive/instancedMesh'
@@ -31,7 +31,7 @@ export interface IRenderer {
 export class Scene {
   // Dependencies
   private _renderer: IRenderer
-  private _vim: Vim | undefined
+  private _vim: WebglVim | undefined
   private _matrix = new THREE.Matrix4()
 
   // State
@@ -153,7 +153,7 @@ export class Scene {
   /**
    * Sets vim index for this scene and all its THREE.Meshes.
    */
-  set vim (value: Vim) {
+  set vim (value: WebglVim) {
     this._vim = value
     this.meshes.forEach((m) => (m.vim = value))
   }

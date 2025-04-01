@@ -5,7 +5,7 @@ import * as Urls from '../devUrls'
 
 export function WebglLocalFile () {
   const div = useRef<HTMLDivElement>(null)
-  const cmp = useRef<WebglReact.Refs.VimComponentRef>()
+  const cmp = useRef<WebglReact.Refs.ViewerRef>()
   const fileInput = useRef<HTMLInputElement>(null)
   useEffect(() => {
     createComponent(div.current, cmp)
@@ -58,8 +58,8 @@ export function WebglLocalFile () {
   )
 }
 
-async function createComponent (div: HTMLDivElement, ref: React.MutableRefObject<WebglReact.Refs.VimComponentRef>) {
-  const webgl = await WebglReact.createWebglComponent(div)
+async function createComponent (div: HTMLDivElement, ref: React.MutableRefObject<WebglReact.Refs.ViewerRef>) {
+  const webgl = await WebglReact.createWebglViewer(div)
   ref.current = webgl
   globalThis.viewer = webgl
 }

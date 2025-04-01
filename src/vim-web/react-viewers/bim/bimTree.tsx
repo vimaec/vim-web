@@ -14,8 +14,8 @@ import * as VIM from '../../core-viewers/webgl/index'
 import { showContextMenu } from '../panels/contextMenu'
 import { CameraRef } from '../state/cameraState'
 import { ArrayEquals } from '../helpers/data'
-import { Isolation } from '../helpers/isolation'
 import { BimTreeData, VimTreeNode } from './bimTreeData'
+import { IsolationRef } from '../state/renderSettings'
 
 export type TreeActionRef = {
   showAll: () => void
@@ -33,10 +33,10 @@ export type TreeActionRef = {
  */
 export function BimTree (props: {
   actionRef: React.MutableRefObject<TreeActionRef>
-  viewer: VIM.Viewer
+  viewer: VIM.WebglCoreViewer
   camera: CameraRef
   objects: VIM.Object3D[]
-  isolation: Isolation
+  isolation: IsolationRef
   treeData: BimTreeData
 }) {
   // Data state
@@ -54,10 +54,10 @@ export function BimTree (props: {
   props.actionRef.current = useMemo(
     () => ({
       showAll: () => {
-        props.isolation.clear('tree')
+        props.isolation.adapter.current.showAll()
       },
       hideAll: () => {
-        props.isolation.isolate([], 'tree')
+        props.isolation.adapter.current.hideAll()
       },
       collapseAll: () => {
         setExpandedItems([])
@@ -232,7 +232,7 @@ export function BimTree (props: {
             }
           })
         }}
-        // Impement double click
+        // Implement double click
         onPrimaryAction={(item, _) => {
           if (doubleClick.isDoubleClick(item.index as number)) {
             props.camera.frameSelection.call()
@@ -264,8 +264,8 @@ export function BimTree (props: {
 }
 
 function toggleVisibility (
-  viewer: VIM.Viewer,
-  isolation: Isolation,
+  viewer: VIM.WebglCoreViewer,
+  isolation: IsolationRef,
   tree: BimTreeData,
   index: number
 ) {
@@ -277,14 +277,14 @@ function toggleVisibility (
 
   const visibility = tree.nodes[index].visible
   if (visibility !== 'vim-visible') {
-    isolation.show(objs, 'tree')
+    isolation.adapter.current.show(objs.flatMap(o => o?.instances ?? []))
   } else {
-    isolation.hide(objs, 'tree')
+    isolation.adapter.current.hide(objs.flatMap(o => o?.instances ?? []))
   }
 }
 
 function updateViewerFocus (
-  viewer: VIM.Viewer,
+  viewer: VIM.WebglCoreViewer,
   tree: BimTreeData,
   index: number
 ) {
@@ -295,7 +295,7 @@ function updateViewerFocus (
 
 function updateViewerSelection (
   tree: BimTreeData,
-  viewer: VIM.Viewer,
+  viewer: VIM.WebglCoreViewer,
   nodes: number[],
   operation: 'add' | 'remove' | 'set'
 ) {
@@ -334,7 +334,8 @@ function scrollToSelection (div: HTMLDivElement) {
     rectElem.bottom > rectContainer.bottom ||
     rectElem.bottom > window.innerHeight
   ) {
-    selection.scrollIntoView(false)
+    // Nearest is important to avoid scrolling to the bottom of the container when the viewer is embedded.
+    selection.scrollIntoView({ block: 'nearest', inline: 'nearest' })
     return
   }
 

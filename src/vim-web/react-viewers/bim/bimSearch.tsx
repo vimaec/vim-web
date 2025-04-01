@@ -4,7 +4,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import * as Icons from '../panels/icons'
-import { WebglViewer } from '../..'
+import { WebglCoreViewer } from '../..'
 
 const SEARCH_DELAY_MS = 200
 /**
@@ -15,11 +15,12 @@ const SEARCH_DELAY_MS = 200
  * @param count current search result count.
  */
 export function BimSearch (props: {
-  viewer: WebglViewer.Viewer
+  viewer: WebglCoreViewer
   filter: string
   setFilter: (s: string) => void
   count: number
 }) {
+  console.log('bim search', props.filter)
   const [text, setText] = useState('')
   const changeTimeout = useRef<ReturnType<typeof setTimeout>>()
 

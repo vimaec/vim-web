@@ -3,8 +3,8 @@
  */
 
 import * as THREE from 'three'
-import { RaycastResult } from '../../raycaster'
-import { Viewer } from '../../viewer'
+import { RaycastResult } from '../../webglCoreRaycaster'
+import { WebglCoreViewer } from '../../webglCoreViewer'
 import { MeasureGizmo } from './measureGizmo'
 import { ControllablePromise } from '../../../../utils/promise'
 
@@ -58,7 +58,7 @@ export type MeasureStage = 'ready' | 'active' | 'done' | 'failed'
  */
 export class Measure implements IMeasure {
   // dependencies
-  private _viewer: Viewer
+  private _viewer: WebglCoreViewer
 
   // resources
   private _meshes: MeasureGizmo | undefined
@@ -100,7 +100,7 @@ export class Measure implements IMeasure {
     return this._stage
   }
 
-  constructor (viewer: Viewer) {
+  constructor (viewer: WebglCoreViewer) {
     this._viewer = viewer
   }
 

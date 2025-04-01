@@ -6,25 +6,16 @@ import * as THREE from 'three'
 import deepmerge from 'deepmerge'
 import { isPlainObject } from 'is-plain-object'
 import { AxesSettings } from '../gizmos/axes/axesSettings'
-import { defaultViewerSettings } from './defaultViewerSettings'
+import { webglCoreViewerDefaultSettings } from './webglCoreViewerDefaultSettings'
+import { RecursivePartial } from '../../../utils/partial'
 
 export type TextureEncoding = 'url' | 'base64' | undefined
 export { AxesSettings } from '../gizmos/axes/axesSettings'
 
-/**
- * Makes all field optional recursively
- * https://stackoverflow.com/questions/41980195/recursive-partialt-in-typescript
- */
-export type RecursivePartial<T> = {
-  [P in keyof T]?: T[P] extends (infer U)[]
-    ? RecursivePartial<U>[]
-    : T[P] extends object
-    ? RecursivePartial<T[P]>
-    : T[P]
-}
+
 
 /** Viewer related options independant from vims */
-export type ViewerSettings = {
+export type WebglCoreViewerSettings = {
   /**
    * Webgl canvas related options
    */
@@ -344,16 +335,16 @@ materials: {
 /**
  * Same as the Setting type but any field can be undefined.
  */
-export type PartialViewerSettings = RecursivePartial<ViewerSettings>
+export type PartialWebglCoreViewerSettings = RecursivePartial<WebglCoreViewerSettings>
 
 /**
  * Returns a full viewer settings where all unassigned values are replaced with the default values.
  * @param settings optional values to use instead of default.
  */
-export function getViewerSettings (settings?: PartialViewerSettings) {
+export function getViewerSettings (settings?: PartialWebglCoreViewerSettings) {
   return settings
-    ? (deepmerge(defaultViewerSettings, settings, { arrayMerge: combineMerge, isMergeableObject: isPlainObject }) as ViewerSettings)
-    : (defaultViewerSettings)
+    ? (deepmerge(webglCoreViewerDefaultSettings, settings, { arrayMerge: combineMerge, isMergeableObject: isPlainObject }) as WebglCoreViewerSettings)
+    : (webglCoreViewerDefaultSettings)
 }
 
 //  https://www.npmjs.com/package/deepmerge#arraymerge-example-combine-arrays

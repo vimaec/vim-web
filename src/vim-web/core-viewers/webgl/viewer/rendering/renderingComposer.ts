@@ -8,7 +8,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 
-import { Viewport } from '../viewport'
+import { WeglCoreViewport } from '../webglCoreViewport'
 import { RenderScene } from './renderScene'
 import { ViewerMaterials } from '../../loader/materials/viewerMaterials'
 import { OutlinePass } from './outlinePass'
@@ -67,7 +67,7 @@ export class RenderingComposer {
   constructor (
     renderer: THREE.WebGLRenderer,
     scene: RenderScene,
-    viewport: Viewport,
+    viewport: WeglCoreViewport,
     materials: ViewerMaterials,
     camera: Camera
   ) {

@@ -11,7 +11,7 @@ import { Box3, RGBA32 } from '../../utils/math3d';
 
 type NodeState = 'visible' | 'hidden' | 'ghosted' | 'highlighted';
 
-export class Vim {
+export class UltraVim {
   readonly source: VimSource;
   private _handle: number = -1;
   private _request: LoadRequest | undefined;

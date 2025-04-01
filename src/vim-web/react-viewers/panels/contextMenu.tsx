@@ -9,12 +9,11 @@ import {
   hideMenu
 } from '@firefox-devtools/react-contextmenu'
 import React, { useEffect, useState } from 'react'
-import { WebglViewer } from '../..'
-import { Isolation } from '../helpers/isolation'
 import { CameraRef } from '../state/cameraState'
-import { ArrayEquals } from '../helpers/data'
 import { TreeActionRef } from '../bim/bimTree'
 import { ModalRef } from './modal'
+import { IsolationRef } from '../state/renderSettings'
+import * as VIM from '../../core-viewers/webgl/index'
 
 const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
 type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -95,26 +94,23 @@ export const VimContextMenuMemo = React.memo(VimContextMenu)
  * Context menu component definition according to current state.
  */
 export function VimContextMenu (props: {
-  viewer: WebglViewer.Viewer
+  viewer: VIM.WebglCoreViewer
   camera: CameraRef
   modal: ModalRef
-  isolation: Isolation
-  selection: WebglViewer.Object3D[]
+  isolation: IsolationRef
+  selection: VIM.Object3D[]
   customization?: (e: ContextMenuElement[]) => ContextMenuElement[]
   treeRef: React.MutableRefObject<TreeActionRef | undefined>
 }) {
-  const getSelection = () => {
-    return [...props.viewer.selection.objects].filter(o => o.type === 'Object3D')
-  }
-
   const viewer = props.viewer
   const camera = props.camera
-  const [, setVersion] = useState(0)
-  const hidden = props.isolation.isActive()
+  const [visibility, setVisibility] = useState(props.isolation.adapter.current.getVisibility())
 
   useEffect(() => {
     // force re-render and reevalution of isolation.
-    props.isolation.onChanged.subscribe(() => setVersion((v) => v + 1))
+    props.isolation.adapter.current.onVisibilityChange.subscribe(() => {
+      setVisibility(props.isolation.adapter.current.getVisibility())
+    })
   }, [])
 
   const onShowControlsBtn = (e: ClickCallback) => {
@@ -133,32 +129,22 @@ export function VimContextMenu (props: {
   }
 
   const onSelectionIsolateBtn = (e: ClickCallback) => {
-    props.isolation.isolate(
-      getSelection(),
-      'contextMenu'
-    )
-    props.viewer.selection.clear()
-    e.stopPropagation()
-  }
-
-  const onSelectSimilarBtn = (e: ClickCallback) => {
-    const o = getSelection()[0]
-    props.treeRef.current?.selectSiblings(o)
+    props.isolation.adapter.current.isolateSelection()
     e.stopPropagation()
   }
 
   const onSelectionHideBtn = (e: ClickCallback) => {
-    props.isolation.hide(getSelection(), 'contextMenu')
+    props.isolation.adapter.current.hideSelection()
     e.stopPropagation()
   }
 
   const onSelectionShowBtn = (e: ClickCallback) => {
-    props.isolation.show(getSelection(), 'contextMenu')
+    props.isolation.adapter.current.showSelection()
     e.stopPropagation()
   }
 
   const onShowAllBtn = (e: ClickCallback) => {
-    props.isolation.clear('contextMenu')
+    props.isolation.adapter.current.showAll()
     e.stopPropagation()
   }
 
@@ -192,10 +178,8 @@ export function VimContextMenu (props: {
       : null
   }
 
-  const hasSelection = props.selection?.length > 0
-  const hasVisibleSelection = props.selection?.findIndex((o) => o.visible) >= 0
+  const hasSelection = props.isolation.adapter.current.hasSelection()
   const measuring = !!viewer.gizmos.measure.stage
-  const isolated = ArrayEquals(props.selection, props.isolation.current())
 
   let elements: ContextMenuElement[] = [
     {
@@ -221,42 +205,35 @@ export function VimContextMenu (props: {
     },
     {
       id: contextMenuElementIds.dividerSelection,
-      enabled: hasSelection || hidden
+      enabled: hasSelection || visibility !== 'all'
     },
     {
       id: contextMenuElementIds.isolateSelection,
       label: 'Isolate Object',
       keyboard: 'I',
       action: onSelectionIsolateBtn,
-      enabled: hasSelection && !isolated
-    },
-    {
-      id: contextMenuElementIds.selectSimilar,
-      label: 'Select Similar',
-      keyboard: undefined,
-      action: onSelectSimilarBtn,
-      enabled: hasSelection
+      enabled: hasSelection && visibility === 'onlySelection'
     },
     {
       id: contextMenuElementIds.hideObject,
       label: 'Hide Object',
       keyboard: 'V',
       action: onSelectionHideBtn,
-      enabled: hasVisibleSelection
+      enabled: hasSelection && !props.isolation.adapter.current.isSelectionHidden()
     },
     {
       id: contextMenuElementIds.showObject,
       label: 'Show Object',
       keyboard: 'V',
       action: onSelectionShowBtn,
-      enabled: hasSelection && !hasVisibleSelection
+      enabled: hasSelection && props.isolation.adapter.current.isSelectionHidden()
     },
     {
       id: contextMenuElementIds.showAll,
       label: 'Show All',
       keyboard: 'Esc',
       action: onShowAllBtn,
-      enabled: hidden
+      enabled: visibility !== 'all'
     },
     { id: contextMenuElementIds.dividerMeasure, enabled: measuring },
     {

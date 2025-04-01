@@ -18,7 +18,7 @@ export type SettingsState = {
  * Returns a new state closure for settings.
  */
 export function useSettings (
-  viewer: VIM.Viewer,
+  viewer: VIM.WebglCoreViewer,
   value: PartialComponentSettings
 ): SettingsState {
   const merge = deepmerge(defaultSettings, value) as ComponentSettings
@@ -56,7 +56,7 @@ export function useSettings (
 /**
  * Apply given vim component settings to the given viewer.
  */
-export function applySettings (viewer: VIM.Viewer, settings: ComponentSettings) {
+export function applySettings (viewer: VIM.WebglCoreViewer, settings: ComponentSettings) {
   // Show/Hide performance gizmo
   const performance = document.getElementsByClassName('vim-performance-div')[0]
   if (performance) {

@@ -2,7 +2,7 @@
 import * as VIM from '../../core-viewers/webgl/index';
 import {SectionBoxAdapter, SectionBoxRef, useSectionBox } from '../state/sectionBoxState';
 
-export function useWebglSectionBox(viewer: VIM.Viewer): SectionBoxRef {
+export function useWebglSectionBox(viewer: VIM.WebglCoreViewer): SectionBoxRef {
   const vimAdapter: SectionBoxAdapter = {
     setClip: (b) => {
       viewer.gizmos.sectionBox.clip = b;

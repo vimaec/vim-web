@@ -7,7 +7,7 @@ import { Object3D } from '../loader/object3D'
 import { Mesh } from '../loader/mesh'
 import { RenderScene } from './rendering/renderScene'
 import { Camera } from './camera/camera'
-import { Renderer } from './rendering/renderer'
+import { WebglCoreRenderer } from './rendering/webglCoreRenderer'
 import { GizmoMarker } from './gizmos/markers/gizmoMarker'
 import { GizmoMarkers } from './gizmos/markers/gizmoMarkers'
 
@@ -101,17 +101,17 @@ export class RaycastResult {
   }
 }
 
-export class Raycaster {
+export class WeglCoreRaycaster {
   private _camera: Camera
   private _scene: RenderScene
-  private _renderer: Renderer
+  private _renderer: WebglCoreRenderer
 
   private _raycaster = new THREE.Raycaster()
 
   constructor (
     camera: Camera,
     scene: RenderScene,
-    renderer: Renderer
+    renderer: WebglCoreRenderer
   ) {
     this._camera = camera
     this._scene = scene

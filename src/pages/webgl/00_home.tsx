@@ -5,7 +5,7 @@ import { Box3, Vector3 } from 'three'
 
 export function WebglHome () {
   const div = useRef<HTMLDivElement>(null)
-  const cmp = useRef<WebglReact.Refs.VimComponentRef>()
+  const cmp = useRef<WebglReact.Refs.ViewerRef>()
   useEffect(() => {
     createComponent(div.current, cmp)
     return () => cmp.current?.dispose()
@@ -16,8 +16,8 @@ export function WebglHome () {
   )
 }
 
-async function createComponent (div: HTMLDivElement, ref: React.MutableRefObject<WebglReact.Refs.VimComponentRef>) {
-  const webgl = await WebglReact.createWebglComponent(div)
+async function createComponent (div: HTMLDivElement, ref: React.MutableRefObject<WebglReact.Refs.ViewerRef>) {
+  const webgl = await WebglReact.createWebglViewer(div)
   ref.current = webgl
   globalThis.viewer = webgl
   globalThis.THREE = THREE
