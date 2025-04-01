@@ -1,17 +1,17 @@
 import { SignalDispatcher } from "ste-signals";
 import { Box3, Vector2, Vector3 } from "../../utils/math3d";
 import { RpcSafeClient } from "./rpcSafeClient";
-import { Vim } from "./vim";
+import { UltraVim } from "./vim";
 import { IReadonlyVimCollection } from "./vimCollection";
 
 export interface IViewerSelection {
   hitTest(pos: Vector2): Promise<HitTestResult | undefined>;
-  select(vim: Vim, node: number | number[]): void;
-  toggle(vim: Vim, node: number | number[]): void;
-  add(vim: Vim, node: number | number[]): void;
-  remove(vim: Vim, node: number | number[]): void;
-  clear(vim?: Vim): void;
-  get() : ReadonlyMap<Vim, ReadonlySet<number>>;
+  select(vim: UltraVim, node: number | number[]): void;
+  toggle(vim: UltraVim, node: number | number[]): void;
+  add(vim: UltraVim, node: number | number[]): void;
+  remove(vim: UltraVim, node: number | number[]): void;
+  clear(vim?: UltraVim): void;
+  get() : ReadonlyMap<UltraVim, ReadonlySet<number>>;
 }
 
 /**
@@ -19,7 +19,7 @@ export interface IViewerSelection {
  */
 export type HitTestResult = {
   /** The Vim instance that was hit */
-  vim: Vim;
+  vim: UltraVim;
   /** The index of the node that was hit */
   nodeIndex: number;
   /** The 3D world position of the hit point */
@@ -34,7 +34,7 @@ export type HitTestResult = {
 export class ViewerSelection implements IViewerSelection {
   private _rpc: RpcSafeClient;
   private _vims: IReadonlyVimCollection;
-  private _selectedNodes: Map<Vim, Set<number>>;
+  private _selectedNodes: Map<UltraVim, Set<number>>;
 
   private _onValueChanged = new SignalDispatcher();
   get onValueChanged(){
@@ -42,7 +42,7 @@ export class ViewerSelection implements IViewerSelection {
   }
 
   get(){
-    return this._selectedNodes as ReadonlyMap<Vim, ReadonlySet<number>>;
+    return this._selectedNodes as ReadonlyMap<UltraVim, ReadonlySet<number>>;
   }
 
   /**
@@ -53,7 +53,7 @@ export class ViewerSelection implements IViewerSelection {
   constructor(rpc: RpcSafeClient, vims: IReadonlyVimCollection) {
     this._rpc = rpc;
     this._vims = vims;
-    this._selectedNodes = new Map<Vim, Set<number>>();
+    this._selectedNodes = new Map<UltraVim, Set<number>>();
   }
 
   /**
@@ -92,7 +92,7 @@ export class ViewerSelection implements IViewerSelection {
    * @param vim - The Vim instance to select nodes from.
    * @param node - A single node index or array of node indices to select.
    */
-  public select(vim: Vim, node: number | number[]) {
+  public select(vim: UltraVim, node: number | number[]) {
     this._clear()
     this.add(vim, node);
   }
@@ -103,7 +103,7 @@ export class ViewerSelection implements IViewerSelection {
    * @param vim - The Vim instance containing the nodes.
    * @param node - A single node index or array of node indices to toggle.
    */
-  public toggle(vim: Vim, node: number | number[]) {
+  public toggle(vim: UltraVim, node: number | number[]) {
     const nodes = Array.isArray(node) ? node : [node];
 
     nodes.forEach((n) => {
@@ -122,7 +122,7 @@ export class ViewerSelection implements IViewerSelection {
    * @param vim - The Vim instance containing the nodes.
    * @param node - A single node index or array of node indices to add.
    */
-  public add(vim: Vim, node: number | number[]) {
+  public add(vim: UltraVim, node: number | number[]) {
     const nodes = Array.isArray(node) ? node : [node];
 
     let nodeSet = this._selectedNodes.get(vim);
@@ -152,7 +152,7 @@ export class ViewerSelection implements IViewerSelection {
    * @param vim - The Vim instance containing the nodes.
    * @param node - A single node index or array of node indices to remove.
    */
-  public remove(vim: Vim, node: number | number[]) {
+  public remove(vim: UltraVim, node: number | number[]) {
     const nodeSet = this._selectedNodes.get(vim);
     if (!nodeSet) return; // No nodes selected for this Vim
 
@@ -181,7 +181,7 @@ export class ViewerSelection implements IViewerSelection {
    * Clears all selections across all VIMs or for a specific VIM.
    * @param vim - Optional. If provided, only clears selections for the specified VIM.
    */
-  public clear(vim?: Vim) {
+  public clear(vim?: UltraVim) {
     // Unhighlight all selected nodes
     const changed = this._clear(vim);
 
@@ -190,7 +190,7 @@ export class ViewerSelection implements IViewerSelection {
     }
   }
 
-  private _clear(vim?: Vim) {
+  private _clear(vim?: UltraVim) {
     let changed = false
     this._selectedNodes.forEach((nodes, v) => {
       if(vim === undefined || v === vim){

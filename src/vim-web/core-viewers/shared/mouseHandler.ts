@@ -61,6 +61,8 @@ export class MouseHandler extends InputHandler {
 
   private async handleMouseClick(event: PointerEvent): Promise<void> {
     if (event.pointerType !== 'mouse') return;
+    if(event.button !== 0) return;
+    
     const pos = this.relativePosition(event);
 
     if (!almostEqual(this._lastMouseDownPosition, pos, 0.01)) {

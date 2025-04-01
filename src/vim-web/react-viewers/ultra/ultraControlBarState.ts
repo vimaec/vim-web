@@ -1,7 +1,7 @@
 
 import { ControlBarCustomization } from '../controlbar/controlBar'
 import { SectionBoxRef } from '../state/sectionBoxState'
-import { controlBarActions, controlBarCamera, controlBarSectionBox } from '../state/controlBarState'
+import { controlBarMeasure, controlBarCamera, controlBarSectionBox } from '../state/controlBarState'
 import * as Ultra from '../../core-viewers/ultra/index'
 import { CameraRef } from '../state/cameraState'
 import { ControlBar, Icons } from '..'

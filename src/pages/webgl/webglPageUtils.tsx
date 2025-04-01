@@ -2,10 +2,10 @@ import React, { useEffect, useRef } from 'react'
 import { THREE, WebglReact } from '../../vim-web'
 
 
-export function useWebgl (div: React.MutableRefObject<HTMLDivElement>, onCreated: (webgl: WebglReact.Refs.VimComponentRef) => void) {
-  const cmp = useRef<WebglReact.Refs.VimComponentRef>()
+export function useWebgl (div: React.MutableRefObject<HTMLDivElement>, onCreated: (webgl: WebglReact.Refs.ViewerRef) => void) {
+  const cmp = useRef<WebglReact.Refs.ViewerRef>()
   useEffect(() => {
-    WebglReact.createWebglComponent(div.current).then((viewer) =>{
+    WebglReact.createWebglViewer(div.current).then((viewer) =>{
       cmp.current = viewer
       globalThis.viewer = cmp.current
       globalThis.THREE = THREE

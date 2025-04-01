@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { ViewerSettings } from '../settings/viewerSettings'
+import { WebglCoreViewerSettings } from '../settings/webglCoreViewerSettings'
 
 export class PerspectiveWrapper {
   camera: THREE.PerspectiveCamera
@@ -12,7 +12,7 @@ export class PerspectiveWrapper {
     this.camera = camera
   }
 
-  applySettings (settings: ViewerSettings) {
+  applySettings (settings: WebglCoreViewerSettings) {
     this.camera.fov = settings.camera.fov
     this.camera.zoom = settings.camera.zoom
     this.camera.near = settings.camera.near

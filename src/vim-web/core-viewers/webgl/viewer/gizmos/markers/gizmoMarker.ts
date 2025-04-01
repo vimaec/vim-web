@@ -1,5 +1,5 @@
-import { Vim } from '../../../loader/vim'
-import { Viewer } from '../../viewer'
+import { WebglVim } from '../../../loader/vim'
+import { WebglCoreViewer } from '../../webglCoreViewer'
 import * as THREE from 'three'
 import { SimpleInstanceSubmesh } from '../../../loader/mesh'
 import { ObjectAttribute } from '../../../loader/objectAttributes'
@@ -11,13 +11,13 @@ import { ColorAttribute } from '../../../loader/colorAttributes'
  */
 export class GizmoMarker {
   public readonly type = 'Marker'
-  private _viewer: Viewer
+  private _viewer: WebglCoreViewer
   private _submesh: SimpleInstanceSubmesh
 
   /**
    * The vim object from which this object came from.
    */
-  vim: Vim | undefined
+  vim: WebglVim | undefined
 
   /**
    * The bim element index associated with this object.
@@ -35,7 +35,7 @@ export class GizmoMarker {
   private _focusedAttribute: ObjectAttribute<boolean>
   private _colorAttribute: ColorAttribute
 
-  constructor (viewer: Viewer, submesh: SimpleInstanceSubmesh) {
+  constructor (viewer: WebglCoreViewer, submesh: SimpleInstanceSubmesh) {
     this._viewer = viewer
     this._submesh = submesh
 

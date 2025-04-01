@@ -14,7 +14,7 @@ export function UltraNodeEffects () {
   )
 }
 
-async function changeState (ultra: UltraReact.UltraComponentRef, tower: UltraViewer.Vim) {
+async function changeState (ultra: UltraReact.UltraViewerRef, tower: UltraViewer.UltraVim) {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const indices = Array.from({ length: 200000 }, (_, i) => i)

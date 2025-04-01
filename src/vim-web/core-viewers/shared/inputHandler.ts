@@ -2,7 +2,7 @@
  * @module viw-webgl-viewer/inputs
  */
 
-import { Viewer } from '../webgl/viewer/viewer'
+import { WebglCoreViewer } from '../webgl/viewer/webglCoreViewer'
 
 /**
  * TODO: Use the same code for ULTRA and webgl.

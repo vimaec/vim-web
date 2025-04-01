@@ -14,7 +14,7 @@ export function UltraHome () {
   )
 }
 
-async function loadFile (ultra: UltraReact.UltraComponentRef) {
+async function loadFile (ultra: UltraReact.UltraViewerRef) {
   const success = await ultra.viewer.connect()
   const request = ultra.load({url:getPathFromUrl() ?? Urls.residence})
   await request.getResult()

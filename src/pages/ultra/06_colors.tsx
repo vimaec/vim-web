@@ -14,7 +14,7 @@ export function UltraColors () {
   )
 }
 
-async function createColors (ultra: UltraReact.UltraComponentRef, tower: UltraViewer.Vim) {
+async function createColors (ultra: UltraReact.UltraViewerRef, tower: UltraViewer.UltraVim) {
   const randomColors = new Array<number>(200000)
     .fill(0)
     .map(() => Math.floor(Math.random() * 0xFFFFFFFF))

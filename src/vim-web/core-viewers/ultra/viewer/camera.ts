@@ -1,6 +1,6 @@
 import { Box3, Segment, Vector3 } from '../../utils/math3d'
 import { RpcSafeClient } from './rpcSafeClient'
-import { Vim } from './vim'
+import { UltraVim } from './vim'
 
 /**
  * Interface defining camera control operations in the 3D viewer
@@ -24,12 +24,12 @@ export interface ICamera {
 
   /**
    * Frames specified nodes of a Vim model in the camera view
-   * @param {Vim} vim - The target Vim model
+   * @param {UltraVim} vim - The target Vim model
    * @param {number[] | 'all'} nodes - Array of node indices or 'all' for entire model
    * @param {number} [blendTime=0.5] - Animation duration in seconds
    * @returns {Promise<Segment | undefined>} Promise resolving to the final camera position segment
    */
-  frameVim(vim: Vim, nodes: number[] | 'all', blendTime?: number): Promise<Segment | undefined>
+  frameVim(vim: UltraVim, nodes: number[] | 'all', blendTime?: number): Promise<Segment | undefined>
 
   /**
    * Saves the current camera position for later restoration
@@ -151,7 +151,7 @@ export class Camera implements ICamera {
    * @param blendTime - Duration of the camera animation in seconds (defaults to 0.5)
    * @returns Promise that resolves when the framing animation is complete
    */
-  async frameVim(vim: Vim, nodes: number[] | 'all', blendTime: number = this._defaultBlendTime): Promise<Segment | undefined> {
+  async frameVim(vim: UltraVim, nodes: number[] | 'all', blendTime: number = this._defaultBlendTime): Promise<Segment | undefined> {
     let segment: Segment | undefined
     if (nodes === 'all') {
       segment = await this._rpc.RPCFrameVim(vim.handle, blendTime);

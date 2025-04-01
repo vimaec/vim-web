@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { PartialViewerSettings, ViewerSettings } from './viewerSettings'
+import { PartialWebglCoreViewerSettings, WebglCoreViewerSettings } from './webglCoreViewerSettings'
 import deepmerge from 'deepmerge'
 
 /**
@@ -9,9 +9,9 @@ import deepmerge from 'deepmerge'
  * @param url URL string with standard parameters.
  * @returns A PartialSettings object that can further be merged with default values.
  */
-export function getViewerSettingsFromUrl (url?: string, settings?: PartialViewerSettings) {
+export function getViewerSettingsFromUrl (url?: string, settings?: PartialWebglCoreViewerSettings) {
   const urlSettings = parseSettingsFromUrl(url)
-  return deepmerge(settings, urlSettings ?? {}) as PartialViewerSettings
+  return deepmerge(settings, urlSettings ?? {}) as PartialWebglCoreViewerSettings
 }
 
 function parseSettingsFromUrl (url: string) {
@@ -110,10 +110,10 @@ function parseSettingsFromUrl (url: string) {
     rendering: {
       onDemand: get('rendering.onDemand', strToBool)
     }
-  } as ViewerSettings
+  } as WebglCoreViewerSettings
 
   // We remove undefined propertes because deepmerge only writes properties that not declared.
-  const result = removeUndefinedProperties(parsed) as PartialViewerSettings
+  const result = removeUndefinedProperties(parsed) as PartialWebglCoreViewerSettings
   return result
 }
 

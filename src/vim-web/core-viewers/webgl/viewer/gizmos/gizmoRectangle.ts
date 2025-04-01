@@ -3,17 +3,17 @@
  */
 
 import * as THREE from 'three'
-import { Viewer } from '../viewer'
+import { WebglCoreViewer } from '../webglCoreViewer'
 
 /**
  * Rectangle Gizmo used for rectangle selection.
  */
 export class GizmoRectangle {
   private line: THREE.LineSegments
-  private viewer: Viewer
+  private viewer: WebglCoreViewer
   private points: THREE.Vector3[] | undefined
 
-  constructor (viewer: Viewer) {
+  constructor (viewer: WebglCoreViewer) {
     this.viewer = viewer
 
     const mat = new THREE.LineBasicMaterial({

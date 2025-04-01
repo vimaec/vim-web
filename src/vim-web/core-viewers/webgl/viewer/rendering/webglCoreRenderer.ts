@@ -4,21 +4,21 @@
 
 import * as THREE from 'three'
 import { IRenderer, Scene } from '../../loader/scene'
-import { Viewport } from '../viewport'
+import { WeglCoreViewport } from '../webglCoreViewport'
 import { RenderScene } from './renderScene'
-import { ModelMaterial, ViewerMaterials } from '../../loader/materials/viewerMaterials'
+import { ModelMaterial, WebglCoreMaterials } from '../../loader/materials/webglCoreMaterials'
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer'
 
 import { Camera } from '../camera/camera'
 import { RenderingSection } from './renderingSection'
 import { RenderingComposer } from './renderingComposer'
-import { ViewerSettings } from '../settings/viewerSettings'
+import { WebglCoreViewerSettings } from '../settings/webglCoreViewerSettings'
 import { SignalDispatcher } from 'ste-signals'
 
 /**
  * Manages how vim objects are added and removed from the THREE.Scene to be rendered
  */
-export class Renderer implements IRenderer {
+export class WebglCoreRenderer implements IRenderer {
   /**
    * The THREE WebGL renderer.
    */
@@ -40,10 +40,10 @@ export class Renderer implements IRenderer {
   antialias: boolean = true
 
   private _scene: RenderScene
-  private _viewport: Viewport
+  private _viewport: WeglCoreViewport
   private _camera: Camera
   private _composer: RenderingComposer
-  private _materials: ViewerMaterials
+  private _materials: WebglCoreMaterials
   private _renderText: boolean | undefined
 
   private _needsUpdate: boolean
@@ -75,10 +75,10 @@ export class Renderer implements IRenderer {
 
   constructor (
     scene: RenderScene,
-    viewport: Viewport,
-    materials: ViewerMaterials,
+    viewport: WeglCoreViewport,
+    materials: WebglCoreMaterials,
     camera: Camera,
-    settings: ViewerSettings
+    settings: WebglCoreViewerSettings
   ) {
     this._viewport = viewport
     this._scene = scene

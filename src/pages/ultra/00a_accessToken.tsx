@@ -6,7 +6,7 @@ export function UltraAccessToken () {
 }
   
 async function createComponent (div: HTMLDivElement, url: string, token: string) {
-  const ultra = await UltraReact.createUltraComponent(div)
+  const ultra = await UltraReact.createUltraViewer(div)
   await ultra.viewer.connect()
   const request = ultra.load({url: url, authToken: token})
   await request.getResult()

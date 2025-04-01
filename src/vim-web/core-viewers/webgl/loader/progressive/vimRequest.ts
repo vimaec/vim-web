@@ -3,7 +3,7 @@ import {
   VimPartialSettings
 } from '../vimSettings'
 
-import { Vim } from '../vim'
+import { WebglVim } from '../vim'
 import { RequestResult, ErrorResult, SuccessResult } from '../../../utils/requestResult'
 import { open } from './open'
 
@@ -39,7 +39,7 @@ export class VimRequest {
 
   // Result states
   private _isDone: boolean = false
-  private _vimResult?: Vim
+  private _vimResult?: WebglVim
   private _error?: string
 
   // Promises to await progress updates and completion
@@ -61,7 +61,7 @@ export class VimRequest {
     try {
       this._bfast = new BFast(this._source)
 
-      const vim: Vim = await open(this._bfast, this._settings, (progress: IProgressLogs) => {
+      const vim: WebglVim = await open(this._bfast, this._settings, (progress: IProgressLogs) => {
         this._progress = progress
         this._progressPromise.resolve(progress)
         this._progressPromise = new ControllablePromise<IProgressLogs>()
@@ -81,7 +81,7 @@ export class VimRequest {
     this._completionPromise.resolve()
   }
 
-  async getResult (): Promise<RequestResult<Vim>> {
+  async getResult (): Promise<RequestResult<WebglVim>> {
     await this._completionPromise
     return this._error ? new ErrorResult(this._error) : new SuccessResult(this._vimResult)
   }

@@ -15,7 +15,7 @@ export function UltraBackground () {
   )
 }
 
-async function changeBackground (ultra: UltraReact.UltraComponentRef) {
+async function changeBackground (ultra: UltraReact.UltraViewerRef) {
   const r = ultra.viewer.renderer
   r.backgroundColor = new UltraViewer.RGBA(0, 0, 0, 0)
 

@@ -15,7 +15,7 @@ export function UltraCamera () {
   )
 }
 
-async function framing (ultra: UltraReact.UltraComponentRef, tower: UltraViewer.Vim) {
+async function framing (ultra: UltraReact.UltraViewerRef, tower: UltraViewer.UltraVim) {
   // Wait for the user to get ready
   await new Promise(resolve => setTimeout(resolve, 2000))
 
@@ -52,7 +52,7 @@ async function framing (ultra: UltraReact.UltraComponentRef, tower: UltraViewer.
   await ultra.viewer.camera.frameVim(tower, indices, 1)
 }
 
-function highlight (tower: UltraViewer.Vim, indices: number[]) {
+function highlight (tower: UltraViewer.UltraVim, indices: number[]) {
   tower.show('all')
   tower.highlight(indices)
 }

@@ -7,7 +7,7 @@ import { StandardMaterial, createOpaque, createTransparent } from './standardMat
 import { createMaskMaterial } from './maskMaterial'
 import { createGhostMaterial as createGhostMaterial } from './ghostMaterial'
 import { OutlineMaterial } from './outlineMaterial'
-import { ViewerSettings } from '../../viewer/settings/viewerSettings'
+import { WebglCoreViewerSettings } from '../../viewer/settings/webglCoreViewerSettings'
 import { MergeMaterial } from './mergeMaterial'
 import { createSimpleMaterial } from './simpleMaterial'
 import { SignalDispatcher } from 'ste-signals'
@@ -18,17 +18,17 @@ export type ModelMaterial = THREE.Material | THREE.Material[] | undefined
 /**
  * Defines the materials to be used by the vim loader and allows for material injection.
  */
-export class ViewerMaterials {
+export class WebglCoreMaterials {
   // eslint-disable-next-line no-use-before-define
-  static instance: ViewerMaterials
+  static instance: WebglCoreMaterials
 
-  static createInstance (instance: ViewerMaterials) {
+  static createInstance (instance: WebglCoreMaterials) {
     this.instance = instance
   }
 
   static getInstance () {
     if (!this.instance) {
-      this.instance = new ViewerMaterials()
+      this.instance = new WebglCoreMaterials()
     }
     return this.instance
   }
@@ -104,9 +104,9 @@ export class ViewerMaterials {
 
   /**
    * Updates material settings based on the provided configuration.
-   * @param {ViewerSettings} settings - The settings to apply to the materials.
+   * @param {WebglCoreViewerSettings} settings - The settings to apply to the materials.
    */
-  applySettings (settings: ViewerSettings) {
+  applySettings (settings: WebglCoreViewerSettings) {
     this.opaque.color = settings.materials.standard.color
     this.transparent.color = settings.materials.standard.color
 

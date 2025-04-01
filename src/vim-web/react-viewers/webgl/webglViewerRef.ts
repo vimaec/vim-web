@@ -5,7 +5,6 @@
 import * as VIM from '../../core-viewers/webgl/index'
 import { ContextMenuCustomization } from '../panels/contextMenu'
 import { ComponentSettings } from '../settings/settings'
-import { Isolation } from '../helpers/isolation'
 import { CameraRef } from '../state/cameraState'
 import { Container } from '../container'
 import { BimInfoPanelRef } from '../bim/bimInfoData'
@@ -13,6 +12,7 @@ import { ControlBarCustomization } from '../controlbar/controlBar'
 import { ComponentLoader } from './webglLoading'
 import { ModalRef } from '../panels/modal'
 import { SectionBoxRef } from '../state/sectionBoxState'
+import { IsolationRef } from '../state/renderSettings'
 /**
 * Settings API managing settings applied to the component.
 */
@@ -77,7 +77,7 @@ export type HelpRef = {
 /**
  * Root-level API of the Vim component.
  */
-export type VimComponentRef = {
+export type ViewerRef = {
   /**
    * HTML structure containing the component.
    */
@@ -86,7 +86,7 @@ export type VimComponentRef = {
   /**
    * Vim WebGL viewer around which the WebGL component is built.
    */
-  viewer: VIM.Viewer
+  viewer: VIM.WebglCoreViewer
 
   /**
    * Vim WebGL loader to download VIMs.
@@ -96,7 +96,7 @@ export type VimComponentRef = {
   /**
    * Isolation API managing isolation state in the component.
    */
-  isolation: Isolation
+  isolation: IsolationRef
 
   /**
    * Section box API managing the section box in the component.

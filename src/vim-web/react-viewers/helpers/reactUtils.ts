@@ -37,6 +37,17 @@ export interface StateRef<T> {
   confirm(): void;
 }
 
+export interface StateRefresher{
+  refresh: () => void
+}
+
+export function useRefresher() : StateRefresher{
+  const [refresh, setRefresh] = useState(false)
+  return {
+    refresh: () => setRefresh(!refresh),
+  }
+}
+
 /**
  * A custom hook that creates a state reference.
  * The reference provides access to the state, along with event dispatching, validation, and confirmation logic.

@@ -1,6 +1,7 @@
 
 export const ids = {
   // Sections
+  sectionSelection: 'controlBar.sectionSelection',
   sectionCamera: 'controlBar.sectionCamera',
   sectionInputs: 'controlBar.sectionInputs',
   sectionActions: 'controlBar.sectionActions',
@@ -27,9 +28,17 @@ export const ids = {
   buttonHelp: 'controlBar.help',
   buttonMaximize: 'controlBar.maximize',
 
+  // Selection buttons
+  buttonClearSelection: 'controlBar.action.clearSelection',
+  buttonShowAll: 'controlBar.selection.showAll',
+  buttonIsolateSelection: 'controlBar.selection.isolate',
+  buttonHideSelection: 'controlBar.selection.hide',
+  buttonShowSelection: 'controlBar.selection.show',
+  buttonAutoIsolate: 'controlBar.selection.autoIsolate',
+  buttonIsolationSettings: 'controlBar.selection.isolationSettings',
+
   // Action Buttons
-  buttonToggleIsolation: 'controlBar.action.toggleIsolation',
-  
+  buttonRenderSettings: 'controlBar.action.renderSettings',
 
   // Tools buttons
   buttonSectionBox: 'controlBar.sectionBox',

@@ -1,7 +1,6 @@
 import * as VIM from '../../core-viewers/webgl/index';
 import { CameraRef } from './cameraState';
 import { CursorManager } from '../helpers/cursor';
-import { Isolation } from '../helpers/isolation';
 
 import {
   ComponentSettings,
@@ -17,8 +16,12 @@ import { getFullScreenState } from './fullScreenState';
 import { SectionBoxRef } from './sectionBoxState';
 import { getMeasureState } from './measureState';
 import { ModalRef } from '../panels/modal';
-
 import * as ControlBar from '../controlbar/controlBar';
+import { WebglCoreViewer } from '../..';
+import { UltraCoreViewer } from '../../core-viewers/ultra';
+import { IsolationAdapter, IsolationRef } from './renderSettings';
+import { ISignal } from 'ste-signals';
+import { VisibilityStatus } from '../webgl/webglIsolationAdapter';
 
 /**
  * Returns a control bar section for the section box.
@@ -93,7 +96,7 @@ export function controlBarSectionBox(
  * Returns a control bar section for pointer/camera modes.
  */
 function controlBarPointer(
-  viewer: VIM.Viewer,
+  viewer: VIM.WebglCoreViewer,
   camera: CameraRef,
   settings: ComponentSettings,
   section: SectionBoxRef
@@ -157,10 +160,8 @@ function controlBarPointer(
   };
 }
 
-export function controlBarActions(
-  camera: CameraRef,
+export function controlBarMeasure(
   settings: ComponentSettings,
-  isolation: Isolation,
   measure: ReturnType<typeof getMeasureState>
 ){
   return {
@@ -168,15 +169,6 @@ export function controlBarActions(
     enable: () => true,
     style: ControlBar.sectionDefaultStyle,
     buttons: [
-
-      {
-        id: ControlBar.ids.buttonToggleIsolation,
-        enabled: () => isTrue(settings.ui.toggleIsolation),
-        tip: 'Toggle Isolation',
-        action: () => isolation.toggle('controlBar'),
-        icon: Icons.toggleIsolation,
-        style: ControlBar.buttonDefaultStyle,
-      },
       {
         id: ControlBar.ids.buttonMeasure,
         enabled: () => isTrue(settings.ui.measuringMode),
@@ -273,40 +265,110 @@ export function controlBarCamera(camera: CameraRef): ControlBar.IControlBarSecti
         icon: Icons.frameScene,
         isOn: () => false,
         style: ControlBar.buttonDefaultStyle,
-      },
+      } 
     ]
   }
 }
 
 
+export function controlBarSelection(isolation: IsolationRef): ControlBar.IControlBarSection {
+  const adapter = isolation.adapter.current
+  const someVisible = adapter.isSelectionVisible() || (!adapter.isSelectionVisible() && !adapter.isSelectionHidden())
+  return {
+    id: ControlBar.ids.sectionSelection,
+    enable: () => true,
+    style: `${ControlBar.sectionDefaultStyle}`,
+    buttons: [
+      {
+        id: ControlBar.ids.buttonClearSelection,
+        tip: 'Clear Selection',
+        action: () => adapter.clearSelection(),
+        icon: Icons.pointer,
+        isOn: () => adapter.hasSelection(),
+        style: ControlBar.buttonDisableDefaultStyle,
+      },
+      {
+        id: ControlBar.ids.buttonShowAll,
+        tip: 'Show All',
+        action: () =>  adapter.showAll(),
+        icon: Icons.showAll,
+        isOn: () =>!isolation.autoIsolate.get() && adapter.getVisibility() !== 'all',
+        style: ControlBar.buttonDisableStyle,
+      },
+
+      {
+        id: ControlBar.ids.buttonHideSelection,
+        enabled: () => someVisible,
+        tip: 'Hide Selection',
+        action: () => adapter.hideSelection(),
+        icon: Icons.hideSelection,
+        isOn: () =>!isolation.autoIsolate.get() &&  adapter.hasSelection() && adapter.isSelectionVisible(),
+        style: ControlBar.buttonDisableStyle,
+      },
+      {
+        id: ControlBar.ids.buttonShowSelection,
+        enabled: () => !someVisible,
+        tip: 'Show Selection',
+        action: () => adapter.showSelection(),
+        icon: Icons.showSelection,
+        isOn: () => !isolation.autoIsolate.get() && adapter.hasSelection() && adapter.isSelectionHidden(),
+        style: ControlBar.buttonDisableStyle,
+      },
+      {
+        id: ControlBar.ids.buttonIsolateSelection,
+        tip: 'Isolate Selection',
+        action: () => adapter.isolateSelection(),
+        icon: Icons.isolateSelection,
+        isOn: () =>!isolation.autoIsolate.get() &&  adapter.hasSelection() && adapter.getVisibility() !== 'onlySelection',
+        style: ControlBar.buttonDisableStyle,
+      },
+      {
+        id: ControlBar.ids.buttonAutoIsolate,
+        tip: 'Auto Isolate',
+        action: () => isolation.autoIsolate.set(!isolation.autoIsolate.get()),
+        isOn: () =>  isolation.autoIsolate.get(),
+        icon: Icons.autoIsolate,
+      },
+      {
+        id: ControlBar.ids.buttonIsolationSettings,
+        tip: 'Isolation Settings',
+        action: () => isolation.showPanel.set(!isolation.showPanel.get()),
+        icon: Icons.slidersHoriz,
+        isOn: () => isolation.showPanel.get(),
+      }
+    ]
+  }
+}
+
 /**
  * Combines all control bar sections into one control bar.
  */
 export function useControlBar(
-  viewer: VIM.Viewer,
+  viewer: VIM.WebglCoreViewer,
   camera: CameraRef,
   modal: ModalRef,
   side: SideState,
-  isolation: Isolation,
   cursor: CursorManager,
   settings: ComponentSettings,
   section: SectionBoxRef,
+  isolationRef: IsolationRef,
   customization: ControlBar.ControlBarCustomization | undefined
 ) {
   const measure = getMeasureState(viewer, cursor);
   const pointerSection = controlBarPointer(viewer, camera, settings, section);
-  const actionSection = controlBarActions(camera, settings, isolation, measure);
+  const actionSection = controlBarMeasure(settings, measure);
   const sectionBoxSection = controlBarSectionBox(section,viewer.selection.count > 0);
   const settingsSection = controlBarSettings(modal, side, settings);
   const cameraSection = controlBarCamera(camera);
-
+  const selectionSection = controlBarSelection(isolationRef);
 
   // Apply user customization (note that pointerSection is added twice per original design)
   let controlBarSections = [
     pointerSection,
     actionSection,
     cameraSection,
-    sectionBoxSection, // Optional section
+    sectionBoxSection,
+    selectionSection,
     settingsSection
   ];
   controlBarSections = customization?.(controlBarSections) ?? controlBarSections;

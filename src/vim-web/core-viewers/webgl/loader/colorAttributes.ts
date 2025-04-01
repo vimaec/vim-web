@@ -4,19 +4,19 @@
 
 import * as THREE from 'three'
 import { MergedSubmesh } from './mesh'
-import { Vim } from './vim'
+import { WebglVim } from './vim'
 import { InsertableSubmesh } from './progressive/insertableSubmesh'
 import { AttributeTarget } from './objectAttributes'
 
 export class ColorAttribute {
-  readonly vim: Vim
+  readonly vim: WebglVim
   private _meshes: AttributeTarget[] | undefined
   private _value: THREE.Color | undefined
 
   constructor (
     meshes: AttributeTarget[] | undefined,
     value: THREE.Color | undefined,
-    vim: Vim | undefined
+    vim: WebglVim | undefined
   ) {
     this._meshes = meshes
     this._value = value

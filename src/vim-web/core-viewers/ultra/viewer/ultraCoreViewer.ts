@@ -1,7 +1,7 @@
 import { ClientError, ClientState, ConnectionSettings, SocketClient } from './socketClient'
 import { Decoder, IDecoder } from './decoder'
 import { DecoderWithWorker } from './decoderWithWorker'
-import { Vim } from './vim'
+import { UltraVim } from './vim'
 import { ILoadRequest, LoadRequest } from './loadRequest'
 import { RpcClient } from './rpcClient'
 import { ILogger, defaultLogger } from './logger'
@@ -263,7 +263,7 @@ export class UltraCoreViewer {
       return request
     }
 
-    const vim = new Vim(this.rpc, this.colors, source, this._logger)
+    const vim = new UltraVim(this.rpc, this.colors, source, this._logger)
     this._vims.add(vim)
     const request = vim.connect()
     request.getResult().then((result) => {
@@ -278,7 +278,7 @@ export class UltraCoreViewer {
    * Unloads the given VIM from the viewer.
    * @param vim - The VIM instance to unload.
    */
-  unloadVim (vim: Vim): void {
+  unloadVim (vim: UltraVim): void {
     this._vims.remove(vim)
     vim.disconnect()
   }

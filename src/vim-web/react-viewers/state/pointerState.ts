@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import * as VIM from '../../core-viewers/webgl/index'
 
-export function getPointerState (viewer: VIM.Viewer) {
+export function getPointerState (viewer: VIM.WebglCoreViewer) {
   const [mode, setMode] = useState<VIM.PointerMode>(viewer.inputs.pointerActive)
 
   useEffect(() => {

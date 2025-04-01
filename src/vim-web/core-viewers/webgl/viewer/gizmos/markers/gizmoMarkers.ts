@@ -1,4 +1,4 @@
-import { Viewer } from '../../viewer'
+import { WebglCoreViewer } from '../../webglCoreViewer'
 import * as THREE from 'three'
 import { GizmoMarker } from './gizmoMarker'
 import { StandardMaterial } from '../../../loader/materials/standardMaterial'
@@ -8,11 +8,11 @@ import { SimpleInstanceSubmesh } from '../../../loader/mesh'
  * API for adding and managing sprite markers in the scene.
  */
 export class GizmoMarkers {
-  private _viewer: Viewer
+  private _viewer: WebglCoreViewer
   private _markers: GizmoMarker[] = []
   private _mesh : THREE.InstancedMesh
 
-  constructor (viewer: Viewer) {
+  constructor (viewer: WebglCoreViewer) {
     this._viewer = viewer
     this._mesh = this.createMesh(undefined, 1, 0)
 

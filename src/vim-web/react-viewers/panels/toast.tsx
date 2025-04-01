@@ -19,7 +19,7 @@ export const MenuToastMemo = React.memo(MenuToast)
 /**
  * Toast jsx component that briefly shows up when camera speed changes.
  */
-function MenuToast (props: { viewer: VIM.Viewer; side: SideState }) {
+function MenuToast (props: { viewer: VIM.WebglCoreViewer; side: SideState }) {
   const [visible, setVisible] = useState<boolean>()
   const [speed, setSpeed] = useState<number>(-1)
   const speedRef = useRef<number>(speed)

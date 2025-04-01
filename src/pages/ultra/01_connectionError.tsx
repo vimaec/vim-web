@@ -13,6 +13,6 @@ export function UltraConnectionError () {
   )
 }
 
-async function badConnection (ultra: UltraReact.UltraComponentRef) {
+async function badConnection (ultra: UltraReact.UltraViewerRef) {
   await ultra.viewer.connect({url:'ws:/invalidServer'})
 }

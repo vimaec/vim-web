@@ -41,11 +41,11 @@ export function pointerToCursor (pointer: VIM.PointerMode): Cursor {
  * Listens to the vim viewer and updates css cursors classes on the canvas accordingly.
  */
 export class CursorManager {
-  private _viewer: VIM.Viewer
+  private _viewer: VIM.WebglCoreViewer
   private cursor: Cursor
   private _boxHover: boolean
   private _subscriptions: (() => void)[]
-  constructor (viewer: VIM.Viewer) {
+  constructor (viewer: VIM.WebglCoreViewer) {
     this._viewer = viewer
   }
 

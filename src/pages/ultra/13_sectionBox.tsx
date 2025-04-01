@@ -6,7 +6,7 @@ import { Box3, Vector3 } from '../../vim-web/core-viewers/utils/math3d'
 
 export function UltraSectionBox() {
   const div = useRef(null)
-  const ref = useRef<UltraReact.UltraComponentRef>()
+  const ref = useRef<UltraReact.UltraViewerRef>()
   const [visible, setVisible] = useState(false)
   const [interactive, setInteractive] = useState(false)
   const [clip, setClip] = useState(false)
@@ -58,7 +58,7 @@ export function UltraSectionBox() {
   );
 }
 
-async function createSectionBox(ultra : UltraReact.UltraComponentRef) {
+async function createSectionBox(ultra : UltraReact.UltraViewerRef) {
   await ultra.viewer.connect();
   
   const request = ultra.load({ url: residence });

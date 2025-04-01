@@ -37,7 +37,7 @@ export function UltraResize () {
   )
 }
 
-async function toggleLock (ultra: UltraReact.UltraComponentRef, vim: UltraViewer.Vim, div: RefObject<HTMLDivElement>) {
+async function toggleLock (ultra: UltraReact.UltraViewerRef, vim: UltraViewer.UltraVim, div: RefObject<HTMLDivElement>) {
   let index = 0
 
   // eslint-disable-next-line no-constant-condition

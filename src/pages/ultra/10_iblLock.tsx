@@ -15,7 +15,7 @@ export function UltraIblLock () {
   )
 }
 
-async function toggleLock (ultra: UltraReact.UltraComponentRef) {
+async function toggleLock (ultra: UltraReact.UltraViewerRef) {
   ultra.viewer.renderer.backgroundBlur = 0
   ultra.viewer.renderer.backgroundColor = new UltraViewer.RGBA(0, 0, 0, 0)
 

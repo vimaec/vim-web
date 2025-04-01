@@ -11,7 +11,7 @@ import { Data, BimInfoPanelRef } from './bimInfoData'
 
 export function BimInfoPanel (props : {
     object: VIM.Object3D,
-    vim: VIM.Vim,
+    vim: VIM.WebglVim,
     elements: AugmentedElement[],
     full : boolean
     bimInfoRef: BimInfoPanelRef
