@@ -3,6 +3,7 @@ import { Validation } from "./validation";
 import { ILogger } from "./logger";
 import { defaultSceneSettings, RpcSafeClient, SceneSettings } from "./rpcSafeClient";
 import { ClientStreamError } from "./socketClient";
+import { ISignal, SignalDispatcher } from "ste-signals";
 
 /**
  * Render settings that extend SceneSettings with additional rendering-specific properties
@@ -27,6 +28,7 @@ export const defaultRenderSettings: RenderSettings = {
  * Interface defining the basic renderer capabilities
  */
 export interface IRenderer {
+  onSceneUpdated: ISignal
   ghostColor: RGBA
   lockIblRotation: boolean
   hdrScale: number
@@ -41,7 +43,8 @@ export interface IRenderer {
 /**
  * Renderer class that handles 3D scene rendering and settings management
  */
-export class Renderer implements IRenderer {
+export class UltraCoreRenderer implements IRenderer {
+
   private _rpc: RpcSafeClient
   private _logger : ILogger
   private _settings: RenderSettings
@@ -50,6 +53,11 @@ export class Renderer implements IRenderer {
   private _updateLighting: boolean = false;
   private _updateGhostColor: boolean = false;
   private _updateIblRotation: boolean = false;
+
+  private readonly _onSceneUpdated = new SignalDispatcher()
+  get onSceneUpdated() {
+    return this._onSceneUpdated.asEvent()
+  }
 
   /**
    * Creates a new Renderer instance
@@ -90,6 +98,11 @@ export class Renderer implements IRenderer {
   onConnect(){
     this._rpc.RPCSetGhostColor(this._settings.ghostColor)
     this._rpc.RPCLockIblRotation(this._settings.lockIblRotation)
+  }
+
+  notifySceneUpdated() {
+    console.log('scene updated')
+    this._onSceneUpdated.dispatch()
   }
 
   // Getters

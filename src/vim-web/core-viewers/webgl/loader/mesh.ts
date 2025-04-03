@@ -4,9 +4,9 @@
 
 import * as THREE from 'three'
 import { InsertableSubmesh } from './progressive/insertableSubmesh'
-import { WebglVim } from './vim'
+import { WebglVim } from './webglVim'
 import { InstancedSubmesh } from './progressive/instancedSubmesh'
-import { ModelMaterial } from './materials/viewerMaterials'
+import { ModelMaterial } from './materials/webglCoreMaterials'
 
 /**
  * Wrapper around THREE.Mesh

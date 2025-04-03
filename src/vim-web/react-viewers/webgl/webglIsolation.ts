@@ -1,34 +1,17 @@
-import { useEffect } from "react";
 import { Object3D, WebglCoreViewer } from "../../core-viewers/webgl";
-import { SignalDispatcher } from "ste-signals";
-import { IsolationAdapter } from "../state/renderSettings";
+import { IsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
 
+export function useWebglIsolation(viewer: WebglCoreViewer){
+  const adapter = createWebglIsolationAdapter(viewer)
+  return useSharedIsolation(adapter)
+}
 
-export type VisibilityStatus = 'all' | 'allButSelection' |'onlySelection' | 'some' | 'none';  
-
-
-export function createWebglIsolationAdapter(viewer: WebglCoreViewer, ): IsolationAdapter {
-
-  let visibilityStatus = getVisibilityState(viewer);
-  const onVisibilityChange = new SignalDispatcher();
-
-  // A bit evil to have this here.
-  useEffect(() => {
-    viewer.renderer.onSceneUpdated.subscribe(() => {
-      
-      const next = getVisibilityState(viewer);
-      const changed = visibilityStatus !== next;
-      visibilityStatus = next;
-      if (changed) {
-        onVisibilityChange.dispatch();
-      }
-    });
-  }, []);
+function createWebglIsolationAdapter(viewer: WebglCoreViewer): IsolationAdapter {
   
   return {
-    onVisibilityChange,
+    onVisibilityChange: viewer.renderer.onSceneUpdated,
     onSelectionChanged: viewer.selection.onValueChanged,
-    getVisibility: () => visibilityStatus,
+    computeVisibility: () => getVisibilityState(viewer),
     hasSelection: () => viewer.selection.count > 0,
     isSelectionVisible: () => viewer.selection.any() && viewer.selection.objects.every(o => o.visible),
     isSelectionHidden: () => viewer.selection.any() && viewer.selection.objects.every(o => !o.visible),
@@ -76,7 +59,7 @@ export function createWebglIsolationAdapter(viewer: WebglCoreViewer, ): Isolatio
     showGhost: (show: boolean) => {
       viewer.renderer.modelMaterial = show
       ? [viewer.materials.simple, viewer.materials.ghost]
-      : viewer.materials.simple
+      : undefined
     },
 
     getGhostOpacity: () => viewer.materials.ghostOpacity,

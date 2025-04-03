@@ -5,14 +5,14 @@
 import * as THREE from 'three'
 import { WebglCoreViewerSettings } from '../settings/webglCoreViewerSettings'
 import { ICamera } from '../camera/ICamera'
-import { ViewerMaterials } from '../../loader/materials/viewerMaterials'
-import { Skybox } from './skybox'
+import { WebglCoreMaterials } from '../../loader/materials/webglCoreMaterials'
+import { Skybox } from './webglCoreSkybox'
 import { WebglCoreRenderer } from '../rendering/webglCoreRenderer'
-import { CameraLight } from './cameraLight'
+import { WebglCoreLight } from './webglCoreLight'
 /**
  * Manages ground plane and lights that are part of the THREE.Scene to render but not part of the Vims.
  */
-export class Environment {
+export class WebglCoreEnvironment {
   private readonly _renderer: WebglCoreRenderer
   private readonly _camera: ICamera
 
@@ -24,19 +24,19 @@ export class Environment {
   /**
    * The array of directional lights in the scene.
    */
-  readonly sunLights: ReadonlyArray<CameraLight>
+  readonly sunLights: ReadonlyArray<WebglCoreLight>
 
   /*
    * The skybox in the scene.
    */
   readonly skybox: Skybox
 
-  constructor (camera:ICamera, renderer: WebglCoreRenderer, viewerMaterials: ViewerMaterials, settings: WebglCoreViewerSettings) {
+  constructor (camera:ICamera, renderer: WebglCoreRenderer, materials: WebglCoreMaterials, settings: WebglCoreViewerSettings) {
     this._camera = camera
     this._renderer = renderer
 
     this.skyLight = this.createSkyLight(settings)
-    this.skybox = new Skybox(camera, renderer, viewerMaterials, settings)
+    this.skybox = new Skybox(camera, renderer, materials, settings)
     this.sunLights = this.createSunLights(settings)
 
     this.addObjectsToRenderer()
@@ -54,9 +54,9 @@ export class Environment {
     return new THREE.HemisphereLight(skyColor, groundColor, intensity * Math.PI)
   }
 
-  private createSunLights (settings: WebglCoreViewerSettings): ReadonlyArray<CameraLight> {
+  private createSunLights (settings: WebglCoreViewerSettings): ReadonlyArray<WebglCoreLight> {
     return settings.sunlights.map((s) =>
-      new CameraLight(this._camera, s)
+      new WebglCoreLight(this._camera, s)
     )
   }
 

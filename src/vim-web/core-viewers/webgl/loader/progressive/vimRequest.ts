@@ -3,7 +3,7 @@ import {
   VimPartialSettings
 } from '../vimSettings'
 
-import { WebglVim } from '../vim'
+import { WebglVim } from '../webglVim'
 import { RequestResult, ErrorResult, SuccessResult } from '../../../utils/requestResult'
 import { open } from './open'
 

@@ -9,7 +9,7 @@ import { WebglCoreViewerSettings, getViewerSettings, PartialWebglCoreViewerSetti
 import { Camera } from './camera/camera'
 import { ICamera } from './camera/ICamera'
 import { WebglCoreSelection } from './webglCoreSelection'
-import { Environment } from './environment/environment'
+import { WebglCoreEnvironment } from './environment/webglCoreEnvironment'
 import { WeglCoreRaycaster } from './webglCoreRaycaster'
 import { RenderScene } from './rendering/renderScene'
 import { WeglCoreViewport } from './webglCoreViewport'
@@ -19,7 +19,7 @@ import { Gizmos } from './gizmos/gizmos'
 import { WebglCoreRenderer } from './rendering/webglCoreRenderer'
 import { ISignal, SignalDispatcher } from 'ste-signals'
 import { WebglCoreMaterials } from '../loader/materials/webglCoreMaterials'
-import { WebglVim } from '../loader/vim'
+import { WebglVim } from '../loader/webglVim'
 import { CoreInputHandler } from '../../shared/coreInputHandler'
 import { createWebglCoreInputAdapter } from './webglCoreInputsAdapter'
 
@@ -66,7 +66,7 @@ export class WebglCoreViewer {
   /**
    * The environment of the viewer, including the ground plane and lights.
    */
-  readonly environment: Environment
+  readonly environment: WebglCoreEnvironment
 
   /**
    * The interface for manipulating the viewer's camera.
@@ -116,7 +116,7 @@ export class WebglCoreViewer {
     this.materials.applySettings(this.settings)
 
     // Ground plane and lights
-    this.environment = new Environment(this.camera, this.renderer, this.materials, this.settings)
+    this.environment = new WebglCoreEnvironment(this.camera, this.renderer, this.materials, this.settings)
 
     // Input and Selection
     this.selection = new WebglCoreSelection(this.materials)

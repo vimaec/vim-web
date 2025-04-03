@@ -8,8 +8,9 @@ import { ILogger } from './logger';
 import { invertMap } from '../../utils/array';
 import { isFileURI, isURL } from '../../utils/url';
 import { Box3, RGBA32 } from '../../utils/math3d';
+import { IRenderer, UltraCoreRenderer } from './ultraCoreRenderer';
 
-type NodeState = 'visible' | 'hidden' | 'ghosted' | 'highlighted';
+export type UltraVimNodeState = 'visible' | 'hidden' | 'ghosted' | 'highlighted';
 
 export class UltraVim {
   readonly source: VimSource;
@@ -18,15 +19,16 @@ export class UltraVim {
 
   private readonly _rpc: RpcSafeClient;
   private _colors: ColorManager;
+  private _renderer: UltraCoreRenderer;
   private _logger: ILogger;
 
-  private _nodeStates: Map<number, NodeState> = new Map();
-  private _allNodeState: NodeState = 'visible';
+  private _nodeStates: Map<number, UltraVimNodeState> = new Map();
+  private _allNodeState: UltraVimNodeState = 'visible';
 
   private _nodeColors: Map<number, RGBA32> = new Map();
 
   // New properties for delayed updates
-  private _pendingNodeStateChanges: Map<number | 'all', NodeState> = new Map();
+  private _pendingNodeStateChanges: Map<number | 'all', UltraVimNodeState> = new Map();
   private _updateScheduled: boolean = false;
 
   /**
@@ -36,10 +38,11 @@ export class UltraVim {
    * @param source - The source URL or file path of the Vim.
    * @param logger - The logger for logging messages.
    */
-  constructor(rpc: RpcSafeClient, color: ColorManager, source: VimSource, logger: ILogger) {
+  constructor(rpc: RpcSafeClient, color: ColorManager, renderer: UltraCoreRenderer,  source: VimSource, logger: ILogger) {
     this._rpc = rpc;
     this.source = source;
     this._colors = color;
+    this._renderer = renderer;
     this._logger = logger;
   }
 
@@ -192,11 +195,55 @@ export class UltraVim {
     return handle;
   }
 
+  getAll(state: UltraVimNodeState): number[] | 'all'{
+    if(this.areAll(state)){
+      return 'all'
+    }
+
+    const nodes: number[] = [];
+    for (const [node, nodeState] of this._nodeStates.entries()) {
+      if (nodeState === state) {
+        nodes.push(node);
+      }
+    }
+    return nodes;
+  }
+
+  public getDefaultState(): UltraVimNodeState {
+    return this._allNodeState;
+  }
+
+  public getState(node: number): UltraVimNodeState {
+    return this._nodeStates.get(node) ?? this._allNodeState;
+  }
+
+
+
+public areAll(state: UltraVimNodeState | UltraVimNodeState[]): boolean {
+    if (!this.matchesState(this._allNodeState, state)) {
+      return false;
+    }
+
+    for (const nodeState of this._nodeStates.values()) {
+      if (!this.matchesState(nodeState, state)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private matchesState(nodeState: UltraVimNodeState, state: UltraVimNodeState | UltraVimNodeState[]): boolean {
+    if (Array.isArray(state)) {
+      return state.some(s => s === nodeState);
+    }
+    return nodeState === state;
+  }
+
   /**
    * Shows the given nodes.
    * @param nodes - The nodes to show. If 'all' is passed, all nodes will be shown.
    */
-  public show(nodes: number[] | 'all'): void {
+  public show(nodes: ForEachable<number> | 'all'): void {
     this.updateMap(nodes, 'visible');
     this.scheduleNodeStateChange(nodes, 'visible');
   }
@@ -205,7 +252,7 @@ export class UltraVim {
    * Hides the given nodes.
    * @param nodes - The nodes to hide. If 'all' is passed, all nodes will be hidden.
    */
-  public hide(nodes: number[] | 'all'): void {
+  public hide(nodes: ForEachable<number> | 'all'): void {
     this.updateMap(nodes, 'hidden');
     this.scheduleNodeStateChange(nodes, 'hidden');
   }
@@ -214,7 +261,7 @@ export class UltraVim {
    * Ghosts the given nodes.
    * @param nodes - The nodes to ghost. If 'all' is passed, all nodes will be ghosted.
    */
-  public ghost(nodes: number[] | 'all'): void {
+  public ghost(nodes: ForEachable<number> | 'all'): void {
     this.updateMap(nodes, 'ghosted');
     this.scheduleNodeStateChange(nodes, 'ghosted');
   }
@@ -223,43 +270,48 @@ export class UltraVim {
    * Highlights the given nodes.
    * @param nodes - The nodes to highlight. If 'all' is passed, all nodes will be highlighted.
    */
-  public highlight(nodes: number[] | 'all'): void {
+  public highlight(nodes: ForEachable<number> | 'all'): void {
     this.updateMap(nodes, 'highlighted');
     this.scheduleNodeStateChange(nodes, 'highlighted');
   }
 
-  /**
-   * Removes the highlight from the given nodes and reverts them to a fallback state.
-   * @param nodes - The nodes to remove the highlight from.
-   * @param fallback - The state to revert the nodes to.
-   */
-  public removeHighlight(nodes: number[] | 'all', fallback: NodeState): void {
-    const toUpdate: number[] = [];
+/**
+ * Removes the highlight from the given nodes and reverts them to a fallback state.
+ * @param from - The node states to remove the highlight from.
+ * @param to - The state to revert the nodes to.
+ */
+public replace(from: UltraVimNodeState | UltraVimNodeState[], to: UltraVimNodeState): void {
 
-    if (nodes === 'all') {
-      // Remove all highlighted nodes
-      for (const [node, state] of this._nodeStates.entries()) {
-        if (state === 'highlighted') {
-          this._nodeStates.set(node, fallback);
-          toUpdate.push(node);
-        }
-      }
-    } else{
-      // Remove highlighted nodes in the given list
-      for (const node of nodes) {
-        const state = this._nodeStates.get(node);
-        if (state === 'highlighted') {
-          this._nodeStates.set(node, fallback);
-          toUpdate.push(node);
-        }
-      }
-    }
-
-    if (toUpdate.length > 0) {
-      this.scheduleNodeStateChange(toUpdate, fallback);
-    }
+  // Update the default state if necessary
+  let changedAll = false;
+  if (this.matchesState(this._allNodeState, from)) {
+    this._allNodeState = to;
+    this._pendingNodeStateChanges.set('all', to);
+    changedAll = true;
   }
 
+  // Update individual nodes
+  for (const [node, state] of this._nodeStates.entries()) {
+    if (this.matchesState(state, from)) {
+      if (to === this._allNodeState) {
+        this._nodeStates.delete(node);
+        if(!changedAll){
+          // If changed all, we don't need to update the node, it gets updated by the 'all' state
+          this._pendingNodeStateChanges.set(node, to)
+        }
+      } else {
+        // Other nodes need to be updated individually
+        this._nodeStates.set(node, to);
+        this._pendingNodeStateChanges.set(node, to)
+      }
+    }else if(changedAll){
+      // If the default state changed, we need to reapply all previous node state
+      this._pendingNodeStateChanges.set(node, state)
+    }
+    this.scheduleUpdate()
+  }
+
+}
 
   /**
    * Retrieves the bounding box of the given nodes.
@@ -340,20 +392,28 @@ export class UltraVim {
     }
   }
 
-  private updateMap(nodes: number[] | 'all', state: NodeState): void {
+  private updateMap(nodes: ForEachable<number> | 'all', state: UltraVimNodeState): void {
     if (nodes === 'all') {
       this._allNodeState = state;
       this._nodeStates.clear();
-    } else if (state !== this._allNodeState){
+      return
+    } 
+    if (state === this._allNodeState){
+      nodes.forEach((n) => this._nodeStates.delete(n));
+    }
+    else{
       nodes.forEach((n) => this._nodeStates.set(n, state));
     }
   }
 
-  private scheduleNodeStateChange(nodes: number[] | 'all', state: NodeState): void {
+  private scheduleNodeStateChange(nodes: number | ForEachable<number>  | 'all', state: UltraVimNodeState): void {
     if (nodes === 'all') {
       this._pendingNodeStateChanges.clear()
       this._pendingNodeStateChanges.set('all', state);
-    } else {
+    }else if(typeof nodes === 'number'){
+      this._pendingNodeStateChanges.set(nodes, state);
+    }
+    else{
       nodes.forEach((node) => {
         this._pendingNodeStateChanges.set(node, state);
       });
@@ -363,6 +423,7 @@ export class UltraVim {
 
   private scheduleUpdate(): void {
     if (!this._updateScheduled) {
+      
       this._updateScheduled = true;
       requestAnimationFrame(() => this.update());
     }
@@ -380,7 +441,7 @@ export class UltraVim {
     }
 
     // Collect nodes by state
-    const nodesByState = new Map<NodeState, number[]>();
+    const nodesByState = new Map<UltraVimNodeState, number[]>();
     for (const [node, state] of this._pendingNodeStateChanges.entries()) {
       if (node !== 'all') {
         if (!nodesByState.has(state)) {
@@ -397,9 +458,11 @@ export class UltraVim {
 
     // Clear pending changes
     this._pendingNodeStateChanges.clear();
+    console.log(this)
+    this._renderer.notifySceneUpdated();
   }
 
-  private callRPCForState(state: NodeState, nodes: number[] | 'all'): void {
+  private callRPCForState(state: UltraVimNodeState, nodes: number[] | 'all'): void {
     if (!this.connected) return;
 
     switch (state) {

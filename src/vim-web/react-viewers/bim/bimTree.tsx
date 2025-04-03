@@ -15,7 +15,7 @@ import { showContextMenu } from '../panels/contextMenu'
 import { CameraRef } from '../state/cameraState'
 import { ArrayEquals } from '../helpers/data'
 import { BimTreeData, VimTreeNode } from './bimTreeData'
-import { IsolationRef } from '../state/renderSettings'
+import { IsolationRef } from '../state/sharedIsolation'
 
 export type TreeActionRef = {
   showAll: () => void

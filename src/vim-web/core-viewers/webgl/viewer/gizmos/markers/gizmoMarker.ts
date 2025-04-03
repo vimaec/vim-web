@@ -1,4 +1,4 @@
-import { WebglVim } from '../../../loader/vim'
+import { WebglVim } from '../../../loader/webglVim'
 import { WebglCoreViewer } from '../../webglCoreViewer'
 import * as THREE from 'three'
 import { SimpleInstanceSubmesh } from '../../../loader/mesh'

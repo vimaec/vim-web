@@ -10,8 +10,8 @@ import { Modal, ModalRef, useModal } from '../panels/modal'
 import { getRequestErrorMessage } from './errors/ultraErrors'
 import { updateModal, updateProgress as modalProgress } from './ultraModal'
 import { ControlBar, ControlBarCustomization } from '../controlbar/controlBar'
-import { useUltraSectionBox } from './ultraSectionBoxState'
-import { useUltraControlBar } from './ultraControlBarState'
+import { useUltraSectionBox } from './ultraSectionBox'
+import { useUltraControlBar } from './ultraControlBar'
 import { SectionBoxPanel } from '../panels/sectionBoxPanel'
 import { RestOfScreen } from '../panels/restOfScreen'
 import { LogoMemo } from '../panels/logo'
@@ -19,8 +19,10 @@ import { whenTrue } from '../helpers/utils'
 import { useSideState } from '../sidePanel/sideState'
 import { UltraViewerRef } from './ultraViewerRef'
 import ReactTooltip from 'react-tooltip'
-import { useUltraCamera } from './ultraCameraState'
+import { useUltraCamera } from './ultraCamera'
 import { useViewerInput } from '../state/viewerInputs'
+import { useUltraIsolation } from './ultraIsolation'
+import { IsolationSettingsPanel } from '../panels/renderSettingsPanel'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.
@@ -82,7 +84,9 @@ export function UltraViewer (props: {
   const side = useSideState(true, 400)
   const [_, setSelectState] = useState(0)
   const [controlBarCustom, setControlBarCustom] = useState<ControlBarCustomization>(() => c => c)
-  const controlBar = useUltraControlBar(props.viewer, sectionBox, camera, _ =>_)
+  const isolation = useUltraIsolation(props.viewer)
+  const controlBar = useUltraControlBar(props.viewer, sectionBox, isolation, camera, _ =>_)
+  
   useViewerInput(props.viewer.inputs, camera)
 
   useEffect(() => {
@@ -93,6 +97,7 @@ export function UltraViewer (props: {
     props.onMount({
       viewer: props.viewer,
       modal,
+      isolation,
       sectionBox,
       camera,
       dispose: () => {},
@@ -113,6 +118,7 @@ export function UltraViewer (props: {
       show={true}
     />
     <SectionBoxPanel state={sectionBox}/>
+    <IsolationSettingsPanel state={isolation} />
   </>
   }}/>
   

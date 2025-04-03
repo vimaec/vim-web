@@ -5,7 +5,7 @@
 import * as THREE from 'three'
 import { Scene } from '../../loader/scene'
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer'
-import { ModelMaterial } from '../../loader/materials/viewerMaterials'
+import { ModelMaterial } from '../../loader/materials/webglCoreMaterials'
 import { InstancedMesh } from '../../loader/progressive/instancedMesh'
 
 /**

@@ -57,6 +57,10 @@ export class RGBA {
     this.a = a
   }
 
+  clone(): RGBA {
+    return new RGBA(this.r, this.g, this.b, this.a)
+  }
+
   isValid (): boolean {
     return Number.isFinite(this.r) &&
       Number.isFinite(this.g) &&

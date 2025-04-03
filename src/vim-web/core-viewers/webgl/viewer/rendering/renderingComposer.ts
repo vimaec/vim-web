@@ -10,7 +10,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 
 import { WeglCoreViewport } from '../webglCoreViewport'
 import { RenderScene } from './renderScene'
-import { ViewerMaterials } from '../../loader/materials/viewerMaterials'
+import { WebglCoreMaterials } from '../../loader/materials/webglCoreMaterials'
 import { OutlinePass } from './outlinePass'
 import { MergePass } from './mergePass'
 import { TransferPass } from './transferPass'
@@ -38,7 +38,7 @@ import { Camera } from '../camera/camera'
 export class RenderingComposer {
   private _renderer: THREE.WebGLRenderer
   private _scene: RenderScene
-  private _materials: ViewerMaterials
+  private _materials: WebglCoreMaterials
   private _camera: THREE.PerspectiveCamera | THREE.OrthographicCamera
   private _size: THREE.Vector2
 
@@ -68,7 +68,7 @@ export class RenderingComposer {
     renderer: THREE.WebGLRenderer,
     scene: RenderScene,
     viewport: WeglCoreViewport,
-    materials: ViewerMaterials,
+    materials: WebglCoreMaterials,
     camera: Camera
   ) {
     this._renderer = renderer

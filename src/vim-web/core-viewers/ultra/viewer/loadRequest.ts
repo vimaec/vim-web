@@ -1,4 +1,4 @@
-import { UltraVim } from './vim'
+import { UltraVim } from './ultraVim'
 import { ControllablePromise } from '../../utils/promise'
 
 export type LoadRequestResult = LoadSuccess | LoadError

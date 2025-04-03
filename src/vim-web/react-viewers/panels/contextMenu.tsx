@@ -12,7 +12,7 @@ import React, { useEffect, useState } from 'react'
 import { CameraRef } from '../state/cameraState'
 import { TreeActionRef } from '../bim/bimTree'
 import { ModalRef } from './modal'
-import { IsolationRef } from '../state/renderSettings'
+import { IsolationRef } from '../state/sharedIsolation'
 import * as VIM from '../../core-viewers/webgl/index'
 
 const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
@@ -104,12 +104,12 @@ export function VimContextMenu (props: {
 }) {
   const viewer = props.viewer
   const camera = props.camera
-  const [visibility, setVisibility] = useState(props.isolation.adapter.current.getVisibility())
+  const [visibility, setVisibility] = useState(props.isolation.visibility.get())
 
   useEffect(() => {
     // force re-render and reevalution of isolation.
     props.isolation.adapter.current.onVisibilityChange.subscribe(() => {
-      setVisibility(props.isolation.adapter.current.getVisibility())
+      setVisibility(props.isolation.visibility.get())
     })
   }, [])
 

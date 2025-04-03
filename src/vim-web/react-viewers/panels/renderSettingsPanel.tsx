@@ -1,4 +1,4 @@
-import { IsolationRef } from "../state/renderSettings";
+import { IsolationRef } from "../state/sharedIsolation";
 import { GenericPanel } from "./genericPanel";
 
 export function IsolationSettingsPanel(props: { state: IsolationRef }) {

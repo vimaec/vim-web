@@ -2,6 +2,7 @@ import * as Ultra from '../../core-viewers/ultra';
 import { ModalRef } from '../panels/modal';
 import { CameraRef } from '../state/cameraState';
 import { SectionBoxRef } from '../state/sectionBoxState';
+import { IsolationRef } from '../state/sharedIsolation';
 
 // TODO: Don't depend on the webgl component
 import {ControlBarRef} from '../webgl/webglViewerRef'
@@ -33,6 +34,7 @@ export type UltraViewerRef = {
    */
   camera: CameraRef
 
+  isolation: IsolationRef
 
   /**
    * Disposes of the component and its resources.
