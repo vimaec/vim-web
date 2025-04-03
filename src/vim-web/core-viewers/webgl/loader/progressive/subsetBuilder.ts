@@ -8,7 +8,7 @@ import { G3dSubset } from './g3dSubset'
 import { ISignal, ISignalHandler, SignalDispatcher } from 'ste-signals'
 import { ISubscribable, SubscriptionChangeEventHandler } from 'ste-core'
 import { Vimx } from './vimx'
-import { Scene } from '../scene'
+import { WebglScene } from '../webglScene'
 
 export interface SubsetBuilder {
   /** Dispatched whenever a subset begins or finishes loading. */
@@ -71,7 +71,7 @@ export class VimSubsetBuilder implements SubsetBuilder {
  */
 export class VimxSubsetBuilder {
   private _localVimx: Vimx
-  private _scene: Scene
+  private _scene: WebglScene
   private _set = new Set<SubsetRequest>()
 
   private _onUpdate = new SignalDispatcher()
@@ -83,7 +83,7 @@ export class VimxSubsetBuilder {
     return this._set.size > 0
   }
 
-  constructor (localVimx: Vimx, scene: Scene) {
+  constructor (localVimx: Vimx, scene: WebglScene) {
     this._localVimx = localVimx
     this._scene = scene
   }

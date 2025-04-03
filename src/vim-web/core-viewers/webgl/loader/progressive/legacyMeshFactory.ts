@@ -3,7 +3,7 @@
  */
 
 import { InsertableMesh } from './insertableMesh'
-import { Scene } from '../scene'
+import { WebglScene } from '../webglScene'
 import { G3dMaterial, G3d, MeshSection } from 'vim-format'
 import { InstancedMeshFactory } from './instancedMeshFactory'
 import { G3dSubset } from './g3dSubset'
@@ -15,9 +15,9 @@ export class VimMeshFactory {
   readonly g3d: G3d
   private _materials: G3dMaterial
   private _instancedFactory: InstancedMeshFactory
-  private _scene: Scene
+  private _scene: WebglScene
 
-  constructor (g3d: G3d, materials: G3dMaterial, scene: Scene) {
+  constructor (g3d: G3d, materials: G3dMaterial, scene: WebglScene) {
     this.g3d = g3d
     this._materials = materials
     this._scene = scene
@@ -39,7 +39,7 @@ export class VimMeshFactory {
     }
   }
 
-  private addMergedMesh (scene: Scene, subset: G3dSubset) {
+  private addMergedMesh (scene: WebglScene, subset: G3dSubset) {
     const opaque = this.createMergedMesh(subset, 'opaque', false)
     const transparents = this.createMergedMesh(subset, 'transparent', true)
     scene.addMesh(opaque)
@@ -63,7 +63,7 @@ export class VimMeshFactory {
     return opaque
   }
 
-  private addInstancedMeshes (scene: Scene, subset: G3dSubset) {
+  private addInstancedMeshes (scene: WebglScene, subset: G3dSubset) {
     const count = subset.getMeshCount()
     for (let m = 0; m < count; m++) {
       const mesh = subset.getSourceMesh(m)

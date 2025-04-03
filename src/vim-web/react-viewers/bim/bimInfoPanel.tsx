@@ -10,14 +10,14 @@ import { AugmentedElement } from '../helpers/element'
 import { Data, BimInfoPanelRef } from './bimInfoData'
 
 export function BimInfoPanel (props : {
-    object: VIM.Object3D,
+    object: VIM.WebglModelObject,
     vim: VIM.WebglVim,
     elements: AugmentedElement[],
     full : boolean
     bimInfoRef: BimInfoPanelRef
   }
 ) {
-  const target = props.object?.type === 'Object3D' ? props.object : undefined
+  const target = props.object?.type === 'WebglModelObject' ? props.object : undefined
   useEffect(() => {
     ReactTooltip.rebuild()
   })

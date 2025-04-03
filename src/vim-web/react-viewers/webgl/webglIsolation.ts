@@ -1,4 +1,4 @@
-import { Object3D, WebglCoreViewer } from "../../core-viewers/webgl";
+import { WebglModelObject, WebglCoreViewer } from "../../core-viewers/webgl";
 import { IsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
 
 export function useWebglIsolation(viewer: WebglCoreViewer){
@@ -72,10 +72,10 @@ function createWebglIsolationAdapter(viewer: WebglCoreViewer): IsolationAdapter 
   };
 }
 
-function updateAllVisibility(viewer: WebglCoreViewer, predicate: (object: Object3D) => boolean){
+function updateAllVisibility(viewer: WebglCoreViewer, predicate: (object: WebglModelObject) => boolean){
  for(let v of viewer.vims){
     for(let o of v.getObjects()){
-      if(o.type === "Object3D"){
+      if(o.type === "WebglModelObject"){
         o.visible = predicate(o)
       }
     }
@@ -90,7 +90,7 @@ function getVisibilityState(viewer: WebglCoreViewer): VisibilityStatus {
   
   for (let v of viewer.vims) {
     for (let o of v.getObjects()) {
-      if (o.type === "Object3D") {
+      if (o.type === "WebglModelObject") {
         // Check for all and none states
         all = all && o.visible;
         none = none && !o.visible;

@@ -3,7 +3,7 @@
  */
 
 import deepmerge from 'deepmerge'
-import { Transparency } from './geometry'
+import { Transparency } from './webglGeometry'
 import * as THREE from 'three'
 
 export type FileType = 'vim' | 'vimx' | undefined
@@ -11,7 +11,7 @@ export type FileType = 'vim' | 'vimx' | undefined
 /**
  * Represents settings for configuring the behavior and rendering of a vim object.
  */
-export type VimSettings = {
+export type WebglVimSettings = {
 
   /**
    * The positional offset for the vim object.
@@ -65,7 +65,7 @@ export type VimSettings = {
 /**
  * Default configuration settings for a vim object.
  */
-export const defaultConfig: VimSettings = {
+export const defaultConfig: WebglVimSettings = {
   position: new THREE.Vector3(),
   rotation: new THREE.Vector3(),
   scale: 1,
@@ -82,12 +82,12 @@ export const defaultConfig: VimSettings = {
 /**
  * Represents a partial configuration of settings for a vim object.
  */
-export type VimPartialSettings = Partial<VimSettings>
+export type VimPartialSettings = Partial<WebglVimSettings>
 
 /**
  * Wraps Vim options, converting values to related THREE.js types and providing default values.
  * @param {VimPartialSettings} [options] - Optional partial settings for the Vim object.
- * @returns {VimSettings} The complete settings for the Vim object, including defaults.
+ * @returns {WebglVimSettings} The complete settings for the Vim object, including defaults.
  */
 export function getFullSettings (options?: VimPartialSettings) {
   const merge = options

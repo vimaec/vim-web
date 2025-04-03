@@ -1,15 +1,15 @@
 import { WebglCoreViewer } from '../../webglCoreViewer'
 import * as THREE from 'three'
-import { GizmoMarker } from './gizmoMarker'
+import { WebglCoreMarker } from './gizmoMarker'
 import { StandardMaterial } from '../../../loader/materials/standardMaterial'
-import { SimpleInstanceSubmesh } from '../../../loader/mesh'
+import { SimpleInstanceSubmesh } from '../../../loader/webglMesh'
 
 /**
  * API for adding and managing sprite markers in the scene.
  */
 export class GizmoMarkers {
   private _viewer: WebglCoreViewer
-  private _markers: GizmoMarker[] = []
+  private _markers: WebglCoreMarker[] = []
   private _mesh : THREE.InstancedMesh
 
   constructor (viewer: WebglCoreViewer) {
@@ -70,7 +70,7 @@ export class GizmoMarkers {
 
     this._mesh.count += 1
     const sub = new SimpleInstanceSubmesh(this._mesh, this._mesh.count - 1)
-    const marker = new GizmoMarker(this._viewer, sub)
+    const marker = new WebglCoreMarker(this._viewer, sub)
     marker.position = position
     this._markers.push(marker)
 
@@ -79,9 +79,9 @@ export class GizmoMarkers {
 
   /**
    * Removes the specified marker from the scene.
-   * @param {GizmoMarker} marker - The marker to remove.
+   * @param {WebglCoreMarker} marker - The marker to remove.
    */
-  remove (marker: GizmoMarker) {
+  remove (marker: WebglCoreMarker) {
     const index = this._markers.findIndex(m => m === marker)
     if (index < 0) return
 

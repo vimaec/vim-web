@@ -3,10 +3,10 @@
  */
 
 import { Camera } from './camera'
-import { Object3D } from '../../loader/object3D'
+import { WebglModelObject } from '../../loader/webglModelObject'
 import { SelectableObject } from '../webglCoreSelection'
 import * as THREE from 'three'
-import { GizmoMarker } from '../gizmos/markers/gizmoMarker'
+import { WebglCoreMarker } from '../gizmos/markers/gizmoMarker'
 import { WebglVim } from '../../loader/webglVim'
 
 export abstract class CameraMovement {
@@ -120,9 +120,9 @@ export abstract class CameraMovement {
 
   /**
    * Rotates the camera without moving so that it looks at the specified target.
-   * @param {Object3D | THREE.Vector3} target - The target object or position to look at.
+   * @param {WebglModelObject | THREE.Vector3} target - The target object or position to look at.
    */
-  abstract target(target: Object3D | THREE.Vector3): void
+  abstract target(target: WebglModelObject | THREE.Vector3): void
 
   /**
    * Resets the camera to its last saved position and orientation.
@@ -145,7 +145,7 @@ export abstract class CameraMovement {
     target: SelectableObject | WebglVim | THREE.Sphere | THREE.Box3 | 'all' | undefined,
     forward?: THREE.Vector3
   ): void {
-    if ((target instanceof GizmoMarker) || (target instanceof Object3D)) {
+    if ((target instanceof WebglCoreMarker) || (target instanceof WebglModelObject)) {
       target = target.getBoundingBox()
     }
     if ((target instanceof WebglVim)) {

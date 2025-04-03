@@ -2,11 +2,11 @@
 import {
   getFullSettings,
   VimPartialSettings,
-  VimSettings
-} from '../vimSettings'
+  WebglVimSettings
+} from '../webglVimSettings'
 
 import { WebglVim } from '../webglVim'
-import { Scene } from '../scene'
+import { WebglScene } from '../webglScene'
 import { Vimx } from './vimx'
 
 import { VimSource } from '../..'
@@ -54,7 +54,7 @@ export async function open (
 
 async function determineFileType (
   bfast: BFast,
-  settings: VimSettings
+  settings: WebglVimSettings
 ) {
   if (settings?.fileType === 'vim') return 'vim'
   if (settings?.fileType === 'vimx') return 'vimx'
@@ -79,7 +79,7 @@ async function requestFileType (bfast: BFast) {
  */
 async function loadFromVimX (
   bfast: BFast,
-  settings: VimSettings,
+  settings: WebglVimSettings,
   onProgress: (p: IProgressLogs) => void
 ) {
   // Fetch geometry data
@@ -91,7 +91,7 @@ async function loadFromVimX (
   const vimx = await Vimx.fromRemote(remoteVimx, !settings.progressive)
 
   // Create scene
-  const scene = new Scene(settings.matrix)
+  const scene = new WebglScene(settings.matrix)
   const mapping = new ElementMapping2(vimx.scene)
 
   // wait for bim data.
@@ -123,7 +123,7 @@ async function loadFromVimX (
  */
 async function loadFromVim (
   bfast: BFast,
-  settings: VimSettings,
+  settings: WebglVimSettings,
   onProgress?: (p: IProgressLogs) => void
 ) {
   const fullSettings = getFullSettings(settings)
@@ -141,7 +141,7 @@ async function loadFromVim (
   const materials = new G3dMaterial(g3d.materialColors)
 
   // Create scene
-  const scene = new Scene(settings.matrix)
+  const scene = new WebglScene(settings.matrix)
   const factory = new VimMeshFactory(g3d, materials, scene)
 
   // Create legacy mapping

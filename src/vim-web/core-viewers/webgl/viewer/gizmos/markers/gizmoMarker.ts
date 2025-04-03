@@ -1,15 +1,15 @@
 import { WebglVim } from '../../../loader/webglVim'
 import { WebglCoreViewer } from '../../webglCoreViewer'
 import * as THREE from 'three'
-import { SimpleInstanceSubmesh } from '../../../loader/mesh'
-import { ObjectAttribute } from '../../../loader/objectAttributes'
-import { ColorAttribute } from '../../../loader/colorAttributes'
+import { SimpleInstanceSubmesh } from '../../../loader/webglMesh'
+import { WebglAttribute } from '../../../loader/webglAttribute'
+import { WebglColorAttribute } from '../../../loader/webglColorAttribute'
 
 /**
  * Marker gizmo that display an interactive sphere at a 3D positions
  * Marker gizmos are still under development.
  */
-export class GizmoMarker {
+export class WebglCoreMarker {
   public readonly type = 'Marker'
   private _viewer: WebglCoreViewer
   private _submesh: SimpleInstanceSubmesh
@@ -29,18 +29,18 @@ export class GizmoMarker {
    */
   instances: number[] | undefined
 
-  private _outlineAttribute: ObjectAttribute<boolean>
-  private _visibleAttribute: ObjectAttribute<boolean>
-  private _coloredAttribute: ObjectAttribute<boolean>
-  private _focusedAttribute: ObjectAttribute<boolean>
-  private _colorAttribute: ColorAttribute
+  private _outlineAttribute: WebglAttribute<boolean>
+  private _visibleAttribute: WebglAttribute<boolean>
+  private _coloredAttribute: WebglAttribute<boolean>
+  private _focusedAttribute: WebglAttribute<boolean>
+  private _colorAttribute: WebglColorAttribute
 
   constructor (viewer: WebglCoreViewer, submesh: SimpleInstanceSubmesh) {
     this._viewer = viewer
     this._submesh = submesh
 
     const array = [submesh]
-    this._outlineAttribute = new ObjectAttribute(
+    this._outlineAttribute = new WebglAttribute(
       false,
       'selected',
       'selected',
@@ -48,7 +48,7 @@ export class GizmoMarker {
       (v) => (v ? 1 : 0)
     )
 
-    this._visibleAttribute = new ObjectAttribute(
+    this._visibleAttribute = new WebglAttribute(
       true,
       'ignore',
       'ignore',
@@ -56,7 +56,7 @@ export class GizmoMarker {
       (v) => (v ? 0 : 1)
     )
 
-    this._focusedAttribute = new ObjectAttribute(
+    this._focusedAttribute = new WebglAttribute(
       false,
       'focused',
       'focused',
@@ -64,7 +64,7 @@ export class GizmoMarker {
       (v) => (v ? 1 : 0)
     )
 
-    this._coloredAttribute = new ObjectAttribute(
+    this._coloredAttribute = new WebglAttribute(
       false,
       'colored',
       'colored',
@@ -72,7 +72,7 @@ export class GizmoMarker {
       (v) => (v ? 1 : 0)
     )
 
-    this._colorAttribute = new ColorAttribute(array, undefined, undefined)
+    this._colorAttribute = new WebglColorAttribute(array, undefined, undefined)
     this.color = new THREE.Color(0xff1a1a)
   }
 
