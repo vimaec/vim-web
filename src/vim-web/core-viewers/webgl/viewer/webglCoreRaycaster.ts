@@ -5,11 +5,16 @@
 import * as THREE from 'three'
 import { WebglModelObject } from '../loader/webglModelObject'
 import { WebglMesh } from '../loader/webglMesh'
-import { RenderScene } from './rendering/renderScene'
-import { Camera } from './camera/camera'
+import { WebglCoreRenderScene } from './rendering/webglCoreRenderScene'
+import { WebglCoreCamera } from './camera/webglCoreCamera'
 import { WebglCoreRenderer } from './rendering/webglCoreRenderer'
 import { WebglCoreMarker } from './gizmos/markers/gizmoMarker'
 import { GizmoMarkers } from './gizmos/markers/gizmoMarkers'
+
+export enum WebglCoreLayers{
+  Default = 0,
+  NoRaycast = 1,
+}
 
 /**
  * Type alias for an array of THREE.Intersection objects.
@@ -33,6 +38,7 @@ export class RaycastResult {
   constructor (intersections: ThreeIntersectionList) {
     this.intersections = intersections
     const [markerHit, marker] = this.getFirstMarkerHit(intersections)
+    console.log('markerHit', markerHit, marker)
     if (marker) {
       this.object = marker
       this.firstHit = markerHit
@@ -102,15 +108,15 @@ export class RaycastResult {
 }
 
 export class WeglCoreRaycaster {
-  private _camera: Camera
-  private _scene: RenderScene
+  private _camera: WebglCoreCamera
+  private _scene: WebglCoreRenderScene
   private _renderer: WebglCoreRenderer
 
   private _raycaster = new THREE.Raycaster()
 
   constructor (
-    camera: Camera,
-    scene: RenderScene,
+    camera: WebglCoreCamera,
+    scene: WebglCoreRenderScene,
     renderer: WebglCoreRenderer
   ) {
     this._camera = camera
@@ -131,7 +137,8 @@ export class WeglCoreRaycaster {
       return new RaycastResult([])
     }
     this._raycaster = this.fromPoint2(position, this._raycaster)
-    let hits = this._raycaster.intersectObjects(this._scene.scene.children)
+    let hits = this._raycaster.intersectObjects(this._scene.threeScene.children)
+    console.log('hits', hits)
     hits = this.filterHits(hits)
     return new RaycastResult(hits)
   }
@@ -149,7 +156,7 @@ export class WeglCoreRaycaster {
    */
   raycastFromWorld (position: THREE.Vector3) {
     this._raycaster = this.fromPoint3(position, this._raycaster)
-    let hits = this._raycaster.intersectObjects(this._scene.scene.children)
+    let hits = this._raycaster.intersectObjects(this._scene.threeScene.children)
     hits = this.filterHits(hits)
     return new RaycastResult(hits)
   }
@@ -178,6 +185,7 @@ export class WeglCoreRaycaster {
       -position.y * 2 + 1
     )
     target.setFromCamera(pos, this._camera.three)
+    
     return target
   }
 

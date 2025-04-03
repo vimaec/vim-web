@@ -11,7 +11,8 @@ import {
   MeasureStyle,
   MeasureElement
 } from './measureHtml'
-import { ICamera } from '../../camera/ICamera'
+import { WebglCoreICamera } from '../../camera/webglCoreICamera'
+import { WebglCoreLayers } from '../../webglCoreRaycaster'
 
 /**
  * Wrapper for a two points line drawn using MeshLine
@@ -62,6 +63,10 @@ class MeasureLine {
     this._meshLine.geometry.addGroup(0, Infinity, 0)
     this._meshLine.geometry.addGroup(0, Infinity, 1)
     this.mesh.frustumCulled = false
+    
+    this._meshLine.layers.set(WebglCoreLayers.NoRaycast)
+    this.mesh.layers.set(WebglCoreLayers.NoRaycast)
+
   }
 
   setPoints (start: THREE.Vector3, end: THREE.Vector3) {
@@ -92,10 +97,10 @@ class MeasureMarker {
   mesh: THREE.Mesh
   private _material: THREE.Material
   private _materialAlways: THREE.Material
-  private _camera: ICamera
+  private _camera: WebglCoreICamera
   private disconnect: () => void
 
-  constructor (color: THREE.Color, camera: ICamera) {
+  constructor (color: THREE.Color, camera: WebglCoreICamera) {
     this._material = new THREE.MeshBasicMaterial({
       color
     })

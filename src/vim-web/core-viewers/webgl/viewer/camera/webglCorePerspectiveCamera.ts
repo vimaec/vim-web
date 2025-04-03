@@ -4,12 +4,14 @@
 
 import * as THREE from 'three'
 import { WebglCoreViewerSettings } from '../settings/webglCoreViewerSettings'
+import { WebglCoreLayers } from '../webglCoreRaycaster'
 
-export class PerspectiveWrapper {
+export class WebglCorePerspectiveCamera {
   camera: THREE.PerspectiveCamera
 
   constructor (camera: THREE.PerspectiveCamera) {
     this.camera = camera
+    this.camera.layers.enable(WebglCoreLayers.NoRaycast)
   }
 
   applySettings (settings: WebglCoreViewerSettings) {

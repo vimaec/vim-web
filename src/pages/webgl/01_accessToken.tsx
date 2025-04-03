@@ -1,4 +1,4 @@
-import { WebglReact } from '../../vim-web'
+import * as VIM from '../../vim-web'
 import * as THREE from 'three'
 import { AccessToken } from '../utils/accesToken'
 
@@ -7,7 +7,7 @@ export function WebglAccessToken () {
 }
 
 async function createComponent (div: HTMLDivElement, url: string, token: string) {
-  const webgl = await WebglReact.createWebglViewer(div)
+  const webgl = await VIM.createWebglViewer(div)
   const request = webgl.loader.request(
     {
       url,

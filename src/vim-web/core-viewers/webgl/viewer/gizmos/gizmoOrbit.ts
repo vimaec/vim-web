@@ -3,7 +3,7 @@
  */
 import * as THREE from 'three'
 import { WebglCoreRenderer } from '../rendering/webglCoreRenderer'
-import { Camera } from '../camera/camera'
+import { WebglCoreCamera } from '../camera/webglCoreCamera'
 import { WebglCoreViewerSettings } from '../settings/webglCoreViewerSettings'
 import { CoreInputHandler } from '../../../shared/coreInputHandler'
 
@@ -13,7 +13,7 @@ import { CoreInputHandler } from '../../../shared/coreInputHandler'
 export class GizmoOrbit {
   // Dependencies
   private _renderer: WebglCoreRenderer
-  private _camera: Camera
+  private _camera: WebglCoreCamera
   private _inputs: CoreInputHandler
 
   // Settings
@@ -38,7 +38,7 @@ export class GizmoOrbit {
 
   constructor (
     renderer: WebglCoreRenderer,
-    camera: Camera,
+    camera: WebglCoreCamera,
     input: CoreInputHandler,
     settings: WebglCoreViewerSettings
   ) {
@@ -191,6 +191,7 @@ export class GizmoOrbit {
       this._materialAlways
     ])
 
+    this._gizmos.layers.set(2)
     this._renderer.add(this._gizmos)
     this.updateScale()
   }

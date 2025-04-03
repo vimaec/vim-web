@@ -5,11 +5,11 @@
 import * as THREE from 'three'
 import { IRenderer, WebglScene } from '../../loader/webglScene'
 import { WeglCoreViewport } from '../webglCoreViewport'
-import { RenderScene } from './renderScene'
+import { WebglCoreRenderScene } from './webglCoreRenderScene'
 import { ModelMaterial, WebglCoreMaterials } from '../../loader/materials/webglCoreMaterials'
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer'
 
-import { Camera } from '../camera/camera'
+import { WebglCoreCamera } from '../camera/webglCoreCamera'
 import { RenderingSection } from './renderingSection'
 import { RenderingComposer } from './renderingComposer'
 import { WebglCoreViewerSettings } from '../settings/webglCoreViewerSettings'
@@ -39,9 +39,9 @@ export class WebglCoreRenderer implements IRenderer {
    */
   antialias: boolean = true
 
-  private _scene: RenderScene
+  private _scene: WebglCoreRenderScene
   private _viewport: WeglCoreViewport
-  private _camera: Camera
+  private _camera: WebglCoreCamera
   private _composer: RenderingComposer
   private _materials: WebglCoreMaterials
   private _renderText: boolean | undefined
@@ -54,6 +54,8 @@ export class WebglCoreRenderer implements IRenderer {
 
   // 3GB
   private maxMemory = 3 * Math.pow(10, 9)
+  private _outlineCount = 0
+
 
   /**
    * Indicates whether the scene should be re-rendered on change only.
@@ -74,10 +76,10 @@ export class WebglCoreRenderer implements IRenderer {
   }
 
   constructor (
-    scene: RenderScene,
+    scene: WebglCoreRenderScene,
     viewport: WeglCoreViewport,
     materials: WebglCoreMaterials,
-    camera: Camera,
+    camera: WebglCoreCamera,
     settings: WebglCoreViewerSettings
   ) {
     this._viewport = viewport
@@ -136,11 +138,11 @@ export class WebglCoreRenderer implements IRenderer {
    * Gets or sets the background color or texture of the scene.
    */
   get background () {
-    return this._scene.scene.background
+    return this._scene.threeScene.background
   }
 
   set background (color: THREE.Color | THREE.Texture) {
-    this._scene.scene.background = color
+    this._scene.threeScene.background = color
     this.needsUpdate = true
   }
 
@@ -213,6 +215,16 @@ export class WebglCoreRenderer implements IRenderer {
     this.needsUpdate = true
   }
 
+  addOutline () {
+    this._outlineCount++
+    this.needsUpdate = true
+  }
+
+  removeOutline () {
+    this._outlineCount--
+    this.needsUpdate = true
+  }
+
   /**
    * Renders what is in the camera's view.
    */
@@ -227,14 +239,14 @@ export class WebglCoreRenderer implements IRenderer {
       this._sceneUpdated = false
     }
 
-    this._composer.outlines = this._scene.hasOutline()
+    this._composer.outlines = this._outlineCount > 0
     if(this.needsUpdate || !this.onDemand) {
       this._composer.render()
     }
     this._needsUpdate = false
 
     if (this.textEnabled && this._scene.has2dObjects()) {
-      this.textRenderer.render(this._scene.scene, this._camera.three)
+      this.textRenderer.render(this._scene.threeScene, this._camera.three)
     }
 
     this._scene.clearUpdateFlags()

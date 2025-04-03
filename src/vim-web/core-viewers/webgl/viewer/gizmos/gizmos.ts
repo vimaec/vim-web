@@ -2,11 +2,10 @@ import { WebglCoreViewer } from '../webglCoreViewer'
 import { GizmoAxes } from './axes/gizmoAxes'
 import { GizmoLoading } from './gizmoLoading'
 import { GizmoOrbit } from './gizmoOrbit'
-import { GizmoRectangle } from './gizmoRectangle'
 import { IMeasure, Measure } from './measure/measure'
 import { SectionBox } from './sectionBox/sectionBox'
 import { GizmoMarkers } from './markers/gizmoMarkers'
-import { Camera } from '../camera/camera'
+import { WebglCoreCamera } from '../camera/webglCoreCamera'
 
 /**
  * Represents a collection of gizmos used for various visualization and interaction purposes within the viewer.
@@ -39,11 +38,6 @@ export class Gizmos {
   readonly orbit: GizmoOrbit
 
   /**
-   * Rectangle Gizmo used for rectangle selection.
-   */
-  readonly rectangle: GizmoRectangle
-
-  /**
    * The axis gizmos of the viewer.
    */
   readonly axes: GizmoAxes
@@ -53,7 +47,7 @@ export class Gizmos {
    */
   readonly markers: GizmoMarkers
 
-  constructor (viewer: WebglCoreViewer, camera : Camera) {
+  constructor (viewer: WebglCoreViewer, camera : WebglCoreCamera) {
     this.viewer = viewer
     this._measure = new Measure(viewer)
     this.sectionBox = new SectionBox(viewer)
@@ -64,7 +58,6 @@ export class Gizmos {
       viewer.inputs,
       viewer.settings
     )
-    this.rectangle = new GizmoRectangle(viewer)
     this.axes = new GizmoAxes(camera, viewer.viewport, viewer.settings.axes)
     this.markers = new GizmoMarkers(viewer)
     viewer.viewport.canvas.parentElement?.prepend(this.axes.canvas)
@@ -83,7 +76,6 @@ export class Gizmos {
     this.sectionBox.dispose()
     this.loading.dispose()
     this.orbit.dispose()
-    this.rectangle.dispose()
     this.axes.dispose()
   }
 }

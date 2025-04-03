@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { useUltra } from './ultraPageUtils'
-import { UltraReact } from '../../vim-web'
+import * as VIM from '../../vim-web'
 
 export function UltraConnectionError () {
   const div = useRef<HTMLDivElement>(null)
@@ -13,6 +13,6 @@ export function UltraConnectionError () {
   )
 }
 
-async function badConnection (ultra: UltraReact.UltraViewerRef) {
+async function badConnection (ultra: VIM.UltraViewerRef) {
   await ultra.viewer.connect({url:'ws:/invalidServer'})
 }

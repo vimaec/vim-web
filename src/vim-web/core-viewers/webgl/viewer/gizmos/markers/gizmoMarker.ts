@@ -93,6 +93,8 @@ export class WebglCoreMarker {
     m.compose(value, new THREE.Quaternion(), new THREE.Vector3(1, 1, 1))
     this._submesh.mesh.setMatrixAt(this._submesh.index, m)
     this._submesh.mesh.instanceMatrix.needsUpdate = true
+    this._viewer.renderer.needsUpdate = true
+    this._submesh.mesh.computeBoundingSphere() //Required for Raycast
   }
 
   get position () {
@@ -116,7 +118,10 @@ export class WebglCoreMarker {
   }
 
   set outline (value: boolean) {
-    this._outlineAttribute.apply(value)
+    if(this._outlineAttribute.apply(value)){
+      if (value) this._viewer.renderer.addOutline()
+      else this._viewer.renderer.removeOutline()
+    }
   }
 
   /**
@@ -172,6 +177,7 @@ export class WebglCoreMarker {
     this._submesh.mesh.setMatrixAt(this._submesh.index, matrix)
     this._submesh.mesh.instanceMatrix.needsUpdate = true
     this._viewer.renderer.needsUpdate = true
+    this._submesh.mesh.computeBoundingSphere() //Required for Raycast
   }
 
   /**

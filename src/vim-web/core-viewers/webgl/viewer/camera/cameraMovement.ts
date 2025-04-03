@@ -2,17 +2,17 @@
  * @module viw-webgl-viewer/camera
  */
 
-import { Camera } from './camera'
+import { WebglCoreCamera } from './webglCoreCamera'
 import { WebglModelObject } from '../../loader/webglModelObject'
 import { SelectableObject } from '../webglCoreSelection'
 import * as THREE from 'three'
 import { WebglCoreMarker } from '../gizmos/markers/gizmoMarker'
 import { WebglVim } from '../../loader/webglVim'
 
-export abstract class CameraMovement {
-  protected _camera: Camera
+export abstract class WebglCoreCameraMovement {
+  protected _camera: WebglCoreCamera
 
-  constructor (camera: Camera) {
+  constructor (camera: WebglCoreCamera) {
     this._camera = camera
   }
 

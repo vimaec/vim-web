@@ -1,4 +1,4 @@
-import * as Ultra from '../../core-viewers/ultra';
+import * as VIM from '../../core-viewers/ultra';
 import { ModalRef } from '../panels/modal';
 import { CameraRef } from '../state/cameraState';
 import { SectionBoxRef } from '../state/sectionBoxState';
@@ -12,7 +12,7 @@ export type UltraViewerRef = {
   /**
    * The Vim viewer instance associated with the component.
    */
-  viewer: Ultra.UltraCoreViewer;
+  viewer: VIM.UltraCoreViewer;
 
   /**
    * API to manage the modal dialog.
@@ -45,5 +45,5 @@ export type UltraViewerRef = {
    * Loads a file into the viewer.
    * @param url The URL of the file to load.
    */
-  load(url: Ultra.VimSource): Ultra.ILoadRequest;
+  load(url: VIM.UltraVimSource): VIM.UltraILoadRequest;
 };

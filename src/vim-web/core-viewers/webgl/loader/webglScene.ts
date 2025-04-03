@@ -10,6 +10,7 @@ import { InsertableMesh } from './progressive/insertableMesh'
 import { InstancedMesh } from './progressive/instancedMesh'
 import { getAverageBoundingBox } from './averageBoundingBox'
 import { ModelMaterial } from './materials/webglCoreMaterials'
+import { WebglCoreRenderer } from '../viewer/rendering/webglCoreRenderer'
 
 /**
  * Interface for a renderer object, providing methods to add and remove objects from a scene, update bounding boxes, and notify scene updates.
@@ -30,7 +31,7 @@ export interface IRenderer {
 // TODO: Only expose what should be public to vim.scene
 export class WebglScene {
   // Dependencies
-  private _renderer: IRenderer
+  private _renderer: WebglCoreRenderer
   private _vim: WebglVim | undefined
   private _matrix = new THREE.Matrix4()
 
@@ -38,7 +39,6 @@ export class WebglScene {
   insertables: InsertableMesh[] = []
   meshes: (WebglMesh | InsertableMesh | InstancedMesh)[] = []
 
-  private _outlineCount: number = 0
   private _boundingBox: THREE.Box3
 
   private _averageBoundingBox: THREE.Box3 | undefined
@@ -52,20 +52,6 @@ export class WebglScene {
 
   setDirty () {
     this.renderer?.notifySceneUpdate()
-  }
-
-  hasOutline () {
-    return this._outlineCount > 0
-  }
-
-  addOutline () {
-    this._outlineCount++
-    this.setDirty()
-  }
-
-  removeOutline () {
-    this._outlineCount--
-    this.setDirty()
   }
 
   clearUpdateFlag () {
@@ -142,7 +128,7 @@ export class WebglScene {
     return this._renderer
   }
 
-  set renderer (value: IRenderer) {
+  set renderer (value: WebglCoreRenderer) {
     this._renderer = value
   }
 

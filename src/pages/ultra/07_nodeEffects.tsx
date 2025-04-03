@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { UltraReact, UltraViewer } from '../../vim-web'
+import * as VIM  from '../../vim-web'
 import { useUltraWithTower } from './ultraPageUtils'
 
 export function UltraNodeEffects () {
@@ -14,7 +14,7 @@ export function UltraNodeEffects () {
   )
 }
 
-async function changeState (ultra: UltraReact.UltraViewerRef, tower: UltraViewer.UltraVim) {
+async function changeState (ultra: VIM.UltraViewerRef, tower: VIM.UltraVim) {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const indices = Array.from({ length: 200000 }, (_, i) => i)

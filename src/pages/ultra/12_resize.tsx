@@ -1,5 +1,5 @@
 import React, { RefObject, useRef } from 'react'
-import { UltraReact, UltraViewer } from '../../vim-web'
+import * as VIM  from '../../vim-web'
 import { useUltraWithWolford } from './ultraPageUtils'
 
 // Define resolution table with different aspect ratios and sizes
@@ -37,7 +37,7 @@ export function UltraResize () {
   )
 }
 
-async function toggleLock (ultra: UltraReact.UltraViewerRef, vim: UltraViewer.UltraVim, div: RefObject<HTMLDivElement>) {
+async function toggleLock (ultra: VIM.UltraViewerRef, vim: VIM.UltraVim, div: RefObject<HTMLDivElement>) {
   let index = 0
 
   // eslint-disable-next-line no-constant-condition

@@ -2,8 +2,8 @@ import { ColorHandle } from './color';
 import { ColorManager } from './colorManager';
 import { MaterialHandles } from './rpcClient';
 import { INVALID_HANDLE } from './ultraCoreViewer';
-import { LoadRequest } from './loadRequest';
-import { RpcSafeClient, VimLoadingStatus, VimSource } from './rpcSafeClient';
+import { UltraLoadRequest } from './ultraLoadRequest';
+import { RpcSafeClient, VimLoadingStatus, UltraVimSource } from './rpcSafeClient';
 import { ILogger } from './logger';
 import { invertMap } from '../../utils/array';
 import { isFileURI, isURL } from '../../utils/url';
@@ -13,9 +13,9 @@ import { IRenderer, UltraCoreRenderer } from './ultraCoreRenderer';
 export type UltraVimNodeState = 'visible' | 'hidden' | 'ghosted' | 'highlighted';
 
 export class UltraVim {
-  readonly source: VimSource;
+  readonly source: UltraVimSource;
   private _handle: number = -1;
-  private _request: LoadRequest | undefined;
+  private _request: UltraLoadRequest | undefined;
 
   private readonly _rpc: RpcSafeClient;
   private _colors: ColorManager;
@@ -38,7 +38,7 @@ export class UltraVim {
    * @param source - The source URL or file path of the Vim.
    * @param logger - The logger for logging messages.
    */
-  constructor(rpc: RpcSafeClient, color: ColorManager, renderer: UltraCoreRenderer,  source: VimSource, logger: ILogger) {
+  constructor(rpc: RpcSafeClient, color: ColorManager, renderer: UltraCoreRenderer,  source: UltraVimSource, logger: ILogger) {
     this._rpc = rpc;
     this.source = source;
     this._colors = color;
@@ -62,13 +62,13 @@ export class UltraVim {
    * Connects to the Vim and initiates loading.
    * @returns The load request associated with this operation.
    */
-  connect(): LoadRequest {
+  connect(): UltraLoadRequest {
     if (this._request) {
       return this._request;
     }
 
     this._logger.log('Loading: ', this.source);
-    this._request = new LoadRequest();
+    this._request = new UltraLoadRequest();
 
     this._load(this.source, this._request).then(async (request) => {
       const result = await request.getResult();
@@ -120,7 +120,7 @@ export class UltraVim {
    * @param result - The load request object to update.
    * @returns The updated load request.
    */
-  private async _load(source: VimSource, result: LoadRequest): Promise<LoadRequest> {
+  private async _load(source: UltraVimSource, result: UltraLoadRequest): Promise<UltraLoadRequest> {
     const handle = await this._getHandle(source, result);
     if(result.isCompleted || handle === INVALID_HANDLE) {
       return result
@@ -170,7 +170,7 @@ export class UltraVim {
     }
   }
 
-  private async _getHandle(source: VimSource, result: LoadRequest): Promise<number> {
+  private async _getHandle(source: UltraVimSource, result: UltraLoadRequest): Promise<number> {
     let handle = undefined;
     try {
       if (isURL(source.url)) {

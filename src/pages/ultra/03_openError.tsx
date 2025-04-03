@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { useUltra } from './ultraPageUtils'
-import { UltraReact } from '../../vim-web'
+import * as VIM from '../../vim-web'
 
 export function UltraOpenError () {
   const div = useRef<HTMLDivElement>(null)
@@ -13,7 +13,7 @@ export function UltraOpenError () {
   )
 }
 
-async function badPath (ultra: UltraReact.UltraViewerRef) {
+async function badPath (ultra: VIM.UltraViewerRef) {
   await ultra.viewer.connect()
   ultra.load({url:'C:/Users/username/Downloads/invalid.vim'})
 }

@@ -3,12 +3,12 @@
  */
 
 import * as THREE from 'three'
-import { Camera } from './camera'
+import { WebglCoreCamera } from './webglCoreCamera'
 import { WebglModelObject } from '../../loader/webglModelObject'
 import { CameraMovementSnap } from './cameraMovementSnap'
-import { CameraMovement } from './cameraMovement'
+import { WebglCoreCameraMovement } from './cameraMovement'
 
-export class CameraLerp extends CameraMovement {
+export class CameraLerp extends WebglCoreCameraMovement {
   _movement: CameraMovementSnap
   _clock = new THREE.Clock()
 
@@ -17,7 +17,7 @@ export class CameraLerp extends CameraMovement {
 
   _duration = 1
 
-  constructor (camera: Camera, movement: CameraMovementSnap) {
+  constructor (camera: WebglCoreCamera, movement: CameraMovementSnap) {
     super(camera)
     this._movement = movement
   }

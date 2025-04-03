@@ -1,14 +1,14 @@
-import { ClientError, ClientState, ConnectionSettings, SocketClient } from './socketClient'
+import { UltraClientError, UltraClientState, UltraConnectionSettings, SocketClient } from './socketClient'
 import { Decoder, IDecoder } from './decoder'
 import { DecoderWithWorker } from './decoderWithWorker'
 import { UltraVim } from './ultraVim'
-import { ILoadRequest, LoadRequest } from './loadRequest'
+import { UltraILoadRequest, UltraLoadRequest } from './ultraLoadRequest'
 import { RpcClient } from './rpcClient'
 import { ILogger, defaultLogger } from './logger'
 import { IViewport, Viewport } from './viewport'
 import { ColorManager } from './colorManager'
 import { UltraCoreCamera, ICamera } from './ultraCoreCamera'
-import { RpcSafeClient, VimSource } from './rpcSafeClient'
+import { RpcSafeClient, UltraVimSource } from './rpcSafeClient'
 import { ISimpleEvent } from 'ste-simple-events'
 import { UltraCoreSelection } from './ultraCoreSelection'
 import { IReadonlyVimCollection, VimCollection } from './vimCollection'
@@ -97,7 +97,7 @@ export class UltraCoreViewer {
    * Event that is triggered when the viewer's connection status changes.
    * @returns An event that emits the current ClientStatus.
    */
-  get onStateChanged (): ISimpleEvent<ClientState> {
+  get onStateChanged (): ISimpleEvent<UltraClientState> {
     return this._socketClient.onStatusUpdate
   }
 
@@ -105,7 +105,7 @@ export class UltraCoreViewer {
    * Gets the current connection status of the viewer.
    * @returns The current ClientStatus.
    */
-  get state (): ClientState {
+  get state (): UltraClientState {
     return this._socketClient.state
   }
 
@@ -187,7 +187,7 @@ export class UltraCoreViewer {
     this._decoder.start()
   }
 
-  private async validateConnection (): Promise<ClientError | undefined> {
+  private async validateConnection (): Promise<UltraClientError | undefined> {
     const apiVersionError = await this.checkAPIVersion()
     if(apiVersionError) return apiVersionError
 
@@ -197,7 +197,7 @@ export class UltraCoreViewer {
     return undefined
   }
 
-  private async checkAPIVersion (): Promise<ClientError | undefined> {
+  private async checkAPIVersion (): Promise<UltraClientError | undefined> {
     const version = await this.rpc.RPCGetAPIVersion()
     const localVersion = this.rpc.API_VERSION
 
@@ -240,7 +240,7 @@ export class UltraCoreViewer {
    * @param url - The server URL to connect to. Defaults to 'ws://localhost:8123'.
    * @returns A promise that resolves when the connection is established.
    */
-  async connect (settings?: ConnectionSettings): Promise<boolean> {
+  async connect (settings?: UltraConnectionSettings): Promise<boolean> {
     return this._socketClient.connect(settings)
   }
 
@@ -256,9 +256,9 @@ export class UltraCoreViewer {
    * @param source - The path or URL to the VIM file.
    * @returns A load request object that can be used to wait for the load to complete.
    */
-  loadVim (source: VimSource): ILoadRequest {
+  loadVim (source: UltraVimSource): UltraILoadRequest {
     if (typeof source.url !== 'string' || source.url.trim() === '') {
-      const request = new LoadRequest()
+      const request = new UltraLoadRequest()
       request.error('loadingError', 'Invalid path')
       return request
     }

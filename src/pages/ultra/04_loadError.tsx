@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { useUltra } from './ultraPageUtils'
-import { UltraReact } from '../../vim-web'
+import * as VIM  from '../../vim-web'
 import * as Urls from '../devUrls'
 
 export function UltraLoadError () {
@@ -14,7 +14,7 @@ export function UltraLoadError () {
   )
 }
 
-async function test (ultra: UltraReact.UltraViewerRef) {
+async function test (ultra: VIM.UltraViewerRef) {
   await ultra.viewer.connect()
   ultra.load({url:Urls.notAVim})
 }

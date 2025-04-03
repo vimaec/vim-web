@@ -4,12 +4,14 @@
 
 import * as THREE from 'three'
 import { WebglCoreViewerSettings } from '../settings/webglCoreViewerSettings'
+import { WebglCoreLayers } from '../webglCoreRaycaster'
 
-export class OrthographicWrapper {
+export class WebglCoreOrthographicCamera {
   camera: THREE.OrthographicCamera
 
   constructor (camera: THREE.OrthographicCamera) {
     this.camera = camera
+    this.camera.layers.enable(WebglCoreLayers.NoRaycast)
   }
 
   frustrumSizeAt (point: THREE.Vector3) {

@@ -4,10 +4,11 @@
 
 import * as THREE from 'three'
 import { WebglCoreViewerSettings } from '../settings/webglCoreViewerSettings'
-import { ICamera } from '../camera/ICamera'
+import { WebglCoreICamera } from '../camera/webglCoreICamera'
 import { WebglCoreMaterials } from '../../loader/materials/webglCoreMaterials'
 import { SkyboxMaterial } from '../../loader/materials/skyboxMaterial'
 import { WebglCoreRenderer } from '../rendering/webglCoreRenderer'
+import { WebglCoreLayers } from '../webglCoreRaycaster'
 
 export class Skybox {
   readonly mesh : THREE.Mesh
@@ -67,11 +68,12 @@ export class Skybox {
   private readonly _material : SkyboxMaterial
   private readonly _renderer: WebglCoreRenderer
 
-  constructor (camera: ICamera, renderer : WebglCoreRenderer, materials: WebglCoreMaterials, settings: WebglCoreViewerSettings) {
+  constructor (camera: WebglCoreICamera, renderer : WebglCoreRenderer, materials: WebglCoreMaterials, settings: WebglCoreViewerSettings) {
     this._renderer = renderer
     this._plane = new THREE.PlaneGeometry()
     this._material = materials.skyBox
     this.mesh = new THREE.Mesh(this._plane, materials.skyBox)
+    this.mesh.layers.set(WebglCoreLayers.NoRaycast)
 
     // Apply settings
     this.enable = settings.skybox.enable

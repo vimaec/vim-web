@@ -7,7 +7,8 @@ import { INVALID_HANDLE } from "./ultraCoreViewer"
 
 const defaultBatchSize = 10000
 
-export type VimSource = {
+//TODO: Share both VIMSource
+export type UltraVimSource = {
   url: string;
   authToken? : string;
 }
@@ -540,7 +541,7 @@ export class RpcSafeClient {
    * @returns Promise resolving to the handle of the loaded VIM component
    * @throws {Error} If the filename is invalid or empty
    */
-  async RPCLoadVim(source: VimSource): Promise<number> {
+  async RPCLoadVim(source: UltraVimSource): Promise<number> {
     // Validation
     if (!Validation.isNonEmptyString(source.url)) return INVALID_HANDLE
     const url = source.url.replace("file:///", "file://")
@@ -558,7 +559,7 @@ export class RpcSafeClient {
    * @returns Promise resolving to the handle of the loaded VIM component
    * @throws {Error} If the URL is invalid
    */
-  async RPCLoadVimURL(source: VimSource): Promise<number> {
+  async RPCLoadVimURL(source: UltraVimSource): Promise<number> {
     // Validation
     if (!Validation.isURL(source.url)) return INVALID_HANDLE
 
