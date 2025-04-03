@@ -6,7 +6,7 @@
 import * as THREE from 'three'
 
 // Vim
-import { WebglVim } from './vim'
+import { WebglVim } from './webglVim'
 import { IElement, VimHelpers } from 'vim-format'
 import { ObjectAttribute } from './objectAttributes'
 import { ColorAttribute } from './colorAttributes'

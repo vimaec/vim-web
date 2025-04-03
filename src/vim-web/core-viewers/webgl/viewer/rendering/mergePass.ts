@@ -4,7 +4,7 @@
 
 import * as THREE from 'three'
 import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass'
-import { ViewerMaterials } from '../../loader/materials/viewerMaterials'
+import { WebglCoreMaterials } from '../../loader/materials/webglCoreMaterials'
 import { MergeMaterial } from '../../loader/materials/mergeMaterial'
 
 /**
@@ -14,7 +14,7 @@ export class MergePass extends Pass {
   private _fsQuad: FullScreenQuad
   private _material: MergeMaterial
 
-  constructor (source: THREE.Texture, materials?: ViewerMaterials) {
+  constructor (source: THREE.Texture, materials?: WebglCoreMaterials) {
     super()
 
     this._fsQuad = new FullScreenQuad()

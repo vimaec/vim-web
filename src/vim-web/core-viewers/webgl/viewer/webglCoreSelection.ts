@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { WebglVim } from '../loader/vim'
+import { WebglVim } from '../loader/webglVim'
 import { WebglCoreMaterials } from '../loader/materials/webglCoreMaterials'
 import { SignalDispatcher } from 'ste-signals'
 import { GizmoMarker } from './gizmos/markers/gizmoMarker'

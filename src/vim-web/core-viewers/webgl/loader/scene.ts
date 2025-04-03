@@ -4,12 +4,12 @@
 
 import * as THREE from 'three'
 import { Mesh, Submesh } from './mesh'
-import { WebglVim } from './vim'
+import { WebglVim } from './webglVim'
 import { estimateBytesUsed } from 'three/examples/jsm/utils/BufferGeometryUtils'
 import { InsertableMesh } from './progressive/insertableMesh'
 import { InstancedMesh } from './progressive/instancedMesh'
 import { getAverageBoundingBox } from './averageBoundingBox'
-import { ModelMaterial } from './materials/viewerMaterials'
+import { ModelMaterial } from './materials/webglCoreMaterials'
 
 /**
  * Interface for a renderer object, providing methods to add and remove objects from a scene, update bounding boxes, and notify scene updates.

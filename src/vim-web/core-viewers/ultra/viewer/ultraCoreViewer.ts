@@ -1,18 +1,18 @@
 import { ClientError, ClientState, ConnectionSettings, SocketClient } from './socketClient'
 import { Decoder, IDecoder } from './decoder'
 import { DecoderWithWorker } from './decoderWithWorker'
-import { UltraVim } from './vim'
+import { UltraVim } from './ultraVim'
 import { ILoadRequest, LoadRequest } from './loadRequest'
 import { RpcClient } from './rpcClient'
 import { ILogger, defaultLogger } from './logger'
 import { IViewport, Viewport } from './viewport'
 import { ColorManager } from './colorManager'
-import { Camera, ICamera } from './camera'
+import { UltraCoreCamera, ICamera } from './ultraCoreCamera'
 import { RpcSafeClient, VimSource } from './rpcSafeClient'
 import { ISimpleEvent } from 'ste-simple-events'
-import { ViewerSelection } from './selection'
+import { UltraCoreSelection } from './ultraCoreSelection'
 import { IReadonlyVimCollection, VimCollection } from './vimCollection'
-import { IRenderer, Renderer } from './renderer'
+import { IRenderer, UltraCoreRenderer } from './ultraCoreRenderer'
 import { SectionBox } from './sectionBox'
 import { CoreInputHandler } from '../../shared/coreInputHandler'	
 import { ultraInputAdapter } from './ultraInputsAdapter'
@@ -30,10 +30,10 @@ export class UltraCoreViewer {
   private readonly _input: CoreInputHandler
   private readonly _logger: ILogger
   private readonly _canvas: HTMLCanvasElement
-  private readonly _renderer : Renderer
+  private readonly _renderer : UltraCoreRenderer
   private readonly _viewport: Viewport
-  private readonly _camera: Camera
-  private readonly _selection: ViewerSelection
+  private readonly _camera: UltraCoreCamera
+  private readonly _selection: UltraCoreSelection
   private readonly _vims : VimCollection
   private _disposed = false
 
@@ -76,7 +76,7 @@ export class UltraCoreViewer {
     return this._decoder
   }
 
-  get selection (): ViewerSelection {
+  get selection (): UltraCoreSelection {
     return this._selection
   }
 
@@ -145,10 +145,10 @@ export class UltraCoreViewer {
     
     this._viewport = new Viewport(canvas, this.rpc, this._logger)
     this._decoder = new Decoder(canvas, this._logger)
-    this._selection = new ViewerSelection(this.rpc, this._vims)
-    this._renderer = new Renderer(this.rpc, this._logger)
+    this._selection = new UltraCoreSelection(this.rpc, this._vims)
+    this._renderer = new UltraCoreRenderer(this.rpc, this._logger)
     this.colors = new ColorManager(this.rpc)
-    this._camera = new Camera(this.rpc)
+    this._camera = new UltraCoreCamera(this.rpc)
     this._input = ultraInputAdapter(this)
 
     this.sectionBox = new SectionBox(this.rpc)
@@ -263,7 +263,7 @@ export class UltraCoreViewer {
       return request
     }
 
-    const vim = new UltraVim(this.rpc, this.colors, source, this._logger)
+    const vim = new UltraVim(this.rpc, this.colors, this._renderer, source, this._logger)
     this._vims.add(vim)
     const request = vim.connect()
     request.getResult().then((result) => {

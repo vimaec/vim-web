@@ -5,7 +5,7 @@
 import * as THREE from 'three'
 import { ICamera } from '../camera/ICamera'
 
-export class CameraLight {
+export class WebglCoreLight {
   readonly light : THREE.DirectionalLight
   private readonly _camera : ICamera
   private _unsubscribe : (() => void) | undefined = undefined

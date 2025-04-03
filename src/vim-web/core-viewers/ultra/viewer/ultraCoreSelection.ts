@@ -1,7 +1,7 @@
 import { SignalDispatcher } from "ste-signals";
 import { Box3, Vector2, Vector3 } from "../../utils/math3d";
 import { RpcSafeClient } from "./rpcSafeClient";
-import { UltraVim } from "./vim";
+import { UltraVim } from "./ultraVim";
 import { IReadonlyVimCollection } from "./vimCollection";
 
 export interface IViewerSelection {
@@ -31,7 +31,7 @@ export type HitTestResult = {
 /**
  * Manages selection state of nodes across multiple VIM instances.
  */
-export class ViewerSelection implements IViewerSelection {
+export class UltraCoreSelection implements IViewerSelection {
   private _rpc: RpcSafeClient;
   private _vims: IReadonlyVimCollection;
   private _selectedNodes: Map<UltraVim, Set<number>>;
@@ -159,14 +159,15 @@ export class ViewerSelection implements IViewerSelection {
     const nodes = Array.isArray(node) ? node : [node];
     let changed = false
 
+    const toChange : number[] = [];
     nodes.forEach((n) => {
       if (nodeSet.has(n)) {
         nodeSet.delete(n);
-        // Immediately unhighlight the node
-        vim.removeHighlight([n], 'visible');
+        toChange.push(n);
         changed = true
       }
     });
+    vim.show(toChange);
 
     if (nodeSet.size === 0) {
       this._selectedNodes.delete(vim);
@@ -192,9 +193,10 @@ export class ViewerSelection implements IViewerSelection {
 
   private _clear(vim?: UltraVim) {
     let changed = false
+
     this._selectedNodes.forEach((nodes, v) => {
       if(vim === undefined || v === vim){
-        v.removeHighlight(Array.from(nodes), 'visible');
+        v.show(Array.from(nodes));
         changed = true
       }
     });

@@ -4,7 +4,7 @@
 
 import * as THREE from 'three'
 import { MergedSubmesh } from './mesh'
-import { WebglVim } from './vim'
+import { WebglVim } from './webglVim'
 import { InsertableSubmesh } from './progressive/insertableSubmesh'
 import { AttributeTarget } from './objectAttributes'
 

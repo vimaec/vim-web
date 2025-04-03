@@ -41,9 +41,8 @@ import { SectionBoxPanel } from '../panels/sectionBoxPanel'
 import { useWebglSectionBox } from './webglSectionBoxAdapter'
 import { useWebglCamera } from './webglCameraState'
 import { useViewerInput } from '../state/viewerInputs'
-import { useIsolationState } from '../state/renderSettings'
 import { IsolationSettingsPanel } from '../panels/renderSettingsPanel'
-import { createWebglIsolationAdapter } from './webglIsolationAdapter'
+import { useWebglIsolation } from './webglIsolation'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.
@@ -126,8 +125,7 @@ export function WebglViewer (props: {
   const viewerState = useViewerState(props.viewer)
   const treeRef = useRef<TreeActionRef>()
   const performanceRef = useRef<HTMLDivElement>(null)
-  const isolationAdapter = createWebglIsolationAdapter(props.viewer)
-  const isolationRef = useIsolationState(isolationAdapter)
+  const isolationRef = useWebglIsolation(props.viewer)
 
   const controlBar = useControlBar(props.viewer, camera, modal, side, cursor, settings.value, sectionBoxRef, isolationRef, controlBarCustom)
 

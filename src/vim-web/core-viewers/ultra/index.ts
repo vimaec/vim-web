@@ -2,7 +2,7 @@ import "./style.css"
 export * from './viewer/ultraCoreViewer'
 export * as utils from '../utils/promise'
 export * from '../utils/math3d'
-export * from './viewer/vim'
+export * from './viewer/ultraVim'
 export * from './viewer/color'
 export type{ ILoadRequest, VimRequestErrorType } from './viewer/loadRequest'
 export type { ClientState, ConnectionSettings } from './viewer/socketClient'

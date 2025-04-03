@@ -12,7 +12,7 @@ import { ControlBarCustomization } from '../controlbar/controlBar'
 import { ComponentLoader } from './webglLoading'
 import { ModalRef } from '../panels/modal'
 import { SectionBoxRef } from '../state/sectionBoxState'
-import { IsolationRef } from '../state/renderSettings'
+import { IsolationRef } from '../state/sharedIsolation'
 /**
 * Settings API managing settings applied to the component.
 */

@@ -5,7 +5,7 @@ import {
   VimSettings
 } from '../vimSettings'
 
-import { WebglVim } from '../vim'
+import { WebglVim } from '../webglVim'
 import { Scene } from '../scene'
 import { Vimx } from './vimx'
 

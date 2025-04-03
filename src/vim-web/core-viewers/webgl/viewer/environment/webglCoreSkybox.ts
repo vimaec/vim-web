@@ -5,7 +5,7 @@
 import * as THREE from 'three'
 import { WebglCoreViewerSettings } from '../settings/webglCoreViewerSettings'
 import { ICamera } from '../camera/ICamera'
-import { ViewerMaterials } from '../../loader/materials/viewerMaterials'
+import { WebglCoreMaterials } from '../../loader/materials/webglCoreMaterials'
 import { SkyboxMaterial } from '../../loader/materials/skyboxMaterial'
 import { WebglCoreRenderer } from '../rendering/webglCoreRenderer'
 
@@ -67,7 +67,7 @@ export class Skybox {
   private readonly _material : SkyboxMaterial
   private readonly _renderer: WebglCoreRenderer
 
-  constructor (camera: ICamera, renderer : WebglCoreRenderer, materials: ViewerMaterials, settings: WebglCoreViewerSettings) {
+  constructor (camera: ICamera, renderer : WebglCoreRenderer, materials: WebglCoreMaterials, settings: WebglCoreViewerSettings) {
     this._renderer = renderer
     this._plane = new THREE.PlaneGeometry()
     this._material = materials.skyBox

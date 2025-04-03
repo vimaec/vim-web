@@ -15,7 +15,7 @@ import { ComponentSettings, isFalse } from '../settings/settings'
 import { whenAllTrue, whenFalse, whenSomeTrue, whenTrue } from '../helpers/utils'
 import { BimInfoPanel } from './bimInfoPanel'
 import { BimInfoPanelRef } from './bimInfoData'
-import { IsolationRef } from '../state/renderSettings'
+import { IsolationRef } from '../state/sharedIsolation'
 
 // Not sure why I need this,
 // when I inline this method in component.tsx it causes an error.

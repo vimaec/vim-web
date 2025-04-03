@@ -1,6 +1,6 @@
 import { Box3, Segment, Vector3 } from '../../utils/math3d'
 import { RpcSafeClient } from './rpcSafeClient'
-import { UltraVim } from './vim'
+import { UltraVim } from './ultraVim'
 
 /**
  * Interface defining camera control operations in the 3D viewer
@@ -55,10 +55,9 @@ export interface ICamera {
  * Implements camera control operations for the 3D viewer
  * @class
  */
-export class Camera implements ICamera {
+export class UltraCoreCamera implements ICamera {
   private _rpc: RpcSafeClient
   private _lastPosition : Segment | undefined
-  private _interval : ReturnType<typeof setInterval> | undefined
   private _defaultBlendTime = 0.5
   private _savedPosition: Segment | undefined
   

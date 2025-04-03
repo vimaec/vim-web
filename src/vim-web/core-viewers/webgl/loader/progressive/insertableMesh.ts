@@ -7,7 +7,7 @@ import { G3d, G3dMesh, G3dMaterial } from 'vim-format'
 import { InsertableGeometry } from './insertableGeometry'
 import { InsertableSubmesh } from './insertableSubmesh'
 import { G3dMeshOffsets } from './g3dOffsets'
-import { WebglVim } from '../vim'
+import { WebglVim } from '../webglVim'
 import { ModelMaterial, WebglCoreMaterials } from '../materials/webglCoreMaterials'
 
 export class InsertableMesh {

@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { ViewerMaterials } from '../../loader/materials/viewerMaterials'
+import { WebglCoreMaterials } from '../../loader/materials/webglCoreMaterials'
 import { WebglCoreRenderer } from './webglCoreRenderer'
 
 /**
@@ -12,7 +12,7 @@ import { WebglCoreRenderer } from './webglCoreRenderer'
 export class RenderingSection {
   private _renderer: WebglCoreRenderer
 
-  private _materials: ViewerMaterials
+  private _materials: WebglCoreMaterials
   private _active: boolean = true
 
   /**
@@ -38,7 +38,7 @@ export class RenderingSection {
     this.minZ
   ]
 
-  constructor (renderer: WebglCoreRenderer, materials: ViewerMaterials) {
+  constructor (renderer: WebglCoreRenderer, materials: WebglCoreMaterials) {
     this._renderer = renderer
     this._materials = materials
   }

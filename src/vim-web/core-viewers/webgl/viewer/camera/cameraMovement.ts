@@ -7,7 +7,7 @@ import { Object3D } from '../../loader/object3D'
 import { SelectableObject } from '../webglCoreSelection'
 import * as THREE from 'three'
 import { GizmoMarker } from '../gizmos/markers/gizmoMarker'
-import { WebglVim } from '../../loader/vim'
+import { WebglVim } from '../../loader/webglVim'
 
 export abstract class CameraMovement {
   protected _camera: Camera

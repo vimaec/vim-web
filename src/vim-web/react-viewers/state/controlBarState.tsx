@@ -19,9 +19,8 @@ import { ModalRef } from '../panels/modal';
 import * as ControlBar from '../controlbar/controlBar';
 import { WebglCoreViewer } from '../..';
 import { UltraCoreViewer } from '../../core-viewers/ultra';
-import { IsolationAdapter, IsolationRef } from './renderSettings';
-import { ISignal } from 'ste-signals';
-import { VisibilityStatus } from '../webgl/webglIsolationAdapter';
+import { IsolationAdapter, IsolationRef } from './sharedIsolation';
+
 
 /**
  * Returns a control bar section for the section box.
@@ -273,7 +272,7 @@ export function controlBarCamera(camera: CameraRef): ControlBar.IControlBarSecti
 
 export function controlBarSelection(isolation: IsolationRef): ControlBar.IControlBarSection {
   const adapter = isolation.adapter.current
-  const someVisible = adapter.isSelectionVisible() || (!adapter.isSelectionVisible() && !adapter.isSelectionHidden())
+  const someVisible = adapter.isSelectionVisible() || !adapter.isSelectionHidden()  
   return {
     id: ControlBar.ids.sectionSelection,
     enable: () => true,
@@ -292,7 +291,7 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
         tip: 'Show All',
         action: () =>  adapter.showAll(),
         icon: Icons.showAll,
-        isOn: () =>!isolation.autoIsolate.get() && adapter.getVisibility() !== 'all',
+        isOn: () =>!isolation.autoIsolate.get() && isolation.visibility.get() !== 'all',
         style: ControlBar.buttonDisableStyle,
       },
 
@@ -302,7 +301,7 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
         tip: 'Hide Selection',
         action: () => adapter.hideSelection(),
         icon: Icons.hideSelection,
-        isOn: () =>!isolation.autoIsolate.get() &&  adapter.hasSelection() && adapter.isSelectionVisible(),
+        isOn: () =>!isolation.autoIsolate.get() && adapter.hasSelection(),
         style: ControlBar.buttonDisableStyle,
       },
       {
@@ -311,7 +310,7 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
         tip: 'Show Selection',
         action: () => adapter.showSelection(),
         icon: Icons.showSelection,
-        isOn: () => !isolation.autoIsolate.get() && adapter.hasSelection() && adapter.isSelectionHidden(),
+        isOn: () => !isolation.autoIsolate.get() && adapter.hasSelection(),
         style: ControlBar.buttonDisableStyle,
       },
       {
@@ -319,7 +318,7 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
         tip: 'Isolate Selection',
         action: () => adapter.isolateSelection(),
         icon: Icons.isolateSelection,
-        isOn: () =>!isolation.autoIsolate.get() &&  adapter.hasSelection() && adapter.getVisibility() !== 'onlySelection',
+        isOn: () =>!isolation.autoIsolate.get() &&  adapter.hasSelection() && isolation.visibility.get() !== 'onlySelection',
         style: ControlBar.buttonDisableStyle,
       },
       {

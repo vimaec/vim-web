@@ -69,7 +69,7 @@ export function useStateRef<T>(initialValue: T) {
    * @param value - The new state value.
    */
   const set = (value: T) => {
-    const finalValue = validate.current(value) ?? value;
+    const finalValue = validate.current(value) ?? ref.current;
     if (finalValue === undefined) return;
     if (finalValue === ref.current) return;
 
@@ -118,6 +118,7 @@ export function useStateRef<T>(initialValue: T) {
      * @param on - A function that validates (and optionally transforms) the new state value.
      */
     useValidate(on: (value: T) => T) {
+      set(on(initialValue));
       useEffect(() => {
         validate.current = on;
       }, []);
