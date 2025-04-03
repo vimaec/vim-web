@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Object3D, WebglCoreViewer } from "../../core-viewers/webgl";
+import { WebglModelObject, WebglCoreViewer } from "../../core-viewers/webgl";
 import { SignalDispatcher } from "ste-signals";
 import { IsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
 import { UltraCoreViewer, UltraVim, UltraVimNodeState } from "../../core-viewers/ultra";

@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { G3d, G3dMesh, G3dMaterial, MeshSection, G3dScene } from 'vim-format'
 import { InstancedMesh } from './instancedMesh'
 import { WebglCoreMaterials } from '../materials/webglCoreMaterials'
-import { Geometry } from '../geometry'
+import { Geometry } from '../webglGeometry'
 
 export class InstancedMeshFactory {
   materials: G3dMaterial

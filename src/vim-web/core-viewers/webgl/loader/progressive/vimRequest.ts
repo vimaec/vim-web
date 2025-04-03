@@ -1,7 +1,7 @@
 // loader
 import {
   VimPartialSettings
-} from '../vimSettings'
+} from '../webglVimSettings'
 
 import { WebglVim } from '../webglVim'
 import { RequestResult, ErrorResult, SuccessResult } from '../../../utils/requestResult'

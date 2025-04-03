@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { Mesh, Submesh } from './mesh'
+import { WebglMesh, Submesh } from './webglMesh'
 import { WebglVim } from './webglVim'
 import { estimateBytesUsed } from 'three/examples/jsm/utils/BufferGeometryUtils'
 import { InsertableMesh } from './progressive/insertableMesh'
@@ -16,9 +16,9 @@ import { ModelMaterial } from './materials/webglCoreMaterials'
  */
 export interface IRenderer {
   // eslint-disable-next-line no-use-before-define
-  add(scene: Scene | THREE.Object3D)
+  add(scene: WebglScene | THREE.Object3D)
   // eslint-disable-next-line no-use-before-define
-  remove(scene: Scene)
+  remove(scene: WebglScene)
   updateBox(box: THREE.Box3)
   notifySceneUpdate()
 }
@@ -28,7 +28,7 @@ export interface IRenderer {
  * It tracks the global bounding box as meshes are added and maintains a mapping between g3d instance indices and meshes.
  */
 // TODO: Only expose what should be public to vim.scene
-export class Scene {
+export class WebglScene {
   // Dependencies
   private _renderer: IRenderer
   private _vim: WebglVim | undefined
@@ -36,7 +36,7 @@ export class Scene {
 
   // State
   insertables: InsertableMesh[] = []
-  meshes: (Mesh | InsertableMesh | InstancedMesh)[] = []
+  meshes: (WebglMesh | InsertableMesh | InstancedMesh)[] = []
 
   private _outlineCount: number = 0
   private _boundingBox: THREE.Box3
@@ -175,7 +175,7 @@ export class Scene {
    * userData.instances = number[] (indices of the g3d instances that went into creating the mesh)
    * userData.boxes = THREE.Box3[] (bounding box of each instance)
    */
-  addMesh (mesh: Mesh | InsertableMesh | InstancedMesh) {
+  addMesh (mesh: WebglMesh | InsertableMesh | InstancedMesh) {
     this.renderer?.add(mesh.mesh)
     mesh.vim = this.vim
 
@@ -194,7 +194,7 @@ export class Scene {
   /**
    * Adds the content of other Scene to this Scene and recomputes fields as needed.
    */
-  merge (other: Scene) {
+  merge (other: WebglScene) {
     if (!other) return this
     other.meshes.forEach((mesh) => this.meshes.push(mesh))
     other._instanceToMeshes.forEach((meshes, instance) => {

@@ -3,12 +3,12 @@
  */
 
 import * as THREE from 'three'
-import { Object3D } from '../loader/object3D'
-import { Mesh } from '../loader/mesh'
+import { WebglModelObject } from '../loader/webglModelObject'
+import { WebglMesh } from '../loader/webglMesh'
 import { RenderScene } from './rendering/renderScene'
 import { Camera } from './camera/camera'
 import { WebglCoreRenderer } from './rendering/webglCoreRenderer'
-import { GizmoMarker } from './gizmos/markers/gizmoMarker'
+import { WebglCoreMarker } from './gizmos/markers/gizmoMarker'
 import { GizmoMarkers } from './gizmos/markers/gizmoMarkers'
 
 /**
@@ -26,7 +26,7 @@ export type ActionModifier = 'none' | 'shift' | 'ctrl'
  * including the intersected object and the hit details.
  */
 export class RaycastResult {
-  object: Object3D | GizmoMarker | undefined
+  object: WebglModelObject | WebglCoreMarker | undefined
   intersections: ThreeIntersectionList
   firstHit: THREE.Intersection | undefined
 
@@ -46,7 +46,7 @@ export class RaycastResult {
 
   private getFirstVimHit (
     intersections: ThreeIntersectionList
-  ): [THREE.Intersection, Object3D] | [] {
+  ): [THREE.Intersection, WebglModelObject] | [] {
     for (let i = 0; i < intersections.length; i++) {
       const obj = this.getVimObjectFromHit(intersections[i])
       if (obj?.visible) return [intersections[i], obj]
@@ -56,7 +56,7 @@ export class RaycastResult {
 
   private getFirstMarkerHit (
     intersections: ThreeIntersectionList
-  ): [THREE.Intersection, GizmoMarker] | [] {
+  ): [THREE.Intersection, WebglCoreMarker] | [] {
     for (let i = 0; i < intersections.length; i++) {
       const data = intersections[i].object.userData.vim
 
@@ -70,7 +70,7 @@ export class RaycastResult {
   }
 
   private getVimObjectFromHit (hit: THREE.Intersection) {
-    const mesh = hit.object.userData.vim as Mesh
+    const mesh = hit.object.userData.vim as WebglMesh
     if (!mesh) return
 
     const sub = mesh.merged

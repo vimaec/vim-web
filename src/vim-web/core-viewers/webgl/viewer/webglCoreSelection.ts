@@ -6,10 +6,10 @@ import * as THREE from 'three'
 import { WebglVim } from '../loader/webglVim'
 import { WebglCoreMaterials } from '../loader/materials/webglCoreMaterials'
 import { SignalDispatcher } from 'ste-signals'
-import { GizmoMarker } from './gizmos/markers/gizmoMarker'
-import { Object3D } from '../loader/object3D'
+import { WebglCoreMarker } from './gizmos/markers/gizmoMarker'
+import { WebglModelObject } from '../loader/webglModelObject'
 
-export type SelectableObject = Object3D | GizmoMarker
+export type SelectableObject = WebglModelObject | WebglCoreMarker
 
 /**
  * Provides selection behaviour for the viewer

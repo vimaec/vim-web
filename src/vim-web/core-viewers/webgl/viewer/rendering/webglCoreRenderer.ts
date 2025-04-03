@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { IRenderer, Scene } from '../../loader/scene'
+import { IRenderer, WebglScene } from '../../loader/webglScene'
 import { WeglCoreViewport } from '../webglCoreViewport'
 import { RenderScene } from './renderScene'
 import { ModelMaterial, WebglCoreMaterials } from '../../loader/materials/webglCoreMaterials'
@@ -244,8 +244,8 @@ export class WebglCoreRenderer implements IRenderer {
    * Adds an object to be rendered.
    * @param target The object or scene to add for rendering.
    */
-  add (target: Scene | THREE.Object3D) {
-    if (target instanceof Scene) {
+  add (target: WebglScene | THREE.Object3D) {
+    if (target instanceof WebglScene) {
       const mem = target.getMemory()
       const remaining = this.maxMemory - this.estimatedMemory
       if (mem > remaining) {
@@ -264,7 +264,7 @@ export class WebglCoreRenderer implements IRenderer {
    * Removes an object from rendering.
    * @param target The object or scene to remove from rendering.
    */
-  remove (target: Scene | THREE.Object3D) {
+  remove (target: WebglScene | THREE.Object3D) {
     this._scene.remove(target)
     this.notifySceneUpdate()
   }

@@ -4,9 +4,9 @@
 
 import * as THREE from 'three'
 import { VimDocument, G3d, VimHeader, FilterMode } from 'vim-format'
-import { Scene } from './scene'
-import { VimSettings } from './vimSettings'
-import { Object3D } from './object3D'
+import { WebglScene } from './webglScene'
+import { WebglVimSettings } from './webglVimSettings'
+import { WebglModelObject } from './webglModelObject'
 import {
   ElementMapping,
   ElementMapping2,
@@ -52,12 +52,12 @@ export class WebglVim {
   /**
    * The settings used when this vim was opened.
    */
-  readonly settings: VimSettings
+  readonly settings: WebglVimSettings
 
   /**
    * Mostly Internal - The scene in which the vim geometry is added.
    */
-  readonly scene: Scene
+  readonly scene: WebglScene
 
   /**
    * The mapping from Bim to Geometry for this vim.
@@ -66,7 +66,7 @@ export class WebglVim {
 
   private readonly _builder: SubsetBuilder
   private readonly _loadedInstances = new Set<number>()
-  private readonly _elementToObject = new Map<number, Object3D>()
+  private readonly _elementToObject = new Map<number, WebglModelObject>()
 
   /**
    * Getter for accessing the event dispatched whenever a subset begins or finishes loading.
@@ -99,8 +99,8 @@ export class WebglVim {
  * @param {VimHeader | undefined} header - The Vim header, if available.
  * @param {VimDocument} document - The Vim document.
  * @param {G3d | undefined} g3d - The G3d object, if available.
- * @param {Scene} scene - The scene containing the vim's geometry.
- * @param {VimSettings} settings - The settings used to open this vim.
+ * @param {WebglScene} scene - The scene containing the vim's geometry.
+ * @param {WebglVimSettings} settings - The settings used to open this vim.
  * @param {ElementMapping | ElementNoMapping | ElementMapping2} map - The element mapping.
  * @param {SubsetBuilder} builder - The subset builder for constructing subsets of the Vim object.
  * @param {string} source - The source of the Vim object.
@@ -111,8 +111,8 @@ export class WebglVim {
     header: VimHeader | undefined,
     document: VimDocument,
     g3d: G3d | undefined,
-    scene: Scene,
-    settings: VimSettings,
+    scene: WebglScene,
+    settings: WebglVimSettings,
     map: ElementMapping | ElementNoMapping | ElementMapping2,
     builder: SubsetBuilder,
     source: string,
@@ -158,15 +158,15 @@ export class WebglVim {
     const elements = this.map.getElementsFromElementId(id)
     return elements
       ?.map((e) => this.getObjectFromElement(e))
-      .filter((o): o is Object3D => o !== undefined) ?? []
+      .filter((o): o is WebglModelObject => o !== undefined) ?? []
   }
 
   /**
    * Retrieves the Vim object associated with the given Vim element index.
    * @param {number} element - The index of the Vim element.
-   * @returns {Object3D | undefined} The Vim object corresponding to the element index, or undefined if not found.
+   * @returns {WebglModelObject | undefined} The Vim object corresponding to the element index, or undefined if not found.
    */
-  getObjectFromElement (element: number): Object3D | undefined {
+  getObjectFromElement (element: number): WebglModelObject | undefined {
     if (!this.map.hasElement(element)) return
 
     if (this._elementToObject.has(element)) {
@@ -176,7 +176,7 @@ export class WebglVim {
     const instances = this.map.getInstancesFromElement(element)
     const meshes = this.scene.getMeshesFromInstances(instances)
 
-    const result = new Object3D(this, element, instances, meshes)
+    const result = new WebglModelObject(this, element, instances, meshes)
     this._elementToObject.set(element, result)
     return result
   }
@@ -184,10 +184,10 @@ export class WebglVim {
   /**
    * Retrieves an array containing all Vim objects strictly contained within the specified bounding box.
    * @param {THREE.Box3} box - The bounding box to search within.
-   * @returns {Object3D[]} An array of Vim objects strictly contained within the bounding box.
+   * @returns {WebglModelObject[]} An array of Vim objects strictly contained within the bounding box.
    */
   getObjectsInBox (box: THREE.Box3) {
-    const result: Object3D[] = []
+    const result: WebglModelObject[] = []
 
     for (const obj of this.getObjects()) {
       const b = obj.getBoundingBox()
@@ -201,10 +201,10 @@ export class WebglVim {
 
   /**
    * Retrieves an array of all objects within the Vim.
-   * @returns {Object3D[]} An array containing all objects within the Vim.
+   * @returns {WebglModelObject[]} An array containing all objects within the Vim.
    */
   getObjects () {
-    const result : Object3D[] = []
+    const result : WebglModelObject[] = []
     for (const e of this.map.getElements()) {
       const obj = this.getObjectFromElement(e)
       result.push(obj)
@@ -215,11 +215,11 @@ export class WebglVim {
   /**
    * Retrieves an array containing all objects within the specified subset.
    * @param {G3dSubset} subset - The subset to retrieve objects from.
-   * @returns {Object3D[]} An array of objects within the specified subset.
+   * @returns {WebglModelObject[]} An array of objects within the specified subset.
    */
   getObjectsInSubset (subset: G3dSubset) {
-    const set = new Set<Object3D>()
-    const result: Object3D[] = []
+    const set = new Set<WebglModelObject>()
+    const result: WebglModelObject[] = []
     const count = subset.getInstanceCount()
     for (let i = 0; i < count; i++) {
       const instance = subset.getVimInstance(i)

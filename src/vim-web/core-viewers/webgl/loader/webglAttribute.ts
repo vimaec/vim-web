@@ -3,24 +3,24 @@
  */
 
 import * as THREE from 'three'
-import { MergedSubmesh, SimpleInstanceSubmesh, Submesh } from './mesh'
+import { MergedSubmesh, SimpleInstanceSubmesh, Submesh } from './webglMesh'
 
-export type AttributeTarget = Submesh | SimpleInstanceSubmesh
+export type WebglAttributeTarget = Submesh | SimpleInstanceSubmesh
 
-export class ObjectAttribute<T> {
+export class WebglAttribute<T> {
   readonly vertexAttribute: string
   readonly instanceAttribute: string
   readonly defaultValue: T
   readonly toNumber: (value: T) => number
 
   private _value: T
-  private _meshes: AttributeTarget[] | undefined
+  private _meshes: WebglAttributeTarget[] | undefined
 
   constructor (
     value: T,
     vertexAttribute: string,
     instanceAttribute: string,
-    meshes: AttributeTarget[] | undefined,
+    meshes: WebglAttributeTarget[] | undefined,
     toNumber: (value: T) => number
   ) {
     this._value = value
@@ -31,7 +31,7 @@ export class ObjectAttribute<T> {
     this.toNumber = toNumber
   }
 
-  updateMeshes (meshes: AttributeTarget[] | undefined) {
+  updateMeshes (meshes: WebglAttributeTarget[] | undefined) {
     this._meshes = meshes
     const v = this._value
     this._value = this.defaultValue
@@ -60,7 +60,7 @@ export class ObjectAttribute<T> {
     return true
   }
 
-  private applyInstanced (sub: AttributeTarget, number: number) {
+  private applyInstanced (sub: WebglAttributeTarget, number: number) {
     const mesh = sub.three as THREE.InstancedMesh
     const geometry = mesh.geometry
     let attribute = geometry.getAttribute(

@@ -8,28 +8,28 @@ import * as THREE from 'three'
 // Vim
 import { WebglVim } from './webglVim'
 import { IElement, VimHelpers } from 'vim-format'
-import { ObjectAttribute } from './objectAttributes'
-import { ColorAttribute } from './colorAttributes'
-import { Submesh } from './mesh'
+import { WebglAttribute } from './webglAttribute'
+import { WebglColorAttribute } from './webglColorAttribute'
+import { Submesh } from './webglMesh'
 
 /**
  * High level api to interact with the loaded vim geometry and data.
  */
-export class Object3D {
+export class WebglModelObject {
   private _color: THREE.Color | undefined
   private _boundingBox: THREE.Box3 | undefined
   private _meshes: Submesh[] | undefined
 
-  private _outlineAttribute: ObjectAttribute<boolean>
-  private _visibleAttribute: ObjectAttribute<boolean>
-  private _coloredAttribute: ObjectAttribute<boolean>
-  private _focusedAttribute: ObjectAttribute<boolean>
-  private _colorAttribute: ColorAttribute
+  private _outlineAttribute: WebglAttribute<boolean>
+  private _visibleAttribute: WebglAttribute<boolean>
+  private _coloredAttribute: WebglAttribute<boolean>
+  private _focusedAttribute: WebglAttribute<boolean>
+  private _colorAttribute: WebglColorAttribute
 
   /**
    * Indicate whether this object is architectural or markup.
    */
-  public readonly type = 'Object3D'
+  public readonly type = 'WebglModelObject'
 
   /**
    * The vim object from which this object came from.
@@ -147,7 +147,7 @@ export class Object3D {
     this.instances = instances
     this._meshes = meshes
 
-    this._outlineAttribute = new ObjectAttribute(
+    this._outlineAttribute = new WebglAttribute(
       false,
       'selected',
       'selected',
@@ -155,7 +155,7 @@ export class Object3D {
       (v) => (v ? 1 : 0)
     )
 
-    this._visibleAttribute = new ObjectAttribute(
+    this._visibleAttribute = new WebglAttribute(
       true,
       'ignore',
       'ignore',
@@ -163,7 +163,7 @@ export class Object3D {
       (v) => (v ? 0 : 1)
     )
 
-    this._focusedAttribute = new ObjectAttribute(
+    this._focusedAttribute = new WebglAttribute(
       false,
       'focused',
       'focused',
@@ -171,7 +171,7 @@ export class Object3D {
       (v) => (v ? 1 : 0)
     )
 
-    this._coloredAttribute = new ObjectAttribute(
+    this._coloredAttribute = new WebglAttribute(
       false,
       'colored',
       'colored',
@@ -179,7 +179,7 @@ export class Object3D {
       (v) => (v ? 1 : 0)
     )
 
-    this._colorAttribute = new ColorAttribute(meshes, undefined, vim)
+    this._colorAttribute = new WebglColorAttribute(meshes, undefined, vim)
   }
 
   /**

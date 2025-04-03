@@ -8,7 +8,7 @@ import { AugmentedElement, getElements } from '../helpers/element'
 
 export type ViewerState = {
   vim: VIM.WebglVim
-  selection: VIM.Object3D[]
+  selection: VIM.WebglModelObject[]
   elements: AugmentedElement[]
 }
 
@@ -17,11 +17,11 @@ export function useViewerState (viewer: VIM.WebglCoreViewer) : ViewerState {
     return viewer.selection.vim ?? viewer.vims[0]
   }
   const getSelection = () => {
-    return [...viewer.selection.objects].filter(o => o.type === 'Object3D')
+    return [...viewer.selection.objects].filter(o => o.type === 'WebglModelObject')
   }
 
   const [vim, setVim] = useState<VIM.WebglVim>(getVim())
-  const [selection, setSelection] = useState<VIM.Object3D[]>(getSelection())
+  const [selection, setSelection] = useState<VIM.WebglModelObject[]>(getSelection())
   const [elements, setElements] = useState<AugmentedElement[] | undefined>([])
   const vimConnection = useRef<() =>void>()
 

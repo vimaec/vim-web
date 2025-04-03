@@ -3,18 +3,18 @@
  */
 
 import * as THREE from 'three'
-import { MergedSubmesh } from './mesh'
+import { MergedSubmesh } from './webglMesh'
 import { WebglVim } from './webglVim'
 import { InsertableSubmesh } from './progressive/insertableSubmesh'
-import { AttributeTarget } from './objectAttributes'
+import { WebglAttributeTarget } from './webglAttribute'
 
-export class ColorAttribute {
+export class WebglColorAttribute {
   readonly vim: WebglVim
-  private _meshes: AttributeTarget[] | undefined
+  private _meshes: WebglAttributeTarget[] | undefined
   private _value: THREE.Color | undefined
 
   constructor (
-    meshes: AttributeTarget[] | undefined,
+    meshes: WebglAttributeTarget[] | undefined,
     value: THREE.Color | undefined,
     vim: WebglVim | undefined
   ) {
@@ -23,7 +23,7 @@ export class ColorAttribute {
     this.vim = vim
   }
 
-  updateMeshes (meshes: AttributeTarget[] | undefined) {
+  updateMeshes (meshes: WebglAttributeTarget[] | undefined) {
     this._meshes = meshes
     if (this._value !== undefined) {
       this.apply(this._value)
@@ -152,7 +152,7 @@ export class ColorAttribute {
    * @param index index of the instanced instance
    * @param color rgb representation of the color to apply
    */
-  private applyInstancedColor (sub: AttributeTarget, color: THREE.Color | undefined) {
+  private applyInstancedColor (sub: WebglAttributeTarget, color: THREE.Color | undefined) {
     const colors = this.getOrAddInstanceColorAttribute(
       sub.three as THREE.InstancedMesh
     )

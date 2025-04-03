@@ -21,7 +21,7 @@ export type TreeActionRef = {
   showAll: () => void
   hideAll: () => void
   collapseAll: () => void
-  selectSiblings: (element: VIM.Object3D) => void
+  selectSiblings: (element: VIM.WebglModelObject) => void
 }
 
 /**
@@ -35,12 +35,12 @@ export function BimTree (props: {
   actionRef: React.MutableRefObject<TreeActionRef>
   viewer: VIM.WebglCoreViewer
   camera: CameraRef
-  objects: VIM.Object3D[]
+  objects: VIM.WebglModelObject[]
   isolation: IsolationRef
   treeData: BimTreeData
 }) {
   // Data state
-  const [objects, setObjects] = useState<VIM.Object3D[]>([])
+  const [objects, setObjects] = useState<VIM.WebglModelObject[]>([])
 
   // Tree state
   const [expandedItems, setExpandedItems] = useState<number[]>([])
@@ -62,7 +62,7 @@ export function BimTree (props: {
       collapseAll: () => {
         setExpandedItems([])
       },
-      selectSiblings: (object: VIM.Object3D) => {
+      selectSiblings: (object: VIM.WebglModelObject) => {
         const element = object.element
         const node = props.treeData.getNodeFromElement(element)
         const siblings = props.treeData.getSiblings(node)
@@ -299,7 +299,7 @@ function updateViewerSelection (
   nodes: number[],
   operation: 'add' | 'remove' | 'set'
 ) {
-  const objects: VIM.Object3D[] = []
+  const objects: VIM.WebglModelObject[] = []
   nodes.forEach((n) => {
     const item = tree.nodes[n]
     const element = item.data.index
