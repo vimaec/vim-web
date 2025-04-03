@@ -3,7 +3,7 @@ import { SectionBoxMesh } from './SectionBoxMesh'
 import { SectionBoxOutline } from './sectionBoxOutline'
 import { SectionBoxHandles } from './sectionBoxHandles'
 import { WebglCoreRenderer } from '../../rendering/webglCoreRenderer'
-import { Camera, ICamera } from '../../camera/camera'
+import { WebglCoreCamera, ICamera } from '../../camera/webglCoreCamera'
 
 export class SectionBoxGizmo
 {

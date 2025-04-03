@@ -14,16 +14,14 @@ export class GizmoMarkers {
 
   constructor (viewer: WebglCoreViewer) {
     this._viewer = viewer
-    this._mesh = this.createMesh(undefined, 1, 0)
-
-    this._mesh.count = 0
+    this._mesh = this.createMesh(undefined, 100)
   }
 
   getMarkerFromIndex (index: number) {
     return this._markers[index]
   }
 
-  private createMesh (previous : THREE.InstancedMesh, capacity : number, count: number) {
+  private createMesh (previous : THREE.InstancedMesh, capacity : number) {
     const geometry = previous?.geometry ?? new THREE.SphereGeometry(1, 8, 8)
 
     const mat = previous?.material ?? new StandardMaterial(new THREE.MeshPhongMaterial({
@@ -31,21 +29,25 @@ export class GizmoMarkers {
       vertexColors: true,
       flatShading: true,
       shininess: 1,
-      transparent: true,
+      transparent: false,
       depthTest: false
     })).material
 
     const mesh = new THREE.InstancedMesh(geometry, mat, capacity)
     mesh.renderOrder = 100
     mesh.userData.vim = this
-    mesh.count = count
+    mesh.count = 0
+    mesh.frustumCulled = false
+    mesh.layers.enableAll()
+    
 
     this._viewer.renderer.add(mesh)
     return mesh
   }
 
   private resizeMesh () {
-    const larger = this.createMesh(this._mesh, this._mesh.count * 2, this._mesh.count)
+    const larger = this.createMesh(this._mesh, this._mesh.count * 2)
+    larger.count = this._mesh.count
 
     for (let i = 0; i < this._mesh.count; i++) {
       const m = new THREE.Matrix4()
@@ -73,7 +75,6 @@ export class GizmoMarkers {
     const marker = new WebglCoreMarker(this._viewer, sub)
     marker.position = position
     this._markers.push(marker)
-
     return marker
   }
 

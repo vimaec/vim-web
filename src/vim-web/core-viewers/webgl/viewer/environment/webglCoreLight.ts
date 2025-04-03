@@ -3,11 +3,11 @@
  */
 
 import * as THREE from 'three'
-import { ICamera } from '../camera/ICamera'
+import { WebglCoreICamera } from '../camera/webglCoreICamera'
 
 export class WebglCoreLight {
   readonly light : THREE.DirectionalLight
-  private readonly _camera : ICamera
+  private readonly _camera : WebglCoreICamera
   private _unsubscribe : (() => void) | undefined = undefined
 
   /**
@@ -57,7 +57,7 @@ export class WebglCoreLight {
   }
 
   constructor (
-    camera: ICamera,
+    camera: WebglCoreICamera,
     options: {
       followCamera: boolean,
       position: THREE.Vector3,

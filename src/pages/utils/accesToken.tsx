@@ -1,13 +1,13 @@
 import { useEffect, useRef } from 'react'
-import { UltraReact, WebglReact } from '../../vim-web'
+import * as VIM from '../../vim-web'
 import { LocalTextBox } from '../utils/localTextBox'
 import * as Urls from '../devUrls'
-type Viewer = UltraReact.UltraViewerRef | WebglReact.Refs.ViewerRef 
-export function AccessToken (create: (div: HTMLDivElement, url: string, token: string) => Promise<Viewer>) {
+type ViewerRef = VIM.UltraViewerRef | VIM.WebglViewerRef 
+export function AccessToken (create: (div: HTMLDivElement, url: string, token: string) => Promise<ViewerRef>) {
   const containerRef = useRef<HTMLDivElement>(null)
   const urlInputRef = useRef<HTMLInputElement>(null)
   const tokenInputRef = useRef<HTMLInputElement>(null)
-  const viewer = useRef<Viewer>()
+  const viewer = useRef<ViewerRef>()
 
   useEffect(() => {
     create(containerRef.current, urlInputRef.current.value, tokenInputRef.current.value)

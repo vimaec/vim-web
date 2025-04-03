@@ -1,6 +1,6 @@
 import './style.css'
-export * as WebglReact from './webgl/index'
-export * as UltraReact from './ultra/index'
+export * from './webgl/index'
+export * from './ultra/index'
 export * as ErrorStyle from './errors/errorStyle'
 export * as Errors from './errors/errors'
 export * as Urls from './urls'

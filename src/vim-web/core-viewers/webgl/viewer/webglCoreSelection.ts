@@ -102,8 +102,7 @@ export class WebglCoreSelection {
    *        or `null`, `undefined`, or an empty array to clear the selection.
    */
   select (object: SelectableObject | SelectableObject[] | undefined) {
-    object =
-      object === undefined ? [] : Array.isArray(object) ? object : [object]
+    object = object === undefined ? [] : Array.isArray(object) ? object : [object]
 
     object = object.filter((o) => o)
     if (
@@ -113,7 +112,7 @@ export class WebglCoreSelection {
       // Value is unchanged, exit early.
       return
     }
-
+    console.log('Selection changed', object)
     this._objects.forEach((o) => (o.outline = false))
     this._objects.clear()
     this._vim = undefined
@@ -121,6 +120,7 @@ export class WebglCoreSelection {
     object?.forEach((o) => {
       this.clearOnNewVim(o.vim)
       this._objects.add(o)
+      console.log('Adding object to selection', o)
       o.outline = true
     })
     this._onValueChanged.dispatch()
@@ -158,6 +158,7 @@ export class WebglCoreSelection {
     objects.forEach((o) => {
       this.clearOnNewVim(o.vim)
       this._objects.add(o)
+
       o.outline = true
     })
     if (oldVim === this._vim && this._objects.size === count) return

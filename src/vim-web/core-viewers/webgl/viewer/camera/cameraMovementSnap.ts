@@ -2,11 +2,11 @@
  * @module viw-webgl-viewer/camera
  */
 
-import { CameraMovement } from './cameraMovement'
+import { WebglCoreCameraMovement } from './cameraMovement'
 import { WebglModelObject } from '../../loader/webglModelObject'
 import * as THREE from 'three'
 
-export class CameraMovementSnap extends CameraMovement {
+export class CameraMovementSnap extends WebglCoreCameraMovement {
   /**
    * Moves the camera closer or farther away from orbit target.
    * @param amount movement size.

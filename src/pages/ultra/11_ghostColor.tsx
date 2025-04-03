@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { UltraReact, UltraViewer } from '../../vim-web'
+import * as VIM  from '../../vim-web'
 import { useUltraWithWolford } from './ultraPageUtils'
 
 export function UltraGhostColor () {
@@ -14,14 +14,14 @@ export function UltraGhostColor () {
   )
 }
 
-async function toggleLock (ultra: UltraReact.UltraViewerRef, vim: UltraViewer.UltraVim) {
+async function toggleLock (ultra: VIM.UltraViewerRef, vim: VIM.UltraVim) {
   vim.ghost('all')
 
-  ultra.viewer.renderer.ghostColor = new UltraViewer.RGBA(1, 0, 0, 0.005)
+  ultra.viewer.renderer.ghostColor = new VIM.RGBA(1, 0, 0, 0.005)
 
   await new Promise(resolve => setTimeout(resolve, 1000))
-  ultra.viewer.renderer.ghostColor = new UltraViewer.RGBA(0, 1, 0, 0.05)
+  ultra.viewer.renderer.ghostColor = new VIM.RGBA(0, 1, 0, 0.05)
 
   await new Promise(resolve => setTimeout(resolve, 1000))
-  ultra.viewer.renderer.ghostColor = new UltraViewer.RGBA(0, 0, 1, 0.005)
+  ultra.viewer.renderer.ghostColor = new VIM.RGBA(0, 0, 1, 0.005)
 }

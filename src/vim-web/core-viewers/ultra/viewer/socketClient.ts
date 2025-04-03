@@ -9,15 +9,15 @@ import { Segment } from '../../utils/math3d'
 
 export const DEFAULT_LOCAL_ULTRA_SERVER_URL = 'ws://localhost:8123'
 
-export type ConnectionSettings = {
+export type UltraConnectionSettings = {
   url?: string
   retries? : number
   timeout?: number
   retryDelay?: number
 }
 
-export type ClientState = ClientStateConnecting | ClientStateConnected | ClientStateDisconnected | ClientStateValidating | ClientError
-export type ClientError = ClientStateCompatibilityError | ClientStateConnectionError | ClientStreamError// | other types of errors
+export type UltraClientState = ClientStateConnecting | ClientStateConnected | ClientStateDisconnected | ClientStateValidating | UltraClientError
+export type UltraClientError = ClientStateCompatibilityError | ClientStateConnectionError | ClientStreamError// | other types of errors
 
 export type ClientStateConnecting = {
   status: 'connecting'
@@ -81,7 +81,7 @@ export class SocketClient {
   private _reconnectTimeout : ReturnType<typeof setTimeout> | undefined
   private _connectionTimeout: ReturnType<typeof setTimeout> | undefined
 
-  private _validateConnection: () => Promise<ClientError | undefined>
+  private _validateConnection: () => Promise<UltraClientError | undefined>
   /**
    * Callback function to handle incoming video frames.
    * @param msg - The video frame message received from the server.
@@ -89,10 +89,10 @@ export class SocketClient {
   public onVideoFrame: (msg: Protocol.VideoFrameMessage) => void = () => { }
   public onCameraPose: (msg: Segment) => void = () => { }
 
-  private _state: ClientState = { status: 'disconnected' }
-  private _onStatusUpdate = new SimpleEventDispatcher<ClientState>()
+  private _state: UltraClientState = { status: 'disconnected' }
+  private _onStatusUpdate = new SimpleEventDispatcher<UltraClientState>()
   private _connectPromise: IPromise<boolean> = new ResolvedPromise<boolean>(undefined)
-  private _connectionSettings: ConnectionSettings
+  private _connectionSettings: UltraConnectionSettings
 
   /**
    * Event that is triggered when the connection status updates.
@@ -106,7 +106,7 @@ export class SocketClient {
    * Gets the current connection status.
    * @returns The current ClientStatus.
    */
-  public get state (): ClientState {
+  public get state (): UltraClientState {
     return this._state
   }
 
@@ -114,7 +114,7 @@ export class SocketClient {
    * Updates the connection state and dispatches the status update event.
    * @param state - The new connection state.
    */
-  private updateState (state: ClientState): void {
+  private updateState (state: UltraClientState): void {
     this._state = state
     this._onStatusUpdate.dispatch(state)
   }
@@ -134,7 +134,7 @@ export class SocketClient {
    * @param logger - The logger for logging messages.
    * @param checks - checks to perform before returning connection.
    */
-  constructor (logger: ILogger, validateConnection: () => Promise<ClientError | undefined>) {
+  constructor (logger: ILogger, validateConnection: () => Promise<UltraClientError | undefined>) {
     this._logger = logger
     this._rpcCallId = 0
     this._streamLogger = new StreamLogger(logger)
@@ -146,7 +146,7 @@ export class SocketClient {
    * @param url - The WebSocket URL to connect to.
    * @returns A promise that resolves when the connection is established.
    */
-  public connect (settings: ConnectionSettings): Promise<boolean> {
+  public connect (settings: UltraConnectionSettings): Promise<boolean> {
     settings = {
       url: settings?.url ?? DEFAULT_LOCAL_ULTRA_SERVER_URL,
       retries: settings?.retries ?? -1,
@@ -198,7 +198,7 @@ export class SocketClient {
   /**
    * Disconnects from the current WebSocket server.
    */
-  public disconnect (error?: ClientError): void {
+  public disconnect (error?: UltraClientError): void {
     this._logger.log('Disconnecting from: ', this.url)
     this._connectionSettings = undefined
     this._disconnect(error)
@@ -207,7 +207,7 @@ export class SocketClient {
   /**
    * Handles the disconnection logic, stopping logging and clearing the socket.
    */
-  private _disconnect (error?: ClientError): void {
+  private _disconnect (error?: UltraClientError): void {
     this._logger.log('disconnect', error)
     clearTimeout(this._reconnectTimeout)
     clearTimeout(this._connectionTimeout)

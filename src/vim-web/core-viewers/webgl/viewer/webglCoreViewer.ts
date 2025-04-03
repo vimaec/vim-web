@@ -6,12 +6,12 @@ import * as THREE from 'three'
 
 // internal
 import { WebglCoreViewerSettings, getViewerSettings, PartialWebglCoreViewerSettings } from './settings/webglCoreViewerSettings'
-import { Camera } from './camera/camera'
-import { ICamera } from './camera/ICamera'
+import { WebglCoreCamera } from './camera/webglCoreCamera'
+import { WebglCoreICamera } from './camera/webglCoreICamera'
 import { WebglCoreSelection } from './webglCoreSelection'
 import { WebglCoreEnvironment } from './environment/webglCoreEnvironment'
 import { WeglCoreRaycaster } from './webglCoreRaycaster'
-import { RenderScene } from './rendering/renderScene'
+import { WebglCoreRenderScene } from './rendering/webglCoreRenderScene'
 import { WeglCoreViewport } from './webglCoreViewport'
 import { Gizmos } from './gizmos/gizmos'
 
@@ -72,7 +72,7 @@ export class WebglCoreViewer {
    * The interface for manipulating the viewer's camera.
    */
   get camera () {
-    return this._camera as ICamera
+    return this._camera as WebglCoreCamera
   }
 
   /**
@@ -87,7 +87,7 @@ export class WebglCoreViewer {
     return this._onVimLoaded.asEvent()
   }
 
-  private _camera: Camera
+  private _camera: WebglCoreCamera
   private _clock = new THREE.Clock()
 
   // State
@@ -100,9 +100,9 @@ export class WebglCoreViewer {
 
     this.materials = WebglCoreMaterials.getInstance()
 
-    const scene = new RenderScene()
+    const scene = new WebglCoreRenderScene()
     this.viewport = new WeglCoreViewport(this.settings)
-    this._camera = new Camera(scene, this.viewport, this.settings)
+    this._camera = new WebglCoreCamera(scene, this.viewport, this.settings)
     this.renderer = new WebglCoreRenderer(
       scene,
       this.viewport,

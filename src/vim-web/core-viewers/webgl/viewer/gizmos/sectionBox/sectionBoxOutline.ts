@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { WebglCoreLayers } from '../../webglCoreRaycaster';
 
 /**
  * Defines the thin outline on the edges of the section box.
@@ -42,6 +43,7 @@ export class SectionBoxOutline extends THREE.LineSegments {
     geo.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geo.setIndex(indices);
     super(geo, mat);
+    this.layers.set(WebglCoreLayers.NoRaycast)
   }
 
   /**

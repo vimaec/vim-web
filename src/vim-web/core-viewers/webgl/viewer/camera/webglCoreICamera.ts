@@ -1,12 +1,12 @@
 import { ISignal } from 'ste-signals';
 import * as THREE from 'three';
-import { CameraMovement } from './cameraMovement';
+import { WebglCoreCameraMovement } from './cameraMovement';
 
 /**
  * Interface representing a camera with various properties and methods for controlling its behavior.
  */
 
-export interface ICamera {
+export interface WebglCoreICamera {
   /**
    * A signal that is dispatched when camera settings change.
    */
@@ -42,17 +42,17 @@ export interface ICamera {
   /**
    * Interface for instantaneously moving the camera.
    * @param {boolean} [force=false] - Set to true to ignore locked axis and rotation.
-   * @returns {CameraMovement} The camera movement api.
+   * @returns {WebglCoreCameraMovement} The camera movement api.
    */
-  snap(force?: boolean): CameraMovement;
+  snap(force?: boolean): WebglCoreCameraMovement;
 
   /**
    * Interface for smoothly moving the camera over time.
    * @param {number} [duration=1] - The duration of the camera movement animation.
    * @param {boolean} [force=false] - Set to true to ignore locked axis and rotation.
-   * @returns {CameraMovement} The camera movement api.
+   * @returns {WebglCoreCameraMovement} The camera movement api.
    */
-  lerp(duration: number, force?: boolean): CameraMovement;
+  lerp(duration: number, force?: boolean): WebglCoreCameraMovement;
 
   /**
    * Calculates the frustum size at a given point in the scene.

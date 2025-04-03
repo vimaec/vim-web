@@ -77,7 +77,7 @@ export type HelpRef = {
 /**
  * Root-level API of the Vim component.
  */
-export type ViewerRef = {
+export type WebglViewerRef = {
   /**
    * HTML structure containing the component.
    */
@@ -86,7 +86,7 @@ export type ViewerRef = {
   /**
    * Vim WebGL viewer around which the WebGL component is built.
    */
-  viewer: VIM.WebglCoreViewer
+  core: VIM.WebglCoreViewer
 
   /**
    * Vim WebGL loader to download VIMs.

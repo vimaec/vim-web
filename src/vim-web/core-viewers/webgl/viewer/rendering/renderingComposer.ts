@@ -9,12 +9,12 @@ import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 
 import { WeglCoreViewport } from '../webglCoreViewport'
-import { RenderScene } from './renderScene'
+import { WebglCoreRenderScene } from './webglCoreRenderScene'
 import { WebglCoreMaterials } from '../../loader/materials/webglCoreMaterials'
 import { OutlinePass } from './outlinePass'
 import { MergePass } from './mergePass'
 import { TransferPass } from './transferPass'
-import { Camera } from '../camera/camera'
+import { WebglCoreCamera } from '../camera/webglCoreCamera'
 
 /*
   * Rendering Pipeline Flow:
@@ -37,7 +37,7 @@ import { Camera } from '../camera/camera'
  */
 export class RenderingComposer {
   private _renderer: THREE.WebGLRenderer
-  private _scene: RenderScene
+  private _scene: WebglCoreRenderScene
   private _materials: WebglCoreMaterials
   private _camera: THREE.PerspectiveCamera | THREE.OrthographicCamera
   private _size: THREE.Vector2
@@ -66,10 +66,10 @@ export class RenderingComposer {
    */
   constructor (
     renderer: THREE.WebGLRenderer,
-    scene: RenderScene,
+    scene: WebglCoreRenderScene,
     viewport: WeglCoreViewport,
     materials: WebglCoreMaterials,
-    camera: Camera
+    camera: WebglCoreCamera
   ) {
     this._renderer = renderer
     this._scene = scene
@@ -100,7 +100,7 @@ export class RenderingComposer {
     this._sceneTarget.texture.name = 'sceneTarget'
 
     // Setup main render pass
-    this._renderPass = new RenderPass(this._scene.scene, this._camera)
+    this._renderPass = new RenderPass(this._scene.threeScene, this._camera)
     this._renderPass.renderToScreen = false
     this._renderPass.clearColor = new THREE.Color(0x000000)
     this._renderPass.clearAlpha = 0
@@ -127,7 +127,7 @@ export class RenderingComposer {
 
     // Setup pass to render only selected objects using mask material
     this._selectionRenderPass = new RenderPass(
-      this._scene.scene,
+      this._scene.threeScene,
       this._camera,
       this._materials.mask
     )

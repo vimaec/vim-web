@@ -46,7 +46,9 @@ function createAdapter(viewer: WebglCoreViewer ) : CoreInputAdapter {
     selectAtPointer: (pos: THREE.Vector2, add: boolean) => {
       //TODO: This logic should happen in shared code
       const pointer = viewer.raycaster.raycastFromScreen(pos)
+      console.log('add', pointer.object)
       if(add){
+        
         viewer.selection.add(pointer.object)
       }
       else{

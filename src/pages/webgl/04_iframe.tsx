@@ -1,6 +1,3 @@
-import * as VIM from '../../vim-web'
-import react, { useEffect, useRef } from 'react'
-
 export function WebglIframe () {
   
   return (

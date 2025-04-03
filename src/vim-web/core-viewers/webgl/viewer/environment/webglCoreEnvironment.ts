@@ -4,7 +4,7 @@
 
 import * as THREE from 'three'
 import { WebglCoreViewerSettings } from '../settings/webglCoreViewerSettings'
-import { ICamera } from '../camera/ICamera'
+import { WebglCoreICamera } from '../camera/webglCoreICamera'
 import { WebglCoreMaterials } from '../../loader/materials/webglCoreMaterials'
 import { Skybox } from './webglCoreSkybox'
 import { WebglCoreRenderer } from '../rendering/webglCoreRenderer'
@@ -14,7 +14,7 @@ import { WebglCoreLight } from './webglCoreLight'
  */
 export class WebglCoreEnvironment {
   private readonly _renderer: WebglCoreRenderer
-  private readonly _camera: ICamera
+  private readonly _camera: WebglCoreICamera
 
   /**
    * The skylight in the scene.
@@ -31,7 +31,7 @@ export class WebglCoreEnvironment {
    */
   readonly skybox: Skybox
 
-  constructor (camera:ICamera, renderer: WebglCoreRenderer, materials: WebglCoreMaterials, settings: WebglCoreViewerSettings) {
+  constructor (camera:WebglCoreICamera, renderer: WebglCoreRenderer, materials: WebglCoreMaterials, settings: WebglCoreViewerSettings) {
     this._camera = camera
     this._renderer = renderer
 

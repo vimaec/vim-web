@@ -6,14 +6,14 @@ import * as THREE from 'three'
 
 import { WeglCoreViewport } from '../webglCoreViewport'
 import { WebglCoreViewerSettings } from '../settings/webglCoreViewerSettings'
-import { RenderScene } from '../rendering/renderScene'
+import { WebglCoreRenderScene } from '../rendering/webglCoreRenderScene'
 import { clamp } from 'three/src/math/MathUtils'
 import { ISignal, SignalDispatcher } from 'ste-signals'
-import { PerspectiveWrapper } from './perspective'
-import { OrthographicWrapper } from './orthographic'
+import { WebglCorePerspectiveCamera } from './webglCorePerspectiveCamera'
+import { WebglCoreOrthographicCamera } from './webglCoreOrthographicCamera'
 import { CameraLerp } from './cameraMovementLerp'
 import { CameraMovementSnap } from './cameraMovementSnap'
-import { CameraMovement } from './cameraMovement'
+import { WebglCoreCameraMovement } from './cameraMovement'
 
 /**
  * Interface representing a camera with various properties and methods for controlling its behavior.
@@ -54,17 +54,17 @@ export interface ICamera {
   /**
    * Interface for instantaneously moving the camera.
    * @param {boolean} [force=false] - Set to true to ignore locked axis and rotation.
-   * @returns {CameraMovement} The camera movement api.
+   * @returns {WebglCoreCameraMovement} The camera movement api.
    */
-  snap (force?: boolean) : CameraMovement
+  snap (force?: boolean) : WebglCoreCameraMovement
 
   /**
    * Interface for smoothly moving the camera over time.
    * @param {number} [duration=1] - The duration of the camera movement animation.
    * @param {boolean} [force=false] - Set to true to ignore locked axis and rotation.
-   * @returns {CameraMovement} The camera movement api.
+   * @returns {WebglCoreCameraMovement} The camera movement api.
    */
-  lerp (duration: number, force?: boolean) : CameraMovement
+  lerp (duration: number, force?: boolean) : WebglCoreCameraMovement
 
   /**
    * Calculates the frustum size at a given point in the scene.
@@ -134,12 +134,12 @@ export interface ICamera {
 /**
  * Manages viewer camera movement and position
  */
-export class Camera implements ICamera {
-  camPerspective: PerspectiveWrapper
-  camOrthographic: OrthographicWrapper
+export class WebglCoreCamera implements ICamera {
+  camPerspective: WebglCorePerspectiveCamera
+  camOrthographic: WebglCoreOrthographicCamera
 
   private _viewport: WeglCoreViewport
-  _scene: RenderScene // make private again
+  _scene: WebglCoreRenderScene // make private again
   private _lerp: CameraLerp
   private _movement: CameraMovementSnap
 
@@ -249,12 +249,12 @@ export class Camera implements ICamera {
   // Settings
   private _velocityBlendFactor: number = 0.0001
 
-  constructor (scene: RenderScene, viewport: WeglCoreViewport, settings: WebglCoreViewerSettings) {
-    this.camPerspective = new PerspectiveWrapper(new THREE.PerspectiveCamera())
+  constructor (scene: WebglCoreRenderScene, viewport: WeglCoreViewport, settings: WebglCoreViewerSettings) {
+    this.camPerspective = new WebglCorePerspectiveCamera(new THREE.PerspectiveCamera())
     this.camPerspective.camera.up = new THREE.Vector3(0, 0, 1)
     this.camPerspective.camera.lookAt(new THREE.Vector3(0, 1, 0))
 
-    this.camOrthographic = new OrthographicWrapper(
+    this.camOrthographic = new WebglCoreOrthographicCamera(
       new THREE.OrthographicCamera()
     )
 
@@ -273,19 +273,19 @@ export class Camera implements ICamera {
   /**
    * Interface for instantaneously moving the camera.
    * @param {boolean} [force=false] - Set to true to ignore locked axis and rotation.
-   * @returns {CameraMovement} The camera movement api.
+   * @returns {WebglCoreCameraMovement} The camera movement api.
    */
-  snap (force: boolean = false) : CameraMovement {
+  snap (force: boolean = false) : WebglCoreCameraMovement {
     this._force = force
     this._lerp.cancel()
-    return this._movement as CameraMovement
+    return this._movement as WebglCoreCameraMovement
   }
 
   /**
    * Interface for smoothly moving the camera over time.
    * @param {number} [duration=1] - The duration of the camera movement animation.
    * @param {boolean} [force=false] - Set to true to ignore locked axis and rotation.
-   * @returns {CameraMovement} The camera movement api.
+   * @returns {WebglCoreCameraMovement} The camera movement api.
    */
   lerp (duration: number = 1, force: boolean = false) {
     if(duration <= 0) return this.snap(force)
@@ -293,7 +293,7 @@ export class Camera implements ICamera {
     this.stop()
     this._force = force
     this._lerp.init(duration)
-    return this._lerp as CameraMovement
+    return this._lerp as WebglCoreCameraMovement
   }
 
   /**

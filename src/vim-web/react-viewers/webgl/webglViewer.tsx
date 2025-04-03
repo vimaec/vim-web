@@ -31,7 +31,7 @@ import { TreeActionRef } from '../bim/bimTree'
 import { Container, createContainer } from '../container'
 import { useViewerState } from './viewerState'
 import { LogoMemo } from '../panels/logo'
-import { ViewerRef } from './webglViewerRef'
+import { WebglViewerRef } from './webglViewerRef'
 import { useBimInfo } from '../bim/bimInfoData'
 import { whenTrue } from '../helpers/utils'
 import { DeferredPromise } from '../helpers/deferredPromise'
@@ -55,8 +55,8 @@ export function createWebglViewer (
   container?: Container | HTMLElement,
   componentSettings: PartialViewerSettings = {},
   viewerSettings: VIM.PartialWebglCoreViewerSettings = {}
-) : Promise<ViewerRef> {
-  const promise = new DeferredPromise<ViewerRef>()
+) : Promise<WebglViewerRef> {
+  const promise = new DeferredPromise<WebglViewerRef>()
 
   // Create the container
   const cmpContainer = container instanceof HTMLElement
@@ -71,7 +71,7 @@ export function createWebglViewer (
   const reactRoot = createRoot(cmpContainer.ui)
 
   // Patch the component to clean up after itself
-  const patchRef = (cmp : ViewerRef) => {
+  const patchRef = (cmp : WebglViewerRef) => {
     cmp.dispose = () => {
       viewer.dispose()
       cmpContainer.dispose()
@@ -84,7 +84,7 @@ export function createWebglViewer (
     <WebglViewer
       container={cmpContainer}
       viewer={viewer}
-      onMount = {(cmp : ViewerRef) => promise.resolve(patchRef(cmp))}
+      onMount = {(cmp : WebglViewerRef) => promise.resolve(patchRef(cmp))}
       settings={componentSettings}
     />
   )
@@ -101,7 +101,7 @@ export function createWebglViewer (
 export function WebglViewer (props: {
   container: Container
   viewer: VIM.WebglCoreViewer
-  onMount: (component: ViewerRef) => void
+  onMount: (component: WebglViewerRef) => void
   settings?: PartialViewerSettings
 }) {
   const settings = useSettings(props.viewer, props.settings ?? {})
@@ -151,7 +151,7 @@ export function WebglViewer (props: {
 
     props.onMount({
       container: props.container,
-      viewer: props.viewer,
+      core: props.viewer,
       loader: loader.current,
       isolation: isolationRef,
       camera,

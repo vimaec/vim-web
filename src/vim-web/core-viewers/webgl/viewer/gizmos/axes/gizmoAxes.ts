@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { Camera } from '../../camera/camera'
+import { WebglCoreCamera } from '../../camera/webglCoreCamera'
 import { WeglCoreViewport } from '../../webglCoreViewport'
 import { AxesSettings } from './axesSettings'
 import { Axis, createAxes } from './axes'
@@ -17,7 +17,7 @@ export class GizmoAxes {
   private _options: AxesSettings
 
   // dependencies
-  private _camera: Camera
+  private _camera: WebglCoreCamera
   private _canvas: HTMLCanvasElement
   private _context: CanvasRenderingContext2D
 
@@ -44,7 +44,7 @@ export class GizmoAxes {
     return this._canvas
   }
 
-  constructor (camera: Camera, viewport: WeglCoreViewport, options?: Partial<AxesSettings>) {
+  constructor (camera: WebglCoreCamera, viewport: WeglCoreViewport, options?: Partial<AxesSettings>) {
     this._initialOptions = new AxesSettings(options)
     this._options = new AxesSettings(options)
     this._camera = camera

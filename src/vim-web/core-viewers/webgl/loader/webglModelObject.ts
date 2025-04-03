@@ -19,12 +19,13 @@ export class WebglModelObject {
   private _color: THREE.Color | undefined
   private _boundingBox: THREE.Box3 | undefined
   private _meshes: Submesh[] | undefined
+  
 
-  private _outlineAttribute: WebglAttribute<boolean>
-  private _visibleAttribute: WebglAttribute<boolean>
-  private _coloredAttribute: WebglAttribute<boolean>
-  private _focusedAttribute: WebglAttribute<boolean>
-  private _colorAttribute: WebglColorAttribute
+  private readonly _outlineAttribute: WebglAttribute<boolean>
+  private readonly _visibleAttribute: WebglAttribute<boolean>
+  private readonly _coloredAttribute: WebglAttribute<boolean>
+  private readonly _focusedAttribute: WebglAttribute<boolean>
+  private readonly _colorAttribute: WebglColorAttribute
 
   /**
    * Indicate whether this object is architectural or markup.
@@ -75,8 +76,8 @@ export class WebglModelObject {
 
   set outline (value: boolean) {
     if (this._outlineAttribute.apply(value)) {
-      if (value) this.vim.scene.addOutline()
-      else this.vim.scene.removeOutline()
+      if (value) this.renderer.addOutline()
+      else this.renderer.removeOutline
     }
   }
 
@@ -89,7 +90,7 @@ export class WebglModelObject {
 
   set focused (value: boolean) {
     if (this._focusedAttribute.apply(value)) {
-      this.vim.scene.setDirty()
+      this.renderer.needsUpdate = true
     }
   }
 
@@ -102,7 +103,8 @@ export class WebglModelObject {
 
   set visible (value: boolean) {
     if (this._visibleAttribute.apply(value)) {
-      this.vim.scene.setDirty()
+
+      this.renderer.needsUpdate = true
     }
 
     // Show all involved meshes
@@ -124,9 +126,13 @@ export class WebglModelObject {
 
   set color (color: THREE.Color | undefined) {
     this._color = color
-    this.vim.scene.setDirty()
+    this.renderer.needsUpdate = true
     this._coloredAttribute.apply(this._color !== undefined)
     this._colorAttribute.apply(this._color)
+  }
+
+  private get renderer(){
+    return this.vim.scene.renderer
   }
 
   /**
@@ -254,7 +260,7 @@ export class WebglModelObject {
 
   private updateMeshes (meshes: Submesh[] | undefined) {
     this._meshes = meshes
-    this.vim.scene.setDirty()
+    this.renderer.needsUpdate = true
 
     this._outlineAttribute.updateMeshes(meshes)
     this._visibleAttribute.updateMeshes(meshes)
