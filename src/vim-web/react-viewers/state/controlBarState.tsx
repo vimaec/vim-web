@@ -356,7 +356,7 @@ export function useControlBar(
   const measure = getMeasureState(viewer, cursor);
   const pointerSection = controlBarPointer(viewer, camera, settings, section);
   const actionSection = controlBarMeasure(settings, measure);
-  const sectionBoxSection = controlBarSectionBox(section,viewer.selection.count > 0);
+  const sectionBoxSection = controlBarSectionBox(section,viewer.selection.any());
   const settingsSection = controlBarSettings(modal, side, settings);
   const cameraSection = controlBarCamera(camera);
   const selectionSection = controlBarSelection(isolationRef);

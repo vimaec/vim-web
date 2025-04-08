@@ -7,10 +7,9 @@ import * as THREE from 'three'
 // internal
 import { WebglCoreViewerSettings, getViewerSettings, PartialWebglCoreViewerSettings } from './settings/webglCoreViewerSettings'
 import { WebglCoreCamera } from './camera/webglCoreCamera'
-import { WebglCoreICamera } from './camera/webglCoreICamera'
-import { WebglCoreSelection } from './webglCoreSelection'
+import { createWebglCoreSelection, IWebglCoreSelection, WebglCoreSelectable, WebglCoreSelectionAdapter } from './webglCoreSelection'
 import { WebglCoreEnvironment } from './environment/webglCoreEnvironment'
-import { WeglCoreRaycaster } from './webglCoreRaycaster'
+import { IWebglCoreRaycaster, WeglCoreRaycaster } from './webglCoreRaycaster'
 import { WebglCoreRenderScene } from './rendering/webglCoreRenderScene'
 import { WeglCoreViewport } from './webglCoreViewport'
 import { Gizmos } from './gizmos/gizmos'
@@ -22,6 +21,7 @@ import { WebglCoreMaterials } from '../loader/materials/webglCoreMaterials'
 import { WebglVim } from '../loader/webglVim'
 import { CoreInputHandler } from '../../shared/coreInputHandler'
 import { createWebglCoreInputAdapter } from './webglCoreInputsAdapter'
+import { CoreSelection } from '../../shared/coreSelection'
 
 /**
  * Viewer and loader for vim files.
@@ -46,7 +46,7 @@ export class WebglCoreViewer {
   /**
    * The interface for managing viewer selection.
    */
-  readonly selection: WebglCoreSelection
+  readonly selection: IWebglCoreSelection
 
   /**
    * The interface for manipulating default viewer inputs.
@@ -56,7 +56,7 @@ export class WebglCoreViewer {
   /**
    * The interface for performing raycasting into the scene to find objects.
    */
-  readonly raycaster: WeglCoreRaycaster
+  readonly raycaster: IWebglCoreRaycaster
 
   /**
    * The materials used by the viewer to render the vims.
@@ -119,7 +119,7 @@ export class WebglCoreViewer {
     this.environment = new WebglCoreEnvironment(this.camera, this.renderer, this.materials, this.settings)
 
     // Input and Selection
-    this.selection = new WebglCoreSelection(this.materials)
+    this.selection = createWebglCoreSelection()
     this.raycaster = new WeglCoreRaycaster(
       this._camera,
       scene,
@@ -141,7 +141,6 @@ export class WebglCoreViewer {
     this.renderer.needsUpdate = this._camera.update(deltaTime)
 
     // Gizmos
-    this.selection.update()
     this.gizmos.updateAfterCamera()
 
     // Rendering
@@ -193,9 +192,7 @@ export class WebglCoreViewer {
     }
     this._vims.delete(vim)
     this.renderer.remove(vim.scene)
-    if (this.selection.vim === vim) {
-      this.selection.clear()
-    }
+    this.selection.removeFromVim(vim)
     this._onVimLoaded.dispatch()
   }
 
@@ -211,7 +208,6 @@ export class WebglCoreViewer {
    */
   dispose () {
     cancelAnimationFrame(this._updateId)
-    this.selection.dispose()
     this.environment.dispose()
     this.selection.clear()
     this.viewport.dispose()

@@ -8,27 +8,27 @@ import { AugmentedElement, getElements } from '../helpers/element'
 
 export type ViewerState = {
   vim: VIM.WebglVim
-  selection: VIM.WebglModelObject[]
+  selection: VIM.WebglCoreModelObject[]
   elements: AugmentedElement[]
 }
 
 export function useViewerState (viewer: VIM.WebglCoreViewer) : ViewerState {
   const getVim = () => {
-    return viewer.selection.vim ?? viewer.vims[0]
+    return viewer.vims[0]
   }
   const getSelection = () => {
-    return [...viewer.selection.objects].filter(o => o.type === 'WebglModelObject')
+    return [...viewer.selection.getAll()].filter(o => o.type === 'WebglModelObject')
   }
 
   const [vim, setVim] = useState<VIM.WebglVim>(getVim())
-  const [selection, setSelection] = useState<VIM.WebglModelObject[]>(getSelection())
+  const [selection, setSelection] = useState<VIM.WebglCoreModelObject[]>(getSelection())
   const [elements, setElements] = useState<AugmentedElement[] | undefined>([])
   const vimConnection = useRef<() =>void>()
 
   useEffect(() => {
     // register to viewer state changes
     const subLoad = viewer.onVimLoaded.subscribe(() => setVim(getVim()))
-    const subSelect = viewer.selection.onValueChanged.subscribe(() => {
+    const subSelect = viewer.selection.onSelectionChanged.subscribe(() => {
       setVim(getVim())
       // Only architectural objects are supported
       setSelection(getSelection())

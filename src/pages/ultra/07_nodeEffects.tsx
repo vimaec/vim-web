@@ -14,20 +14,22 @@ export function UltraNodeEffects () {
   )
 }
 
-async function changeState (ultra: VIM.UltraViewerRef, tower: VIM.UltraVim) {
+async function changeState (ultra: VIM.UltraViewerRef, tower: VIM.UltraCoreVim) {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const indices = Array.from({ length: 200000 }, (_, i) => i)
-    tower.highlight(indices)
+    /*
+    indices.forEach((i) => tower.getObject(i).state = 'highlighted')
     await new Promise(resolve => setTimeout(resolve, 3000))
+    */
 
-    tower.ghost(indices)
-    await new Promise(resolve => setTimeout(resolve, 3000))
+    indices.forEach((i) => tower.getObjectFromInstance(i).state = VIM.UltraVimNodeState.GHOSTED)
+    await new Promise(resolve => setTimeout(resolve, 15000))
 
-    tower.hide(indices)
-    await new Promise(resolve => setTimeout(resolve, 3000))
+    indices.forEach((i) => tower.getObjectFromInstance(i).state = VIM.UltraVimNodeState.HIDDEN)
+    await new Promise(resolve => setTimeout(resolve, 15000))
 
-    tower.show(indices)
-    await new Promise(resolve => setTimeout(resolve, 3000))
+    indices.forEach((i) => tower.getObjectFromInstance(i).state = VIM.UltraVimNodeState.VISIBLE)
+    await new Promise(resolve => setTimeout(resolve, 15000))
   }
 }

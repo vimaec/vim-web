@@ -19,7 +19,7 @@ export function useUltra (div: RefObject<HTMLDivElement>, onCreated: (ultra: VIM
   }, [])
 }
 
-export function useUltraWithTower (div: RefObject<HTMLDivElement>, onCreated: (ultra: VIM.UltraViewerRef, towers: VIM.UltraVim) => void) {
+export function useUltraWithTower (div: RefObject<HTMLDivElement>, onCreated: (ultra: VIM.UltraViewerRef, towers: VIM.UltraCoreVim) => void) {
   useUltraWithModel(
     div,
     Urls.medicalTower,
@@ -27,7 +27,7 @@ export function useUltraWithTower (div: RefObject<HTMLDivElement>, onCreated: (u
   )
 }
 
-export function useUltraWithWolford (div: RefObject<HTMLDivElement>, onCreated: (ultra: VIM.UltraViewerRef, towers: VIM.UltraVim) => void) {
+export function useUltraWithWolford (div: RefObject<HTMLDivElement>, onCreated: (ultra: VIM.UltraViewerRef, towers: VIM.UltraCoreVim) => void) {
   useUltraWithModel(
     div,
     Urls.residence,
@@ -46,7 +46,7 @@ export function useUltraNoModel(div: RefObject<HTMLDivElement>, onCreated:  (ult
 function useUltraWithModel (
   div: RefObject<HTMLDivElement>,
   modelUrl: string,
-  onCreated: (ultra: VIM.UltraViewerRef, model: VIM.UltraVim) => void
+  onCreated: (ultra: VIM.UltraViewerRef, model: VIM.UltraCoreVim) => void
 ) {
     useUltra(div, async (ultra) => {
       await ultra.viewer.connect()

@@ -3,122 +3,62 @@
  */
 
 import * as THREE from 'three'
-import { WebglModelObject } from '../loader/webglModelObject'
+import { WebglCoreModelObject } from '../loader/webglModelObject'
 import { WebglMesh } from '../loader/webglMesh'
 import { WebglCoreRenderScene } from './rendering/webglCoreRenderScene'
 import { WebglCoreCamera } from './camera/webglCoreCamera'
 import { WebglCoreRenderer } from './rendering/webglCoreRenderer'
 import { WebglCoreMarker } from './gizmos/markers/gizmoMarker'
 import { GizmoMarkers } from './gizmos/markers/gizmoMarkers'
+import { CoreRaycaster, CoreRaycastResult } from '../../shared/coreRaycaster'
+import { Validation } from '../../ultra/viewer/validation'
 
-export enum WebglCoreLayers{
+/**
+ * Type alias for an array of THREE.Intersection objects.
+ */
+export type ThreeIntersectionList = THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>>[]
+export type WebglRaycastableObject = WebglCoreModelObject | WebglCoreMarker
+export type IWebglRaycastResult = CoreRaycastResult<WebglRaycastableObject>
+export type IWebglCoreRaycaster = CoreRaycaster<WebglRaycastableObject>
+export enum WebglCoreLayers {
   Default = 0,
   NoRaycast = 1,
 }
 
 /**
- * Type alias for an array of THREE.Intersection objects.
+ * A simple container for raycast results.
  */
-export type ThreeIntersectionList = THREE.Intersection<
-  THREE.Object3D<THREE.Object3DEventMap>
->[]
-
-export type ActionType = 'main' | 'double' | 'idle'
-export type ActionModifier = 'none' | 'shift' | 'ctrl'
-
-/**
- * Aggregates detailed information about a raycasting result,
- * including the intersected object and the hit details.
- */
-export class RaycastResult {
-  object: WebglModelObject | WebglCoreMarker | undefined
+export class WebglRaycastResult implements IWebglRaycastResult {
+  object: WebglCoreModelObject | WebglCoreMarker | undefined
   intersections: ThreeIntersectionList
   firstHit: THREE.Intersection | undefined
 
-  constructor (intersections: ThreeIntersectionList) {
-    this.intersections = intersections
-    const [markerHit, marker] = this.getFirstMarkerHit(intersections)
-    console.log('markerHit', markerHit, marker)
-    if (marker) {
-      this.object = marker
-      this.firstHit = markerHit
-      return
-    }
-
-    const [objectHit, obj] = this.getFirstVimHit(intersections)
-    this.firstHit = objectHit
-    this.object = obj
+  get worldNormal() {
+    return this.firstHit?.face?.normal
   }
 
-  private getFirstVimHit (
-    intersections: ThreeIntersectionList
-  ): [THREE.Intersection, WebglModelObject] | [] {
-    for (let i = 0; i < intersections.length; i++) {
-      const obj = this.getVimObjectFromHit(intersections[i])
-      if (obj?.visible) return [intersections[i], obj]
-    }
-    return []
-  }
-
-  private getFirstMarkerHit (
-    intersections: ThreeIntersectionList
-  ): [THREE.Intersection, WebglCoreMarker] | [] {
-    for (let i = 0; i < intersections.length; i++) {
-      const data = intersections[i].object.userData.vim
-
-      if (data instanceof GizmoMarkers) {
-        const instance = intersections[i].instanceId
-        const marker = data.getMarkerFromIndex(instance)
-        return [intersections[i], marker]
-      }
-    }
-    return []
-  }
-
-  private getVimObjectFromHit (hit: THREE.Intersection) {
-    const mesh = hit.object.userData.vim as WebglMesh
-    if (!mesh) return
-
-    const sub = mesh.merged
-      ? mesh.getSubmeshFromFace(hit.faceIndex)
-      : mesh.getSubMesh(hit.instanceId)
-    return sub.object
-  }
-
-  // Convenience getters for hit information
-  get isHit (): boolean {
-    return !!this.firstHit
-  }
-
-  get distance () {
-    return this.firstHit?.distance
-  }
-
-  get position () {
+  get worldPosition() {
     return this.firstHit?.point
   }
 
-  get threeId () {
-    return this.firstHit?.object?.id
-  }
-
-  get faceIndex () {
-    return this.firstHit?.faceIndex
+  constructor(intersections: ThreeIntersectionList, firstHit?: THREE.Intersection, object?: WebglCoreModelObject | WebglCoreMarker) {
+    this.intersections = intersections
+    this.firstHit = firstHit
+    this.object = object
   }
 }
 
-export class WeglCoreRaycaster {
+/**
+ * Performs raycasting operations.
+ */
+export class WeglCoreRaycaster implements IWebglCoreRaycaster {
   private _camera: WebglCoreCamera
   private _scene: WebglCoreRenderScene
   private _renderer: WebglCoreRenderer
 
   private _raycaster = new THREE.Raycaster()
 
-  constructor (
-    camera: WebglCoreCamera,
-    scene: WebglCoreRenderScene,
-    renderer: WebglCoreRenderer
-  ) {
+  constructor(camera: WebglCoreCamera, scene: WebglCoreRenderScene, renderer: WebglCoreRenderer) {
     this._camera = camera
     this._scene = scene
     this._renderer = renderer
@@ -127,84 +67,89 @@ export class WeglCoreRaycaster {
   /**
    * Performs a raycast from the camera using normalized screen coordinates.
    * Coordinates must be within [0, 1] for both x and y.
-   * If the coordinates are out of bounds, an error is logged and an empty result is returned.
-   *
-   * @param {THREE.Vector2} position - The normalized screen position for raycasting.
    */
-  raycastFromScreen (position: THREE.Vector2) {
-    if (position.x < 0 || position.y < 0 || position.x > 1 || position.y > 1) {
-      console.error('Invalid position for raycasting')
-      return new RaycastResult([])
-    }
-    this._raycaster = this.fromPoint2(position, this._raycaster)
+  raycastFromScreen(position: THREE.Vector2): Promise<WebglRaycastResult> {
+    if(!Validation.isRelativeVector2(position)) return Promise.resolve(undefined)
+
+    const ndcPos = ToThreeNDCPosition(position)
+    this._raycaster.setFromCamera(ndcPos, this._camera.camPerspective.camera)
     let hits = this._raycaster.intersectObjects(this._scene.threeScene.children)
-    console.log('hits', hits)
     hits = this.filterHits(hits)
-    return new RaycastResult(hits)
+    const result = this.createResultFromIntersections(hits)
+    return Promise.resolve(result)
   }
 
-  private filterHits (hits: ThreeIntersectionList) {
+  /**
+   * Performs a raycast from the camera towards a specified world position.
+   */
+  raycastFromWorld(position: THREE.Vector3): Promise<WebglRaycastResult> {
+    const direction = position.clone().sub(this._camera.position).normalize()
+    this._raycaster.set(this._camera.position, direction)
+    let hits = this._raycaster.intersectObjects(this._scene.threeScene.children)
+    hits = this.filterHits(hits)
+    const result = this.createResultFromIntersections(hits)
+    return Promise.resolve(result)
+  }
+
+  private filterHits(hits: ThreeIntersectionList): ThreeIntersectionList {
     return this._renderer.section.active
       ? hits.filter((i) => this._renderer.section.box.containsPoint(i.point))
       : hits
   }
 
   /**
-   * Performs a raycast from the camera towards a specified world position.
-   *
-   * @param {THREE.Vector3} position - The target world position for raycasting.
+   * Processes the list of intersections to determine the first valid hit.
+   * It first checks for a marker hit, then for a model object hit.
    */
-  raycastFromWorld (position: THREE.Vector3) {
-    this._raycaster = this.fromPoint3(position, this._raycaster)
-    let hits = this._raycaster.intersectObjects(this._scene.threeScene.children)
-    hits = this.filterHits(hits)
-    return new RaycastResult(hits)
+  private processIntersections(intersections: ThreeIntersectionList): { firstHit?: THREE.Intersection, object?: WebglCoreModelObject | WebglCoreMarker } {
+    // Check for marker hit first
+    for (let i = 0; i < intersections.length; i++) {
+      const userData = intersections[i].object.userData.vim
+      if (userData instanceof GizmoMarkers) {
+        const instance = intersections[i].instanceId
+        const marker = userData.getMarkerFromIndex(instance)
+        if (marker) {
+          return { firstHit: intersections[i], object: marker }
+        }
+      }
+    }
+    // Then check for a core model object hit
+    for (let i = 0; i < intersections.length; i++) {
+      const obj = this.getVimObjectFromHit(intersections[i])
+      if (obj?.visible) {
+        return { firstHit: intersections[i], object: obj }
+      }
+    }
+    return {}
   }
 
   /**
-   * Performs a raycast starting from the camera's current target position.
+   * Extracts the core model object from a raycast hit.
    */
-  raycastForward () {
-    return this.raycastFromWorld(this._camera.target)
+  private getVimObjectFromHit(hit: THREE.Intersection): WebglCoreModelObject | undefined {
+    const mesh = hit.object.userData.vim as WebglMesh
+    if (!mesh) return undefined
+    const sub = mesh.merged
+      ? mesh.getSubmeshFromFace(hit.faceIndex)
+      : mesh.getSubMesh(hit.instanceId)
+    return sub?.object
   }
 
   /**
-   * Creates and returns a THREE.Raycaster that casts a ray from the camera's position
-   * through the provided normalized screen coordinate (x and y in the range [0, 1]).
-   *
-   * @param {THREE.Vector2} position - The normalized screen position for raycasting.
-   * @param {THREE.Raycaster} target - Optional existing raycaster instance to update.
-   * @returns {THREE.Raycaster} A configured raycaster for performing raycasting.
+   * Creates a WebglRaycastResult from a list of intersections by processing the hits.
    */
-  fromPoint2 (
-    position: THREE.Vector2,
-    target: THREE.Raycaster = new THREE.Raycaster()
-  ) {
-    const pos = new THREE.Vector2(
-      position.x * 2 - 1,
-      -position.y * 2 + 1
-    )
-    target.setFromCamera(pos, this._camera.three)
-    
-    return target
+  private createResultFromIntersections(intersections: ThreeIntersectionList): WebglRaycastResult {
+    const { firstHit, object } = this.processIntersections(intersections)
+    return new WebglRaycastResult(intersections, firstHit, object)
   }
+}
 
-  /**
-   * Creates and returns a THREE.Raycaster that casts a ray from the camera's position
-   * towards the specified world position.
-   * The ray's direction is computed as the normalized vector from the camera position to the target position.
-   *
-   * @param {THREE.Vector3} position - The world position for raycasting.
-   * @param {THREE.Raycaster} target - Optional existing raycaster instance to update.
-   * @returns {THREE.Raycaster} A configured raycaster for performing raycasting.
-   */
-  fromPoint3 (
-    position: THREE.Vector3,
-    target: THREE.Raycaster = new THREE.Raycaster()
-  ) {
-    const direction = position.clone().sub(this._camera.position).normalize()
-
-    target.set(this._camera.position, direction)
-    return target
-  }
+/**
+ * Converts normalized screen coordinates (0-1 range) into Three.js NDC ([-1, 1] range).
+ */
+export function ToThreeNDCPosition(position: THREE.Vector2): THREE.Vector2 {
+  return new THREE.Vector2(
+    position.x * 2 - 1,
+    -position.y * 2 + 1
+  )
 }

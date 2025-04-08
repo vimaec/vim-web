@@ -55,9 +55,19 @@ export function useRefresher() : StateRefresher{
  * @param initialValue - The initial state value.
  * @returns An object implementing StateRef along with additional helper hooks.
  */
-export function useStateRef<T>(initialValue: T) {
+export function useStateRef<T>(initialValue: T | (() => T)) {
   const [value, setValue] = useState(initialValue);
-  const ref = useRef(initialValue);
+  
+  // https://react.dev/reference/react/useRef#avoiding-recreating-the-ref-contents
+  const ref = useRef<T>(undefined);
+  if(ref.current === undefined) {
+    if (typeof initialValue === "function") {
+      ref.current = (initialValue as () => T)();
+    } else {
+      ref.current = initialValue;
+    }
+  }
+
   const event = useRef(new SimpleEventDispatcher<T>());
   const validate = useRef((value: T) => value);
   const confirm = useRef((value: T) => value);
@@ -118,7 +128,7 @@ export function useStateRef<T>(initialValue: T) {
      * @param on - A function that validates (and optionally transforms) the new state value.
      */
     useValidate(on: (value: T) => T) {
-      set(on(initialValue));
+      set(on(ref.current));
       useEffect(() => {
         validate.current = on;
       }, []);

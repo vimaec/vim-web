@@ -16,7 +16,7 @@ export function useWebglSectionBox(viewer: VIM.WebglCoreViewer): SectionBoxRef {
     getSelectionBox: () =>
       Promise.resolve(viewer.selection.getBoundingBox()),
     getSceneBox: () => Promise.resolve(viewer.renderer.getBoundingBox()),
-    onSelectionChanged: viewer.selection.onValueChanged,
+    onSelectionChanged: viewer.selection.onSelectionChanged,
   };
   return useSectionBox(vimAdapter);
 }

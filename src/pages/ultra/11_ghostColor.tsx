@@ -14,8 +14,8 @@ export function UltraGhostColor () {
   )
 }
 
-async function toggleLock (ultra: VIM.UltraViewerRef, vim: VIM.UltraVim) {
-  vim.ghost('all')
+async function toggleLock (ultra: VIM.UltraViewerRef, vim: VIM.UltraCoreVim) {
+  vim.nodeState.setAll('ghosted', true)
 
   ultra.viewer.renderer.ghostColor = new VIM.RGBA(1, 0, 0, 0.005)
 

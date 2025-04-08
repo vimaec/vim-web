@@ -1,6 +1,7 @@
 import { Box3, Segment, Vector3 } from '../../utils/math3d'
 import { RpcSafeClient } from './rpcSafeClient'
-import { UltraVim } from './ultraVim'
+import { UltraCoreModelObject } from './ultraCoreModelObject'
+import { UltraCoreVim } from './ultraCoreVim'
 
 /**
  * Interface defining camera control operations in the 3D viewer
@@ -24,12 +25,20 @@ export interface ICamera {
 
   /**
    * Frames specified nodes of a Vim model in the camera view
-   * @param {UltraVim} vim - The target Vim model
+   * @param {UltraCoreVim} vim - The target Vim model
    * @param {number[] | 'all'} nodes - Array of node indices or 'all' for entire model
    * @param {number} [blendTime=0.5] - Animation duration in seconds
    * @returns {Promise<Segment | undefined>} Promise resolving to the final camera position segment
    */
-  frameVim(vim: UltraVim, nodes: number[] | 'all', blendTime?: number): Promise<Segment | undefined>
+  frameVim(vim: UltraCoreVim, nodes: number[] | 'all', blendTime?: number): Promise<Segment | undefined>
+
+  /**
+   * Frames a specific object in the camera view
+   * @param {UltraCoreModelObject} object - The target object to frame
+   * @param {number} [blendTime=0.5] - Animation duration in seconds
+   * @returns {Promise<Segment | undefined>} Promise resolving to the final camera position segment
+   */
+  frameObject(object: UltraCoreModelObject, blendTime?: number): Promise<Segment | undefined>
 
   /**
    * Saves the current camera position for later restoration
@@ -150,13 +159,19 @@ export class UltraCoreCamera implements ICamera {
    * @param blendTime - Duration of the camera animation in seconds (defaults to 0.5)
    * @returns Promise that resolves when the framing animation is complete
    */
-  async frameVim(vim: UltraVim, nodes: number[] | 'all', blendTime: number = this._defaultBlendTime): Promise<Segment | undefined> {
+  async frameVim(vim: UltraCoreVim, nodes: number[] | 'all', blendTime: number = this._defaultBlendTime): Promise<Segment | undefined> {
     let segment: Segment | undefined
     if (nodes === 'all') {
       segment = await this._rpc.RPCFrameVim(vim.handle, blendTime);
     } else {
       segment = await this._rpc.RPCFrameInstances(vim.handle, nodes, blendTime);
     }
+    this._savedPosition = this._savedPosition ?? segment
+    return segment
+  }
+
+  async frameObject(object: UltraCoreModelObject, blendTime: number = this._defaultBlendTime) : Promise<Segment | undefined> {
+    const segment = await this._rpc.RPCFrameInstances(object.vim.handle, [object.instance], blendTime)
     this._savedPosition = this._savedPosition ?? segment
     return segment
   }

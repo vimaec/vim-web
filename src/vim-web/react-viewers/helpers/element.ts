@@ -35,7 +35,7 @@ export async function getElements (vim: VIM.WebglVim) {
     worksetName: worksets ? worksets[e?.worksetIndex ?? -1] : undefined
   })) as AugmentedElement[]
 
-  const real = result.filter(e => vim.getObjectFromElement(e.index).hasMesh)
+  const real = result.filter(e => vim.getObjectFromElementIndex(e.index).hasMesh)
 
   return real
 }

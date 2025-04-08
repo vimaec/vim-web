@@ -47,12 +47,12 @@ export interface IsolationAdapter{
 
 export function useSharedIsolation(adapter : IsolationAdapter){
   const _adapter = useRef(adapter);
-  const visibility = useStateRef<VisibilityStatus>(adapter.computeVisibility());
+  const visibility = useStateRef<VisibilityStatus>(() => adapter.computeVisibility());
   const autoIsolate = useStateRef<boolean>(false);
   const showPanel = useStateRef<boolean>(false);
   const showRooms = useStateRef<boolean>(false);
   const showGhost = useStateRef<boolean>(false);
-  const ghostOpacity = useStateRef<string>(adapter.getGhostOpacity().toFixed(4));
+  const ghostOpacity = useStateRef<string>(() =>adapter.getGhostOpacity().toFixed(4));
   
   useEffect(() => {
     adapter.showGhost(showGhost.get());

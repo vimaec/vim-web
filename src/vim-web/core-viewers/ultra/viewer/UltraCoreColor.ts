@@ -5,7 +5,7 @@ import { ColorManager } from "./colorManager";
  * Represents a handle to a color in the color management system.
  * This class provides access to color components and manages the lifecycle of color instances.
  */
-export class ColorHandle {
+export class UltraCoreColor {
   private _manager: ColorManager;
   /** Unique identifier for the color instance */
   readonly id: number;

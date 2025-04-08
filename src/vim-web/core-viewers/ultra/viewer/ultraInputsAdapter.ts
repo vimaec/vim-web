@@ -55,30 +55,30 @@ function createAdapter(viewer: UltraCoreViewer ) : CoreInputAdapter {
       viewer.selection.clear()
     },
     frameCamera: () => {
-      if (viewer.selection.count > 0) {
+      if (viewer.selection.any()) {
         frameSelection(viewer);
       } else {
         viewer.camera.frameAll();
       }
     },
     selectAtPointer: async (pos: THREE.Vector2, add: boolean) => {
-      const hit = await viewer.selection.hitTest(pos);
+      const hit = await viewer.raycaster.raycastFromScreen(pos);
       if(!hit){
         viewer.selection.clear();
         return
       }
   
       if(add) {
-        viewer.selection.toggle(hit.vim, hit.nodeIndex);
+        viewer.selection.toggle(hit.object);
       }
       else{
-        viewer.selection.select(hit.vim, hit.nodeIndex);
+        viewer.selection.select(hit.object);
       }
     },
     frameAtPointer: async (pos: THREE.Vector2) => {
-      const hit = await viewer.selection.hitTest(pos);
+      const hit = await viewer.raycaster.raycastFromScreen(pos);
       if(hit){
-        viewer.camera.frameVim(hit.vim, [hit.nodeIndex], 1);
+        viewer.camera.frameObject(hit.object);
       }else{
         viewer.camera.frameAll(1);
       }

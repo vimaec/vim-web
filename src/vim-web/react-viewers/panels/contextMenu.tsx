@@ -98,7 +98,7 @@ export function VimContextMenu (props: {
   camera: CameraRef
   modal: ModalRef
   isolation: IsolationRef
-  selection: VIM.WebglModelObject[]
+  selection: VIM.WebglCoreModelObject[]
   customization?: (e: ContextMenuElement[]) => ContextMenuElement[]
   treeRef: React.MutableRefObject<TreeActionRef | undefined>
 }) {
