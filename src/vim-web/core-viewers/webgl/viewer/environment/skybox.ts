@@ -1,0 +1,95 @@
+/**
+ * @module viw-webgl-viewer
+ */
+
+import * as THREE from 'three'
+import { WebglCoreViewerSettings } from '../settings/viewerSettings'
+import { WebglCoreICamera } from '../camera/cameraInterface'
+import { WebglCoreMaterials } from '../../loader/materials/materials'
+import { SkyboxMaterial } from '../../loader/materials/skyboxMaterial'
+import { WebglCoreRenderer } from '../rendering/renderer'
+import { WebglCoreLayers } from '../raycaster'
+
+export class Skybox {
+  readonly mesh : THREE.Mesh
+
+  /**
+   * Whether the skybox is enabled or not.
+   */
+  get enable () {
+    return this.mesh.visible
+  }
+
+  /**
+   * Whether the skybox is enabled or not.
+   */
+  set enable (value: boolean) {
+    this.mesh.visible = value
+    this._renderer.needsUpdate = true
+  }
+
+  /**
+   * The color of the sky.
+   */
+  get skyColor () {
+    return this._material.skyColor
+  }
+
+  set skyColor (value: THREE.Color) {
+    this._material.skyColor = value
+    this._renderer.needsUpdate = true
+  }
+
+  /**
+   * The color of the ground.
+   */
+  get groundColor () {
+    return this._material.groundColor
+  }
+
+  set groundColor (value: THREE.Color) {
+    this._material.groundColor = value
+    this._renderer.needsUpdate = true
+  }
+
+  /**
+   * The sharpness of the gradient transition between the sky and the ground.
+   */
+  get sharpness () {
+    return this._material.sharpness
+  }
+
+  set sharpness (value: number) {
+    this._material.sharpness = value
+    this._renderer.needsUpdate = true
+  }
+
+  private readonly _plane : THREE.PlaneGeometry
+  private readonly _material : SkyboxMaterial
+  private readonly _renderer: WebglCoreRenderer
+
+  constructor (camera: WebglCoreICamera, renderer : WebglCoreRenderer, materials: WebglCoreMaterials, settings: WebglCoreViewerSettings) {
+    this._renderer = renderer
+    this._plane = new THREE.PlaneGeometry()
+    this._material = materials.skyBox
+    this.mesh = new THREE.Mesh(this._plane, materials.skyBox)
+    this.mesh.layers.set(WebglCoreLayers.NoRaycast)
+
+    // Apply settings
+    this.enable = settings.skybox.enable
+    this.skyColor = settings.skybox.skyColor
+    this.groundColor = settings.skybox.groundColor
+    this.sharpness = settings.skybox.sharpness
+
+    camera.onMoved.subscribe(() => {
+      this.mesh.position.copy(camera.position).add(camera.forward)
+      this.mesh.quaternion.copy(camera.quaternion)
+      const size = camera.frustrumSizeAt(this.mesh.position)
+      this.mesh.scale.set(size.x, size.y, 1)
+    })
+  }
+
+  dispose () {
+    this._plane.dispose()
+  }
+}

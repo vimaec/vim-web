@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { WebglCoreLayers } from '../../webglCoreRaycaster';
+import { WebglCoreLayers } from '../../raycaster';
 
 /**
  * Defines the box mesh for the section box.

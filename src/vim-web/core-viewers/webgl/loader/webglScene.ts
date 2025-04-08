@@ -9,8 +9,8 @@ import { estimateBytesUsed } from 'three/examples/jsm/utils/BufferGeometryUtils'
 import { InsertableMesh } from './progressive/insertableMesh'
 import { InstancedMesh } from './progressive/instancedMesh'
 import { getAverageBoundingBox } from './averageBoundingBox'
-import { ModelMaterial } from './materials/webglCoreMaterials'
-import { WebglCoreRenderer } from '../viewer/rendering/webglCoreRenderer'
+import { ModelMaterial } from './materials/materials'
+import { WebglCoreRenderer } from '../viewer/rendering/renderer'
 
 /**
  * Interface for a renderer object, providing methods to add and remove objects from a scene, update bounding boxes, and notify scene updates.

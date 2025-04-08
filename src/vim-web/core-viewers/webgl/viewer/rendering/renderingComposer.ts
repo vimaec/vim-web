@@ -8,13 +8,13 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 
-import { WeglCoreViewport } from '../webglCoreViewport'
-import { WebglCoreRenderScene } from './webglCoreRenderScene'
-import { WebglCoreMaterials } from '../../loader/materials/webglCoreMaterials'
+import { WeglCoreViewport } from '../viewport'
+import { WebglCoreRenderScene } from './renderScene'
+import { WebglCoreMaterials } from '../../loader/materials/materials'
 import { OutlinePass } from './outlinePass'
 import { MergePass } from './mergePass'
 import { TransferPass } from './transferPass'
-import { WebglCoreCamera } from '../camera/webglCoreCamera'
+import { WebglCoreCamera } from '../camera/camera'
 
 /*
   * Rendering Pipeline Flow:

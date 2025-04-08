@@ -1,6 +1,6 @@
 import * as VIM from '../../core-viewers/webgl/index'
 import { DeferredPromise } from './deferredPromise'
-import { LoadingError } from '../webgl/webglLoading'
+import { LoadingError } from '../webgl/loading'
 
 type RequestCallbacks = {
   onProgress: (p: VIM.IProgressLogs) => void

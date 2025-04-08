@@ -2,7 +2,7 @@
  * @module viw-webgl-viewer/gizmos/sectionBox
  */
 
-import { WebglCoreViewer } from '../../webglCoreViewer';
+import { WebglCoreViewer } from '../../viewer';
 import * as THREE from 'three';
 import { BoxInputs } from './sectionBoxInputs';
 import { SignalDispatcher } from 'ste-signals';

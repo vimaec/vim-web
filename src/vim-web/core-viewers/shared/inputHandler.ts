@@ -1,56 +1,272 @@
-/**
- * @module viw-webgl-viewer/inputs
- */
+  import { WebglCoreViewer } from '../webgl/viewer/viewer'
+  import { TouchHandler } from './touchHandler'
+  import { MouseHandler } from './mouseHandler'
+  import { KeyboardHandler } from './keyboardHandler'
+  import * as THREE from 'three'
+  import { SimpleEventDispatcher } from 'ste-simple-events'
+  import { SignalDispatcher } from 'ste-signals'
+  import { BaseInputHandler } from './baseInputHandler'
 
-import { WebglCoreViewer } from '../webgl/viewer/webglCoreViewer'
+  export type PointerMode = 'orbit' | 'look' | 'pan' | 'zoom' | 'rect'
 
-/**
- * TODO: Use the same code for ULTRA and webgl.
- * Base class for various input handlers.
- * It provides convenience to register to and unregister from events.
- */
-export class InputHandler {
-  protected _canvas: HTMLCanvasElement
-  protected _disconnect: Function[] = []
+  export interface InputAdapter{
+    init: () => void
 
-  constructor (canvas: HTMLCanvasElement) {
-    this._canvas = canvas
+    toggleOrthographic: () => void
+    resetCamera: () => void
+    clearSelection: () => void
+    frameCamera: () => void
+    moveCamera: (value: THREE.Vector3) => void
+    orbitCamera: (value: THREE.Vector2) => void
+    rotateCamera: (value: THREE.Vector2) => void
+    panCamera: (value: THREE.Vector2) => void
+
+    // Raw input handlers for Ultra
+    keyDown: (keyCode: string) => boolean
+    keyUp: (keyCode: string) => boolean
+    mouseDown: (pos: THREE.Vector2, button: number) => void
+    mouseUp: (pos: THREE.Vector2, button: number) => void
+    mouseMove: (pos: THREE.Vector2) => void
+
+    selectAtPointer: (pos: THREE.Vector2, add: boolean) => void
+    frameAtPointer: (pos: THREE.Vector2) => void
+    zoom: (value: number) => void
   }
 
-  // Helper to unregister all event listeners
-  protected reg<T extends Event>(
-    element: Document | HTMLElement | Window,
-    eventType: string,
-    callback: (event: T) => void
-  ): void {
-    const f = (e: Event): void => { callback(e as T); };
-    element.addEventListener(eventType, f);
-    this._disconnect.push(() => { element.removeEventListener(eventType, f); });
+  interface InputSettings{
+    orbit: boolean
+    scrollSpeed: number
+    moveSpeed: number
+    rotateSpeed: number
+    orbitSpeed: number
   }
 
-  /**
-   * Register handler to related browser events
-   * Prevents double registrations
+  export class GeneralInputHandler extends BaseInputHandler {
+
+    /**
+     * Touch input handler
+     */
+    touch: TouchHandler
+    /**
+     * Mouse input handler
+     */
+    mouse: MouseHandler
+    /**
+     * Keyboard input handler
+     */
+    keyboard: KeyboardHandler
+
+
+    scrollSpeed: number = 1.6
+    private _moveSpeed: number
+    rotateSpeed: number
+    orbitSpeed: number
+
+    private _pointerActive: PointerMode = 'orbit'
+    private _pointerFallback: PointerMode = 'look'
+    private _pointerOverride: PointerMode | undefined
+    private _onPointerOverrideChanged = new SignalDispatcher()
+    private _onPointerModeChanged = new SignalDispatcher()
+    private _onSettingsChanged = new SignalDispatcher()
+    private _adapter : InputAdapter
+
+    constructor (canvas: HTMLCanvasElement, adapter: InputAdapter, settings: Partial<InputSettings> = {}) {
+      super(canvas)
+      this._adapter = adapter
+
+      this._pointerActive = (settings.orbit === undefined || settings.orbit) ? 'orbit' : 'look'
+      this.scrollSpeed = settings.scrollSpeed ?? 1.6
+      this._moveSpeed = settings.moveSpeed ?? 1
+      this.rotateSpeed = settings.rotateSpeed ?? 1
+      this.orbitSpeed = settings.orbitSpeed ?? 1
+
+      this.reg(document, 'contextmenu', (e: MouseEvent) => {
+        this._onContextMenu.dispatch(new THREE.Vector2(e.clientX, e.clientY))
+        e.preventDefault()
+      })
+      this.keyboard = new KeyboardHandler(canvas)
+      this.mouse = new MouseHandler(canvas)
+      this.touch = new TouchHandler(canvas)
+
+      // Keyboard controls
+      this.keyboard.onKeyDown = (key: string) => adapter.keyDown(key)
+      this.keyboard.onKeyUp = (key: string) => adapter.keyUp(key)
+
+      this.keyboard.registerKeyUp('KeyP', 'replace', () => adapter.toggleOrthographic());
+      this.keyboard.registerKeyUp('Equal', 'replace', () => this.moveSpeed++);
+      this.keyboard.registerKeyUp('Minus', 'replace', () => this.moveSpeed--);
+      this.keyboard.registerKeyUp('Space', 'replace', () => {
+        this._pointerActive = this._pointerActive === 'orbit' ? 'look' : 'orbit';
+        this._pointerFallback = this._pointerActive;
+        this._onPointerModeChanged.dispatch();
+      });
+      this.keyboard.registerKeyUp('Home', 'replace', () => adapter.resetCamera());
+      this.keyboard.registerKeyUp('Escape', 'replace', () => adapter.clearSelection());
+      this.keyboard.registerKeyUp('KeyF', 'replace', () => {
+        adapter.frameCamera();
+      });
+
+      this.keyboard.onMove = (value: THREE.Vector3 ) =>{
+        const mul = Math.pow(1.25, this._moveSpeed)
+        adapter.moveCamera(value.multiplyScalar(mul))
+      } 
+
+      // Mouse controls
+      this.mouse.onButtonDown = adapter.mouseDown
+      this.mouse.onMouseMove = adapter.mouseMove
+      this.mouse.onButtonUp = adapter.mouseUp
+      this.mouse.onDrag = (delta: THREE.Vector2, button: number) =>{
+        if(button === 0){
+          if(this._pointerActive === 'orbit') adapter.orbitCamera(toRotation(delta, this.orbitSpeed))
+          if(this._pointerActive === 'look') adapter.rotateCamera(toRotation(delta, this.rotateSpeed))
+        } 
+        if(button === 2) adapter.rotateCamera(toRotation(delta,1))
+        if(button === 1) adapter.panCamera(delta)
+      }
+
+      this.mouse.onClick = (pos: THREE.Vector2, modif: boolean) => adapter.selectAtPointer(pos, modif)
+      this.mouse.onDoubleClick = adapter.frameAtPointer
+      this.mouse.onWheel = (value: number, ctrl: boolean) => {
+        if(ctrl){
+          this.moveSpeed -= Math.sign(value)
+        }
+        else{
+          const zoom = Math.pow(this.scrollSpeed, value)
+          adapter.zoom(zoom)
+        }
+      }
+
+      // Touch controls
+      this.touch.onTap = (pos: THREE.Vector2) => adapter.selectAtPointer(pos, false)
+      this.touch.onDoubleTap = adapter.frameAtPointer
+      this.touch.onDrag = (delta: THREE.Vector2) => adapter.orbitCamera(delta)
+      this.touch.onPinchOrSpread = adapter.zoom
+      this.touch.onDoubleDrag = (value : THREE.Vector2) => adapter.panCamera(value)
+    }
+
+    init(){
+      this.registerAll()
+      this._adapter.init()
+    }
+
+    get moveSpeed () {
+      return this._moveSpeed
+    }
+
+    set moveSpeed (value: number) {
+      this._moveSpeed = value
+      this._onSettingsChanged.dispatch()
+    }
+
+    get onSettingsChanged() {
+      return this._onSettingsChanged.asEvent()
+    }
+
+    /**
+     * Returns the last main mode (orbit, look) that was active.
+     */
+    get pointerFallback () : PointerMode {
+      return this._pointerFallback
+    }
+
+    /**
+     * Returns current pointer mode.
+     */
+    get pointerActive (): PointerMode {
+      return this._pointerActive
+    }
+
+    /**
+     * A temporary pointer mode used for temporary icons.
+     */
+    get pointerOverride (): PointerMode {
+      return this._pointerOverride
+    }
+
+    set pointerOverride (value: PointerMode | undefined) {
+      if (value === this._pointerOverride) return
+      this._pointerOverride = value
+      this._onPointerOverrideChanged.dispatch()
+    }
+
+    /**
+     * Changes pointer interaction mode. Look mode will set camera orbitMode to false.
+     */
+    set pointerActive (value: PointerMode) {
+      console.log('set pointerActive', value)
+    }
+
+
+    /**
+     * Event called when pointer interaction mode changes.
+     */
+    get onPointerModeChanged () {
+      return this._onPointerModeChanged.asEvent()
+    }
+
+
+    /**
+     * Event called when the pointer is temporarily overriden.
+     */
+    get onPointerOverrideChanged () {
+      return this._onPointerOverrideChanged.asEvent()
+    }
+
+    private _onContextMenu = new SimpleEventDispatcher<
+      THREE.Vector2 | undefined
+    >()
+
+    /**
+     * Event called when when context menu could be displayed
+     */
+    get onContextMenu () {
+      return this._onContextMenu.asEvent()
+    }
+
+    /**
+     * Calls context menu action
+     */
+    ContextMenu (position: THREE.Vector2 | undefined) {
+      this._onContextMenu.dispatch(position)
+    }
+
+
+    /**
+   * Register inputs handlers for default viewer behavior
    */
-  register () {
-    if (this._disconnect.length > 0) return
-    this.addListeners()
+    registerAll () {
+      this.keyboard.register()
+      this.mouse.register()
+      this.touch.register()
+    }
+
+    /**
+     * Unregisters all input handlers
+     */
+    unregisterAll = () => {
+      this.mouse.unregister()
+      this.keyboard.unregister()
+      this.touch.unregister()
+    }
+
+    /**
+     * Resets all input state
+     */
+    resetAll () {
+      this.mouse.reset()
+      this.keyboard.reset()
+      this.touch.reset()
+    }
+
+    dispose(){
+      this.unregisterAll()
+    }
   }
 
-  protected addListeners () {}
-
-  /**
-   * Unregister handler from related browser events
-   * Prevents double unregistration
-   */
-  unregister () {
-    this._disconnect.forEach((f) => f())
-    this._disconnect.length = 0
-    this.reset()
-  }
-
-  /**
-   * Reset handler states such as button down, drag, etc.
-   */
-  reset () {}
-}
+    function toRotation (delta: THREE.Vector2, speed: number) {
+      const rot = delta.clone()
+      rot.x = -delta.y
+      rot.y = -delta.x
+      rot.multiplyScalar(180 * speed)
+      return rot
+    }

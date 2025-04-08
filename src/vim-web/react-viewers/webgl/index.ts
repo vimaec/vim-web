@@ -1,9 +1,9 @@
-export * from './webglViewer'
+export * from './viewer'
 export * as ContextMenu from '../panels/contextMenu'
 export * as BimInfo from '../bim/bimInfoData'
 export * as ControlBar from '../controlbar/controlBar'
 
 export { LoadRequest } from '../helpers/loadRequest'
-export * from './webglViewerRef'
+export * from './viewerRef'
 export { getLocalSettings as getLocalSettings } from '../settings/settingsStorage'
 export { type ComponentSettings as Settings, type PartialComponentSettings as PartialSettings, defaultSettings } from '../settings/settings'

@@ -4,7 +4,7 @@
 
 import * as THREE from 'three'
 import { SectionBoxHandle } from './sectionBoxHandle'
-import { ICamera } from '../../camera/webglCoreCamera'
+import { ICamera } from '../../camera/camera'
 
 export class SectionBoxHandles {
   readonly up: SectionBoxHandle

@@ -1,11 +1,11 @@
-import { WebglCoreViewer } from '../webglCoreViewer'
+import { WebglCoreViewer } from '../viewer'
 import { GizmoAxes } from './axes/gizmoAxes'
 import { GizmoLoading } from './gizmoLoading'
 import { GizmoOrbit } from './gizmoOrbit'
 import { IMeasure, Measure } from './measure/measure'
 import { SectionBox } from './sectionBox/sectionBox'
 import { GizmoMarkers } from './markers/gizmoMarkers'
-import { WebglCoreCamera } from '../camera/webglCoreCamera'
+import { WebglCoreCamera } from '../camera/camera'
 
 /**
  * Represents a collection of gizmos used for various visualization and interaction purposes within the viewer.

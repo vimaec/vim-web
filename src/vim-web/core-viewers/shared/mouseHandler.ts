@@ -1,11 +1,11 @@
-import { InputHandler } from "./inputHandler";
+import { BaseInputHandler } from "./baseInputHandler";
 import { Vector2, almostEqual } from "../utils/math3d"; // TODO Move up
 import * as THREE from 'three';
 
 type DragCallback = (delta: Vector2, button: number) => void;
 
 // Existing MouseHandler class
-export class MouseHandler extends InputHandler {
+export class MouseHandler extends BaseInputHandler {
   private _lastMouseDownPosition = new Vector2(0, 0);
   private _capture: CaptureStateMachine;
   private _dragHandler: DragHandler; 

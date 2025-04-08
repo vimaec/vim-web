@@ -1,2 +1,2 @@
-export * from './ultraViewer'
-export * from './ultraViewerRef'
+export * from './viewer'
+export * from './viewerRef'
