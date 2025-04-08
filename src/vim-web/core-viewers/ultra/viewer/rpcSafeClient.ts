@@ -4,6 +4,7 @@ import { MaterialHandle, RpcClient } from "./rpcClient"
 import { Validation } from "./validation"
 import { batchArray, batchArrays } from "../../utils/array"
 import { INVALID_HANDLE } from "./ultraCoreViewer"
+import { THREE } from "../../.."
 
 const defaultBatchSize = 10000
 
@@ -117,7 +118,7 @@ export class RpcSafeClient {
     this.rpc.RPCLockIblRotation(lock)
   }
 
-  RPCGetSceneAABB(): Promise<Box3 | undefined> {
+  RPCGetSceneAABB(): Promise<THREE.Box3 | undefined> {
     return this.safeCall(
       () => this.rpc.RPCGetSceneAABB(),
       undefined
@@ -187,6 +188,7 @@ export class RpcSafeClient {
    * @throws {Error} If the component handle is invalid or nodes array is invalid
    */
   RPCHide(componentHandle: number, nodes: number[]): void {
+    
     if (!Validation.isComponentHandle(componentHandle)) return
     if (!Validation.areComponentHandles(nodes)) return
 
@@ -204,6 +206,7 @@ export class RpcSafeClient {
    * @throws {Error} If the component handle is invalid or nodes array is invalid
    */
   RPCShow(componentHandle: number, nodes: number[]): void {
+    if(nodes.length === 0) return
     // Validation
     if (!Validation.isComponentHandle(componentHandle)) return
     if (!Validation.areComponentHandles(nodes)) return
@@ -223,6 +226,7 @@ export class RpcSafeClient {
    * @throws {Error} If the component handle is invalid or nodes array is invalid
    */
   RPCGhost(componentHandle: number, nodes: number[]): void {
+    if(nodes.length === 0) return
     // Validation
     if (!Validation.isComponentHandle(componentHandle)) return
     if (!Validation.areComponentHandles(nodes)) return
@@ -242,6 +246,7 @@ export class RpcSafeClient {
    * @throws {Error} If the component handle is invalid or nodes array is invalid
    */
   RPCHighlight(componentHandle: number, nodes: number[]): void {
+    if(nodes.length === 0) return
     // Validation
     if (!Validation.isComponentHandle(componentHandle)) return
     if (!Validation.areComponentHandles(nodes)) return
@@ -308,7 +313,7 @@ export class RpcSafeClient {
     this.rpc.RPCSetSectionBox(
       {
         ...state,
-        box: state.box ?? new Box3(new Vector3(), new Vector3())
+        box: state.box ?? new THREE.Box3(new THREE.Vector3(), new THREE.Vector3())
       })
   }
 
@@ -350,7 +355,7 @@ export class RpcSafeClient {
     this.rpc.RPCSetCameraPosition(segment, blendTime)
   }
 
-  async RPCGetBoundingBoxAll(componentHandle: number){
+  async RPCGetBoundingBoxAll(componentHandle: number): Promise<THREE.Box3 | undefined> {
     return await this.safeCall(
       () => this.rpc.RPCGetBoundingBoxAll(componentHandle),
       undefined
@@ -368,7 +373,7 @@ export class RpcSafeClient {
   async RPCGetBoundingBox(
     componentHandle: number,
     nodes: number[]
-  ): Promise<Box3 | undefined> {
+  ): Promise<THREE.Box3 | undefined> {
     // Validation
     if (!Validation.isComponentHandle(componentHandle)) return
     if (!Validation.areComponentHandles(nodes)) return
@@ -383,10 +388,10 @@ export class RpcSafeClient {
   private async getBoundingBoxBatched(
     componentHandle: number,
     nodes: number[]
-  ): Promise<Box3> {
+  ): Promise<THREE.Box3> {
 
     if(nodes.length === 0){
-      return new Box3()
+      return new THREE.Box3()
     }
 
     const batches = batchArray(nodes, this.batchSize)
@@ -394,7 +399,7 @@ export class RpcSafeClient {
       const aabb = await this.rpc.RPCGetBoundingBox(componentHandle, batch)
       const v1 = new Vector3(aabb.min.x, aabb.min.y, aabb.min.z)
       const v2 = new Vector3(aabb.max.x, aabb.max.y, aabb.max.z)
-      return new Box3(v1, v2)
+      return new THREE.Box3(v1, v2)
     })
     const boxes = await Promise.all(promises)
     const box = boxes[0]
@@ -481,7 +486,7 @@ export class RpcSafeClient {
    * @param blendTime - Duration of the camera transition in seconds (non-negative)
    * @throws {Error} If the box is invalid (min values must be less than max values)
    */
-  async RPCFrameBox(box: Box3, blendTime: number): Promise<Segment | undefined> {
+  async RPCFrameBox(box: THREE.Box3, blendTime: number): Promise<Segment | undefined> {
     // Validation
     if (!Validation.isValidBox(box)) return
     blendTime = Validation.clamp01(blendTime)
@@ -629,7 +634,7 @@ export class RpcSafeClient {
    * @param pos - Normalized screen coordinates (0-1, 0-1)
    * @returns Promise resolving to hit test result if something was hit, undefined otherwise
    */
-  async RPCPerformHitTest(pos: Vector2): Promise<HitCheckResult | undefined> {
+  async RPCPerformHitTest(pos: THREE.Vector2): Promise<HitCheckResult | undefined> {
     // Validation
     if (!Validation.isRelativeVector2(pos)) return
 
@@ -652,7 +657,7 @@ export class RpcSafeClient {
    * @throws {Error} If mouseButton is not a valid positive integer
    */
   RPCMouseButtonEvent(
-    position: Vector2,
+    position: THREE.Vector2,
     mouseButton: number,
     down: boolean
   ){
@@ -671,7 +676,7 @@ export class RpcSafeClient {
    * @throws {Error} If mouseButton is not a valid positive integer
    */
   RPCMouseDoubleClickEvent(
-    position: Vector2,
+    position: THREE.Vector2,
     mouseButton: number
   ): void {
     // Validation
@@ -685,7 +690,7 @@ export class RpcSafeClient {
    * Sends a mouse movement event to the viewer.
    * @param position - The normalized screen coordinates (0-1, 0-1)
    */
-  RPCMouseMoveEvent(position: Vector2): void {
+  RPCMouseMoveEvent(position: THREE.Vector2): void {
     // Validation
     if (!Validation.isRelativeVector2(position)) return
 
@@ -712,7 +717,7 @@ export class RpcSafeClient {
    * @throws {Error} If mouseButton is not a valid positive integer
    */
   RPCMouseSelectEvent(
-    position: Vector2,
+    position: THREE.Vector2,
     mouseButton: number
   ): void {
     // Validation

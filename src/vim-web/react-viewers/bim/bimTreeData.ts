@@ -90,7 +90,7 @@ export class BimTreeData {
             : 'vim-undefined'
         return node.visible
       } else {
-        const obj = vim.getObjectFromElement(node.data?.index)
+        const obj = vim.getObjectFromElementIndex(node.data?.index)
         node.visible = obj?.visible ? 'vim-visible' : 'vim-hidden'
         return node.visible
       }

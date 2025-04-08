@@ -4,12 +4,13 @@ import * as THREE from 'three'
 import { SimpleInstanceSubmesh } from '../../../loader/webglMesh'
 import { WebglAttribute } from '../../../loader/webglAttribute'
 import { WebglColorAttribute } from '../../../loader/webglColorAttribute'
+import { CoreModelObject } from '../../../../shared/coreVim'
 
 /**
  * Marker gizmo that display an interactive sphere at a 3D positions
  * Marker gizmos are still under development.
  */
-export class WebglCoreMarker {
+export class WebglCoreMarker implements CoreModelObject {
   public readonly type = 'Marker'
   private _viewer: WebglCoreViewer
   private _submesh: SimpleInstanceSubmesh
@@ -185,7 +186,8 @@ export class WebglCoreMarker {
    * Returns a unit box arount the marker position.
    * @returns {THREE.Box3 | undefined} The bounding box of the object.
    */
-  getBoundingBox (): THREE.Box3 {
-    return new THREE.Box3().setFromCenterAndSize(this.position.clone(), new THREE.Vector3(1, 1, 1))
+  async getBoundingBox (): Promise<THREE.Box3> {
+    const box =  new THREE.Box3().setFromCenterAndSize(this.position.clone(), new THREE.Vector3(1, 1, 1))
+    return Promise.resolve(box)
   }
 }

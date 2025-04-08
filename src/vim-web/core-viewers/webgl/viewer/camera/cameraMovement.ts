@@ -3,8 +3,8 @@
  */
 
 import { WebglCoreCamera } from './webglCoreCamera'
-import { WebglModelObject } from '../../loader/webglModelObject'
-import { SelectableObject } from '../webglCoreSelection'
+import { WebglCoreModelObject } from '../../loader/webglModelObject'
+import { WebglCoreSelectable } from '../webglCoreSelection'
 import * as THREE from 'three'
 import { WebglCoreMarker } from '../gizmos/markers/gizmoMarker'
 import { WebglVim } from '../../loader/webglVim'
@@ -120,9 +120,9 @@ export abstract class WebglCoreCameraMovement {
 
   /**
    * Rotates the camera without moving so that it looks at the specified target.
-   * @param {WebglModelObject | THREE.Vector3} target - The target object or position to look at.
+   * @param {WebglCoreModelObject | THREE.Vector3} target - The target object or position to look at.
    */
-  abstract target(target: WebglModelObject | THREE.Vector3): void
+  abstract target(target: WebglCoreModelObject | THREE.Vector3): void
 
   /**
    * Resets the camera to its last saved position and orientation.
@@ -141,12 +141,12 @@ export abstract class WebglCoreCameraMovement {
    * @param {IObject | WebglVim | THREE.Sphere | THREE.Box3 | 'all' | undefined} target - The target object, or 'all' to frame all objects.
    * @param {THREE.Vector3} [forward] - Optional forward direction after framing.
    */
-  frame (
-    target: SelectableObject | WebglVim | THREE.Sphere | THREE.Box3 | 'all' | undefined,
+  async frame (
+    target: WebglCoreSelectable | WebglVim | THREE.Sphere | THREE.Box3 | 'all' | undefined,
     forward?: THREE.Vector3
-  ): void {
-    if ((target instanceof WebglCoreMarker) || (target instanceof WebglModelObject)) {
-      target = target.getBoundingBox()
+  ) {
+    if ((target instanceof WebglCoreMarker) || (target instanceof WebglCoreModelObject)) {
+      target = await target.getBoundingBox()
     }
     if ((target instanceof WebglVim)) {
       target = target.scene.getAverageBoundingBox()

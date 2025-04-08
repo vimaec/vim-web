@@ -35,30 +35,30 @@ function createAdapter(viewer: WebglCoreViewer ) : CoreInputAdapter {
     clearSelection: () => {
       viewer.selection.clear()
     },
-    frameCamera: () => {
-      if(viewer.selection.count > 0){
-        viewer.camera.lerp(0.75).frame(viewer.selection.getBoundingBox())
+    frameCamera: async () => {
+      if(viewer.selection.count() > 0){
+        const box = await viewer.selection.getBoundingBox()
+        viewer.camera.lerp(0.75).frame(box)
       }
       else{
         viewer.camera.lerp(0.75).frame('all')
       }
     },
-    selectAtPointer: (pos: THREE.Vector2, add: boolean) => {
+    selectAtPointer: async (pos: THREE.Vector2, add: boolean) => {
       //TODO: This logic should happen in shared code
-      const pointer = viewer.raycaster.raycastFromScreen(pos)
-      console.log('add', pointer.object)
+      const result = await viewer.raycaster.raycastFromScreen(pos)
       if(add){
         
-        viewer.selection.add(pointer.object)
+        viewer.selection.add(result.object)
       }
       else{
-        viewer.selection.select(pointer.object)
+        viewer.selection.select(result.object)
       }
     },
-    frameAtPointer: (pos: THREE.Vector2) => {
+    frameAtPointer: async (pos: THREE.Vector2) => {
       //TODO: This logic should happen in shared code
-      const pointer = viewer.raycaster.raycastFromScreen(pos)
-      viewer.camera.lerp(0.75).frame(pointer.object)
+      const result = await viewer.raycaster.raycastFromScreen(pos)
+      viewer.camera.lerp(0.75).frame(result.object)
     },
     zoom: (value: number) => {
       viewer.camera.lerp(0.75).zoom(value)

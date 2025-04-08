@@ -91,7 +91,7 @@ export function UltraViewer (props: {
 
   useEffect(() => {
     props.viewer.onStateChanged.subscribe(state => updateModal(modal, state))
-    props.viewer.selection.onValueChanged.subscribe(() =>{
+    props.viewer.selection.onSelectionChanged.subscribe(() =>{
       setSelectState(i => (i+1)%2)
     } )
     props.onMount({

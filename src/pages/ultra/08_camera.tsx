@@ -15,7 +15,7 @@ export function UltraCamera () {
   )
 }
 
-async function framing (ultra: VIM.UltraViewerRef, tower: VIM.UltraVim) {
+async function framing (ultra: VIM.UltraViewerRef, tower: VIM.UltraCoreVim) {
   // Wait for the user to get ready
   await new Promise(resolve => setTimeout(resolve, 2000))
 
@@ -52,7 +52,7 @@ async function framing (ultra: VIM.UltraViewerRef, tower: VIM.UltraVim) {
   await ultra.viewer.camera.frameVim(tower, indices, 1)
 }
 
-function highlight (tower: VIM.UltraVim, indices: number[]) {
-  tower.show('all')
-  tower.highlight(indices)
+function highlight (tower: VIM.UltraCoreVim, indices: number[]) {
+  tower.nodeState.setAllNodesState(VIM.UltraVimNodeState.VISIBLE, true)
+  indices.forEach((i) => {tower.getObjectFromInstance(i).state = VIM.UltraVimNodeState.HIGHLIGHTED} )
 }

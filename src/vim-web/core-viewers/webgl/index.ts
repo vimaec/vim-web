@@ -17,9 +17,9 @@ export * from './viewer/settings/webglCoreViewerSettingsParsing'
 export * from './viewer/settings/webglCoreViewerDefaultSettings'
 
 export {
-  RaycastResult as HitTestResult} from './viewer/webglCoreRaycaster'
+  WebglRaycastResult as HitTestResult} from './viewer/webglCoreRaycaster'
 
-export { type SelectableObject, WebglCoreSelection as Selection } from './viewer/webglCoreSelection'
+export { type WebglCoreSelectable } from './viewer/webglCoreSelection'
 export * from './loader/progressive/insertableMesh'
 export * from './loader/progressive/g3dSubset'
 export * from './loader/webglGeometry'

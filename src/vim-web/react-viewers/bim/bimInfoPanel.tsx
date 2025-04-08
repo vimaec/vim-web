@@ -10,7 +10,7 @@ import { AugmentedElement } from '../helpers/element'
 import { Data, BimInfoPanelRef } from './bimInfoData'
 
 export function BimInfoPanel (props : {
-    object: VIM.WebglModelObject,
+    object: VIM.WebglCoreModelObject,
     vim: VIM.WebglVim,
     elements: AugmentedElement[],
     full : boolean

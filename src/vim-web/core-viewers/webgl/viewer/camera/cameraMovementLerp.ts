@@ -4,7 +4,7 @@
 
 import * as THREE from 'three'
 import { WebglCoreCamera } from './webglCoreCamera'
-import { WebglModelObject } from '../../loader/webglModelObject'
+import { WebglCoreModelObject } from '../../loader/webglModelObject'
 import { CameraMovementSnap } from './cameraMovementSnap'
 import { WebglCoreCameraMovement } from './cameraMovement'
 
@@ -123,8 +123,8 @@ export class CameraLerp extends WebglCoreCameraMovement {
     }
   }
 
-  target (target: WebglModelObject | THREE.Vector3): void {
-    const pos = target instanceof WebglModelObject ? target.getCenter() : target
+  async target (target: WebglCoreModelObject | THREE.Vector3) {
+    const pos = target instanceof WebglCoreModelObject ? (await target.getCenter()) : target
     const next = pos.clone().sub(this._camera.position)
     const start = this._camera.quaternion.clone()
     const rot = new THREE.Quaternion().setFromUnitVectors(

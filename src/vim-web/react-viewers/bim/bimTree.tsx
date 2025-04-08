@@ -21,7 +21,7 @@ export type TreeActionRef = {
   showAll: () => void
   hideAll: () => void
   collapseAll: () => void
-  selectSiblings: (element: VIM.WebglModelObject) => void
+  selectSiblings: (element: VIM.WebglCoreModelObject) => void
 }
 
 /**
@@ -35,12 +35,12 @@ export function BimTree (props: {
   actionRef: React.MutableRefObject<TreeActionRef>
   viewer: VIM.WebglCoreViewer
   camera: CameraRef
-  objects: VIM.WebglModelObject[]
+  objects: VIM.WebglCoreModelObject[]
   isolation: IsolationRef
   treeData: BimTreeData
 }) {
   // Data state
-  const [objects, setObjects] = useState<VIM.WebglModelObject[]>([])
+  const [objects, setObjects] = useState<VIM.WebglCoreModelObject[]>([])
 
   // Tree state
   const [expandedItems, setExpandedItems] = useState<number[]>([])
@@ -62,14 +62,14 @@ export function BimTree (props: {
       collapseAll: () => {
         setExpandedItems([])
       },
-      selectSiblings: (object: VIM.WebglModelObject) => {
+      selectSiblings: (object: VIM.WebglCoreModelObject) => {
         const element = object.element
         const node = props.treeData.getNodeFromElement(element)
         const siblings = props.treeData.getSiblings(node)
         const result = siblings.map((n) => {
           const nn = props.treeData.nodes[n]
           const e = nn.data.index
-          const o = props.viewer.vims[0].getObjectFromElement(e)
+          const o = props.viewer.vims[0].getObjectFromElementIndex(e)
           return o
         })
 
@@ -91,7 +91,7 @@ export function BimTree (props: {
   useEffect(() => {
     if (props.treeData && objects.length === 1 && div.current) {
       scrollToSelection(div.current)
-      const [first] = props.viewer.selection.objects
+      const [first] = props.viewer.selection.getAll()
       focus.current = props.treeData.getNodeFromElement(first.element)
     }
   }, [props.treeData, objects])
@@ -239,12 +239,6 @@ export function BimTree (props: {
           }
         }}
         // Default behavior
-        onFocusItem={(item) => {
-          const index = item.index as number
-          setFocusedItem(index)
-          updateViewerFocus(props.viewer, props.treeData, index)
-        }}
-        // Default behavior
         onExpandItem={(item) => {
           setExpandedItems([...expandedItems, item.index as number])
         }}
@@ -272,7 +266,7 @@ function toggleVisibility (
   const objs = tree
     .getLeafs(index)
     .map((n) =>
-      viewer.vims[0]?.getObjectFromElement(tree.nodes[n]?.data.index)
+      viewer.vims[0]?.getObjectFromElementIndex(tree.nodes[n]?.data.index)
     )
 
   const visibility = tree.nodes[index].visible
@@ -283,36 +277,26 @@ function toggleVisibility (
   }
 }
 
-function updateViewerFocus (
-  viewer: VIM.WebglCoreViewer,
-  tree: BimTreeData,
-  index: number
-) {
-  const node = tree.nodes[index]
-  const obj = viewer.vims[0].getObjectFromElement(node.data?.index)
-  viewer.selection.focus(obj)
-}
-
 function updateViewerSelection (
   tree: BimTreeData,
   viewer: VIM.WebglCoreViewer,
   nodes: number[],
   operation: 'add' | 'remove' | 'set'
 ) {
-  const objects: VIM.WebglModelObject[] = []
+  const objects: VIM.WebglCoreModelObject[] = []
   nodes.forEach((n) => {
     const item = tree.nodes[n]
     const element = item.data.index
 
-    const obj = viewer.vims[0].getObjectFromElement(element)
+    const obj = viewer.vims[0].getObjectFromElementIndex(element)
     objects.push(obj)
   })
   switch (operation) {
     case 'add':
-      viewer.selection.add(...objects)
+      viewer.selection.add(objects)
       break
     case 'remove':
-      viewer.selection.remove(...objects)
+      viewer.selection.remove(objects)
       break
     case 'set':
       viewer.selection.select(objects)

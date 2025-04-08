@@ -11,11 +11,16 @@ import { IElement, VimHelpers } from 'vim-format'
 import { WebglAttribute } from './webglAttribute'
 import { WebglColorAttribute } from './webglColorAttribute'
 import { Submesh } from './webglMesh'
+import { CoreModelObject } from '../../shared/coreVim'
+import { CoreSelectionAdapter } from '../../shared/coreSelection'
+
+
+
 
 /**
  * High level api to interact with the loaded vim geometry and data.
  */
-export class WebglModelObject {
+export class WebglCoreModelObject implements CoreModelObject {
   private _color: THREE.Color | undefined
   private _boundingBox: THREE.Box3 | undefined
   private _meshes: Submesh[] | undefined
@@ -209,7 +214,7 @@ export class WebglModelObject {
    * Returns undefined if the object has no geometry.
    * @returns {THREE.Box3 | undefined} The bounding box of the object, or undefined if the object has no geometry.
    */
-  getBoundingBox () {
+  async getBoundingBox () {
     if (!this.instances || !this._meshes) return
     if (this._boundingBox) return this._boundingBox
 
@@ -224,7 +229,7 @@ export class WebglModelObject {
       this._boundingBox = box
     }
 
-    return this._boundingBox
+    return Promise.resolve(this._boundingBox)
   }
 
   /**
@@ -233,8 +238,9 @@ export class WebglModelObject {
    * A new instance is created if none is provided.
    * @returns {THREE.Vector3 | undefined} The center position of the object, or undefined if the object has no geometry.
    */
-  public getCenter (target: THREE.Vector3 = new THREE.Vector3()) {
-    return this.getBoundingBox()?.getCenter(target)
+  public async getCenter (target: THREE.Vector3 = new THREE.Vector3()) {
+    const box = await this.getBoundingBox()
+    return box?.getCenter(target)
   }
 
   /**

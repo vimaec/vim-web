@@ -3,7 +3,7 @@
  */
 
 import { WebglCoreCameraMovement } from './cameraMovement'
-import { WebglModelObject } from '../../loader/webglModelObject'
+import { WebglCoreModelObject } from '../../loader/webglModelObject'
 import * as THREE from 'three'
 
 export class CameraMovementSnap extends WebglCoreCameraMovement {
@@ -43,8 +43,8 @@ export class CameraMovementSnap extends WebglCoreCameraMovement {
     this.set(this._camera.position, target)
   }
 
-  target (target: WebglModelObject | THREE.Vector3): void {
-    const pos = target instanceof WebglModelObject ? target.getCenter() : target
+  async target (target: WebglCoreModelObject | THREE.Vector3) {
+    const pos = target instanceof WebglCoreModelObject ? (await target.getCenter()) : target
     if (!pos) return
     this.set(this._camera.position, pos)
   }

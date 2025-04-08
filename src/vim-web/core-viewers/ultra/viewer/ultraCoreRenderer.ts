@@ -101,7 +101,6 @@ export class UltraCoreRenderer implements IRenderer {
   }
 
   notifySceneUpdated() {
-    console.log('scene updated')
     this._onSceneUpdated.dispatch()
   }
 

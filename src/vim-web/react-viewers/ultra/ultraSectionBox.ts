@@ -13,7 +13,7 @@ export function useUltraSectionBox(viewer: Ultra.UltraCoreViewer): SectionBoxRef
     }, 
     getBox: () => viewer.sectionBox.getBox(),
     setBox: (box) => viewer.sectionBox.fitBox(box),
-    onSelectionChanged: viewer.selection.onValueChanged,
+    onSelectionChanged: viewer.selection.onSelectionChanged,
 
 
     getSelectionBox: () => viewer.selection.getBoundingBox(),

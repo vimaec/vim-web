@@ -1,4 +1,4 @@
-import { WebglModelObject, WebglCoreViewer } from "../../core-viewers/webgl";
+import { WebglCoreModelObject, WebglCoreViewer } from "../../core-viewers/webgl";
 import { IsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
 
 export function useWebglIsolation(viewer: WebglCoreViewer){
@@ -10,20 +10,20 @@ function createWebglIsolationAdapter(viewer: WebglCoreViewer): IsolationAdapter 
   
   return {
     onVisibilityChange: viewer.renderer.onSceneUpdated,
-    onSelectionChanged: viewer.selection.onValueChanged,
+    onSelectionChanged: viewer.selection.onSelectionChanged,
     computeVisibility: () => getVisibilityState(viewer),
-    hasSelection: () => viewer.selection.count > 0,
-    isSelectionVisible: () => viewer.selection.any() && viewer.selection.objects.every(o => o.visible),
-    isSelectionHidden: () => viewer.selection.any() && viewer.selection.objects.every(o => !o.visible),
+    hasSelection: () => viewer.selection.any(),
+    isSelectionVisible: () => viewer.selection.any() && viewer.selection.getAll().every(o => o.visible),
+    isSelectionHidden: () => viewer.selection.any() && viewer.selection.getAll().every(o => !o.visible),
 
     clearSelection: () => viewer.selection.clear(),
 
     isolateSelection: () => updateAllVisibility(viewer, o => viewer.selection.has(o)),
     hideSelection: () => {
-      viewer.selection.objects.forEach(o => o.visible = false)
+      viewer.selection.getAll().forEach(o => o.visible = false)
     },
     showSelection: () => {
-      viewer.selection.objects.forEach(o => o.visible = true)
+      viewer.selection.getAll().forEach(o => o.visible = true)
     },
 
     hideAll: () => {
@@ -72,9 +72,9 @@ function createWebglIsolationAdapter(viewer: WebglCoreViewer): IsolationAdapter 
   };
 }
 
-function updateAllVisibility(viewer: WebglCoreViewer, predicate: (object: WebglModelObject) => boolean){
+function updateAllVisibility(viewer: WebglCoreViewer, predicate: (object: WebglCoreModelObject) => boolean){
  for(let v of viewer.vims){
-    for(let o of v.getObjects()){
+    for(let o of v.getAllObjects()){
       if(o.type === "WebglModelObject"){
         o.visible = predicate(o)
       }
@@ -89,7 +89,7 @@ function getVisibilityState(viewer: WebglCoreViewer): VisibilityStatus {
   let onlySelectionFlag = true;
   
   for (let v of viewer.vims) {
-    for (let o of v.getObjects()) {
+    for (let o of v.getAllObjects()) {
       if (o.type === "WebglModelObject") {
         // Check for all and none states
         all = all && o.visible;
