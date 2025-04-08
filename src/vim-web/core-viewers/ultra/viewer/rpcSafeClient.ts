@@ -3,7 +3,7 @@ import { HitCheckResult, SectionBoxState } from "./marshal"
 import { MaterialHandle, RpcClient } from "./rpcClient"
 import { Validation } from "./validation"
 import { batchArray, batchArrays } from "../../utils/array"
-import { INVALID_HANDLE } from "./ultraCoreViewer"
+import { INVALID_HANDLE } from "./viewer"
 import { THREE } from "../../.."
 
 const defaultBatchSize = 10000

@@ -1,4 +1,4 @@
-import { WebglCoreViewer } from '../../webglCoreViewer'
+import { WebglCoreViewer } from '../../viewer'
 import * as THREE from 'three'
 import { WebglCoreMarker } from './gizmoMarker'
 import { StandardMaterial } from '../../../loader/materials/standardMaterial'

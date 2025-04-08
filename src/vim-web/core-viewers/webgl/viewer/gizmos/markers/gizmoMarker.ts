@@ -1,10 +1,10 @@
 import { WebglVim } from '../../../loader/webglVim'
-import { WebglCoreViewer } from '../../webglCoreViewer'
+import { WebglCoreViewer } from '../../viewer'
 import * as THREE from 'three'
 import { SimpleInstanceSubmesh } from '../../../loader/webglMesh'
 import { WebglAttribute } from '../../../loader/webglAttribute'
 import { WebglColorAttribute } from '../../../loader/webglColorAttribute'
-import { CoreModelObject } from '../../../../shared/coreVim'
+import { CoreModelObject } from '../../../../shared/vim'
 
 /**
  * Marker gizmo that display an interactive sphere at a 3D positions

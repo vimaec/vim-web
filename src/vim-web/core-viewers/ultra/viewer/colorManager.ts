@@ -1,6 +1,6 @@
 import { MaterialHandles } from './rpcClient'
 import { RpcSafeClient } from './rpcSafeClient'
-import { UltraCoreColor } from './UltraCoreColor'
+import { RemoteColor } from './remoteColor'
 import { RGBA32 } from '../../utils/math3d'
 
 const MAX_BATCH_SIZE = 3000
@@ -11,10 +11,10 @@ const MAX_BATCH_SIZE = 3000
  */
 export class ColorManager {
   private _rpc: RpcSafeClient
-  private _hexToColor = new Map<number, UltraCoreColor>()
-  private _idToColor = new Map<number, UltraCoreColor>()
+  private _hexToColor = new Map<number, RemoteColor>()
+  private _idToColor = new Map<number, RemoteColor>()
 
-  private _toDelete : UltraCoreColor[] = []
+  private _toDelete : RemoteColor[] = []
   private _deleteId : ReturnType<typeof setTimeout> | undefined
 
   /**
@@ -30,7 +30,7 @@ export class ColorManager {
    * @param hex - The RGBA32 color value
    * @returns Promise resolving to a ColorHandle, or undefined if creation fails
    */
-  async getColor (hex: RGBA32) : Promise<UltraCoreColor | undefined> {
+  async getColor (hex: RGBA32) : Promise<RemoteColor | undefined> {
     const colors = await this.getColors([hex])
     if (!colors) return undefined
     return colors[0]
@@ -43,7 +43,7 @@ export class ColorManager {
    * @remarks Duplicate hex values will be mapped to the same color instance for efficiency
    */
   async getColors (c : RGBA32[]) {
-    const result = new Array<UltraCoreColor>(c.length)
+    const result = new Array<RemoteColor>(c.length)
     const hexToIndices = new Map<number, number[]>()
     const toCreate: RGBA32[] = []
     for (let i = 0; i < c.length; i++) {
@@ -90,7 +90,7 @@ export class ColorManager {
    * Destroys a color instance and removes it from the cache.
    * @param color - The ColorHandle to destroy
    */
-  destroy (color: UltraCoreColor) {
+  destroy (color: RemoteColor) {
     this._hexToColor.delete(color.hex)
     this._idToColor.delete(color.id)
     this._deleteColor(color)
@@ -113,8 +113,8 @@ export class ColorManager {
    * @returns Promise resolving to an array of ColorHandles, or undefined if creation fails
    * @private
    */
-  private async _createColors (colors : RGBA32[]) : Promise<UltraCoreColor[] | undefined> {
-    const result : UltraCoreColor[] = []
+  private async _createColors (colors : RGBA32[]) : Promise<RemoteColor[] | undefined> {
+    const result : RemoteColor[] = []
     if (colors.length === 0) {
       return result
     }
@@ -137,7 +137,7 @@ export class ColorManager {
    * @private
    */
   private _createColor (color: RGBA32, id: number) {
-    const handle = new UltraCoreColor(color, id, this)
+    const handle = new RemoteColor(color, id, this)
     this._hexToColor.set(color.hex, handle)
     this._idToColor.set(handle.id, handle)
     return handle
@@ -148,7 +148,7 @@ export class ColorManager {
    * @param color - The ColorHandle to delete
    * @private
    */
-  private _deleteColor (color: UltraCoreColor) {
+  private _deleteColor (color: RemoteColor) {
     // Colors are deleted in batches to reduce the number of RPC calls
 
     // If the batch size is reached, delete the current batch

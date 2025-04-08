@@ -3,8 +3,8 @@
  */
 
 import * as THREE from 'three'
-import { WebglCoreCamera } from '../../camera/webglCoreCamera'
-import { WeglCoreViewport } from '../../webglCoreViewport'
+import { WebglCoreCamera } from '../../camera/camera'
+import { WeglCoreViewport } from '../../viewport'
 import { AxesSettings } from './axesSettings'
 import { Axis, createAxes } from './axes'
 

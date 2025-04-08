@@ -1,5 +1,5 @@
 import { ISignal, SignalDispatcher } from "ste-signals";
-import { UltraCoreVim } from "./ultraCoreVim";
+import { UltraCoreVim } from "./vim";
 
 export interface IReadonlyVimCollection {
   getFromHandle(handle: number): UltraCoreVim | undefined;

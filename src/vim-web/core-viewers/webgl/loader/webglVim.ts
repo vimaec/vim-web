@@ -16,7 +16,7 @@ import { ISignal, SignalDispatcher } from 'ste-signals'
 import { G3dSubset } from './progressive/g3dSubset'
 import { SubsetBuilder } from './progressive/subsetBuilder'
 import { LoadPartialSettings } from './progressive/subsetRequest'
-import { CoreVim } from '../../shared/coreVim'
+import { CoreVim } from '../../shared/vim'
 
 type VimFormat = 'vim' | 'vimx'
 

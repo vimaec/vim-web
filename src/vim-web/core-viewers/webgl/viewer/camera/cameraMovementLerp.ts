@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { WebglCoreCamera } from './webglCoreCamera'
+import { WebglCoreCamera } from './camera'
 import { WebglCoreModelObject } from '../../loader/webglModelObject'
 import { CameraMovementSnap } from './cameraMovementSnap'
 import { WebglCoreCameraMovement } from './cameraMovement'

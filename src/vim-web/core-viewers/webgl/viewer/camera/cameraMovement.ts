@@ -2,9 +2,9 @@
  * @module viw-webgl-viewer/camera
  */
 
-import { WebglCoreCamera } from './webglCoreCamera'
+import { WebglCoreCamera } from './camera'
 import { WebglCoreModelObject } from '../../loader/webglModelObject'
-import { WebglCoreSelectable } from '../webglCoreSelection'
+import { WebglCoreSelectable } from '../selection'
 import * as THREE from 'three'
 import { WebglCoreMarker } from '../gizmos/markers/gizmoMarker'
 import { WebglVim } from '../../loader/webglVim'

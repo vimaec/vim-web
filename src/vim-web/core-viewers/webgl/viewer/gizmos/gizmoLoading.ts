@@ -2,7 +2,7 @@
  @module viw-webgl-viewer/gizmos/sectionBox
 */
 
-import { WebglCoreViewer } from '../webglCoreViewer'
+import { WebglCoreViewer } from '../viewer'
 
 /**
  * The loading indicator gizmo.

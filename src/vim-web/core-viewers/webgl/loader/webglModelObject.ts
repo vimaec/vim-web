@@ -11,8 +11,8 @@ import { IElement, VimHelpers } from 'vim-format'
 import { WebglAttribute } from './webglAttribute'
 import { WebglColorAttribute } from './webglColorAttribute'
 import { Submesh } from './webglMesh'
-import { CoreModelObject } from '../../shared/coreVim'
-import { CoreSelectionAdapter } from '../../shared/coreSelection'
+import { CoreModelObject } from '../../shared/vim'
+import { CoreSelectionAdapter } from '../../shared/selection'
 
 
 

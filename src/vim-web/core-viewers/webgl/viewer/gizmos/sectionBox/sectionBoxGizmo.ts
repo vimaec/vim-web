@@ -2,8 +2,8 @@ import * as THREE from 'three'
 import { SectionBoxMesh } from './SectionBoxMesh'
 import { SectionBoxOutline } from './sectionBoxOutline'
 import { SectionBoxHandles } from './sectionBoxHandles'
-import { WebglCoreRenderer } from '../../rendering/webglCoreRenderer'
-import { WebglCoreCamera, ICamera } from '../../camera/webglCoreCamera'
+import { WebglCoreRenderer } from '../../rendering/renderer'
+import { WebglCoreCamera, ICamera } from '../../camera/camera'
 
 export class SectionBoxGizmo
 {

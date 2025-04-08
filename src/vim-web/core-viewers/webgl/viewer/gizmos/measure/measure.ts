@@ -3,8 +3,8 @@
  */
 
 import * as THREE from 'three'
-import { IWebglRaycastResult, WebglRaycastResult } from '../../webglCoreRaycaster'
-import { WebglCoreViewer } from '../../webglCoreViewer'
+import { IWebglRaycastResult, WebglRaycastResult } from '../../raycaster'
+import { WebglCoreViewer } from '../../viewer'
 import { MeasureGizmo } from './measureGizmo'
 import { ControllablePromise } from '../../../../utils/promise'
 

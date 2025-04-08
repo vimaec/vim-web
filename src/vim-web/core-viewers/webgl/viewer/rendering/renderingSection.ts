@@ -3,8 +3,8 @@
  */
 
 import * as THREE from 'three'
-import { WebglCoreMaterials } from '../../loader/materials/webglCoreMaterials'
-import { WebglCoreRenderer } from './webglCoreRenderer'
+import { WebglCoreMaterials } from '../../loader/materials/materials'
+import { WebglCoreRenderer } from './renderer'
 
 /**
  * Manages a section box from renderer clipping planes

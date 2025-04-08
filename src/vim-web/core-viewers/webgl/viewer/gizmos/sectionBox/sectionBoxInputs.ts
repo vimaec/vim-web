@@ -2,11 +2,11 @@
  * @module viw-webgl-viewer/gizmos/sectionBox
  */
 
-import { WebglCoreViewer } from '../../webglCoreViewer';
+import { WebglCoreViewer } from '../../viewer';
 import * as THREE from 'three';
 import { SectionBoxHandles } from './sectionBoxHandles';
 import { Axis, SectionBoxHandle } from './sectionBoxHandle';
-import { ToThreeNDCPosition } from '../../webglCoreRaycaster';
+import { ToThreeNDCPosition } from '../../raycaster';
 
 const MIN_BOX_SIZE = 3;
 

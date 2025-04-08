@@ -8,7 +8,7 @@ import { InsertableGeometry } from './insertableGeometry'
 import { InsertableSubmesh } from './insertableSubmesh'
 import { G3dMeshOffsets } from './g3dOffsets'
 import { WebglVim } from '../webglVim'
-import { ModelMaterial, WebglCoreMaterials } from '../materials/webglCoreMaterials'
+import { ModelMaterial, WebglCoreMaterials } from '../materials/materials'
 
 export class InsertableMesh {
   offsets: G3dMeshOffsets

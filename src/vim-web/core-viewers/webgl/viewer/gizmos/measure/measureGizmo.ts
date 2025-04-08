@@ -5,14 +5,14 @@
 import * as THREE from 'three'
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer'
 import { MeshLine, MeshLineMaterial } from '../../../utils/meshLine'
-import { WebglCoreViewer } from '../../webglCoreViewer'
+import { WebglCoreViewer } from '../../viewer'
 import {
   createMeasureElement,
   MeasureStyle,
   MeasureElement
 } from './measureHtml'
-import { WebglCoreICamera } from '../../camera/webglCoreICamera'
-import { WebglCoreLayers } from '../../webglCoreRaycaster'
+import { WebglCoreICamera } from '../../camera/cameraInterface'
+import { WebglCoreLayers } from '../../raycaster'
 
 /**
  * Wrapper for a two points line drawn using MeshLine
