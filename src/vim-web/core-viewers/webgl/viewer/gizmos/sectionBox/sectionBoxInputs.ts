@@ -2,11 +2,11 @@
  * @module viw-webgl-viewer/gizmos/sectionBox
  */
 
-import { WebglCoreViewer } from '../../viewer';
+import { Viewer } from '../../viewer';
 import * as THREE from 'three';
 import { SectionBoxHandles } from './sectionBoxHandles';
 import { Axis, SectionBoxHandle } from './sectionBoxHandle';
-import { ToThreeNDCPosition } from '../../raycaster';
+import { threeNDCFromVector2 } from '../../raycaster';
 
 const MIN_BOX_SIZE = 3;
 
@@ -21,7 +21,7 @@ export class BoxInputs {
   // -------------------------------------------------------------------------
 
   /** The parent Viewer controlling the scene. */
-  private _viewer: WebglCoreViewer;
+  private _viewer: Viewer;
 
   /** The handles mesh group containing the draggable cones/faces. */
   private _handles: SectionBoxHandles;
@@ -83,11 +83,11 @@ export class BoxInputs {
   /**
    * Creates a new BoxInputs instance for pointer-driven box resizing.
    * 
-   * @param viewer - The parent {@link WebglCoreViewer} that renders the scene.
+   * @param viewer - The parent {@link Viewer} that renders the scene.
    * @param handles - A {@link SectionBoxHandles} instance containing the draggable mesh handles.
    * @param box - The shared bounding box (`Box3`) that will be updated by dragging.
    */
-  constructor(viewer: WebglCoreViewer, handles: SectionBoxHandles, box: THREE.Box3) {
+  constructor(viewer: Viewer, handles: SectionBoxHandles, box: THREE.Box3) {
     this._viewer = viewer;
     this._handles = handles;
     this._sharedBox = box;
@@ -294,7 +294,7 @@ export class BoxInputs {
   }
 
   private setupRaycaster(position: THREE.Vector2) {
-    const pos = ToThreeNDCPosition(position);
+    const pos = threeNDCFromVector2(position);
     this._raycaster.setFromCamera(pos, this._viewer.camera.three);
   }
 }

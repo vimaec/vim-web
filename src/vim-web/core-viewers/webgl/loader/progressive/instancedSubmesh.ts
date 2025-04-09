@@ -2,7 +2,7 @@
  * @module vim-loader
  */
 
-import { Submesh } from '../webglMesh'
+import { Submesh } from '../mesh'
 import { InstancedMesh } from './instancedMesh'
 
 export class InstancedSubmesh {

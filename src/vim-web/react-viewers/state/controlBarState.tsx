@@ -3,7 +3,7 @@ import { CameraRef } from './cameraState';
 import { CursorManager } from '../helpers/cursor';
 
 import {
-  ComponentSettings,
+  Settings,
   anyUiCursorButton,
   anyUiSettingButton,
   isTrue,
@@ -18,7 +18,7 @@ import { getMeasureState } from './measureState';
 import { ModalRef } from '../panels/modal';
 import * as ControlBar from '../controlbar/controlBar';
 import { WebglCoreViewer } from '../..';
-import { UltraCoreViewer } from '../../core-viewers/ultra';
+import { Viewer } from '../../core-viewers/ultra';
 import { IsolationAdapter, IsolationRef } from './sharedIsolation';
 
 
@@ -95,9 +95,9 @@ export function controlBarSectionBox(
  * Returns a control bar section for pointer/camera modes.
  */
 function controlBarPointer(
-  viewer: VIM.WebglCoreViewer,
+  viewer: VIM.Viewer,
   camera: CameraRef,
-  settings: ComponentSettings,
+  settings: Settings,
   section: SectionBoxRef
 ): ControlBar.IControlBarSection {
   const pointer = getPointerState(viewer);
@@ -160,7 +160,7 @@ function controlBarPointer(
 }
 
 export function controlBarMeasure(
-  settings: ComponentSettings,
+  settings: Settings,
   measure: ReturnType<typeof getMeasureState>
 ){
   return {
@@ -184,7 +184,7 @@ export function controlBarMeasure(
 function controlBarSettings(
   modal: ModalRef,
   side: SideState,
-  settings: ComponentSettings): ControlBar.IControlBarSection {
+  settings: Settings): ControlBar.IControlBarSection {
   const fullScreen = getFullScreenState();
 
   return {
@@ -343,12 +343,12 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
  * Combines all control bar sections into one control bar.
  */
 export function useControlBar(
-  viewer: VIM.WebglCoreViewer,
+  viewer: VIM.Viewer,
   camera: CameraRef,
   modal: ModalRef,
   side: SideState,
   cursor: CursorManager,
-  settings: ComponentSettings,
+  settings: Settings,
   section: SectionBoxRef,
   isolationRef: IsolationRef,
   customization: ControlBar.ControlBarCustomization | undefined

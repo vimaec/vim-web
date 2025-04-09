@@ -1,7 +1,7 @@
 import { SignalDispatcher } from "ste-signals"
-import { Box3, Vector3 } from "../../utils/math3d"
+import { Box3, Vector3 } from "../../../utils/math3d"
 import { RpcSafeClient } from "./rpcSafeClient"
-import { safeBox } from "../../utils/threeUtils"
+import { safeBox } from "../../../utils/threeUtils"
 
 export class SectionBox {
 

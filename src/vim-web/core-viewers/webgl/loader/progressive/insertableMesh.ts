@@ -7,13 +7,13 @@ import { G3d, G3dMesh, G3dMaterial } from 'vim-format'
 import { InsertableGeometry } from './insertableGeometry'
 import { InsertableSubmesh } from './insertableSubmesh'
 import { G3dMeshOffsets } from './g3dOffsets'
-import { WebglVim } from '../webglVim'
-import { ModelMaterial, WebglCoreMaterials } from '../materials/materials'
+import { Vim } from '../vim'
+import { ModelMaterial, Materials } from '../materials/materials'
 
 export class InsertableMesh {
   offsets: G3dMeshOffsets
   mesh: THREE.Mesh
-  vim: WebglVim
+  vim: Vim
 
   /**
    * Whether the mesh is merged or not.
@@ -57,8 +57,8 @@ export class InsertableMesh {
     this.geometry = new InsertableGeometry(offsets, materials, transparent)
 
     this._material = transparent
-      ? WebglCoreMaterials.getInstance().transparent.material
-      : WebglCoreMaterials.getInstance().opaque.material
+      ? Materials.getInstance().transparent.material
+      : Materials.getInstance().opaque.material
 
     this.mesh = new THREE.Mesh(this.geometry.geometry, this._material)
     this.mesh.userData.vim = this

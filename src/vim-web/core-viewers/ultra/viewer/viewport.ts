@@ -1,4 +1,4 @@
-import { debounce } from "../../utils/debounce"
+import * as Utils from "../../../utils"
 import { ILogger } from "./logger";
 import { RpcSafeClient } from "./rpcSafeClient";
 
@@ -33,7 +33,7 @@ export class Viewport {
     this._rpc = rpc
     this._logger = logger
 
-    const [debounced, clear] = debounce(() => this.onResize(), 250)
+    const [debounced, clear] = Utils.debounce(() => this.onResize(), 250)
     this._observer = new ResizeObserver(debounced)
     this._observer.observe(canvas)
     this._clearTimeout = clear

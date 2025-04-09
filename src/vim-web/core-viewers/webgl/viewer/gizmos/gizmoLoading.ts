@@ -2,18 +2,18 @@
  @module viw-webgl-viewer/gizmos/sectionBox
 */
 
-import { WebglCoreViewer } from '../viewer'
+import { Viewer } from '../viewer'
 
 /**
  * The loading indicator gizmo.
  */
 export class GizmoLoading {
   // dependencies
-  private _viewer: WebglCoreViewer
+  private _viewer: Viewer
   private _spinner: HTMLElement
   private _visible: boolean
 
-  constructor (viewer: WebglCoreViewer) {
+  constructor (viewer: Viewer) {
     this._viewer = viewer
     this._spinner = this.createBar()
     this._visible = false

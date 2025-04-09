@@ -2,17 +2,17 @@
  * @module viw-webgl-viewer/camera
  */
 
-import { WebglCoreCamera } from './camera'
-import { WebglCoreModelObject } from '../../loader/webglModelObject'
-import { WebglCoreSelectable } from '../selection'
+import { Camera } from './camera'
+import { Element3D } from '../../loader/element3d'
+import { Selectable } from '../selection'
 import * as THREE from 'three'
-import { WebglCoreMarker } from '../gizmos/markers/gizmoMarker'
-import { WebglVim } from '../../loader/webglVim'
+import { Marker } from '../gizmos/markers/gizmoMarker'
+import { Vim } from '../../loader/vim'
 
-export abstract class WebglCoreCameraMovement {
-  protected _camera: WebglCoreCamera
+export abstract class CameraMovement {
+  protected _camera: Camera
 
-  constructor (camera: WebglCoreCamera) {
+  constructor (camera: Camera) {
     this._camera = camera
   }
 
@@ -120,9 +120,9 @@ export abstract class WebglCoreCameraMovement {
 
   /**
    * Rotates the camera without moving so that it looks at the specified target.
-   * @param {WebglCoreModelObject | THREE.Vector3} target - The target object or position to look at.
+   * @param {Element3D | THREE.Vector3} target - The target object or position to look at.
    */
-  abstract target(target: WebglCoreModelObject | THREE.Vector3): void
+  abstract target(target: Element3D | THREE.Vector3): void
 
   /**
    * Resets the camera to its last saved position and orientation.
@@ -138,17 +138,17 @@ export abstract class WebglCoreCameraMovement {
 
   /**
    * Sets the camera's orientation and position to focus on the specified target.
-   * @param {IObject | WebglVim | THREE.Sphere | THREE.Box3 | 'all' | undefined} target - The target object, or 'all' to frame all objects.
+   * @param {IObject | Vim | THREE.Sphere | THREE.Box3 | 'all' | undefined} target - The target object, or 'all' to frame all objects.
    * @param {THREE.Vector3} [forward] - Optional forward direction after framing.
    */
   async frame (
-    target: WebglCoreSelectable | WebglVim | THREE.Sphere | THREE.Box3 | 'all' | undefined,
+    target: Selectable | Vim | THREE.Sphere | THREE.Box3 | 'all' | undefined,
     forward?: THREE.Vector3
   ) {
-    if ((target instanceof WebglCoreMarker) || (target instanceof WebglCoreModelObject)) {
+    if ((target instanceof Marker) || (target instanceof Element3D)) {
       target = await target.getBoundingBox()
     }
-    if ((target instanceof WebglVim)) {
+    if ((target instanceof Vim)) {
       target = target.scene.getAverageBoundingBox()
     }
     if (target === 'all') {

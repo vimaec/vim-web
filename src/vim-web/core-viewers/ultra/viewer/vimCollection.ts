@@ -1,16 +1,16 @@
 import { ISignal, SignalDispatcher } from "ste-signals";
-import { UltraCoreVim } from "./vim";
+import { Vim } from "./vim";
 
 export interface IReadonlyVimCollection {
-  getFromHandle(handle: number): UltraCoreVim | undefined;
-  getAll(): ReadonlyArray<UltraCoreVim>;
-  getAt(index: number): UltraCoreVim | undefined
+  getFromHandle(handle: number): Vim | undefined;
+  getAll(): ReadonlyArray<Vim>;
+  getAt(index: number): Vim | undefined
   count: number;
   onChanged: ISignal;
 }
 
 export class VimCollection implements IReadonlyVimCollection {
-  private _vims: UltraCoreVim[];
+  private _vims: Vim[];
   private _onChanged = new SignalDispatcher();
   get onChanged() {
     return this._onChanged.asEvent();
@@ -28,7 +28,7 @@ export class VimCollection implements IReadonlyVimCollection {
    * Adds a Vim instance to the collection.
    * @param vim - The Vim instance to add.
    */
-  public add(vim: UltraCoreVim): void {
+  public add(vim: Vim): void {
     // Check if the Vim is already in the collection to prevent duplicates
     if (!this._vims.some(v => v.handle === vim.handle)) {
       this._vims.push(vim);
@@ -40,7 +40,7 @@ export class VimCollection implements IReadonlyVimCollection {
    * Removes a Vim instance from the collection.
    * @param vim - The Vim instance to remove.
    */
-  public remove(vim: UltraCoreVim): void {
+  public remove(vim: Vim): void {
     const count = this._vims.length;
     this._vims = this._vims.filter(v => v.handle !== vim.handle);
     if (this._vims.length !== count) {
@@ -53,7 +53,7 @@ export class VimCollection implements IReadonlyVimCollection {
    * @param handle - The handle of the Vim instance.
    * @returns The Vim instance or undefined if not found.
    */
-  public getFromHandle(handle: number): UltraCoreVim | undefined {
+  public getFromHandle(handle: number): Vim | undefined {
     return this._vims.find(v => v.handle === handle);
   }
 
@@ -62,7 +62,7 @@ export class VimCollection implements IReadonlyVimCollection {
    * @param index - The index of the Vim instance.
    * @returns The Vim instance or undefined if the index is out of bounds.
    */
-  public getAt(index: number): UltraCoreVim | undefined {
+  public getAt(index: number): Vim | undefined {
     return this._vims[index];
   }
 
@@ -70,7 +70,7 @@ export class VimCollection implements IReadonlyVimCollection {
    * Gets all Vim instances.
    * @returns An array of Vim instances.
    */
-  public getAll(): ReadonlyArray<UltraCoreVim> {
+  public getAll(): ReadonlyArray<Vim> {
     return this._vims;
   }
 

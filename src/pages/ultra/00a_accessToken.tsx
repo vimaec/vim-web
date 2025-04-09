@@ -6,7 +6,7 @@ export function UltraAccessToken () {
 }
   
 async function createComponent (div: HTMLDivElement, url: string, token: string) {
-  const ultra = await VIM.createUltraViewer(div)
+  const ultra = await VIM.React.Ultra.createViewer(div)
   await ultra.viewer.connect()
   const request = ultra.load({url: url, authToken: token})
   await request.getResult()

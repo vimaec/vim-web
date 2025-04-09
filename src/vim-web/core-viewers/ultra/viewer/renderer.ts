@@ -1,9 +1,10 @@
-import { Box3, RGBA } from "../../utils/math3d";
-import { Validation } from "./validation";
+import { ISignal, SignalDispatcher } from "ste-signals";
+import * as THREE from "three";
+import { Validation } from "../../../utils";
 import { ILogger } from "./logger";
 import { defaultSceneSettings, RpcSafeClient, SceneSettings } from "./rpcSafeClient";
+import { RGBA } from "./rpcTypes";
 import { ClientStreamError } from "./socketClient";
-import { ISignal, SignalDispatcher } from "ste-signals";
 
 /**
  * Render settings that extend SceneSettings with additional rendering-specific properties
@@ -37,13 +38,13 @@ export interface IRenderer {
   hdrBackgroundSaturation: number
   backgroundBlur: number
   backgroundColor: RGBA
-  getBoundingBox(): Promise<Box3 | undefined>
+  getBoundingBox(): Promise<THREE.Box3 | undefined>
 }
 
 /**
  * Renderer class that handles 3D scene rendering and settings management
  */
-export class UltraCoreRenderer implements IRenderer {
+export class Renderer implements IRenderer {
 
   private _rpc: RpcSafeClient
   private _logger : ILogger
@@ -267,7 +268,7 @@ export class UltraCoreRenderer implements IRenderer {
     this.requestSettingsUpdate();
   }
 
-  getBoundingBox(): Promise<Box3 | undefined> {
+  getBoundingBox(): Promise<THREE.Box3 | undefined> {
     return this._rpc.RPCGetSceneAABB()
   }
 

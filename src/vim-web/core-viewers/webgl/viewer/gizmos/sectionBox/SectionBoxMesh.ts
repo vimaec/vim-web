@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { WebglCoreLayers } from '../../raycaster';
+import { Layers } from '../../raycaster';
 
 /**
  * Defines the box mesh for the section box.
@@ -16,7 +16,7 @@ export class SectionBoxMesh extends THREE.Mesh {
     });
 
     super(geo, mat);
-    this.layers.set(WebglCoreLayers.NoRaycast)
+    this.layers.set(Layers.NoRaycast)
   }
 
   /**

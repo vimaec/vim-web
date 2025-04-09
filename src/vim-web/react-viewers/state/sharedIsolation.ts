@@ -1,7 +1,7 @@
 import { RefObject, useEffect, useRef } from "react";
 import { StateRef, useStateRef } from "../helpers/reactUtils";
 import { ISignal } from "ste-signals";
-import { sanitize } from "../../core-viewers/utils/strings";
+import { sanitize } from "../../utils/strings";
 
 export type VisibilityStatus = 'all' | 'allButSelection' |'onlySelection' | 'some' | 'none';  
 

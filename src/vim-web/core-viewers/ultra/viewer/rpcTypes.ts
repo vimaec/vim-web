@@ -1,33 +1,21 @@
-// We just use relevent types from three.js
-export { Matrix4 as Matrix44, } from 'three'
-export {Vector2, Vector3, Box3} from 'three'
+import * as Utils from '../../../utils'
+import * as THREE from 'three'
 
-import {Vector2, Vector3 } from 'three'
-
-/**
- * Checks if two Vector2 objects are approximately equal.
- * @param v1 - First Vector2.
- * @param v2 - Second Vector2.
- * @param epsilon - Tolerance for floating-point comparisons.
- * @returns True if vectors are almost equal, false otherwise.
- */
-export function almostEqual(v1: Vector2, v2: Vector2, epsilon = 1e-6): boolean {
-  return Math.abs(v1.x - v2.x) < epsilon && Math.abs(v1.y - v2.y) < epsilon;
-}
+export {Vector2, Vector3, Box3, Matrix4 as Matrix44 } from 'three'
 
 export class Segment {
-  origin: Vector3
-  target: Vector3
+  origin: THREE.Vector3
+  target: THREE.Vector3
 
-  constructor (origin: Vector3 = new Vector3(), target: Vector3 = new Vector3()) {
+  constructor (origin: THREE.Vector3 = new THREE.Vector3(), target: THREE.Vector3 = new THREE.Vector3()) {
     this.origin = origin
     this.target = target
   }
 
   static fromArray (array: number[]): Segment {
     return new Segment(
-      new Vector3(array[0], array[1], array[2]),
-      new Vector3(array[3], array[4], array[5])
+      new THREE.Vector3(array[0], array[1], array[2]),
+      new THREE.Vector3(array[3], array[4], array[5])
     )
   }
 
@@ -146,10 +134,10 @@ export class RGBA32 {
 
   static fromFloats (r: number, g: number, b: number, a: number = 1): RGBA32 {
     return this.fromInts(
-      remap(r, 255),
-      remap(g, 255),
-      remap(b, 255),
-      remap(a, 255)
+      Utils.remap(r, 255),
+      Utils.remap(g, 255),
+      Utils.remap(b, 255),
+      Utils.remap(a, 255)
     )
   }
 
@@ -219,19 +207,21 @@ export class RGBA32 {
   }
 }
 
-/**
- * Remaps the given value from the range [0-1] to [0-max].
- */
-export function remap (value: number, max: number): number {
-  return Math.round(clamp(value, 0, 1) * max)
+export type HitCheckResult = {
+  vimHandle: number;         // uint32_t equivalent
+  nodeIndex: number;         // uint32_t equivalent
+  worldPosition: THREE.Vector3;  // 3-element array of floats
+  worldNormal: THREE.Vector3;    // 3-element array of floats
 }
 
-/**
- * Clamps the given value between the given min and max.
- */
-export function clamp (value: number, min: number, max: number): number {
-  if (!Number.isFinite(value)) {
-    return min
-  }
-  return Math.min(Math.max(value, min), max)
+export type VimStatus = {
+  status: number;    // uint32_t equivalent
+  progress: number;  // float equivalent
+}
+
+export type SectionBoxState = {
+  visible: boolean;       // bool equivalent
+  interactive: boolean;  // bool equivalent
+  clip : boolean;         // bool equivalent
+  box: THREE.Box3;              // Box3 equivalent
 }

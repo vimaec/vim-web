@@ -2,7 +2,9 @@
  * @module viw-webgl-react
  */
 
-import * as VIM from '../../core-viewers/webgl/index'
+import * as VIM from '../../'
+import PointerMode = VIM.Core.Shared.PointerMode
+import Viewer = VIM.Core.Webgl.Viewer
 
 /**
  * Css classes for custom cursors.
@@ -20,7 +22,7 @@ export type Cursor =
 /**
  * Maps between viewer pointers and cursor css classes
  */
-export function pointerToCursor (pointer: VIM.PointerMode): Cursor {
+export function pointerToCursor (pointer: PointerMode): Cursor {
   switch (pointer) {
     case 'orbit':
       return 'cursor-orbit'
@@ -41,11 +43,11 @@ export function pointerToCursor (pointer: VIM.PointerMode): Cursor {
  * Listens to the vim viewer and updates css cursors classes on the canvas accordingly.
  */
 export class CursorManager {
-  private _viewer: VIM.WebglCoreViewer
+  private _viewer: Viewer
   private cursor: Cursor
   private _boxHover: boolean
   private _subscriptions: (() => void)[]
-  constructor (viewer: VIM.WebglCoreViewer) {
+  constructor (viewer: Viewer) {
     this._viewer = viewer
   }
 

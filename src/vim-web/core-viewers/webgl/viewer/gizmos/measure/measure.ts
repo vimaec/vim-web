@@ -3,10 +3,10 @@
  */
 
 import * as THREE from 'three'
-import { IWebglRaycastResult, WebglRaycastResult } from '../../raycaster'
-import { WebglCoreViewer } from '../../viewer'
+import { IRaycastResult, RaycastResult } from '../../raycaster'
+import { Viewer } from '../../viewer'
 import { MeasureGizmo } from './measureGizmo'
-import { ControllablePromise } from '../../../../utils/promise'
+import { ControllablePromise } from '../../../../../utils/promise'
 
 /**
  * Interacts with the measure tool.
@@ -58,7 +58,7 @@ export type MeasureStage = 'ready' | 'active' | 'done' | 'failed'
  */
 export class Measure implements IMeasure {
   // dependencies
-  private _viewer: WebglCoreViewer
+  private _viewer: Viewer
 
   // resources
   private _meshes: MeasureGizmo | undefined
@@ -100,7 +100,7 @@ export class Measure implements IMeasure {
     return this._stage
   }
 
-  constructor (viewer: WebglCoreViewer) {
+  constructor (viewer: Viewer) {
     this._viewer = viewer
   }
 
@@ -145,7 +145,7 @@ export class Measure implements IMeasure {
   /**
    * Should be private.
    */
-  onFirstClick (hit: IWebglRaycastResult) {
+  onFirstClick (hit: IRaycastResult) {
     this.clear()
     this._meshes = new MeasureGizmo(this._viewer)
     this._startPos = hit.worldPosition
@@ -178,7 +178,7 @@ export class Measure implements IMeasure {
   /**
    * Should be private.
    */
-  onSecondClick (hit : IWebglRaycastResult) {
+  onSecondClick (hit : IRaycastResult) {
     // Compute measurement vector component
     this._endPos = hit.worldPosition
 

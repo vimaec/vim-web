@@ -1,27 +1,27 @@
-import { THREE } from "../../..";
-import { CoreRaycaster, CoreRaycastResult } from "../../shared/raycaster";
+import * as THREE from "three";
+import { Validation } from "../../../utils";
+import * as Shared from "../../shared";
+import { Element3D } from "./element3d";
 import { RpcSafeClient } from "./rpcSafeClient";
-import { UltraCoreModelObject } from "./modelObject";
-import { Validation } from "./validation";
 import { IReadonlyVimCollection } from "./vimCollection";
 
-export type IUltraRaycastResult = CoreRaycastResult<UltraCoreModelObject>;
-export type IUltraRaycaster = CoreRaycaster<UltraCoreModelObject>;
+export type IUltraRaycastResult = Shared.IRaycastResult<Element3D>;
+export type IUltraRaycaster = Shared.IRaycaster<Element3D>;
 
 /**
  * Represents the result of a hit test operation.
  */
-export class UltraRaycastResult implements CoreRaycastResult<UltraCoreModelObject> {
+export class UltraRaycastResult implements Shared.IRaycastResult<Element3D> {
 
   /** The model Object hit */
-  object: UltraCoreModelObject
+  object: Element3D
 
   /** The 3D world position of the hit point */
   worldPosition: THREE.Vector3;
   /** The surface normal at the hit point */
   worldNormal: THREE.Vector3;
 
-  constructor(object: UltraCoreModelObject, worldPosition: THREE.Vector3, worldNormal: THREE.Vector3) {
+  constructor(object: Element3D, worldPosition: THREE.Vector3, worldNormal: THREE.Vector3) {
     this.object = object;
     this.worldPosition = worldPosition;
     this.worldNormal = worldNormal;
@@ -37,7 +37,7 @@ export class UltraRaycastResult implements CoreRaycastResult<UltraCoreModelObjec
  * Handles raycasting operations in the Ultra system, enabling picking and
  * interaction with 3D objects in the scene.
  */
-export class UltraCoreRaycaster implements CoreRaycaster<UltraCoreModelObject> {
+export class Raycaster implements Shared.IRaycaster<Element3D> {
   private _rpc: RpcSafeClient;
   private _vims: IReadonlyVimCollection;
 

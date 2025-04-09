@@ -2,19 +2,19 @@
  * @module viw-webgl-viewer/gizmos
  */
 import * as THREE from 'three'
-import { WebglCoreRenderer } from '../rendering/renderer'
-import { WebglCoreCamera } from '../camera/camera'
-import { WebglCoreViewerSettings } from '../settings/viewerSettings'
-import { GeneralInputHandler } from '../../../shared/InputHandler'
+import { Renderer } from '../rendering/renderer'
+import { Camera } from '../camera/camera'
+import { ViewerSettings } from '../settings/viewerSettings'
+import { InputHandler } from '../../../shared/inputHandler'
 
 /**
  * Manages the camera target gizmo
  */
 export class GizmoOrbit {
   // Dependencies
-  private _renderer: WebglCoreRenderer
-  private _camera: WebglCoreCamera
-  private _inputs: GeneralInputHandler
+  private _renderer: Renderer
+  private _camera: Camera
+  private _inputs: InputHandler
 
   // Settings
   private _size: number = 1
@@ -37,10 +37,10 @@ export class GizmoOrbit {
   private _animation: number = 0
 
   constructor (
-    renderer: WebglCoreRenderer,
-    camera: WebglCoreCamera,
-    input: GeneralInputHandler,
-    settings: WebglCoreViewerSettings
+    renderer: Renderer,
+    camera: Camera,
+    input: InputHandler,
+    settings: ViewerSettings
   ) {
     this._renderer = renderer
     this._camera = camera
@@ -146,7 +146,7 @@ export class GizmoOrbit {
     this._materialAlways.color = color
   }
 
-  private applySettings (settings: WebglCoreViewerSettings) {
+  private applySettings (settings: ViewerSettings) {
     this._active = settings.camera.gizmo.enable
     this.setColor(settings.camera.gizmo.color)
     this.setSize(settings.camera.gizmo.size)

@@ -4,7 +4,7 @@
 
 import * as THREE from 'three'
 import { InsertableSubmesh } from './progressive/insertableSubmesh'
-import { WebglVim } from './webglVim'
+import { Vim } from './vim'
 import { InstancedSubmesh } from './progressive/instancedSubmesh'
 import { ModelMaterial } from './materials/materials'
 
@@ -22,7 +22,7 @@ export class WebglMesh {
   /**
    * Vim file from which this mesh was created.
    */
-  vim: WebglVim | undefined
+  vim: Vim | undefined
 
   /**
    * Whether the mesh is merged or not.

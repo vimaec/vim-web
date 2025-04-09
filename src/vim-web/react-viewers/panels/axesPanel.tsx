@@ -18,7 +18,7 @@ export const AxesPanelMemo = React.memo(AxesPanel)
 /**
  * JSX Component for axes gizmo.
  */
-function AxesPanel (props: { viewer: VIM.WebglCoreViewer, camera: CameraRef, settings: SettingsState }) {
+function AxesPanel (props: { viewer: VIM.Viewer, camera: CameraRef, settings: SettingsState }) {
   const viewer = props.viewer
 
   const [ortho, setOrtho] = useState<boolean>(viewer.camera.orthographic)

@@ -6,7 +6,7 @@ export class CameraObserver {
   private _timeOut : ReturnType<typeof setTimeout>
   private _sub : () => void
 
-  constructor (viewer: VIM.WebglCoreViewer, delay: number) {
+  constructor (viewer: VIM.Viewer, delay: number) {
     this._sub = viewer.camera.onMoved.subscribe(() => {
       this.onChange?.(true)
       clearTimeout(this._timeOut)

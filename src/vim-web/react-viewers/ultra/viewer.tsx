@@ -1,6 +1,6 @@
 
 
-import * as VIM from '../..'
+import * as Core from '../../core-viewers/ultra' 
 import React, { useEffect, useState } from 'react'
 import { Container, createContainer } from '../container'
 import { createRoot } from 'react-dom/client'
@@ -17,7 +17,7 @@ import { RestOfScreen } from '../panels/restOfScreen'
 import { LogoMemo } from '../panels/logo'
 import { whenTrue } from '../helpers/utils'
 import { useSideState } from '../sidePanel/sideState'
-import { UltraViewerRef } from './viewerRef'
+import { ViewerRef } from './viewerRef'
 import ReactTooltip from 'react-tooltip'
 import { useUltraCamera } from './camera'
 import { useViewerInput } from '../state/viewerInputs'
@@ -31,22 +31,22 @@ import { IsolationSettingsPanel } from '../panels/renderSettingsPanel'
 *  @param viewerSettings Viewer settings.
  * @returns An object containing the resulting container, reactRoot, and viewer.
  */
-export function createUltraViewer (
+export function createViewer (
   container?: Container | HTMLElement
-) : Promise<UltraViewerRef> {
-  const promise = new DeferredPromise<UltraViewerRef>()
+) : Promise<ViewerRef> {
+  const promise = new DeferredPromise<ViewerRef>()
   const cmpContainer = container instanceof HTMLElement
     ? createContainer(container)
     : container ?? createContainer()
 
   // Create the viewer and container
-  const viewer = VIM.UltraCoreViewer.createWithCanvas(cmpContainer.gfx)
+  const viewer = Core.Viewer.createWithCanvas(cmpContainer.gfx)
 
   // Create the React root
   const reactRoot = createRoot(cmpContainer.ui)
 
   // Patch the component to clean up after itself
-  const attachDispose = (cmp : UltraViewerRef) => {
+  const attachDispose = (cmp : ViewerRef) => {
     cmp.dispose = () => {
       viewer.dispose()
       cmpContainer.dispose()
@@ -56,10 +56,10 @@ export function createUltraViewer (
   }
 
   reactRoot.render(
-    <UltraViewer
+    <Viewer
       container={cmpContainer}
       viewer={viewer}
-      onMount = {(cmp : UltraViewerRef) => promise.resolve(attachDispose(cmp))}
+      onMount = {(cmp : ViewerRef) => promise.resolve(attachDispose(cmp))}
     />
   )
   return promise
@@ -72,10 +72,10 @@ export function createUltraViewer (
  * @param onMount A callback function triggered when the component is mounted. Receives a reference to the Vim component.
  * @param settings Optional settings for configuring the Vim component's behavior.
  */
-export function UltraViewer (props: {
+export function Viewer (props: {
   container: Container
-  viewer: VIM.UltraCoreViewer
-  onMount: (component: UltraViewerRef) => void}) {
+  viewer: Core.Viewer
+  onMount: (component: ViewerRef) => void}) {
 
   const modal = useModal(true)
   const sectionBox = useUltraSectionBox(props.viewer)
@@ -133,8 +133,8 @@ export function UltraViewer (props: {
   </>
 }
 
-function patchLoad(viewer: VIM.UltraCoreViewer, modal: ModalRef) {
-  return function load (source: VIM.UltraVimSource): VIM.UltraILoadRequest {
+function patchLoad(viewer: Core.Viewer, modal: ModalRef) {
+  return function load (source: Core.VimSource): Core.ILoadRequest {
     const request = viewer.loadVim(source)
 
     // We don't want to block the main thread to get progress updates

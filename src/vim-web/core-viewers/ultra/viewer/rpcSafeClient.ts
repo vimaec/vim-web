@@ -1,15 +1,13 @@
-import { Box3, RGBA, RGBA32, Segment, Vector2, Vector3 } from "../../utils/math3d"
-import { HitCheckResult, SectionBoxState } from "./marshal"
+import * as RpcTypes from "./rpcTypes"
 import { MaterialHandle, RpcClient } from "./rpcClient"
-import { Validation } from "./validation"
-import { batchArray, batchArrays } from "../../utils/array"
-import { INVALID_HANDLE } from "./viewer"
-import { THREE } from "../../.."
+import { Validation } from "../../../utils";
+import { batchArray, batchArrays } from "../../../utils/array"
+import { ULTRA_INVALID_HANDLE } from "./viewer"
 
 const defaultBatchSize = 10000
 
 //TODO: Share both VIMSource
-export type UltraVimSource = {
+export type VimSource = {
   url: string;
   authToken? : string;
 }
@@ -30,7 +28,7 @@ export type SceneSettings = {
   hdrBackgroundScale: number
   hdrBackgroundSaturation: number
   backGroundBlur: number
-  backgroundColor: RGBA
+  backgroundColor: RpcTypes.RGBA
 }
 
 export const defaultSceneSettings: SceneSettings = {
@@ -39,7 +37,7 @@ export const defaultSceneSettings: SceneSettings = {
   hdrBackgroundScale: 1.0,
   hdrBackgroundSaturation: 1.0,
   backGroundBlur: 1.0,
-  backgroundColor: new RGBA(0.9, 0.9, 0.9, 1.0)
+  backgroundColor: new RpcTypes.RGBA(0.9, 0.9, 0.9, 1.0)
 }
 
 export enum VimLoadingStatus {
@@ -118,7 +116,7 @@ export class RpcSafeClient {
     this.rpc.RPCLockIblRotation(lock)
   }
 
-  RPCGetSceneAABB(): Promise<THREE.Box3 | undefined> {
+  RPCGetSceneAABB(): Promise<RpcTypes.Box3 | undefined> {
     return this.safeCall(
       () => this.rpc.RPCGetSceneAABB(),
       undefined
@@ -272,18 +270,18 @@ export class RpcSafeClient {
    * @throws {Error} If the text is empty
    */
   async RPCCreateText(
-    position: Vector3,
-    color: RGBA32,
+    position: RpcTypes.Vector3,
+    color: RpcTypes.RGBA32,
     text : string
   ): Promise<number> {
     // Validation
-    if (!Validation.isNonEmptyString(text)) return INVALID_HANDLE
-    if (!Validation.isValidVector3(position)) return INVALID_HANDLE
+    if (!Validation.isNonEmptyString(text)) return ULTRA_INVALID_HANDLE
+    if (!Validation.isValidVector3(position)) return ULTRA_INVALID_HANDLE
 
     // Run
     return await this.safeCall(
       () => this.rpc.RPCCreateText(position, color, text),
-      INVALID_HANDLE
+      ULTRA_INVALID_HANDLE
     )
   }
 
@@ -309,15 +307,15 @@ export class RpcSafeClient {
     this.rpc.RPCEnableSectionBox(enable)
   }
 
-  RPCSetSectionBox(state: SectionBoxState): void {
+  RPCSetSectionBox(state: RpcTypes.SectionBoxState): void {
     this.rpc.RPCSetSectionBox(
       {
         ...state,
-        box: state.box ?? new THREE.Box3(new THREE.Vector3(), new THREE.Vector3())
+        box: state.box ?? new RpcTypes.Box3(new RpcTypes.Vector3(), new RpcTypes.Vector3())
       })
   }
 
-  async RPCGetSectionBox(): Promise<SectionBoxState | undefined> {
+  async RPCGetSectionBox(): Promise<RpcTypes.SectionBoxState | undefined> {
     return await this.safeCall(
       () => this.rpc.RPCGetSectionBox(),
       undefined
@@ -333,7 +331,7 @@ export class RpcSafeClient {
    * Retrieves the current camera position and orientation.
    * @returns Promise resolving to a segment representing the camera's current position and target
    */
-  async RPCGetCameraPosition(): Promise<Segment | undefined> {
+  async RPCGetCameraPosition(): Promise<RpcTypes.Segment | undefined> {
     return await this.safeCall(
       () => this.rpc.RPCGetCameraPosition(),
       undefined
@@ -346,7 +344,7 @@ export class RpcSafeClient {
    * @param blendTime - Duration of the camera transition in seconds (non-negative)
    * @throws {Error} If segment is invalid or blendTime is negative
    */
-  RPCSetCameraPosition(segment: Segment, blendTime: number): void {
+  RPCSetCameraPosition(segment: RpcTypes.Segment, blendTime: number): void {
     // Validation
     if (!Validation.isValidSegment(segment)) return
     blendTime = Validation.clamp01(blendTime)
@@ -355,7 +353,7 @@ export class RpcSafeClient {
     this.rpc.RPCSetCameraPosition(segment, blendTime)
   }
 
-  async RPCGetBoundingBoxAll(componentHandle: number): Promise<THREE.Box3 | undefined> {
+  async RPCGetBoundingBoxAll(componentHandle: number): Promise<RpcTypes.Box3 | undefined> {
     return await this.safeCall(
       () => this.rpc.RPCGetBoundingBoxAll(componentHandle),
       undefined
@@ -373,7 +371,7 @@ export class RpcSafeClient {
   async RPCGetBoundingBox(
     componentHandle: number,
     nodes: number[]
-  ): Promise<THREE.Box3 | undefined> {
+  ): Promise<RpcTypes.Box3 | undefined> {
     // Validation
     if (!Validation.isComponentHandle(componentHandle)) return
     if (!Validation.areComponentHandles(nodes)) return
@@ -388,18 +386,18 @@ export class RpcSafeClient {
   private async getBoundingBoxBatched(
     componentHandle: number,
     nodes: number[]
-  ): Promise<THREE.Box3> {
+  ): Promise<RpcTypes.Box3> {
 
     if(nodes.length === 0){
-      return new THREE.Box3()
+      return new RpcTypes.Box3()
     }
 
     const batches = batchArray(nodes, this.batchSize)
     const promises = batches.map(async (batch) => {
       const aabb = await this.rpc.RPCGetBoundingBox(componentHandle, batch)
-      const v1 = new Vector3(aabb.min.x, aabb.min.y, aabb.min.z)
-      const v2 = new Vector3(aabb.max.x, aabb.max.y, aabb.max.z)
-      return new THREE.Box3(v1, v2)
+      const v1 = new RpcTypes.Vector3(aabb.min.x, aabb.min.y, aabb.min.z)
+      const v2 = new RpcTypes.Vector3(aabb.max.x, aabb.max.y, aabb.max.z)
+      return new RpcTypes.Box3(v1, v2)
     })
     const boxes = await Promise.all(promises)
     const box = boxes[0]
@@ -412,7 +410,7 @@ export class RpcSafeClient {
    * @param blendTime - Duration of the camera transition in seconds (non-negative)
    * @returns Promise resolving to camera segment representing the final position
    */
-  async RPCFrameAll(blendTime: number): Promise<Segment | undefined> {
+  async RPCFrameAll(blendTime: number): Promise<RpcTypes.Segment | undefined> {
     // Validation
     blendTime = Validation.clamp01(blendTime)
 
@@ -430,7 +428,7 @@ export class RpcSafeClient {
    * @returns Promise resolving to camera segment representing the final position
    * @throws {Error} If the component handle is invalid
    */
-  async RPCFrameVim(componentHandle: number, blendTime: number): Promise<Segment | undefined> {
+  async RPCFrameVim(componentHandle: number, blendTime: number): Promise<RpcTypes.Segment | undefined> {
     // Validation
     if (!Validation.isComponentHandle(componentHandle)) return 
     blendTime = Validation.clamp01(blendTime)
@@ -455,7 +453,7 @@ export class RpcSafeClient {
     componentHandle: number,
     nodes: number[],
     blendTime: number
-  ): Promise<Segment | undefined> {
+  ): Promise<RpcTypes.Segment | undefined> {
     // Validation
     if (!Validation.isComponentHandle(componentHandle)) return
     if (!Validation.areComponentHandles(nodes)) return 
@@ -486,7 +484,7 @@ export class RpcSafeClient {
    * @param blendTime - Duration of the camera transition in seconds (non-negative)
    * @throws {Error} If the box is invalid (min values must be less than max values)
    */
-  async RPCFrameBox(box: THREE.Box3, blendTime: number): Promise<Segment | undefined> {
+  async RPCFrameBox(box: RpcTypes.Box3, blendTime: number): Promise<RpcTypes.Segment | undefined> {
     // Validation
     if (!Validation.isValidBox(box)) return
     blendTime = Validation.clamp01(blendTime)
@@ -546,15 +544,15 @@ export class RpcSafeClient {
    * @returns Promise resolving to the handle of the loaded VIM component
    * @throws {Error} If the filename is invalid or empty
    */
-  async RPCLoadVim(source: UltraVimSource): Promise<number> {
+  async RPCLoadVim(source: VimSource): Promise<number> {
     // Validation
-    if (!Validation.isNonEmptyString(source.url)) return INVALID_HANDLE
+    if (!Validation.isNonEmptyString(source.url)) return ULTRA_INVALID_HANDLE
     const url = source.url.replace("file:///", "file://")
 
     // Run
     return await this.safeCall(
       () => this.rpc.RPCLoadVim(url),
-      INVALID_HANDLE
+      ULTRA_INVALID_HANDLE
     )
   }
 
@@ -564,14 +562,14 @@ export class RpcSafeClient {
    * @returns Promise resolving to the handle of the loaded VIM component
    * @throws {Error} If the URL is invalid
    */
-  async RPCLoadVimURL(source: UltraVimSource): Promise<number> {
+  async RPCLoadVimURL(source: VimSource): Promise<number> {
     // Validation
-    if (!Validation.isURL(source.url)) return INVALID_HANDLE
+    if (!Validation.isURL(source.url)) return ULTRA_INVALID_HANDLE
 
     // Run
     return await this.safeCall(
       () => this.rpc.RPCLoadVimURL(source.url, source.authToken ?? ""),
-      INVALID_HANDLE
+      ULTRA_INVALID_HANDLE
     )
   }
 
@@ -624,7 +622,7 @@ export class RpcSafeClient {
    * Sets the color used for ghosted geometry.
    * @param ghostColor - The RGBA color to use for ghosted elements
    */
-  RPCSetGhostColor(ghostColor: RGBA): void {
+  RPCSetGhostColor(ghostColor: RpcTypes.RGBA): void {
     const color = Validation.clampRGBA01(ghostColor)
     this.rpc.RPCSetGhostColor(color)
   }
@@ -634,7 +632,7 @@ export class RpcSafeClient {
    * @param pos - Normalized screen coordinates (0-1, 0-1)
    * @returns Promise resolving to hit test result if something was hit, undefined otherwise
    */
-  async RPCPerformHitTest(pos: THREE.Vector2): Promise<HitCheckResult | undefined> {
+  async RPCPerformHitTest(pos: RpcTypes.Vector2): Promise<RpcTypes.HitCheckResult | undefined> {
     // Validation
     if (!Validation.isRelativeVector2(pos)) return
 
@@ -657,7 +655,7 @@ export class RpcSafeClient {
    * @throws {Error} If mouseButton is not a valid positive integer
    */
   RPCMouseButtonEvent(
-    position: THREE.Vector2,
+    position: RpcTypes.Vector2,
     mouseButton: number,
     down: boolean
   ){
@@ -676,7 +674,7 @@ export class RpcSafeClient {
    * @throws {Error} If mouseButton is not a valid positive integer
    */
   RPCMouseDoubleClickEvent(
-    position: THREE.Vector2,
+    position: RpcTypes.Vector2,
     mouseButton: number
   ): void {
     // Validation
@@ -690,7 +688,7 @@ export class RpcSafeClient {
    * Sends a mouse movement event to the viewer.
    * @param position - The normalized screen coordinates (0-1, 0-1)
    */
-  RPCMouseMoveEvent(position: THREE.Vector2): void {
+  RPCMouseMoveEvent(position: RpcTypes.Vector2): void {
     // Validation
     if (!Validation.isRelativeVector2(position)) return
 
@@ -717,7 +715,7 @@ export class RpcSafeClient {
    * @throws {Error} If mouseButton is not a valid positive integer
    */
   RPCMouseSelectEvent(
-    position: THREE.Vector2,
+    position: RpcTypes.Vector2,
     mouseButton: number
   ): void {
     // Validation
@@ -758,7 +756,7 @@ export class RpcSafeClient {
   async RPCCreateMaterialInstances(
     materialHandle: MaterialHandle,
     smoothness: number,
-    colors: RGBA32[]
+    colors: RpcTypes.RGBA32[]
   ): Promise<number[] | undefined> {
     if (!Validation.isMaterialHandle(materialHandle)) return 
     if (!Validation.isFullArray(colors)) return
@@ -773,7 +771,7 @@ export class RpcSafeClient {
   private async createMaterialInstancesBatched(
     materialHandle: number,
     smoothness: number,
-    colors: RGBA32[]
+    colors: RpcTypes.RGBA32[]
   ): Promise<number[]> {
     const batches = batchArray(colors, this.batchSize)
     const promises = batches.map(async (batch) => {
@@ -913,7 +911,7 @@ export class RpcSafeClient {
   RPCShowAABBs(
     componentHandle: number,
     nodes: number[],
-    colors: RGBA32[]
+    colors: RpcTypes.RGBA32[]
   ): void {
     // Validation
     if (!Validation.isComponentHandle(componentHandle)) return

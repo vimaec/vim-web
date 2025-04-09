@@ -1,7 +1,9 @@
 import React, { useRef } from 'react'
 import { useUltra } from './ultraPageUtils'
-import { UltraReact } from '../../vim-web'
 import * as Urls from '../devUrls'
+import * as VIM from '../../vim-web'
+
+import ViewerRef = VIM.React.Ultra.ViewerRef
 
 export function UltraHome () {
   const div = useRef<HTMLDivElement>(null)
@@ -14,7 +16,10 @@ export function UltraHome () {
   )
 }
 
-async function loadFile (ultra: UltraReact.UltraViewerRef) {
+async function loadFile (ultra: ViewerRef) {
+  
+
+
   const success = await ultra.viewer.connect()
   const request = ultra.load({url:getPathFromUrl() ?? Urls.residence})
   await request.getResult()

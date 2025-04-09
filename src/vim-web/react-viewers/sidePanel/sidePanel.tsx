@@ -22,7 +22,7 @@ export const SidePanelMemo = React.memo(SidePanel)
 export function SidePanel (props: {
   container: Container
   side: SideState
-  viewer: VIM.WebglCoreViewer
+  viewer: VIM.Viewer
   content: () => JSX.Element
 }) {
   const resizeTimeOut = useRef<number>()

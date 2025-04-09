@@ -1,11 +1,11 @@
-import { THREE, WebglCoreModelObject } from "../.."
+import { THREE } from "../.."
 
-export interface CoreModelObject{
-  vim: CoreVim<CoreModelObject>
+export interface IVimObject{
+  vim: IVim<IVimObject>
   getBoundingBox(): Promise<THREE.Box3>
 }
 
-export interface CoreVim<T extends CoreModelObject> {
+export interface IVim<T extends IVimObject> {
     /**
      * Retrieves the object associated with the specified instance number.
      * @param instance - The instance number of the object.

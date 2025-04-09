@@ -2,12 +2,12 @@ import * as THREE from 'three'
 import { SectionBoxMesh } from './SectionBoxMesh'
 import { SectionBoxOutline } from './sectionBoxOutline'
 import { SectionBoxHandles } from './sectionBoxHandles'
-import { WebglCoreRenderer } from '../../rendering/renderer'
-import { WebglCoreCamera, ICamera } from '../../camera/camera'
+import { Renderer } from '../../rendering/renderer'
+import { Camera, ICamera } from '../../camera/camera'
 
 export class SectionBoxGizmo
 {
-    private _renderer: WebglCoreRenderer
+    private _renderer: Renderer
     readonly cube: SectionBoxMesh
     readonly outline: SectionBoxOutline
     readonly handles: SectionBoxHandles
@@ -22,7 +22,7 @@ export class SectionBoxGizmo
       this.handles.visible = value
     }
 
-    constructor(renderer: WebglCoreRenderer, camera: ICamera)
+    constructor(renderer: Renderer, camera: ICamera)
     {
         this._renderer = renderer
         this.cube = new SectionBoxMesh()

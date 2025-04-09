@@ -1,40 +1,40 @@
-import { UltraClientError, UltraClientState, UltraConnectionSettings, SocketClient } from './socketClient'
+import { ISimpleEvent } from 'ste-simple-events'
+import * as Shared from '../../shared'
+import { Camera, ICamera } from './camera'
+import { ColorManager } from './colorManager'
 import { Decoder, IDecoder } from './decoder'
 import { DecoderWithWorker } from './decoderWithWorker'
-import { UltraCoreVim } from './vim'
-import { UltraILoadRequest, UltraLoadRequest } from './loadRequest'
-import { RpcClient } from './rpcClient'
-import { ILogger, defaultLogger } from './logger'
-import { IViewport, Viewport } from './viewport'
-import { ColorManager } from './colorManager'
-import { UltraCoreCamera, ICamera } from './camera'
-import { RpcSafeClient, UltraVimSource } from './rpcSafeClient'
-import { ISimpleEvent } from 'ste-simple-events'
-import { createUltraCoreSelection, IUltraCoreSelection } from './selection'
-import { IReadonlyVimCollection, VimCollection } from './vimCollection'
-import { IRenderer, UltraCoreRenderer } from './renderer'
-import { SectionBox } from './sectionBox'
-import { GeneralInputHandler } from '../../shared/InputHandler'	
 import { ultraInputAdapter } from './inputsAdapter'
-import { IUltraRaycaster, UltraCoreRaycaster } from './raycaster'
+import { ILoadRequest, LoadRequest } from './loadRequest'
+import { defaultLogger, ILogger } from './logger'
+import { IUltraRaycaster, Raycaster } from './raycaster'
+import { IRenderer, Renderer } from './renderer'
+import { RpcClient } from './rpcClient'
+import { RpcSafeClient, VimSource } from './rpcSafeClient'
+import { SectionBox } from './sectionBox'
+import { createSelection, ISelection } from './selection'
+import { ClientError, ClientState, ConnectionSettings, SocketClient } from './socketClient'
+import { IViewport, Viewport } from './viewport'
+import { Vim } from './vim'
+import { IReadonlyVimCollection, VimCollection } from './vimCollection'
 
-export const INVALID_HANDLE = 0xffffffff
+export const ULTRA_INVALID_HANDLE = 0xffffffff
 
 /**
  * The main Viewer class responsible for managing VIM files,
  * handling connections, and coordinating various components like the camera, decoder, and inputs.
  */
-export class UltraCoreViewer {
+export class Viewer {
   private readonly _decoder: Decoder | DecoderWithWorker
   private readonly _socketClient: SocketClient
-  private readonly _input: GeneralInputHandler
+  private readonly _input: Shared.InputHandler
   private readonly _logger: ILogger
   private readonly _canvas: HTMLCanvasElement
-  private readonly _renderer : UltraCoreRenderer
+  private readonly _renderer : Renderer
   private readonly _viewport: Viewport
-  private readonly _camera: UltraCoreCamera
-  private readonly _selection: IUltraCoreSelection
-  private readonly _raycaster: UltraCoreRaycaster
+  private readonly _camera: Camera
+  private readonly _selection: ISelection
+  private readonly _raycaster: Raycaster
   private readonly _vims : VimCollection
   private _disposed = false
 
@@ -81,7 +81,7 @@ export class UltraCoreViewer {
     return this._raycaster
   }
 
-  get selection (): IUltraCoreSelection {
+  get selection (): ISelection {
     return this._selection
   }
 
@@ -102,7 +102,7 @@ export class UltraCoreViewer {
    * Event that is triggered when the viewer's connection status changes.
    * @returns An event that emits the current ClientStatus.
    */
-  get onStateChanged (): ISimpleEvent<UltraClientState> {
+  get onStateChanged (): ISimpleEvent<ClientState> {
     return this._socketClient.onStatusUpdate
   }
 
@@ -110,7 +110,7 @@ export class UltraCoreViewer {
    * Gets the current connection status of the viewer.
    * @returns The current ClientStatus.
    */
-  get state (): UltraClientState {
+  get state (): ClientState {
     return this._socketClient.state
   }
 
@@ -125,12 +125,12 @@ export class UltraCoreViewer {
    * @param logger - Optional logger for logging messages.
    * @returns A new instance of the Viewer class.
    */
-  static createWithCanvas (parent: HTMLElement, logger?: ILogger): UltraCoreViewer {
+  static createWithCanvas (parent: HTMLElement, logger?: ILogger): Viewer {
     const canvas = document.createElement('canvas')
     parent.appendChild(canvas)
     canvas.style.width = '100%'
     canvas.style.height = '100%'
-    const uv = new UltraCoreViewer(canvas, logger)
+    const uv = new Viewer(canvas, logger)
     return uv
   }
 
@@ -150,11 +150,11 @@ export class UltraCoreViewer {
     
     this._viewport = new Viewport(canvas, this.rpc, this._logger)
     this._decoder = new Decoder(canvas, this._logger)
-    this._selection = createUltraCoreSelection()
-    this._renderer = new UltraCoreRenderer(this.rpc, this._logger)
+    this._selection = createSelection()
+    this._renderer = new Renderer(this.rpc, this._logger)
     this.colors = new ColorManager(this.rpc)
-    this._camera = new UltraCoreCamera(this.rpc)
-    this._raycaster = new UltraCoreRaycaster(this.rpc, this.vims)
+    this._camera = new Camera(this.rpc)
+    this._raycaster = new Raycaster(this.rpc, this.vims)
     this._input = ultraInputAdapter(this)
 
     this.sectionBox = new SectionBox(this.rpc)
@@ -193,7 +193,7 @@ export class UltraCoreViewer {
     this._decoder.start()
   }
 
-  private async validateConnection (): Promise<UltraClientError | undefined> {
+  private async validateConnection (): Promise<ClientError | undefined> {
     const apiVersionError = await this.checkAPIVersion()
     if(apiVersionError) return apiVersionError
 
@@ -203,7 +203,7 @@ export class UltraCoreViewer {
     return undefined
   }
 
-  private async checkAPIVersion (): Promise<UltraClientError | undefined> {
+  private async checkAPIVersion (): Promise<ClientError | undefined> {
     const version = await this.rpc.RPCGetAPIVersion()
     const localVersion = this.rpc.API_VERSION
 
@@ -246,7 +246,7 @@ export class UltraCoreViewer {
    * @param url - The server URL to connect to. Defaults to 'ws://localhost:8123'.
    * @returns A promise that resolves when the connection is established.
    */
-  async connect (settings?: UltraConnectionSettings): Promise<boolean> {
+  async connect (settings?: ConnectionSettings): Promise<boolean> {
     return this._socketClient.connect(settings)
   }
 
@@ -262,14 +262,14 @@ export class UltraCoreViewer {
    * @param source - The path or URL to the VIM file.
    * @returns A load request object that can be used to wait for the load to complete.
    */
-  loadVim (source: UltraVimSource): UltraILoadRequest {
+  loadVim (source: VimSource): ILoadRequest {
     if (typeof source.url !== 'string' || source.url.trim() === '') {
-      const request = new UltraLoadRequest()
+      const request = new LoadRequest()
       request.error('loadingError', 'Invalid path')
       return request
     }
 
-    const vim = new UltraCoreVim(this.rpc, this.colors, this._renderer, source, this._logger)
+    const vim = new Vim(this.rpc, this.colors, this._renderer, source, this._logger)
     this._vims.add(vim)
     const request = vim.connect()
     request.getResult().then((result) => {
@@ -284,7 +284,7 @@ export class UltraCoreViewer {
    * Unloads the given VIM from the viewer.
    * @param vim - The VIM instance to unload.
    */
-  unloadVim (vim: UltraCoreVim): void {
+  unloadVim (vim: Vim): void {
     this._vims.remove(vim)
     vim.disconnect()
   }

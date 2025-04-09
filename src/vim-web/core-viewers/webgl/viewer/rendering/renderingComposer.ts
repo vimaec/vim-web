@@ -8,13 +8,13 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 
-import { WeglCoreViewport } from '../viewport'
-import { WebglCoreRenderScene } from './renderScene'
-import { WebglCoreMaterials } from '../../loader/materials/materials'
+import { Viewport } from '../viewport'
+import { RenderScene } from './renderScene'
+import { Materials } from '../../loader/materials/materials'
 import { OutlinePass } from './outlinePass'
 import { MergePass } from './mergePass'
 import { TransferPass } from './transferPass'
-import { WebglCoreCamera } from '../camera/camera'
+import { Camera } from '../camera/camera'
 
 /*
   * Rendering Pipeline Flow:
@@ -37,8 +37,8 @@ import { WebglCoreCamera } from '../camera/camera'
  */
 export class RenderingComposer {
   private _renderer: THREE.WebGLRenderer
-  private _scene: WebglCoreRenderScene
-  private _materials: WebglCoreMaterials
+  private _scene: RenderScene
+  private _materials: Materials
   private _camera: THREE.PerspectiveCamera | THREE.OrthographicCamera
   private _size: THREE.Vector2
 
@@ -66,10 +66,10 @@ export class RenderingComposer {
    */
   constructor (
     renderer: THREE.WebGLRenderer,
-    scene: WebglCoreRenderScene,
-    viewport: WeglCoreViewport,
-    materials: WebglCoreMaterials,
-    camera: WebglCoreCamera
+    scene: RenderScene,
+    viewport: Viewport,
+    materials: Materials,
+    camera: Camera
   ) {
     this._renderer = renderer
     this._scene = scene

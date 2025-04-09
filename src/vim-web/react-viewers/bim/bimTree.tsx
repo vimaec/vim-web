@@ -10,18 +10,21 @@ import {
 } from 'react-complex-tree'
 import 'react-complex-tree/lib/style.css'
 import ReactTooltip from 'react-tooltip'
-import * as VIM from '../../core-viewers/webgl/index'
+import * as VIM from '../../'
 import { showContextMenu } from '../panels/contextMenu'
 import { CameraRef } from '../state/cameraState'
 import { ArrayEquals } from '../helpers/data'
 import { BimTreeData, VimTreeNode } from './bimTreeData'
 import { IsolationRef } from '../state/sharedIsolation'
 
+import Element3D = VIM.Core.Webgl.Element3D
+import Viewer = VIM.Core.Webgl.Viewer
+
 export type TreeActionRef = {
   showAll: () => void
   hideAll: () => void
   collapseAll: () => void
-  selectSiblings: (element: VIM.WebglCoreModelObject) => void
+  selectSiblings: (element: Element3D) => void
 }
 
 /**
@@ -33,14 +36,14 @@ export type TreeActionRef = {
  */
 export function BimTree (props: {
   actionRef: React.MutableRefObject<TreeActionRef>
-  viewer: VIM.WebglCoreViewer
+  viewer: Viewer
   camera: CameraRef
-  objects: VIM.WebglCoreModelObject[]
+  objects: Element3D[]
   isolation: IsolationRef
   treeData: BimTreeData
 }) {
   // Data state
-  const [objects, setObjects] = useState<VIM.WebglCoreModelObject[]>([])
+  const [objects, setObjects] = useState<Element3D[]>([])
 
   // Tree state
   const [expandedItems, setExpandedItems] = useState<number[]>([])
@@ -62,7 +65,7 @@ export function BimTree (props: {
       collapseAll: () => {
         setExpandedItems([])
       },
-      selectSiblings: (object: VIM.WebglCoreModelObject) => {
+      selectSiblings: (object: Element3D) => {
         const element = object.element
         const node = props.treeData.getNodeFromElement(element)
         const siblings = props.treeData.getSiblings(node)
@@ -258,7 +261,7 @@ export function BimTree (props: {
 }
 
 function toggleVisibility (
-  viewer: VIM.WebglCoreViewer,
+  viewer: Viewer,
   isolation: IsolationRef,
   tree: BimTreeData,
   index: number
@@ -279,11 +282,11 @@ function toggleVisibility (
 
 function updateViewerSelection (
   tree: BimTreeData,
-  viewer: VIM.WebglCoreViewer,
+  viewer: Viewer,
   nodes: number[],
   operation: 'add' | 'remove' | 'set'
 ) {
-  const objects: VIM.WebglCoreModelObject[] = []
+  const objects: Element3D[] = []
   nodes.forEach((n) => {
     const item = tree.nodes[n]
     const element = item.data.index

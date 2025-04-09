@@ -2,6 +2,9 @@ import React, { useRef } from 'react'
 import { useUltra } from './ultraPageUtils'
 import * as VIM  from '../../vim-web'
 import * as Urls from '../devUrls'
+
+import ViewerRef = VIM.React.Ultra.ViewerRef
+
 export function UltraAbortError () {
   const div = useRef<HTMLDivElement>(null)
   useUltra(div, (ultra) => {
@@ -13,7 +16,7 @@ export function UltraAbortError () {
   )
 }
 
-async function abortLoad (ultra: VIM.UltraViewerRef) {
+async function abortLoad (ultra: ViewerRef) {
   await ultra.viewer.connect()
   const request = ultra.load({url:Urls.residence})
   request.abort()

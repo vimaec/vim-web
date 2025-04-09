@@ -3,18 +3,18 @@
  */
 
 import * as THREE from 'three'
-import { WebglCoreViewerSettings } from '../settings/viewerSettings'
-import { WebglCoreLayers } from '../raycaster'
+import { ViewerSettings } from '../settings/viewerSettings'
+import { Layers } from '../raycaster'
 
-export class WebglCorePerspectiveCamera {
+export class PerspectiveCamera {
   camera: THREE.PerspectiveCamera
 
   constructor (camera: THREE.PerspectiveCamera) {
     this.camera = camera
-    this.camera.layers.enable(WebglCoreLayers.NoRaycast)
+    this.camera.layers.enable(Layers.NoRaycast)
   }
 
-  applySettings (settings: WebglCoreViewerSettings) {
+  applySettings (settings: ViewerSettings) {
     this.camera.fov = settings.camera.fov
     this.camera.zoom = settings.camera.zoom
     this.camera.near = settings.camera.near

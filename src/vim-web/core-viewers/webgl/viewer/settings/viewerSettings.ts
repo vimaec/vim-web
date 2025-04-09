@@ -6,16 +6,16 @@ import * as THREE from 'three'
 import deepmerge from 'deepmerge'
 import { isPlainObject } from 'is-plain-object'
 import { AxesSettings } from '../gizmos/axes/axesSettings'
-import { webglCoreViewerDefaultSettings } from './viewerDefaultSettings'
-import { RecursivePartial } from '../../../utils/partial'
+import { viewerDefaultSettings } from './viewerDefaultSettings'
+import { RecursivePartial } from '../../../../utils/partial'
 
 export type TextureEncoding = 'url' | 'base64' | undefined
-export { AxesSettings } from '../gizmos/axes/axesSettings'
+export { AxesSettings as AxesSettings } from '../gizmos/axes/axesSettings'
 
 
 
 /** Viewer related options independant from vims */
-export type WebglCoreViewerSettings = {
+export type ViewerSettings = {
   /**
    * Webgl canvas related options
    */
@@ -335,16 +335,16 @@ materials: {
 /**
  * Same as the Setting type but any field can be undefined.
  */
-export type PartialWebglCoreViewerSettings = RecursivePartial<WebglCoreViewerSettings>
+export type PartialViewerSettings = RecursivePartial<ViewerSettings>
 
 /**
  * Returns a full viewer settings where all unassigned values are replaced with the default values.
  * @param settings optional values to use instead of default.
  */
-export function getViewerSettings (settings?: PartialWebglCoreViewerSettings) {
+export function getViewerSettings (settings?: PartialViewerSettings) {
   return settings
-    ? (deepmerge(webglCoreViewerDefaultSettings, settings, { arrayMerge: combineMerge, isMergeableObject: isPlainObject }) as WebglCoreViewerSettings)
-    : (webglCoreViewerDefaultSettings)
+    ? (deepmerge(viewerDefaultSettings, settings, { arrayMerge: combineMerge, isMergeableObject: isPlainObject }) as ViewerSettings)
+    : (viewerDefaultSettings)
 }
 
 //  https://www.npmjs.com/package/deepmerge#arraymerge-example-combine-arrays

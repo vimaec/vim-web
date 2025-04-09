@@ -12,7 +12,7 @@ export type AugmentedElement = BIM.IElement & {
   levelName: string
   worksetName: string
 }
-export async function getElements (vim: VIM.WebglVim) {
+export async function getElements (vim: VIM.Vim) {
   if (!vim.bim) return []
   const [elements, bimDocument, category, levels, worksets] = await Promise.all(
     [

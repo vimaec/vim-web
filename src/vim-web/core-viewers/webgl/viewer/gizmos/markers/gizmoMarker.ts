@@ -1,24 +1,24 @@
-import { WebglVim } from '../../../loader/webglVim'
-import { WebglCoreViewer } from '../../viewer'
+import { Vim } from '../../../loader/vim'
+import { Viewer } from '../../viewer'
 import * as THREE from 'three'
-import { SimpleInstanceSubmesh } from '../../../loader/webglMesh'
+import { SimpleInstanceSubmesh } from '../../../loader/mesh'
 import { WebglAttribute } from '../../../loader/webglAttribute'
-import { WebglColorAttribute } from '../../../loader/webglColorAttribute'
-import { CoreModelObject } from '../../../../shared/vim'
+import { WebglColorAttribute } from '../../../loader/colorAttribute'
+import { IVimObject } from '../../../../shared/vim'
 
 /**
  * Marker gizmo that display an interactive sphere at a 3D positions
  * Marker gizmos are still under development.
  */
-export class WebglCoreMarker implements CoreModelObject {
+export class Marker implements IVimObject {
   public readonly type = 'Marker'
-  private _viewer: WebglCoreViewer
+  private _viewer: Viewer
   private _submesh: SimpleInstanceSubmesh
 
   /**
    * The vim object from which this object came from.
    */
-  vim: WebglVim | undefined
+  vim: Vim | undefined
 
   /**
    * The bim element index associated with this object.
@@ -36,7 +36,7 @@ export class WebglCoreMarker implements CoreModelObject {
   private _focusedAttribute: WebglAttribute<boolean>
   private _colorAttribute: WebglColorAttribute
 
-  constructor (viewer: WebglCoreViewer, submesh: SimpleInstanceSubmesh) {
+  constructor (viewer: Viewer, submesh: SimpleInstanceSubmesh) {
     this._viewer = viewer
     this._submesh = submesh
 

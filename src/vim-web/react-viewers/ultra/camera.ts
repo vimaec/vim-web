@@ -1,8 +1,8 @@
-import * as VIM from "../..";
+import * as Core from "../../core-viewers/ultra";
 import { useCamera } from "../state/cameraState";
 import { SectionBoxRef } from "../state/sectionBoxState";
 
-export function useUltraCamera(viewer: VIM.UltraCoreViewer, section: SectionBoxRef) {
+export function useUltraCamera(viewer: Core.Viewer, section: SectionBoxRef) {
 
   return useCamera({
     onSelectionChanged: viewer.selection.onSelectionChanged,

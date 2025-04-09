@@ -2,19 +2,19 @@
  * @module viw-webgl-viewer
  */
 
-import { WebglCoreMarker } from './gizmos/markers/gizmoMarker'
-import { WebglCoreModelObject } from '../loader/webglModelObject'
-import { CoreSelection, CoreSelectionAdapter } from '../../shared/selection'
+import { Marker } from './gizmos/markers/gizmoMarker'
+import { Element3D } from '../loader/element3d'
+import * as Shared from '../../shared'
 
-export type IWebglCoreSelection = CoreSelection<WebglCoreSelectable>
-export type WebglCoreSelectable = WebglCoreModelObject | WebglCoreMarker
+export type Selectable = Element3D | Marker
+export type ISelection = Shared.Selection<Selectable>
 
 export function createWebglCoreSelection() {
-  return new CoreSelection<WebglCoreSelectable>(new WebglCoreSelectionAdapter())
+  return new Shared.Selection<Selectable>(new SelectionAdapter())
 } 
 
-export class WebglCoreSelectionAdapter  implements CoreSelectionAdapter<WebglCoreSelectable>{
-  outline(object: WebglCoreSelectable, state: boolean): void {
+class SelectionAdapter implements Shared.ISelectionAdapter<Selectable>{
+  outline(object: Selectable, state: boolean): void {
     object.outline = state
   }
 }

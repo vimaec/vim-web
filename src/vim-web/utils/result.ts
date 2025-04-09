@@ -31,4 +31,4 @@ export class ErrorResult {
   }
 }
 
-export type RequestResult<T> = SuccessResult<T> | ErrorResult
+export type Result<T> = SuccessResult<T> | ErrorResult

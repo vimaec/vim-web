@@ -1,24 +1,24 @@
-import { CoreModelObject } from "../../shared/vim";
-import { Box3, RGBA32 } from "../../utils/math3d";
-import { UltraVimNodeState } from "./nodeState";
-import { UltraCoreVim } from "./vim";
+import * as Shared from "../../shared";
+import { Box3, RGBA32 } from "./rpcTypes";
+import { NodeState } from "./nodeState";
+import { Vim } from "./vim";
 
-export class UltraCoreModelObject implements CoreModelObject {
-  readonly vim: UltraCoreVim;
+export class Element3D implements Shared.IVimObject {
+  readonly vim: Vim;
   get vimHandle() {
     return this.vim.handle;
   }
 
-  constructor(vim: UltraCoreVim, instance: number) {
+  constructor(vim: Vim, instance: number) {
     this.vim = vim;
     this.instance = instance;
   }
   readonly instance: number; // This should be many instances
 
-  get state(): UltraVimNodeState {
+  get state(): NodeState {
     return this.vim.nodeState.getNodeState(this.instance);
   }
-  set state(state: UltraVimNodeState) {
+  set state(state: NodeState) {
     this.vim.nodeState.setNodeState(this.instance, state);
   }
 

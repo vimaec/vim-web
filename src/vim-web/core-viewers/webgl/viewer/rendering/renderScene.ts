@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { WebglScene } from '../../loader/webglScene'
+import { WebglScene } from '../../loader/scene'
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer'
 import { ModelMaterial } from '../../loader/materials/materials'
 import { InstancedMesh } from '../../loader/progressive/instancedMesh'
@@ -11,7 +11,7 @@ import { InstancedMesh } from '../../loader/progressive/instancedMesh'
 /**
  * Wrapper around the THREE scene that tracks bounding box and other information.
  */
-export class WebglCoreRenderScene {
+export class RenderScene {
   threeScene: THREE.Scene
 
   // state

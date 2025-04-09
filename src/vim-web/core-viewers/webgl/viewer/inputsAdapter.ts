@@ -1,16 +1,16 @@
-import { InputAdapter, GeneralInputHandler } from "../../shared/InputHandler"
-import { WebglCoreViewer } from "./viewer"
+import * as Shared from "../../shared"
+import { Viewer } from "./viewer"
 import * as THREE from 'three'
 
-export function createWebglCoreInputAdapter(viewer: WebglCoreViewer) {
-  return new GeneralInputHandler(
+export function createInputHandler(viewer: Viewer) {
+  return new Shared.InputHandler(
     viewer.viewport.canvas,
     createAdapter(viewer),
     viewer.settings.camera.controls
   )
 }
 
-function createAdapter(viewer: WebglCoreViewer ) : InputAdapter {
+function createAdapter(viewer: Viewer ) : Shared.IInputAdapter {
   return {
     init: () => {},
     orbitCamera: (value: THREE.Vector2) => {

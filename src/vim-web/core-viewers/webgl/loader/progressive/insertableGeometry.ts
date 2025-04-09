@@ -4,7 +4,7 @@
 
 import * as THREE from 'three'
 import { G3d, G3dMesh, G3dMaterial } from 'vim-format'
-import { WebglScene } from '../webglScene'
+import { WebglScene } from '../scene'
 import { G3dMeshOffsets } from './g3dOffsets'
 
 // TODO Merge both submeshes class.

@@ -1,27 +1,27 @@
-import { RemoteColor } from './remoteColor';
+import * as Utils from '../../../utils';
+import * as Shared from '../../shared/vim';
 import { ColorManager } from './colorManager';
-import { MaterialHandles } from './rpcClient';
-import { INVALID_HANDLE } from './viewer';
-import { UltraLoadRequest } from './loadRequest';
-import { RpcSafeClient, VimLoadingStatus, UltraVimSource } from './rpcSafeClient';
+import { Element3D } from './element3d';
+import { LoadRequest } from './loadRequest';
 import { ILogger } from './logger';
-import { isFileURI, isURL } from '../../utils/url';
-import { Box3, RGBA32 } from '../../utils/math3d';
-import { IRenderer, UltraCoreRenderer } from './renderer';
-import { UltraVimNodeState, StateSynchronizer } from './nodeState';
-import { UltraCoreModelObject } from './modelObject';
-import { CoreVim } from '../../shared/vim';
+import { NodeState, StateSynchronizer } from './nodeState';
+import { Renderer } from './renderer';
+import { MaterialHandles } from './rpcClient';
+import { RpcSafeClient, VimLoadingStatus, VimSource } from './rpcSafeClient';
+import { ULTRA_INVALID_HANDLE } from './viewer';
+
+import * as THREE from 'three';
+import { RGBA32 } from './rpcTypes';
 
 
-
-export class UltraCoreVim implements CoreVim<UltraCoreModelObject> {
-  readonly source: UltraVimSource;
+export class Vim implements Shared.IVim<Element3D> {
+  readonly source: VimSource;
   private _handle: number = -1;
-  private _request: UltraLoadRequest | undefined;
+  private _request: LoadRequest | undefined;
 
   private readonly _rpc: RpcSafeClient;
   private _colors: ColorManager;
-  private _renderer: UltraCoreRenderer;
+  private _renderer: Renderer;
   private _logger: ILogger;
 
   // The StateSynchronizer wraps a StateTracker and handles RPC synchronization.
@@ -34,13 +34,13 @@ export class UltraCoreVim implements CoreVim<UltraCoreModelObject> {
   // Delayed update flag.
   private _updateScheduled: boolean = false;
 
-  private _objects: Map<number, UltraCoreModelObject> = new Map();
+  private _objects: Map<number, Element3D> = new Map();
 
   constructor(
     rpc: RpcSafeClient,
     color: ColorManager,
-    renderer: UltraCoreRenderer,
-    source: UltraVimSource,
+    renderer: Renderer,
+    source: VimSource,
     logger: ILogger
   ) {
     this._rpc = rpc;
@@ -55,27 +55,27 @@ export class UltraCoreVim implements CoreVim<UltraCoreModelObject> {
       () => this._handle,
       () => this.connected,
       () => this._renderer.notifySceneUpdated(),
-      UltraVimNodeState.VISIBLE // default state
+      NodeState.VISIBLE // default state
     );
   }
-  getObjectFromInstance(instance: number): UltraCoreModelObject {
+  getObjectFromInstance(instance: number): Element3D {
     if (this._objects.has(instance)) {
       return this._objects.get(instance)!;
     }
-    const object = new UltraCoreModelObject(this, instance);
+    const object = new Element3D(this, instance);
     this._objects.set(instance, object);
     return object;
   }
-  getObjectsFromElementId(id: number): UltraCoreModelObject[] {
+  getObjectsFromElementId(id: number): Element3D[] {
     throw new Error('Method not implemented.');
   }
-  getObjectFromElementIndex(element: number): UltraCoreModelObject {
+  getObjectFromElementIndex(element: number): Element3D {
     throw new Error('Method not implemented.');
   }
-  getObjectsInBox(box: Box3): UltraCoreModelObject[] {
+  getObjectsInBox(box: THREE.Box3): Element3D[] {
     throw new Error('Method not implemented.');
   }
-  getAllObjects(): UltraCoreModelObject[] {
+  getAllObjects(): Element3D[] {
     throw new Error('Method not implemented.');
   }
 
@@ -87,12 +87,12 @@ export class UltraCoreVim implements CoreVim<UltraCoreModelObject> {
     return this._handle >= 0;
   }
 
-  connect(): UltraLoadRequest {
+  connect(): LoadRequest {
     if (this._request) {
       return this._request;
     }
     this._logger.log('Loading: ', this.source);
-    this._request = new UltraLoadRequest();
+    this._request = new LoadRequest();
 
     this._load(this.source, this._request).then(async (request) => {
       const result = await request.getResult();
@@ -118,9 +118,9 @@ export class UltraCoreVim implements CoreVim<UltraCoreModelObject> {
     }
   }
 
-  private async _load(source: UltraVimSource, result: UltraLoadRequest): Promise<UltraLoadRequest> {
+  private async _load(source: VimSource, result: LoadRequest): Promise<LoadRequest> {
     const handle = await this._getHandle(source, result);
-    if (result.isCompleted || handle === INVALID_HANDLE) {
+    if (result.isCompleted || handle === ULTRA_INVALID_HANDLE) {
       return result;
     }
     while (true) {
@@ -162,12 +162,12 @@ export class UltraCoreVim implements CoreVim<UltraCoreModelObject> {
     }
   }
 
-  private async _getHandle(source: UltraVimSource, result: UltraLoadRequest): Promise<number> {
+  private async _getHandle(source: VimSource, result: LoadRequest): Promise<number> {
     let handle = undefined;
     try {
-      if (isURL(source.url)) {
+      if (Utils.isURL(source.url)) {
         handle = await this._rpc.RPCLoadVimURL(source);
-      } else if (isFileURI(source.url)) {
+      } else if (Utils.isFileURI(source.url)) {
         handle = await this._rpc.RPCLoadVim(source);
       } else {
         console.log('Defaulting to file path');
@@ -175,17 +175,17 @@ export class UltraCoreVim implements CoreVim<UltraCoreModelObject> {
       }
     } catch (e) {
       result.error('downloadingError', (e as Error).message);
-      return INVALID_HANDLE;
+      return ULTRA_INVALID_HANDLE;
     }
-    if (handle === INVALID_HANDLE) {
+    if (handle === ULTRA_INVALID_HANDLE) {
       result.error('downloadingError');
-      return INVALID_HANDLE;
+      return ULTRA_INVALID_HANDLE;
     }
     console.log('handle :', handle);
     return handle;
   }
 
-  async getBoundingBoxNodes(nodes: number[] | 'all'): Promise<Box3 | undefined> {
+  async getBoundingBoxNodes(nodes: number[] | 'all'): Promise<THREE.Box3 | undefined> {
     if (!this.connected || (nodes !== 'all' && nodes.length === 0)) {
       return Promise.resolve(undefined);
     }
@@ -195,7 +195,7 @@ export class UltraCoreVim implements CoreVim<UltraCoreModelObject> {
     return await this._rpc.RPCGetBoundingBox(this._handle, nodes);
   }
 
-  async getBoundingBox(): Promise<Box3 | undefined> {
+  async getBoundingBox(): Promise<THREE.Box3 | undefined> {
     if (!this.connected ) {
       return Promise.resolve(undefined);
     }
@@ -291,16 +291,16 @@ function wait(ms: number): Promise<void> {
  * but the change is still tracked for remote updates.
  */
 class StateTracker {
-  private _state = new Map<number, UltraVimNodeState>();
+  private _state = new Map<number, NodeState>();
   private _updates = new Set<number>();
-  private _default: UltraVimNodeState;
+  private _default: NodeState;
   private _updatedDefault: boolean = false;
 
-  constructor(defaultState: UltraVimNodeState = UltraVimNodeState.VISIBLE) {
+  constructor(defaultState: NodeState = NodeState.VISIBLE) {
     this._default = defaultState;
   }
 
-  setAll(state: UltraVimNodeState, clearNodes: boolean) {
+  setAll(state: NodeState, clearNodes: boolean) {
     this._default = state;
     this._updatedDefault = true;
     if (clearNodes) {
@@ -324,7 +324,7 @@ class StateTracker {
     toRemove.forEach(k => this._state.delete(k));
   }
 
-  set(key: number, value: UltraVimNodeState) {
+  set(key: number, value: NodeState) {
     if (this._default === value) {
       this.delete(key);
     } else {
@@ -345,7 +345,7 @@ class StateTracker {
   /**
    * Update nodes in bulk. If 'all' is specified, the default is updated.
    */
-  updateNodes(nodes: ForEachable<number> | 'all', state: UltraVimNodeState): void {
+  updateNodes(nodes: Utils.ForEachable<number> | 'all', state: NodeState): void {
     if (nodes === 'all') {
       this.setAll(state, true);
     } else {
@@ -359,18 +359,18 @@ class StateTracker {
     }
   }
 
-  get(key: number): UltraVimNodeState | undefined {
+  get(key: number): NodeState | undefined {
     return this._state.get(key);
   }
 
-  getDefault(): UltraVimNodeState {
+  getDefault(): NodeState {
     return this._default;
   }
 
   /**
    * Returns whether every node (override or not) is in the given state(s).
    */
-  areAll(state: UltraVimNodeState | UltraVimNodeState[]): boolean {
+  areAll(state: NodeState | NodeState[]): boolean {
     if (!this.matchesState(this._default, state)) {
       return false;
     }
@@ -385,7 +385,7 @@ class StateTracker {
   /**
    * Returns a node’s effective state.
    */
-  getState(node: number): UltraVimNodeState {
+  getState(node: number): NodeState {
     return this._state.get(node) ?? this._default;
   }
 
@@ -393,7 +393,7 @@ class StateTracker {
    * Returns either 'all' if every node is in the given state, or an array
    * of node IDs (from the overrides) whose state equals the provided state.
    */
-  getAll(state: UltraVimNodeState): number[] | 'all' {
+  getAll(state: NodeState): number[] | 'all' {
     if (this.areAll(state)) return 'all';
     const nodes: number[] = [];
     for (const [node, nodeState] of this._state.entries()) {
@@ -407,9 +407,9 @@ class StateTracker {
   /**
    * Returns a mapping from state to an array of updated node IDs.
    */
-  getUpdates(): Map<UltraVimNodeState, number[]> {
-    const nodesByState = new Map<UltraVimNodeState, number[]>();
-    Object.values(UltraVimNodeState).forEach((state) => {
+  getUpdates(): Map<NodeState, number[]> {
+    const nodesByState = new Map<NodeState, number[]>();
+    Object.values(NodeState).forEach((state) => {
       nodesByState.set(state, []);
     });
 
@@ -429,14 +429,14 @@ class StateTracker {
     this._updatedDefault = false;
   }
 
-  entries(): IterableIterator<[number, UltraVimNodeState]> {
+  entries(): IterableIterator<[number, NodeState]> {
     return this._state.entries();
   }
 
   /**
    * Helper: checks if a node state matches one or more target states.
    */
-  matchesState(nodeState: UltraVimNodeState, state: UltraVimNodeState | UltraVimNodeState[]): boolean {
+  matchesState(nodeState: NodeState, state: NodeState | NodeState[]): boolean {
     if (Array.isArray(state)) {
       return state.includes(nodeState);
     }
@@ -447,7 +447,7 @@ class StateTracker {
    * Replaces all nodes that match the provided state(s) with a new state.
    * If all nodes are in the given state(s), the default is updated.
    */
-  replace(from: UltraVimNodeState | UltraVimNodeState[], to: UltraVimNodeState): void {
+  replace(from: NodeState | NodeState[], to: NodeState): void {
     if (this.areAll(from)) {
       this.setAll(to, false);
     }

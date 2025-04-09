@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef, useLayoutEffect, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
-import { addBox } from '../../core-viewers/utils/threeUtils';
+import { addBox } from '../../utils/threeUtils';
 import { ISignal } from 'ste-signals';
 import { ActionRef, ArgActionRef, AsyncFuncRef, StateRef, useArgActionRef, useAsyncFuncRef, useFuncRef, useStateRef } from '../helpers/reactUtils';
-import { sanitize } from '../../core-viewers/utils/strings';
+import { sanitize } from '../../utils/strings';
 
 export type Offsets = {
   topOffset: string;

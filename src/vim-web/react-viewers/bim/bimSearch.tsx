@@ -4,7 +4,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import * as Icons from '../panels/icons'
-import { WebglCoreViewer } from '../..'
+import * as Core from '../../core-viewers/webgl'
 
 const SEARCH_DELAY_MS = 200
 /**
@@ -15,7 +15,7 @@ const SEARCH_DELAY_MS = 200
  * @param count current search result count.
  */
 export function BimSearch (props: {
-  viewer: WebglCoreViewer
+  viewer: Core.Viewer
   filter: string
   setFilter: (s: string) => void
   count: number
