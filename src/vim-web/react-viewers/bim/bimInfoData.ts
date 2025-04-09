@@ -5,7 +5,7 @@
  */
 
 import { useState } from 'react'
-import * as VIM from '../../core-viewers/webgl/index'
+import * as VIM from '../../core-viewers/webgl'
 
 /**
  * Represents an entry in the BIM info panel, such as a key-value pair in a header or body section.
@@ -90,7 +90,7 @@ export type Data = {
  * @param source - The VIM.Object or VIM.Vim instance from which the data was originally extracted.
  * @returns A promise that resolves to the modified Data object.
  */
-export type DataCustomization = (data: Data, source: VIM.WebglVim | VIM.WebglCoreModelObject) => Promise<Data>
+export type DataCustomization = (data: Data, source: VIM.Vim | VIM.Element3D) => Promise<Data>
 
 /**
  * A rendering customization function that takes props containing data and a standard

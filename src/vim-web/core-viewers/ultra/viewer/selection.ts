@@ -1,14 +1,14 @@
-import { UltraVimNodeState as UltraGraphicState } from "./nodeState";
-import { CoreSelection, CoreSelectionAdapter } from "../../shared/selection";
-import { UltraCoreModelObject } from "./modelObject";
+import * as Shared from "../../shared";
+import { Element3D } from "./element3d";
+import { NodeState } from "./nodeState";
 
-export type IUltraCoreSelection = CoreSelection<UltraCoreModelObject>
-export function createUltraCoreSelection(): IUltraCoreSelection {
-  return new CoreSelection<UltraCoreModelObject>(new UltraCoreSelectionAdapter());
+export type ISelection = Shared.Selection<Element3D>
+export function createSelection(): ISelection {
+  return new Shared.Selection<Element3D>(new SelectionAdapter());
 }
 
-export class UltraCoreSelectionAdapter implements CoreSelectionAdapter<UltraCoreModelObject>{
-  outline(object: UltraCoreModelObject, state: boolean){
-    object.state = state ? UltraGraphicState.HIGHLIGHTED : UltraGraphicState.VISIBLE;
+class SelectionAdapter implements Shared.ISelectionAdapter<Element3D>{
+  outline(object: Element3D, state: boolean){
+    object.state = state ? NodeState.HIGHLIGHTED : NodeState.VISIBLE;
   }
 }

@@ -1,23 +1,22 @@
-import { StreamLogger } from './streamLogger'
-import * as Protocol from './protocol'
-import { Marshal, ReadMarshal } from './marshal'
-import { ILogger } from './logger'
-import { ControllablePromise, IPromise, ResolvedPromise } from '../../utils/promise'
 import { SimpleEventDispatcher } from 'ste-simple-events'
-import { isWebSocketUrl } from '../../utils/url'
-import { Segment } from '../../utils/math3d'
+import * as Utils from '../../../utils'
+import { ILogger } from './logger'
+import * as Protocol from './protocol'
+import { Marshal, ReadMarshal } from './rpcMarshal'
+import { Segment } from './rpcTypes'
+import { StreamLogger } from './streamLogger'
 
 export const DEFAULT_LOCAL_ULTRA_SERVER_URL = 'ws://localhost:8123'
 
-export type UltraConnectionSettings = {
+export type ConnectionSettings = {
   url?: string
   retries? : number
   timeout?: number
   retryDelay?: number
 }
 
-export type UltraClientState = ClientStateConnecting | ClientStateConnected | ClientStateDisconnected | ClientStateValidating | UltraClientError
-export type UltraClientError = ClientStateCompatibilityError | ClientStateConnectionError | ClientStreamError// | other types of errors
+export type ClientState = ClientStateConnecting | ClientStateConnected | ClientStateDisconnected | ClientStateValidating | ClientError
+export type ClientError = ClientStateCompatibilityError | ClientStateConnectionError | ClientStreamError// | other types of errors
 
 export type ClientStateConnecting = {
   status: 'connecting'
@@ -81,7 +80,7 @@ export class SocketClient {
   private _reconnectTimeout : ReturnType<typeof setTimeout> | undefined
   private _connectionTimeout: ReturnType<typeof setTimeout> | undefined
 
-  private _validateConnection: () => Promise<UltraClientError | undefined>
+  private _validateConnection: () => Promise<ClientError | undefined>
   /**
    * Callback function to handle incoming video frames.
    * @param msg - The video frame message received from the server.
@@ -89,10 +88,10 @@ export class SocketClient {
   public onVideoFrame: (msg: Protocol.VideoFrameMessage) => void = () => { }
   public onCameraPose: (msg: Segment) => void = () => { }
 
-  private _state: UltraClientState = { status: 'disconnected' }
-  private _onStatusUpdate = new SimpleEventDispatcher<UltraClientState>()
-  private _connectPromise: IPromise<boolean> = new ResolvedPromise<boolean>(undefined)
-  private _connectionSettings: UltraConnectionSettings
+  private _state: ClientState = { status: 'disconnected' }
+  private _onStatusUpdate = new SimpleEventDispatcher<ClientState>()
+  private _connectPromise: Utils.IPromise<boolean> = new Utils.ResolvedPromise<boolean>(undefined)
+  private _connectionSettings: ConnectionSettings
 
   /**
    * Event that is triggered when the connection status updates.
@@ -106,7 +105,7 @@ export class SocketClient {
    * Gets the current connection status.
    * @returns The current ClientStatus.
    */
-  public get state (): UltraClientState {
+  public get state (): ClientState {
     return this._state
   }
 
@@ -114,7 +113,7 @@ export class SocketClient {
    * Updates the connection state and dispatches the status update event.
    * @param state - The new connection state.
    */
-  private updateState (state: UltraClientState): void {
+  private updateState (state: ClientState): void {
     this._state = state
     this._onStatusUpdate.dispatch(state)
   }
@@ -134,7 +133,7 @@ export class SocketClient {
    * @param logger - The logger for logging messages.
    * @param checks - checks to perform before returning connection.
    */
-  constructor (logger: ILogger, validateConnection: () => Promise<UltraClientError | undefined>) {
+  constructor (logger: ILogger, validateConnection: () => Promise<ClientError | undefined>) {
     this._logger = logger
     this._rpcCallId = 0
     this._streamLogger = new StreamLogger(logger)
@@ -146,7 +145,7 @@ export class SocketClient {
    * @param url - The WebSocket URL to connect to.
    * @returns A promise that resolves when the connection is established.
    */
-  public connect (settings: UltraConnectionSettings): Promise<boolean> {
+  public connect (settings: ConnectionSettings): Promise<boolean> {
     settings = {
       url: settings?.url ?? DEFAULT_LOCAL_ULTRA_SERVER_URL,
       retries: settings?.retries ?? -1,
@@ -155,7 +154,7 @@ export class SocketClient {
     }
 
     const url = settings.url
-    if (!isWebSocketUrl(url)) {
+    if (!Utils.isWebSocketUrl(url)) {
       this._disconnect({ status: 'error', error: 'connection', serverUrl: url })
       return Promise.reject(new Error(`Invalid WebSocket URL: ${url}`))
     }
@@ -174,7 +173,7 @@ export class SocketClient {
 
     // Only create a new promise if the URL is different
     if(this.url !== url){
-      this._connectPromise = new ControllablePromise<boolean>()
+      this._connectPromise = new Utils.ControllablePromise<boolean>()
       this._connectionSettings = settings
     }
 
@@ -198,7 +197,7 @@ export class SocketClient {
   /**
    * Disconnects from the current WebSocket server.
    */
-  public disconnect (error?: UltraClientError): void {
+  public disconnect (error?: ClientError): void {
     this._logger.log('Disconnecting from: ', this.url)
     this._connectionSettings = undefined
     this._disconnect(error)
@@ -207,7 +206,7 @@ export class SocketClient {
   /**
    * Handles the disconnection logic, stopping logging and clearing the socket.
    */
-  private _disconnect (error?: UltraClientError): void {
+  private _disconnect (error?: ClientError): void {
     this._logger.log('disconnect', error)
     clearTimeout(this._reconnectTimeout)
     clearTimeout(this._connectionTimeout)

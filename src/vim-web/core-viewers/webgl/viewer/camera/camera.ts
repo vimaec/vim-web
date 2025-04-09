@@ -4,27 +4,26 @@
 
 import * as THREE from 'three'
 
-import { WeglCoreViewport } from '../viewport'
-import { WebglCoreViewerSettings } from '../settings/viewerSettings'
-import { WebglCoreRenderScene } from '../rendering/renderScene'
-import { clamp } from 'three/src/math/MathUtils'
 import { ISignal, SignalDispatcher } from 'ste-signals'
-import { WebglCorePerspectiveCamera } from './cameraPerspective'
-import { WebglCoreOrthographicCamera } from './cameraOrthographic'
+import { RenderScene } from '../rendering/renderScene'
+import { ViewerSettings } from '../settings/viewerSettings'
+import { Viewport } from '../viewport'
+import { ICamera } from './cameraInterface'
+import { CameraMovement } from './cameraMovement'
 import { CameraLerp } from './cameraMovementLerp'
 import { CameraMovementSnap } from './cameraMovementSnap'
-import { WebglCoreCameraMovement } from './cameraMovement'
-import { WebglCoreICamera } from './cameraInterface'
+import { OrthographicCamera } from './cameraOrthographic'
+import { PerspectiveCamera } from './cameraPerspective'
 
 /**
  * Manages viewer camera movement and position
  */
-export class WebglCoreCamera implements WebglCoreICamera {
-  camPerspective: WebglCorePerspectiveCamera
-  camOrthographic: WebglCoreOrthographicCamera
+export class Camera implements ICamera {
+  camPerspective: PerspectiveCamera
+  camOrthographic: OrthographicCamera
 
-  private _viewport: WeglCoreViewport
-  _scene: WebglCoreRenderScene // make private again
+  private _viewport: Viewport
+  _scene: RenderScene // make private again
   private _lerp: CameraLerp
   private _movement: CameraMovementSnap
 
@@ -134,12 +133,12 @@ export class WebglCoreCamera implements WebglCoreICamera {
   // Settings
   private _velocityBlendFactor: number = 0.0001
 
-  constructor (scene: WebglCoreRenderScene, viewport: WeglCoreViewport, settings: WebglCoreViewerSettings) {
-    this.camPerspective = new WebglCorePerspectiveCamera(new THREE.PerspectiveCamera())
+  constructor (scene: RenderScene, viewport: Viewport, settings: ViewerSettings) {
+    this.camPerspective = new PerspectiveCamera(new THREE.PerspectiveCamera())
     this.camPerspective.camera.up = new THREE.Vector3(0, 0, 1)
     this.camPerspective.camera.lookAt(new THREE.Vector3(0, 1, 0))
 
-    this.camOrthographic = new WebglCoreOrthographicCamera(
+    this.camOrthographic = new OrthographicCamera(
       new THREE.OrthographicCamera()
     )
 
@@ -158,19 +157,19 @@ export class WebglCoreCamera implements WebglCoreICamera {
   /**
    * Interface for instantaneously moving the camera.
    * @param {boolean} [force=false] - Set to true to ignore locked axis and rotation.
-   * @returns {WebglCoreCameraMovement} The camera movement api.
+   * @returns {CameraMovement} The camera movement api.
    */
-  snap (force: boolean = false) : WebglCoreCameraMovement {
+  snap (force: boolean = false) : CameraMovement {
     this._force = force
     this._lerp.cancel()
-    return this._movement as WebglCoreCameraMovement
+    return this._movement as CameraMovement
   }
 
   /**
    * Interface for smoothly moving the camera over time.
    * @param {number} [duration=1] - The duration of the camera movement animation.
    * @param {boolean} [force=false] - Set to true to ignore locked axis and rotation.
-   * @returns {WebglCoreCameraMovement} The camera movement api.
+   * @returns {CameraMovement} The camera movement api.
    */
   lerp (duration: number = 1, force: boolean = false) {
     if(duration <= 0) return this.snap(force)
@@ -178,7 +177,7 @@ export class WebglCoreCamera implements WebglCoreICamera {
     this.stop()
     this._force = force
     this._lerp.init(duration)
-    return this._lerp as WebglCoreCameraMovement
+    return this._lerp as CameraMovement
   }
 
   /**
@@ -263,7 +262,7 @@ export class WebglCoreCamera implements WebglCoreICamera {
     return this._target
   }
 
-  applySettings (settings: WebglCoreViewerSettings) {
+  applySettings (settings: ViewerSettings) {
     // Camera
 
     this.defaultForward = settings.camera.forward

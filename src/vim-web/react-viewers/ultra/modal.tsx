@@ -2,7 +2,7 @@ import { ModalRef } from "../panels/modal"
 import { getErrorMessage } from './errors/ultraErrors'
 import * as VIM from '../..'
 
-export function updateModal (modal: ModalRef, state: VIM.UltraClientState) {
+export function updateModal (modal: ModalRef, state: VIM.Core.Ultra.ClientState) {
   if (state.status === 'connected') {
     modal.loading(undefined)
     modal.message(undefined)
@@ -18,7 +18,7 @@ export function updateModal (modal: ModalRef, state: VIM.UltraClientState) {
   }
 }
 
-export async function updateProgress (request: VIM.UltraILoadRequest, modal: ModalRef) {
+export async function updateProgress (request: VIM.Core.Ultra.ILoadRequest, modal: ModalRef) {
   for await (const progress of request.getProgress()) {
     if (request.isCompleted) break
     modal.loading({ message: 'Loading File in VIM Ultra mode', progress })

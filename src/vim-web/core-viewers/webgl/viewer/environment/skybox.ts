@@ -3,12 +3,12 @@
  */
 
 import * as THREE from 'three'
-import { WebglCoreViewerSettings } from '../settings/viewerSettings'
-import { WebglCoreICamera } from '../camera/cameraInterface'
-import { WebglCoreMaterials } from '../../loader/materials/materials'
+import { ViewerSettings } from '../settings/viewerSettings'
+import { ICamera } from '../camera/cameraInterface'
+import { Materials } from '../../loader/materials/materials'
 import { SkyboxMaterial } from '../../loader/materials/skyboxMaterial'
-import { WebglCoreRenderer } from '../rendering/renderer'
-import { WebglCoreLayers } from '../raycaster'
+import { Renderer } from '../rendering/renderer'
+import { Layers } from '../raycaster'
 
 export class Skybox {
   readonly mesh : THREE.Mesh
@@ -66,14 +66,14 @@ export class Skybox {
 
   private readonly _plane : THREE.PlaneGeometry
   private readonly _material : SkyboxMaterial
-  private readonly _renderer: WebglCoreRenderer
+  private readonly _renderer: Renderer
 
-  constructor (camera: WebglCoreICamera, renderer : WebglCoreRenderer, materials: WebglCoreMaterials, settings: WebglCoreViewerSettings) {
+  constructor (camera: ICamera, renderer : Renderer, materials: Materials, settings: ViewerSettings) {
     this._renderer = renderer
     this._plane = new THREE.PlaneGeometry()
     this._material = materials.skyBox
     this.mesh = new THREE.Mesh(this._plane, materials.skyBox)
-    this.mesh.layers.set(WebglCoreLayers.NoRaycast)
+    this.mesh.layers.set(Layers.NoRaycast)
 
     // Apply settings
     this.enable = settings.skybox.enable

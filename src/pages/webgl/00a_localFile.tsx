@@ -1,9 +1,12 @@
 import React, { ChangeEvent, useEffect, useRef } from 'react'
 import * as VIM from '../../vim-web'
 
+import Webgl = VIM.React.Webgl
+import ViewerRef = VIM.React.Webgl.ViewerRef
+
 export function WebglLocalFile () {
   const div = useRef<HTMLDivElement>(null)
-  const cmp = useRef<VIM.WebglViewerRef>()
+  const cmp = useRef<ViewerRef>()
   const fileInput = useRef<HTMLInputElement>(null)
   useEffect(() => {
     createComponent(div.current, cmp)
@@ -56,8 +59,8 @@ export function WebglLocalFile () {
   )
 }
 
-async function createComponent (div: HTMLDivElement, ref: React.MutableRefObject<VIM.WebglViewerRef>) {
-  const webgl = await VIM.createWebglViewer(div)
+async function createComponent (div: HTMLDivElement, ref: React.MutableRefObject<ViewerRef>) {
+  const webgl = await Webgl.createViewer(div)
   ref.current = webgl
   globalThis.viewer = webgl
 }

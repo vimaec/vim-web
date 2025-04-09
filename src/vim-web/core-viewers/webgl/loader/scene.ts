@@ -3,14 +3,14 @@
  */
 
 import * as THREE from 'three'
-import { WebglMesh, Submesh } from './webglMesh'
-import { WebglVim } from './webglVim'
+import { WebglMesh, Submesh } from './mesh'
+import { Vim } from './vim'
 import { estimateBytesUsed } from 'three/examples/jsm/utils/BufferGeometryUtils'
 import { InsertableMesh } from './progressive/insertableMesh'
 import { InstancedMesh } from './progressive/instancedMesh'
 import { getAverageBoundingBox } from './averageBoundingBox'
 import { ModelMaterial } from './materials/materials'
-import { WebglCoreRenderer } from '../viewer/rendering/renderer'
+import { Renderer } from '../viewer/rendering/renderer'
 
 /**
  * Interface for a renderer object, providing methods to add and remove objects from a scene, update bounding boxes, and notify scene updates.
@@ -31,8 +31,8 @@ export interface IRenderer {
 // TODO: Only expose what should be public to vim.scene
 export class WebglScene {
   // Dependencies
-  private _renderer: WebglCoreRenderer
-  private _vim: WebglVim | undefined
+  private _renderer: Renderer
+  private _vim: Vim | undefined
   private _matrix = new THREE.Matrix4()
 
   // State
@@ -128,7 +128,7 @@ export class WebglScene {
     return this._renderer
   }
 
-  set renderer (value: WebglCoreRenderer) {
+  set renderer (value: Renderer) {
     this._renderer = value
   }
 
@@ -139,7 +139,7 @@ export class WebglScene {
   /**
    * Sets vim index for this scene and all its THREE.Meshes.
    */
-  set vim (value: WebglVim) {
+  set vim (value: Vim) {
     this._vim = value
     this.meshes.forEach((m) => (m.vim = value))
   }

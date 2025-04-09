@@ -4,7 +4,7 @@
 
 import * as VIM from '../../core-viewers/webgl/index'
 import { ContextMenuCustomization } from '../panels/contextMenu'
-import { ComponentSettings } from '../settings/settings'
+import { Settings } from '../settings/settings'
 import { CameraRef } from '../state/cameraState'
 import { Container } from '../container'
 import { BimInfoPanelRef } from '../bim/bimInfoData'
@@ -24,13 +24,13 @@ export type SettingsRef = {
    * Allows updating settings by providing a callback function.
    * @param updater A function that updates the current settings.
    */
-  update : (updater: (settings: ComponentSettings) => void) => void
+  update : (updater: (settings: Settings) => void) => void
 
   /**
    * Registers a callback function to be notified when settings are updated.
    * @param callback A function to be called when settings are updated, receiving the updated settings.
    */
-  register : (callback: (settings: ComponentSettings) => void) => void
+  register : (callback: (settings: Settings) => void) => void
 
 }
 
@@ -77,7 +77,7 @@ export type HelpRef = {
 /**
  * Root-level API of the Vim component.
  */
-export type WebglViewerRef = {
+export type ViewerRef = {
   /**
    * HTML structure containing the component.
    */
@@ -86,7 +86,7 @@ export type WebglViewerRef = {
   /**
    * Vim WebGL viewer around which the WebGL component is built.
    */
-  core: VIM.WebglCoreViewer
+  core: VIM.Viewer
 
   /**
    * Vim WebGL loader to download VIMs.

@@ -2,11 +2,11 @@
  * @module viw-webgl-viewer/camera
  */
 
-import { WebglCoreCameraMovement } from './cameraMovement'
-import { WebglCoreModelObject } from '../../loader/webglModelObject'
+import { CameraMovement } from './cameraMovement'
+import { Element3D } from '../../loader/element3d'
 import * as THREE from 'three'
 
-export class CameraMovementSnap extends WebglCoreCameraMovement {
+export class CameraMovementSnap extends CameraMovement {
   /**
    * Moves the camera closer or farther away from orbit target.
    * @param amount movement size.
@@ -43,8 +43,8 @@ export class CameraMovementSnap extends WebglCoreCameraMovement {
     this.set(this._camera.position, target)
   }
 
-  async target (target: WebglCoreModelObject | THREE.Vector3) {
-    const pos = target instanceof WebglCoreModelObject ? (await target.getCenter()) : target
+  async target (target: Element3D | THREE.Vector3) {
+    const pos = target instanceof Element3D ? (await target.getCenter()) : target
     if (!pos) return
     this.set(this._camera.position, pos)
   }

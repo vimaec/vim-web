@@ -8,7 +8,7 @@ import { CameraRef } from '../state/cameraState'
 import { IsolationRef } from '../state/sharedIsolation'
 
 export function applyWebglBindings(
-  viewer: VIM.WebglCoreViewer,
+  viewer: VIM.Viewer,
   camera: CameraRef,
   isolation: IsolationRef,
   sideState: SideState)

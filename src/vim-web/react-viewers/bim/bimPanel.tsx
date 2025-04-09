@@ -3,7 +3,7 @@
  */
 
 import React, { useEffect, useState, useMemo } from 'react'
-import * as VIM from '../../core-viewers/webgl/index'
+import * as VIM from '../../core-viewers/webgl'
 
 import { BimTree, TreeActionRef } from './bimTree'
 import { BimSearch } from './bimSearch'
@@ -11,7 +11,7 @@ import { CameraRef } from '../state/cameraState'
 import { toTreeData } from './bimTreeData'
 import { ViewerState } from '../webgl/viewerState'
 import { AugmentedElement } from '../helpers/element'
-import { ComponentSettings, isFalse } from '../settings/settings'
+import { Settings, isFalse } from '../settings/settings'
 import { whenAllTrue, whenFalse, whenSomeTrue, whenTrue } from '../helpers/utils'
 import { BimInfoPanel } from './bimInfoPanel'
 import { BimInfoPanelRef } from './bimInfoData'
@@ -21,12 +21,12 @@ import { IsolationRef } from '../state/sharedIsolation'
 // when I inline this method in component.tsx it causes an error.
 // The error appears only in JSFiddle when the module is directly imported in a script tag.
 export function OptionalBimPanel (props: {
-  viewer: VIM.WebglCoreViewer
+  viewer: VIM.Viewer
   camera: CameraRef
   viewerState: ViewerState
   isolation: IsolationRef
   visible: boolean
-  settings: ComponentSettings
+  settings: Settings
   treeRef: React.MutableRefObject<TreeActionRef | undefined>
   bimInfoRef: BimInfoPanelRef
 }) {
@@ -46,12 +46,12 @@ export function OptionalBimPanel (props: {
  * @returns
  */
 export function BimPanel (props: {
-  viewer: VIM.WebglCoreViewer
+  viewer: VIM.Viewer
   camera: CameraRef
   viewerState: ViewerState
   isolation: IsolationRef
   visible: boolean
-  settings: ComponentSettings
+  settings: Settings
   treeRef: React.MutableRefObject<TreeActionRef | undefined>
   bimInfoRef: BimInfoPanelRef
 }) {

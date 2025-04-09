@@ -2,6 +2,9 @@ import React, { useRef } from 'react'
 import * as VIM  from '../../vim-web'
 import { useUltraWithWolford } from './ultraPageUtils'
 
+import ViewerRef = VIM.React.Ultra.ViewerRef
+import RGBA = VIM.Core.Ultra.RGBA
+
 export function UltraBackground () {
   const div = useRef<HTMLDivElement>(null)
 
@@ -15,9 +18,9 @@ export function UltraBackground () {
   )
 }
 
-async function changeBackground (ultra: VIM.UltraViewerRef) {
+async function changeBackground (ultra: ViewerRef) {
   const r = ultra.viewer.renderer
-  r.backgroundColor = new VIM.RGBA(0, 0, 0, 0)
+  r.backgroundColor = new RGBA(0, 0, 0, 0)
 
   // Cycle through background blur
   console.log('backgroundBlur')
@@ -71,10 +74,10 @@ async function changeBackground (ultra: VIM.UltraViewerRef) {
     await new Promise(resolve => setTimeout(resolve, 200))
   }
 
-  r.backgroundColor = new VIM.RGBA(0, 0, 0, 0)
+  r.backgroundColor = new RGBA(0, 0, 0, 0)
 }
 
-function nudgeColor (color: VIM.RGBA): VIM.RGBA {
+function nudgeColor (color: RGBA): RGBA {
   // Random small adjustment between -0.1 and 0.1 for each channel
   const nudgeAmount = 0.2
   const r = Math.max(0, Math.min(1, color.r + (Math.random() * 2 - 1) * nudgeAmount))
@@ -82,5 +85,5 @@ function nudgeColor (color: VIM.RGBA): VIM.RGBA {
   const b = Math.max(0, Math.min(1, color.b + (Math.random() * 2 - 1) * nudgeAmount))
   const a = Math.max(0, Math.min(1, color.a + (Math.random() * 2 - 1) * nudgeAmount))
 
-  return new VIM.RGBA(r, g, b, a)
+  return new RGBA(r, g, b, a)
 }

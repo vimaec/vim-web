@@ -33,10 +33,10 @@ export type LoadingError = {
  * Includes event emitters for progress updates and completion notifications.
  */
 export class ComponentLoader {
-  private _viewer : VIM.WebglCoreViewer
+  private _viewer : VIM.Viewer
   private _modal: ModalRef
 
-  constructor (viewer : VIM.WebglCoreViewer, modal: ModalRef) {
+  constructor (viewer : VIM.Viewer, modal: ModalRef) {
     this._viewer = viewer
     this._modal = modal
   }
@@ -120,7 +120,7 @@ export class ComponentLoader {
     * @param vim Vim to add to the viewer.
     * @param settings Optional settings to apply to the vim.
     */
-  add (vim: VIM.WebglVim, settings: AddSettings = {}) {
+  add (vim: VIM.Vim, settings: AddSettings = {}) {
     this.initVim(vim, settings)
   }
 
@@ -128,12 +128,12 @@ export class ComponentLoader {
    * Removes the vim from the viewer and disposes it.
    * @param vim Vim to remove from the viewer.
    */
-  remove (vim: VIM.WebglVim) {
+  remove (vim: VIM.Vim) {
     this._viewer.remove(vim)
     vim.dispose()
   }
 
-  private initVim (vim : VIM.WebglVim, settings: AddSettings) {
+  private initVim (vim : VIM.Vim, settings: AddSettings) {
     this._viewer.add(vim)
     vim.onLoadingUpdate.subscribe(() => {
       this._viewer.gizmos.loading.visible = vim.isLoading

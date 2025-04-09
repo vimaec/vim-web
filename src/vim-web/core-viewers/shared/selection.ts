@@ -1,16 +1,16 @@
 import { ISignal, SignalDispatcher } from "ste-signals";
-import { CoreModelObject, CoreVim } from "./vim";
+import { IVimObject, IVim } from "./vim";
 import { THREE } from "../..";
 
-export interface SelectionManager<T extends CoreModelObject> {
+export interface ISelection<T extends IVimObject> {
   select(object: T | T[]): void;
   toggle(object: T | T[]): void;
   add(object: T | T[]): void;
   remove(object: T | T[]): void;
   clear(): void;
   getAll(): T[];
-  GetFromVim(vim: CoreVim<T>): T[];
-  removeFromVim(vim: CoreVim<T>): void;
+  GetFromVim(vim: IVim<T>): T[];
+  removeFromVim(vim: IVim<T>): void;
   getBoundingBox(): Promise<THREE.Box3>;
   count(): number;
   any(): boolean;
@@ -19,16 +19,16 @@ export interface SelectionManager<T extends CoreModelObject> {
   onSelectionChanged: ISignal;
 }
 
-export interface CoreSelectionAdapter<T extends CoreModelObject> {
+export interface ISelectionAdapter<T extends IVimObject> {
   outline(object: T, state: boolean): void;
 }
 
-export class CoreSelection<T extends CoreModelObject> implements SelectionManager<T> {
+export class Selection<T extends IVimObject> implements ISelection<T> {
   private _onSelectionChanged = new SignalDispatcher();
   private _selection = new Set<T>();
-  private _adapter: CoreSelectionAdapter<T>;
+  private _adapter: ISelectionAdapter<T>;
 
-  constructor(adapter: CoreSelectionAdapter<T>) {
+  constructor(adapter: ISelectionAdapter<T>) {
     this._adapter = adapter;
   }
   
@@ -150,11 +150,11 @@ export class CoreSelection<T extends CoreModelObject> implements SelectionManage
     return [...this._selection];
   }
 
-  GetFromVim(vim: CoreVim<T>): T[] {
+  GetFromVim(vim: IVim<T>): T[] {
     return [...this._selection].filter(obj => obj.vim === vim);
   }
 
-  removeFromVim(vim: CoreVim<T>): void {
+  removeFromVim(vim: IVim<T>): void {
     const prevSize = this._selection.size;
     let removed = false;
 

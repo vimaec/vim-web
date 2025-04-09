@@ -1,27 +1,28 @@
 import { BaseInputHandler } from "./baseInputHandler";
-import { Vector2, almostEqual } from "../utils/math3d"; // TODO Move up
-import * as THREE from 'three';
 
-type DragCallback = (delta: Vector2, button: number) => void;
+import * as THREE from 'three';
+import * as Utils from "../../utils";
+
+type DragCallback = (delta: THREE.Vector2, button: number) => void;
 
 // Existing MouseHandler class
 export class MouseHandler extends BaseInputHandler {
-  private _lastMouseDownPosition = new Vector2(0, 0);
+  private _lastMouseDownPosition = new THREE.Vector2(0, 0);
   private _capture: CaptureStateMachine;
   private _dragHandler: DragHandler; 
 
-  onButtonDown: (pos: Vector2, button: number) => void;
-  onButtonUp: (pos: Vector2, button: number) => void;
-  onMouseMove: (event: Vector2) => void;
+  onButtonDown: (pos: THREE.Vector2, button: number) => void;
+  onButtonUp: (pos: THREE.Vector2, button: number) => void;
+  onMouseMove: (event: THREE.Vector2) => void;
   onDrag: DragCallback; // Callback for drag movement
-  onClick: (position: Vector2, ctrl: boolean) => void;
-  onDoubleClick: (position: Vector2) => void;
+  onClick: (position: THREE.Vector2, ctrl: boolean) => void;
+  onDoubleClick: (position: THREE.Vector2) => void;
   onWheel: (value: number, ctrl: boolean) => void;
 
   constructor(canvas: HTMLCanvasElement) {
     super(canvas);
     this._capture = new CaptureStateMachine(canvas);
-    this._dragHandler = new DragHandler(canvas, (delta: Vector2, button:number) => this.onDrag(delta, button));
+    this._dragHandler = new DragHandler(canvas, (delta: THREE.Vector2, button:number) => this.onDrag(delta, button));
   }
 
   protected addListeners(): void {
@@ -65,7 +66,7 @@ export class MouseHandler extends BaseInputHandler {
     
     const pos = this.relativePosition(event);
 
-    if (!almostEqual(this._lastMouseDownPosition, pos, 0.01)) {
+    if (!Utils.almostEqual(this._lastMouseDownPosition, pos, 0.01)) {
       return;
     }
 
@@ -94,9 +95,9 @@ export class MouseHandler extends BaseInputHandler {
     event.preventDefault();
   }
 
-  private relativePosition(event: PointerEvent | MouseEvent): Vector2 {
+  private relativePosition(event: PointerEvent | MouseEvent): THREE.Vector2 {
     const rect = this._canvas.getBoundingClientRect();
-    return new Vector2(
+    return new THREE.Vector2(
       event.offsetX / rect.width,
       event.offsetY / rect.height
     );
@@ -144,7 +145,7 @@ class CaptureStateMachine {
 
 class DragHandler {
   private _canvas : HTMLCanvasElement;
-  private _lastDragPosition: Vector2 | null = null;
+  private _lastDragPosition:THREE.Vector2 | null = null;
   private _button: number;
 
   private _onDrag: DragCallback;
@@ -159,7 +160,7 @@ class DragHandler {
    * Initializes the drag operation by setting the starting position.
    * @param pos The initial pointer position.
    */
-  onPointerDown(pos: Vector2, button: number): void {
+  onPointerDown(pos: THREE.Vector2, button: number): void {
     this._lastDragPosition = pos;
     this._button = button;
   }
@@ -169,13 +170,13 @@ class DragHandler {
    * @param pos The current pointer position.
    * @returns The delta movement vector, or null if no previous position exists.
    */
-  onPointerMove(pos: Vector2): void {
+  onPointerMove(pos: THREE.Vector2): void {
 
     if (this._lastDragPosition) {
       const x = pos.x - this._lastDragPosition.x
       const y = pos.y - this._lastDragPosition.y
       this._lastDragPosition = pos;
-      this._onDrag(new Vector2(x,y), this._button);
+      this._onDrag(new THREE.Vector2(x,y), this._button);
     }
   }
 

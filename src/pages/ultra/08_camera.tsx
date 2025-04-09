@@ -3,6 +3,10 @@ import * as VIM  from '../../vim-web'
 import { useUltraWithTower } from './ultraPageUtils'
 import { generateRandomIndices } from './testUtils'
 
+import NodeState = VIM.Core.Ultra.NodeState
+import ViewerRef = VIM.React.Ultra.ViewerRef
+import Vim = VIM.Core.Ultra.Vim
+
 export function UltraCamera () {
   const div = useRef<HTMLDivElement>(null)
 
@@ -15,7 +19,7 @@ export function UltraCamera () {
   )
 }
 
-async function framing (ultra: VIM.UltraViewerRef, tower: VIM.UltraCoreVim) {
+async function framing (ultra: ViewerRef, tower: Vim)  {
   // Wait for the user to get ready
   await new Promise(resolve => setTimeout(resolve, 2000))
 
@@ -52,7 +56,7 @@ async function framing (ultra: VIM.UltraViewerRef, tower: VIM.UltraCoreVim) {
   await ultra.viewer.camera.frameVim(tower, indices, 1)
 }
 
-function highlight (tower: VIM.UltraCoreVim, indices: number[]) {
-  tower.nodeState.setAllNodesState(VIM.UltraVimNodeState.VISIBLE, true)
-  indices.forEach((i) => {tower.getObjectFromInstance(i).state = VIM.UltraVimNodeState.HIGHLIGHTED} )
+function highlight (tower: Vim, indices: number[]) {
+  tower.nodeState.setAllNodesState(NodeState.VISIBLE, true)
+  indices.forEach((i) => {tower.getObjectFromInstance(i).state = NodeState.HIGHLIGHTED} )
 }

@@ -1,43 +1,43 @@
-import { UltraCoreVim } from './vim'
-import { ControllablePromise } from '../../utils/promise'
+import { Vim } from './vim'
+import * as Utils from '../../../utils'
 
-export type UltraLoadRequestResult = UltraLoadSuccess | UltraLoadError
+export type LoadRequestResult = LoadSuccess | LoadError
 
-export class UltraLoadSuccess {
+export class LoadSuccess {
   readonly isError = false
   readonly isSuccess = true
-  readonly vim: UltraCoreVim
-  constructor (vim: UltraCoreVim) {
+  readonly vim: Vim
+  constructor (vim: Vim) {
     this.vim = vim
   }
 }
 
-export class UltraLoadError {
+export class LoadError {
   readonly isError = true
   readonly isSuccess = false
-  readonly type: UltraVimRequestErrorType
+  readonly type: VimRequestErrorType
   readonly details: string | undefined
-  constructor (public error: UltraVimRequestErrorType, details?: string) {
+  constructor (public error: VimRequestErrorType, details?: string) {
     this.type = error
     this.details = details
   }
 }
 
-export interface UltraILoadRequest {
+export interface ILoadRequest {
   get isCompleted(): boolean;
   getProgress(): AsyncGenerator<number>;
-  getResult(): Promise<UltraLoadError | UltraLoadSuccess>;
+  getResult(): Promise<LoadError | LoadSuccess>;
   abort(): void;
 }
 
-export type UltraVimRequestErrorType = 'loadingError' | 'downloadingError' | 'serverDisconnected' | 'unknown' | 'cancelled'
+export type VimRequestErrorType = 'loadingError' | 'downloadingError' | 'serverDisconnected' | 'unknown' | 'cancelled'
 
-export class UltraLoadRequest implements UltraILoadRequest {
+export class LoadRequest implements ILoadRequest {
   private _progress : number = 0
-  private _progressPromise = new ControllablePromise<void>()
+  private _progressPromise = new Utils.ControllablePromise<void>()
 
-  private _completionPromise = new ControllablePromise<void>()
-  private _result : UltraLoadError | UltraLoadSuccess | undefined
+  private _completionPromise = new Utils.ControllablePromise<void>()
+  private _result : LoadError | LoadSuccess | undefined
 
   get isCompleted () {
     return this._result !== undefined
@@ -58,7 +58,7 @@ export class UltraLoadRequest implements UltraILoadRequest {
     }
   }
 
-  async getResult () : Promise<UltraLoadError | UltraLoadSuccess> {
+  async getResult () : Promise<LoadError | LoadSuccess> {
     await this._completionPromise.promise
     return this._result
   }
@@ -66,19 +66,19 @@ export class UltraLoadRequest implements UltraILoadRequest {
   onProgress (progress: number) {
     this._progress = progress
     this._progressPromise.resolve()
-    this._progressPromise = new ControllablePromise<void>()
+    this._progressPromise = new Utils.ControllablePromise<void>()
   }
 
-  success (vim: UltraCoreVim) {
-    this._result = new UltraLoadSuccess(vim)
+  success (vim: Vim) {
+    this._result = new LoadSuccess(vim)
     this._progress = 1
     this._progressPromise.resolve()
     this._completionPromise.resolve()
     return this
   }
 
-  error (error: UltraVimRequestErrorType, details?: string) {
-    this._result = new UltraLoadError(error, details)
+  error (error: VimRequestErrorType, details?: string) {
+    this._result = new LoadError(error, details)
     this._progress = 1
     this._progressPromise.resolve()
     this._completionPromise.resolve()

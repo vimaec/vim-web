@@ -2,11 +2,12 @@ import React, { useEffect, useRef } from 'react'
 
 import * as Urls from '../devUrls'
 import * as VIM from '../../vim-web'
-globalThis.THREE = VIM.THREE
+
+import ViewerRef = VIM.React.Webgl.ViewerRef
 
 export function WebglHome () {
   const div = useRef<HTMLDivElement>(null)
-  const cmp = useRef<VIM.WebglViewerRef>()
+  const cmp = useRef<ViewerRef>()
   useEffect(() => {
     createComponent(div.current, cmp)
     return () => cmp.current?.dispose()
@@ -17,8 +18,8 @@ export function WebglHome () {
   )
 }
 
-async function createComponent (div: HTMLDivElement, ref: React.MutableRefObject<VIM.WebglViewerRef>) {
-  const webgl = await VIM.createWebglViewer(div)
+async function createComponent (div: HTMLDivElement, ref: React.MutableRefObject<ViewerRef>) {
+  const webgl = await VIM.React.Webgl.createViewer(div)
   ref.current = webgl
   globalThis.viewer = webgl
 

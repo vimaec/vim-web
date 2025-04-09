@@ -30,7 +30,7 @@ export type VimTreeNode = TreeItem<AugmentedElement> & {
  * @returns
  */
 export function toTreeData (
-  vim: VIM.WebglVim,
+  vim: VIM.Vim,
   elements: AugmentedElement[],
   grouping: Grouping
 ) {
@@ -68,7 +68,7 @@ export class BimTreeData {
     this.flatten(map)
   }
 
-  updateVisibility (vim: VIM.WebglVim) {
+  updateVisibility (vim: VIM.Vim) {
     const set = new Set<VimTreeNode>()
     const updateOne = (node: VimTreeNode): NodeVisibility => {
       if (set.has(node)) {

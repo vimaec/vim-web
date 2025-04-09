@@ -17,15 +17,15 @@ export function WebglMarkers () {
 
     viewer.core.camera.lerp(1).frame(m2)
 
-    // Create a basic box geometry
-const geometry = new THREE.BoxGeometry(1, 1, 1);
+        // Create a basic box geometry
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
 
-// Create a simple material
-const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    // Create a simple material
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 
-// Create a mesh from geometry and material
-const box = new THREE.Mesh(geometry, material);
-viewer.core.renderer.add(box)
+    // Create a mesh from geometry and material
+    const box = new THREE.Mesh(geometry, material);
+    viewer.core.renderer.add(box)
 
   })
 

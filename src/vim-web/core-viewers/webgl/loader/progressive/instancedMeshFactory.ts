@@ -5,8 +5,8 @@
 import * as THREE from 'three'
 import { G3d, G3dMesh, G3dMaterial, MeshSection, G3dScene } from 'vim-format'
 import { InstancedMesh } from './instancedMesh'
-import { WebglCoreMaterials } from '../materials/materials'
-import { Geometry } from '../webglGeometry'
+import { Materials } from '../materials/materials'
+import * as Geometry from '../geometry'
 
 export class InstancedMeshFactory {
   materials: G3dMaterial
@@ -48,8 +48,8 @@ export class InstancedMeshFactory {
     )
 
     const material = transparent
-      ? WebglCoreMaterials.getInstance().transparent
-      : WebglCoreMaterials.getInstance().opaque
+      ? Materials.getInstance().transparent
+      : Materials.getInstance().opaque
 
     const threeMesh = new THREE.InstancedMesh(
       geometry,
@@ -76,8 +76,8 @@ export class InstancedMeshFactory {
       transparent
     )
     const material = transparent
-      ? WebglCoreMaterials.getInstance().transparent
-      : WebglCoreMaterials.getInstance().opaque
+      ? Materials.getInstance().transparent
+      : Materials.getInstance().opaque
 
     const threeMesh = new THREE.InstancedMesh(
       geometry,

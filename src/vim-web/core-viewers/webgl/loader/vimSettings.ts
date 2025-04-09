@@ -3,7 +3,7 @@
  */
 
 import deepmerge from 'deepmerge'
-import { Transparency } from './webglGeometry'
+import { Transparency } from './geometry'
 import * as THREE from 'three'
 
 export type FileType = 'vim' | 'vimx' | undefined

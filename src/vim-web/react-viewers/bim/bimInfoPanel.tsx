@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react'
-import * as VIM from '../../core-viewers/webgl/index'
+import * as VIM from '../../core-viewers/webgl/'
 import ReactTooltip from 'react-tooltip'
 import { BimBody } from './bimInfoBody'
 import { BimHeader } from './bimInfoHeader'
@@ -10,8 +10,8 @@ import { AugmentedElement } from '../helpers/element'
 import { Data, BimInfoPanelRef } from './bimInfoData'
 
 export function BimInfoPanel (props : {
-    object: VIM.WebglCoreModelObject,
-    vim: VIM.WebglVim,
+    object: VIM.Element3D,
+    vim: VIM.Vim,
     elements: AugmentedElement[],
     full : boolean
     bimInfoRef: BimInfoPanelRef

@@ -3,15 +3,18 @@ import * as VIM from '../../vim-web'
 import * as DevUrls from '../devUrls'
 globalThis.THREE = VIM.THREE
 
+import ViewerRef = VIM.React.Webgl.ViewerRef
+import Webgl = VIM.React.Webgl
+
 /**
  * Custom hook to create a WebGL viewer and attach it to a div element.
  * @param div - The div element to attach the viewer to
  * @param onReady - Callback function to be called when the viewer is ready
  */
-export function useWebglViewer (div: RefObject<HTMLDivElement>, onReady?: (viewer: VIM.WebglViewerRef) => void) {
-  const viewerRef = useRef<VIM.WebglViewerRef>()
+export function useWebglViewer (div: RefObject<HTMLDivElement>, onReady?: (viewer: ViewerRef) => void) {
+  const viewerRef = useRef<ViewerRef>()
   useEffect(() => {
-    VIM.createWebglViewer(div.current).then((viewer) => {
+    Webgl.createViewer(div.current).then((viewer) => {
       viewerRef.current = viewer
       globalThis.viewer = viewer
       onReady?.(viewer)
@@ -28,7 +31,7 @@ export function useWebglViewer (div: RefObject<HTMLDivElement>, onReady?: (viewe
  * @param onReady - Callback function to be called when the viewer is ready and the model is loaded
  * @returns {void}
  */
-export function useWebglViewerWithModel (div: RefObject<HTMLDivElement>, model: string, onReady?: (viewer: VIM.WebglViewerRef) => void) {
+export function useWebglViewerWithModel (div: RefObject<HTMLDivElement>, model: string, onReady?: (viewer: ViewerRef) => void) {
   useWebglViewer(div, async (viewer) => {
     const request = viewer.loader.request(
       { url: model }
@@ -47,7 +50,7 @@ export function useWebglViewerWithModel (div: RefObject<HTMLDivElement>, model: 
  * @param div - The div element to attach the viewer to
  * @param onReady - Callback function to be called when the viewer is ready
  */
-export function useWebglViewerWithResidence(div: RefObject<HTMLDivElement>, onReady?: (viewer: VIM.WebglViewerRef) => void) {
+export function useWebglViewerWithResidence(div: RefObject<HTMLDivElement>, onReady?: (viewer: ViewerRef) => void) {
   useWebglViewerWithModel(div, DevUrls.residence, onReady)
 }
 
@@ -56,6 +59,6 @@ export function useWebglViewerWithResidence(div: RefObject<HTMLDivElement>, onRe
  * @param div - The div element to attach the viewer to
  * @param onReady - Callback function to be called when the viewer is ready
  */
-export function useWebglViewerWithTower(div: RefObject<HTMLDivElement>, onReady?: (viewer: VIM.WebglViewerRef) => void) {
+export function useWebglViewerWithTower(div: RefObject<HTMLDivElement>, onReady?: (viewer: ViewerRef) => void) {
   useWebglViewerWithModel(div, DevUrls.medicalTower, onReady)
 }

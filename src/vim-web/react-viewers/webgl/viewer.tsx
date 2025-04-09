@@ -25,13 +25,13 @@ import { Overlay } from '../panels/overlay'
 import { addPerformanceCounter } from '../panels/performance'
 import { applyWebglBindings } from './inputsBindings'
 import { CursorManager } from '../helpers/cursor'
-import { PartialComponentSettings as PartialViewerSettings, isTrue } from '../settings/settings'
+import { PartialSettings as PartialViewerSettings, isTrue } from '../settings/settings'
 import { useSettings } from '../settings/settingsState'
 import { TreeActionRef } from '../bim/bimTree'
 import { Container, createContainer } from '../container'
 import { useViewerState } from './viewerState'
 import { LogoMemo } from '../panels/logo'
-import { WebglViewerRef } from './viewerRef'
+import { ViewerRef } from './viewerRef'
 import { useBimInfo } from '../bim/bimInfoData'
 import { whenTrue } from '../helpers/utils'
 import { DeferredPromise } from '../helpers/deferredPromise'
@@ -51,12 +51,12 @@ import { useWebglIsolation } from './isolation'
 *  @param viewerSettings Viewer settings.
  * @returns An object containing the resulting container, reactRoot, and viewer.
  */
-export function createWebglViewer (
+export function createViewer (
   container?: Container | HTMLElement,
   componentSettings: PartialViewerSettings = {},
-  viewerSettings: VIM.PartialWebglCoreViewerSettings = {}
-) : Promise<WebglViewerRef> {
-  const promise = new DeferredPromise<WebglViewerRef>()
+  viewerSettings: VIM.PartialViewerSettings = {}
+) : Promise<ViewerRef> {
+  const promise = new DeferredPromise<ViewerRef>()
 
   // Create the container
   const cmpContainer = container instanceof HTMLElement
@@ -64,14 +64,14 @@ export function createWebglViewer (
     : container ?? createContainer()
 
   // Create the viewer inside the container
-  const viewer = new VIM.WebglCoreViewer(viewerSettings)
+  const viewer = new VIM.Viewer(viewerSettings)
   viewer.viewport.reparent(cmpContainer.gfx)
 
   // Create the React root
   const reactRoot = createRoot(cmpContainer.ui)
 
   // Patch the component to clean up after itself
-  const patchRef = (cmp : WebglViewerRef) => {
+  const patchRef = (cmp : ViewerRef) => {
     cmp.dispose = () => {
       viewer.dispose()
       cmpContainer.dispose()
@@ -84,7 +84,7 @@ export function createWebglViewer (
     <WebglViewer
       container={cmpContainer}
       viewer={viewer}
-      onMount = {(cmp : WebglViewerRef) => promise.resolve(patchRef(cmp))}
+      onMount = {(cmp : ViewerRef) => promise.resolve(patchRef(cmp))}
       settings={componentSettings}
     />
   )
@@ -100,8 +100,8 @@ export function createWebglViewer (
  */
 export function WebglViewer (props: {
   container: Container
-  viewer: VIM.WebglCoreViewer
-  onMount: (component: WebglViewerRef) => void
+  viewer: VIM.Viewer
+  onMount: (component: ViewerRef) => void
   settings?: PartialViewerSettings
 }) {
   const settings = useSettings(props.viewer, props.settings ?? {})

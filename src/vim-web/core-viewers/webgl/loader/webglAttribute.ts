@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { MergedSubmesh, SimpleInstanceSubmesh, Submesh } from './webglMesh'
+import { MergedSubmesh, SimpleInstanceSubmesh, Submesh } from './mesh'
 
 export type WebglAttributeTarget = Submesh | SimpleInstanceSubmesh
 

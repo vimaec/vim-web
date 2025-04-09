@@ -1,12 +1,12 @@
-import { WebglCoreModelObject, WebglCoreViewer } from "../../core-viewers/webgl";
+import { Element3D, Viewer } from "../../core-viewers/webgl";
 import { IsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
 
-export function useWebglIsolation(viewer: WebglCoreViewer){
+export function useWebglIsolation(viewer: Viewer){
   const adapter = createWebglIsolationAdapter(viewer)
   return useSharedIsolation(adapter)
 }
 
-function createWebglIsolationAdapter(viewer: WebglCoreViewer): IsolationAdapter {
+function createWebglIsolationAdapter(viewer: Viewer): IsolationAdapter {
   
   return {
     onVisibilityChange: viewer.renderer.onSceneUpdated,
@@ -72,7 +72,7 @@ function createWebglIsolationAdapter(viewer: WebglCoreViewer): IsolationAdapter 
   };
 }
 
-function updateAllVisibility(viewer: WebglCoreViewer, predicate: (object: WebglCoreModelObject) => boolean){
+function updateAllVisibility(viewer: Viewer, predicate: (object: Element3D) => boolean){
  for(let v of viewer.vims){
     for(let o of v.getAllObjects()){
       if(o.type === "WebglModelObject"){
@@ -82,7 +82,7 @@ function updateAllVisibility(viewer: WebglCoreViewer, predicate: (object: WebglC
   }
 }
 
-function getVisibilityState(viewer: WebglCoreViewer): VisibilityStatus {
+function getVisibilityState(viewer: Viewer): VisibilityStatus {
   let all = true;
   let none = true;
   let allButSelectionFlag = true;

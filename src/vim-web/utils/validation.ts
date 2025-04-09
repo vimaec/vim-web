@@ -1,7 +1,7 @@
-import { Box3, RGB, RGBA, Segment, Vector2, Vector3 } from '../../utils/math3d'
-import { isURL } from '../../utils/url'
-import { MaterialHandle, materialHandles } from '../viewer/rpcClient'
-import { INVALID_HANDLE } from './viewer'
+import { Box3, RGB, RGBA, Segment, Vector2, Vector3 } from '../core-viewers/ultra/viewer/rpcTypes'
+import * as Utils from '.'
+import { MaterialHandle, materialHandles } from '../core-viewers/ultra/viewer/rpcClient'
+import { ULTRA_INVALID_HANDLE } from '../core-viewers/ultra/viewer/viewer'
 
 export class Validation {
   //= ===========================================================================
@@ -63,7 +63,7 @@ export class Validation {
   //= ===========================================================================
   static isComponentHandle (handle: number): boolean {
     if (!this.isPositiveInteger(handle)) return false
-    if (handle === INVALID_HANDLE) {
+    if (handle === ULTRA_INVALID_HANDLE) {
       console.warn(`Invalid handle ${handle}. Aborting operation.`)
       return false
     }
@@ -158,7 +158,7 @@ export class Validation {
   }
 
   static isURL (value: string): boolean {
-    if (!isURL(value)) {
+    if (!Utils.isURL(value)) {
       console.warn('Invalid value: must be a valid URL. Aborting operation.')
       return false
     }

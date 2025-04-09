@@ -1,6 +1,6 @@
 import { THREE } from "../..";
 
-export interface CoreRaycastResult<T>{
+export interface IRaycastResult<T>{
   /** The model Object hit */
   object: T | undefined;
 
@@ -10,9 +10,9 @@ export interface CoreRaycastResult<T>{
   worldNormal: THREE.Vector3;
 }
 
-export interface CoreRaycaster<T> {
-  raycastFromScreen(position: THREE.Vector2): Promise<CoreRaycastResult<T>>;
-  raycastFromWorld(position: THREE.Vector3): Promise<CoreRaycastResult<T>>;
+export interface IRaycaster<T> {
+  raycastFromScreen(position: THREE.Vector2): Promise<IRaycastResult<T>>;
+  raycastFromWorld(position: THREE.Vector3): Promise<IRaycastResult<T>>;
 }
 
 

@@ -3,14 +3,14 @@
  */
 
 import * as THREE from 'three'
-import { WebglVim } from '../webglVim'
+import { Vim } from '../vim'
 import { InstancedSubmesh } from './instancedSubmesh'
 import { G3d, G3dMesh } from 'vim-format'
 import { ModelMaterial } from '../materials/materials'
 
 export class InstancedMesh {
   g3dMesh: G3dMesh | G3d
-  vim: WebglVim
+  vim: Vim
   mesh: THREE.InstancedMesh
 
   // instances

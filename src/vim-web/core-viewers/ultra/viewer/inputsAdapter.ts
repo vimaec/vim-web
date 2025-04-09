@@ -1,5 +1,5 @@
-import { InputAdapter, GeneralInputHandler } from "../../shared/InputHandler"
-import { UltraCoreViewer } from "./viewer"
+import * as Shared from "../../shared"
+import { Viewer } from "./viewer"
 import * as THREE from 'three'
 
 const CODE_TO_KEYCODE: Record<string, number> = {
@@ -22,14 +22,14 @@ const CODE_TO_KEYCODE: Record<string, number> = {
 
 export default CODE_TO_KEYCODE;
 
-export function ultraInputAdapter(viewer: UltraCoreViewer) {
-  return new GeneralInputHandler(
+export function ultraInputAdapter(viewer: Viewer) {
+  return new Shared.InputHandler(
     viewer.viewport.canvas,
     createAdapter(viewer),
   )
 }
 
-function createAdapter(viewer: UltraCoreViewer ) : InputAdapter {
+function createAdapter(viewer: Viewer ) : Shared.IInputAdapter {
   return {
 
     init: () => {
@@ -114,7 +114,7 @@ function createAdapter(viewer: UltraCoreViewer ) : InputAdapter {
   }
 }
 
-async function frameSelection(viewer: UltraCoreViewer) {
+async function frameSelection(viewer: Viewer) {
   const box = await viewer.selection.getBoundingBox();
   if (!box) return;
   viewer.camera.frameBox(box);

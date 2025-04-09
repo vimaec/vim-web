@@ -1,5 +1,5 @@
-import { RGBA32 } from "../../utils/math3d";
-import { ColorManager } from "./colorManager";
+import { RGBA32 } from './rpcTypes'
+import { ColorManager } from './colorManager';
 
 /**
  * Represents a handle to a color in the color management system.

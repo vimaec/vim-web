@@ -4,7 +4,7 @@ import { RpcSafeClient } from './rpcSafeClient';
  * Represents the possible states a node can have in the UltraVim system.
  */
 // TODO: Rename without Node
-export enum UltraVimNodeState {
+export enum NodeState {
   VISIBLE = 'visible',
   HIDDEN = 'hidden',
   GHOSTED = 'ghosted',
@@ -38,7 +38,7 @@ export class StateSynchronizer {
     getHandle: () => number,
     isConnected: () => boolean,
     onUpdate: () => void,
-    defaultState: UltraVimNodeState = UltraVimNodeState.VISIBLE
+    defaultState: NodeState = NodeState.VISIBLE
   ) {
     this._tracker = new StateTracker(defaultState);
     this._rpc = rpc;
@@ -55,7 +55,7 @@ export class StateSynchronizer {
    * @param state - A single state or array of states to check against
    * @returns True if all nodes are in the specified state(s), false otherwise
    */
-  areAllInState(state: UltraVimNodeState | UltraVimNodeState[]): boolean {
+  areAllInState(state: NodeState | NodeState[]): boolean {
     return this._tracker.areAll(state);
   }
 
@@ -65,7 +65,7 @@ export class StateSynchronizer {
    * @param node - The node identifier
    * @returns The current state of the node
    */
-  getNodeState(node: number): UltraVimNodeState {
+  getNodeState(node: number): NodeState {
     return this._tracker.getState(node);
   }
 
@@ -75,7 +75,7 @@ export class StateSynchronizer {
    * @param state - The state to query
    * @returns Either 'all' if all nodes are in this state, or an array of node IDs
    */
-  getNodesInState(state: UltraVimNodeState): number[] | 'all' {
+  getNodesInState(state: NodeState): number[] | 'all' {
     return this._tracker.getAll(state);
   }
 
@@ -84,7 +84,7 @@ export class StateSynchronizer {
    * 
    * @returns The current default state
    */
-  getDefaultState(): UltraVimNodeState {
+  getDefaultState(): NodeState {
     return this._tracker.getDefault();
   }
 
@@ -96,7 +96,7 @@ export class StateSynchronizer {
    * @param nodeId - The identifier of the node
    * @param state - The new state to apply
    */
-  setNodeState(nodeId: number, state: UltraVimNodeState): void {
+  setNodeState(nodeId: number, state: NodeState): void {
     this._tracker.setState(nodeId, state);
     this.scheduleUpdate();
   }
@@ -107,7 +107,7 @@ export class StateSynchronizer {
    * @param state - The state to apply to all nodes
    * @param clear - If true, clears all node-specific overrides
    */
-  setAllNodesState(state: UltraVimNodeState, clear: boolean): void {
+  setAllNodesState(state: NodeState, clear: boolean): void {
     this._tracker.setAll(state, clear);
     this.scheduleUpdate();
   }
@@ -118,7 +118,7 @@ export class StateSynchronizer {
    * @param fromState - The state(s) to replace
    * @param toState - The new state to apply
    */
-  replaceState(fromState: UltraVimNodeState | UltraVimNodeState[], toState: UltraVimNodeState): void {
+  replaceState(fromState: NodeState | NodeState[], toState: NodeState): void {
     this._tracker.replace(fromState, toState);
     this.scheduleUpdate();
   }
@@ -179,22 +179,22 @@ export class StateSynchronizer {
    * @param state - The state to apply to all nodes
    * @private
    */
-  private callRPCForStateAll(state: UltraVimNodeState): void {
+  private callRPCForStateAll(state: NodeState): void {
     if (!this._isConnected()) {
       return;
     }
     
     switch (state) {
-      case UltraVimNodeState.VISIBLE:
+      case NodeState.VISIBLE:
         this._rpc.RPCShowAll(this._getHandle());
         break;
-      case UltraVimNodeState.HIDDEN:
+      case NodeState.HIDDEN:
         this._rpc.RPCHideAll(this._getHandle());
         break;
-      case UltraVimNodeState.GHOSTED:
+      case NodeState.GHOSTED:
         this._rpc.RPCGhostAll(this._getHandle());
         break;
-      case UltraVimNodeState.HIGHLIGHTED:
+      case NodeState.HIGHLIGHTED:
         this._rpc.RPCHighlightAll(this._getHandle());
         break;
     }
@@ -207,22 +207,22 @@ export class StateSynchronizer {
    * @param nodes - Array of node IDs to update
    * @private
    */
-  private callRPCForStateNodes(state: UltraVimNodeState, nodes: number[]): void {
+  private callRPCForStateNodes(state: NodeState, nodes: number[]): void {
     if (!this._isConnected()) {
       return;
     }
     
     switch (state) {
-      case UltraVimNodeState.VISIBLE:
+      case NodeState.VISIBLE:
         this._rpc.RPCShow(this._getHandle(), nodes);
         break;
-      case UltraVimNodeState.HIDDEN:
+      case NodeState.HIDDEN:
         this._rpc.RPCHide(this._getHandle(), nodes);
         break;
-      case UltraVimNodeState.GHOSTED:
+      case NodeState.GHOSTED:
         this._rpc.RPCGhost(this._getHandle(), nodes);
         break;
-      case UltraVimNodeState.HIGHLIGHTED:
+      case NodeState.HIGHLIGHTED:
         this._rpc.RPCHighlight(this._getHandle(), nodes);
         break;
     }
@@ -238,9 +238,9 @@ export class StateSynchronizer {
  * @private Not exported, used internally by StateSynchronizer
  */
 class StateTracker {
-  private _state = new Map<number, UltraVimNodeState>();
+  private _state = new Map<number, NodeState>();
   private _updates = new Set<number>();
-  private _default: UltraVimNodeState;
+  private _default: NodeState;
   private _updatedDefault: boolean = false;
 
   /**
@@ -248,7 +248,7 @@ class StateTracker {
    * 
    * @param defaultState - The default state for nodes when not explicitly set
    */
-  constructor(defaultState: UltraVimNodeState = UltraVimNodeState.VISIBLE) {
+  constructor(defaultState: NodeState = NodeState.VISIBLE) {
     this._default = defaultState;
   }
 
@@ -258,7 +258,7 @@ class StateTracker {
    * @param state - The new default state
    * @param clearNodes - If true, clears all node-specific overrides
    */
-  setAll(state: UltraVimNodeState, clearNodes: boolean): void {
+  setAll(state: NodeState, clearNodes: boolean): void {
     this._default = state;
     this._updatedDefault = true;
     if (clearNodes) {
@@ -297,7 +297,7 @@ class StateTracker {
    * @param nodeId - The node identifier
    * @param state - The new state to apply
    */
-  setState(nodeId: number, state: UltraVimNodeState): void {
+  setState(nodeId: number, state: NodeState): void {
     if (this._default === state) {
       // If the new state matches the default, remove the override
       this._state.delete(nodeId);
@@ -318,7 +318,7 @@ class StateTracker {
    * 
    * @returns The current default state
    */
-  getDefault(): UltraVimNodeState {
+  getDefault(): NodeState {
     return this._default;
   }
 
@@ -328,7 +328,7 @@ class StateTracker {
    * @param state - A single state or array of states to check against
    * @returns True if all nodes are in the specified state(s), false otherwise
    */
-  areAll(state: UltraVimNodeState | UltraVimNodeState[]): boolean {
+  areAll(state: NodeState | NodeState[]): boolean {
     // First check if the default state matches
     if (!matchesState(this._default, state)) {
       return false;
@@ -350,7 +350,7 @@ class StateTracker {
    * @param node - The node identifier
    * @returns The current state of the node (override or default)
    */
-  getState(node: number): UltraVimNodeState {
+  getState(node: number): NodeState {
     return this._state.get(node) ?? this._default;
   }
 
@@ -361,7 +361,7 @@ class StateTracker {
    * @param state - The state to query
    * @returns Either 'all' if all nodes are in this state, or an array of node IDs
    */
-  getAll(state: UltraVimNodeState): number[] | 'all' {
+  getAll(state: NodeState): number[] | 'all' {
     if (this.areAll(state)) return 'all';
     
     const nodes: number[] = [];
@@ -379,10 +379,10 @@ class StateTracker {
    * 
    * @returns A tuple with the updated default state (if any) and a map of states to node IDs
    */
-  getUpdates(): [UltraVimNodeState | undefined, Map<UltraVimNodeState, number[]>] {
+  getUpdates(): [NodeState | undefined, Map<NodeState, number[]>] {
     // Initialize the map with all possible states
-    const nodesByState = new Map<UltraVimNodeState, number[]>();
-    Object.values(UltraVimNodeState).forEach(state => {
+    const nodesByState = new Map<NodeState, number[]>();
+    Object.values(NodeState).forEach(state => {
       nodesByState.set(state, []);
     });
     
@@ -420,7 +420,7 @@ class StateTracker {
    * 
    * @returns An iterator of [nodeId, state] pairs
    */
-  entries(): IterableIterator<[number, UltraVimNodeState]> {
+  entries(): IterableIterator<[number, NodeState]> {
     return this._state.entries();
   }
 
@@ -431,7 +431,7 @@ class StateTracker {
    * @param fromState - The state(s) to replace
    * @param toState - The new state to apply
    */
-  replace(fromState: UltraVimNodeState | UltraVimNodeState[], toState: UltraVimNodeState): void {
+  replace(fromState: NodeState | NodeState[], toState: NodeState): void {
     // If the default state matches what we're replacing, update it
     if (matchesState(this._default, fromState)) {
       this._default = toState;
@@ -457,7 +457,7 @@ class StateTracker {
  * @param state - A single state or array of states to check against
  * @returns True if the node state matches any of the target states
  */
-function matchesState(nodeState: UltraVimNodeState, state: UltraVimNodeState | UltraVimNodeState[]): boolean {
+function matchesState(nodeState: NodeState, state: NodeState | NodeState[]): boolean {
   if (Array.isArray(state)) {
     return state.includes(nodeState);
   }

@@ -3,8 +3,6 @@ export interface ILogger {
   error:(message: string, e :unknown) => void
 }
 
-
-
 export const defaultLogger: ILogger = {
   
   log: (message: string, obj?: any) => {

@@ -2,13 +2,13 @@
  * @module viw-webgl-viewer/gizmos/sectionBox
  */
 
-import { WebglCoreViewer } from '../../viewer';
+import { Viewer } from '../../viewer';
 import * as THREE from 'three';
 import { BoxInputs } from './sectionBoxInputs';
 import { SignalDispatcher } from 'ste-signals';
 import { SimpleEventDispatcher } from 'ste-simple-events';
 import { SectionBoxGizmo } from './sectionBoxGizmo';
-import { safeBox } from '../../../../utils/threeUtils';
+import { safeBox } from '../../../../../utils/threeUtils';
 
 /**
  * Manages a section box gizmo, serving as a proxy between the renderer and the user.
@@ -24,7 +24,7 @@ export class SectionBox {
   // Private fields
   // -------------------------------------------------------------------------
 
-  private _viewer: WebglCoreViewer;
+  private _viewer: Viewer;
   private _gizmos: SectionBoxGizmo;
   private _inputs: BoxInputs;
   
@@ -90,9 +90,9 @@ export class SectionBox {
   /**
    * Creates a new SectionBox gizmo controller.
    * 
-   * @param viewer - The parent {@link WebglCoreViewer} in which the section box is rendered.
+   * @param viewer - The parent {@link Viewer} in which the section box is rendered.
    */
-  constructor(viewer: WebglCoreViewer) {
+  constructor(viewer: Viewer) {
     this._viewer = viewer;
 
     this._gizmos = new SectionBoxGizmo(viewer.renderer, viewer.camera);

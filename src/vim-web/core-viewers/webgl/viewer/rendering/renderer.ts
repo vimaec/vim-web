@@ -3,22 +3,22 @@
  */
 
 import * as THREE from 'three'
-import { IRenderer, WebglScene } from '../../loader/webglScene'
-import { WeglCoreViewport } from '../viewport'
-import { WebglCoreRenderScene } from './renderScene'
-import { ModelMaterial, WebglCoreMaterials } from '../../loader/materials/materials'
+import { IRenderer, WebglScene } from '../../loader/scene'
+import { Viewport } from '../viewport'
+import { RenderScene } from './renderScene'
+import { ModelMaterial, Materials } from '../../loader/materials/materials'
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer'
 
-import { WebglCoreCamera } from '../camera/camera'
+import { Camera } from '../camera/camera'
 import { RenderingSection } from './renderingSection'
 import { RenderingComposer } from './renderingComposer'
-import { WebglCoreViewerSettings } from '../settings/viewerSettings'
+import { ViewerSettings } from '../settings/viewerSettings'
 import { SignalDispatcher } from 'ste-signals'
 
 /**
  * Manages how vim objects are added and removed from the THREE.Scene to be rendered
  */
-export class WebglCoreRenderer implements IRenderer {
+export class Renderer implements IRenderer {
   /**
    * The THREE WebGL renderer.
    */
@@ -39,11 +39,11 @@ export class WebglCoreRenderer implements IRenderer {
    */
   antialias: boolean = true
 
-  private _scene: WebglCoreRenderScene
-  private _viewport: WeglCoreViewport
-  private _camera: WebglCoreCamera
+  private _scene: RenderScene
+  private _viewport: Viewport
+  private _camera: Camera
   private _composer: RenderingComposer
-  private _materials: WebglCoreMaterials
+  private _materials: Materials
   private _renderText: boolean | undefined
 
   private _needsUpdate: boolean
@@ -76,11 +76,11 @@ export class WebglCoreRenderer implements IRenderer {
   }
 
   constructor (
-    scene: WebglCoreRenderScene,
-    viewport: WeglCoreViewport,
-    materials: WebglCoreMaterials,
-    camera: WebglCoreCamera,
-    settings: WebglCoreViewerSettings
+    scene: RenderScene,
+    viewport: Viewport,
+    materials: Materials,
+    camera: Camera,
+    settings: ViewerSettings
   ) {
     this._viewport = viewport
     this._scene = scene

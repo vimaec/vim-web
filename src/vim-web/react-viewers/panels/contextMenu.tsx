@@ -2,12 +2,7 @@
  * @module viw-webgl-react
  */
 
-import {
-  ContextMenu,
-  MenuItem,
-  showMenu,
-  hideMenu
-} from '@firefox-devtools/react-contextmenu'
+import * as FireMenu from '@firefox-devtools/react-contextmenu'
 import React, { useEffect, useState } from 'react'
 import { CameraRef } from '../state/cameraState'
 import { TreeActionRef } from '../bim/bimTree'
@@ -21,7 +16,7 @@ type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
 export function showContextMenu (
   position: { x: number; y: number } | undefined
 ) {
-  hideMenu()
+  FireMenu.hideMenu()
   if (!position) {
     return
   }
@@ -31,7 +26,7 @@ export function showContextMenu (
     id: VIM_CONTEXT_MENU_ID
   }
 
-  showMenu(showMenuConfig)
+  FireMenu.showMenu(showMenuConfig)
 }
 
 /**
@@ -88,17 +83,17 @@ export type ContextMenuCustomization = (
 /**
  * Memoized version of VimContextMenu.
  */
-export const VimContextMenuMemo = React.memo(VimContextMenu)
+export const VimContextMenuMemo = React.memo(ContextMenu)
 
 /**
  * Context menu component definition according to current state.
  */
-export function VimContextMenu (props: {
-  viewer: VIM.WebglCoreViewer
+export function ContextMenu (props: {
+  viewer: VIM.Viewer
   camera: CameraRef
   modal: ModalRef
   isolation: IsolationRef
-  selection: VIM.WebglCoreModelObject[]
+  selection: VIM.Element3D[]
   customization?: (e: ContextMenuElement[]) => ContextMenuElement[]
   treeRef: React.MutableRefObject<TreeActionRef | undefined>
 }) {
@@ -156,20 +151,20 @@ export function VimContextMenu (props: {
   const createButton = (button: IContextMenuButton) => {
     if (!button.enabled) return null
     return (
-      <MenuItem
+      <FireMenu.MenuItem
         key={button.id}
         className="vim-context-menu-item vc-flex vc-cursor-pointer vc-select-none vc-items-center vc-justify-between vc-px-5 vc-py-2 hover:vc-bg-gray-lightest"
         onClick={button.action}
       >
         <span>{button.label}</span>
         <span className="vc-text-gray-medium">{button.keyboard}</span>
-      </MenuItem>
+      </FireMenu.MenuItem>
     )
   }
   const createDivider = (divider: IContextMenuDivider) => {
     return divider.enabled
       ? (
-      <MenuItem
+      <FireMenu.MenuItem
         key={divider.id}
         className="vim-context-menu-item vc-my-1 vc-border-t vc-border-gray-lighter"
         divider
@@ -253,7 +248,7 @@ export function VimContextMenu (props: {
         e.preventDefault()
       }}
     >
-      <ContextMenu
+      <FireMenu.ContextMenu
         // hideOnLeave={true}
         preventHideOnContextMenu={true}
         className="vc-z-50 vc-w-[240px] vc-rounded vc-bg-white vc-py-1 vc-text-gray-darker vc-shadow-lg"
@@ -262,7 +257,7 @@ export function VimContextMenu (props: {
         {elements.map((e) => {
           return 'label' in e ? createButton(e) : createDivider(e)
         })}
-      </ContextMenu>
+      </FireMenu.ContextMenu>
     </div>
   )
 }

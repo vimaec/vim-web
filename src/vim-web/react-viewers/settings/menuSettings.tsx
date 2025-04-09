@@ -4,7 +4,7 @@
 
 import React from 'react'
 import * as VIM from '../../core-viewers/webgl/index'
-import { UserBoolean, ComponentSettings } from './settings'
+import { UserBoolean, Settings } from './settings'
 import { SettingsState } from './settingsState'
 import { THREE } from '../..'
 
@@ -16,7 +16,7 @@ import { THREE } from '../..'
  * @returns
  */
 export function MenuSettings (props: {
-  viewer: VIM.WebglCoreViewer
+  viewer: VIM.Viewer
   settings: SettingsState
   visible: boolean
 }) {
@@ -37,8 +37,8 @@ export function MenuSettings (props: {
 
   const settingsToggle = (
     label: string,
-    getter: (settings: ComponentSettings) => UserBoolean,
-    setter: (settings: ComponentSettings, b: boolean) => void
+    getter: (settings: Settings) => UserBoolean,
+    setter: (settings: Settings, b: boolean) => void
   ) => {
     const value = getter(props.settings.value)
     if (value === 'AlwaysTrue' || value === 'AlwaysFalse') {
@@ -53,8 +53,8 @@ export function MenuSettings (props: {
   const settingsBox = (label: string,
     info: string,
     transform : (value:number) => number,
-    getter: (settings: ComponentSettings) => number,
-    setter: (settings: ComponentSettings, b: number) => void) => {
+    getter: (settings: Settings) => number,
+    setter: (settings: Settings, b: number) => void) => {
     const value = getter(props.settings.value).toString()
     const update = (event: React.FocusEvent<HTMLInputElement, Element>) => {
       const str = event.target.value

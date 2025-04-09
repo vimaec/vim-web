@@ -1,19 +1,19 @@
 import { IsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
-import { UltraCoreModelObject, UltraCoreViewer, UltraCoreVim, UltraVimNodeState } from "../../core-viewers/ultra";
+import { Element3D, Viewer, Vim, NodeState } from "../../core-viewers/ultra";
 import { useStateRef } from "../helpers/reactUtils";
 
-export function useUltraIsolation(viewer: UltraCoreViewer){
+export function useUltraIsolation(viewer: Viewer){
   const adapter = createAdapter(viewer)
   return useSharedIsolation(adapter)
 }
 
-function createAdapter(viewer: UltraCoreViewer): IsolationAdapter {
+function createAdapter(viewer: Viewer): IsolationAdapter {
 
   const ghost = useStateRef<boolean>(false);
 
   // Helper function to hide objects in ghost or hidden state
-  const hide = (objects: UltraCoreModelObject[] | 'all') =>{
-    const state = ghost.get() ? UltraVimNodeState.GHOSTED : UltraVimNodeState.HIDDEN
+  const hide = (objects: Element3D[] | 'all') =>{
+    const state = ghost.get() ? NodeState.GHOSTED : NodeState.HIDDEN
     if(objects === 'all'){
       viewer.vims.getAll().forEach(vim => {vim.nodeState.setAllNodesState(state, true)})
       return
@@ -35,7 +35,7 @@ function createAdapter(viewer: UltraCoreViewer): IsolationAdapter {
       hide('all') 
 
       for(const obj of viewer.selection.getAll()){
-        obj.state = UltraVimNodeState.HIGHLIGHTED
+        obj.state = NodeState.HIGHLIGHTED
       }
     },
     hideSelection: () => {
@@ -44,7 +44,7 @@ function createAdapter(viewer: UltraCoreViewer): IsolationAdapter {
     },
     showSelection: () => {
       viewer.selection.getAll().forEach(obj => {
-        obj.state = UltraVimNodeState.VISIBLE
+        obj.state = NodeState.VISIBLE
       })
     },
 
@@ -53,23 +53,23 @@ function createAdapter(viewer: UltraCoreViewer): IsolationAdapter {
     },
     showAll: () => {
       for(const vim of viewer.vims.getAll()){
-        vim.nodeState.setAllNodesState(UltraVimNodeState.VISIBLE, true)
+        vim.nodeState.setAllNodesState(NodeState.VISIBLE, true)
       }
       viewer.selection.getAll().forEach(obj => {
-        obj.state = UltraVimNodeState.HIGHLIGHTED
+        obj.state = NodeState.HIGHLIGHTED
       })
     },
 
     isolate: (instances: number[]) => {
       hide('all') // Hide all objects
       viewer.selection.getAll().forEach(obj => {
-        obj.state = UltraVimNodeState.HIGHLIGHTED
+        obj.state = NodeState.HIGHLIGHTED
       })
     },
     show: (instances: number[]) => {
       for(const vim of viewer.vims.getAll()){
         for(const i of instances){
-          vim.getObjectFromInstance(i).state = UltraVimNodeState.VISIBLE
+          vim.getObjectFromInstance(i).state = NodeState.VISIBLE
         }
       }
     },
@@ -90,9 +90,9 @@ function createAdapter(viewer: UltraCoreViewer): IsolationAdapter {
       
       for(const vim of viewer.vims.getAll()){
         if(show){
-          vim.nodeState.replaceState(UltraVimNodeState.HIDDEN, UltraVimNodeState.GHOSTED)
+          vim.nodeState.replaceState(NodeState.HIDDEN, NodeState.GHOSTED)
         } else {
-          vim.nodeState.replaceState(UltraVimNodeState.GHOSTED, UltraVimNodeState.HIDDEN)
+          vim.nodeState.replaceState(NodeState.GHOSTED, NodeState.HIDDEN)
         }
       }
     },
@@ -111,7 +111,7 @@ function createAdapter(viewer: UltraCoreViewer): IsolationAdapter {
   };
 }
 
-function checkSelectionState(viewer: UltraCoreViewer, test: (state: UltraVimNodeState) => boolean): boolean {
+function checkSelectionState(viewer: Viewer, test: (state: NodeState) => boolean): boolean {
   if(!viewer.selection.any()){
     return false
   }
@@ -119,15 +119,15 @@ function checkSelectionState(viewer: UltraCoreViewer, test: (state: UltraVimNode
   return viewer.selection.getAll().every(obj => test(obj.state))
 }
 
-function getVisibilityState(viewer: UltraCoreViewer): VisibilityStatus {
+function getVisibilityState(viewer: Viewer): VisibilityStatus {
   let all = true;
   let none = true;
   let allButSelectionFlag = true;
   let onlySelectionFlag = true;
 
   for (let v of viewer.vims.getAll()) {
-    const allVisible = v.nodeState.areAllInState([UltraVimNodeState.VISIBLE, UltraVimNodeState.HIGHLIGHTED])
-    const allHidden = v.nodeState.areAllInState([UltraVimNodeState.HIDDEN, UltraVimNodeState.GHOSTED])
+    const allVisible = v.nodeState.areAllInState([NodeState.VISIBLE, NodeState.HIGHLIGHTED])
+    const allHidden = v.nodeState.areAllInState([NodeState.HIDDEN, NodeState.GHOSTED])
 
     all = all && allVisible
     none = none && allHidden
@@ -144,7 +144,7 @@ function getVisibilityState(viewer: UltraCoreViewer): VisibilityStatus {
   return 'some';
 }
 
-function onlySelection(viewer: UltraCoreViewer, vim: UltraCoreVim): boolean {
+function onlySelection(viewer: Viewer, vim: Vim): boolean {
   return false
   /*
   const selectedInstances = viewer.selection.get().get(vim)
@@ -168,7 +168,7 @@ function onlySelection(viewer: UltraCoreViewer, vim: UltraCoreVim): boolean {
   */
 }
 
-function allButSelection(viewer: UltraCoreViewer, vim: UltraCoreVim): boolean {
+function allButSelection(viewer: Viewer, vim: Vim): boolean {
   return false
   /*
   const selectedInstances = viewer.selection.get().get(vim)

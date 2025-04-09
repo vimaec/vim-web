@@ -3,12 +3,12 @@
  */
 
 import * as THREE from 'three'
-import { WebglCoreCamera } from './camera'
-import { WebglCoreModelObject } from '../../loader/webglModelObject'
+import { Camera } from './camera'
+import { Element3D } from '../../loader/element3d'
 import { CameraMovementSnap } from './cameraMovementSnap'
-import { WebglCoreCameraMovement } from './cameraMovement'
+import { CameraMovement } from './cameraMovement'
 
-export class CameraLerp extends WebglCoreCameraMovement {
+export class CameraLerp extends CameraMovement {
   _movement: CameraMovementSnap
   _clock = new THREE.Clock()
 
@@ -17,7 +17,7 @@ export class CameraLerp extends WebglCoreCameraMovement {
 
   _duration = 1
 
-  constructor (camera: WebglCoreCamera, movement: CameraMovementSnap) {
+  constructor (camera: Camera, movement: CameraMovementSnap) {
     super(camera)
     this._movement = movement
   }
@@ -123,8 +123,8 @@ export class CameraLerp extends WebglCoreCameraMovement {
     }
   }
 
-  async target (target: WebglCoreModelObject | THREE.Vector3) {
-    const pos = target instanceof WebglCoreModelObject ? (await target.getCenter()) : target
+  async target (target: Element3D | THREE.Vector3) {
+    const pos = target instanceof Element3D ? (await target.getCenter()) : target
     const next = pos.clone().sub(this._camera.position)
     const start = this._camera.quaternion.clone()
     const rot = new THREE.Quaternion().setFromUnitVectors(

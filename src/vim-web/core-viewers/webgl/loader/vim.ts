@@ -4,9 +4,9 @@
 
 import * as THREE from 'three'
 import { VimDocument, G3d, VimHeader, FilterMode } from 'vim-format'
-import { WebglScene } from './webglScene'
-import { WebglVimSettings } from './webglVimSettings'
-import { WebglCoreModelObject } from './webglModelObject'
+import { WebglScene } from './scene'
+import { WebglVimSettings } from './vimSettings'
+import { Element3D as WebglElement3D } from './element3d'
 import {
   ElementMapping,
   ElementMapping2,
@@ -16,7 +16,7 @@ import { ISignal, SignalDispatcher } from 'ste-signals'
 import { G3dSubset } from './progressive/g3dSubset'
 import { SubsetBuilder } from './progressive/subsetBuilder'
 import { LoadPartialSettings } from './progressive/subsetRequest'
-import { CoreVim } from '../../shared/vim'
+import { IVim } from '../../shared/vim'
 
 type VimFormat = 'vim' | 'vimx'
 
@@ -24,7 +24,7 @@ type VimFormat = 'vim' | 'vimx'
  * Represents a container for the built three.js meshes and the vim data from which they were constructed.
  * Facilitates high-level scene manipulation by providing access to objects.
  */
-export class WebglVim implements CoreVim<WebglCoreModelObject> {
+export class Vim implements IVim<WebglElement3D> {
   /**
    * Indicates whether the vim was opened from a vim or vimx file.
    */
@@ -67,7 +67,7 @@ export class WebglVim implements CoreVim<WebglCoreModelObject> {
 
   private readonly _builder: SubsetBuilder
   private readonly _loadedInstances = new Set<number>()
-  private readonly _elementToObject = new Map<number, WebglCoreModelObject>()
+  private readonly _elementToObject = new Map<number, WebglElement3D>()
 
   /**
    * Getter for accessing the event dispatched whenever a subset begins or finishes loading.
@@ -164,15 +164,15 @@ export class WebglVim implements CoreVim<WebglCoreModelObject> {
     const elements = this.map.getElementsFromElementId(id)
     return elements
       ?.map((e) => this.getObjectFromElementIndex(e))
-      .filter((o): o is WebglCoreModelObject => o !== undefined) ?? []
+      .filter((o): o is WebglElement3D => o !== undefined) ?? []
   }
 
   /**
    * Retrieves the Vim object associated with the given Vim element index.
    * @param {number} element - The index of the Vim element.
-   * @returns {WebglCoreModelObject | undefined} The Vim object corresponding to the element index, or undefined if not found.
+   * @returns {WebglElement3D | undefined} The Vim object corresponding to the element index, or undefined if not found.
    */
-  getObjectFromElementIndex (element: number): WebglCoreModelObject | undefined {
+  getObjectFromElementIndex (element: number): WebglElement3D | undefined {
     if (!this.map.hasElement(element)) return
 
     if (this._elementToObject.has(element)) {
@@ -182,17 +182,17 @@ export class WebglVim implements CoreVim<WebglCoreModelObject> {
     const instances = this.map.getInstancesFromElement(element)
     const meshes = this.scene.getMeshesFromInstances(instances)
 
-    const result = new WebglCoreModelObject(this, element, instances, meshes)
+    const result = new WebglElement3D(this, element, instances, meshes)
     this._elementToObject.set(element, result)
     return result
   }
 
   /**
    * Retrieves an array of all objects within the Vim.
-   * @returns {WebglCoreModelObject[]} An array containing all objects within the Vim.
+   * @returns {WebglElement3D[]} An array containing all objects within the Vim.
    */
   getAllObjects () {
-    const result : WebglCoreModelObject[] = []
+    const result : WebglElement3D[] = []
     for (const e of this.map.getElements()) {
       const obj = this.getObjectFromElementIndex(e)
       result.push(obj)
@@ -203,11 +203,11 @@ export class WebglVim implements CoreVim<WebglCoreModelObject> {
   /**
    * Retrieves an array containing all objects within the specified subset.
    * @param {G3dSubset} subset - The subset to retrieve objects from.
-   * @returns {WebglCoreModelObject[]} An array of objects within the specified subset.
+   * @returns {WebglElement3D[]} An array of objects within the specified subset.
    */
   getObjectsInSubset (subset: G3dSubset) {
-    const set = new Set<WebglCoreModelObject>()
-    const result: WebglCoreModelObject[] = []
+    const set = new Set<WebglElement3D>()
+    const result: WebglElement3D[] = []
     const count = subset.getInstanceCount()
     for (let i = 0; i < count; i++) {
       const instance = subset.getVimInstance(i)

@@ -1,6 +1,6 @@
 import type{SocketClient} from './socketClient'
-import { Marshal, HitCheckResult, VimStatus, SectionBoxState } from './marshal'
-import { Box3, RGBA, RGBA32, Segment, Vector2, Vector3, Matrix44 } from '../../utils/math3d'
+import { Marshal } from './rpcMarshal'
+import * as RpcTypes from './rpcTypes'
 
 // RPC Generated Constants
 
@@ -70,7 +70,7 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  async RPCCreateMaterialInstances(materialHandle: number, smoothness: number, colors: RGBA32[]): Promise<number> {
+  async RPCCreateMaterialInstances(materialHandle: number, smoothness: number, colors: RpcTypes.RGBA32[]): Promise<number> {
     const marshal = new Marshal();
     marshal.writeString("RPCCreateMaterialInstances");
     marshal.writeUInt(materialHandle);
@@ -81,7 +81,7 @@ return this._socket.state.status === "connected"
     return ret;
   }
 
-  async RPCCreateText(position: Vector3, color: RGBA32, text: string): Promise<number> {
+  async RPCCreateText(position: RpcTypes.Vector3, color: RpcTypes.RGBA32, text: string): Promise<number> {
     const marshal = new Marshal();
     marshal.writeString("RPCCreateText");
     marshal.writeVector3(position);
@@ -113,7 +113,7 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  async RPCFrameAll(blendTime: number): Promise<Segment> {
+  async RPCFrameAll(blendTime: number): Promise<RpcTypes.Segment> {
     const marshal = new Marshal();
     marshal.writeString("RPCFrameAll");
     marshal.writeFloat(blendTime);
@@ -122,7 +122,7 @@ return this._socket.state.status === "connected"
     return ret;
   }
 
-  async RPCFrameBox(box: Box3, blendTime: number): Promise<Segment> {
+  async RPCFrameBox(box: RpcTypes.Box3, blendTime: number): Promise<RpcTypes.Segment> {
     const marshal = new Marshal();
     marshal.writeString("RPCFrameBox");
     marshal.writeBox3(box);
@@ -132,7 +132,7 @@ return this._socket.state.status === "connected"
     return ret;
   }
 
-  async RPCFrameInstances(componentHandle: number, nodes: number[], blendTime: number): Promise<Segment> {
+  async RPCFrameInstances(componentHandle: number, nodes: number[], blendTime: number): Promise<RpcTypes.Segment> {
     const marshal = new Marshal();
     marshal.writeString("RPCFrameInstances");
     marshal.writeUInt(componentHandle);
@@ -143,7 +143,7 @@ return this._socket.state.status === "connected"
     return ret;
   }
 
-  async RPCFrameVim(componentHandle: number, blendTime: number): Promise<Segment> {
+  async RPCFrameVim(componentHandle: number, blendTime: number): Promise<RpcTypes.Segment> {
     const marshal = new Marshal();
     marshal.writeString("RPCFrameVim");
     marshal.writeUInt(componentHandle);
@@ -161,7 +161,7 @@ return this._socket.state.status === "connected"
     return ret;
   }
 
-  async RPCGetBoundingBox(componentHandle: number, nodes: number[]): Promise<Box3> {
+  async RPCGetBoundingBox(componentHandle: number, nodes: number[]): Promise<RpcTypes.Box3> {
     const marshal = new Marshal();
     marshal.writeString("RPCGetBoundingBox");
     marshal.writeUInt(componentHandle);
@@ -171,7 +171,7 @@ return this._socket.state.status === "connected"
     return ret;
   }
 
-  async RPCGetBoundingBoxAll(componentHandle: number): Promise<Box3> {
+  async RPCGetBoundingBoxAll(componentHandle: number): Promise<RpcTypes.Box3> {
     const marshal = new Marshal();
     marshal.writeString("RPCGetBoundingBoxAll");
     marshal.writeUInt(componentHandle);
@@ -180,7 +180,7 @@ return this._socket.state.status === "connected"
     return ret;
   }
 
-  async RPCGetCameraPosition(): Promise<Segment> {
+  async RPCGetCameraPosition(): Promise<RpcTypes.Segment> {
     const marshal = new Marshal();
     marshal.writeString("RPCGetCameraPosition");
     const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
@@ -188,7 +188,7 @@ return this._socket.state.status === "connected"
     return ret;
   }
 
-  async RPCGetIblRotation(): Promise<Matrix44> {
+  async RPCGetIblRotation(): Promise<RpcTypes.Matrix44> {
     const marshal = new Marshal();
     marshal.writeString("RPCGetIblRotation");
     const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
@@ -204,7 +204,7 @@ return this._socket.state.status === "connected"
     return ret;
   }
 
-  async RPCGetSceneAABB(): Promise<Box3> {
+  async RPCGetSceneAABB(): Promise<RpcTypes.Box3> {
     const marshal = new Marshal();
     marshal.writeString("RPCGetSceneAABB");
     const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
@@ -212,7 +212,7 @@ return this._socket.state.status === "connected"
     return ret;
   }
 
-  async RPCGetSectionBox(): Promise<SectionBoxState> {
+  async RPCGetSectionBox(): Promise<RpcTypes.SectionBoxState> {
     const marshal = new Marshal();
     marshal.writeString("RPCGetSectionBox");
     const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
@@ -220,7 +220,7 @@ return this._socket.state.status === "connected"
     return ret;
   }
 
-  async RPCGetVimLoadingState(componentHandle: number): Promise<VimStatus> {
+  async RPCGetVimLoadingState(componentHandle: number): Promise<RpcTypes.VimStatus> {
     const marshal = new Marshal();
     marshal.writeString("RPCGetVimLoadingState");
     marshal.writeUInt(componentHandle);
@@ -323,7 +323,7 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  RPCMouseButtonEvent(mousePos: Vector2, mouseButton: number, down: boolean): void {
+  RPCMouseButtonEvent(mousePos: RpcTypes.Vector2, mouseButton: number, down: boolean): void {
     const marshal = new Marshal();
     marshal.writeString("RPCMouseButtonEvent");
     marshal.writeVector2(mousePos);
@@ -332,7 +332,7 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  RPCMouseDoubleClickEvent(mousePos: Vector2, mouseButton: number): void {
+  RPCMouseDoubleClickEvent(mousePos: RpcTypes.Vector2, mouseButton: number): void {
     const marshal = new Marshal();
     marshal.writeString("RPCMouseDoubleClickEvent");
     marshal.writeVector2(mousePos);
@@ -340,7 +340,7 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  RPCMouseMoveEvent(mousePos: Vector2): void {
+  RPCMouseMoveEvent(mousePos: RpcTypes.Vector2): void {
     const marshal = new Marshal();
     marshal.writeString("RPCMouseMoveEvent");
     marshal.writeVector2(mousePos);
@@ -354,7 +354,7 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  RPCMouseSelectEvent(mousePos: Vector2, mouseButton: number): void {
+  RPCMouseSelectEvent(mousePos: RpcTypes.Vector2, mouseButton: number): void {
     const marshal = new Marshal();
     marshal.writeString("RPCMouseSelectEvent");
     marshal.writeVector2(mousePos);
@@ -362,7 +362,7 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  RPCMoveCameraTo(usePosition: boolean, useTarget: boolean, position: Vector3, target: Vector3, blendTime: number): void {
+  RPCMoveCameraTo(usePosition: boolean, useTarget: boolean, position: RpcTypes.Vector3, target: RpcTypes.Vector3, blendTime: number): void {
     const marshal = new Marshal();
     marshal.writeString("RPCMoveCameraTo");
     marshal.writeBoolean(usePosition);
@@ -380,7 +380,7 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  async RPCPerformHitTest(pos: Vector2): Promise<HitCheckResult> {
+  async RPCPerformHitTest(pos: RpcTypes.Vector2): Promise<RpcTypes.HitCheckResult> {
     const marshal = new Marshal();
     marshal.writeString("RPCPerformHitTest");
     marshal.writeVector2(pos);
@@ -413,7 +413,7 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  RPCSetCameraPosition(state: Segment, blendTime: number): void {
+  RPCSetCameraPosition(state: RpcTypes.Segment, blendTime: number): void {
     const marshal = new Marshal();
     marshal.writeString("RPCSetCameraPosition");
     marshal.writeSegment(state);
@@ -421,21 +421,21 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  RPCSetGhostColor(ghostColor: RGBA): void {
+  RPCSetGhostColor(ghostColor: RpcTypes.RGBA): void {
     const marshal = new Marshal();
     marshal.writeString("RPCSetGhostColor");
     marshal.writeRGBA(ghostColor);
     this._socket.sendRPC(marshal);
   }
 
-  RPCSetIblRotation(transform: Matrix44): void {
+  RPCSetIblRotation(transform: RpcTypes.Matrix44): void {
     const marshal = new Marshal();
     marshal.writeString("RPCSetIblRotation");
     marshal.writeMatrix44(transform);
     this._socket.sendRPC(marshal);
   }
 
-  RPCSetLighting(toneMappingWhitePoint: number, hdrScale: number, hdrBackgroundScale: number, hdrBackgroundSaturation: number, backgroundBlur: number, backgroundColor: RGBA): void {
+  RPCSetLighting(toneMappingWhitePoint: number, hdrScale: number, hdrBackgroundScale: number, hdrBackgroundSaturation: number, backgroundBlur: number, backgroundColor: RpcTypes.RGBA): void {
     const marshal = new Marshal();
     marshal.writeString("RPCSetLighting");
     marshal.writeFloat(toneMappingWhitePoint);
@@ -463,7 +463,7 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  RPCSetSectionBox(state: SectionBoxState): void {
+  RPCSetSectionBox(state: RpcTypes.SectionBoxState): void {
     const marshal = new Marshal();
     marshal.writeString("RPCSetSectionBox");
     marshal.writeSectionBoxState(state);
@@ -478,7 +478,7 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  RPCShowAABBs(componentHandle: number, nodes: number[], colors: RGBA32[]): void {
+  RPCShowAABBs(componentHandle: number, nodes: number[], colors: RpcTypes.RGBA32[]): void {
     const marshal = new Marshal();
     marshal.writeString("RPCShowAABBs");
     marshal.writeUInt(componentHandle);
@@ -494,7 +494,7 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  async RPCStartScene(toneMappingWhitePoint: number, hdrScale: number, hdrBackgroundScale: number, hdrBackgroundSaturation: number, backgroundBlur: number, backgroundColor: RGBA): Promise<boolean> {
+  async RPCStartScene(toneMappingWhitePoint: number, hdrScale: number, hdrBackgroundScale: number, hdrBackgroundSaturation: number, backgroundBlur: number, backgroundColor: RpcTypes.RGBA): Promise<boolean> {
     const marshal = new Marshal();
     marshal.writeString("RPCStartScene");
     marshal.writeFloat(toneMappingWhitePoint);

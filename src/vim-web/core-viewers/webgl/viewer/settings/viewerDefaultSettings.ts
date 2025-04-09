@@ -1,11 +1,11 @@
 import * as THREE from 'three'
 import { AxesSettings } from '../gizmos/axes/axesSettings'
-import { WebglCoreViewerSettings } from './viewerSettings'
+import { ViewerSettings } from './viewerSettings'
 
 /**
  * Defines the default values for the VIM Viewer settings.
  */
-export const webglCoreViewerDefaultSettings: WebglCoreViewerSettings = {
+export const viewerDefaultSettings: ViewerSettings = {
   canvas: {
     id: undefined,
     resizeDelay: 200

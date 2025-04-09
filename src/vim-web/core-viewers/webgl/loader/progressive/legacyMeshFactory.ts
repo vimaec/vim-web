@@ -3,7 +3,7 @@
  */
 
 import { InsertableMesh } from './insertableMesh'
-import { WebglScene } from '../webglScene'
+import { WebglScene } from '../scene'
 import { G3dMaterial, G3d, MeshSection } from 'vim-format'
 import { InstancedMeshFactory } from './instancedMeshFactory'
 import { G3dSubset } from './g3dSubset'

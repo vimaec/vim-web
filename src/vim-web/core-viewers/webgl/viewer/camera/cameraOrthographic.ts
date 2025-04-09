@@ -3,15 +3,15 @@
  */
 
 import * as THREE from 'three'
-import { WebglCoreViewerSettings } from '../settings/viewerSettings'
-import { WebglCoreLayers } from '../raycaster'
+import { ViewerSettings } from '../settings/viewerSettings'
+import { Layers } from '../raycaster'
 
-export class WebglCoreOrthographicCamera {
+export class OrthographicCamera {
   camera: THREE.OrthographicCamera
 
   constructor (camera: THREE.OrthographicCamera) {
     this.camera = camera
-    this.camera.layers.enable(WebglCoreLayers.NoRaycast)
+    this.camera.layers.enable(Layers.NoRaycast)
   }
 
   frustrumSizeAt (point: THREE.Vector3) {
@@ -21,7 +21,7 @@ export class WebglCoreOrthographicCamera {
     )
   }
 
-  applySettings (settings: WebglCoreViewerSettings) {
+  applySettings (settings: ViewerSettings) {
     this.camera.zoom = settings.camera.zoom
     this.camera.near = -settings.camera.far
     this.camera.far = settings.camera.far

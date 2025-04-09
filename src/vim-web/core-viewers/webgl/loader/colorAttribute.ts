@@ -3,20 +3,20 @@
  */
 
 import * as THREE from 'three'
-import { MergedSubmesh } from './webglMesh'
-import { WebglVim } from './webglVim'
+import { MergedSubmesh } from './mesh'
+import { Vim } from './vim'
 import { InsertableSubmesh } from './progressive/insertableSubmesh'
 import { WebglAttributeTarget } from './webglAttribute'
 
 export class WebglColorAttribute {
-  readonly vim: WebglVim
+  readonly vim: Vim
   private _meshes: WebglAttributeTarget[] | undefined
   private _value: THREE.Color | undefined
 
   constructor (
     meshes: WebglAttributeTarget[] | undefined,
     value: THREE.Color | undefined,
-    vim: WebglVim | undefined
+    vim: Vim | undefined
   ) {
     this._meshes = meshes
     this._value = value

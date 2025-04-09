@@ -42,9 +42,9 @@ export function isFalse (value:UserBoolean | boolean) {
 
 /**
  * Complete settings configuration for the Vim component
- * @interface ComponentSettings
+ * @interface Settings
  */
-export type ComponentSettings = {
+export type Settings = {
   materials: {
     useFastMaterial: boolean
     useGhostMaterial: boolean
@@ -101,14 +101,14 @@ export type ComponentSettings = {
 /**
  * Partial version of ComponentSettings where all properties are optional
  */
-export type PartialComponentSettings = RecursivePartial<ComponentSettings>
+export type PartialSettings = RecursivePartial<Settings>
 
 /**
  * Checks if any axes-related UI buttons are enabled
- * @param {ComponentSettings} settings - The component settings to check
+ * @param {Settings} settings - The component settings to check
  * @returns {boolean} True if any axes buttons are enabled
  */
-export function anyUiAxesButton (settings: ComponentSettings) {
+export function anyUiAxesButton (settings: Settings) {
   return (
     settings.ui.orthographic ||
     settings.ui.resetCamera ||
@@ -118,10 +118,10 @@ export function anyUiAxesButton (settings: ComponentSettings) {
 
 /**
  * Checks if any cursor-related UI buttons are enabled
- * @param {ComponentSettings} settings - The component settings to check
+ * @param {Settings} settings - The component settings to check
  * @returns {boolean} True if any cursor buttons are enabled
  */
-export function anyUiCursorButton (settings: ComponentSettings) {
+export function anyUiCursorButton (settings: Settings) {
   return (
     isTrue(settings.ui.orbit) ||
     isTrue(settings.ui.lookAround) ||
@@ -133,10 +133,10 @@ export function anyUiCursorButton (settings: ComponentSettings) {
 
 /**
  * Checks if any tool-related UI buttons are enabled
- * @param {ComponentSettings} settings - The component settings to check
+ * @param {Settings} settings - The component settings to check
  * @returns {boolean} True if any tool buttons are enabled
  */
-export function anyUiToolButton (settings: ComponentSettings) {
+export function anyUiToolButton (settings: Settings) {
   return (
     isTrue(settings.ui.sectioningMode) ||
     isTrue(settings.ui.measuringMode) ||
@@ -146,10 +146,10 @@ export function anyUiToolButton (settings: ComponentSettings) {
 
 /**
  * Checks if any settings-related UI buttons are enabled
- * @param {ComponentSettings} settings - The component settings to check
+ * @param {Settings} settings - The component settings to check
  * @returns {boolean} True if any settings buttons are enabled
  */
-export function anyUiSettingButton (settings: ComponentSettings) {
+export function anyUiSettingButton (settings: Settings) {
   return (
     isTrue(settings.ui.projectInspector) ||
     isTrue(settings.ui.settings) ||
@@ -161,9 +161,9 @@ export function anyUiSettingButton (settings: ComponentSettings) {
 /**
  * Default settings configuration for the Vim component
  * @constant
- * @type {ComponentSettings}
+ * @type {Settings}
  */
-export const defaultSettings: ComponentSettings = {
+export const defaultSettings: Settings = {
   materials: {
     useFastMaterial: false,
     useGhostMaterial: true,

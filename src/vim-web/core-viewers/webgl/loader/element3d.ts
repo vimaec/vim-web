@@ -6,13 +6,12 @@
 import * as THREE from 'three'
 
 // Vim
-import { WebglVim } from './webglVim'
+import { Vim } from './vim'
 import { IElement, VimHelpers } from 'vim-format'
 import { WebglAttribute } from './webglAttribute'
-import { WebglColorAttribute } from './webglColorAttribute'
-import { Submesh } from './webglMesh'
-import { CoreModelObject } from '../../shared/vim'
-import { CoreSelectionAdapter } from '../../shared/selection'
+import { WebglColorAttribute } from './colorAttribute'
+import { Submesh } from './mesh'
+import { IVimObject } from '../../shared/vim'
 
 
 
@@ -20,7 +19,7 @@ import { CoreSelectionAdapter } from '../../shared/selection'
 /**
  * High level api to interact with the loaded vim geometry and data.
  */
-export class WebglCoreModelObject implements CoreModelObject {
+export class Element3D implements IVimObject {
   private _color: THREE.Color | undefined
   private _boundingBox: THREE.Box3 | undefined
   private _meshes: Submesh[] | undefined
@@ -40,7 +39,7 @@ export class WebglCoreModelObject implements CoreModelObject {
   /**
    * The vim object from which this object came from.
    */
-  readonly vim: WebglVim
+  readonly vim: Vim
 
   /**
    * The bim element index associated with this object.
@@ -142,13 +141,13 @@ export class WebglCoreModelObject implements CoreModelObject {
 
   /**
    * Constructs a new instance of Object.
-   * @param {WebglVim} vim The Vim instance.
+   * @param {Vim} vim The Vim instance.
    * @param {number} element The element index.
    * @param {number[] | undefined} instances An optional array of instance numbers.
    * @param {Submesh[] | undefined} meshes An optional array of submeshes.
    */
   constructor (
-    vim: WebglVim,
+    vim: Vim,
     element: number,
     instances: number[] | undefined,
     meshes: Submesh[] | undefined

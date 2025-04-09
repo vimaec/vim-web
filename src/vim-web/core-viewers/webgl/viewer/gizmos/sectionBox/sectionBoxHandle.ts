@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils';
-import { WebglCoreCamera, ICamera } from '../../camera/camera';
+import { Camera, ICamera } from '../../camera/camera';
 export type Axis = 'x' | 'y' | 'z';
 
 export class SectionBoxHandle extends THREE.Mesh {

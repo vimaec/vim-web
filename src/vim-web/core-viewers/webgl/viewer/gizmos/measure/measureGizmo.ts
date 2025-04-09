@@ -5,14 +5,14 @@
 import * as THREE from 'three'
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer'
 import { MeshLine, MeshLineMaterial } from '../../../utils/meshLine'
-import { WebglCoreViewer } from '../../viewer'
+import { Viewer } from '../../viewer'
 import {
   createMeasureElement,
   MeasureStyle,
   MeasureElement
 } from './measureHtml'
-import { WebglCoreICamera } from '../../camera/cameraInterface'
-import { WebglCoreLayers } from '../../raycaster'
+import { ICamera } from '../../camera/cameraInterface'
+import { Layers } from '../../raycaster'
 
 /**
  * Wrapper for a two points line drawn using MeshLine
@@ -64,8 +64,8 @@ class MeasureLine {
     this._meshLine.geometry.addGroup(0, Infinity, 1)
     this.mesh.frustumCulled = false
     
-    this._meshLine.layers.set(WebglCoreLayers.NoRaycast)
-    this.mesh.layers.set(WebglCoreLayers.NoRaycast)
+    this._meshLine.layers.set(Layers.NoRaycast)
+    this.mesh.layers.set(Layers.NoRaycast)
 
   }
 
@@ -97,10 +97,10 @@ class MeasureMarker {
   mesh: THREE.Mesh
   private _material: THREE.Material
   private _materialAlways: THREE.Material
-  private _camera: WebglCoreICamera
+  private _camera: ICamera
   private disconnect: () => void
 
-  constructor (color: THREE.Color, camera: WebglCoreICamera) {
+  constructor (color: THREE.Color, camera: ICamera) {
     this._material = new THREE.MeshBasicMaterial({
       color
     })
@@ -146,7 +146,7 @@ class MeasureMarker {
  * Reprents all graphical elements associated with a measure.
  */
 export class MeasureGizmo {
-  private _viewer: WebglCoreViewer
+  private _viewer: Viewer
   private _startMarker: MeasureMarker
   private _endMarker: MeasureMarker
   private _line: MeasureLine
@@ -158,7 +158,7 @@ export class MeasureGizmo {
   private _html: MeasureElement
   private _animId: number | undefined
 
-  constructor (viewer: WebglCoreViewer) {
+  constructor (viewer: Viewer) {
     this._viewer = viewer
     const canvasSize = this._viewer.viewport.getSize()
 
