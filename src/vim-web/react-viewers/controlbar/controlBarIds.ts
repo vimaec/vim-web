@@ -1,55 +1,52 @@
+// Sections
+export const sectionSelection = 'controlBar.sectionSelection'
+export const sectionCamera = 'controlBar.sectionCamera'
+export const sectionInputs = 'controlBar.sectionInputs'
+export const sectionActions = 'controlBar.sectionActions'
+export const sectionTools = 'controlBar.sectionTools'
+export const sectionSettings = 'controlBar.sectionSettings'
+export const sectionMeasure = 'controlBar.sectionMeasure'
+export const sectionSectionBox = 'controlBar.sectionSectionBox'
 
-export const ids = {
-  // Sections
-  sectionSelection: 'controlBar.sectionSelection',
-  sectionCamera: 'controlBar.sectionCamera',
-  sectionInputs: 'controlBar.sectionInputs',
-  sectionActions: 'controlBar.sectionActions',
-  sectionTools: 'controlBar.sectionTools',
-  sectionSettings: 'controlBar.sectionSettings',
-  sectionMeasure: 'controlBar.sectionMeasure',
-  sectionSectionBox: 'controlBar.sectionSectionBox',
+// Camera buttons
+export const buttonCameraFrameSelection = 'controlBar.camera.frameSelection'
+export const buttonCameraFrameScene = 'controlBar.camera.frameScene'
+export const buttonCameraAuto = 'controlBar.camera.auto'
 
-  // Camera buttons
-  buttonCameraFrameSelection: 'controlBar.camera.frameSelection',
-  buttonCameraFrameScene: 'controlBar.camera.frameScene',
-  buttonCameraAuto: 'controlBar.camera.auto',
+// Camera Control buttons
+export const buttonCameraOrbit = 'controlBar.camera.orbit'
+export   const buttonCameraLook = 'controlBarcamera.look'
+export const buttonCameraPan = 'controlBar.camera.pan'
+export const buttonCameraZoom = 'controlBar.camera.zoom'
+export const buttonCameraZoomWindow = 'controlBar.camera.zoomWindow'
 
-  // Camera Control buttons
-  buttonCameraOrbit: 'controlBar.camera.orbit',
-  buttonCameraLook: 'controlBarcamera.look',
-  buttonCameraPan: 'controlBar.camera.pan',
-  buttonCameraZoom: 'controlBar.camera.zoom',
-  buttonCameraZoomWindow: 'controlBar.camera.zoomWindow',
+// Settings buttons
+export const buttonProjectInspector = 'controlBar.projectInspector'
+export const buttonSettings = 'controlBar.settings'
+export const buttonHelp = 'controlBar.help'
+export const buttonMaximize = 'controlBar.maximize'
 
-  // Settings buttons
-  buttonProjectInspector: 'controlBar.projectInspector',
-  buttonSettings: 'controlBar.settings',
-  buttonHelp: 'controlBar.help',
-  buttonMaximize: 'controlBar.maximize',
+// Selection buttons
+export const buttonClearSelection = 'controlBar.action.clearSelection'
+export const buttonShowAll = 'controlBar.selection.showAll'
+export const buttonIsolateSelection = 'controlBar.selection.isolate'
+export const buttonHideSelection = 'controlBar.selection.hide'
+export const buttonShowSelection = 'controlBar.selection.show'
+export const buttonAutoIsolate = 'controlBar.selection.autoIsolate'
+export const buttonIsolationSettings = 'controlBar.selection.isolationSettings'
 
-  // Selection buttons
-  buttonClearSelection: 'controlBar.action.clearSelection',
-  buttonShowAll: 'controlBar.selection.showAll',
-  buttonIsolateSelection: 'controlBar.selection.isolate',
-  buttonHideSelection: 'controlBar.selection.hide',
-  buttonShowSelection: 'controlBar.selection.show',
-  buttonAutoIsolate: 'controlBar.selection.autoIsolate',
-  buttonIsolationSettings: 'controlBar.selection.isolationSettings',
+// Action Buttons
+export const buttonRenderSettings = 'controlBar.action.renderSettings'
 
-  // Action Buttons
-  buttonRenderSettings: 'controlBar.action.renderSettings',
+// Tools buttons
+export const buttonSectionBox = 'controlBar.sectionBox'
+export const buttonMeasure = 'controlBar.measure'
 
-  // Tools buttons
-  buttonSectionBox: 'controlBar.sectionBox',
-  buttonMeasure: 'controlBar.measure',
+// Section box buttons
+export const buttonSectionBoxEnable = 'controlBar.sectionBox.enable'
+export const buttonSectionBoxVisible = 'controlBar.sectionBox.visible'
 
-  // Section box buttons
-  buttonSectionBoxEnable: 'controlBar.sectionBox.enable',
-  buttonSectionBoxVisible: 'controlBar.sectionBox.visible',
-
-  buttonSectionBoxToSelection: 'controlBar.sectionBox.sectionSelection',
-  buttonSectionBoxToScene: 'controlBar.sectionBox.sectionScene',
-  buttonSectionBoxAuto: 'controlBar.sectionBox.auto',
-  buttonSectionBoxSettings: 'controlBar.sectionBox.settings',
-};
+export const buttonSectionBoxToSelection = 'controlBar.sectionBox.sectionSelection'
+export const buttonSectionBoxToScene = 'controlBar.sectionBox.sectionScene'
+export const buttonSectionBoxAuto = 'controlBar.sectionBox.auto'
+export const buttonSectionBoxSettings = 'controlBar.sectionBox.settings'

@@ -4,8 +4,8 @@
 
 import React, { useEffect, useRef } from 'react'
 import * as Core from '../../core-viewers'
-import * as Icons from '../panels/icons'
-import { SideState } from './sideState'
+import * as Icons from '../icons'
+import { SideState } from '../state/sideState'
 import { Enable, Resizable } from 're-resizable'
 import { Container } from '../container'
 

@@ -17,15 +17,15 @@ import {
   showContextMenu,
   VimContextMenuMemo
 } from '../panels/contextMenu'
-import { SidePanelMemo } from '../sidePanel/sidePanel'
-import { useSideState } from '../sidePanel/sideState'
+import { SidePanelMemo } from '../panels/sidePanel'
+import { useSideState } from '../state/sideState'
 import { MenuSettings } from '../settings/menuSettings'
 import { MenuToastMemo } from '../panels/toast'
 import { Overlay } from '../panels/overlay'
 import { addPerformanceCounter } from '../panels/performance'
 import { applyWebglBindings } from './inputsBindings'
 import { CursorManager } from '../helpers/cursor'
-import { PartialSettings as PartialViewerSettings, isTrue } from '../settings/settings'
+import { PartialSettings, isTrue } from '../settings'
 import { useSettings } from '../settings/settingsState'
 import { TreeActionRef } from '../bim/bimTree'
 import { Container, createContainer } from '../container'
@@ -45,16 +45,16 @@ import { IsolationSettingsPanel } from '../panels/renderSettingsPanel'
 import { useWebglIsolation } from './isolation'
 
 /**
- * Creates a UI container along with a VIM.Viewer and its associated React component.
+ * Creates a UI container along with a VIM.Viewer and its associated React viewer.
  * @param container An optional container object. If none is provided, a container will be created.
- * @param componentSettings UI Component settings.
-*  @param viewerSettings Viewer settings.
+ * @param settings UI Component settings.
+*  @param coreSettings Viewer settings.
  * @returns An object containing the resulting container, reactRoot, and viewer.
  */
 export function createViewer (
   container?: Container | HTMLElement,
-  componentSettings: PartialViewerSettings = {},
-  viewerSettings: Core.Webgl.PartialViewerSettings = {}
+  settings: PartialSettings = {},
+  coreSettings: Core.Webgl.PartialViewerSettings = {}
 ) : Promise<ViewerRef> {
   const promise = new DeferredPromise<ViewerRef>()
 
@@ -64,13 +64,13 @@ export function createViewer (
     : container ?? createContainer()
 
   // Create the viewer inside the container
-  const viewer = new Core.Webgl.Viewer(viewerSettings)
+  const viewer = new Core.Webgl.Viewer(coreSettings)
   viewer.viewport.reparent(cmpContainer.gfx)
 
   // Create the React root
   const reactRoot = createRoot(cmpContainer.ui)
 
-  // Patch the component to clean up after itself
+  // Patch the viewer to clean up after itself
   const patchRef = (cmp : ViewerRef) => {
     cmp.dispose = () => {
       viewer.dispose()
@@ -81,28 +81,28 @@ export function createViewer (
   }
 
   reactRoot.render(
-    <WebglViewer
+    <Viewer
       container={cmpContainer}
       viewer={viewer}
       onMount = {(cmp : ViewerRef) => promise.resolve(patchRef(cmp))}
-      settings={componentSettings}
+      settings={settings}
     />
   )
   return promise
 }
 
 /**
- * Represents a React component providing UI for the Vim viewer.
+ * Represents a React viewer providing UI for the Vim viewer.
  * @param container The container object containing root, gfx, and UI elements for the Vim viewer.
  * @param viewer The Vim viewer instance for which UI is provided.
- * @param onMount A callback function triggered when the component is mounted. Receives a reference to the Vim component.
- * @param settings Optional settings for configuring the Vim component's behavior.
+ * @param onMount A callback function triggered when the viewer is mounted. Receives a reference to the Vim viewer.
+ * @param settings Optional settings for configuring the Vim viewer's behavior.
  */
-export function WebglViewer (props: {
+export function Viewer (props: {
   container: Container
   viewer: Core.Webgl.Viewer
-  onMount: (component: ViewerRef) => void
-  settings?: PartialViewerSettings
+  onMount: (viewer: ViewerRef) => void
+  settings?: PartialSettings
 }) {
   const settings = useSettings(props.viewer, props.settings ?? {})
   const modal = useModal(settings.value.capacity.canFollowUrl)

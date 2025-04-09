@@ -11,7 +11,7 @@ import { Gizmos } from './gizmos/gizmos'
 import { IRaycaster, Raycaster } from './raycaster'
 import { RenderScene } from './rendering/renderScene'
 import { createSelection, ISelection } from './selection'
-import { getViewerSettings, PartialViewerSettings, ViewerSettings } from './settings/viewerSettings'
+import { createViewerSettings, PartialViewerSettings, ViewerSettings } from './settings/viewerSettings'
 import { Viewport } from './viewport'
 
 // loader
@@ -95,7 +95,7 @@ export class Viewer {
   private _updateId: number
 
   constructor (settings?: PartialViewerSettings) {
-    this.settings = getViewerSettings(settings)
+    this.settings = createViewerSettings(settings)
 
     this.materials = Materials.getInstance()
 

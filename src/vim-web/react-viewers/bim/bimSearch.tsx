@@ -3,7 +3,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react'
-import * as Icons from '../panels/icons'
+import * as Icons from '../icons'
 import * as Core from '../../core-viewers'
 
 const SEARCH_DELAY_MS = 200

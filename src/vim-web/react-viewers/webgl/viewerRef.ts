@@ -14,7 +14,7 @@ import { ModalRef } from '../panels/modal'
 import { SectionBoxRef } from '../state/sectionBoxState'
 import { IsolationRef } from '../state/sharedIsolation'
 /**
-* Settings API managing settings applied to the component.
+* Settings API managing settings applied to the viewer.
 */
 export type SettingsRef = {
   // Double lambda is required to prevent react from using reducer pattern
@@ -35,7 +35,7 @@ export type SettingsRef = {
 }
 
 /**
- * Reference to manage context menu functionality in the component.
+ * Reference to manage context menu functionality in the viewer.
  */
 export type ContextMenuRef = {
   /**
@@ -46,7 +46,7 @@ export type ContextMenuRef = {
 }
 
 /**
- * Reference to manage control bar functionality in the component.
+ * Reference to manage control bar functionality in the viewer.
  */
 export type ControlBarRef = {
   /**
@@ -57,7 +57,7 @@ export type ControlBarRef = {
 }
 
 /**
- * Reference to manage help message functionality in the component.
+ * Reference to manage help message functionality in the viewer.
  */
 export type HelpRef = {
   /**
@@ -75,16 +75,16 @@ export type HelpRef = {
 }
 
 /**
- * Root-level API of the Vim component.
+ * Root-level API of the Vim viewer.
  */
 export type ViewerRef = {
   /**
-   * HTML structure containing the component.
+   * HTML structure containing the viewer.
    */
   container: Container
 
   /**
-   * Vim WebGL viewer around which the WebGL component is built.
+   * Vim WebGL viewer around which the WebGL viewer is built.
    */
   coreViewer: Core.Webgl.Viewer
 
@@ -94,12 +94,12 @@ export type ViewerRef = {
   loader: ComponentLoader
 
   /**
-   * Isolation API managing isolation state in the component.
+   * Isolation API managing isolation state in the viewer.
    */
   isolation: IsolationRef
 
   /**
-   * Section box API managing the section box in the component.
+   * Section box API managing the section box in the viewer.
    */
   sectionBox: SectionBoxRef
 
@@ -114,7 +114,7 @@ export type ViewerRef = {
   controlBar: ControlBarRef
 
   /**
-   * Settings API managing settings applied to the component.
+   * Settings API managing settings applied to the viewer.
    */
   settings: SettingsRef
 
@@ -134,7 +134,7 @@ export type ViewerRef = {
   bimInfo: BimInfoPanelRef
 
   /**
-   * Cleans up and releases resources used by the component.
+   * Cleans up and releases resources used by the viewer.
    */
   dispose: () => void
 }

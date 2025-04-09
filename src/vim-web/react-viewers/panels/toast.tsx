@@ -4,7 +4,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import * as Core from '../../core-viewers'
-import { SideState } from '../sidePanel/sideState'
+import { SideState } from '../state/sideState'
 
 export type ToastConfigSpeed = {
   visible: boolean

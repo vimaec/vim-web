@@ -13,7 +13,7 @@ export const videoDecoderConfig: globalThis.VideoDecoderConfig = {
   codedHeight: 720
 }
 
-export enum FrameType {
+export enum VideoFrameType {
   // eslint-disable-next-line no-unused-vars
   KeyFrame = 0,
   // eslint-disable-next-line no-unused-vars
@@ -152,7 +152,7 @@ export class Decoder implements IDecoder {
    * @param frame - The video frame message to be queued for decoding
    */
   public enqueue (frame: VideoFrameMessage): void {
-    if (frame.header.frameType === FrameType.KeyFrame && this._queue.length > 0) {
+    if (frame.header.frameType === VideoFrameType.KeyFrame && this._queue.length > 0) {
       // We keep the first frame of the stream because otherwise the decoder will error
       this._queue.length = this._firstDecoded ? 0 : 1
     }
@@ -223,7 +223,7 @@ export class Decoder implements IDecoder {
   // eslint-disable-next-line no-undef
   private createChunk (message: VideoFrameMessage): globalThis.EncodedVideoChunk {
     const init: globalThis.EncodedVideoChunkInit = {
-      type: message.header.frameType === FrameType.KeyFrame ? 'key' : 'delta',
+      type: message.header.frameType === VideoFrameType.KeyFrame ? 'key' : 'delta',
       data: message.dataBuffer,
       timestamp: message.header.timestamp,
       duration: message.header.duration

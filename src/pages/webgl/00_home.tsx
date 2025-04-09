@@ -6,6 +6,10 @@ import * as VIM from '../../vim-web'
 import ViewerRef = VIM.React.Webgl.ViewerRef
 
 export function WebglHome () {
+
+  const a = new VIM.React.Webgl.
+  
+
   const div = useRef<HTMLDivElement>(null)
   const cmp = useRef<ViewerRef>()
   useEffect(() => {

@@ -1,4 +1,4 @@
-import * as Utils from "../../../utils"
+import * as Utils from "../../utils"
 import { ILogger } from "./logger";
 import { RpcSafeClient } from "./rpcSafeClient";
 

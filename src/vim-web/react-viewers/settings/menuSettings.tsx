@@ -4,9 +4,10 @@
 
 import React from 'react'
 import * as Core from '../../core-viewers'
-import { UserBoolean, Settings } from './settings'
+import { Settings } from './settings'
+import { UserBoolean } from './userBoolean'
 import { SettingsState } from './settingsState'
-import { THREE } from '../..'
+import * as THREE from 'three'
 
 /**
  * JSX Component to interact with settings.

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import MessageBox, { MessageBoxProps, MessageBoxPropsTyped } from './messageBox'
 import { LoadingBox, LoadingBoxProps, LoadingBoxPropsTyped } from './loadingBox'
 import { HelpProps, HelpPropsTyped, MenuHelp } from './help'
-import * as Icons from './icons'
+import * as Icons from '../icons'
 
 export type ModalProps = MessageBoxProps | LoadingBoxProps | HelpProps
 export type ModalPropsTyped = (MessageBoxPropsTyped | LoadingBoxPropsTyped | HelpPropsTyped) & {
@@ -100,7 +100,7 @@ function modalContent (modal: ModalPropsTyped) {
 }
 
 /**
- * Ads the behind css class to the vim component div.
+ * Ads the behind css class to the vim viewer div.
  */
 function setComponentBehind (value: boolean) {
   const component = document.getElementsByClassName('vim-component')[0]

@@ -25,7 +25,7 @@ export type RequestSource = {
  * @param settings the settings to configure how the vim will be loaded.
  * @returns a request object that can be used to track progress and get the result.
  */
-export function request (options: RequestSource, settings? : VimPartialSettings) {
+export function requestVim (options: RequestSource, settings? : VimPartialSettings) {
   return new VimRequest(options, settings)
 }
 

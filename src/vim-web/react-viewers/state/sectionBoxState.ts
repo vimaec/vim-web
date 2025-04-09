@@ -40,7 +40,7 @@ export interface SectionBoxAdapter {
   setBox: (box: THREE.Box3) => void;
   onSelectionChanged: ISignal;
 
-  // Allow to override these at the component level
+  // Allow to override these at the viewer level
   getSelectionBox: () => Promise<THREE.Box3 | undefined>;
   getSceneBox: () => Promise<THREE.Box3>;
 }
@@ -137,7 +137,7 @@ export function useSectionBox(
     sectionBox,
     getBox: () => adapter.getBox(),
 
-    // TODO - Remove these from here, it should be overriden at the component level.
+    // TODO - Remove these from here, it should be overriden at the viewer level.
     getSceneBox: getSceneBox,
     getSelectionBox,
   }

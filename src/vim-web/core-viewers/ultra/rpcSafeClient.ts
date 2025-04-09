@@ -1,7 +1,7 @@
 import * as RpcTypes from "./rpcTypes"
 import { MaterialHandle, RpcClient } from "./rpcClient"
-import { Validation } from "../../../utils";
-import { batchArray, batchArrays } from "../../../utils/array"
+import { Validation } from "../../utils";
+import { batchArray, batchArrays } from "../../utils/array"
 import { INVALID_HANDLE } from "./viewer"
 
 const defaultBatchSize = 10000

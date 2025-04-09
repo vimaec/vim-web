@@ -1,4 +1,4 @@
-import * as Shared from "../../shared";
+import * as Shared from "../shared";
 import { Box3, RGBA32 } from "./rpcTypes";
 import { NodeState } from "./nodeState";
 import { Vim } from "./vim";

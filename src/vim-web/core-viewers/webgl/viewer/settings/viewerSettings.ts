@@ -6,13 +6,10 @@ import * as THREE from 'three'
 import deepmerge from 'deepmerge'
 import { isPlainObject } from 'is-plain-object'
 import { AxesSettings } from '../gizmos/axes/axesSettings'
-import { viewerDefaultSettings } from './viewerDefaultSettings'
+import { getDefaultViewerSettings } from './viewerDefaultSettings'
 import { RecursivePartial } from '../../../../utils/partial'
 
 export type TextureEncoding = 'url' | 'base64' | undefined
-export { AxesSettings as AxesSettings } from '../gizmos/axes/axesSettings'
-
-
 
 /** Viewer related options independant from vims */
 export type ViewerSettings = {
@@ -341,10 +338,10 @@ export type PartialViewerSettings = RecursivePartial<ViewerSettings>
  * Returns a full viewer settings where all unassigned values are replaced with the default values.
  * @param settings optional values to use instead of default.
  */
-export function getViewerSettings (settings?: PartialViewerSettings) {
+export function createViewerSettings (settings?: PartialViewerSettings) {
   return settings
-    ? (deepmerge(viewerDefaultSettings, settings, { arrayMerge: combineMerge, isMergeableObject: isPlainObject }) as ViewerSettings)
-    : (viewerDefaultSettings)
+    ? (deepmerge(getDefaultViewerSettings(), settings, { arrayMerge: combineMerge, isMergeableObject: isPlainObject }) as ViewerSettings)
+    : getDefaultViewerSettings()
 }
 
 //  https://www.npmjs.com/package/deepmerge#arraymerge-example-combine-arrays

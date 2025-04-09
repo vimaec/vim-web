@@ -1,4 +1,4 @@
-import * as Shared from "../../shared"
+import * as Shared from "../shared"
 import { Viewer } from "./viewer"
 import * as THREE from 'three'
 

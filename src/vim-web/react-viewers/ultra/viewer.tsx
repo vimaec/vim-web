@@ -16,7 +16,7 @@ import { SectionBoxPanel } from '../panels/sectionBoxPanel'
 import { RestOfScreen } from '../panels/restOfScreen'
 import { LogoMemo } from '../panels/logo'
 import { whenTrue } from '../helpers/utils'
-import { useSideState } from '../sidePanel/sideState'
+import { useSideState } from '../state/sideState'
 import { ViewerRef } from './viewerRef'
 import ReactTooltip from 'react-tooltip'
 import { useUltraCamera } from './camera'
@@ -25,10 +25,8 @@ import { useUltraIsolation } from './isolation'
 import { IsolationSettingsPanel } from '../panels/renderSettingsPanel'
 
 /**
- * Creates a UI container along with a VIM.Viewer and its associated React component.
+ * Creates a UI container along with a VIM.Viewer and its associated React viewer.
  * @param container An optional container object. If none is provided, a container will be created.
- * @param componentSettings UI Component settings.
-*  @param viewerSettings Viewer settings.
  * @returns An object containing the resulting container, reactRoot, and viewer.
  */
 export function createViewer (
@@ -45,7 +43,7 @@ export function createViewer (
   // Create the React root
   const reactRoot = createRoot(cmpContainer.ui)
 
-  // Patch the component to clean up after itself
+  // Patch the viewer to clean up after itself
   const attachDispose = (cmp : ViewerRef) => {
     cmp.dispose = () => {
       viewer.dispose()
@@ -66,16 +64,16 @@ export function createViewer (
 }
 
 /**
- * Represents a React component providing UI for the Vim viewer.
+ * Represents a React viewer providing UI for the Vim viewer.
  * @param container The container object containing root, gfx, and UI elements for the Vim viewer.
  * @param viewer The Vim viewer instance for which UI is provided.
- * @param onMount A callback function triggered when the component is mounted. Receives a reference to the Vim component.
- * @param settings Optional settings for configuring the Vim component's behavior.
+ * @param onMount A callback function triggered when the viewer is mounted. Receives a reference to the Vim viewer.
+ * @param settings Optional settings for configuring the Vim viewer's behavior.
  */
 export function Viewer (props: {
   container: Container
   viewer: Core.Ultra.Viewer
-  onMount: (component: ViewerRef) => void}) {
+  onMount: (viewer: ViewerRef) => void}) {
 
   const modal = useModal(true)
   const sectionBox = useUltraSectionBox(props.viewer)

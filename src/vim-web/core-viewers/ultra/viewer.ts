@@ -1,5 +1,5 @@
 import { ISimpleEvent } from 'ste-simple-events'
-import * as Shared from '../../shared'
+import * as Shared from '../shared'
 import { Camera, ICamera } from './camera'
 import { ColorManager } from './colorManager'
 import { Decoder, IDecoder } from './decoder'
@@ -110,7 +110,7 @@ export class Viewer {
    * Gets the current connection status of the viewer.
    * @returns The current ClientStatus.
    */
-  get state (): ClientState {
+  get connectionState (): ClientState {
     return this._socketClient.state
   }
 

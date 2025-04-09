@@ -3,7 +3,7 @@
  */
 
 /**
- * Defines all icons for the VIM component.
+ * Defines all icons for the VIM viewer.
  * @packageDocumentation
  */
 

@@ -5,7 +5,7 @@
 import * as THREE from 'three'
 import { VimDocument, G3d, VimHeader, FilterMode } from 'vim-format'
 import { WebglScene } from './scene'
-import { WebglVimSettings } from './vimSettings'
+import { VimSettings } from './vimSettings'
 import { Element3D as WebglElement3D } from './element3d'
 import {
   ElementMapping,
@@ -53,7 +53,7 @@ export class Vim implements IVim<WebglElement3D> {
   /**
    * The settings used when this vim was opened.
    */
-  readonly settings: WebglVimSettings
+  readonly settings: VimSettings
 
   /**
    * Mostly Internal - The scene in which the vim geometry is added.
@@ -101,7 +101,7 @@ export class Vim implements IVim<WebglElement3D> {
  * @param {VimDocument} document - The Vim document.
  * @param {G3d | undefined} g3d - The G3d object, if available.
  * @param {WebglScene} scene - The scene containing the vim's geometry.
- * @param {WebglVimSettings} settings - The settings used to open this vim.
+ * @param {VimSettings} settings - The settings used to open this vim.
  * @param {ElementMapping | ElementNoMapping | ElementMapping2} map - The element mapping.
  * @param {SubsetBuilder} builder - The subset builder for constructing subsets of the Vim object.
  * @param {string} source - The source of the Vim object.
@@ -113,7 +113,7 @@ export class Vim implements IVim<WebglElement3D> {
     document: VimDocument,
     g3d: G3d | undefined,
     scene: WebglScene,
-    settings: WebglVimSettings,
+    settings: VimSettings,
     map: ElementMapping | ElementNoMapping | ElementMapping2,
     builder: SubsetBuilder,
     source: string,

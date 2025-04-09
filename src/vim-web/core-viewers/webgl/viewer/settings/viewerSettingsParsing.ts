@@ -9,7 +9,7 @@ import deepmerge from 'deepmerge'
  * @param url URL string with standard parameters.
  * @returns A PartialSettings object that can further be merged with default values.
  */
-export function getViewerSettingsFromUrl (url?: string, settings?: PartialViewerSettings) {
+export function createViewerSettingsFromUrl (url?: string, settings?: PartialViewerSettings) {
   const urlSettings = parseSettingsFromUrl(url)
   return deepmerge(settings, urlSettings ?? {}) as PartialViewerSettings
 }
