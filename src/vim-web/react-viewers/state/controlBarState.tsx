@@ -1,4 +1,4 @@
-import * as VIM from '../../core-viewers/webgl/index';
+import * as Core from "../../core-viewers";
 import { CameraRef } from './cameraState';
 import { CursorManager } from '../helpers/cursor';
 
@@ -17,9 +17,8 @@ import { SectionBoxRef } from './sectionBoxState';
 import { getMeasureState } from './measureState';
 import { ModalRef } from '../panels/modal';
 import * as ControlBar from '../controlbar/controlBar';
-import { WebglCoreViewer } from '../..';
-import { Viewer } from '../../core-viewers/ultra';
-import { IsolationAdapter, IsolationRef } from './sharedIsolation';
+import { IsolationRef } from './sharedIsolation';
+import { PointerMode } from '../../core-viewers/shared';
 
 
 /**
@@ -95,7 +94,7 @@ export function controlBarSectionBox(
  * Returns a control bar section for pointer/camera modes.
  */
 function controlBarPointer(
-  viewer: VIM.Viewer,
+  viewer: Core.Webgl.Viewer,
   camera: CameraRef,
   settings: Settings,
   section: SectionBoxRef
@@ -111,36 +110,36 @@ function controlBarPointer(
         id: ControlBar.ids.buttonCameraOrbit,
         enabled: () => isTrue(settings.ui.orbit),
         tip: 'Orbit',
-        action: () => pointer.onButton('orbit'),
+        action: () => pointer.onButton(PointerMode.ORBIT),
         icon: Icons.orbit,
-        isOn: () => pointer.mode === 'orbit',
+        isOn: () => pointer.mode === PointerMode.ORBIT,
         style: ControlBar.buttonDefaultStyle,
       },
       {
         id: ControlBar.ids.buttonCameraLook,
         enabled: () => isTrue(settings.ui.lookAround),
         tip: 'Look Around',
-        action: () => pointer.onButton('look'),
+        action: () => pointer.onButton(PointerMode.LOOK),
         icon: Icons.look,
-        isOn: () => pointer.mode === 'look',
+        isOn: () => pointer.mode === PointerMode.LOOK,
         style: ControlBar.buttonDefaultStyle,
       },
       {
         id: ControlBar.ids.buttonCameraPan,
         enabled: () => isTrue(settings.ui.pan),
         tip: 'Pan',
-        action: () => pointer.onButton('pan'),
+        action: () => pointer.onButton(PointerMode.PAN),
         icon: Icons.pan,
-        isOn: () => pointer.mode === 'pan',
+        isOn: () => pointer.mode === PointerMode.PAN,
         style: ControlBar.buttonDefaultStyle,
       },
       {
         id: ControlBar.ids.buttonCameraZoom,
         enabled: () => isTrue(settings.ui.zoom),
         tip: 'Zoom',
-        action: () => pointer.onButton('zoom'),
+        action: () => pointer.onButton(PointerMode.ZOOM),
         icon: Icons.zoom,
-        isOn: () => pointer.mode === 'zoom',
+        isOn: () => pointer.mode === PointerMode.ZOOM,
         style: ControlBar.buttonDefaultStyle,
       },
       {
@@ -148,10 +147,10 @@ function controlBarPointer(
         enabled: () => isTrue(settings.ui.zoomWindow),
         tip: 'Zoom Window',
         action: () => {
-          pointer.onButton('rect');
+          pointer.onButton(PointerMode.RECT);
         },
         icon: Icons.frameRect,
-        isOn: () => pointer.mode === 'rect',
+        isOn: () => pointer.mode === PointerMode.RECT,
         style: ControlBar.buttonDefaultStyle,
       },
 
@@ -343,7 +342,7 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
  * Combines all control bar sections into one control bar.
  */
 export function useControlBar(
-  viewer: VIM.Viewer,
+  viewer: Core.Webgl.Viewer,
   camera: CameraRef,
   modal: ModalRef,
   side: SideState,

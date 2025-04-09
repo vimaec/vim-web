@@ -8,7 +8,7 @@ import { NodeState, StateSynchronizer } from './nodeState';
 import { Renderer } from './renderer';
 import { MaterialHandles } from './rpcClient';
 import { RpcSafeClient, VimLoadingStatus, VimSource } from './rpcSafeClient';
-import { ULTRA_INVALID_HANDLE } from './viewer';
+import { INVALID_HANDLE } from './viewer';
 
 import * as THREE from 'three';
 import { RGBA32 } from './rpcTypes';
@@ -120,7 +120,7 @@ export class Vim implements Shared.IVim<Element3D> {
 
   private async _load(source: VimSource, result: LoadRequest): Promise<LoadRequest> {
     const handle = await this._getHandle(source, result);
-    if (result.isCompleted || handle === ULTRA_INVALID_HANDLE) {
+    if (result.isCompleted || handle === INVALID_HANDLE) {
       return result;
     }
     while (true) {
@@ -175,11 +175,11 @@ export class Vim implements Shared.IVim<Element3D> {
       }
     } catch (e) {
       result.error('downloadingError', (e as Error).message);
-      return ULTRA_INVALID_HANDLE;
+      return INVALID_HANDLE;
     }
-    if (handle === ULTRA_INVALID_HANDLE) {
+    if (handle === INVALID_HANDLE) {
       result.error('downloadingError');
-      return ULTRA_INVALID_HANDLE;
+      return INVALID_HANDLE;
     }
     console.log('handle :', handle);
     return handle;

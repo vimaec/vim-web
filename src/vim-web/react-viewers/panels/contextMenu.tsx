@@ -8,7 +8,7 @@ import { CameraRef } from '../state/cameraState'
 import { TreeActionRef } from '../bim/bimTree'
 import { ModalRef } from './modal'
 import { IsolationRef } from '../state/sharedIsolation'
-import * as VIM from '../../core-viewers/webgl/index'
+import * as Core from '../../core-viewers'
 
 const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
 type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -89,11 +89,11 @@ export const VimContextMenuMemo = React.memo(ContextMenu)
  * Context menu component definition according to current state.
  */
 export function ContextMenu (props: {
-  viewer: VIM.Viewer
+  viewer: Core.Webgl.Viewer
   camera: CameraRef
   modal: ModalRef
   isolation: IsolationRef
-  selection: VIM.Element3D[]
+  selection: Core.Webgl.Element3D[]
   customization?: (e: ContextMenuElement[]) => ContextMenuElement[]
   treeRef: React.MutableRefObject<TreeActionRef | undefined>
 }) {

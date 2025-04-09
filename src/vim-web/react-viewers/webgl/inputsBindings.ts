@@ -2,13 +2,13 @@
  * @module viw-webgl-react
  */
 
-import * as VIM from '../../core-viewers/webgl/index'
+import * as Core from '../../core-viewers'
 import { SideState } from '../sidePanel/sideState'
 import { CameraRef } from '../state/cameraState'
 import { IsolationRef } from '../state/sharedIsolation'
 
 export function applyWebglBindings(
-  viewer: VIM.Viewer,
+  viewer: Core.Webgl.Viewer,
   camera: CameraRef,
   isolation: IsolationRef,
   sideState: SideState)

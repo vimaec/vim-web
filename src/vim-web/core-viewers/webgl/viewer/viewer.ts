@@ -10,7 +10,7 @@ import { Environment } from './environment/environment'
 import { Gizmos } from './gizmos/gizmos'
 import { IRaycaster, Raycaster } from './raycaster'
 import { RenderScene } from './rendering/renderScene'
-import { createWebglCoreSelection, ISelection } from './selection'
+import { createSelection, ISelection } from './selection'
 import { getViewerSettings, PartialViewerSettings, ViewerSettings } from './settings/viewerSettings'
 import { Viewport } from './viewport'
 
@@ -118,7 +118,7 @@ export class Viewer {
     this.environment = new Environment(this.camera, this.renderer, this.materials, this.settings)
 
     // Input and Selection
-    this.selection = createWebglCoreSelection()
+    this.selection = createSelection()
     this.raycaster = new Raycaster(
       this._camera,
       scene,

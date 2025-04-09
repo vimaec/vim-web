@@ -9,7 +9,7 @@ import * as Shared from '../../shared'
 export type Selectable = Element3D | Marker
 export type ISelection = Shared.Selection<Selectable>
 
-export function createWebglCoreSelection() {
+export function createSelection() {
   return new Shared.Selection<Selectable>(new SelectionAdapter())
 } 
 

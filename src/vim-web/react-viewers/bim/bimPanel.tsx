@@ -3,7 +3,7 @@
  */
 
 import React, { useEffect, useState, useMemo } from 'react'
-import * as VIM from '../../core-viewers/webgl'
+import * as Core from '../../core-viewers'
 
 import { BimTree, TreeActionRef } from './bimTree'
 import { BimSearch } from './bimSearch'
@@ -21,7 +21,7 @@ import { IsolationRef } from '../state/sharedIsolation'
 // when I inline this method in component.tsx it causes an error.
 // The error appears only in JSFiddle when the module is directly imported in a script tag.
 export function OptionalBimPanel (props: {
-  viewer: VIM.Viewer
+  viewer: Core.Webgl.Viewer
   camera: CameraRef
   viewerState: ViewerState
   isolation: IsolationRef
@@ -46,7 +46,7 @@ export function OptionalBimPanel (props: {
  * @returns
  */
 export function BimPanel (props: {
-  viewer: VIM.Viewer
+  viewer: Core.Webgl.Viewer
   camera: CameraRef
   viewerState: ViewerState
   isolation: IsolationRef

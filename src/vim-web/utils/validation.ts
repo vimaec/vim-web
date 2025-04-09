@@ -1,7 +1,6 @@
-import { Box3, RGB, RGBA, Segment, Vector2, Vector3 } from '../core-viewers/ultra/viewer/rpcTypes'
-import * as Utils from '.'
-import { MaterialHandle, materialHandles } from '../core-viewers/ultra/viewer/rpcClient'
-import { ULTRA_INVALID_HANDLE } from '../core-viewers/ultra/viewer/viewer'
+import * as THREE from 'three'
+import * as Core from '../core-viewers'
+import { isURL } from './url'
 
 export class Validation {
   //= ===========================================================================
@@ -63,7 +62,7 @@ export class Validation {
   //= ===========================================================================
   static isComponentHandle (handle: number): boolean {
     if (!this.isPositiveInteger(handle)) return false
-    if (handle === ULTRA_INVALID_HANDLE) {
+    if (handle === Core.Ultra.INVALID_HANDLE) {
       console.warn(`Invalid handle ${handle}. Aborting operation.`)
       return false
     }
@@ -75,7 +74,7 @@ export class Validation {
   }
 
   static isMaterialHandle (handle: number): boolean {
-    if (!materialHandles.includes(handle as MaterialHandle)) {
+    if (!Core.Ultra.materialHandles.includes(handle as Core.Ultra.MaterialHandle)) {
       console.warn(`Invalid material handle ${handle}. Aborting operation.`)
       return false
     }
@@ -85,7 +84,7 @@ export class Validation {
   //= ===========================================================================
   // VECTOR AND GEOMETRY VALIDATIONS
   //= ===========================================================================
-  static isValidVector2 (value: Vector2): boolean {
+  static isValidVector2 (value: THREE.Vector2): boolean {
     
     if (!Number.isFinite(value.x) || !Number.isFinite(value.y)) {
       console.warn('Invalid value: must be a valid Vector2. Aborting operation.')
@@ -94,7 +93,7 @@ export class Validation {
     return true
   }
 
-  static isRelativeVector2 (value: Vector2): boolean {
+  static isRelativeVector2 (value: THREE.Vector2): boolean {
     if(!this.isValidVector2(value)) return false
     if (value.x < 0 || value.x > 1 || value.y < 0 || value.y > 1) {
       console.warn('Invalid value: must be a relative Vector2 (0-1, 0-1). Aborting operation.')
@@ -103,7 +102,7 @@ export class Validation {
     return true
   }
 
-  static isValidVector3 (value: Vector3): boolean {
+  static isValidVector3 (value: THREE.Vector3): boolean {
     if (!Number.isFinite(value.x) || !Number.isFinite(value.y) || !Number.isFinite(value.z)) {
       console.warn('Invalid Vector3. Aborting operation.')
       return false
@@ -111,7 +110,7 @@ export class Validation {
     return true
   }
 
-  static isValidBox (box: Box3): boolean {
+  static isValidBox (box: THREE.Box3): boolean {
     if (box.isEmpty()) {
       console.warn('Box is invalid. Min values must be less than max values')
       return false
@@ -119,7 +118,7 @@ export class Validation {
     return true
   }
 
-  static isValidSegment (segment: Segment): boolean {
+  static isValidSegment (segment: Core.Ultra.Segment): boolean {
     if (!segment.isValid()) {
       console.warn('Segment is invalid. Origin must be different from target')
       return false
@@ -130,7 +129,7 @@ export class Validation {
   //= ===========================================================================
   // COLOR VALIDATIONS
   //= ===========================================================================
-  static isRelativeRGBA (color: RGBA): boolean {
+  static isRelativeRGBA (color: Core.Ultra.RGBA): boolean {
     if (color.r < 0 || color.r > 1 || color.g < 0 || color.g > 1 || color.b < 0 || color.b > 1) {
       console.warn('Invalid value: must be a relative color (0-1, 0-1, 0-1)')
       return false
@@ -138,7 +137,7 @@ export class Validation {
     return true
   }
 
-  static isRelativeRGB (color: RGB): boolean {
+  static isRelativeRGB (color: Core.Ultra.RGB): boolean {
     if (color.r < 0 || color.r > 1 || color.g < 0 || color.g > 1 || color.b < 0 || color.b > 1) {
       console.warn('Invalid value: must be a relative color (0-1, 0-1, 0-1)')
       return false
@@ -158,7 +157,7 @@ export class Validation {
   }
 
   static isURL (value: string): boolean {
-    if (!Utils.isURL(value)) {
+    if (!isURL(value)) {
       console.warn('Invalid value: must be a valid URL. Aborting operation.')
       return false
     }
@@ -242,8 +241,8 @@ export class Validation {
     return value
   }
 
-  static clampRGBA01 (value: RGBA): RGBA {
-    return new RGBA(
+  static clampRGBA01 (value: Core.Ultra.RGBA): Core.Ultra.RGBA {
+    return new Core.Ultra.RGBA(
       this.clamp01(value.r),
       this.clamp01(value.g),
       this.clamp01(value.b),
@@ -251,8 +250,8 @@ export class Validation {
     )
   }
 
-  static clampRGB01 (value: RGBA): RGBA {
-    return new RGBA(
+  static clampRGB01 (value: Core.Ultra.RGBA): Core.Ultra.RGBA {
+    return new Core.Ultra.RGBA(
       this.clamp01(value.r),
       this.clamp01(value.g),
       this.clamp01(value.b)

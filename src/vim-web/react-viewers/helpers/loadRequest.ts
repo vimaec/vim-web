@@ -1,9 +1,9 @@
-import * as VIM from '../../core-viewers/webgl/index'
+import * as Core from '../../core-viewers'
 import { DeferredPromise } from './deferredPromise'
 import { LoadingError } from '../webgl/loading'
 
 type RequestCallbacks = {
-  onProgress: (p: VIM.IProgressLogs) => void
+  onProgress: (p: Core.Webgl.IProgressLogs) => void
   onError: (e: LoadingError) => void
   onDone: () => void
 }
@@ -14,22 +14,22 @@ type RequestCallbacks = {
 export class LoadRequest {
   readonly source
   private _callbacks : RequestCallbacks
-  private _request: VIM.VimRequest
+  private _request: Core.Webgl.VimRequest
 
-  private _progress: VIM.IProgressLogs = { loaded: 0, total: 0, all: new Map() }
+  private _progress: Core.Webgl.IProgressLogs = { loaded: 0, total: 0, all: new Map() }
   private _progressPromise = new DeferredPromise<void>()
 
   private _isDone: boolean = false
   private _completionPromise = new DeferredPromise<void>()
 
-  constructor (callbacks: RequestCallbacks, source: VIM.RequestSource, settings?: VIM.VimPartialSettings) {
+  constructor (callbacks: RequestCallbacks, source: Core.Webgl.RequestSource, settings?: Core.Webgl.VimPartialSettings) {
     this.source = source
     this._callbacks = callbacks
     this.startRequest(source, settings)
   }
 
-  private async startRequest (source: VIM.RequestSource, settings?: VIM.VimPartialSettings) {
-    this._request = await VIM.request(source, settings)
+  private async startRequest (source: Core.Webgl.RequestSource, settings?: Core.Webgl.VimPartialSettings) {
+    this._request = await Core.Webgl.request(source, settings)
     for await (const progress of this._request.getProgress()) {
       this.onProgress(progress)
     }
@@ -41,7 +41,7 @@ export class LoadRequest {
     }
   }
 
-  private onProgress (progress: VIM.IProgressLogs) {
+  private onProgress (progress: Core.Webgl.IProgressLogs) {
     this._callbacks.onProgress(progress)
     this._progress = progress
     this._progressPromise.resolve()
@@ -67,7 +67,7 @@ export class LoadRequest {
     this._completionPromise.resolve()
   }
 
-  async * getProgress () : AsyncGenerator<VIM.IProgressLogs, void, void> {
+  async * getProgress () : AsyncGenerator<Core.Webgl.IProgressLogs, void, void> {
     while (!this._isDone) {
       await this._progressPromise
       yield this._progress

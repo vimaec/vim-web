@@ -1,6 +1,6 @@
 
 
-import * as Core from '../../core-viewers/ultra' 
+import * as Core from '../../core-viewers' 
 import React, { useEffect, useState } from 'react'
 import { Container, createContainer } from '../container'
 import { createRoot } from 'react-dom/client'
@@ -40,7 +40,7 @@ export function createViewer (
     : container ?? createContainer()
 
   // Create the viewer and container
-  const viewer = Core.Viewer.createWithCanvas(cmpContainer.gfx)
+  const viewer = Core.Ultra.Viewer.createWithCanvas(cmpContainer.gfx)
 
   // Create the React root
   const reactRoot = createRoot(cmpContainer.ui)
@@ -74,7 +74,7 @@ export function createViewer (
  */
 export function Viewer (props: {
   container: Container
-  viewer: Core.Viewer
+  viewer: Core.Ultra.Viewer
   onMount: (component: ViewerRef) => void}) {
 
   const modal = useModal(true)
@@ -133,8 +133,8 @@ export function Viewer (props: {
   </>
 }
 
-function patchLoad(viewer: Core.Viewer, modal: ModalRef) {
-  return function load (source: Core.VimSource): Core.ILoadRequest {
+function patchLoad(viewer: Core.Ultra.Viewer, modal: ModalRef) {
+  return function load (source: Core.Ultra.VimSource): Core.Ultra.ILoadRequest {
     const request = viewer.loadVim(source)
 
     // We don't want to block the main thread to get progress updates

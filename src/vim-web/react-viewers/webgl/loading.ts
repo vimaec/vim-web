@@ -2,10 +2,10 @@
  * @module viw-webgl-react
  */
 
-import * as VIM from '../../core-viewers/webgl/index'
+import { Errors } from '..'
+import * as Core from '../../core-viewers'
 import { LoadRequest } from '../helpers/loadRequest'
 import { ModalRef } from '../panels/modal'
-import { Errors } from '..'
 
 type AddSettings = {
   /**
@@ -21,7 +21,7 @@ type AddSettings = {
   loadEmpty?: boolean
 }
 
-export type OpenSettings = VIM.VimPartialSettings & AddSettings
+export type OpenSettings = Core.Webgl.VimPartialSettings & AddSettings
 
 export type LoadingError = {
   url: string
@@ -33,10 +33,10 @@ export type LoadingError = {
  * Includes event emitters for progress updates and completion notifications.
  */
 export class ComponentLoader {
-  private _viewer : VIM.Viewer
+  private _viewer : Core.Webgl.Viewer
   private _modal: ModalRef
 
-  constructor (viewer : VIM.Viewer, modal: ModalRef) {
+  constructor (viewer : Core.Webgl.Viewer, modal: ModalRef) {
     this._viewer = viewer
     this._modal = modal
   }
@@ -44,7 +44,7 @@ export class ComponentLoader {
   /**
    * Event emitter for progress updates.
    */
-  onProgress (p: VIM.IProgressLogs) {
+  onProgress (p: Core.Webgl.IProgressLogs) {
     this._modal.loading({
       message: 'Loading in WebGL Mode',
       progress: p.loaded,
@@ -74,9 +74,9 @@ export class ComponentLoader {
    * Receives progress logs as input.
    */
   async open (
-    source: VIM.RequestSource,
+    source: Core.Webgl.RequestSource,
     settings: OpenSettings,
-    onProgress?: (p: VIM.IProgressLogs) => void
+    onProgress?: (p: Core.Webgl.IProgressLogs) => void
   ) {
     const request = this.request(source, settings)
 
@@ -106,8 +106,8 @@ export class ComponentLoader {
    * @param settings Settings to apply to vim file.
    * @returns A new load request instance to track progress and get result.
    */
-  request (source: VIM.RequestSource,
-    settings?: VIM.VimPartialSettings) {
+  request (source: Core.Webgl.RequestSource,
+    settings?: Core.Webgl.VimPartialSettings) {
     return new LoadRequest({
       onProgress: (p) => this.onProgress(p),
       onError: (e) => this.onError(e),
@@ -120,7 +120,7 @@ export class ComponentLoader {
     * @param vim Vim to add to the viewer.
     * @param settings Optional settings to apply to the vim.
     */
-  add (vim: VIM.Vim, settings: AddSettings = {}) {
+  add (vim: Core.Webgl.Vim, settings: AddSettings = {}) {
     this.initVim(vim, settings)
   }
 
@@ -128,12 +128,12 @@ export class ComponentLoader {
    * Removes the vim from the viewer and disposes it.
    * @param vim Vim to remove from the viewer.
    */
-  remove (vim: VIM.Vim) {
+  remove (vim: Core.Webgl.Vim) {
     this._viewer.remove(vim)
     vim.dispose()
   }
 
-  private initVim (vim : VIM.Vim, settings: AddSettings) {
+  private initVim (vim : Core.Webgl.Vim, settings: AddSettings) {
     this._viewer.add(vim)
     vim.onLoadingUpdate.subscribe(() => {
       this._viewer.gizmos.loading.visible = vim.isLoading

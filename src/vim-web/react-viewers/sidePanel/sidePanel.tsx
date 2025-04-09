@@ -3,7 +3,7 @@
  */
 
 import React, { useEffect, useRef } from 'react'
-import * as VIM from '../../core-viewers/webgl/index'
+import * as Core from '../../core-viewers'
 import * as Icons from '../panels/icons'
 import { SideState } from './sideState'
 import { Enable, Resizable } from 're-resizable'
@@ -22,7 +22,7 @@ export const SidePanelMemo = React.memo(SidePanel)
 export function SidePanel (props: {
   container: Container
   side: SideState
-  viewer: VIM.Viewer
+  viewer: Core.Webgl.Viewer
   content: () => JSX.Element
 }) {
   const resizeTimeOut = useRef<number>()

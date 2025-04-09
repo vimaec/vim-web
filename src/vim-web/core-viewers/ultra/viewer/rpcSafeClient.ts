@@ -2,7 +2,7 @@ import * as RpcTypes from "./rpcTypes"
 import { MaterialHandle, RpcClient } from "./rpcClient"
 import { Validation } from "../../../utils";
 import { batchArray, batchArrays } from "../../../utils/array"
-import { ULTRA_INVALID_HANDLE } from "./viewer"
+import { INVALID_HANDLE } from "./viewer"
 
 const defaultBatchSize = 10000
 
@@ -275,13 +275,13 @@ export class RpcSafeClient {
     text : string
   ): Promise<number> {
     // Validation
-    if (!Validation.isNonEmptyString(text)) return ULTRA_INVALID_HANDLE
-    if (!Validation.isValidVector3(position)) return ULTRA_INVALID_HANDLE
+    if (!Validation.isNonEmptyString(text)) return INVALID_HANDLE
+    if (!Validation.isValidVector3(position)) return INVALID_HANDLE
 
     // Run
     return await this.safeCall(
       () => this.rpc.RPCCreateText(position, color, text),
-      ULTRA_INVALID_HANDLE
+      INVALID_HANDLE
     )
   }
 
@@ -546,13 +546,13 @@ export class RpcSafeClient {
    */
   async RPCLoadVim(source: VimSource): Promise<number> {
     // Validation
-    if (!Validation.isNonEmptyString(source.url)) return ULTRA_INVALID_HANDLE
+    if (!Validation.isNonEmptyString(source.url)) return INVALID_HANDLE
     const url = source.url.replace("file:///", "file://")
 
     // Run
     return await this.safeCall(
       () => this.rpc.RPCLoadVim(url),
-      ULTRA_INVALID_HANDLE
+      INVALID_HANDLE
     )
   }
 
@@ -564,12 +564,12 @@ export class RpcSafeClient {
    */
   async RPCLoadVimURL(source: VimSource): Promise<number> {
     // Validation
-    if (!Validation.isURL(source.url)) return ULTRA_INVALID_HANDLE
+    if (!Validation.isURL(source.url)) return INVALID_HANDLE
 
     // Run
     return await this.safeCall(
       () => this.rpc.RPCLoadVimURL(source.url, source.authToken ?? ""),
-      ULTRA_INVALID_HANDLE
+      INVALID_HANDLE
     )
   }
 

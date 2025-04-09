@@ -2,7 +2,7 @@
  * @module public-api
  */
 
-import * as VIM from '../../core-viewers/webgl/index'
+import * as Core from '../../core-viewers'
 import { ContextMenuCustomization } from '../panels/contextMenu'
 import { Settings } from '../settings/settings'
 import { CameraRef } from '../state/cameraState'
@@ -86,7 +86,7 @@ export type ViewerRef = {
   /**
    * Vim WebGL viewer around which the WebGL component is built.
    */
-  core: VIM.Viewer
+  coreViewer: Core.Webgl.Viewer
 
   /**
    * Vim WebGL loader to download VIMs.

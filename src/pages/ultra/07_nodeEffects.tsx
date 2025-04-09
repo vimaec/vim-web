@@ -4,6 +4,7 @@ import { useUltraWithTower } from './ultraPageUtils'
 
 import ViewerRef = VIM.React.Ultra.ViewerRef
 import Vim = VIM.Core.Ultra.Vim
+import NodeState = VIM.Core.Ultra.NodeState
 
 export function UltraNodeEffects () {
   const div = useRef<HTMLDivElement>(null)
@@ -26,13 +27,13 @@ async function changeState (ultra: ViewerRef, tower: Vim) {
     await new Promise(resolve => setTimeout(resolve, 3000))
     */
 
-    indices.forEach((i) => tower.getObjectFromInstance(i).state = VIM.Core.Ultra.NodeState.GHOSTED)
+    indices.forEach((i) => tower.getObjectFromInstance(i).state = NodeState.GHOSTED)
     await new Promise(resolve => setTimeout(resolve, 15000))
 
-    indices.forEach((i) => tower.getObjectFromInstance(i).state = VIM.Core.Ultra.NodeState.HIDDEN)
+    indices.forEach((i) => tower.getObjectFromInstance(i).state = NodeState.HIDDEN)
     await new Promise(resolve => setTimeout(resolve, 15000))
 
-    indices.forEach((i) => tower.getObjectFromInstance(i).state = VIM.Core.Ultra.NodeState.VISIBLE)
+    indices.forEach((i) => tower.getObjectFromInstance(i).state = NodeState.VISIBLE)
     await new Promise(resolve => setTimeout(resolve, 15000))
   }
 }

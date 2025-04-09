@@ -18,7 +18,7 @@ import { IViewport, Viewport } from './viewport'
 import { Vim } from './vim'
 import { IReadonlyVimCollection, VimCollection } from './vimCollection'
 
-export const ULTRA_INVALID_HANDLE = 0xffffffff
+export const INVALID_HANDLE = 0xffffffff
 
 /**
  * The main Viewer class responsible for managing VIM files,

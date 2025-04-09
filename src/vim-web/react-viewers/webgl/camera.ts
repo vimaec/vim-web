@@ -1,4 +1,4 @@
-import { Core } from "../..";
+import * as Core from "../../core-viewers";
 import { useCamera } from "../state/cameraState";
 import { SectionBoxRef } from "../state/sectionBoxState";
 
