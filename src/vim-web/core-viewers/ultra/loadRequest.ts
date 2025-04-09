@@ -1,5 +1,5 @@
 import { Vim } from './vim'
-import * as Utils from '../../../utils'
+import * as Utils from '../../utils'
 
 export type LoadRequestResult = LoadSuccess | LoadError
 

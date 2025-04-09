@@ -23,9 +23,9 @@ export type LoadingBoxPropsTyped = LoadingBoxProps & {
 };
 
 /**
- * LoadingBox component that displays a loading message or other messages.
+ * LoadingBox viewer that displays a loading message or other messages.
  * @param props - Component props containing optional content.
- * @returns The LoadingBox component or null if no content is provided.
+ * @returns The LoadingBox viewer or null if no content is provided.
  */
 export function LoadingBox (props: { content: LoadingBoxProps }) {
   return (
@@ -37,9 +37,9 @@ export function LoadingBox (props: { content: LoadingBoxProps }) {
 }
 
 /**
- * Content component that displays the main content based on the provided info.
+ * Content viewer that displays the main content based on the provided info.
  * @param info - Message information.
- * @returns The content component with appropriate styling.
+ * @returns The content viewer with appropriate styling.
  */
 function content (info: LoadingBoxProps) {
   return (

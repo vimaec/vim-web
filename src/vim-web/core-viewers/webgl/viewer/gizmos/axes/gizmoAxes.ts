@@ -3,9 +3,9 @@
  */
 
 import * as THREE from 'three'
-import { Camera } from '../../camera/camera'
+import { Camera } from '../../camera'
 import { Viewport } from '../../viewport'
-import { AxesSettings } from './axesSettings'
+import { AxesSettings, createAxesSettings } from './axesSettings'
 import { Axis, createAxes } from './axes'
 
 /**
@@ -45,8 +45,8 @@ export class GizmoAxes {
   }
 
   constructor (camera: Camera, viewport: Viewport, options?: Partial<AxesSettings>) {
-    this._initialOptions = new AxesSettings(options)
-    this._options = new AxesSettings(options)
+    this._initialOptions = createAxesSettings(options)
+    this._options = createAxesSettings(options)
     this._camera = camera
     this._reparentConnection = viewport.onReparent.subscribe(() => this.reparent(viewport.parent))
     this._canvas = this.createCanvas()

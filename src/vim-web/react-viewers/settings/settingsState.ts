@@ -4,8 +4,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as Core from '../../core-viewers'
-import { Settings, PartialSettings, defaultSettings, isTrue } from './settings'
-import deepmerge from 'deepmerge'
+import { Settings, PartialSettings, createSettings } from './settings'
+import { isTrue } from './userBoolean'
 import { saveSettingsToLocal } from './settingsStorage'
 
 export type SettingsState = {
@@ -21,8 +21,8 @@ export function useSettings (
   viewer: Core.Webgl.Viewer,
   value: PartialSettings
 ): SettingsState {
-  const merge = deepmerge(defaultSettings, value) as Settings
-  const [settings, setSettings] = useState(merge)
+  const merged = createSettings(value)
+  const [settings, setSettings] = useState(merged)
   const onUpdate = useRef<(s: Settings) => void>()
 
   const update = function (updater: (s: Settings) => void) {
@@ -54,7 +54,7 @@ export function useSettings (
 }
 
 /**
- * Apply given vim component settings to the given viewer.
+ * Apply given vim viewer settings to the given viewer.
  */
 export function applySettings (viewer: Core.Webgl.Viewer, settings: Settings) {
   // Show/Hide performance gizmo

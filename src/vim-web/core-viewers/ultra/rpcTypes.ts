@@ -1,4 +1,4 @@
-import * as Utils from '../../../utils'
+import * as Utils from '../../utils'
 import * as THREE from 'three'
 
 export {Vector2, Vector3, Box3, Matrix4 as Matrix44 } from 'three'

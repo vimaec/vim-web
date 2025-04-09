@@ -6,9 +6,6 @@ import { controlBarCamera, controlBarSectionBox, controlBarSelection } from '../
 import { SectionBoxRef } from '../state/sectionBoxState'
 import { IsolationRef } from '../state/sharedIsolation'
 
-export { buttonBlueStyle, buttonDefaultStyle } from '../controlbar/controlBarButton'
-export { sectionBlueStyle, sectionDefaultStyle } from '../controlbar/controlBarSection'
-
 export function useUltraControlBar (
   viewer: Core.Viewer,
   section: SectionBoxRef,

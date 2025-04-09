@@ -1,12 +1,12 @@
 import { SimpleEventDispatcher } from 'ste-simple-events'
-import * as Utils from '../../../utils'
+import * as Utils from '../../utils'
 import { ILogger } from './logger'
 import * as Protocol from './protocol'
 import { Marshal, ReadMarshal } from './rpcMarshal'
 import { Segment } from './rpcTypes'
 import { StreamLogger } from './streamLogger'
 
-export const DEFAULT_LOCAL_ULTRA_SERVER_URL = 'ws://localhost:8123'
+export const DEFAULT_LOCAL_SERVER_URL = 'ws://localhost:8123'
 
 export type ConnectionSettings = {
   url?: string
@@ -51,7 +51,7 @@ export type ClientStreamError = {
   details: string
 }
 
-export enum FrameType {
+export enum RCPMessageType {
   // eslint-disable-next-line no-unused-vars
   VideoKeyFrame = 0,
   // eslint-disable-next-line no-unused-vars
@@ -147,7 +147,7 @@ export class SocketClient {
    */
   public connect (settings: ConnectionSettings): Promise<boolean> {
     settings = {
-      url: settings?.url ?? DEFAULT_LOCAL_ULTRA_SERVER_URL,
+      url: settings?.url ?? DEFAULT_LOCAL_SERVER_URL,
       retries: settings?.retries ?? -1,
       timeout : settings?.timeout ?? 5000,
       retryDelay: settings?.retryDelay ?? 5000
@@ -240,24 +240,24 @@ export class SocketClient {
     const msg = await Protocol.readBlob(event.data as Blob)
 
     switch (msg.header.frameType) {
-      case FrameType.Disconnection:
+      case RCPMessageType.Disconnection:
         this._logger.log('Server Disconnected (User Timeout)')
         this.disconnect()
         return
 
-      case FrameType.RPCResponse:
+      case RCPMessageType.RPCResponse:
         this.handleRPCResponse(msg.dataBuffer)
         return
 
-      case FrameType.CameraPose:
+      case RCPMessageType.CameraPose:
         const m = new ReadMarshal(msg.dataBuffer)
         if(this.onCameraPose){
           this.onCameraPose(m.readSegment())
         }
         return
 
-      case FrameType.VideoKeyFrame:
-      case FrameType.VideoDeltaFrame:
+      case RCPMessageType.VideoKeyFrame:
+      case RCPMessageType.VideoDeltaFrame:
         this.onVideoFrame(msg)
         this._streamLogger.onFrame(msg)
         break

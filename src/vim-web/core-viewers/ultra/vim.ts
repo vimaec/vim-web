@@ -1,5 +1,5 @@
-import * as Utils from '../../../utils';
-import * as Shared from '../../shared/vim';
+import * as Utils from '../../utils';
+import * as Shared from '../shared/vim';
 import { ColorManager } from './colorManager';
 import { Element3D } from './element3d';
 import { LoadRequest } from './loadRequest';

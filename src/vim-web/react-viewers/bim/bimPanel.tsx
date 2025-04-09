@@ -2,23 +2,23 @@
  * @module viw-webgl-react
  */
 
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import * as Core from '../../core-viewers'
 
-import { BimTree, TreeActionRef } from './bimTree'
-import { BimSearch } from './bimSearch'
-import { CameraRef } from '../state/cameraState'
-import { toTreeData } from './bimTreeData'
-import { ViewerState } from '../webgl/viewerState'
 import { AugmentedElement } from '../helpers/element'
-import { Settings, isFalse } from '../settings/settings'
 import { whenAllTrue, whenFalse, whenSomeTrue, whenTrue } from '../helpers/utils'
-import { BimInfoPanel } from './bimInfoPanel'
-import { BimInfoPanelRef } from './bimInfoData'
+import { Settings, isFalse } from '../settings'
+import { CameraRef } from '../state/cameraState'
 import { IsolationRef } from '../state/sharedIsolation'
+import { ViewerState } from '../webgl/viewerState'
+import { BimInfoPanelRef } from './bimInfoData'
+import { BimInfoPanel } from './bimInfoPanel'
+import { BimSearch } from './bimSearch'
+import { BimTree, TreeActionRef } from './bimTree'
+import { toTreeData } from './bimTreeData'
 
 // Not sure why I need this,
-// when I inline this method in component.tsx it causes an error.
+// when I inline this method in viewer.tsx it causes an error.
 // The error appears only in JSFiddle when the module is directly imported in a script tag.
 export function OptionalBimPanel (props: {
   viewer: Core.Webgl.Viewer

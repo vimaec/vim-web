@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { Validation } from "../../../utils";
-import * as Shared from "../../shared";
+import { Validation } from "../../utils";
+import * as Shared from "../shared";
 import { Element3D } from "./element3d";
 import { RpcSafeClient } from "./rpcSafeClient";
 import { IReadonlyVimCollection } from "./vimCollection";

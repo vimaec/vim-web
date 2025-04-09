@@ -5,7 +5,7 @@ import { compare } from './bimUtils'
 import { AugmentedElement } from '../helpers/element'
 
 // TODO: Get this type from vim-format
-export declare type ElementParameter = {
+export type ElementParameter = {
   name: string | undefined;
   value: string | undefined;
   group: string | undefined;

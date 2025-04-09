@@ -3,7 +3,7 @@
  */
 
 import * as Core from '../../core-viewers'
-import { SideState } from '../sidePanel/sideState'
+import { SideState } from '../state/sideState'
 import { CameraRef } from '../state/cameraState'
 import { IsolationRef } from '../state/sharedIsolation'
 

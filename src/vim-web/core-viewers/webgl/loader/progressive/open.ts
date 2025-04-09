@@ -1,8 +1,8 @@
 // loader
 import {
-  getFullSettings,
+  createVimSettings,
   VimPartialSettings,
-  WebglVimSettings
+  VimSettings
 } from '../vimSettings'
 
 import { Vim } from '../vim'
@@ -38,7 +38,7 @@ export async function open (
   onProgress?: (p: IProgressLogs) => void
 ) {
   const bfast = source instanceof BFast ? source : new BFast(source)
-  const fullSettings = getFullSettings(settings)
+  const fullSettings = createVimSettings(settings)
   const type = await determineFileType(bfast, fullSettings)
 
   if (type === 'vim') {
@@ -54,7 +54,7 @@ export async function open (
 
 async function determineFileType (
   bfast: BFast,
-  settings: WebglVimSettings
+  settings: VimSettings
 ) {
   if (settings?.fileType === 'vim') return 'vim'
   if (settings?.fileType === 'vimx') return 'vimx'
@@ -79,7 +79,7 @@ async function requestFileType (bfast: BFast) {
  */
 async function loadFromVimX (
   bfast: BFast,
-  settings: WebglVimSettings,
+  settings: VimSettings,
   onProgress: (p: IProgressLogs) => void
 ) {
   // Fetch geometry data
@@ -123,10 +123,10 @@ async function loadFromVimX (
  */
 async function loadFromVim (
   bfast: BFast,
-  settings: WebglVimSettings,
+  settings: VimSettings,
   onProgress?: (p: IProgressLogs) => void
 ) {
-  const fullSettings = getFullSettings(settings)
+  const fullSettings = createVimSettings(settings)
 
   if (bfast.source instanceof RemoteBuffer) {
     bfast.source.onProgress = onProgress

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
-import { SideState } from '../sidePanel/sideState'
+import { SideState } from '../state/sideState'
 
 export function RestOfScreen (props:{
   side: SideState,

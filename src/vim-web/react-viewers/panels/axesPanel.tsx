@@ -4,11 +4,19 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import * as Core from '../../core-viewers'
-import * as Icons from './icons'
+import * as Icons from '../icons'
 import { CameraRef } from '../state/cameraState'
-import { anyUiAxesButton, isTrue } from '../settings/settings'
+import { isTrue, Settings } from '../settings'
 import { SettingsState } from '../settings/settingsState'
 import { whenAllTrue, whenTrue } from '../helpers/utils'
+
+function anyUiAxesButton (settings: Settings) {
+  return (
+    settings.ui.orthographic ||
+    settings.ui.resetCamera ||
+    settings.ui.enableGhost
+  )
+}
 
 /**
  * Memoized version of the AxesPanelMemo.

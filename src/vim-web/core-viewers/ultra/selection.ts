@@ -1,4 +1,4 @@
-import * as Shared from "../../shared";
+import * as Shared from "../shared";
 import { Element3D } from "./element3d";
 import { NodeState } from "./nodeState";
 

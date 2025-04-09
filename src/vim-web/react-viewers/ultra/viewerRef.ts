@@ -4,13 +4,13 @@ import { CameraRef } from '../state/cameraState';
 import { SectionBoxRef } from '../state/sectionBoxState';
 import { IsolationRef } from '../state/sharedIsolation';
 
-// TODO: Don't depend on the webgl component
+// TODO: Don't depend on the webgl viewer
 import {ControlBarRef} from '../webgl/viewerRef'
 
 
 export type ViewerRef = {
   /**
-   * The Vim viewer instance associated with the component.
+   * The Vim viewer instance associated with the viewer.
    */
   viewer:Core.Viewer;
 
@@ -37,7 +37,7 @@ export type ViewerRef = {
   isolation: IsolationRef
 
   /**
-   * Disposes of the component and its resources.
+   * Disposes of the viewer and its resources.
    */
   dispose: () => void;
 

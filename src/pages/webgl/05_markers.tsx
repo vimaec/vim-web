@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import { useWebglViewer, useWebglViewerWithResidence } from './webglPageUtils'
 import * as THREE from 'three'
-import { camera } from '../../vim-web/react-viewers/panels/icons'
+import { camera } from '../../vim-web/react-viewers/icons'
 
 export function WebglMarkers () {
   const div = useRef<HTMLDivElement>(null)

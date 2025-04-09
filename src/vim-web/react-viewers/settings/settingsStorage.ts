@@ -2,16 +2,17 @@
  * @module viw-webgl-react
  */
 
-import { UserBoolean, Settings, RecursivePartial, PartialSettings } from './settings'
+import { Settings, RecursivePartial, PartialSettings } from './settings'
+import { UserBoolean } from './userBoolean'
 
 /**
- * Retrieves component settings from localStorage and applies permissions
- * @param settings - Partial component settings to apply permissions from
+ * Retrieves viewer settings from localStorage and applies permissions
+ * @param settings - Partial viewer settings to apply permissions from
  * @returns The stored settings with applied permissions, or empty object if retrieval fails
  */
 export function getLocalSettings (settings: PartialSettings = {}) {
   try {
-    const json = localStorage.getItem('component.settings')
+    const json = localStorage.getItem('viewer.settings')
     const previous = JSON.parse(json) as Settings
     applyPermission(previous, settings)
     return previous ?? {}
@@ -22,13 +23,13 @@ export function getLocalSettings (settings: PartialSettings = {}) {
 }
 
 /**
- * Saves component settings to localStorage after removing permissions
+ * Saves viewer settings to localStorage after removing permissions
  * @param value - Component settings to save
  */
 export function saveSettingsToLocal (value: Settings) {
   try {
     const save = removePermission(value)
-    localStorage.setItem('component.settings', JSON.stringify(save))
+    localStorage.setItem('viewer.settings', JSON.stringify(save))
   } catch (error) {
     console.error('Could not save settings to local storage ', error)
   }
@@ -36,7 +37,7 @@ export function saveSettingsToLocal (value: Settings) {
 
 /**
  * Applies permission rules from current settings to previous settings
- * @param previous - The existing component settings to modify
+ * @param previous - The existing viewer settings to modify
  * @param current - The new partial settings containing permission rules
  */
 function applyPermission (
@@ -58,7 +59,7 @@ function applyPermission (
 
 /**
  * Removes permission rules from settings by converting AlwaysTrue/AlwaysFalse to boolean values
- * @param settings - The component settings to process
+ * @param settings - The viewer settings to process
  * @returns A new settings object with permissions converted to boolean values
  */
 function removePermission (settings: Settings) {

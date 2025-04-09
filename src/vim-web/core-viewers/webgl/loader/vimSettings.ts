@@ -11,7 +11,7 @@ export type FileType = 'vim' | 'vimx' | undefined
 /**
  * Represents settings for configuring the behavior and rendering of a vim object.
  */
-export type WebglVimSettings = {
+export type VimSettings = {
 
   /**
    * The positional offset for the vim object.
@@ -65,34 +65,36 @@ export type WebglVimSettings = {
 /**
  * Default configuration settings for a vim object.
  */
-export const defaultConfig: WebglVimSettings = {
-  position: new THREE.Vector3(),
-  rotation: new THREE.Vector3(),
-  scale: 1,
-  matrix: undefined,
-  transparency: 'all',
-  verboseHttp: false,
+export function getDefaultVimSettings(): VimSettings {
+return {
+    position: new THREE.Vector3(),
+    rotation: new THREE.Vector3(),
+    scale: 1,
+    matrix: undefined,
+    transparency: 'all',
+    verboseHttp: false,
 
-  // progressive
-  fileType: undefined,
-  progressive: false,
-  progressiveInterval: 1000
+    // progressive
+    fileType: undefined,
+    progressive: false,
+    progressiveInterval: 1000
+  }
 }
 
 /**
  * Represents a partial configuration of settings for a vim object.
  */
-export type VimPartialSettings = Partial<WebglVimSettings>
+export type VimPartialSettings = Partial<VimSettings>
 
 /**
  * Wraps Vim options, converting values to related THREE.js types and providing default values.
  * @param {VimPartialSettings} [options] - Optional partial settings for the Vim object.
- * @returns {WebglVimSettings} The complete settings for the Vim object, including defaults.
+ * @returns {VimSettings} The complete settings for the Vim object, including defaults.
  */
-export function getFullSettings (options?: VimPartialSettings) {
+export function createVimSettings (options?: VimPartialSettings) {
   const merge = options
-    ? deepmerge(defaultConfig, options, undefined)
-    : defaultConfig
+    ? deepmerge(getDefaultVimSettings(), options, undefined)
+    : getDefaultVimSettings()
 
   merge.transparency = Transparency.isValid(merge.transparency)
     ? merge.transparency

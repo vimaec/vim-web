@@ -3,7 +3,7 @@
  */
 
 import * as Core from '../../core-viewers'
-import PointerMode = Core.Shared.PointerMode
+import PointerMode = Core.PointerMode
 import Viewer = Core.Webgl.Viewer
 
 /**

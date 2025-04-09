@@ -5,7 +5,7 @@
 import { Viewer } from '../../viewer';
 import * as THREE from 'three';
 import { SectionBoxHandles } from './sectionBoxHandles';
-import { Axis, SectionBoxHandle } from './sectionBoxHandle';
+import { AxisName, SectionBoxHandle } from './sectionBoxHandle';
 import { threeNDCFromVector2 } from '../../raycaster';
 
 const MIN_BOX_SIZE = 3;
@@ -247,7 +247,7 @@ export class BoxInputs {
    * @param amount - The numeric offset along that axis to add or subtract.
    * @returns A **new** `Box3` instance with updated min/max coordinates.
    */
-  private stretch(axis: Axis, sign: number, amount: number): THREE.Box3 {
+  private stretch(axis: AxisName, sign: number, amount: number): THREE.Box3 {
     const box = this._sharedBox.clone();
     const direction = sign > 0 ? 'max' : 'min';
     const opposite = sign > 0 ? 'min' : 'max';

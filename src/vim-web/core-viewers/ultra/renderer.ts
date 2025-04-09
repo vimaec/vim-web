@@ -1,6 +1,6 @@
 import { ISignal, SignalDispatcher } from "ste-signals";
 import * as THREE from "three";
-import { Validation } from "../../../utils";
+import { Validation } from "../../utils";
 import { ILogger } from "./logger";
 import { defaultSceneSettings, RpcSafeClient, SceneSettings } from "./rpcSafeClient";
 import { RGBA } from "./rpcTypes";

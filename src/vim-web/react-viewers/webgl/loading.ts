@@ -2,7 +2,7 @@
  * @module viw-webgl-react
  */
 
-import { Errors } from '..'
+import * as Errors from '../errors'
 import * as Core from '../../core-viewers'
 import { LoadRequest } from '../helpers/loadRequest'
 import { ModalRef } from '../panels/modal'

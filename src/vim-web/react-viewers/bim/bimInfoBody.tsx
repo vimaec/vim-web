@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import ReactTooltip from 'react-tooltip'
-import * as Icons from '../panels/icons'
+import * as Icons from '../icons'
 import * as BIM from './bimInfoData'
 import { createOpenState } from './openState'
 import { BimInfoPanelRef } from './bimInfoData'
