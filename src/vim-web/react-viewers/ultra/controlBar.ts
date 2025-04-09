@@ -1,5 +1,5 @@
 
-import * as Ultra from '../../core-viewers/ultra/index'
+import * as Core from '../../core-viewers/ultra'
 import { ControlBarCustomization } from '../controlbar/controlBar'
 import { CameraRef } from '../state/cameraState'
 import { controlBarCamera, controlBarSectionBox, controlBarSelection } from '../state/controlBarState'
@@ -10,7 +10,7 @@ export { buttonBlueStyle, buttonDefaultStyle } from '../controlbar/controlBarBut
 export { sectionBlueStyle, sectionDefaultStyle } from '../controlbar/controlBarSection'
 
 export function useUltraControlBar (
-  viewer: Ultra.Viewer,
+  viewer: Core.Viewer,
   section: SectionBoxRef,
   isolation: IsolationRef,
   camera: CameraRef,

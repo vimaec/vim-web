@@ -1,7 +1,7 @@
 import * as Errors from '../../errors/errors'
-import * as VIM from '../../..'
+import * as Core from '../../../core-viewers'
 
-export function getErrorMessage (state: VIM.UltraClientState) {
+export function getErrorMessage (state: Core.Ultra.ClientState) {
   if(state.status !== 'error') return undefined
 
   // Implement the code above as a switch
@@ -15,7 +15,7 @@ export function getErrorMessage (state: VIM.UltraClientState) {
   }
 }
 
-export function getRequestErrorMessage (serverUrl: string, source: VIM.UltraVimSource, error: VIM.UltraVimRequestErrorType ) {
+export function getRequestErrorMessage (serverUrl: string, source: Core.Ultra.VimSource, error: Core.Ultra.VimRequestErrorType ) {
   console.log(error)
   switch (error) {
     case 'loadingError':

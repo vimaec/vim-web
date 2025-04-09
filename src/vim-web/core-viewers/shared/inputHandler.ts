@@ -122,8 +122,8 @@ export class InputHandler extends BaseInputHandler {
     this.mouse.onButtonUp = adapter.mouseUp
     this.mouse.onDrag = (delta: THREE.Vector2, button: number) =>{
       if(button === 0){
-        if(this._pointerActive === 'orbit') adapter.orbitCamera(toRotation(delta, this.orbitSpeed))
-        if(this._pointerActive === 'look') adapter.rotateCamera(toRotation(delta, this.rotateSpeed))
+        if(this._pointerActive === PointerMode.ORBIT) adapter.orbitCamera(toRotation(delta, this.orbitSpeed))
+        if(this._pointerActive === PointerMode.LOOK) adapter.rotateCamera(toRotation(delta, this.rotateSpeed))
       } 
       if(button === 2) adapter.rotateCamera(toRotation(delta,1))
       if(button === 1) adapter.panCamera(delta)

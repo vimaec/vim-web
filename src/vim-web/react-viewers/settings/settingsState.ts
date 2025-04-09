@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import * as VIM from '../../core-viewers/webgl/index'
+import * as Core from '../../core-viewers'
 import { Settings, PartialSettings, defaultSettings, isTrue } from './settings'
 import deepmerge from 'deepmerge'
 import { saveSettingsToLocal } from './settingsStorage'
@@ -18,7 +18,7 @@ export type SettingsState = {
  * Returns a new state closure for settings.
  */
 export function useSettings (
-  viewer: VIM.Viewer,
+  viewer: Core.Webgl.Viewer,
   value: PartialSettings
 ): SettingsState {
   const merge = deepmerge(defaultSettings, value) as Settings
@@ -56,7 +56,7 @@ export function useSettings (
 /**
  * Apply given vim component settings to the given viewer.
  */
-export function applySettings (viewer: VIM.Viewer, settings: Settings) {
+export function applySettings (viewer: Core.Webgl.Viewer, settings: Settings) {
   // Show/Hide performance gizmo
   const performance = document.getElementsByClassName('vim-performance-div')[0]
   if (performance) {

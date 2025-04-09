@@ -2,17 +2,17 @@
  * @module viw-webgl-react
  */
 
-import { useEffect, useState, useMemo, useRef } from 'react'
-import * as VIM from '../../core-viewers/webgl/index'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import * as Core from '../../core-viewers'
 import { AugmentedElement, getElements } from '../helpers/element'
 
 export type ViewerState = {
-  vim: VIM.Vim
-  selection: VIM.Element3D[]
+  vim: Core.Webgl.Vim
+  selection: Core.Webgl.Element3D[]
   elements: AugmentedElement[]
 }
 
-export function useViewerState (viewer: VIM.Viewer) : ViewerState {
+export function useViewerState (viewer: Core.Webgl.Viewer) : ViewerState {
   const getVim = () => {
     return viewer.vims[0]
   }
@@ -20,8 +20,8 @@ export function useViewerState (viewer: VIM.Viewer) : ViewerState {
     return [...viewer.selection.getAll()].filter(o => o.type === 'WebglModelObject')
   }
 
-  const [vim, setVim] = useState<VIM.Vim>(getVim())
-  const [selection, setSelection] = useState<VIM.Element3D[]>(getSelection())
+  const [vim, setVim] = useState<Core.Webgl.Vim>(getVim())
+  const [selection, setSelection] = useState<Core.Webgl.Element3D[]>(getSelection())
   const [elements, setElements] = useState<AugmentedElement[] | undefined>([])
   const vimConnection = useRef<() =>void>()
 

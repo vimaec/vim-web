@@ -2,7 +2,7 @@
  * @module viw-webgl-react
  */
 
-import * as VIM from '../../core-viewers/webgl/index'
+import * as Core from '../../core-viewers'
 import * as BIM from 'vim-format'
 
 export type AugmentedElement = BIM.IElement & {
@@ -12,7 +12,7 @@ export type AugmentedElement = BIM.IElement & {
   levelName: string
   worksetName: string
 }
-export async function getElements (vim: VIM.Vim) {
+export async function getElements (vim: Core.Webgl.Vim) {
   if (!vim.bim) return []
   const [elements, bimDocument, category, levels, worksets] = await Promise.all(
     [

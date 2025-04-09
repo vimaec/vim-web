@@ -6,7 +6,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { createRoot } from 'react-dom/client'
 import ReactTooltip from 'react-tooltip'
 
-import * as VIM from '../../core-viewers/webgl/index'
+import * as Core from '../../core-viewers'
 import { AxesPanelMemo } from '../panels/axesPanel'
 import { ControlBar, ControlBarCustomization } from '../controlbar/controlBar'
 import { useControlBar } from '../state/controlBarState'
@@ -54,7 +54,7 @@ import { useWebglIsolation } from './isolation'
 export function createViewer (
   container?: Container | HTMLElement,
   componentSettings: PartialViewerSettings = {},
-  viewerSettings: VIM.PartialViewerSettings = {}
+  viewerSettings: Core.Webgl.PartialViewerSettings = {}
 ) : Promise<ViewerRef> {
   const promise = new DeferredPromise<ViewerRef>()
 
@@ -64,7 +64,7 @@ export function createViewer (
     : container ?? createContainer()
 
   // Create the viewer inside the container
-  const viewer = new VIM.Viewer(viewerSettings)
+  const viewer = new Core.Webgl.Viewer(viewerSettings)
   viewer.viewport.reparent(cmpContainer.gfx)
 
   // Create the React root
@@ -100,7 +100,7 @@ export function createViewer (
  */
 export function WebglViewer (props: {
   container: Container
-  viewer: VIM.Viewer
+  viewer: Core.Webgl.Viewer
   onMount: (component: ViewerRef) => void
   settings?: PartialViewerSettings
 }) {
@@ -151,7 +151,7 @@ export function WebglViewer (props: {
 
     props.onMount({
       container: props.container,
-      core: props.viewer,
+      coreViewer: props.viewer,
       loader: loader.current,
       isolation: isolationRef,
       camera,

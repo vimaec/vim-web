@@ -1,7 +1,7 @@
 /**
  * @module viw-webgl-react
  */
-import * as VIM from '../../core-viewers/webgl/index'
+import * as Core from '../../core-viewers'
 
 import { TreeItem } from 'react-complex-tree'
 import { MapTree, sort, toMapTree } from '../helpers/data'
@@ -30,7 +30,7 @@ export type VimTreeNode = TreeItem<AugmentedElement> & {
  * @returns
  */
 export function toTreeData (
-  vim: VIM.Vim,
+  vim: Core.Webgl.Vim,
   elements: AugmentedElement[],
   grouping: Grouping
 ) {
@@ -68,7 +68,7 @@ export class BimTreeData {
     this.flatten(map)
   }
 
-  updateVisibility (vim: VIM.Vim) {
+  updateVisibility (vim: Core.Webgl.Vim) {
     const set = new Set<VimTreeNode>()
     const updateOne = (node: VimTreeNode): NodeVisibility => {
       if (set.has(node)) {

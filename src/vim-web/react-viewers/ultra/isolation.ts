@@ -1,6 +1,11 @@
 import { IsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
-import { Element3D, Viewer, Vim, NodeState } from "../../core-viewers/ultra";
+import * as Core from "../../core-viewers";
 import { useStateRef } from "../helpers/reactUtils";
+
+import NodeState = Core.Ultra.NodeState
+import Viewer = Core.Ultra.Viewer
+import Vim = Core.Ultra.Vim
+import Element3D = Core.Ultra.Element3D
 
 export function useUltraIsolation(viewer: Viewer){
   const adapter = createAdapter(viewer)

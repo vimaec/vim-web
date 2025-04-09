@@ -3,7 +3,7 @@
  */
 
 import React from 'react'
-import * as VIM from '../../core-viewers/webgl/index'
+import * as Core from '../../core-viewers'
 import { UserBoolean, Settings } from './settings'
 import { SettingsState } from './settingsState'
 import { THREE } from '../..'
@@ -16,7 +16,7 @@ import { THREE } from '../..'
  * @returns
  */
 export function MenuSettings (props: {
-  viewer: VIM.Viewer
+  viewer: Core.Webgl.Viewer
   settings: SettingsState
   visible: boolean
 }) {

@@ -2,9 +2,9 @@
  * @module viw-webgl-react
  */
 
-import * as VIM from '../../'
-import PointerMode = VIM.Core.Shared.PointerMode
-import Viewer = VIM.Core.Webgl.Viewer
+import * as Core from '../../core-viewers'
+import PointerMode = Core.Shared.PointerMode
+import Viewer = Core.Webgl.Viewer
 
 /**
  * Css classes for custom cursors.
@@ -24,15 +24,15 @@ export type Cursor =
  */
 export function pointerToCursor (pointer: PointerMode): Cursor {
   switch (pointer) {
-    case 'orbit':
+    case PointerMode.ORBIT:
       return 'cursor-orbit'
-    case 'look':
+    case PointerMode.LOOK:
       return 'cursor-look'
-    case 'pan':
+    case PointerMode.PAN:
       return 'cursor-pan'
-    case 'zoom':
+    case PointerMode.ZOOM:
       return 'cursor-zoom'
-    case 'rect':
+    case PointerMode.RECT:
       return 'cursor-rect'
     default:
       return 'cursor-regular'
