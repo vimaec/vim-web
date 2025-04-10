@@ -214,14 +214,14 @@ export function ContextMenu (props: {
       label: 'Hide Object',
       keyboard: 'V',
       action: onSelectionHideBtn,
-      enabled: hasSelection && !props.isolation.adapter.current.isSelectionHidden()
+      enabled: hasSelection && !props.isolation.adapter.current.hasHiddenSelection()
     },
     {
       id: contextMenuElementIds.showObject,
       label: 'Show Object',
       keyboard: 'V',
       action: onSelectionShowBtn,
-      enabled: hasSelection && props.isolation.adapter.current.isSelectionHidden()
+      enabled: hasSelection && props.isolation.adapter.current.hasHiddenSelection()
     },
     {
       id: contextMenuElementIds.showAll,

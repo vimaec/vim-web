@@ -36,7 +36,7 @@ import { useBimInfo } from '../bim/bimInfoData'
 import { whenTrue } from '../helpers/utils'
 import { DeferredPromise } from '../helpers/deferredPromise'
 import { ComponentLoader } from './loading'
-import { Modal, useModal } from '../panels/modal'
+import { Modal, ModalRef } from '../panels/modal'
 import { SectionBoxPanel } from '../panels/sectionBoxPanel'
 import { useWebglSectionBox } from './sectionBox'
 import { useWebglCamera } from './camera'
@@ -105,7 +105,7 @@ export function Viewer (props: {
   settings?: PartialSettings
 }) {
   const settings = useSettings(props.viewer, props.settings ?? {})
-  const modal = useModal(settings.value.capacity.canFollowUrl)
+  const modal = useRef<ModalRef>(null)
 
   const sectionBoxRef = useWebglSectionBox(props.viewer)
   const camera = useWebglCamera(props.viewer, sectionBoxRef)
@@ -121,17 +121,18 @@ export function Viewer (props: {
   const [contextMenu, setcontextMenu] = useState<ContextMenuCustomization>()
   const [controlBarCustom, setControlBarCustom] = useState<ControlBarCustomization>()
   const bimInfoRef = useBimInfo()
+  console.log('bimInfoRef', bimInfoRef)
 
   const viewerState = useViewerState(props.viewer)
   const treeRef = useRef<TreeActionRef>()
   const performanceRef = useRef<HTMLDivElement>(null)
   const isolationRef = useWebglIsolation(props.viewer)
 
-  const controlBar = useControlBar(props.viewer, camera, modal, side, cursor, settings.value, sectionBoxRef, isolationRef, controlBarCustom)
+  const controlBar = useControlBar(props.viewer, camera, modal.current, side, cursor, settings.value, sectionBoxRef, isolationRef, controlBarCustom)
 
   useEffect(() => {
-    side.setHasBim(viewerState.vim?.bim !== undefined)
-  }, [viewerState.vim?.bim])
+    side.setHasBim(viewerState.vim.get()?.bim !== undefined)
+  })
 
   // On first render
   useEffect(() => {
@@ -151,7 +152,7 @@ export function Viewer (props: {
 
     props.onMount({
       container: props.container,
-      coreViewer: props.viewer,
+      core: props.viewer,
       loader: loader.current,
       isolation: isolationRef,
       camera,
@@ -165,7 +166,7 @@ export function Viewer (props: {
       controlBar: {
         customize: (v) => setControlBarCustom(() => v)
       },
-      modal,
+      get modal() { return modal.current },
       bimInfo: bimInfoRef,
       dispose: () => {}
     })
@@ -199,7 +200,7 @@ export function Viewer (props: {
   return (
     <>
       <div className="vim-performance-div" ref={performanceRef}></div>
-      <Modal state={modal} />
+      <Modal ref={modal} canFollowLinks={settings.value.capacity.canFollowUrl} />
       <SidePanelMemo
         container={props.container}
         viewer={props.viewer}
@@ -227,9 +228,9 @@ export function Viewer (props: {
       <VimContextMenuMemo
         viewer={props.viewer}
         camera={camera}
-        modal={modal}
+        modal={modal.current}
         isolation={isolationRef}
-        selection={viewerState.selection}
+        selection={viewerState.selection.get()}
         customization={contextMenu}
         treeRef={treeRef}
       />

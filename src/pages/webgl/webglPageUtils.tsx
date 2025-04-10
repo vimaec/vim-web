@@ -5,6 +5,7 @@ globalThis.THREE = VIM.THREE
 
 import ViewerRef = VIM.React.Webgl.ViewerRef
 import Webgl = VIM.React.Webgl
+import Vim = VIM.Core.Webgl.Vim
 
 /**
  * Custom hook to create a WebGL viewer and attach it to a div element.
@@ -31,7 +32,7 @@ export function useWebglViewer (div: RefObject<HTMLDivElement>, onReady?: (viewe
  * @param onReady - Callback function to be called when the viewer is ready and the model is loaded
  * @returns {void}
  */
-export function useWebglViewerWithModel (div: RefObject<HTMLDivElement>, model: string, onReady?: (viewer: ViewerRef) => void) {
+export function useWebglViewerWithModel (div: RefObject<HTMLDivElement>, model: string, onReady?: (viewer: ViewerRef, vim : Vim) => void) {
   useWebglViewer(div, async (viewer) => {
     const request = viewer.loader.request(
       { url: model }
@@ -40,8 +41,10 @@ export function useWebglViewerWithModel (div: RefObject<HTMLDivElement>, model: 
     if (result.isSuccess()) {
       viewer.loader.add(result.result)
       viewer.camera.frameScene.call()
+      onReady?.(viewer, result.result)
+      return
     }
-    onReady?.(viewer)
+    throw new Error('Failed to load model')
   })
 }
 
@@ -50,7 +53,7 @@ export function useWebglViewerWithModel (div: RefObject<HTMLDivElement>, model: 
  * @param div - The div element to attach the viewer to
  * @param onReady - Callback function to be called when the viewer is ready
  */
-export function useWebglViewerWithResidence(div: RefObject<HTMLDivElement>, onReady?: (viewer: ViewerRef) => void) {
+export function useWebglViewerWithResidence(div: RefObject<HTMLDivElement>, onReady?: (viewer: ViewerRef, vim : Vim) => void) {
   useWebglViewerWithModel(div, DevUrls.residence, onReady)
 }
 

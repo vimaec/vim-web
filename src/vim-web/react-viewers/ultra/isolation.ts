@@ -31,8 +31,8 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
     onSelectionChanged: viewer.selection.onSelectionChanged,
     computeVisibility: () => getVisibilityState(viewer),
     hasSelection: () => viewer.selection.any(),
-    isSelectionVisible: () => checkSelectionState(viewer, s => s === 'visible' || s === 'highlighted'),
-    isSelectionHidden: () => checkSelectionState(viewer, s => s === 'hidden' || s === 'ghosted'),
+    hasVisibleSelection: () => checkSelectionState(viewer, s => s === 'visible' || s === 'highlighted'),
+    hasHiddenSelection: () => checkSelectionState(viewer, s => s === 'hidden' || s === 'ghosted'),
 
     clearSelection: () => viewer.selection.clear(),
 

@@ -79,8 +79,7 @@ export function useStateRef<T>(initialValue: T | (() => T)) {
    * @param value - The new state value.
    */
   const set = (value: T) => {
-    const finalValue = validate.current(value) ?? ref.current;
-    if (finalValue === undefined) return;
+    const finalValue = validate.current(value);
     if (finalValue === ref.current) return;
 
     ref.current = finalValue;
@@ -105,14 +104,22 @@ export function useStateRef<T>(initialValue: T | (() => T)) {
 
     /**
      * Registers a callback to be invoked when the state changes.
+     * Accepts a sync function, a cleanup function, or a function returning a Promise<void> (which will be ignored).
+     * 
      * @param on - The callback function that receives the new state value.
      */
-    useOnChange(on: (value: T) => void | (() => void)) {
+    useOnChange(on: (value: T) => void | (() => void) | Promise<void>) {
       useEffect(() => {
-        return event.current.subscribe(on);
+        return event.current.subscribe((value) => {
+          const result = on(value);
+          // If it's a promise, we just call it and ignore resolution/rejection
+          if (result instanceof Promise) {
+            result.catch(console.error); // Optional: log errors
+          }
+        });
       }, []);
     },
-
+    
     /**
      * Memoizes a value based on the current state and additional dependencies.
      * @param on - A function that computes a value based on the current state.

@@ -1,9 +1,9 @@
 import * as Utils from '../../utils';
-import * as Shared from '../shared/vim';
+import type { IVim } from '../shared/vim';
+import type { ILogger } from './logger';
 import { ColorManager } from './colorManager';
 import { Element3D } from './element3d';
 import { LoadRequest } from './loadRequest';
-import { ILogger } from './logger';
 import { NodeState, StateSynchronizer } from './nodeState';
 import { Renderer } from './renderer';
 import { MaterialHandles } from './rpcClient';
@@ -14,7 +14,7 @@ import * as THREE from 'three';
 import { RGBA32 } from './rpcTypes';
 
 
-export class Vim implements Shared.IVim<Element3D> {
+export class Vim implements IVim<Element3D> {
   readonly source: VimSource;
   private _handle: number = -1;
   private _request: LoadRequest | undefined;

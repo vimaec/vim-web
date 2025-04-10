@@ -5,33 +5,55 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as Core from '../../core-viewers'
 import { AugmentedElement, getElements } from '../helpers/element'
+import { StateRef, useStateRef } from '../helpers'
 
 export type ViewerState = {
-  vim: Core.Webgl.Vim
-  selection: Core.Webgl.Element3D[]
-  elements: AugmentedElement[]
+  vim: StateRef<Core.Webgl.Vim>
+  selection: StateRef<Core.Webgl.Element3D[]>
+  elements: StateRef<AugmentedElement[]>
+  filter: StateRef<string>
 }
 
 export function useViewerState (viewer: Core.Webgl.Viewer) : ViewerState {
   const getVim = () => {
-    return viewer.vims[0]
-  }
-  const getSelection = () => {
-    return [...viewer.selection.getAll()].filter(o => o.type === 'WebglModelObject')
+    const v = viewer.vims?.[0]
+    console.log('getVim', v)
+    return v
   }
 
-  const [vim, setVim] = useState<Core.Webgl.Vim>(getVim())
-  const [selection, setSelection] = useState<Core.Webgl.Element3D[]>(getSelection())
-  const [elements, setElements] = useState<AugmentedElement[] | undefined>([])
-  const vimConnection = useRef<() =>void>()
+  const getSelection = () => {
+    return [...viewer.selection.getAll()].filter(o => o.type === 'Element3D')
+  }
+
+  const vim = useStateRef<Core.Webgl.Vim>(getVim())
+  const selection = useStateRef<Core.Webgl.Element3D[]>(getSelection())
+  const elements = useStateRef<AugmentedElement[] | undefined>([])
+  const filter = useStateRef<string>('')
+
+  const updateElements = (element: AugmentedElement[]) =>{
+    const filtered = filterElements(element, filter.get())
+    elements.set(filtered)
+  }
+
+  vim.useOnChange(async (v) => {
+    
+    const elements = await getElements(v)
+    console.log('VIM CHANGED', elements)
+    updateElements(elements)
+  })
+
+  filter.useOnChange((f) => {
+    updateElements(elements.get())
+  })
 
   useEffect(() => {
     // register to viewer state changes
-    const subLoad = viewer.onVimLoaded.subscribe(() => setVim(getVim()))
+    const subLoad = viewer.onVimLoaded.subscribe(() => {
+      console.log('VIM LOADED', viewer.vims)
+      vim.set(getVim())
+    })
     const subSelect = viewer.selection.onSelectionChanged.subscribe(() => {
-      setVim(getVim())
-      // Only architectural objects are supported
-      setSelection(getSelection())
+      selection.set(getSelection())
     })
 
     // Clean up
@@ -41,21 +63,26 @@ export function useViewerState (viewer: Core.Webgl.Viewer) : ViewerState {
     }
   }, [])
 
-  useEffect(() => {
-    vimConnection.current?.()
+  return {
+    vim,
+    selection,
+    elements,
+    filter
+  }
+}
 
-    if (vim) {
-      vimConnection.current = vim.onLoadingUpdate.subscribe(() => {
-        getElements(vim).then((elements) => setElements(elements))
-      })
-      getElements(vim).then((elements) => setElements(elements))
-    } else {
-      setElements([])
-    }
-  }, [vim])
-
-  return useMemo(() => {
-    const result = { vim, selection, elements } as ViewerState
-    return result
-  }, [vim, selection, elements])
+function filterElements (
+  elements: AugmentedElement[],
+  filter: string
+) {
+  const filterLower = filter.toLocaleLowerCase()
+  const filtered = elements.filter(
+    (e) =>
+      (e.id?.toString() ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.name ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.category?.name ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.familyName ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.type ?? '').toLocaleLowerCase().includes(filterLower)
+  )
+  return filtered
 }

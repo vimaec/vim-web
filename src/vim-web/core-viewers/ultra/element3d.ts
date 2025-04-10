@@ -1,9 +1,9 @@
-import * as Shared from "../shared";
-import { Box3, RGBA32 } from "./rpcTypes";
+import { IVimObject } from "../shared/vim";
 import { NodeState } from "./nodeState";
+import { Box3, RGBA32 } from "./rpcTypes";
 import { Vim } from "./vim";
 
-export class Element3D implements Shared.IVimObject {
+export class Element3D implements IVimObject {
   readonly vim: Vim;
   get vimHandle() {
     return this.vim.handle;

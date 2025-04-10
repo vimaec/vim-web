@@ -1,10 +1,10 @@
-import { ISimpleEvent } from 'ste-simple-events'
-import * as Shared from '../shared'
+import type { ISimpleEvent } from 'ste-simple-events'
+import type {InputHandler} from '../shared'
 import { Camera, ICamera } from './camera'
 import { ColorManager } from './colorManager'
 import { Decoder, IDecoder } from './decoder'
 import { DecoderWithWorker } from './decoderWithWorker'
-import { ultraInputAdapter } from './inputsAdapter'
+import { ultraInputAdapter } from './inputAdapter'
 import { ILoadRequest, LoadRequest } from './loadRequest'
 import { defaultLogger, ILogger } from './logger'
 import { IUltraRaycaster, Raycaster } from './raycaster'
@@ -27,7 +27,7 @@ export const INVALID_HANDLE = 0xffffffff
 export class Viewer {
   private readonly _decoder: Decoder | DecoderWithWorker
   private readonly _socketClient: SocketClient
-  private readonly _input: Shared.InputHandler
+  private readonly _input: InputHandler
   private readonly _logger: ILogger
   private readonly _canvas: HTMLCanvasElement
   private readonly _renderer : Renderer

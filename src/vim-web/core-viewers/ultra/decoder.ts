@@ -5,7 +5,7 @@ import { ILogger } from './logger'
 /**
  * Configuration for the video decoder.
  */
-export const videoDecoderConfig: globalThis.VideoDecoderConfig = {
+const videoDecoderConfig: globalThis.VideoDecoderConfig = {
   // codec: 'avc1.420014', // Baseline
   // codec: 'avc1.4D0014', // Main
   codec: 'avc1.580014', // Extended
@@ -13,7 +13,7 @@ export const videoDecoderConfig: globalThis.VideoDecoderConfig = {
   codedHeight: 720
 }
 
-export enum VideoFrameType {
+enum VideoFrameType {
   // eslint-disable-next-line no-unused-vars
   KeyFrame = 0,
   // eslint-disable-next-line no-unused-vars

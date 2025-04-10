@@ -10,7 +10,10 @@ import { Camera } from './camera/camera'
 import { Renderer } from './rendering/renderer'
 import { Marker } from './gizmos/markers/gizmoMarker'
 import { GizmoMarkers } from './gizmos/markers/gizmoMarkers'
-import * as Shared from '../../shared'
+import type {
+  IRaycaster as IRaycasterBase,
+  IRaycastResult as IRaycastResultBase,
+} from '../../shared'
 import { Validation } from '../../../utils'
 
 /**
@@ -18,8 +21,8 @@ import { Validation } from '../../../utils'
  */
 export type ThreeIntersectionList = THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>>[]
 export type RaycastableObject = Element3D | Marker
-export type IRaycastResult = Shared.IRaycastResult<RaycastableObject>
-export type IRaycaster = Shared.IRaycaster<RaycastableObject>
+export type IRaycastResult = IRaycastResultBase<RaycastableObject>
+export type IRaycaster = IRaycasterBase<RaycastableObject>
 export enum Layers {
   Default = 0,
   NoRaycast = 1,

@@ -1,12 +1,12 @@
 
 
 import * as Core from '../../core-viewers' 
-import React, { useEffect, useState } from 'react'
+import React, {useRef, RefObject, useEffect, useState } from 'react'
 import { Container, createContainer } from '../container'
 import { createRoot } from 'react-dom/client'
 import { DeferredPromise } from '../helpers/deferredPromise'
 import { Overlay } from '../panels/overlay'
-import { Modal, ModalRef, useModal } from '../panels/modal'
+import { Modal, ModalRef } from '../panels/modal'
 import { getRequestErrorMessage } from './errors/ultraErrors'
 import { updateModal, updateProgress as modalProgress } from './modal'
 import { ControlBar, ControlBarCustomization } from '../controlbar/controlBar'
@@ -75,7 +75,7 @@ export function Viewer (props: {
   viewer: Core.Ultra.Viewer
   onMount: (viewer: ViewerRef) => void}) {
 
-  const modal = useModal(true)
+  const modal = useRef<ModalRef>(null)
   const sectionBox = useUltraSectionBox(props.viewer)
   const camera = useUltraCamera(props.viewer, sectionBox)
 
@@ -94,7 +94,7 @@ export function Viewer (props: {
     } )
     props.onMount({
       viewer: props.viewer,
-      modal,
+      get modal() { return modal.current },
       isolation,
       sectionBox,
       camera,
@@ -120,7 +120,7 @@ export function Viewer (props: {
   </>
   }}/>
   
-  <Modal state={modal}/>
+  <Modal ref={modal} canFollowLinks= {true}/>
   <ReactTooltip
     multiline={true}
     arrowColor="transparent"
@@ -131,22 +131,22 @@ export function Viewer (props: {
   </>
 }
 
-function patchLoad(viewer: Core.Ultra.Viewer, modal: ModalRef) {
+function patchLoad(viewer: Core.Ultra.Viewer, modal: RefObject<ModalRef>) {
   return function load (source: Core.Ultra.VimSource): Core.Ultra.ILoadRequest {
     const request = viewer.loadVim(source)
 
     // We don't want to block the main thread to get progress updates
-    void modalProgress(request, modal)
+    void modalProgress(request, modal.current)
 
     // We decorate the request to display manage modal messages
     void request.getResult().then(
       result => {
         if (result.isError) {
-          modal.message(getRequestErrorMessage(viewer.serverUrl, source, result.error))
+          modal.current?.message(getRequestErrorMessage(viewer.serverUrl, source, result.error))
           return
         }
         if (result.isSuccess) {
-          modal.loading(undefined)
+          modal.current?.loading(undefined)
         }
       }
     )

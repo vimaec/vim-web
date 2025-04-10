@@ -69,3 +69,19 @@ async function getFamilyTypeNameMap (document: BIM.VimDocument) {
     })
   )
 }
+
+export function filterElements (
+  elements: AugmentedElement[],
+  filter: string
+) {
+  const filterLower = filter.toLocaleLowerCase()
+  const filtered = elements.filter(
+    (e) =>
+      (e.id?.toString() ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.name ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.category?.name ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.familyName ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.type ?? '').toLocaleLowerCase().includes(filterLower)
+  )
+  return filtered
+}

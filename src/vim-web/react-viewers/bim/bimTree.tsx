@@ -101,7 +101,7 @@ export function BimTree (props: {
 
   useEffect(() => {
     const unsubscribe = props.viewer.renderer.onSceneUpdated.subscribe(() => {
-      props.treeData?.updateVisibility(props.viewer.vims[0])
+      props.treeData?.updateVisibility()
       setVersion((v) => v + 1)
     })
 
@@ -269,7 +269,7 @@ function toggleVisibility (
   const objs = tree
     .getLeafs(index)
     .map((n) =>
-      viewer.vims[0]?.getObjectFromElementIndex(tree.nodes[n]?.data.index)
+      tree.vim.getObjectFromElementIndex(tree.nodes[n]?.data.index)
     )
 
   const visibility = tree.nodes[index].visible
@@ -291,7 +291,7 @@ function updateViewerSelection (
     const item = tree.nodes[n]
     const element = item.data.index
 
-    const obj = viewer.vims[0].getObjectFromElementIndex(element)
+    const obj = tree.vim.getObjectFromElementIndex(element)
     objects.push(obj)
   })
   switch (operation) {
