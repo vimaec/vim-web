@@ -1,16 +1,16 @@
-import * as Shared from "../../shared"
+import {InputHandler, type IInputAdapter} from "../../shared/inputHandler"
 import { Viewer } from "./viewer"
 import * as THREE from 'three'
 
 export function createInputHandler(viewer: Viewer) {
-  return new Shared.InputHandler(
+  return new InputHandler(
     viewer.viewport.canvas,
     createAdapter(viewer),
     viewer.settings.camera.controls
   )
 }
 
-function createAdapter(viewer: Viewer ) : Shared.IInputAdapter {
+function createAdapter(viewer: Viewer ) : IInputAdapter {
   return {
     init: () => {},
     orbitCamera: (value: THREE.Vector2) => {

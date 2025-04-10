@@ -34,7 +34,9 @@ export function toTreeData (
   elements: AugmentedElement[],
   grouping: Grouping
 ) {
+  if(!vim) return
   if (!elements?.length) return
+  console.log('toTreeData', vim, elements)
 
   const main: (e: AugmentedElement) => string =
     grouping === 'Family'
@@ -52,23 +54,24 @@ export function toTreeData (
   ])
   sort(tree)
 
-  const result = new BimTreeData(tree)
-  result.updateVisibility(vim)
+  const result = new BimTreeData(vim, tree)
+  result.updateVisibility()
   return result
 }
 
 export class BimTreeData {
+  vim : Core.Webgl.Vim
   nodes: Record<number, VimTreeNode>
   elementToNode: Map<number, number>
 
-  constructor (map: MapTree<string, AugmentedElement>) {
+  constructor (vim: Core.Webgl.Vim, map: MapTree<string, AugmentedElement>) {
+    this.vim = vim
     this.nodes = {}
     this.elementToNode = new Map<number, number>()
-
     this.flatten(map)
   }
 
-  updateVisibility (vim: Core.Webgl.Vim) {
+  updateVisibility () {
     const set = new Set<VimTreeNode>()
     const updateOne = (node: VimTreeNode): NodeVisibility => {
       if (set.has(node)) {
@@ -90,7 +93,7 @@ export class BimTreeData {
             : 'vim-undefined'
         return node.visible
       } else {
-        const obj = vim.getObjectFromElementIndex(node.data?.index)
+        const obj = this.vim.getObjectFromElementIndex(node.data?.index)
         node.visible = obj?.visible ? 'vim-visible' : 'vim-hidden'
         return node.visible
       }

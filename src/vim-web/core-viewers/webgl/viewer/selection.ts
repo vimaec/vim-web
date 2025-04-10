@@ -4,16 +4,16 @@
 
 import { Marker } from './gizmos/markers/gizmoMarker'
 import { Element3D } from '../loader/element3d'
-import * as Shared from '../../shared'
+import {Selection, type ISelectionAdapter} from '../../shared/selection'
 
 export type Selectable = Element3D | Marker
-export type ISelection = Shared.Selection<Selectable>
+export type ISelection = Selection<Selectable>
 
 export function createSelection() {
-  return new Shared.Selection<Selectable>(new SelectionAdapter())
+  return new Selection<Selectable>(new SelectionAdapter())
 } 
 
-class SelectionAdapter implements Shared.ISelectionAdapter<Selectable>{
+class SelectionAdapter implements ISelectionAdapter<Selectable>{
   outline(object: Selectable, state: boolean): void {
     object.outline = state
   }

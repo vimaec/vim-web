@@ -13,8 +13,8 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
     onSelectionChanged: viewer.selection.onSelectionChanged,
     computeVisibility: () => getVisibilityState(viewer),
     hasSelection: () => viewer.selection.any(),
-    isSelectionVisible: () => viewer.selection.any() && viewer.selection.getAll().every(o => o.visible),
-    isSelectionHidden: () => viewer.selection.any() && viewer.selection.getAll().every(o => !o.visible),
+    hasVisibleSelection: () => viewer.selection.any() && viewer.selection.getAll().every(o => o.visible),
+    hasHiddenSelection: () => viewer.selection.any() && viewer.selection.getAll().every(o => !o.visible),
 
     clearSelection: () => viewer.selection.clear(),
 
@@ -75,7 +75,7 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
 function updateAllVisibility(viewer: Core.Webgl.Viewer, predicate: (object: Core.Webgl.Element3D) => boolean){
  for(let v of viewer.vims){
     for(let o of v.getAllObjects()){
-      if(o.type === "WebglModelObject"){
+      if(o.type === 'Element3D'){
         o.visible = predicate(o)
       }
     }
@@ -90,7 +90,7 @@ function getVisibilityState(viewer: Core.Webgl.Viewer): VisibilityStatus {
   
   for (let v of viewer.vims) {
     for (let o of v.getAllObjects()) {
-      if (o.type === "WebglModelObject") {
+      if (o.type === "Element3D") {
         // Check for all and none states
         all = all && o.visible;
         none = none && !o.visible;

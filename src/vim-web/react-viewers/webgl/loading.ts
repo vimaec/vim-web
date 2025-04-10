@@ -34,9 +34,9 @@ export type LoadingError = {
  */
 export class ComponentLoader {
   private _viewer : Core.Webgl.Viewer
-  private _modal: ModalRef
+  private _modal: React.RefObject<ModalRef>
 
-  constructor (viewer : Core.Webgl.Viewer, modal: ModalRef) {
+  constructor (viewer : Core.Webgl.Viewer, modal: React.RefObject<ModalRef>) {
     this._viewer = viewer
     this._modal = modal
   }
@@ -45,7 +45,7 @@ export class ComponentLoader {
    * Event emitter for progress updates.
    */
   onProgress (p: Core.Webgl.IProgressLogs) {
-    this._modal.loading({
+    this._modal.current?.loading({
       message: 'Loading in WebGL Mode',
       progress: p.loaded,
       mode: 'bytes'
@@ -56,14 +56,14 @@ export class ComponentLoader {
      * Event emitter for completion notifications.
    */
   onDone () {
-    this._modal.loading(undefined)
+    this._modal.current?.loading(undefined)
   }
 
   /**
    * Event emitter for error notifications.
    */
   onError (e: LoadingError) {
-    this._modal.message(Errors.serverFileDownloadingError(e.url))
+    this._modal.current?.message(Errors.serverFileDownloadingError(e.url))
   }
 
   /**

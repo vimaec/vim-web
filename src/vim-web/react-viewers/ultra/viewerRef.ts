@@ -1,3 +1,4 @@
+import { RefObject } from 'react';
 import * as Core from '../../core-viewers/ultra';
 import { ModalRef } from '../panels/modal';
 import { CameraRef } from '../state/cameraState';

@@ -20,7 +20,6 @@ export function BimSearch (props: {
   setFilter: (s: string) => void
   count: number
 }) {
-  console.log('bim search', props.filter)
   const [text, setText] = useState('')
   const changeTimeout = useRef<ReturnType<typeof setTimeout>>()
 

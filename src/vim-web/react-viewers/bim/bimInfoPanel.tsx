@@ -17,7 +17,7 @@ export function BimInfoPanel (props : {
     bimInfoRef: BimInfoPanelRef
   }
 ) {
-  const target = props.object?.type === 'WebglModelObject' ? props.object : undefined
+  const target = props.object?.type === 'Element3D' ? props.object : undefined
   useEffect(() => {
     ReactTooltip.rebuild()
   })
@@ -33,6 +33,7 @@ export function BimInfoPanel (props : {
       data = await props.bimInfoRef.onData(data, target ?? props.vim)
       setData(data)
     }
+    
     // UseEffect doesn't accept async functions so we need to wrap it
     update()
   }

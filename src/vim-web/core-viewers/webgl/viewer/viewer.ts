@@ -16,7 +16,7 @@ import { Viewport } from './viewport'
 
 // loader
 import { ISignal, SignalDispatcher } from 'ste-signals'
-import * as Shared from '../../shared'
+import type {InputHandler} from '../../shared'
 import { Materials } from '../loader/materials/materials'
 import { Vim } from '../loader/vim'
 import { createInputHandler } from './inputsAdapter'
@@ -50,7 +50,7 @@ export class Viewer {
   /**
    * The interface for manipulating default viewer inputs.
    */
-  readonly inputs: Shared.InputHandler
+  readonly inputs: InputHandler
 
   /**
    * The interface for performing raycasting into the scene to find objects.

@@ -13,9 +13,6 @@ import { WebglColorAttribute } from './colorAttribute'
 import { Submesh } from './mesh'
 import { IVimObject } from '../../shared/vim'
 
-
-
-
 /**
  * High level api to interact with the loaded vim geometry and data.
  */
@@ -34,7 +31,7 @@ export class Element3D implements IVimObject {
   /**
    * Indicate whether this object is architectural or markup.
    */
-  public readonly type = 'WebglModelObject'
+  public readonly type = 'Element3D'
 
   /**
    * The vim object from which this object came from.
@@ -80,6 +77,7 @@ export class Element3D implements IVimObject {
 
   set outline (value: boolean) {
     if (this._outlineAttribute.apply(value)) {
+      this.renderer.notifySceneUpdate()
       if (value) this.renderer.addOutline()
       else this.renderer.removeOutline
     }
@@ -94,7 +92,7 @@ export class Element3D implements IVimObject {
 
   set focused (value: boolean) {
     if (this._focusedAttribute.apply(value)) {
-      this.renderer.needsUpdate = true
+      this.renderer.notifySceneUpdate()
     }
   }
 
@@ -107,8 +105,7 @@ export class Element3D implements IVimObject {
 
   set visible (value: boolean) {
     if (this._visibleAttribute.apply(value)) {
-
-      this.renderer.needsUpdate = true
+      this.renderer.notifySceneUpdate()
     }
 
     // Show all involved meshes
@@ -130,9 +127,9 @@ export class Element3D implements IVimObject {
 
   set color (color: THREE.Color | undefined) {
     this._color = color
-    this.renderer.needsUpdate = true
     this._coloredAttribute.apply(this._color !== undefined)
     this._colorAttribute.apply(this._color)
+    this.renderer.notifySceneUpdate()
   }
 
   private get renderer(){

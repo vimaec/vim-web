@@ -5,6 +5,7 @@ import { WebglInvalidFile } from './02_invalidFile'
 import { WebglZippedFile } from './03_zippedFile'
 import { WebglIframe } from './04_iframe'
 import { WebglMarkers } from './05_markers'
+import { WebglUnload } from './06_unload'
 
 
 export const gitRoot = 'https://github.com/vimaec/vim-web/tree/main/src/pages/webgl'
@@ -16,4 +17,5 @@ export const webglPages = [
   { path: '/webgl/zippedFile', page: gitRoot+'/03_zippedFile', component: <WebglZippedFile /> },
   { path: '/webgl/iframe', page: gitRoot+'/04_iframe', component: <WebglIframe /> },
   { path: '/webgl/markers', page: gitRoot+'/05_markers', component: <WebglMarkers /> },
+  { path: '/webgl/unload', page: gitRoot+'/06_unload', component: <WebglUnload /> },
 ]

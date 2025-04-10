@@ -86,7 +86,7 @@ export type ViewerRef = {
   /**
    * Vim WebGL viewer around which the WebGL viewer is built.
    */
-  coreViewer: Core.Webgl.Viewer
+  core: Core.Webgl.Viewer
 
   /**
    * Vim WebGL loader to download VIMs.

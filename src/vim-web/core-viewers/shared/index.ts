@@ -1,8 +1,12 @@
-export * from './baseInputHandler'
+// Full export
 export * from './inputHandler'
-export * from './keyboardHandler'
-export * from './mouseHandler'
-export * from './raycaster'
-export * from './selection'
-export * from './touchHandler'
-export * from './vim'
+
+// Type export
+export type * from './baseInputHandler'
+export {PointerMode} from './inputHandler'
+export type * from './keyboardHandler'
+export type * from './mouseHandler'
+export type * from './raycaster'
+export type * from './selection'
+export type * from './touchHandler'
+export type * from './vim'

@@ -1,17 +1,17 @@
 import * as THREE from "three";
 import { Validation } from "../../utils";
-import * as Shared from "../shared";
+import type {IRaycastResult, IRaycaster} from "../shared/raycaster";
 import { Element3D } from "./element3d";
 import { RpcSafeClient } from "./rpcSafeClient";
 import { IReadonlyVimCollection } from "./vimCollection";
 
-export type IUltraRaycastResult = Shared.IRaycastResult<Element3D>;
-export type IUltraRaycaster = Shared.IRaycaster<Element3D>;
+export type IUltraRaycastResult = IRaycastResult<Element3D>;
+export type IUltraRaycaster = IRaycaster<Element3D>;
 
 /**
  * Represents the result of a hit test operation.
  */
-export class UltraRaycastResult implements Shared.IRaycastResult<Element3D> {
+export class UltraRaycastResult implements IRaycastResult<Element3D> {
 
   /** The model Object hit */
   object: Element3D
@@ -37,7 +37,7 @@ export class UltraRaycastResult implements Shared.IRaycastResult<Element3D> {
  * Handles raycasting operations in the Ultra system, enabling picking and
  * interaction with 3D objects in the scene.
  */
-export class Raycaster implements Shared.IRaycaster<Element3D> {
+export class Raycaster implements IRaycaster<Element3D> {
   private _rpc: RpcSafeClient;
   private _vims: IReadonlyVimCollection;
 

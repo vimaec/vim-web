@@ -22,18 +22,17 @@ async function changeState (ultra: ViewerRef, tower: Vim) {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const indices = Array.from({ length: 200000 }, (_, i) => i)
-    /*
-    indices.forEach((i) => tower.getObject(i).state = 'highlighted')
-    await new Promise(resolve => setTimeout(resolve, 3000))
-    */
-
+    
+    indices.forEach((i) => tower.getObjectFromInstance(i).state = NodeState.HIGHLIGHTED)
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
     indices.forEach((i) => tower.getObjectFromInstance(i).state = NodeState.GHOSTED)
-    await new Promise(resolve => setTimeout(resolve, 15000))
+    await new Promise(resolve => setTimeout(resolve, 2000))
 
     indices.forEach((i) => tower.getObjectFromInstance(i).state = NodeState.HIDDEN)
-    await new Promise(resolve => setTimeout(resolve, 15000))
+    await new Promise(resolve => setTimeout(resolve, 2000))
 
     indices.forEach((i) => tower.getObjectFromInstance(i).state = NodeState.VISIBLE)
-    await new Promise(resolve => setTimeout(resolve, 15000))
+    await new Promise(resolve => setTimeout(resolve, 2000))
   }
 }

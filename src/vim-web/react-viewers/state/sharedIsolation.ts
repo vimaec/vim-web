@@ -21,8 +21,8 @@ export interface IsolationAdapter{
   computeVisibility: () => VisibilityStatus,
 
   hasSelection(): boolean;
-  isSelectionVisible: () => boolean,
-  isSelectionHidden: () => boolean,
+  hasVisibleSelection: () => boolean,
+  hasHiddenSelection: () => boolean,
 
   clearSelection(): void;
   isolateSelection(): void;

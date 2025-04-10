@@ -57,7 +57,13 @@ export class Selection<T extends IVimObject> implements ISelection<T> {
   // Overloads for select
   select(object: T): void;
   select(objects: T[]): void;
-  select(objectOrObjects: T | T[]): void {
+  select(objectOrObjects: T | T[] | undefined): void {
+    // If no object is provided, clear the selection
+    if(!objectOrObjects) {
+      this.clear();
+      return;
+    }
+
     const objects = Array.isArray(objectOrObjects) ? objectOrObjects : [objectOrObjects];
 
     // If there is only one object and it's already the sole selection, do nothing.

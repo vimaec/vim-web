@@ -51,7 +51,7 @@ export type ClientStreamError = {
   details: string
 }
 
-export enum RCPMessageType {
+enum RCPMessageType {
   // eslint-disable-next-line no-unused-vars
   VideoKeyFrame = 0,
   // eslint-disable-next-line no-unused-vars

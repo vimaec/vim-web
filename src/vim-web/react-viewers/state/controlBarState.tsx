@@ -270,7 +270,8 @@ export function controlBarCamera(camera: CameraRef): ControlBar.IControlBarSecti
 
 export function controlBarSelection(isolation: IsolationRef): ControlBar.IControlBarSection {
   const adapter = isolation.adapter.current
-  const someVisible = adapter.isSelectionVisible() || !adapter.isSelectionHidden()  
+  const someVisible = adapter.hasVisibleSelection() || !adapter.hasHiddenSelection()  
+
   return {
     id: Ids.sectionSelection,
     enable: () => true,
@@ -299,7 +300,7 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
         tip: 'Hide Selection',
         action: () => adapter.hideSelection(),
         icon: Icons.hideSelection,
-        isOn: () =>!isolation.autoIsolate.get() && adapter.hasSelection(),
+        isOn: () =>!isolation.autoIsolate.get() && adapter.hasVisibleSelection(),
         style: Style.buttonDisableStyle,
       },
       {
@@ -308,7 +309,7 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
         tip: 'Show Selection',
         action: () => adapter.showSelection(),
         icon: Icons.showSelection,
-        isOn: () => !isolation.autoIsolate.get() && adapter.hasSelection(),
+        isOn: () => !isolation.autoIsolate.get() && adapter.hasHiddenSelection(),
         style: Style.buttonDisableStyle,
       },
       {
