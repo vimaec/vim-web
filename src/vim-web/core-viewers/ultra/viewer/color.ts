@@ -1,4 +1,4 @@
-import { RGBA32 } from "../utils/math3d";
+import { RGBA32 } from "../../utils/math3d";
 import { ColorManager } from "./colorManager";
 
 /**

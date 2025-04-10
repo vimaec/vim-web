@@ -1,4 +1,4 @@
-import { Box3, Segment, Vector3 } from '../utils/math3d'
+import { Box3, Segment, Vector3 } from '../../utils/math3d'
 import { RpcSafeClient } from './rpcSafeClient'
 import { Vim } from './vim'
 

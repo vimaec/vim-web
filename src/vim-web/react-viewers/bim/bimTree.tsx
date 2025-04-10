@@ -139,8 +139,8 @@ export function BimTree (props: {
       className="vim-bim-tree vc-mt-2  vc-flex-1 vc-flex vc-w-full vc-min-h-0"
       ref={div}
       tabIndex={0}
-      onFocus={() => (props.viewer.inputs.keyboard.arrowsEnabled = false)}
-      onBlur={() => (props.viewer.inputs.keyboard.arrowsEnabled = true)}
+      onFocus={() => (props.viewer.inputs.keyboard.unregister())}
+      onBlur={() => (props.viewer.inputs.keyboard.register())}
     >
       <ControlledTreeEnvironment
         renderDepthOffset={div.current ? Math.min(div.current.clientWidth * 0.04, 10) : 10 }

@@ -26,14 +26,14 @@ function MenuToast (props: { viewer: VIM.Viewer; side: SideState }) {
   const toastTimeout = useRef<ReturnType<typeof setTimeout>>()
 
   useEffect(() => {
-    speedRef.current = props.viewer.camera.speed
-    const subCam = props.viewer.camera.onSettingsChanged.subscribe(() => {
-      if (props.viewer.camera.speed !== speedRef.current) {
+    speedRef.current = props.viewer.inputs.moveSpeed
+    const subCam = props.viewer.inputs.onSettingsChanged.subscribe(() => {
+      if (props.viewer.inputs.moveSpeed !== speedRef.current) {
         clearTimeout(toastTimeout.current)
         toastTimeout.current = setTimeout(() => setVisible(false), 1000)
 
-        speedRef.current = props.viewer.camera.speed
-        setSpeed(props.viewer.camera.speed)
+        speedRef.current = props.viewer.inputs.moveSpeed
+        setSpeed(props.viewer.inputs.moveSpeed)
         setVisible(true)
       }
     })

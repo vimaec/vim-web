@@ -6,14 +6,13 @@ import * as THREE from 'three'
 import { Object3D } from '../loader/object3D'
 import { Mesh } from '../loader/mesh'
 import { RenderScene } from './rendering/renderScene'
-import { Viewport } from './viewport'
 import { Camera } from './camera/camera'
 import { Renderer } from './rendering/renderer'
 import { GizmoMarker } from './gizmos/markers/gizmoMarker'
 import { GizmoMarkers } from './gizmos/markers/gizmoMarkers'
 
 /**
- * Type alias for THREE intersection array
+ * Type alias for an array of THREE.Intersection objects.
  */
 export type ThreeIntersectionList = THREE.Intersection<
   THREE.Object3D<THREE.Object3DEventMap>
@@ -23,7 +22,8 @@ export type ActionType = 'main' | 'double' | 'idle'
 export type ActionModifier = 'none' | 'shift' | 'ctrl'
 
 /**
- * Highlevel aggregate of information about a raycast result
+ * Aggregates detailed information about a raycasting result,
+ * including the intersected object and the hit details.
  */
 export class RaycastResult {
   object: Object3D | GizmoMarker | undefined
@@ -32,19 +32,19 @@ export class RaycastResult {
 
   constructor (intersections: ThreeIntersectionList) {
     this.intersections = intersections
-    const [markerHit, marker] = this.GetFirstMarkerHit(intersections)
+    const [markerHit, marker] = this.getFirstMarkerHit(intersections)
     if (marker) {
       this.object = marker
       this.firstHit = markerHit
       return
     }
 
-    const [objectHit, obj] = this.GetFirstVimHit(intersections)
+    const [objectHit, obj] = this.getFirstVimHit(intersections)
     this.firstHit = objectHit
     this.object = obj
   }
 
-  private GetFirstVimHit (
+  private getFirstVimHit (
     intersections: ThreeIntersectionList
   ): [THREE.Intersection, Object3D] | [] {
     for (let i = 0; i < intersections.length; i++) {
@@ -54,7 +54,7 @@ export class RaycastResult {
     return []
   }
 
-  private GetFirstMarkerHit (
+  private getFirstMarkerHit (
     intersections: ThreeIntersectionList
   ): [THREE.Intersection, GizmoMarker] | [] {
     for (let i = 0; i < intersections.length; i++) {
@@ -79,7 +79,7 @@ export class RaycastResult {
     return sub.object
   }
 
-  // Convenience functions and mnemonics
+  // Convenience getters for hit information
   get isHit (): boolean {
     return !!this.firstHit
   }
@@ -102,7 +102,6 @@ export class RaycastResult {
 }
 
 export class Raycaster {
-  private _viewport: Viewport
   private _camera: Camera
   private _scene: RenderScene
   private _renderer: Renderer
@@ -110,22 +109,27 @@ export class Raycaster {
   private _raycaster = new THREE.Raycaster()
 
   constructor (
-    viewport: Viewport,
     camera: Camera,
     scene: RenderScene,
     renderer: Renderer
   ) {
-    this._viewport = viewport
     this._camera = camera
     this._scene = scene
     this._renderer = renderer
   }
 
   /**
-   * Performs a raycast by projecting a ray from the camera position to a screen position.
-   * @param {THREE.Vector2} position - The screen position for raycasting.
+   * Performs a raycast from the camera using normalized screen coordinates.
+   * Coordinates must be within [0, 1] for both x and y.
+   * If the coordinates are out of bounds, an error is logged and an empty result is returned.
+   *
+   * @param {THREE.Vector2} position - The normalized screen position for raycasting.
    */
-  raycast2 (position: THREE.Vector2) {
+  raycastFromScreen (position: THREE.Vector2) {
+    if (position.x < 0 || position.y < 0 || position.x > 1 || position.y > 1) {
+      console.error('Invalid position for raycasting')
+      return new RaycastResult([])
+    }
     this._raycaster = this.fromPoint2(position, this._raycaster)
     let hits = this._raycaster.intersectObjects(this._scene.scene.children)
     hits = this.filterHits(hits)
@@ -139,10 +143,11 @@ export class Raycaster {
   }
 
   /**
-   * Performs a raycast by projecting a ray from the camera position to a world position.
-   * @param {THREE.Vector3} position - The world position for raycasting.
+   * Performs a raycast from the camera towards a specified world position.
+   *
+   * @param {THREE.Vector3} position - The target world position for raycasting.
    */
-  raycast3 (position: THREE.Vector3) {
+  raycastFromWorld (position: THREE.Vector3) {
     this._raycaster = this.fromPoint3(position, this._raycaster)
     let hits = this._raycaster.intersectObjects(this._scene.scene.children)
     hits = this.filterHits(hits)
@@ -150,30 +155,40 @@ export class Raycaster {
   }
 
   /**
-   * Performs a raycast by projecting a ray from the camera center.
+   * Performs a raycast starting from the camera's current target position.
    */
   raycastForward () {
-    return this.raycast3(this._camera.target)
+    return this.raycastFromWorld(this._camera.target)
   }
 
   /**
-   * Returns a THREE.Raycaster projecting a ray from camera position to screen position
+   * Creates and returns a THREE.Raycaster that casts a ray from the camera's position
+   * through the provided normalized screen coordinate (x and y in the range [0, 1]).
+   *
+   * @param {THREE.Vector2} position - The normalized screen position for raycasting.
+   * @param {THREE.Raycaster} target - Optional existing raycaster instance to update.
+   * @returns {THREE.Raycaster} A configured raycaster for performing raycasting.
    */
   fromPoint2 (
     position: THREE.Vector2,
     target: THREE.Raycaster = new THREE.Raycaster()
   ) {
-    const size = this._viewport.getSize()
-    const x = (position.x / size.x) * 2 - 1
-    const y = -(position.y / size.y) * 2 + 1
-    target.setFromCamera(new THREE.Vector2(x, y), this._camera.three)
+    const pos = new THREE.Vector2(
+      position.x * 2 - 1,
+      -position.y * 2 + 1
+    )
+    target.setFromCamera(pos, this._camera.three)
     return target
   }
 
   /**
-   * Returns a THREE.Raycaster projecting a ray from the camera position to a screen position.
-   * @param {THREE.Vector2} position - The screen position for raycasting.
-   * @returns {THREE.Raycaster} A raycaster object for performing raycasting.
+   * Creates and returns a THREE.Raycaster that casts a ray from the camera's position
+   * towards the specified world position.
+   * The ray's direction is computed as the normalized vector from the camera position to the target position.
+   *
+   * @param {THREE.Vector3} position - The world position for raycasting.
+   * @param {THREE.Raycaster} target - Optional existing raycaster instance to update.
+   * @returns {THREE.Raycaster} A configured raycaster for performing raycasting.
    */
   fromPoint3 (
     position: THREE.Vector3,
@@ -183,52 +198,5 @@ export class Raycaster {
 
     target.set(this._camera.position, direction)
     return target
-  }
-}
-
-/**
- * Represents an input action with its position and modifiers.
- */
-export class InputAction {
-  readonly position: THREE.Vector2
-  readonly modifier: ActionModifier
-  readonly type: ActionType
-  private _raycaster: Raycaster
-
-  constructor (
-    type: ActionType,
-    modifier: ActionModifier,
-    position: THREE.Vector2,
-    raycaster: Raycaster
-  ) {
-    this.type = type
-    this.modifier = modifier
-    this.position = position
-    this._raycaster = raycaster
-  }
-
-  private _raycast: RaycastResult | undefined
-
-  /**
-   * A THREE.Raycaster object for custom raycasting.
-   */
-  get raycaster () {
-    return this._raycaster.fromPoint2(this.position)
-  }
-
-  /**
-   * Performs raycasting for VIM objects at the current point. This operation can be computationally expensive.
-   */
-  get raycast () {
-    return (
-      this._raycast ?? (this._raycast = this._raycaster.raycast2(this.position))
-    )
-  }
-
-  /**
-   * Returns the object at the current point. This operation can cause a computationally expensive raycast evaluation.
-   */
-  get object () {
-    return this.raycast.object
   }
 }

@@ -158,7 +158,7 @@ export class GizmoRectangle {
     if (!this.points) return
 
     const hits = this.points
-      .map((p) => this.viewer.raycaster.raycast3(p))
+      .map((p) => this.viewer.raycaster.raycastFromWorld(p))
       .filter((h) => h.isHit)
 
     let position: THREE.Vector3 | undefined

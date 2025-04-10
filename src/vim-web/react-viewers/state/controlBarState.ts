@@ -42,7 +42,7 @@ export function controlBarSectionBox(
         icon: Icons.sectionBox,
       },
       {
-        id: ControlBar.ids.buttonSectionBoxShrinkToSelection,
+        id: ControlBar.ids.buttonSectionBoxToSelection,
         tip: 'Fit Section',
         enabled: () => section.enable.get(),
         isOn: () => hasSelection,
@@ -51,11 +51,11 @@ export function controlBarSectionBox(
         icon: Icons.sectionBoxShrink,
       },
       {
-        id: ControlBar.ids.buttonSectionBoxReset,
+        id: ControlBar.ids.buttonSectionBoxToScene,
         tip: 'Reset Section',
         enabled: () => section.enable.get(),
         style: (on) => ControlBar.buttonDefaultStyle(on),
-        action: () => section.sectionReset.call(), 
+        action: () => section.sectionScene.call(), 
         icon: Icons.sectionBoxReset,
       },
       {
@@ -157,7 +157,7 @@ function controlBarPointer(
   };
 }
 
-function controlBarActions(
+export function controlBarActions(
   camera: CameraRef,
   settings: ComponentSettings,
   isolation: Isolation,
@@ -168,15 +168,7 @@ function controlBarActions(
     enable: () => true,
     style: ControlBar.sectionDefaultStyle,
     buttons: [
-      {
-        id: ControlBar.ids.buttonZoomToFit,
-        enabled: () => isTrue(settings.ui.zoomToFit),
-        tip: 'Zoom to Fit',
-        action: () => camera.frameSelection.call(),
-        icon: Icons.frameSelection,
-        isOn: () => false,
-        style: ControlBar.buttonDefaultStyle,
-      },
+
       {
         id: ControlBar.ids.buttonToggleIsolation,
         enabled: () => isTrue(settings.ui.toggleIsolation),
@@ -250,7 +242,7 @@ function controlBarSettings(
   }
 }
 
-export function controlBarCamera(camera: CameraRef){
+export function controlBarCamera(camera: CameraRef): ControlBar.IControlBarSection {
   return {
     id: ControlBar.ids.sectionCamera,
     enable: () => true,
@@ -262,6 +254,24 @@ export function controlBarCamera(camera: CameraRef){
         isOn: () => camera.autoCamera.get(),
         action: () => camera.autoCamera.set(!camera.autoCamera.get()),
         icon: Icons.autoCamera,
+        style: ControlBar.buttonDefaultStyle,
+      },
+      {
+        id: ControlBar.ids.buttonCameraFrameSelection,
+        // enabled: () => isTrue(settings.ui.zoomToFit), TODO: Implement ui toggles in Ultra
+        tip: 'Frame Selection',
+        action: () => camera.frameSelection.call(),
+        icon: Icons.frameSelection,
+        isOn: () => false,
+        style: ControlBar.buttonDefaultStyle,
+      },
+      {
+        id: ControlBar.ids.buttonCameraFrameScene,
+        // enabled: () => isTrue(settings.ui.zoomToFit), TODO: Implement ui toggles in Ultra
+        tip: 'Frame All',
+        action: () => camera.frameScene.call(),
+        icon: Icons.frameScene,
+        isOn: () => false,
         style: ControlBar.buttonDefaultStyle,
       },
     ]

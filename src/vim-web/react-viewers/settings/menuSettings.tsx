@@ -91,8 +91,8 @@ export function MenuSettings (props: {
           'Scroll Speed',
           '[0.1,10]',
           n => THREE.MathUtils.clamp(n, 0.1, 10),
-          s => props.viewer.inputs.mouse.scrollSpeed,
-          (s, v) => { props.viewer.inputs.mouse.scrollSpeed = v }
+          s => props.viewer.inputs.scrollSpeed,
+          (s, v) => { props.viewer.inputs.scrollSpeed = v }
         )}
         {settingsSubtitle('Materials')}
         {settingsToggle(
@@ -185,9 +185,9 @@ export function MenuSettings (props: {
           (settings, value) => (settings.ui.zoomWindow = value)
         )}
         {settingsToggle(
-          'Show Zoom To Fit Button',
-          (settings) => settings.ui.zoomToFit,
-          (settings, value) => (settings.ui.zoomToFit = value)
+          'Show Zoom Frame Selection Button',
+          (settings) => settings.ui.frameSelection,
+          (settings, value) => (settings.ui.frameSelection = value)
         )}
         {settingsSubtitle('Control Bar - Tools')}
         {settingsToggle(

@@ -9,19 +9,17 @@ export * from './loader/progressive/vimRequest'
 export * from './loader/progressive/vimx'
 export * from './viewer/viewer'
 export * from './loader/geometry'
-export type { PointerMode, InputScheme } from './viewer/inputs/input'
-export { DefaultInputScheme, KEYS } from './viewer/inputs/input'
+export * from '../shared/coreInputHandler'
+
 
 export * from './viewer/settings/viewerSettings'
 export * from './viewer/settings/viewerSettingsParsing'
 export * from './viewer/settings/defaultViewerSettings'
 
 export {
-  RaycastResult as HitTestResult,
-  InputAction
-} from './viewer/raycaster'
+  RaycastResult as HitTestResult} from './viewer/raycaster'
 
-export { type SelectableObject } from './viewer/selection'
+export { type SelectableObject, Selection } from './viewer/selection'
 export * from './loader/progressive/insertableMesh'
 export * from './loader/progressive/g3dSubset'
 export * from './loader/geometry'

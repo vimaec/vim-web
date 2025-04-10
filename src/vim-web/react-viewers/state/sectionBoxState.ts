@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef, useLayoutEffect, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
-import { addBox } from '../../core-viewers/webgl/utils/threeUtils';
+import { addBox } from '../../core-viewers/utils/threeUtils';
 import { ISignal } from 'ste-signals';
-import { ActionRef, ArgActionRef, AsyncFuncRef, StateRef, useArgActionRef, useFuncRef, useStateRef } from '../helpers/reactUtils';
+import { ActionRef, ArgActionRef, AsyncFuncRef, StateRef, useArgActionRef, useAsyncFuncRef, useFuncRef, useStateRef } from '../helpers/reactUtils';
 
 export type Offsets = {
   topOffset: string;
@@ -18,24 +18,30 @@ export interface SectionBoxRef {
   auto: StateRef<boolean>;
 
   sectionSelection: AsyncFuncRef<void>;
-  sectionReset: AsyncFuncRef<void>;
-  section: ArgActionRef<THREE.Box3>;
+  sectionScene: AsyncFuncRef<void>;
+  sectionBox: ArgActionRef<THREE.Box3>;
+  getBox: () => THREE.Box3;
 
   showOffsetPanel: StateRef<boolean>;
 
   topOffset: StateRef<string>;
   sideOffset: StateRef<string>;
   bottomOffset: StateRef<string>;
+
+  getSelectionBox: AsyncFuncRef<THREE.Box3 | undefined>;
+  getSceneBox: AsyncFuncRef<THREE.Box3>;
 }
 
 export interface SectionBoxAdapter {
   setClip : (b: boolean) => void;
   setVisible: (visible: boolean) => void;
   getBox: () => THREE.Box3;
-  fitBox: (box: THREE.Box3) => void;
-  getSelectionBox: () => Promise<THREE.Box3 | undefined>;
-  getRendererBox: () => Promise<THREE.Box3>;
+  setBox: (box: THREE.Box3) => void;
   onSelectionChanged: ISignal;
+
+  // Allow to override these at the component level
+  getSelectionBox: () => Promise<THREE.Box3 | undefined>;
+  getSceneBox: () => Promise<THREE.Box3>;
 }
 
 export function useSectionBox(
@@ -52,6 +58,8 @@ export function useSectionBox(
 
   // The reference box on which the offsets are applied.
   const boxRef = useRef<THREE.Box3>(adapter.getBox());
+  const getSelectionBox = useAsyncFuncRef(adapter.getSelectionBox);
+  const getSceneBox = useAsyncFuncRef(adapter.getSceneBox);
 
   // One Time Setup
   useEffect(() => {
@@ -72,7 +80,7 @@ export function useSectionBox(
       sectionSelection.call();
     }
     else{
-      sectionReset.call();
+      sectionScene.call();
     }
   })
 
@@ -86,9 +94,9 @@ export function useSectionBox(
   bottomOffset.useConfirm((v) => sanitize(v, true));
 
   // Update the section box on offset change.
-  topOffset.useOnChange((v) => section.call(boxRef.current));
-  sideOffset.useOnChange((v) => section.call(boxRef.current));
-  bottomOffset.useOnChange((v) => section.call(boxRef.current));
+  topOffset.useOnChange((v) => sectionBox.call(boxRef.current));
+  sideOffset.useOnChange((v) => sectionBox.call(boxRef.current));
+  bottomOffset.useOnChange((v) => sectionBox.call(boxRef.current));
 
   // Section selection on auto mode enabled.
   auto.useOnChange((v) => {if(v) sectionSelection.call()})
@@ -96,31 +104,23 @@ export function useSectionBox(
   // Show/Hide the section box on visible change.
   visible.useOnChange((v) => adapter.setVisible(v));
 
-
-
   // Update the box by combining the base box and the computed offsets.
-  const section = useArgActionRef((baseBox: THREE.Box3) => {
+  const sectionBox = useArgActionRef((baseBox: THREE.Box3) => {
     if(baseBox === undefined) return
     boxRef.current = baseBox;
     const newBox = addBox(baseBox, offsetsToBox3(topOffset.get(), sideOffset.get(), bottomOffset.get()));
-    adapter.fitBox(newBox);
+    adapter.setBox(newBox);
   });
 
   // Sets the box to the selection box or the renderer box if no selection.
   const sectionSelection = useFuncRef(async () => {
-    try {
-      const box =
-        (await adapter.getSelectionBox()) ??
-        (await adapter.getRendererBox());
-      section.call(box);
-    } catch (e) {
-      console.error(e);
-    }
+    const box = (await getSelectionBox.call()) ?? (await getSceneBox.call());
+    sectionBox.call(box);
   })
   
-  const sectionReset = useFuncRef(async () => {
-    const box = await adapter.getRendererBox();
-    section.call(box);
+  const sectionScene = useFuncRef(async () => {
+    const box = await getSceneBox.call();
+    sectionBox.call(box);
   });
 
   return {
@@ -132,8 +132,13 @@ export function useSectionBox(
     sideOffset,
     bottomOffset,
     sectionSelection,
-    sectionReset,
-    section,
+    sectionScene,
+    sectionBox,
+    getBox: () => adapter.getBox(),
+
+    // TODO - Remove these from here, it should be overriden at the component level.
+    getSceneBox: getSceneBox,
+    getSelectionBox,
   }
 }
 

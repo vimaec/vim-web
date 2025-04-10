@@ -30,9 +30,9 @@ export abstract class CameraMovement {
   move2 (vector: THREE.Vector2, axes: 'XY' | 'XZ'): void {
     const direction =
       axes === 'XY'
-        ? new THREE.Vector3(-vector.x, vector.y, 0)
+        ? new THREE.Vector3(-vector.x, 0, vector.y)
         : axes === 'XZ'
-          ? new THREE.Vector3(-vector.x, 0, vector.y)
+          ? new THREE.Vector3(-vector.x, vector.y, 0)
           : undefined
 
     if (direction) this.move3(direction)
@@ -152,6 +152,7 @@ export abstract class CameraMovement {
       target = target.scene.getAverageBoundingBox()
     }
     if (target === 'all') {
+      console.log('frame all')
       target = this._camera._scene.getAverageBoundingBox()
     }
     if (target instanceof THREE.Box3) {

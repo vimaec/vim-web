@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { UltraViewer, UltraReact } from '../../vim-web'
 import { useUltraNoModel } from './ultraPageUtils'
 import { residence } from '../devUrls'
-import { Box3, Vector3 } from '../../vim-web/core-viewers/ultra/utils/math3d'
+import { Box3, Vector3 } from '../../vim-web/core-viewers/utils/math3d'
 
 export function UltraSectionBox() {
   const div = useRef(null)

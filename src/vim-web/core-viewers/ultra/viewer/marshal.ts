@@ -2,7 +2,7 @@
  * Don't modify this file, the RPC generated code depends on its interface.
  */
 
-import { Box3, RGB, RGBA, RGBA32, Segment, Vector2, Vector3, Matrix44 } from "../utils/math3d";
+import { Box3, RGB, RGBA, RGBA32, Segment, Vector2, Vector3, Matrix44 } from "../../utils/math3d";
 
 export type HitCheckResult = {
   vimHandle: number;         // uint32_t equivalent

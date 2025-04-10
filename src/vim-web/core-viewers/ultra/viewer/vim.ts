@@ -1,13 +1,13 @@
 import { ColorHandle } from './color';
 import { ColorManager } from './colorManager';
 import { MaterialHandles } from './rpcClient';
-import { INVALID_HANDLE } from './viewer';
+import { INVALID_HANDLE } from './ultraCoreViewer';
 import { LoadRequest } from './loadRequest';
 import { RpcSafeClient, VimLoadingStatus, VimSource } from './rpcSafeClient';
 import { ILogger } from './logger';
-import { invertMap } from '../utils/array';
-import { isFileURI, isURL } from '../utils/url';
-import { Box3, RGBA32 } from '../utils/math3d';
+import { invertMap } from '../../utils/array';
+import { isFileURI, isURL } from '../../utils/url';
+import { Box3, RGBA32 } from '../../utils/math3d';
 
 type NodeState = 'visible' | 'hidden' | 'ghosted' | 'highlighted';
 

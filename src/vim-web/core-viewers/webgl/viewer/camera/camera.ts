@@ -101,11 +101,6 @@ export interface ICamera {
   get isLerping () : boolean
 
   /**
-   * The camera speed factor.
-   */
-  speed : number
-
-  /**
    * The current or target velocity of the camera.
    */
   localVelocity : THREE.Vector3
@@ -151,7 +146,6 @@ export class Camera implements ICamera {
   // movements
   private _inputVelocity = new THREE.Vector3()
   private _velocity = new THREE.Vector3()
-  private _speed: number = 0
 
   // orbit
   private _orthographic: boolean = false
@@ -254,7 +248,6 @@ export class Camera implements ICamera {
 
   // Settings
   private _velocityBlendFactor: number = 0.0001
-  private _moveSpeed: number = 1
 
   constructor (scene: RenderScene, viewport: Viewport, settings: ViewerSettings) {
     this.camPerspective = new PerspectiveWrapper(new THREE.PerspectiveCamera())
@@ -351,18 +344,6 @@ export class Camera implements ICamera {
   }
 
   /**
-   * The camera speed factor.
-   */
-  get speed () {
-    return this._speed
-  }
-
-  set speed (value: number) {
-    this._speed = clamp(value, -25, 25)
-    this._onValueChanged.dispatch()
-  }
-
-  /**
    * The current or target velocity of the camera.
    */
   get localVelocity () {
@@ -406,9 +387,6 @@ export class Camera implements ICamera {
     this.allowedRotation = settings.camera.allowedRotation
     this.camPerspective.applySettings(settings)
     this.camOrthographic.applySettings(settings)
-
-    // Controls
-    this._moveSpeed = settings.camera.controls.moveSpeed
 
     // Values
     this._onValueChanged.dispatch()
@@ -495,7 +473,7 @@ export class Camera implements ICamera {
     this._velocity.add(this._tmp1)
 
     // Stop movement if velocity is too low
-    if (this._velocity.lengthSq() < deltaTime / 10) {
+    if (this._velocity.lengthSq() <= Number.EPSILON) {
       this._velocity.set(0, 0, 0)
       return false
     }
@@ -511,7 +489,7 @@ export class Camera implements ICamera {
     const rotated = !this._lastQuaternion.equals(this.quaternion)
     const mod = rotated ? 1 : 1.66
     const frustrum = this.frustrumSizeAt(this.target).length()
-    return Math.pow(1.25, this.speed) * this._moveSpeed * mod * frustrum
+    return mod * frustrum
   }
 
   private checkForMovement () {

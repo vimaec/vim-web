@@ -1,15 +1,16 @@
 
 import { ControlBarCustomization } from '../controlbar/controlBar'
 import { SectionBoxRef } from '../state/sectionBoxState'
-import { controlBarCamera, controlBarSectionBox } from '../state/controlBarState'
+import { controlBarActions, controlBarCamera, controlBarSectionBox } from '../state/controlBarState'
 import * as Ultra from '../../core-viewers/ultra/index'
 import { CameraRef } from '../state/cameraState'
+import { ControlBar, Icons } from '..'
 
 export { buttonDefaultStyle, buttonBlueStyle } from '../controlbar/controlBarButton'
 export { sectionDefaultStyle, sectionBlueStyle } from '../controlbar/controlBarSection'
 
 export function useUltraControlBar (
-  viewer: Ultra.Viewer,
+  viewer: Ultra.UltraCoreViewer,
   section: SectionBoxRef,
   camera: CameraRef,
   customization: ControlBarCustomization | undefined
@@ -20,3 +21,4 @@ export function useUltraControlBar (
   bar = customization?.(bar) ?? bar
   return bar
 }
+
