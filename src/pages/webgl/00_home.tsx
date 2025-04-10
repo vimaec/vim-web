@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
-import { WebglReact } from '../../vim-web'
-import * as THREE from 'three'
+import { THREE, WebglReact } from '../../vim-web'
 import * as Urls from '../devUrls'
+import { Box3, Vector3 } from 'three'
 
 export function WebglHome () {
   const div = useRef<HTMLDivElement>(null)
@@ -20,12 +20,12 @@ async function createComponent (div: HTMLDivElement, ref: React.MutableRefObject
   const webgl = await WebglReact.createWebglComponent(div)
   ref.current = webgl
   globalThis.viewer = webgl
+  globalThis.THREE = THREE
 
   const url = getPathFromUrl() ?? Urls.residence
   const request = webgl.loader.request(
     { url }
   )
-
   const result = await request.getResult()
   if (result.isSuccess()) {
     webgl.loader.add(result.result)

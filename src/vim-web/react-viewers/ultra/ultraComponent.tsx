@@ -20,6 +20,7 @@ import { useSideState } from '../sidePanel/sideState'
 import { UltraComponentRef } from './ultraComponentRef'
 import ReactTooltip from 'react-tooltip'
 import { useUltraCamera } from './ultraCameraState'
+import { useViewerInput } from '../state/viewerInputs'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.
@@ -37,7 +38,7 @@ export function createUltraComponent (
     : container ?? createContainer()
 
   // Create the viewer and container
-  const viewer = Ultra.Viewer.createWithCanvas(cmpContainer.gfx)
+  const viewer = Ultra.UltraCoreViewer.createWithCanvas(cmpContainer.gfx)
 
   // Create the React root
   const reactRoot = createRoot(cmpContainer.ui)
@@ -71,17 +72,18 @@ export function createUltraComponent (
  */
 export function UltraComponent (props: {
   container: Container
-  viewer: Ultra.Viewer
+  viewer: Ultra.UltraCoreViewer
   onMount: (component: UltraComponentRef) => void}) {
 
   const modal = useModal(true)
   const sectionBox = useUltraSectionBox(props.viewer)
-  const camera = useUltraCamera(props.viewer)
+  const camera = useUltraCamera(props.viewer, sectionBox)
 
   const side = useSideState(true, 400)
   const [_, setSelectState] = useState(0)
   const [controlBarCustom, setControlBarCustom] = useState<ControlBarCustomization>(() => c => c)
   const controlBar = useUltraControlBar(props.viewer, sectionBox, camera, _ =>_)
+  useViewerInput(props.viewer.inputs, camera)
 
   useEffect(() => {
     props.viewer.onStateChanged.subscribe(state => updateModal(modal, state))
@@ -125,7 +127,7 @@ export function UltraComponent (props: {
   </>
 }
 
-function patchLoad(viewer: Ultra.Viewer, modal: ModalRef) {
+function patchLoad(viewer: Ultra.UltraCoreViewer, modal: ModalRef) {
   return function load (source: Ultra.VimSource): Ultra.ILoadRequest {
     const request = viewer.loadVim(source)
 

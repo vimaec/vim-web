@@ -1,7 +1,7 @@
 import { MaterialHandles } from './rpcClient'
 import { RpcSafeClient } from './rpcSafeClient'
 import { ColorHandle } from './color'
-import { RGBA32 } from '../utils/math3d'
+import { RGBA32 } from '../../utils/math3d'
 
 const MAX_BATCH_SIZE = 3000
 

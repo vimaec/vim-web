@@ -1,14 +1,14 @@
 import { SignalDispatcher } from "ste-signals"
-import { Box3 } from "../utils/math3d"
+import { Box3, Vector3 } from "../../utils/math3d"
 import { RpcSafeClient } from "./rpcSafeClient"
-import { safeBox } from "../../webgl/utils/threeUtils"
+import { safeBox } from "../../utils/threeUtils"
 
 export class SectionBox {
 
   private _visible: boolean = false
   private _interactible: boolean = false
   private _clip: boolean = false
-  private _box : Box3 = new Box3()
+  private _box : Box3 | undefined
   private _rpc: RpcSafeClient
   
   private _interval: ReturnType<typeof setInterval>
@@ -114,8 +114,8 @@ export class SectionBox {
     this.scheduleUpdate()
   }
 
-  getBox(){
-    return this._box
+  getBox() : Box3 | undefined{
+    return this._box?.clone()
   }
 
   dispose(){

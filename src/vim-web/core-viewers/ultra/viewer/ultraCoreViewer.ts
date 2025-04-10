@@ -1,4 +1,3 @@
-import { IInputs, Inputs } from './inputs/inputs'
 import { ClientError, ClientState, ConnectionSettings, SocketClient } from './socketClient'
 import { Decoder, IDecoder } from './decoder'
 import { DecoderWithWorker } from './decoderWithWorker'
@@ -15,6 +14,8 @@ import { ViewerSelection } from './selection'
 import { IReadonlyVimCollection, VimCollection } from './vimCollection'
 import { IRenderer, Renderer } from './renderer'
 import { SectionBox } from './sectionBox'
+import { CoreInputHandler } from '../../shared/coreInputHandler'	
+import { ultraInputAdapter } from './ultraInputsAdapter'
 
 
 export const INVALID_HANDLE = 0xffffffff
@@ -23,10 +24,10 @@ export const INVALID_HANDLE = 0xffffffff
  * The main Viewer class responsible for managing VIM files,
  * handling connections, and coordinating various components like the camera, decoder, and inputs.
  */
-export class Viewer {
+export class UltraCoreViewer {
   private readonly _decoder: Decoder | DecoderWithWorker
   private readonly _socketClient: SocketClient
-  private readonly _input: Inputs
+  private readonly _input: CoreInputHandler
   private readonly _logger: ILogger
   private readonly _canvas: HTMLCanvasElement
   private readonly _renderer : Renderer
@@ -52,7 +53,7 @@ export class Viewer {
   /**
    * The input API for handling user input events.
    */
-  get inputs (): IInputs {
+  get inputs () {
     return this._input
   }
 
@@ -119,12 +120,12 @@ export class Viewer {
    * @param logger - Optional logger for logging messages.
    * @returns A new instance of the Viewer class.
    */
-  static createWithCanvas (parent: HTMLElement, logger?: ILogger): Viewer {
+  static createWithCanvas (parent: HTMLElement, logger?: ILogger): UltraCoreViewer {
     const canvas = document.createElement('canvas')
     parent.appendChild(canvas)
     canvas.style.width = '100%'
     canvas.style.height = '100%'
-    const uv = new Viewer(canvas, logger)
+    const uv = new UltraCoreViewer(canvas, logger)
     return uv
   }
 
@@ -148,7 +149,8 @@ export class Viewer {
     this._renderer = new Renderer(this.rpc, this._logger)
     this.colors = new ColorManager(this.rpc)
     this._camera = new Camera(this.rpc)
-    this._input = new Inputs(canvas, this.rpc, this._selection, this._camera, this._renderer)
+    this._input = ultraInputAdapter(this)
+
     this.sectionBox = new SectionBox(this.rpc)
 
     // Set up the video frame handler
@@ -175,7 +177,7 @@ export class Viewer {
    */
   private async onConnect (): Promise<void> {
     this._renderer.onConnect()
-    this._input.onConnect()
+    this._input.init()
     this._camera.onConnect()
     
     this._vims.getAll().forEach((vim) => vim.connect())

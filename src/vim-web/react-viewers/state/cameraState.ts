@@ -2,62 +2,68 @@
  * @module viw-webgl-react
  */
 
-import { useEffect, useRef } from 'react'
-import { WebglViewer, THREE } from '../../index'
-import { ActionRef, AsyncFuncRef, StateRef, useActionRef, useAsyncFuncRef, useFuncRef, useStateRef } from '../helpers/reactUtils'
+import { useEffect } from 'react'
+import { SectionBoxRef, THREE } from '../../index'
+import { ActionRef, AsyncFuncRef, StateRef, useActionRef, useAsyncFuncRef, useStateRef } from '../helpers/reactUtils'
 import { ISignal } from 'ste-signals'
 
 export interface CameraRef {
   autoCamera: StateRef<boolean>
   reset : ActionRef
+
   frameSelection: AsyncFuncRef<void>
   frameScene: AsyncFuncRef<void>
+
+  // Allow to override these at the component level
+  getSelectionBox: AsyncFuncRef<THREE.Box3 | undefined>
+  getSceneBox: AsyncFuncRef<THREE.Box3 | undefined>
 }
 
 interface ICameraAdapter {
   onSelectionChanged: ISignal
   frameCamera: (box: THREE.Box3, duration: number) => void
   resetCamera: (duration : number) => void
-  frameAll: (duration: number) => void
-  hasSelection: () => boolean
-  getSelectionBox: () => Promise<THREE.Box3>
+  getSelectionBox: () => Promise<THREE.Box3 | undefined>
+  getSceneBox: () => Promise<THREE.Box3 | undefined>
 }
 
-export function useCamera(adapter: ICameraAdapter){
+export function useCamera(adapter: ICameraAdapter, section: SectionBoxRef){
+
   const autoCamera = useStateRef(false)
   autoCamera.useOnChange((v) => {
     if (v) {frameSelection.call()}
   });
 
   useEffect(() => {
-    adapter.onSelectionChanged.sub(() => {
-      if (autoCamera.get()) {
+    const refresh = () => {
+      if(autoCamera.get()){
         frameSelection.call()
       }
-    })
+    }
+    
+    // Reframe on section box change.
+    section.sectionSelection.append(refresh)
+    section.sectionScene.append(refresh)
+    adapter.onSelectionChanged.sub(refresh)
   },[])
 
   const reset = useActionRef(() => adapter.resetCamera(1))
+  const getSelectionBox = useAsyncFuncRef(adapter.getSelectionBox)
+  const getSceneBox = useAsyncFuncRef(adapter.getSceneBox)
 
   const frameSelection = useAsyncFuncRef(async () => {
-    if (!adapter.hasSelection()){
-      frameScene.call()
-      return
-    }
-
-    const box = await adapter.getSelectionBox()
-    if(!box){
-      return
-    }
-
-    adapter.frameCamera(box, 1)
+    const box = (await getSelectionBox.call()) ?? (await getSceneBox.call())
+    frame(adapter, section, box)
   })
 
   const frameScene = useAsyncFuncRef(async () => {
-    adapter.frameAll(1)
+    const box = await getSceneBox.call()
+    frame(adapter, section, box)
   })
 
   return {
+    getSelectionBox,
+    getSceneBox,
     autoCamera,
     reset,
     frameSelection,
@@ -65,30 +71,19 @@ export function useCamera(adapter: ICameraAdapter){
   } as CameraRef
 }
 
+function frame(adapter: ICameraAdapter, section: SectionBoxRef, box: THREE.Box3) {
+  if(!box) return
 
-/**
- * Returns the bounding box of all visible objects.
- * @param source Optional VIM to specify the source of visible objects.
- * @returns The bounding box of all visible objects.
- */
-function getVisibleBoundingBox (viewer: WebglViewer.Viewer, source?: WebglViewer.Vim) {
-  let box: THREE.Box3
+  // Take into account section box for framing.
+  if(section.enable.get()){
+    const sectionBox = section.getBox();
+    if (section) {
+      box.intersect(sectionBox);
+    }
 
-  const vimBoxUnion = (vim: WebglViewer.Vim) => {
-    for (const obj of vim.getObjects()) {
-      if (!obj.visible) continue
-      const b = obj.getBoundingBox()
-      if (!b) continue
-      box = box ? box.union(b) : b?.clone()
+    if(box.isEmpty()){
+      box.copy(sectionBox)
     }
   }
-  if (source) {
-    vimBoxUnion(source)
-  } else {
-    for (const vim of viewer.vims) {
-      vimBoxUnion(vim)
-    }
-  }
-
-  return box
+  adapter.frameCamera(box, 1)
 }

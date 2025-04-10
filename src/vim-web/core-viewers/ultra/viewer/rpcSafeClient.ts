@@ -1,9 +1,9 @@
-import { Box3, RGBA, RGBA32, Segment, Vector2, Vector3 } from "../utils/math3d"
+import { Box3, RGBA, RGBA32, Segment, Vector2, Vector3 } from "../../utils/math3d"
 import { HitCheckResult, SectionBoxState } from "./marshal"
 import { MaterialHandle, RpcClient } from "./rpcClient"
-import { Validation } from "../utils/validation"
-import { batchArray, batchArrays } from "../utils/array"
-import { INVALID_HANDLE } from "./viewer"
+import { Validation } from "./validation"
+import { batchArray, batchArrays } from "../../utils/array"
+import { INVALID_HANDLE } from "./ultraCoreViewer"
 
 const defaultBatchSize = 10000
 
@@ -304,7 +304,11 @@ export class RpcSafeClient {
   }
 
   RPCSetSectionBox(state: SectionBoxState): void {
-    this.rpc.RPCSetSectionBox(state)
+    this.rpc.RPCSetSectionBox(
+      {
+        ...state,
+        box: state.box ?? new Box3(new Vector3(), new Vector3())
+      })
   }
 
   async RPCGetSectionBox(): Promise<SectionBoxState | undefined> {

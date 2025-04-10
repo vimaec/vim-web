@@ -28,7 +28,7 @@ export class CameraLerp extends CameraMovement {
 
   init (duration: number) {
     this.cancel()
-    this._duration = Math.max(duration,0.01)
+    this._duration = Math.max(duration, 0.01)
     this._clock.start()
   }
 
@@ -62,6 +62,7 @@ export class CameraLerp extends CameraMovement {
     const pos = new THREE.Vector3()
 
     this.onProgress = (progress) => {
+      console.log('progress', progress)
       pos.copy(start)
       pos.lerp(end, progress)
       this._movement.move3(pos)

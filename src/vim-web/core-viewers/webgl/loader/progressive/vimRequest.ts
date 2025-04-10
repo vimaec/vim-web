@@ -4,14 +4,14 @@ import {
 } from '../vimSettings'
 
 import { Vim } from '../vim'
-import { DeferredPromise } from '../../utils/deferredPromise'
-import { RequestResult, ErrorResult, SuccessResult } from '../../utils/requestResult'
+import { RequestResult, ErrorResult, SuccessResult } from '../../../utils/requestResult'
 import { open } from './open'
 
 import { VimSource } from '../..'
 import {
   BFast, IProgressLogs
 } from 'vim-format'
+import { ControllablePromise } from '../../../utils/promise'
 
 export type RequestSource = {
   url?: string,
@@ -44,8 +44,8 @@ export class VimRequest {
 
   // Promises to await progress updates and completion
   private _progress : IProgressLogs = { loaded: 0, total: 0, all: new Map() }
-  private _progressPromise = new DeferredPromise<IProgressLogs>()
-  private _completionPromise = new DeferredPromise<void>()
+  private _progressPromise = new ControllablePromise<IProgressLogs>()
+  private _completionPromise = new ControllablePromise<void>()
 
   constructor (source: VimSource, settings: VimPartialSettings) {
     this._source = source
@@ -64,7 +64,7 @@ export class VimRequest {
       const vim: Vim = await open(this._bfast, this._settings, (progress: IProgressLogs) => {
         this._progress = progress
         this._progressPromise.resolve(progress)
-        this._progressPromise = new DeferredPromise<IProgressLogs>()
+        this._progressPromise = new ControllablePromise<IProgressLogs>()
       })
       this._vimResult = vim
     } catch (err: any) {
@@ -92,7 +92,7 @@ export class VimRequest {
    */
   async * getProgress (): AsyncGenerator<IProgressLogs, void, void> {
     while (!this._isDone) {
-      yield await this._progressPromise
+      yield await this._progressPromise.promise
     }
   }
 

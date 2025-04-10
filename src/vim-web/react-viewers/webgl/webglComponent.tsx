@@ -23,12 +23,11 @@ import { MenuSettings } from '../settings/menuSettings'
 import { MenuToastMemo } from '../panels/toast'
 import { Overlay } from '../panels/overlay'
 import { addPerformanceCounter } from '../panels/performance'
-import { ComponentInputs as ComponentInputScheme } from '../helpers/componentInputs'
+import { applyWebglBindings } from './webgInputsBindings'
 import { CursorManager } from '../helpers/cursor'
 import { PartialComponentSettings, isTrue } from '../settings/settings'
 import { useSettings } from '../settings/settingsState'
 import { Isolation } from '../helpers/isolation'
-import { useCamera } from '../state/cameraState'
 import { TreeActionRef } from '../bim/bimTree'
 import { Container, createContainer } from '../container'
 import { useViewerState } from './viewerState'
@@ -42,6 +41,7 @@ import { Modal, useModal } from '../panels/modal'
 import { SectionBoxPanel } from '../panels/sectionBoxPanel'
 import { useWebglSectionBox } from './webglSectionBoxState'
 import { useWebglCamera } from './webglCameraState'
+import { useViewerInput } from '../state/viewerInputs'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React component.
@@ -106,9 +106,11 @@ export function VimComponent (props: {
   const settings = useSettings(props.viewer, props.settings ?? {})
   const modal = useModal(settings.value.capacity.canFollowUrl)
 
-  const camera = useWebglCamera(props.viewer)
+  const sectionBox = useWebglSectionBox(props.viewer)
+  const camera = useWebglCamera(props.viewer, sectionBox)
   const cursor = useMemo(() => new CursorManager(props.viewer), [])
   const loader = useRef(new ComponentLoader(props.viewer, modal))
+  useViewerInput(props.viewer.inputs, camera)
 
   const [isolation] = useState(() => new Isolation(props.viewer, camera, settings.value))
   useEffect(() => isolation.applySettings(settings.value), [settings])
@@ -126,7 +128,7 @@ export function VimComponent (props: {
   const treeRef = useRef<TreeActionRef>()
   const performanceRef = useRef<HTMLDivElement>(null)
   
-  const sectionBox = useWebglSectionBox(props.viewer)
+  
   const controlBar = useControlBar(props.viewer, camera, modal, side, isolation, cursor, settings.value, sectionBox, controlBarCustom)
 
   useEffect(() => {
@@ -143,12 +145,7 @@ export function VimComponent (props: {
 
     // Setup custom input scheme
     props.viewer.viewport.canvas.tabIndex = 0
-    props.viewer.inputs.scheme = new ComponentInputScheme(
-      props.viewer,
-      camera,
-      isolation,
-      side
-    )
+    applyWebglBindings(props.viewer, camera, isolation, side)
 
     // Register context menu
     const subContext =

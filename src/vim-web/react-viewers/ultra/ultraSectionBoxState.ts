@@ -2,7 +2,7 @@
 import * as Ultra from '../../core-viewers/ultra/index';
 import { useSectionBox, SectionBoxAdapter, SectionBoxRef } from '../state/sectionBoxState';
 
-export function useUltraSectionBox(viewer: Ultra.Viewer): SectionBoxRef {
+export function useUltraSectionBox(viewer: Ultra.UltraCoreViewer): SectionBoxRef {
   const ultraAdapter: SectionBoxAdapter = {
     setClip: (b) => {
       viewer.sectionBox.clip = b;
@@ -10,12 +10,15 @@ export function useUltraSectionBox(viewer: Ultra.Viewer): SectionBoxRef {
     setVisible: (b) => {
       viewer.sectionBox.visible = b;
       viewer.sectionBox.interactive = b;
-    },
-    getBox: () => viewer.sectionBox.getBox().clone(),
-    fitBox: (box) => viewer.sectionBox.fitBox(box),
-    getSelectionBox: () => viewer.selection.getBoundingBox(),
-    getRendererBox: () => viewer.renderer.getBoundingBox(),
+    }, 
+    getBox: () => viewer.sectionBox.getBox(),
+    setBox: (box) => viewer.sectionBox.fitBox(box),
     onSelectionChanged: viewer.selection.onValueChanged,
+
+
+    getSelectionBox: () => viewer.selection.getBoundingBox(),
+    getSceneBox: () => viewer.renderer.getBoundingBox(),
+
   };
   return useSectionBox(ultraAdapter);
 }

@@ -38,7 +38,7 @@ export function WebglLocalFile () {
       await delay(1000)
 
       try {
-        const vim = await vwgl.loader.open({ buffer: content }, { rotation: new THREE.Vector3(270, 0, 0) })
+        const vim = await vwgl.loader.open({ buffer: content },{})
         vwgl.loader.add(vim)
       } finally {
         vwgl.modal.loading(undefined)
