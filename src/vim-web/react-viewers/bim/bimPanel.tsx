@@ -58,7 +58,6 @@ export function BimPanel (props: {
 
   const tree = useMemo(() => {
     const t =  toTreeData(props.viewerState.vim.get(), props.viewerState.elements.get(), 'Family')
-    console.log("TREE DATA", t)
     return t
   },[props.viewerState.vim.get(), props.viewerState.elements.get()])
 

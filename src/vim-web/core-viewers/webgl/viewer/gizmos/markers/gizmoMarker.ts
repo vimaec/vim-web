@@ -7,7 +7,7 @@ import { WebglColorAttribute } from '../../../loader/colorAttribute'
 import { IVimObject } from '../../../../shared/vim'
 
 /**
- * Marker gizmo that display an interactive sphere at a 3D positions
+ * Marker gizmo that displays an interactive sphere at a 3D position.
  * Marker gizmos are still under development.
  */
 export class Marker implements IVimObject {
@@ -15,20 +15,33 @@ export class Marker implements IVimObject {
   private _viewer: Viewer
   private _submesh: SimpleInstanceSubmesh
 
+  private static _tmpMatrix = new THREE.Matrix4()
+  private static _unitVector = new THREE.Vector3(1, 1, 1)
+
   /**
-   * The vim object from which this object came from.
+   * The Vim object from which this object came.
+   * Can be undefined if the object is not part of a Vim.
    */
   vim: Vim | undefined
 
   /**
-   * The bim element index associated with this object.
+   * The BIM element index associated with this object.
+   * Can be undefined if the object is not part of a Vim.
    */
   element: number | undefined
 
   /**
-   * The geometry instances  associated with this object.
+   * The geometry instances associated with this object.
+   * This is used when the marker is derived from multiple instances.
    */
   instances: number[] | undefined
+
+  /**
+   * The index of the marker in the marker collection.
+   */
+  get index(): number {
+    return this._submesh.index
+  }
 
   private _outlineAttribute: WebglAttribute<boolean>
   private _visibleAttribute: WebglAttribute<boolean>
@@ -36,48 +49,30 @@ export class Marker implements IVimObject {
   private _focusedAttribute: WebglAttribute<boolean>
   private _colorAttribute: WebglColorAttribute
 
-  constructor (viewer: Viewer, submesh: SimpleInstanceSubmesh) {
+  /**
+   * Constructs a new Marker object.
+   * @param viewer - The viewer managing rendering and interaction.
+   * @param submesh - The instanced submesh this marker is bound to.
+   */
+  constructor(viewer: Viewer, submesh: SimpleInstanceSubmesh) {
     this._viewer = viewer
     this._submesh = submesh
 
     const array = [submesh]
-    this._outlineAttribute = new WebglAttribute(
-      false,
-      'selected',
-      'selected',
-      array,
-      (v) => (v ? 1 : 0)
-    )
-
-    this._visibleAttribute = new WebglAttribute(
-      true,
-      'ignore',
-      'ignore',
-      array,
-      (v) => (v ? 0 : 1)
-    )
-
-    this._focusedAttribute = new WebglAttribute(
-      false,
-      'focused',
-      'focused',
-      array,
-      (v) => (v ? 1 : 0)
-    )
-
-    this._coloredAttribute = new WebglAttribute(
-      false,
-      'colored',
-      'colored',
-      array,
-      (v) => (v ? 1 : 0)
-    )
-
+    this._outlineAttribute = new WebglAttribute(false, 'selected', 'selected', array, (v) => (v ? 1 : 0))
+    this._visibleAttribute = new WebglAttribute(true, 'ignore', 'ignore', array, (v) => (v ? 0 : 1))
+    this._focusedAttribute = new WebglAttribute(false, 'focused', 'focused', array, (v) => (v ? 1 : 0))
+    this._coloredAttribute = new WebglAttribute(false, 'colored', 'colored', array, (v) => (v ? 1 : 0))
     this._colorAttribute = new WebglColorAttribute(array, undefined, undefined)
+
     this.color = new THREE.Color(0xff1a1a)
   }
 
-  updateMesh (mesh: SimpleInstanceSubmesh) {
+  /**
+   * Updates the underlying submesh and rebinds all attributes to the new mesh.
+   * @param mesh - The new submesh to bind to this marker.
+   */
+  updateMesh(mesh: SimpleInstanceSubmesh): void {
     this._submesh = mesh
     const array = [this._submesh]
     this._visibleAttribute.updateMeshes(array)
@@ -88,72 +83,91 @@ export class Marker implements IVimObject {
     this._viewer.renderer.needsUpdate = true
   }
 
-  /** Sets the position of the marker in the 3d scene */
-  set position (value: THREE.Vector3) {
-    const m = new THREE.Matrix4()
-    m.compose(value, new THREE.Quaternion(), new THREE.Vector3(1, 1, 1))
-    this._submesh.mesh.setMatrixAt(this._submesh.index, m)
+  /**
+   * Sets the world position of the marker.
+   */
+  set position(value: THREE.Vector3) {
+    Marker._tmpMatrix.compose(value, new THREE.Quaternion(), new THREE.Vector3(1, 1, 1))
+    this._submesh.mesh.setMatrixAt(this.index, Marker._tmpMatrix)
     this._submesh.mesh.instanceMatrix.needsUpdate = true
     this._viewer.renderer.needsUpdate = true
-    this._submesh.mesh.computeBoundingSphere() //Required for Raycast
-  }
-
-  get position () {
-    const m = new THREE.Matrix4()
-    this._submesh.mesh.getMatrixAt(0, m)
-    return new THREE.Vector3().setFromMatrixPosition(m)
+    this._submesh.mesh.computeBoundingSphere() // Required for raycasting
   }
 
   /**
-   * Always false
+   * Gets the world position of the marker.
    */
-  get hasMesh (): boolean {
+  get position(): THREE.Vector3 {
+    this._submesh.mesh.getMatrixAt(this.index, Marker._tmpMatrix)
+    return new THREE.Vector3().setFromMatrixPosition(Marker._tmpMatrix)
+  }
+
+  /**
+   * Always false; marker is a gizmo and not an actual mesh.
+   */
+  get hasMesh(): boolean {
     return false
   }
 
   /**
-   * Applies a color override instead of outlines.
+   * Gets whether the marker is outlined (highlighted).
    */
-  get outline (): boolean {
+  get outline(): boolean {
     return this._outlineAttribute.value
   }
 
-  set outline (value: boolean) {
-    if(this._outlineAttribute.apply(value)){
+  /**
+   * Sets whether the marker is outlined (highlighted).
+   */
+  set outline(value: boolean) {
+    if (this._outlineAttribute.apply(value)) {
       if (value) this._viewer.renderer.addOutline()
       else this._viewer.renderer.removeOutline()
     }
   }
 
   /**
-   * Enlarges the gizmo to indicate focus.
+   * Gets whether the marker is focused (enlarged).
    */
-  get focused (): boolean {
+  get focused(): boolean {
     return this._focusedAttribute.value
   }
 
-  set focused (value: boolean) {
+  /**
+   * Sets whether the marker is focused (enlarged).
+   */
+  set focused(value: boolean) {
     this._focusedAttribute.apply(value)
     this._viewer.renderer.needsUpdate = true
   }
 
   /**
-   * Determines if the gizmo will be rendered.
+   * Gets whether the marker is visible in the scene.
    */
-  get visible (): boolean {
+  get visible(): boolean {
     return this._visibleAttribute.value
   }
 
-  set visible (value: boolean) {
+  /**
+   * Sets whether the marker is visible in the scene.
+   */
+  set visible(value: boolean) {
     this._visibleAttribute.apply(value)
     this._viewer.renderer.needsUpdate = true
   }
 
-  get color (): THREE.Color {
+  /**
+   * Gets the current color override for the marker.
+   */
+  get color(): THREE.Color {
     return this._colorAttribute.value
   }
 
-  set color (color: THREE.Color) {
+  /**
+   * Sets the color override for the marker.
+   * Passing undefined disables the override.
+   */
+  set color(color: THREE.Color | undefined) {
     if (color) {
       this._coloredAttribute.apply(true)
       this._colorAttribute.apply(color)
@@ -163,31 +177,41 @@ export class Marker implements IVimObject {
     this._viewer.renderer.needsUpdate = true
   }
 
-  get size () {
-    const matrix = new THREE.Matrix4()
-    this._submesh.mesh.getMatrixAt(this._submesh.index, matrix)
-    return matrix.elements[0]
-  }
-
-  set size (value: number) {
-    const matrix = new THREE.Matrix4()
-    this._submesh.mesh.getMatrixAt(this._submesh.index, matrix)
-    matrix.elements[0] = value
-    matrix.elements[5] = value
-    matrix.elements[10] = value
-    this._submesh.mesh.setMatrixAt(this._submesh.index, matrix)
-    this._submesh.mesh.instanceMatrix.needsUpdate = true
-    this._viewer.renderer.needsUpdate = true
-    this._submesh.mesh.computeBoundingSphere() //Required for Raycast
+  /**
+   * Gets the uniform scale factor applied to the marker.
+   */
+  get size(): number {
+    this._submesh.mesh.getMatrixAt(this.index, Marker._tmpMatrix)
+    return Marker._tmpMatrix.elements[0]
   }
 
   /**
-   * Retrieves the bounding box of the object from cache or computes it if needed.
-   * Returns a unit box arount the marker position.
-   * @returns {THREE.Box3 | undefined} The bounding box of the object.
+   * Sets the uniform scale factor for the marker.
+   * Only updates the matrix if the size has changed.
    */
-  async getBoundingBox (): Promise<THREE.Box3> {
-    const box =  new THREE.Box3().setFromCenterAndSize(this.position.clone(), new THREE.Vector3(1, 1, 1))
+  set size(value: number) {
+    const matrix = Marker._tmpMatrix
+    this._submesh.mesh.getMatrixAt(this.index, matrix)
+    const currentSize = matrix.elements[0]
+    if (currentSize !== value) {
+      matrix.elements[0] = value
+      matrix.elements[5] = value
+      matrix.elements[10] = value
+      this._submesh.mesh.setMatrixAt(this.index, matrix)
+      this._submesh.mesh.instanceMatrix.needsUpdate = true
+      this._viewer.renderer.needsUpdate = true
+      this._submesh.mesh.computeBoundingSphere() // Required for Raycast
+    }
+  }
+
+  /**
+   * Retrieves the bounding box of the object.
+   * Returns a unit-sized box centered at the marker position.
+   * Returned as a promise to satisfy interface, but computed synchronously.
+   * @returns The bounding box of the marker.
+   */
+  async getBoundingBox(): Promise<THREE.Box3> {
+    const box = new THREE.Box3().setFromCenterAndSize(this.position.clone(), Marker._unitVector)
     return Promise.resolve(box)
   }
 }

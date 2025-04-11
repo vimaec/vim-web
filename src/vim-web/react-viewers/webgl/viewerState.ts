@@ -17,7 +17,6 @@ export type ViewerState = {
 export function useViewerState (viewer: Core.Webgl.Viewer) : ViewerState {
   const getVim = () => {
     const v = viewer.vims?.[0]
-    console.log('getVim', v)
     return v
   }
 
@@ -38,7 +37,6 @@ export function useViewerState (viewer: Core.Webgl.Viewer) : ViewerState {
   vim.useOnChange(async (v) => {
     
     const elements = await getElements(v)
-    console.log('VIM CHANGED', elements)
     updateElements(elements)
   })
 
@@ -49,7 +47,6 @@ export function useViewerState (viewer: Core.Webgl.Viewer) : ViewerState {
   useEffect(() => {
     // register to viewer state changes
     const subLoad = viewer.onVimLoaded.subscribe(() => {
-      console.log('VIM LOADED', viewer.vims)
       vim.set(getVim())
     })
     const subSelect = viewer.selection.onSelectionChanged.subscribe(() => {
