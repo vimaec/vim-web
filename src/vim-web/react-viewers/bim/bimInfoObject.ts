@@ -1,18 +1,18 @@
-import * as VIM from '../../core-viewers/webgl/index'
+import * as Core from '../../core-viewers'
 import { groupBy } from '../helpers/data'
 import * as BIM from './bimInfoData'
 import { compare } from './bimUtils'
 import { AugmentedElement } from '../helpers/element'
 
 // TODO: Get this type from vim-format
-export declare type ElementParameter = {
+export type ElementParameter = {
   name: string | undefined;
   value: string | undefined;
   group: string | undefined;
   isInstance: boolean;
 };
 
-export async function getObjectData (object: VIM.Object3D, elements: AugmentedElement[]) : Promise<BIM.Data> {
+export async function getObjectData (object: Core.Webgl.Element3D, elements: AugmentedElement[]) : Promise<BIM.Data> {
   const element = object
     ? elements.find((e) => e.index === object.element)
     : undefined
@@ -62,7 +62,7 @@ export function getHeader (info: AugmentedElement | undefined): BIM.Entry[] | un
 }
 
 export async function getBody (
-  object: VIM.Object3D
+  object: Core.Webgl.Element3D
 ): Promise<BIM.Section[]> {
   let parameters = await object?.getBimParameters()
   if (!parameters) return null

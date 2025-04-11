@@ -10,7 +10,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 
 import { Viewport } from '../viewport'
 import { RenderScene } from './renderScene'
-import { ViewerMaterials } from '../../loader/materials/viewerMaterials'
+import { Materials } from '../../loader/materials/materials'
 import { OutlinePass } from './outlinePass'
 import { MergePass } from './mergePass'
 import { TransferPass } from './transferPass'
@@ -38,7 +38,7 @@ import { Camera } from '../camera/camera'
 export class RenderingComposer {
   private _renderer: THREE.WebGLRenderer
   private _scene: RenderScene
-  private _materials: ViewerMaterials
+  private _materials: Materials
   private _camera: THREE.PerspectiveCamera | THREE.OrthographicCamera
   private _size: THREE.Vector2
 
@@ -68,7 +68,7 @@ export class RenderingComposer {
     renderer: THREE.WebGLRenderer,
     scene: RenderScene,
     viewport: Viewport,
-    materials: ViewerMaterials,
+    materials: Materials,
     camera: Camera
   ) {
     this._renderer = renderer
@@ -100,7 +100,7 @@ export class RenderingComposer {
     this._sceneTarget.texture.name = 'sceneTarget'
 
     // Setup main render pass
-    this._renderPass = new RenderPass(this._scene.scene, this._camera)
+    this._renderPass = new RenderPass(this._scene.threeScene, this._camera)
     this._renderPass.renderToScreen = false
     this._renderPass.clearColor = new THREE.Color(0x000000)
     this._renderPass.clearAlpha = 0
@@ -127,7 +127,7 @@ export class RenderingComposer {
 
     // Setup pass to render only selected objects using mask material
     this._selectionRenderPass = new RenderPass(
-      this._scene.scene,
+      this._scene.threeScene,
       this._camera,
       this._materials.mask
     )

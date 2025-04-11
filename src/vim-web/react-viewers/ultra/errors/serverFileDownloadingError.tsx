@@ -1,4 +1,3 @@
-import * as Ultra from '../../../core-viewers/ultra'
 import { MessageBoxProps } from '../../panels/messageBox'
 import * as style from '../../errors/errorStyle'
 import * as Urls from '../../urls'

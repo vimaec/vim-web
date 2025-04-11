@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef, useLayoutEffect, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
-import { addBox } from '../../core-viewers/utils/threeUtils';
+import { addBox } from '../../utils/threeUtils';
 import { ISignal } from 'ste-signals';
 import { ActionRef, ArgActionRef, AsyncFuncRef, StateRef, useArgActionRef, useAsyncFuncRef, useFuncRef, useStateRef } from '../helpers/reactUtils';
+import { sanitize } from '../../utils/strings';
 
 export type Offsets = {
   topOffset: string;
@@ -39,7 +40,7 @@ export interface SectionBoxAdapter {
   setBox: (box: THREE.Box3) => void;
   onSelectionChanged: ISignal;
 
-  // Allow to override these at the component level
+  // Allow to override these at the viewer level
   getSelectionBox: () => Promise<THREE.Box3 | undefined>;
   getSceneBox: () => Promise<THREE.Box3>;
 }
@@ -89,9 +90,9 @@ export function useSectionBox(
   showOffsetPanel.useValidate((v) => enable.get() && v);
 
   // Setup textbox confirmation
-  topOffset.useConfirm((v) => sanitize(v, true));
-  sideOffset.useConfirm((v) => sanitize(v, true));
-  bottomOffset.useConfirm((v) => sanitize(v, true));
+  topOffset.useConfirm((v) => sanitize(v, true, 1));
+  sideOffset.useConfirm((v) => sanitize(v, true, 1));
+  bottomOffset.useConfirm((v) => sanitize(v, true, 1));
 
   // Update the section box on offset change.
   topOffset.useOnChange((v) => sectionBox.call(boxRef.current));
@@ -136,30 +137,11 @@ export function useSectionBox(
     sectionBox,
     getBox: () => adapter.getBox(),
 
-    // TODO - Remove these from here, it should be overriden at the component level.
+    // TODO - Remove these from here, it should be overriden at the viewer level.
     getSceneBox: getSceneBox,
     getSelectionBox,
   }
 }
-
-const sanitize = (value: string, strict: boolean) => {
-  // Special cases for non-strict mode
-  if (!strict) {
-    if (value === '' || value === '-') return value;
-  }
-  
-  // Parse the number
-  const num = parseFloat(value);
-  
-  // Handle invalid numbers
-  if (isNaN(num)) {
-    return strict ? '1' : undefined;
-  }
-  
-  // Valid number
-  return String(num);
-}
-
 
 function offsetsToBox3(top: string, side: string, bottom: string): THREE.Box3 {
   const getNumber = (s: string) => {

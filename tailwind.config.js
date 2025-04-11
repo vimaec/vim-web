@@ -59,7 +59,11 @@ module.exports = {
         DEFAULT: 'var(--c-overflow)'
       }
     },
-    extend: {}
+    extend: {
+      fontSize: {
+        'xxs': '10px',
+      },
+    }
   },
   plugins: [
     /** Makes it so we still tailwind preflight utils, but they only apply to vim-component

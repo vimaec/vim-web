@@ -3,7 +3,7 @@
  */
 
 import { CameraMovement } from './cameraMovement'
-import { Object3D } from '../../loader/object3D'
+import { Element3D } from '../../loader/element3d'
 import * as THREE from 'three'
 
 export class CameraMovementSnap extends CameraMovement {
@@ -43,8 +43,8 @@ export class CameraMovementSnap extends CameraMovement {
     this.set(this._camera.position, target)
   }
 
-  target (target: Object3D | THREE.Vector3): void {
-    const pos = target instanceof Object3D ? target.getCenter() : target
+  async target (target: Element3D | THREE.Vector3) {
+    const pos = target instanceof Element3D ? (await target.getCenter()) : target
     if (!pos) return
     this.set(this._camera.position, pos)
   }

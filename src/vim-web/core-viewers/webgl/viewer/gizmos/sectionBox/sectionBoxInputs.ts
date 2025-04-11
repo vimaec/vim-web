@@ -5,7 +5,8 @@
 import { Viewer } from '../../viewer';
 import * as THREE from 'three';
 import { SectionBoxHandles } from './sectionBoxHandles';
-import { Axis, SectionBoxHandle } from './sectionBoxHandle';
+import { AxisName, SectionBoxHandle } from './sectionBoxHandle';
+import { threeNDCFromVector2 } from '../../raycaster';
 
 const MIN_BOX_SIZE = 3;
 
@@ -246,7 +247,7 @@ export class BoxInputs {
    * @param amount - The numeric offset along that axis to add or subtract.
    * @returns A **new** `Box3` instance with updated min/max coordinates.
    */
-  private stretch(axis: Axis, sign: number, amount: number): THREE.Box3 {
+  private stretch(axis: AxisName, sign: number, amount: number): THREE.Box3 {
     const box = this._sharedBox.clone();
     const direction = sign > 0 ? 'max' : 'min';
     const opposite = sign > 0 ? 'min' : 'max';
@@ -268,23 +269,14 @@ export class BoxInputs {
   }
 
   /**
-   * Prepares the internal raycaster for a given 2D pointer position.
-   * 
-   * @param position - The pointer position in canvas coordinates.
-   * @returns The updated raycaster pointing from the camera through this position.
-   */
-  private getRaycaster(position: THREE.Vector2): THREE.Raycaster {
-    return this._viewer.raycaster.fromPoint2(position, this._raycaster);
-  }
-
-  /**
    * Raycasts into the handle meshes from the given pointer position.
    * 
    * @param position - The pointer position in canvas coordinates.
    * @returns An array of intersection results, if any.
    */
   private raycast(position: THREE.Vector2): THREE.Intersection[] {
-    return this.getRaycaster(position).intersectObject(this._handles.meshes);
+    this.setupRaycaster(position);
+    return this._raycaster.intersectObject(this._handles.meshes);
   }
 
   /**
@@ -294,9 +286,15 @@ export class BoxInputs {
    * @returns The intersection point in 3D space, or `null` if none.
    */
   private raycastPlane(position: THREE.Vector2): THREE.Vector3 | null {
-    return this.getRaycaster(position).ray.intersectPlane(
+    this.setupRaycaster(position);
+    return this._raycaster.ray.intersectPlane(
       this._dragPlane,
       new THREE.Vector3()
     );
+  }
+
+  private setupRaycaster(position: THREE.Vector2) {
+    const pos = threeNDCFromVector2(position);
+    this._raycaster.setFromCamera(pos, this._viewer.camera.three);
   }
 }

@@ -3,8 +3,8 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react'
-import * as VIM from '../../core-viewers/webgl/index'
-import { SideState } from '../sidePanel/sideState'
+import * as Core from '../../core-viewers'
+import { SideState } from '../state/sideState'
 
 export type ToastConfigSpeed = {
   visible: boolean
@@ -19,7 +19,7 @@ export const MenuToastMemo = React.memo(MenuToast)
 /**
  * Toast jsx component that briefly shows up when camera speed changes.
  */
-function MenuToast (props: { viewer: VIM.Viewer; side: SideState }) {
+function MenuToast (props: { viewer: Core.Webgl.Viewer; side: SideState }) {
   const [visible, setVisible] = useState<boolean>()
   const [speed, setSpeed] = useState<number>(-1)
   const speedRef = useRef<number>(speed)

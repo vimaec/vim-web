@@ -1,4 +1,4 @@
-import { UltraReact } from '../../vim-web'
+import * as VIM from '../../vim-web'
 import { AccessToken } from '../utils/accesToken'
 
 export function UltraAccessToken () {
@@ -6,7 +6,7 @@ export function UltraAccessToken () {
 }
   
 async function createComponent (div: HTMLDivElement, url: string, token: string) {
-  const ultra = await UltraReact.createUltraComponent(div)
+  const ultra = await VIM.React.Ultra.createViewer(div)
   await ultra.viewer.connect()
   const request = ultra.load({url: url, authToken: token})
   await request.getResult()
