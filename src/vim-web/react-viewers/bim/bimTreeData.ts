@@ -36,7 +36,6 @@ export function toTreeData (
 ) {
   if(!vim) return
   if (!elements?.length) return
-  console.log('toTreeData', vim, elements)
 
   const main: (e: AugmentedElement) => string =
     grouping === 'Family'

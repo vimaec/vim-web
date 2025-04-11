@@ -121,7 +121,6 @@ export function Viewer (props: {
   const [contextMenu, setcontextMenu] = useState<ContextMenuCustomization>()
   const [controlBarCustom, setControlBarCustom] = useState<ControlBarCustomization>()
   const bimInfoRef = useBimInfo()
-  console.log('bimInfoRef', bimInfoRef)
 
   const viewerState = useViewerState(props.viewer)
   const treeRef = useRef<TreeActionRef>()
