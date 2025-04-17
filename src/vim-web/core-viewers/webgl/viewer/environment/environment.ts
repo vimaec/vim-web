@@ -4,11 +4,11 @@
 
 import * as THREE from 'three'
 import { ViewerSettings } from '../settings/viewerSettings'
-import { ICamera } from '../camera/ICamera'
-import { ViewerMaterials } from '../../loader/materials/viewerMaterials'
+import { ICamera } from '../camera/cameraInterface'
+import { Materials } from '../../loader/materials/materials'
 import { Skybox } from './skybox'
 import { Renderer } from '../rendering/renderer'
-import { CameraLight } from './cameraLight'
+import { Light } from './light'
 /**
  * Manages ground plane and lights that are part of the THREE.Scene to render but not part of the Vims.
  */
@@ -24,19 +24,19 @@ export class Environment {
   /**
    * The array of directional lights in the scene.
    */
-  readonly sunLights: ReadonlyArray<CameraLight>
+  readonly sunLights: ReadonlyArray<Light>
 
   /*
    * The skybox in the scene.
    */
   readonly skybox: Skybox
 
-  constructor (camera:ICamera, renderer: Renderer, viewerMaterials: ViewerMaterials, settings: ViewerSettings) {
+  constructor (camera:ICamera, renderer: Renderer, materials: Materials, settings: ViewerSettings) {
     this._camera = camera
     this._renderer = renderer
 
     this.skyLight = this.createSkyLight(settings)
-    this.skybox = new Skybox(camera, renderer, viewerMaterials, settings)
+    this.skybox = new Skybox(camera, renderer, materials, settings)
     this.sunLights = this.createSunLights(settings)
 
     this.addObjectsToRenderer()
@@ -54,9 +54,9 @@ export class Environment {
     return new THREE.HemisphereLight(skyColor, groundColor, intensity * Math.PI)
   }
 
-  private createSunLights (settings: ViewerSettings): ReadonlyArray<CameraLight> {
+  private createSunLights (settings: ViewerSettings): ReadonlyArray<Light> {
     return settings.sunlights.map((s) =>
-      new CameraLight(this._camera, s)
+      new Light(this._camera, s)
     )
   }
 

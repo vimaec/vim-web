@@ -3,12 +3,20 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react'
-import * as VIM from '../../core-viewers/webgl/index'
-import * as Icons from './icons'
+import * as Core from '../../core-viewers'
+import * as Icons from '../icons'
 import { CameraRef } from '../state/cameraState'
-import { anyUiAxesButton, isTrue } from '../settings/settings'
+import { isTrue, Settings } from '../settings'
 import { SettingsState } from '../settings/settingsState'
 import { whenAllTrue, whenTrue } from '../helpers/utils'
+
+function anyUiAxesButton (settings: Settings) {
+  return (
+    settings.ui.orthographic ||
+    settings.ui.resetCamera ||
+    settings.ui.enableGhost
+  )
+}
 
 /**
  * Memoized version of the AxesPanelMemo.
@@ -18,7 +26,7 @@ export const AxesPanelMemo = React.memo(AxesPanel)
 /**
  * JSX Component for axes gizmo.
  */
-function AxesPanel (props: { viewer: VIM.Viewer, camera: CameraRef, settings: SettingsState }) {
+function AxesPanel (props: { viewer: Core.Webgl.Viewer, camera: CameraRef, settings: SettingsState }) {
   const viewer = props.viewer
 
   const [ortho, setOrtho] = useState<boolean>(viewer.camera.orthographic)

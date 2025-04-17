@@ -3,10 +3,10 @@
  */
 
 import * as THREE from 'three'
-import { RaycastResult } from '../../raycaster'
+import { IRaycastResult, RaycastResult } from '../../raycaster'
 import { Viewer } from '../../viewer'
 import { MeasureGizmo } from './measureGizmo'
-import { ControllablePromise } from '../../../../utils/promise'
+import { ControllablePromise } from '../../../../../utils/promise'
 
 /**
  * Interacts with the measure tool.
@@ -116,22 +116,7 @@ export class Measure implements IMeasure {
     this._promise = new ControllablePromise<void>()
     this._stage = 'ready'
     this._previousOnClick = this._viewer.inputs.mouse.onClick
-    this._viewer.inputs.mouse.onClick = (pos, ctrl) => {
-      
-      const hit = this._viewer.raycaster.raycastFromScreen(pos)
-      if(!hit.isHit) return
-      switch (this._stage) {
-        case 'ready':
-          this.onFirstClick(hit)
-          this._stage = 'active'
-          break 
-        case 'active':
-          const success = this.onSecondClick(hit)
-          this._stage = success ? 'done' : 'failed'
-          this._promise.resolve()
-          break
-      }
-    }
+    this._viewer.inputs.mouse.onClick = async (pos: THREE.Vector2) => this.onClick(pos)
     return this._promise.promise.finally(() => {
       if (this._previousOnClick) {
         this._viewer.inputs.mouse.onClick = this._previousOnClick
@@ -140,13 +125,30 @@ export class Measure implements IMeasure {
     })
   }
 
+  private async onClick (pos: THREE.Vector2) {
+      
+    const hit = await this._viewer.raycaster.raycastFromScreen(pos)
+    if(hit === undefined) return
+    switch (this._stage) {
+      case 'ready':
+        this.onFirstClick(hit)
+        this._stage = 'active'
+        break 
+      case 'active':
+        const success = this.onSecondClick(hit)
+        this._stage = success ? 'done' : 'failed'
+        this._promise.resolve()
+        break
+    }
+  }
+
   /**
    * Should be private.
    */
-  onFirstClick (hit: RaycastResult) {
+  onFirstClick (hit: IRaycastResult) {
     this.clear()
     this._meshes = new MeasureGizmo(this._viewer)
-    this._startPos = hit.position
+    this._startPos = hit.worldPosition
     this._meshes.start(this._startPos)
   }
 
@@ -176,9 +178,9 @@ export class Measure implements IMeasure {
   /**
    * Should be private.
    */
-  onSecondClick (hit : RaycastResult) {
+  onSecondClick (hit : IRaycastResult) {
     // Compute measurement vector component
-    this._endPos = hit.position
+    this._endPos = hit.worldPosition
 
     this._measurement = this._endPos.clone().sub(this._startPos)
     console.log(`Distance: ${this._measurement.length()}`)

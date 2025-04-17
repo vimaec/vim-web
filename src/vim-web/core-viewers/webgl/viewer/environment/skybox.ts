@@ -4,10 +4,11 @@
 
 import * as THREE from 'three'
 import { ViewerSettings } from '../settings/viewerSettings'
-import { ICamera } from '../camera/ICamera'
-import { ViewerMaterials } from '../../loader/materials/viewerMaterials'
+import { ICamera } from '../camera/cameraInterface'
+import { Materials } from '../../loader/materials/materials'
 import { SkyboxMaterial } from '../../loader/materials/skyboxMaterial'
 import { Renderer } from '../rendering/renderer'
+import { Layers } from '../raycaster'
 
 export class Skybox {
   readonly mesh : THREE.Mesh
@@ -67,11 +68,12 @@ export class Skybox {
   private readonly _material : SkyboxMaterial
   private readonly _renderer: Renderer
 
-  constructor (camera: ICamera, renderer : Renderer, materials: ViewerMaterials, settings: ViewerSettings) {
+  constructor (camera: ICamera, renderer : Renderer, materials: Materials, settings: ViewerSettings) {
     this._renderer = renderer
     this._plane = new THREE.PlaneGeometry()
     this._material = materials.skyBox
     this.mesh = new THREE.Mesh(this._plane, materials.skyBox)
+    this.mesh.layers.set(Layers.NoRaycast)
 
     // Apply settings
     this.enable = settings.skybox.enable

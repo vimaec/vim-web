@@ -3,11 +3,11 @@
  */
 
 /**
- * Basic HTML structure that the webgl component expects
+ * Basic HTML structure that the webgl viewer expects
  */
 export type Container = {
   /**
-   * Root of the viewer, all component ui should have this as an acestor.
+   * Root of the viewer, all viewer ui should have this as an acestor.
    */
   root: HTMLElement
   /**
@@ -24,7 +24,7 @@ export type Container = {
 }
 
 /**
- * Creates a default container for the vim component around a vim viewer
+ * Creates a default container for the vim viewer around a vim viewer
  * The element is created if not provided. The element will be made position:absolute.
  * @element optional HTML element to use as root
  */

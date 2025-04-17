@@ -65,18 +65,20 @@ export type VimSettings = {
 /**
  * Default configuration settings for a vim object.
  */
-export const defaultConfig: VimSettings = {
-  position: new THREE.Vector3(),
-  rotation: new THREE.Vector3(),
-  scale: 1,
-  matrix: undefined,
-  transparency: 'all',
-  verboseHttp: false,
+export function getDefaultVimSettings(): VimSettings {
+return {
+    position: new THREE.Vector3(),
+    rotation: new THREE.Vector3(),
+    scale: 1,
+    matrix: undefined,
+    transparency: 'all',
+    verboseHttp: false,
 
-  // progressive
-  fileType: undefined,
-  progressive: false,
-  progressiveInterval: 1000
+    // progressive
+    fileType: undefined,
+    progressive: false,
+    progressiveInterval: 1000
+  }
 }
 
 /**
@@ -89,10 +91,10 @@ export type VimPartialSettings = Partial<VimSettings>
  * @param {VimPartialSettings} [options] - Optional partial settings for the Vim object.
  * @returns {VimSettings} The complete settings for the Vim object, including defaults.
  */
-export function getFullSettings (options?: VimPartialSettings) {
+export function createVimSettings (options?: VimPartialSettings) {
   const merge = options
-    ? deepmerge(defaultConfig, options, undefined)
-    : defaultConfig
+    ? deepmerge(getDefaultVimSettings(), options, undefined)
+    : getDefaultVimSettings()
 
   merge.transparency = Transparency.isValid(merge.transparency)
     ? merge.transparency

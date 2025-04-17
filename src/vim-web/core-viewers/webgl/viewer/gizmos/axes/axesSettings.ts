@@ -1,39 +1,46 @@
-export class AxesSettings {
-  size: number = 84
-  padding: number = 4
-  bubbleSizePrimary: number = 8
-  bubbleSizeSecondary: number = 6
-  lineWidth: number = 2
-  fontPxSize: number = 12
-  fontFamily: string = 'arial'
-  fontWeight: string = 'bold'
-  fontColor: string = '#222222'
-  className: string = 'gizmo-axis-canvas'
+export interface AxesSettings {
+  size: number;
+  padding: number;
+  bubbleSizePrimary: number;
+  bubbleSizeSecondary: number;
+  lineWidth: number;
+  fontPxSize: number;
+  fontFamily: string;
+  fontWeight: string;
+  fontColor: string;
+  className: string;
+  colorX: string;
+  colorY: string;
+  colorZ: string;
+  colorXSub: string;
+  colorYSub: string;
+  colorZSub: string;
+}
 
-  colorX: string = '#f73c3c'
-  colorY: string = '#6ccb26'
-  colorZ: string = '#178cf0'
-  colorXSub: string = '#942424'
-  colorYSub: string = '#417a17'
-  colorZSub: string = '#0e5490'
-
-  constructor (init?: Partial<AxesSettings>) {
-    this.size = init?.size ?? this.size
-    this.padding = init?.padding ?? this.padding
-    this.bubbleSizePrimary = init?.bubbleSizePrimary ?? this.bubbleSizePrimary
-    this.bubbleSizeSecondary =
-      init?.bubbleSizeSecondary ?? this.bubbleSizeSecondary
-    this.lineWidth = init?.lineWidth ?? this.lineWidth
-    this.fontPxSize = init?.fontPxSize ?? this.fontPxSize
-    this.fontFamily = init?.fontFamily ?? this.fontFamily
-    this.fontWeight = init?.fontWeight ?? this.fontWeight
-    this.fontColor = init?.fontColor ?? this.fontColor
-    this.className = init?.className ?? this.className
-    this.colorX = init?.colorX ?? this.colorX
-    this.colorY = init?.colorY ?? this.colorY
-    this.colorZ = init?.colorZ ?? this.colorZ
-    this.colorXSub = init?.colorXSub ?? this.colorXSub
-    this.colorYSub = init?.colorYSub ?? this.colorYSub
-    this.colorZSub = init?.colorZSub ?? this.colorZSub
+export function getDefaultAxesSettings() :AxesSettings {
+  return{
+    size: 84,
+    padding: 4,
+    bubbleSizePrimary: 8,
+    bubbleSizeSecondary: 6,
+    lineWidth: 2,
+    fontPxSize: 12,
+    fontFamily: 'arial',
+    fontWeight: 'bold',
+    fontColor: '#222222',
+    className: 'gizmo-axis-canvas',
+    colorX: '#f73c3c',
+    colorY: '#6ccb26',
+    colorZ: '#178cf0',
+    colorXSub: '#942424',
+    colorYSub: '#417a17',
+    colorZSub: '#0e5490',
   }
+
+};
+
+export function createAxesSettings(
+  init?: Partial<AxesSettings>
+): AxesSettings {
+  return { ...getDefaultAxesSettings(), ...init };
 }

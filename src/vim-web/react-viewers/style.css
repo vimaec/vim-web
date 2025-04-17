@@ -196,7 +196,7 @@
     padding-left:  min(2cqmin, 1rem);
     padding-right:  min(2cqmin, 1rem);
   }
-  
+
   .vim-control-bar-button {
     height: min(8cqmin, 2.5rem);
     width: min(8cqmin, 2.5rem);
@@ -204,6 +204,18 @@
   .vim-control-bar-section {
     gap: min(2cqmin, 0.5rem)
   }
+
+  .vim-rest-of-screen .vc-text-xs {
+    font-size: min(2.0cqmin, 0.75rem);
+    line-height: min(2.5cqmin, 0.85rem);
+  }
+
+  .vim-control-bar-counter{
+    margin-bottom: min(1cqmin, 0.5rem);
+    margin-right: min(2cqmin, 0.5rem);
+    margin-left: max(-2cqmin, -0.75rem);
+  }
+
   .vim-axes-panel{
     border-radius: min(3cqmin, 1rem);
     top: min(2cqmin, 1.5rem);

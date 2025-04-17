@@ -4,7 +4,7 @@
 
 import * as THREE from 'three'
 import { Camera } from './camera'
-import { Object3D } from '../../loader/object3D'
+import { Element3D } from '../../loader/element3d'
 import { CameraMovementSnap } from './cameraMovementSnap'
 import { CameraMovement } from './cameraMovement'
 
@@ -123,8 +123,8 @@ export class CameraLerp extends CameraMovement {
     }
   }
 
-  target (target: Object3D | THREE.Vector3): void {
-    const pos = target instanceof Object3D ? target.getCenter() : target
+  async target (target: Element3D | THREE.Vector3) {
+    const pos = target instanceof Element3D ? (await target.getCenter()) : target
     const next = pos.clone().sub(this._camera.position)
     const start = this._camera.quaternion.clone()
     const rot = new THREE.Quaternion().setFromUnitVectors(

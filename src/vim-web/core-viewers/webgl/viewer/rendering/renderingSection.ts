@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { ViewerMaterials } from '../../loader/materials/viewerMaterials'
+import { Materials } from '../../loader/materials/materials'
 import { Renderer } from './renderer'
 
 /**
@@ -12,7 +12,7 @@ import { Renderer } from './renderer'
 export class RenderingSection {
   private _renderer: Renderer
 
-  private _materials: ViewerMaterials
+  private _materials: Materials
   private _active: boolean = true
 
   /**
@@ -38,7 +38,7 @@ export class RenderingSection {
     this.minZ
   ]
 
-  constructor (renderer: Renderer, materials: ViewerMaterials) {
+  constructor (renderer: Renderer, materials: Materials) {
     this._renderer = renderer
     this._materials = materials
   }

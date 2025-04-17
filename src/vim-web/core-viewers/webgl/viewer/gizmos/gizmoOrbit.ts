@@ -5,7 +5,7 @@ import * as THREE from 'three'
 import { Renderer } from '../rendering/renderer'
 import { Camera } from '../camera/camera'
 import { ViewerSettings } from '../settings/viewerSettings'
-import { CoreInputHandler } from '../../../shared/coreInputHandler'
+import {type InputHandler, PointerMode} from '../../../shared'
 
 /**
  * Manages the camera target gizmo
@@ -14,7 +14,7 @@ export class GizmoOrbit {
   // Dependencies
   private _renderer: Renderer
   private _camera: Camera
-  private _inputs: CoreInputHandler
+  private _inputs: InputHandler
 
   // Settings
   private _size: number = 1
@@ -39,7 +39,7 @@ export class GizmoOrbit {
   constructor (
     renderer: Renderer,
     camera: Camera,
-    input: CoreInputHandler,
+    input: InputHandler,
     settings: ViewerSettings
   ) {
     this._renderer = renderer
@@ -67,7 +67,7 @@ export class GizmoOrbit {
   private onUpdate () {
     this.updateScale()
     this.setPosition(this._camera.target)
-    this.show(this._inputs.pointerActive === 'orbit')
+    this.show(this._inputs.pointerActive === PointerMode.ORBIT)
   }
 
   /**
@@ -191,6 +191,7 @@ export class GizmoOrbit {
       this._materialAlways
     ])
 
+    this._gizmos.layers.set(2)
     this._renderer.add(this._gizmos)
     this.updateScale()
   }

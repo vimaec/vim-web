@@ -3,7 +3,8 @@
  */
 
 import { useEffect } from 'react'
-import { SectionBoxRef, THREE } from '../../index'
+import * as THREE from 'three'
+import { SectionBoxRef } from './sectionBoxState'
 import { ActionRef, AsyncFuncRef, StateRef, useActionRef, useAsyncFuncRef, useStateRef } from '../helpers/reactUtils'
 import { ISignal } from 'ste-signals'
 
@@ -14,7 +15,7 @@ export interface CameraRef {
   frameSelection: AsyncFuncRef<void>
   frameScene: AsyncFuncRef<void>
 
-  // Allow to override these at the component level
+  // Allow to override these at the viewer level
   getSelectionBox: AsyncFuncRef<THREE.Box3 | undefined>
   getSceneBox: AsyncFuncRef<THREE.Box3 | undefined>
 }

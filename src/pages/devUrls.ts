@@ -7,3 +7,4 @@ export const residenceWithAccessToken = 'https://saas-api-v2.vimaec.com/api/publ
 export const notAVim = 'https://storage.cdn.vimaec.com/samples/not_a_vim.vim'
 
 export const medicalTower = 'https://storage.cdn.vimaec.com/samples/Medical_Tower.vim'
+export const bigDemo = "https://vimdevelopment01storage.blob.core.windows.net/samples/demo.vim"

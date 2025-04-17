@@ -1,25 +1,4 @@
-const btnStyle = 'vim-control-bar-button vc-rounded-full vc-items-center vc-justify-center vc-flex vc-transition-all hover:vc-scale-110'
-export function buttonDefaultStyle (on: boolean) {
-  return on
-    ? btnStyle + ' vc-text-primary'
-    : btnStyle + ' vc-text-gray-medium'
-}
-
-export function buttonExpandStyle (on: boolean) {
-  return on
-    ? btnStyle + ' vc-text-white vc-bg-primary'
-    : btnStyle + ' vc-text-gray-medium'
-}
-
-export function buttonDisableStyle (on: boolean) {
-  return on
-    ? btnStyle + ' vc-text-gray-medium'
-    : btnStyle + ' vc-text-gray vc-pointer-events-none'
-}
-
-export function buttonBlueStyle (on: boolean) {
-  return btnStyle + ' vc-text-white'
-}
+import * as Style from './style'
 
 export interface IControlBarButtonItem {
   id: string,
@@ -31,9 +10,23 @@ export interface IControlBarButtonItem {
   style?: (on: boolean) => string
 }
 
+export function isControlBarButtonItem(button: any): button is IControlBarButtonItem {
+  return (
+    button !== null &&
+    typeof button === "object" &&
+    typeof button.id === "string" &&
+    typeof button.tip === "string" &&
+    typeof button.action === "function" &&
+    typeof button.icon === "function" &&
+    (button.enabled === undefined || typeof button.enabled === "function") &&
+    (button.isOn === undefined || typeof button.isOn === "function") &&
+    (button.style === undefined || typeof button.style === "function")
+  );
+}
+
 export function createButton (button: IControlBarButtonItem) {
   if (button.enabled !== undefined && !button.enabled()) return null
-  const style = (button.style?? buttonDefaultStyle)(button.isOn?.())
+  const style = (button.style?? Style.buttonDefaultStyle)(button.isOn?.())
 
   return (
     <button key={button.id} id={button.id} data-tip={button.tip} onClick={button.action} className={style} type="button">
@@ -41,3 +34,4 @@ export function createButton (button: IControlBarButtonItem) {
     </button>
   )
 }
+

@@ -3,10 +3,10 @@
  */
 
 import * as THREE from 'three'
-import { IRenderer, Scene } from '../../loader/scene'
+import { IRenderer, WebglScene } from '../../loader/scene'
 import { Viewport } from '../viewport'
 import { RenderScene } from './renderScene'
-import { ModelMaterial, ViewerMaterials } from '../../loader/materials/viewerMaterials'
+import { ModelMaterial, Materials } from '../../loader/materials/materials'
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer'
 
 import { Camera } from '../camera/camera'
@@ -43,7 +43,7 @@ export class Renderer implements IRenderer {
   private _viewport: Viewport
   private _camera: Camera
   private _composer: RenderingComposer
-  private _materials: ViewerMaterials
+  private _materials: Materials
   private _renderText: boolean | undefined
 
   private _needsUpdate: boolean
@@ -54,6 +54,8 @@ export class Renderer implements IRenderer {
 
   // 3GB
   private maxMemory = 3 * Math.pow(10, 9)
+  private _outlineCount = 0
+
 
   /**
    * Indicates whether the scene should be re-rendered on change only.
@@ -76,7 +78,7 @@ export class Renderer implements IRenderer {
   constructor (
     scene: RenderScene,
     viewport: Viewport,
-    materials: ViewerMaterials,
+    materials: Materials,
     camera: Camera,
     settings: ViewerSettings
   ) {
@@ -136,11 +138,11 @@ export class Renderer implements IRenderer {
    * Gets or sets the background color or texture of the scene.
    */
   get background () {
-    return this._scene.scene.background
+    return this._scene.threeScene.background
   }
 
   set background (color: THREE.Color | THREE.Texture) {
-    this._scene.scene.background = color
+    this._scene.threeScene.background = color
     this.needsUpdate = true
   }
 
@@ -213,6 +215,16 @@ export class Renderer implements IRenderer {
     this.needsUpdate = true
   }
 
+  addOutline () {
+    this._outlineCount++
+    this.needsUpdate = true
+  }
+
+  removeOutline () {
+    this._outlineCount--
+    this.needsUpdate = true
+  }
+
   /**
    * Renders what is in the camera's view.
    */
@@ -227,14 +239,14 @@ export class Renderer implements IRenderer {
       this._sceneUpdated = false
     }
 
-    this._composer.outlines = this._scene.hasOutline()
+    this._composer.outlines = this._outlineCount > 0
     if(this.needsUpdate || !this.onDemand) {
       this._composer.render()
     }
     this._needsUpdate = false
 
     if (this.textEnabled && this._scene.has2dObjects()) {
-      this.textRenderer.render(this._scene.scene, this._camera.three)
+      this.textRenderer.render(this._scene.threeScene, this._camera.three)
     }
 
     this._scene.clearUpdateFlags()
@@ -244,8 +256,8 @@ export class Renderer implements IRenderer {
    * Adds an object to be rendered.
    * @param target The object or scene to add for rendering.
    */
-  add (target: Scene | THREE.Object3D) {
-    if (target instanceof Scene) {
+  add (target: WebglScene | THREE.Object3D) {
+    if (target instanceof WebglScene) {
       const mem = target.getMemory()
       const remaining = this.maxMemory - this.estimatedMemory
       if (mem > remaining) {
@@ -264,7 +276,7 @@ export class Renderer implements IRenderer {
    * Removes an object from rendering.
    * @param target The object or scene to remove from rendering.
    */
-  remove (target: Scene | THREE.Object3D) {
+  remove (target: WebglScene | THREE.Object3D) {
     this._scene.remove(target)
     this.notifySceneUpdate()
   }

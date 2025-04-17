@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useLayoutEffect, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
-import { addBox } from '../../core-viewers/utils/threeUtils';
+import { addBox } from '../../utils/threeUtils';
 import { ISignal } from 'ste-signals';
 import { ActionRef, ArgActionRef, AsyncFuncRef, StateRef, useArgActionRef, useAsyncFuncRef, useFuncRef, useStateRef } from '../helpers/reactUtils';
 
@@ -24,9 +24,9 @@ export interface SectionBoxRef {
 
   showOffsetPanel: StateRef<boolean>;
 
-  topOffset: StateRef<string>;
-  sideOffset: StateRef<string>;
-  bottomOffset: StateRef<string>;
+  topOffset: StateRef<number>;
+  sideOffset: StateRef<number>;
+  bottomOffset: StateRef<number>;
 
   getSelectionBox: AsyncFuncRef<THREE.Box3 | undefined>;
   getSceneBox: AsyncFuncRef<THREE.Box3>;
@@ -39,7 +39,7 @@ export interface SectionBoxAdapter {
   setBox: (box: THREE.Box3) => void;
   onSelectionChanged: ISignal;
 
-  // Allow to override these at the component level
+  // Allow to override these at the viewer level
   getSelectionBox: () => Promise<THREE.Box3 | undefined>;
   getSceneBox: () => Promise<THREE.Box3>;
 }
@@ -52,9 +52,9 @@ export function useSectionBox(
   const visible = useStateRef(false);
   const showOffsetPanel = useStateRef(false);
   const auto = useStateRef(false);
-  const topOffset = useStateRef('1');
-  const sideOffset = useStateRef('1');
-  const bottomOffset = useStateRef('1');
+  const topOffset = useStateRef(1);
+  const sideOffset = useStateRef(1);
+  const bottomOffset = useStateRef(1);
 
   // The reference box on which the offsets are applied.
   const boxRef = useRef<THREE.Box3>(adapter.getBox());
@@ -88,11 +88,6 @@ export function useSectionBox(
   visible.useValidate((v) => enable.get() && v);
   showOffsetPanel.useValidate((v) => enable.get() && v);
 
-  // Setup textbox confirmation
-  topOffset.useConfirm((v) => sanitize(v, true));
-  sideOffset.useConfirm((v) => sanitize(v, true));
-  bottomOffset.useConfirm((v) => sanitize(v, true));
-
   // Update the section box on offset change.
   topOffset.useOnChange((v) => sectionBox.call(boxRef.current));
   sideOffset.useOnChange((v) => sectionBox.call(boxRef.current));
@@ -108,7 +103,7 @@ export function useSectionBox(
   const sectionBox = useArgActionRef((baseBox: THREE.Box3) => {
     if(baseBox === undefined) return
     boxRef.current = baseBox;
-    const newBox = addBox(baseBox, offsetsToBox3(topOffset.get(), sideOffset.get(), bottomOffset.get()));
+    const newBox = addBox(baseBox, offsetsToBox3_(topOffset.get(), sideOffset.get(), bottomOffset.get()));
     adapter.setBox(newBox);
   });
 
@@ -136,38 +131,16 @@ export function useSectionBox(
     sectionBox,
     getBox: () => adapter.getBox(),
 
-    // TODO - Remove these from here, it should be overriden at the component level.
+    // TODO - Remove these from here, it should be overriden at the viewer level.
     getSceneBox: getSceneBox,
     getSelectionBox,
   }
 }
 
-const sanitize = (value: string, strict: boolean) => {
-  // Special cases for non-strict mode
-  if (!strict) {
-    if (value === '' || value === '-') return value;
-  }
-  
-  // Parse the number
-  const num = parseFloat(value);
-  
-  // Handle invalid numbers
-  if (isNaN(num)) {
-    return strict ? '1' : undefined;
-  }
-  
-  // Valid number
-  return String(num);
-}
+function offsetsToBox3_(top: number, side: number, bottom: number): THREE.Box3 {
 
-
-function offsetsToBox3(top: string, side: string, bottom: string): THREE.Box3 {
-  const getNumber = (s: string) => {
-    const num = parseFloat(s);
-    return isNaN(num) ? 0 : num;
-  };
   return new THREE.Box3(
-    new THREE.Vector3(-getNumber(side), -getNumber(side), -getNumber(bottom)),
-    new THREE.Vector3(getNumber(side), getNumber(side), getNumber(top))
+    new THREE.Vector3(-side, -side, -bottom),
+    new THREE.Vector3(side, side, top)
   );
 }
