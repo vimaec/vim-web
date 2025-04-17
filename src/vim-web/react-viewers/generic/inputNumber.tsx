@@ -1,7 +1,7 @@
 import { useRef, useState, useSyncExternalStore, useEffect } from "react";
 import { StateRef } from "../helpers/reactUtils";
 
-export function InputNumber(props: { state: StateRef<number> }) {
+export function InputNumber(props: { state: StateRef<number>, disabled?: boolean }) {
   const defaultValue = useRef(props.state.get());
 
   const externalValue = useSyncExternalStore(
@@ -39,6 +39,7 @@ export function InputNumber(props: { state: StateRef<number> }) {
 
   return (
     <input
+      disabled={props.disabled ?? false}
       type="number"
       value={inputValue}
       onChange={handleChange}

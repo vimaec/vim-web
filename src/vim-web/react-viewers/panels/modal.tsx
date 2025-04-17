@@ -10,14 +10,14 @@ export type ModalPropsTyped = (MessageBoxPropsTyped | LoadingBoxPropsTyped | Hel
   onClose?: () => void
 }
 
-export type ModalRef = {
+export type ModalHandle = {
   getActiveState(): ModalPropsTyped | undefined
   loading (content: LoadingBoxProps | undefined): void
   message (content: MessageBoxProps | undefined): void
   help (show: boolean): void
 }
 
-export const Modal = forwardRef<ModalRef, {canFollowLinks: boolean}>((props, ref) =>{
+export const Modal = forwardRef<ModalHandle, {canFollowLinks: boolean}>((props, ref) =>{
   const [state, setState ] = useState<(ModalPropsTyped)[]>()
 
   const update = (value: ModalPropsTyped | undefined, index: number) => {

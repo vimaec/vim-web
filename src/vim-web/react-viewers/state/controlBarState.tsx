@@ -11,7 +11,7 @@ import { getPointerState } from './pointerState';
 import { getFullScreenState } from './fullScreenState';
 import { SectionBoxRef } from './sectionBoxState';
 import { getMeasureState } from './measureState';
-import { ModalRef } from '../panels/modal';
+import { ModalHandle } from '../panels/modal';
 
 import { IsolationRef } from './sharedIsolation';
 import { PointerMode } from '../../core-viewers/shared';
@@ -180,7 +180,7 @@ export function controlBarMeasure(
 }
 
 function controlBarSettings(
-  modal: ModalRef,
+  modal: ModalHandle,
   side: SideState,
   settings: Settings): ControlBar.IControlBarSection {
   const fullScreen = getFullScreenState();
@@ -344,7 +344,7 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
 export function useControlBar(
   viewer: Core.Webgl.Viewer,
   camera: CameraRef,
-  modal: ModalRef,
+  modal: ModalHandle,
   side: SideState,
   cursor: CursorManager,
   settings: Settings,

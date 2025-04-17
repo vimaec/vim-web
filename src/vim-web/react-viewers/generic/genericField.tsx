@@ -7,6 +7,8 @@ import { StateRef, useRefresher } from "../helpers/reactUtils";
 interface BaseGenericEntry {
   id: string;
   label: string;
+  enabled?: () => boolean;
+  visible?: () => boolean;
 }
 
 // A text field.
@@ -34,25 +36,34 @@ export type GenericEntryType = GenericTextEntry | GenericBoolEntry | GenericNumb
  * @returns The rendered field element.
  */
 export function GenericEntry(field: GenericEntryType): React.ReactNode {
+  if (field.visible?.() === false) return null;
+
+  const isEnabled = field.enabled?.() !== false;
+
   return (
     <div
       key={field.id}
-      className="vim-sectionbox-offsets-entry vc-text-xs vc-flex vc-items-center vc-justify-between vc-my-2"
+      className={`vim-sectionbox-offsets-entry vc-text-xs vc-flex vc-items-center vc-justify-between vc-my-2 ${
+        isEnabled ? '' : 'vc-opacity-50 vc-pointer-events-none'
+      }`}
     >
       <dt className="vc-w-1/2 vc-inline">{field.label}</dt>
-      <dd className="vc-w-1/3 vc-inline"><GenericField field={field} /></dd>
+      <dd className="vc-w-1/3 vc-inline">
+        <GenericField field={field} disabled={!isEnabled} />
+      </dd>
     </div>
   );
 }
 
-function GenericField(props:{field: GenericEntryType}) {
+
+function GenericField(props:{field: GenericEntryType, disabled?: boolean}): React.ReactNode {
   switch (props.field.type) {
     case "number":
-      return <InputNumber state={props.field.state} />;
+      return <InputNumber state={props.field.state} disabled={props.field.enabled?.() === false} />;
     case "text":
-      return <GenericTextField field={props.field}/>;
+      return <GenericTextField state={props.field.state} disabled={props.field.enabled?.() === false} />;
     case "bool":
-      return <GenericBoolField field={props.field}/>;
+      return <GenericBoolField state={props.field.state} disabled={props.field.enabled?.() === false} />;
     default:
       return null;
   }
@@ -63,19 +74,19 @@ function GenericField(props:{field: GenericEntryType}) {
  * @param field - The text field to render.
  * @returns The rendered text input element.
  */
-function GenericTextField(props:{field: GenericTextEntry}) {
+function GenericTextField(props:{state: StateRef<string>, disabled?: boolean}): React.ReactNode {
   const refresher = useRefresher() // Makes sure the component re-renders when the state changes.
   return (
     <input
-      id={props.field.id}
       type="text"
-      value={props.field.state.get()}
+      disabled={props.disabled ?? false}
+      value={props.state.get()}
       onChange={(e) => {
         refresher.refresh()
-        props.field.state.set(e.target.value)
+        props.state.set(e.target.value)
       }}
       className="vc-border vc-inline vc-border-gray-300 vc-py-1 vc-w-full vc-px-1"
-      onBlur={() => props.field.state.confirm()}
+      onBlur={() => props.state.confirm()}
     />
   );
 }
@@ -85,16 +96,16 @@ function GenericTextField(props:{field: GenericTextEntry}) {
  * @param field - The boolean field to render.
  * @returns The rendered checkbox element.
  */
-function GenericBoolField(props:{field: GenericBoolEntry}): React.ReactNode {
+function GenericBoolField(props:{state: StateRef<boolean>, disabled?: boolean }): React.ReactNode {
   const refresher = useRefresher() // Makes sure the component re-renders when the state changes.
   return (
     <input
-      id={props.field.id}
       type="checkbox"
-      checked={props.field.state.get()}
+      disabled={props.disabled ?? false}
+      checked={props.state.get()}
       onChange={(e) => {
         refresher.refresh()
-        props.field.state.set(e.target.checked)}
+        props.state.set(e.target.checked)}
       }
       className="vc-border vc-inline vc-border-gray-300 vc-py-1 vc-w-full vc-px-1"
     />

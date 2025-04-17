@@ -1,9 +1,9 @@
-import { ModalRef } from "../panels/modal"
+import { ModalHandle } from "../panels/modal"
 import { getErrorMessage } from './errors/ultraErrors'
 import * as Core from '../../core-viewers'
 import { RefObject } from "react"
 
-export function updateModal (modal: RefObject<ModalRef>, state: Core.Ultra.ClientState) {
+export function updateModal (modal: RefObject<ModalHandle>, state: Core.Ultra.ClientState) {
   const m = modal.current
   if (state.status === 'connected') {
     m.loading(undefined)
@@ -20,7 +20,7 @@ export function updateModal (modal: RefObject<ModalRef>, state: Core.Ultra.Clien
   }
 }
 
-export async function updateProgress (request: Core.Ultra.ILoadRequest, modal: ModalRef) {
+export async function updateProgress (request: Core.Ultra.ILoadRequest, modal: ModalHandle) {
   for await (const progress of request.getProgress()) {
     if (request.isCompleted) break
     modal?.loading({ message: 'Loading File in VIM Ultra mode', progress })

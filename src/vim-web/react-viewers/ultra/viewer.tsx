@@ -6,7 +6,7 @@ import { Container, createContainer } from '../container'
 import { createRoot } from 'react-dom/client'
 import { DeferredPromise } from '../helpers/deferredPromise'
 import { Overlay } from '../panels/overlay'
-import { Modal, ModalRef } from '../panels/modal'
+import { Modal, ModalHandle } from '../panels/modal'
 import { getRequestErrorMessage } from './errors/ultraErrors'
 import { updateModal, updateProgress as modalProgress } from './modal'
 import { ControlBar, ControlBarCustomization } from '../controlbar/controlBar'
@@ -23,6 +23,7 @@ import { useUltraCamera } from './camera'
 import { useViewerInput } from '../state/viewerInputs'
 import { useUltraIsolation } from './isolation'
 import { IsolationPanel } from '../panels/isolationPanel'
+import { GenericPanelHandle } from '../generic/genericPanel'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React viewer.
@@ -75,9 +76,12 @@ export function Viewer (props: {
   core: Core.Ultra.Viewer
   onMount: (viewer: ViewerRef) => void}) {
 
-  const modal = useRef<ModalRef>(null)
+
   const sectionBox = useUltraSectionBox(props.core)
   const camera = useUltraCamera(props.core, sectionBox)
+  const isolationPanelHandle = useRef<GenericPanelHandle>(null)
+  const sectionBoxPanelHandle = useRef<GenericPanelHandle>(null)
+  const modalHandle = useRef<ModalHandle>(null)
 
   const side = useSideState(true, 400)
   const [_, setSelectState] = useState(0)
@@ -88,21 +92,27 @@ export function Viewer (props: {
   useViewerInput(props.core.inputs, camera)
 
   useEffect(() => {
-    props.core.onStateChanged.subscribe(state => updateModal(modal, state))
+    props.core.onStateChanged.subscribe(state => updateModal(modalHandle, state))
     props.core.selection.onSelectionChanged.subscribe(() =>{
       setSelectState(i => (i+1)%2)
     } )
     props.onMount({
       core: props.core,
-      get modal() { return modal.current },
+      get modal() { return modalHandle.current },
       isolation,
       sectionBox,
       camera,
+      get isolationPanel(){
+        return isolationPanelHandle.current
+      },
+      get sectionBoxPanel(){
+        return sectionBoxPanelHandle.current
+      },
       dispose: () => {},
       controlBar: {
         customize: (v) => setControlBarCustom(() => v)
       },
-      load: patchLoad(props.core, modal)
+      load: patchLoad(props.core, modalHandle)
     })
   }, [])
 
@@ -115,12 +125,12 @@ export function Viewer (props: {
       content={controlBarCustom(controlBar)}
       show={true}
     />
-    <SectionBoxPanel state={sectionBox}/>
-    <IsolationPanel state={isolation} />
+    <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBox}/>
+    <IsolationPanel ref={isolationPanelHandle} state={isolation} />
   </>
   }}/>
   
-  <Modal ref={modal} canFollowLinks= {true}/>
+  <Modal ref={modalHandle} canFollowLinks= {true}/>
   <ReactTooltip
     multiline={true}
     arrowColor="transparent"
@@ -131,7 +141,7 @@ export function Viewer (props: {
   </>
 }
 
-function patchLoad(viewer: Core.Ultra.Viewer, modal: RefObject<ModalRef>) {
+function patchLoad(viewer: Core.Ultra.Viewer, modal: RefObject<ModalHandle>) {
   return function load (source: Core.Ultra.VimSource): Core.Ultra.ILoadRequest {
     const request = viewer.loadVim(source)
 

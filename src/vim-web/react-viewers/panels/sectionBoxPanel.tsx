@@ -1,8 +1,8 @@
 import { forwardRef } from "react";
 import { SectionBoxRef } from "../state/sectionBoxState";
-import { GenericPanel, GenericPanelRef } from "../generic/genericPanel";
+import { GenericPanel, GenericPanelHandle } from "../generic/genericPanel";
 
-export const SectionBoxPanel = forwardRef<GenericPanelRef, { state: SectionBoxRef }>(
+export const SectionBoxPanel = forwardRef<GenericPanelHandle, { state: SectionBoxRef }>(
   (props, ref) => {
     return (
       <GenericPanel
