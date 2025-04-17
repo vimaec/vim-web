@@ -45,6 +45,7 @@ export class SectionBox {
   }
   
   private async pull(){
+    if(!this._rpc.connected) return
     if(this.needUpdate) return
     const id = this._pullId
     const state = await this._rpc.RPCGetSectionBox()

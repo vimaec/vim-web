@@ -21,11 +21,11 @@ export function UltraGhostColor () {
 
 async function toggleLock (ultra: ViewerRef, vim: Vim) {
   vim.nodeState.setAllNodesState(NodeState.GHOSTED, true)
-  ultra.viewer.renderer.ghostColor = new RGBA(1, 0, 0, 0.005)
+  ultra.core.renderer.ghostColor = new RGBA(1, 0, 0, 0.005)
 
   await new Promise(resolve => setTimeout(resolve, 1000))
-  ultra.viewer.renderer.ghostColor = new RGBA(0, 1, 0, 0.05)
+  ultra.core.renderer.ghostColor = new RGBA(0, 1, 0, 0.05)
 
   await new Promise(resolve => setTimeout(resolve, 1000))
-  ultra.viewer.renderer.ghostColor = new RGBA(0, 0, 1, 0.005)
+  ultra.core.renderer.ghostColor = new RGBA(0, 0, 1, 0.005)
 }

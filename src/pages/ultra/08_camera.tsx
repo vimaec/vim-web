@@ -29,31 +29,31 @@ async function framing (ultra: ViewerRef, tower: Vim)  {
 
     // Test frameVim with 5 indices
     console.log('Framing 5 random indices')
-    const position = await ultra.viewer.camera.frameVim(tower, indices, 1)
+    const position = await ultra.core.camera.frameVim(tower, indices, 1)
     console.log('Saving position')
-    ultra.viewer.camera.save(position)
+    ultra.core.camera.save(position)
     await new Promise(resolve => setTimeout(resolve, 2000))
 
     // Test frameVim with all
     console.log('Framing whole model')
-    await ultra.viewer.camera.frameVim(tower, 'all', 1)
+    await ultra.core.camera.frameVim(tower, 'all', 1)
     await new Promise(resolve => setTimeout(resolve, 2000))
 
     // Restore the saved camera position
     console.log('Resetting camera to last saved position')
-    ultra.viewer.camera.restoreSavedPosition()
+    ultra.core.camera.restoreSavedPosition()
     await new Promise(resolve => setTimeout(resolve, 2000))
 
     // Test frameAll
     console.log('Framing whole scene')
-    await ultra.viewer.camera.frameAll(1)
+    await ultra.core.camera.frameAll(1)
     await new Promise(resolve => setTimeout(resolve, 2000))
   }
 
   // Test frameVim with a large number of indices
   const indices = generateRandomIndices(80_000, 120_000)
   highlight(tower, indices)
-  await ultra.viewer.camera.frameVim(tower, indices, 1)
+  await ultra.core.camera.frameVim(tower, indices, 1)
 }
 
 function highlight (tower: Vim, indices: number[]) {

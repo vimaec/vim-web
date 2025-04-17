@@ -1,3 +1,2 @@
 export * from './errors'
-export * from './errorStyle'
-export * from './errorUtils'
+export * as Style from './errorStyle'

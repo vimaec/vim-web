@@ -41,8 +41,10 @@ import { SectionBoxPanel } from '../panels/sectionBoxPanel'
 import { useWebglSectionBox } from './sectionBox'
 import { useWebglCamera } from './camera'
 import { useViewerInput } from '../state/viewerInputs'
-import { IsolationSettingsPanel } from '../panels/renderSettingsPanel'
+import { IsolationPanel } from '../panels/isolationPanel'
 import { useWebglIsolation } from './isolation'
+import { GenericPanelRef } from '../panels'
+import { useRefresher } from '../helpers/reactUtils'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React viewer.
@@ -108,6 +110,9 @@ export function Viewer (props: {
   const modal = useRef<ModalRef>(null)
 
   const sectionBoxRef = useWebglSectionBox(props.viewer)
+  const isolationPanelRef = useRef<GenericPanelRef>(null)
+  const sectionBoxPanelRef = useRef<GenericPanelRef>(null)
+
   const camera = useWebglCamera(props.viewer, sectionBoxRef)
   const cursor = useMemo(() => new CursorManager(props.viewer), [])
   const loader = useRef(new ComponentLoader(props.viewer, modal))
@@ -156,6 +161,12 @@ export function Viewer (props: {
       isolation: isolationRef,
       camera,
       settings,
+      get isolationPanel(){
+        return isolationPanelRef.current
+      },
+      get sectionBoxPanel(){
+        return sectionBoxPanelRef.current
+      },
       get sectionBox(){
         return sectionBoxRef
       },
@@ -214,8 +225,8 @@ export function Viewer (props: {
           content={controlBar}
           show={isTrue(settings.value.ui.controlBar)}
         />
-        <SectionBoxPanel state={sectionBoxRef}/>
-        <IsolationSettingsPanel state={isolationRef}/>
+        <SectionBoxPanel ref={sectionBoxPanelRef} state={sectionBoxRef}/>
+        <IsolationPanel ref={isolationPanelRef} state={isolationRef}/>
         <AxesPanelMemo
           viewer={props.viewer}
           camera={camera}

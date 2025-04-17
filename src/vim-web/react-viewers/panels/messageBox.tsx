@@ -4,7 +4,7 @@ export type MessageBoxProps = {
   title: string;
   body: string | JSX.Element;
   footer?: string | JSX.Element;
-  canClose: boolean;
+  canClose?: boolean;
   onClose?: () => void;
 }
 

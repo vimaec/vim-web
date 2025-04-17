@@ -1,7 +1,6 @@
 import { RefObject, useEffect, useRef } from "react";
-import { StateRef, useStateRef } from "../helpers/reactUtils";
+import { FuncRef, StateRef, useFuncRef, useStateRef } from "../helpers/reactUtils";
 import { ISignal } from "ste-signals";
-import { sanitize } from "../../utils/strings";
 
 export type VisibilityStatus = 'all' | 'allButSelection' |'onlySelection' | 'some' | 'none';  
 
@@ -11,8 +10,10 @@ export interface IsolationRef {
   autoIsolate: StateRef<boolean>;
   showPanel: StateRef<boolean>;
   showGhost: StateRef<boolean>;
-  ghostOpacity: StateRef<string>;
+  ghostOpacity: StateRef<number>;
   showRooms: StateRef<boolean>;
+  onAutoIsolate: FuncRef<void>;
+  onVisibilityChange: FuncRef<void>;
 }
 
 export interface IsolationAdapter{
@@ -52,27 +53,42 @@ export function useSharedIsolation(adapter : IsolationAdapter){
   const showPanel = useStateRef<boolean>(false);
   const showRooms = useStateRef<boolean>(false);
   const showGhost = useStateRef<boolean>(false);
-  const ghostOpacity = useStateRef<string>(() =>adapter.getGhostOpacity().toFixed(4));
+  const ghostOpacity = useStateRef<number>(() => adapter.getGhostOpacity());
+  
+  const onAutoIsolate = useFuncRef(() => {
+    if(adapter.hasSelection()){
+      adapter.isolateSelection();
+    }
+    else{
+      adapter.showAll();
+    }
+  })
+
+  const onVisibilityChange = useFuncRef(() => {
+    visibility.set(adapter.computeVisibility());
+  })
   
   useEffect(() => {
     adapter.showGhost(showGhost.get());
     adapter.onVisibilityChange.sub(() => {
-      visibility.set(adapter.computeVisibility());
+      onVisibilityChange.call();
     });
     adapter.onSelectionChanged.sub(() => {
-      if(autoIsolate.get()) onAutoIsolate(adapter);
+      if(autoIsolate.get()) onAutoIsolate.call();
     });
   }, []);
 
-  ghostOpacity.useConfirm((v) => sanitize(v, true, 0.04));
-
   autoIsolate.useOnChange((v) => {
-    if(v) onAutoIsolate(adapter);
+    if(v) onAutoIsolate.call();
   });
 
   showGhost.useOnChange((v) => adapter.showGhost(v));
   showRooms.useOnChange((v) => adapter.setShowRooms(v));
-  ghostOpacity.useOnChange((v) => adapter.setGhostOpacity(parseFloat(v)));
+
+  ghostOpacity.useValidate((next, current) => {
+    return next <= 0 ? current : next
+  });
+  ghostOpacity.useOnChange((v) => adapter.setGhostOpacity(v));
 
   return {
     adapter: _adapter,
@@ -81,15 +97,8 @@ export function useSharedIsolation(adapter : IsolationAdapter){
     showPanel,
     showGhost,
     showRooms,
-    ghostOpacity
+    ghostOpacity,
+    onAutoIsolate,
+    onVisibilityChange
   } as IsolationRef
-}
-
-function onAutoIsolate(adapter: IsolationAdapter){
-  if(adapter.hasSelection()){
-    adapter.isolateSelection();
-  }
-  else{
-    adapter.showAll();
-  }
 }

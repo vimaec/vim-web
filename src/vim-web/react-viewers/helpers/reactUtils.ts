@@ -15,7 +15,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { SimpleEventDispatcher } from "ste-simple-events";
+import { ISimpleEvent, SimpleEventDispatcher } from "ste-simple-events";
 
 /**
  * Interface for a state reference.
@@ -35,6 +35,8 @@ export interface StateRef<T> {
    * Confirms the current state (potentially applying a confirmation transformation).
    */
   confirm(): void;
+
+  onChange: ISimpleEvent<T>;
 }
 
 export interface StateRefresher{
@@ -44,7 +46,10 @@ export interface StateRefresher{
 export function useRefresher() : StateRefresher{
   const [refresh, setRefresh] = useState(false)
   return {
-    refresh: () => setRefresh(!refresh),
+
+    refresh: () => {
+      setRefresh(!refresh)
+    },
   }
 }
 
@@ -69,7 +74,7 @@ export function useStateRef<T>(initialValue: T | (() => T)) {
   }
 
   const event = useRef(new SimpleEventDispatcher<T>());
-  const validate = useRef((value: T) => value);
+  const validate = useRef((next: T, current: T) => next);
   const confirm = useRef((value: T) => value);
 
   /**
@@ -79,7 +84,7 @@ export function useStateRef<T>(initialValue: T | (() => T)) {
    * @param value - The new state value.
    */
   const set = (value: T) => {
-    const finalValue = validate.current(value);
+    const finalValue = validate.current(value, ref.current);
     if (finalValue === ref.current) return;
 
     ref.current = finalValue;
@@ -95,6 +100,7 @@ export function useStateRef<T>(initialValue: T | (() => T)) {
       return ref.current;
     },
     set,
+    onChange: event.current.asEvent(),
     /**
      * Confirms the current state by applying the confirm function and updating the state.
      */
@@ -134,8 +140,8 @@ export function useStateRef<T>(initialValue: T | (() => T)) {
      * Sets a validation function to process any new state value before updating.
      * @param on - A function that validates (and optionally transforms) the new state value.
      */
-    useValidate(on: (value: T) => T) {
-      set(on(ref.current));
+    useValidate(on: (next: T, current:T) => T) {
+      set(on(ref.current, ref.current));
       useEffect(() => {
         validate.current = on;
       }, []);

@@ -16,6 +16,6 @@ export function UltraDownloadError () {
 }
 
 async function badURL (ultra: ViewerRef) {
-  await ultra.viewer.connect()
+  await ultra.core.connect()
   ultra.load({url:'https://invalidURL.vim'})
 }

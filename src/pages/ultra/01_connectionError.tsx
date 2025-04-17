@@ -16,5 +16,5 @@ export function UltraConnectionError () {
 }
 
 async function badConnection (ultra: ViewerRef) {
-  await ultra.viewer.connect({url:'ws:/invalidServer'})
+  await ultra.core.connect({url:'ws:/invalidServer'})
 }

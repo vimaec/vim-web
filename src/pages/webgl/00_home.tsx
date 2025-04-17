@@ -10,7 +10,11 @@ export function WebglHome () {
   const div = useRef<HTMLDivElement>(null)
   const cmp = useRef<ViewerRef>()
   useEffect(() => {
-    createComponent(div.current, cmp)
+    createComponent(div.current, cmp).then(() => {
+      console.log('Component created')
+    })
+      
+
     return () => cmp.current?.dispose()
   }, [])
 
