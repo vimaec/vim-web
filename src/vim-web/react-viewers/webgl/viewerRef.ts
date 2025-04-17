@@ -10,10 +10,10 @@ import { Container } from '../container'
 import { BimInfoPanelRef } from '../bim/bimInfoData'
 import { ControlBarRef } from '../controlbar'
 import { ComponentLoader } from './loading'
-import { ModalRef } from '../panels/modal'
+import { ModalHandle } from '../panels/modal'
 import { SectionBoxRef } from '../state/sectionBoxState'
 import { IsolationRef } from '../state/sharedIsolation'
-import { GenericPanelRef } from '../panels'
+import { GenericPanelHandle } from '../generic'
 /**
 * Settings API managing settings applied to the viewer.
 */
@@ -102,7 +102,7 @@ export type ViewerRef = {
   /**
    * Message API to interact with the loading box.
    */
-  modal: ModalRef
+  modal: ModalHandle
 
   /**
    * Camera API to interact with the viewer camera at a higher level.
@@ -114,8 +114,15 @@ export type ViewerRef = {
    */
   bimInfo: BimInfoPanelRef
 
-  isolationPanel : GenericPanelRef
-  sectionBoxPanel : GenericPanelRef
+  /**
+   * API to interact with the isolation panel.
+   */
+  isolationPanel : GenericPanelHandle
+
+  /**
+   * API to interact with the isolation panel.
+   */
+  sectionBoxPanel : GenericPanelHandle
 
   /**
    * Cleans up and releases resources used by the viewer.

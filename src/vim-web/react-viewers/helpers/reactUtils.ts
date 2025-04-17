@@ -39,6 +39,37 @@ export interface StateRef<T> {
   onChange: ISimpleEvent<T>;
 }
 
+/**
+ * A basic implementation of StateRef<T> without React.
+ */
+export class MutableState<T> implements StateRef<T> {
+  private _value: T;
+  private _onChange = new SimpleEventDispatcher<T>();
+
+  constructor(initial: T) {
+    this._value = initial;
+  }
+
+  get(): T {
+    return this._value;
+  }
+
+  set(value: T): void {
+    if (value === this._value) return;
+    this._value = value;
+    this._onChange.dispatch(value);
+  }
+
+  confirm(): void {
+    // No-op by default
+  }
+
+  get onChange(): ISimpleEvent<T> {
+    return this._onChange.asEvent();
+  }
+}
+
+
 export interface StateRefresher{
   refresh: () => void
 }

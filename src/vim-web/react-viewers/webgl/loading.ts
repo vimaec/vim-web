@@ -5,7 +5,7 @@
 import * as Errors from '../errors'
 import * as Core from '../../core-viewers'
 import { LoadRequest } from '../helpers/loadRequest'
-import { ModalRef } from '../panels/modal'
+import { ModalHandle } from '../panels/modal'
 
 type AddSettings = {
   /**
@@ -34,9 +34,9 @@ export type LoadingError = {
  */
 export class ComponentLoader {
   private _viewer : Core.Webgl.Viewer
-  private _modal: React.RefObject<ModalRef>
+  private _modal: React.RefObject<ModalHandle>
 
-  constructor (viewer : Core.Webgl.Viewer, modal: React.RefObject<ModalRef>) {
+  constructor (viewer : Core.Webgl.Viewer, modal: React.RefObject<ModalHandle>) {
     this._viewer = viewer
     this._modal = modal
   }

@@ -1,8 +1,8 @@
 import { forwardRef } from "react";
 import { IsolationRef } from "../state/sharedIsolation";
-import { GenericPanel, GenericPanelRef } from "../generic/genericPanel";
+import { GenericPanel, GenericPanelHandle } from "../generic/genericPanel";
 
-export const IsolationPanel = forwardRef<GenericPanelRef, { state: IsolationRef }>(
+export const IsolationPanel = forwardRef<GenericPanelHandle, { state: IsolationRef }>(
 
   (props, ref) => {
     return (
@@ -14,7 +14,7 @@ export const IsolationPanel = forwardRef<GenericPanelRef, { state: IsolationRef 
         entries={[
           { type: "bool", id: "showGhost", label: "Show Ghost", state: props.state.showGhost },
           // { type: "bool", id: "showRooms", label: "Show Rooms", state: props.state.showRooms },
-          { type: "number", id: "ghostOpacity", label: "Ghost Opacity", state: props.state.ghostOpacity },
+          { type: "number", id: "ghostOpacity", label: "Ghost Opacity", state: props.state.ghostOpacity, enabled: () => props.state.showGhost.get() },
         ]}
       />
     );

@@ -3,7 +3,7 @@ export * as ContextMenu from './contextMenu';
 
 // Type exports
 export type * from './axesPanel';
-export type * from '../generic/genericPanel';
+
 export type * from './help';
 export type * from './loadingBox';
 export type * from './logo';

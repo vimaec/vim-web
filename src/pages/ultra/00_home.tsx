@@ -4,6 +4,7 @@ import * as Urls from '../devUrls'
 import * as VIM from '../../vim-web'
 
 import ViewerRef = VIM.React.Ultra.ViewerRef
+import { NodeState } from '../../vim-web/core-viewers/ultra'
 
 export function UltraHome () {
   const div = useRef<HTMLDivElement>(null)
@@ -16,17 +17,24 @@ export function UltraHome () {
   )
 }
 
-async function loadFile (ultra: ViewerRef) {
+async function loadFile (viewer: ViewerRef) {
   
 
 
-  const success = await ultra.core.connect()
-  const request = ultra.load({url:getPathFromUrl() ?? "https://vimdevelopment01storage.blob.core.windows.net/samples/demo.vim" /* ?? "D:/Drive/Vim/vim-web/src/pages/demo.vim"*/})
-  await request.getResult()
-  await ultra.core.camera.frameAll(0)
-
+  const success = await viewer.core.connect()
+  const request = viewer.load({url:getPathFromUrl() ?? Urls.residence})
+  const load = await request.getResult()
+  await viewer.core.camera.frameAll(0)
+  if(load.isSuccess){
+    console.log('Load success')
+    viewer.core.selection.onSelectionChanged.subscribe(() => {
+      load.vim.nodeState.setAllNodesState(NodeState.HIGHLIGHTED, true)
+      load.vim.nodeState.replaceState(NodeState.HIGHLIGHTED, NodeState.VISIBLE)
+      viewer.core.selection.getAll().forEach((element) =>element.state = NodeState.HIGHLIGHTED)
+    })
+  }
   
-  globalThis.ultra = ultra
+  globalThis.viewer = viewer
 }
 
 function getPathFromUrl () {

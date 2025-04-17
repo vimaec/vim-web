@@ -124,7 +124,7 @@ export class StateSynchronizer {
   }
 
   /**
-   * Reapplies all current state settings, useful after changes to the node structure.
+   * Reapplies all current state settings, useful after a reconnection.
    * This will remove redundant overrides and ensure consistency.
    */
   reapplyStates(): void {
@@ -432,23 +432,40 @@ class StateTracker {
    * @param toState - The new state to apply
    */
   replace(fromState: NodeState | NodeState[], toState: NodeState): void {
+    this.purge(); // Clean up redundant overrides
+    
     // If the default state matches what we're replacing, update it
     if (matchesState(this._default, fromState)) {
       this._default = toState;
       this._updatedDefault = true;
+      this.reapply();
+      return
     }
 
     // Update all matching node overrides
     for (const [nodeId, state] of this._state.entries()) {
       if (matchesState(state, fromState)) {
         this._state.set(nodeId, toState);
+        this._updates.add(nodeId);
       }
     }
+  }
 
-    // Reapply to clean up redundant overrides and mark nodes for update
-    this.reapply();
+  // Clean up redundant overrides
+  private purge(){
+    const toRemove : number[] = [];
+    
+    for (const [nodeId, state] of this._state.entries()) {
+      if (state === this._default) {
+        toRemove.push(nodeId);
+      }
+    }
+    
+    toRemove.forEach(nodeId => this._state.delete(nodeId));
   }
 }
+
+
 
 /**
  * Helper function that checks if a node state matches one or more target states.

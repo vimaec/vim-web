@@ -3,6 +3,7 @@ import { Icons } from "..";
 import { StateRef } from "../helpers/reactUtils";
 import { useFloatingPanelPosition } from "../helpers/layout";
 import { GenericEntryType, GenericEntry } from "./genericField";
+import { Customizer, useCustomizer } from "../helpers/customizer";
 
 // Generic props for the panel.
 export interface GenericPanelProps {
@@ -13,7 +14,9 @@ export interface GenericPanelProps {
   anchorElement: HTMLElement | null;
 }
 
-export const GenericPanel = forwardRef<GenericPanelRef, GenericPanelProps>((props, ref) => {
+export type GenericPanelHandle = Customizer<GenericEntryType[]>;
+
+export const GenericPanel = forwardRef<GenericPanelHandle, GenericPanelProps>((props, ref) => {
   const panelRef = useRef<HTMLDivElement>(null);
 
   const panelPosition = useFloatingPanelPosition(
@@ -58,35 +61,3 @@ export const GenericPanel = forwardRef<GenericPanelRef, GenericPanelProps>((prop
   );
 });
 
-export type GenericPanelRef = Customizer<GenericEntryType[]>;
-
-export interface Customizer<TData> {
-  customize(fn: (entries: TData) => TData);
-}
-
-export function useCustomizer<TData>(
-  baseEntries: TData,
-  ref: React.Ref<Customizer<TData>>
-) {
-  const customization = useRef<(entries: TData) => TData>();
-  const [entries, setEntries] = useState<TData>(baseEntries);
-
-  const applyCustomization = () => {
-    setEntries(customization.current ? customization.current(baseEntries) : baseEntries);
-  };
-
-  const setCustomization = (fn: (entries: TData) => TData) => {
-    customization.current = fn;
-    applyCustomization();
-  };
-
-  useEffect(() => {
-    applyCustomization();
-  }, [baseEntries]);
-
-  useImperativeHandle(ref, () => ({
-    customize: setCustomization
-  }));
-
-  return entries;
-}

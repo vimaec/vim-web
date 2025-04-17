@@ -1,10 +1,11 @@
 import { RefObject } from 'react';
 import * as Core from '../../core-viewers/ultra';
-import { ModalRef } from '../panels/modal';
+import { ModalHandle } from '../panels/modal';
 import { CameraRef } from '../state/cameraState';
 import { SectionBoxRef } from '../state/sectionBoxState';
 import { IsolationRef } from '../state/sharedIsolation';
 import { ControlBarRef } from '../controlbar';
+import { GenericPanelHandle } from '../generic/';
 
 export type ViewerRef = {
   /**
@@ -15,7 +16,7 @@ export type ViewerRef = {
   /**
    * API to manage the modal dialog.
    */
-  modal: ModalRef;
+  modal: ModalHandle;
 
   /**
    * API to manage the section box.
@@ -33,6 +34,16 @@ export type ViewerRef = {
   camera: CameraRef
 
   isolation: IsolationRef
+  
+  /**
+   * API to interact with the isolation panel.
+   */
+  isolationPanel : GenericPanelHandle
+
+  /**
+   * API to interact with the isolation panel.
+   */
+  sectionBoxPanel : GenericPanelHandle
 
   /**
    * Disposes of the viewer and its resources.

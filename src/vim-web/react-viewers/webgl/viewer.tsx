@@ -36,15 +36,14 @@ import { useBimInfo } from '../bim/bimInfoData'
 import { whenTrue } from '../helpers/utils'
 import { DeferredPromise } from '../helpers/deferredPromise'
 import { ComponentLoader } from './loading'
-import { Modal, ModalRef } from '../panels/modal'
+import { Modal, ModalHandle } from '../panels/modal'
 import { SectionBoxPanel } from '../panels/sectionBoxPanel'
 import { useWebglSectionBox } from './sectionBox'
 import { useWebglCamera } from './camera'
 import { useViewerInput } from '../state/viewerInputs'
 import { IsolationPanel } from '../panels/isolationPanel'
 import { useWebglIsolation } from './isolation'
-import { GenericPanelRef } from '../panels'
-import { useRefresher } from '../helpers/reactUtils'
+import { GenericPanelHandle } from '../generic'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React viewer.
@@ -107,11 +106,11 @@ export function Viewer (props: {
   settings?: PartialSettings
 }) {
   const settings = useSettings(props.viewer, props.settings ?? {})
-  const modal = useRef<ModalRef>(null)
+  const modal = useRef<ModalHandle>(null)
 
   const sectionBoxRef = useWebglSectionBox(props.viewer)
-  const isolationPanelRef = useRef<GenericPanelRef>(null)
-  const sectionBoxPanelRef = useRef<GenericPanelRef>(null)
+  const isolationPanelHandle = useRef<GenericPanelHandle>(null)
+  const sectionBoxPanelHandle = useRef<GenericPanelHandle>(null)
 
   const camera = useWebglCamera(props.viewer, sectionBoxRef)
   const cursor = useMemo(() => new CursorManager(props.viewer), [])
@@ -162,10 +161,10 @@ export function Viewer (props: {
       camera,
       settings,
       get isolationPanel(){
-        return isolationPanelRef.current
+        return isolationPanelHandle.current
       },
       get sectionBoxPanel(){
-        return sectionBoxPanelRef.current
+        return sectionBoxPanelHandle.current
       },
       get sectionBox(){
         return sectionBoxRef
@@ -225,8 +224,8 @@ export function Viewer (props: {
           content={controlBar}
           show={isTrue(settings.value.ui.controlBar)}
         />
-        <SectionBoxPanel ref={sectionBoxPanelRef} state={sectionBoxRef}/>
-        <IsolationPanel ref={isolationPanelRef} state={isolationRef}/>
+        <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBoxRef}/>
+        <IsolationPanel ref={isolationPanelHandle} state={isolationRef}/>
         <AxesPanelMemo
           viewer={props.viewer}
           camera={camera}
