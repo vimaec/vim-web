@@ -19,7 +19,7 @@ export function UltraBackground () {
 }
 
 async function changeBackground (ultra: ViewerRef) {
-  const r = ultra.viewer.renderer
+  const r = ultra.core.renderer
   r.backgroundColor = new RGBA(0, 0, 0, 0)
 
   // Cycle through background blur

@@ -1,7 +1,7 @@
 import { MessageBoxProps } from '../../panels/messageBox'
 import * as style from '../../errors/errorStyle'
 import * as Urls from '../../urls'
-import { isFilePathOrUri } from '../../errors/errorUtils'
+import { isFilePathOrUri } from '../../../utils/url'
 import { fileOpeningError } from './fileOpeningError'
 
 export function serverFileDownloadingError (url : string, authToken?: string, server?: string): MessageBoxProps {

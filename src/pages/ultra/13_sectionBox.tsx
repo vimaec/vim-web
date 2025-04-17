@@ -22,7 +22,7 @@ export function UltraSectionBox() {
         new Vector3(updatedBox.min.x, updatedBox.min.y, updatedBox.min.z),
         new Vector3(updatedBox.max.x, updatedBox.max.y, updatedBox.max.z)
       );
-      ref.current.viewer.sectionBox.fitBox(box3);
+      ref.current.core.sectionBox.fitBox(box3);
       return updatedBox;
     });
   };
@@ -30,22 +30,22 @@ export function UltraSectionBox() {
   useUltraNoModel(div, (ultra) => {
     createSectionBox(ultra);
     ref.current = ultra;
-    ultra.viewer.sectionBox.onUpdate.subscribe(() => {
-      setVisible(ultra.viewer.sectionBox.visible);
-      setInteractive(ultra.viewer.sectionBox.interactive);
-      setClip(ultra.viewer.sectionBox.clip);
-      setBox(ultra.viewer.sectionBox.getBox());
+    ultra.core.sectionBox.onUpdate.subscribe(() => {
+      setVisible(ultra.core.sectionBox.visible);
+      setInteractive(ultra.core.sectionBox.interactive);
+      setClip(ultra.core.sectionBox.clip);
+      setBox(ultra.core.sectionBox.getBox());
     });
   });
 
   return (
     <div className='vc-inset-0 vc-absolute'>
       <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000, background: 'white', padding: '10px', borderRadius: '5px' }}>
-        <Checkbox label='Visible' checked={visible} onChange={(value) => { setVisible(value); if (ref.current) ref.current.viewer.sectionBox.visible = value; }} />
+        <Checkbox label='Visible' checked={visible} onChange={(value) => { setVisible(value); if (ref.current) ref.current.core.sectionBox.visible = value; }} />
         <br />
-        <Checkbox label='Interactible' checked={interactive} onChange={(value) => { setInteractive(value); if (ref.current) ref.current.viewer.sectionBox.interactive = value; }} />
+        <Checkbox label='Interactible' checked={interactive} onChange={(value) => { setInteractive(value); if (ref.current) ref.current.core.sectionBox.interactive = value; }} />
         <br />
-        <Checkbox label='Clip' checked={clip} onChange={(value) => { setClip(value); if (ref.current) ref.current.viewer.sectionBox.clip = value; }} />
+        <Checkbox label='Clip' checked={clip} onChange={(value) => { setClip(value); if (ref.current) ref.current.core.sectionBox.clip = value; }} />
         <br />
         {['x', 'y', 'z'].map(axis => (
           <div key={axis} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -60,14 +60,14 @@ export function UltraSectionBox() {
 }
 
 async function createSectionBox(ultra : ViewerRef) {
-  await ultra.viewer.connect();
+  await ultra.core.connect();
   
   const request = ultra.load({ url: residence });
   const result = await request.getResult();
   if (result.isSuccess) {
-    await ultra.viewer.camera.frameAll(0);
-    const box = await ultra.viewer.renderer.getBoundingBox();
-    ultra.viewer.sectionBox.fitBox(box);
+    await ultra.core.camera.frameAll(0);
+    const box = await ultra.core.renderer.getBoundingBox();
+    ultra.core.sectionBox.fitBox(box);
   }
 }
 

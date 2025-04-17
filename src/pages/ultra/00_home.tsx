@@ -20,10 +20,12 @@ async function loadFile (ultra: ViewerRef) {
   
 
 
-  const success = await ultra.viewer.connect()
-  const request = ultra.load({url:getPathFromUrl() ?? Urls.residence})
+  const success = await ultra.core.connect()
+  const request = ultra.load({url:getPathFromUrl() ?? "https://vimdevelopment01storage.blob.core.windows.net/samples/demo.vim" /* ?? "D:/Drive/Vim/vim-web/src/pages/demo.vim"*/})
   await request.getResult()
-  await ultra.viewer.camera.frameAll(0)
+  await ultra.core.camera.frameAll(0)
+
+  
   globalThis.ultra = ultra
 }
 

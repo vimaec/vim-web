@@ -13,6 +13,18 @@ import * as Core from '../../core-viewers'
 const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
 type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
 
+/**
+ * Reference to manage context menu functionality in the viewer.
+ */
+export type ContextMenuRef = {
+  /**
+   * Defines a callback function to dynamically customize the context menu.
+   * @param customization The configuration object specifying the customization options for the context menu.
+   */
+  customize: (customization: ContextMenuCustomization) => void
+}
+
+
 export function showContextMenu (
   position: { x: number; y: number } | undefined
 ) {

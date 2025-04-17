@@ -28,6 +28,7 @@ export function WebglMarkers () {
               tip: 'Remove Marker',
               action: async () => {
                 const selectedMarkers = await viewer.core.selection.getAll().filter(e => e.type === 'Marker')
+                console.log('selected markers', selectedMarkers)
                 selectedMarkers.forEach((marker) => viewer.core.gizmos.markers.remove(marker))
               }   
             }

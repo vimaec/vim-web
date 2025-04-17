@@ -17,7 +17,7 @@ export function UltraAbortError () {
 }
 
 async function abortLoad (ultra: ViewerRef) {
-  await ultra.viewer.connect()
+  await ultra.core.connect()
   const request = ultra.load({url:Urls.residence})
   request.abort()
 }

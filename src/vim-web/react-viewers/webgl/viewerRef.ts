@@ -3,16 +3,17 @@
  */
 
 import * as Core from '../../core-viewers'
-import { ContextMenuCustomization } from '../panels/contextMenu'
+import { ContextMenuRef } from '../panels/contextMenu'
 import { Settings } from '../settings/settings'
 import { CameraRef } from '../state/cameraState'
 import { Container } from '../container'
 import { BimInfoPanelRef } from '../bim/bimInfoData'
-import { ControlBarCustomization } from '../controlbar/controlBar'
+import { ControlBarRef } from '../controlbar'
 import { ComponentLoader } from './loading'
 import { ModalRef } from '../panels/modal'
 import { SectionBoxRef } from '../state/sectionBoxState'
 import { IsolationRef } from '../state/sharedIsolation'
+import { GenericPanelRef } from '../panels'
 /**
 * Settings API managing settings applied to the viewer.
 */
@@ -34,27 +35,7 @@ export type SettingsRef = {
 
 }
 
-/**
- * Reference to manage context menu functionality in the viewer.
- */
-export type ContextMenuRef = {
-  /**
-   * Defines a callback function to dynamically customize the context menu.
-   * @param customization The configuration object specifying the customization options for the context menu.
-   */
-  customize: (customization: ContextMenuCustomization) => void
-}
 
-/**
- * Reference to manage control bar functionality in the viewer.
- */
-export type ControlBarRef = {
-  /**
-   * Defines a callback function to dynamically customize the control bar.
-   * @param customization The configuration object specifying the customization options for the control bar.
-   */
-  customize: (customization: ControlBarCustomization) => void
-}
 
 /**
  * Reference to manage help message functionality in the viewer.
@@ -132,6 +113,9 @@ export type ViewerRef = {
    * API To interact with the BIM info panel.
    */
   bimInfo: BimInfoPanelRef
+
+  isolationPanel : GenericPanelRef
+  sectionBoxPanel : GenericPanelRef
 
   /**
    * Cleans up and releases resources used by the viewer.

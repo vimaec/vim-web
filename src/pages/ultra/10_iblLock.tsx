@@ -19,12 +19,12 @@ export function UltraIblLock () {
 }
 
 async function toggleLock (ultra: ViewerRef) {
-  ultra.viewer.renderer.backgroundBlur = 0
-  ultra.viewer.renderer.backgroundColor = new RGBA(0, 0, 0, 0)
+  ultra.core.renderer.backgroundBlur = 0
+  ultra.core.renderer.backgroundColor = new RGBA(0, 0, 0, 0)
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    ultra.viewer.renderer.lockIblRotation = !ultra.viewer.renderer.lockIblRotation
+    ultra.core.renderer.lockIblRotation = !ultra.core.renderer.lockIblRotation
     await new Promise(resolve => setTimeout(resolve, 3000))
   }
 }

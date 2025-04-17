@@ -4,16 +4,13 @@ import { ModalRef } from '../panels/modal';
 import { CameraRef } from '../state/cameraState';
 import { SectionBoxRef } from '../state/sectionBoxState';
 import { IsolationRef } from '../state/sharedIsolation';
-
-// TODO: Don't depend on the webgl viewer
-import {ControlBarRef} from '../webgl/viewerRef'
-
+import { ControlBarRef } from '../controlbar';
 
 export type ViewerRef = {
   /**
    * The Vim viewer instance associated with the viewer.
    */
-  viewer:Core.Viewer;
+  core: Core.Viewer;
 
   /**
    * API to manage the modal dialog.

@@ -2,10 +2,10 @@
  * @module viw-webgl-react
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect } from 'react'
 import * as Core from '../../core-viewers'
 import { AugmentedElement, getElements } from '../helpers/element'
-import { StateRef, useStateRef } from '../helpers'
+import { StateRef, useStateRef } from '../helpers/reactUtils'
 
 export type ViewerState = {
   vim: StateRef<Core.Webgl.Vim>

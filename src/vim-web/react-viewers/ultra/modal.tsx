@@ -10,7 +10,7 @@ export function updateModal (modal: RefObject<ModalRef>, state: Core.Ultra.Clien
     m.message(undefined)
   }
   if (state.status === 'connecting') {
-    if (modal.current === undefined || m.getActiveState().type === 'loading') {
+    if (modal.current === undefined || m.getActiveState()?.type === 'loading') {
       m.loading({ message: 'Initializing...' })
     }
   }

@@ -6,7 +6,7 @@ import * as Icons from '../icons'
 
 export type ModalProps = MessageBoxProps | LoadingBoxProps | HelpProps
 export type ModalPropsTyped = (MessageBoxPropsTyped | LoadingBoxPropsTyped | HelpPropsTyped) & {
-  canClose: boolean
+  canClose?: boolean
   onClose?: () => void
 }
 
@@ -34,7 +34,7 @@ export const Modal = forwardRef<ModalRef, {canFollowLinks: boolean}>((props, ref
 
   useImperativeHandle(ref, () => ({
     getActiveState,
-    loading (content: LoadingBoxProps) {
+    loading (content: LoadingBoxProps | undefined) {
       if (content === undefined) {
         update(undefined, 2)
       } else {
@@ -48,7 +48,7 @@ export const Modal = forwardRef<ModalRef, {canFollowLinks: boolean}>((props, ref
         update(undefined, 0)
       }
     },
-    message (content: MessageBoxProps) {
+    message (content: MessageBoxProps | undefined) {
       if (content === undefined) {
         update(undefined, 1)
       } else {

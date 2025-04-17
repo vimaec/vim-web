@@ -42,7 +42,7 @@ export function useUltraWithWolford (div: RefObject<HTMLDivElement>, onCreated: 
 
 export function useUltraNoModel(div: RefObject<HTMLDivElement>, onCreated:  (ultra: ViewerRef) => void){
   useUltra(div, async (ultra) => {
-    await ultra.viewer.connect()
+    await ultra.core.connect()
     onCreated(ultra)
     return ultra
   })
@@ -54,11 +54,11 @@ function useUltraWithModel (
   onCreated: (ultra: ViewerRef, model: Vim) => void
 ) {
     useUltra(div, async (ultra) => {
-      await ultra.viewer.connect()
+      await ultra.core.connect()
       const request = ultra.load({url:modelUrl})
       const result = await request.getResult()
       if (result.isSuccess) {
-        await ultra.viewer.camera.frameAll(0)
+        await ultra.core.camera.frameAll(0)
         const model = result.vim
         onCreated(ultra, model)
       }

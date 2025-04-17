@@ -1,7 +1,7 @@
 // Full export
 export * from './vimSettings';
 export {requestVim as request, type RequestSource, type VimRequest} from './progressive/vimRequest';
-
+export * as Materials from './materials';
 
 // Types
 export type {Transparency} from './geometry';

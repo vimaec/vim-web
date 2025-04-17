@@ -22,7 +22,7 @@ import ReactTooltip from 'react-tooltip'
 import { useUltraCamera } from './camera'
 import { useViewerInput } from '../state/viewerInputs'
 import { useUltraIsolation } from './isolation'
-import { IsolationSettingsPanel } from '../panels/renderSettingsPanel'
+import { IsolationPanel } from '../panels/isolationPanel'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React viewer.
@@ -38,7 +38,7 @@ export function createViewer (
     : container ?? createContainer()
 
   // Create the viewer and container
-  const viewer = Core.Ultra.Viewer.createWithCanvas(cmpContainer.gfx)
+  const core = Core.Ultra.Viewer.createWithCanvas(cmpContainer.gfx)
 
   // Create the React root
   const reactRoot = createRoot(cmpContainer.ui)
@@ -46,7 +46,7 @@ export function createViewer (
   // Patch the viewer to clean up after itself
   const attachDispose = (cmp : ViewerRef) => {
     cmp.dispose = () => {
-      viewer.dispose()
+      core.dispose()
       cmpContainer.dispose()
       reactRoot.unmount()
     }
@@ -56,7 +56,7 @@ export function createViewer (
   reactRoot.render(
     <Viewer
       container={cmpContainer}
-      viewer={viewer}
+      core={core}
       onMount = {(cmp : ViewerRef) => promise.resolve(attachDispose(cmp))}
     />
   )
@@ -72,28 +72,28 @@ export function createViewer (
  */
 export function Viewer (props: {
   container: Container
-  viewer: Core.Ultra.Viewer
+  core: Core.Ultra.Viewer
   onMount: (viewer: ViewerRef) => void}) {
 
   const modal = useRef<ModalRef>(null)
-  const sectionBox = useUltraSectionBox(props.viewer)
-  const camera = useUltraCamera(props.viewer, sectionBox)
+  const sectionBox = useUltraSectionBox(props.core)
+  const camera = useUltraCamera(props.core, sectionBox)
 
   const side = useSideState(true, 400)
   const [_, setSelectState] = useState(0)
   const [controlBarCustom, setControlBarCustom] = useState<ControlBarCustomization>(() => c => c)
-  const isolation = useUltraIsolation(props.viewer)
-  const controlBar = useUltraControlBar(props.viewer, sectionBox, isolation, camera, _ =>_)
+  const isolation = useUltraIsolation(props.core)
+  const controlBar = useUltraControlBar(props.core, sectionBox, isolation, camera, _ =>_)
   
-  useViewerInput(props.viewer.inputs, camera)
+  useViewerInput(props.core.inputs, camera)
 
   useEffect(() => {
-    props.viewer.onStateChanged.subscribe(state => updateModal(modal, state))
-    props.viewer.selection.onSelectionChanged.subscribe(() =>{
+    props.core.onStateChanged.subscribe(state => updateModal(modal, state))
+    props.core.selection.onSelectionChanged.subscribe(() =>{
       setSelectState(i => (i+1)%2)
     } )
     props.onMount({
-      viewer: props.viewer,
+      core: props.core,
       get modal() { return modal.current },
       isolation,
       sectionBox,
@@ -102,7 +102,7 @@ export function Viewer (props: {
       controlBar: {
         customize: (v) => setControlBarCustom(() => v)
       },
-      load: patchLoad(props.viewer, modal)
+      load: patchLoad(props.core, modal)
     })
   }, [])
 
@@ -110,13 +110,13 @@ export function Viewer (props: {
   <RestOfScreen side={side} content={() => {
     return <>
     {whenTrue(true, <LogoMemo/>)}
-    <Overlay canvas={props.viewer.viewport.canvas}/>
+    <Overlay canvas={props.core.viewport.canvas}/>
     <ControlBar
       content={controlBarCustom(controlBar)}
       show={true}
     />
     <SectionBoxPanel state={sectionBox}/>
-    <IsolationSettingsPanel state={isolation} />
+    <IsolationPanel state={isolation} />
   </>
   }}/>
   
