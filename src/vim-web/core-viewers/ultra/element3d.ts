@@ -1,9 +1,9 @@
-import { IVimObject } from "../shared/vim";
+import { IVimElement } from "../shared/vim";
 import { NodeState } from "./nodeState";
 import { Box3, RGBA32 } from "./rpcTypes";
 import { Vim } from "./vim";
 
-export class Element3D implements IVimObject {
+export class Element3D implements IVimElement {
   readonly vim: Vim;
   get vimHandle() {
     return this.vim.handle;

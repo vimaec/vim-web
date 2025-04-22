@@ -20,10 +20,9 @@ export function WebglUnload () {
       viewer.loader.add(result.result)
       viewer.camera.frameScene.call()
     }
-
-
-    return (
-      <div ref={div} className='vc-inset-0 vc-absolute'/>
-    )
   })
+  
+  return (
+    <div ref={div} className='vc-inset-0 vc-absolute'/>
+  )
 }

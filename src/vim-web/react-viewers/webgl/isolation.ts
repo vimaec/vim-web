@@ -40,7 +40,7 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
     show: (instances: number[]) => {
       for(let i of instances){
         for(let v of viewer.vims){
-          const o = v.getObjectFromInstance(i)
+          const o = v.getElementFromInstanceIndex(i)
             o.visible = true
         }
       }
@@ -49,7 +49,7 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
     hide: (instances: number[]) => {
       for(let i of instances){
         for(let v of viewer.vims){
-          const o = v.getObjectFromInstance(i)
+          const o = v.getElementFromInstanceIndex(i)
             o.visible = false;
         }
       }
@@ -74,7 +74,7 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
 
 function updateAllVisibility(viewer: Core.Webgl.Viewer, predicate: (object: Core.Webgl.Element3D) => boolean){
  for(let v of viewer.vims){
-    for(let o of v.getAllObjects()){
+    for(let o of v.getAllElements()){
       if(o.type === 'Element3D'){
         o.visible = predicate(o)
       }
@@ -89,7 +89,7 @@ function getVisibilityState(viewer: Core.Webgl.Viewer): VisibilityStatus {
   let onlySelectionFlag = true;
   
   for (let v of viewer.vims) {
-    for (let o of v.getAllObjects()) {
+    for (let o of v.getAllElements()) {
       if (o.type === "Element3D") {
         // Check for all and none states
         all = all && o.visible;

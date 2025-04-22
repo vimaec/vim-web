@@ -149,10 +149,10 @@ export class Vim implements IVim<WebglElement3D> {
    * @param {number} instance - The instance number of the object.
    * @returns {THREE.Object3D | undefined} The object corresponding to the instance, or undefined if not found.
    */
-  getObjectFromInstance (instance: number) {
+  getElementFromInstanceIndex (instance: number) {
     const element = this.map.getElementFromInstance(instance)
     if (element === undefined) return
-    return this.getObjectFromElementIndex(element)
+    return this.getElementFromIndex(element)
   }
 
   /**
@@ -160,10 +160,10 @@ export class Vim implements IVim<WebglElement3D> {
    * @param {number} id - The element ID to retrieve objects for.
    * @returns {THREE.Object3D[]} An array of objects corresponding to the element ID, or an empty array if none are found.
    */
-  getObjectsFromElementId (id: number) {
+  getElementFromId (id: number) {
     const elements = this.map.getElementsFromElementId(id)
     return elements
-      ?.map((e) => this.getObjectFromElementIndex(e))
+      ?.map((e) => this.getElementFromIndex(e))
       .filter((o): o is WebglElement3D => o !== undefined) ?? []
   }
 
@@ -172,7 +172,7 @@ export class Vim implements IVim<WebglElement3D> {
    * @param {number} element - The index of the Vim element.
    * @returns {WebglElement3D | undefined} The Vim object corresponding to the element index, or undefined if not found.
    */
-  getObjectFromElementIndex (element: number): WebglElement3D | undefined {
+  getElementFromIndex (element: number): WebglElement3D | undefined {
     if (!this.map.hasElement(element)) return
 
     if (this._elementToObject.has(element)) {
@@ -191,10 +191,10 @@ export class Vim implements IVim<WebglElement3D> {
    * Retrieves an array of all objects within the Vim.
    * @returns {WebglElement3D[]} An array containing all objects within the Vim.
    */
-  getAllObjects () {
+  getAllElements () {
     const result : WebglElement3D[] = []
     for (const e of this.map.getElements()) {
-      const obj = this.getObjectFromElementIndex(e)
+      const obj = this.getElementFromIndex(e)
       result.push(obj)
     }
     return result
@@ -211,7 +211,7 @@ export class Vim implements IVim<WebglElement3D> {
     const count = subset.getInstanceCount()
     for (let i = 0; i < count; i++) {
       const instance = subset.getVimInstance(i)
-      const obj = this.getObjectFromInstance(instance)
+      const obj = this.getElementFromInstanceIndex(instance)
       if (!set.has(obj)) {
         result.push(obj)
         set.add(obj)
