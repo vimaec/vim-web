@@ -74,7 +74,7 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
     show: (instances: number[]) => {
       for(const vim of viewer.vims.getAll()){
         for(const i of instances){
-          vim.getObjectFromInstance(i).state = NodeState.VISIBLE
+          vim.getElementFromInstanceIndex(i).state = NodeState.VISIBLE
         }
       }
     },
@@ -82,7 +82,7 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
     hide: (instances: number[]) => {
       for(const vim of viewer.vims.getAll()){
         for(const i of instances){
-          const obj = vim.getObjectFromInstance(i)
+          const obj = vim.getElementFromInstanceIndex(i)
           hide([obj])
         }
       }

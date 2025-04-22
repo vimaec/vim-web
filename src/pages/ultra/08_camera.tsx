@@ -58,5 +58,5 @@ async function framing (ultra: ViewerRef, tower: Vim)  {
 
 function highlight (tower: Vim, indices: number[]) {
   tower.nodeState.setAllNodesState(NodeState.VISIBLE, true)
-  indices.forEach((i) => {tower.getObjectFromInstance(i).state = NodeState.HIGHLIGHTED} )
+  indices.forEach((i) => {tower.getElementFromInstanceIndex(i).state = NodeState.HIGHLIGHTED} )
 }

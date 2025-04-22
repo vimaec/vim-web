@@ -11,12 +11,12 @@ import { IElement, VimHelpers } from 'vim-format'
 import { WebglAttribute } from './webglAttribute'
 import { WebglColorAttribute } from './colorAttribute'
 import { Submesh } from './mesh'
-import { IVimObject } from '../../shared/vim'
+import { IVimElement } from '../../shared/vim'
 
 /**
  * High level api to interact with the loaded vim geometry and data.
  */
-export class Element3D implements IVimObject {
+export class Element3D implements IVimElement {
   private _color: THREE.Color | undefined
   private _boundingBox: THREE.Box3 | undefined
   private _meshes: Submesh[] | undefined

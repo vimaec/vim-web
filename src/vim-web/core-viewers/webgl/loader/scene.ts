@@ -150,7 +150,7 @@ export class WebglScene {
     this._instanceToMeshes.set(submesh.instance, meshes)
     this.setDirty()
     if (this.vim) {
-      const obj = this.vim.getObjectFromInstance(submesh.instance)
+      const obj = this.vim.getElementFromInstanceIndex(submesh.instance)
       obj._addMesh(submesh)
     }
   }

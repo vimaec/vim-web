@@ -23,16 +23,16 @@ async function changeState (ultra: ViewerRef, tower: Vim) {
   while (true) {
     const indices = Array.from({ length: 200000 }, (_, i) => i)
     
-    indices.forEach((i) => tower.getObjectFromInstance(i).state = NodeState.HIGHLIGHTED)
+    indices.forEach((i) => tower.getElementFromInstanceIndex(i).state = NodeState.HIGHLIGHTED)
     await new Promise(resolve => setTimeout(resolve, 2000))
     
-    indices.forEach((i) => tower.getObjectFromInstance(i).state = NodeState.GHOSTED)
+    indices.forEach((i) => tower.getElementFromInstanceIndex(i).state = NodeState.GHOSTED)
     await new Promise(resolve => setTimeout(resolve, 2000))
 
-    indices.forEach((i) => tower.getObjectFromInstance(i).state = NodeState.HIDDEN)
+    indices.forEach((i) => tower.getElementFromInstanceIndex(i).state = NodeState.HIDDEN)
     await new Promise(resolve => setTimeout(resolve, 2000))
 
-    indices.forEach((i) => tower.getObjectFromInstance(i).state = NodeState.VISIBLE)
+    indices.forEach((i) => tower.getElementFromInstanceIndex(i).state = NodeState.VISIBLE)
     await new Promise(resolve => setTimeout(resolve, 2000))
   }
 }

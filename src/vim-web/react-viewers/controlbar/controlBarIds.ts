@@ -15,7 +15,7 @@ export const buttonCameraAuto = 'controlBar.camera.auto'
 
 // Camera Control buttons
 export const buttonCameraOrbit = 'controlBar.camera.orbit'
-export   const buttonCameraLook = 'controlBarcamera.look'
+export const buttonCameraLook = 'controlBarcamera.look'
 export const buttonCameraPan = 'controlBar.camera.pan'
 export const buttonCameraZoom = 'controlBar.camera.zoom'
 export const buttonCameraZoomWindow = 'controlBar.camera.zoomWindow'

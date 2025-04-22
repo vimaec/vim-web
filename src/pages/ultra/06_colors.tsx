@@ -25,6 +25,6 @@ async function createColors (ultra: ViewerRef, tower:Vim) {
     .map(i => new RGBA32(i))
 
   randomColors.forEach((c, i) => {
-    tower.getObjectFromInstance(i).color = c
+    tower.getElementFromInstanceIndex(i).color = c
   })
 }

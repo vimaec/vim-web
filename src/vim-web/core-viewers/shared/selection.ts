@@ -1,23 +1,23 @@
 import { ISignal, SignalDispatcher } from "ste-signals";
-import { IVimObject, IVim } from "./vim";
+import { IVimElement, IVim } from "./vim";
 import { THREE } from "../..";
 import { DebouncedSignal } from "../../utils";
 
-export interface ISelectionAdapter<T extends IVimObject> {
-  outline(object: T, state: boolean): void;
+export interface ISelectionAdapter<T extends IVimElement> {
+  outline(target: T, state: boolean): void;
 }
 
 /**
  * Represents a selection manager that supports adding, removing, toggling, and querying selected objects.
  * The selection change signal is debounced to dispatch only once per animation frame.
  */
-export class Selection<T extends IVimObject>{
+export class Selection<T extends IVimElement>{
   private _onSelectionChanged = new DebouncedSignal();
   private _selection = new Set<T>();
   private _adapter: ISelectionAdapter<T>;
 
   /**
-   * If true, reselecting the currently selected single object will toggle it instead of doing nothing.
+   * If true, reselecting the currently selected single target will toggle it instead of doing nothing.
    */
   public toggleOnRepeatSelect = false;
   
@@ -36,11 +36,11 @@ export class Selection<T extends IVimObject>{
 
   /**
    * Checks whether a specific object is currently selected.
-   * @param object - The object to check.
+   * @param target - The target to check.
    * @returns `true` if the object is selected; otherwise, `false`.
    */
-  has(object: T): boolean {
-    return this._selection.has(object);
+  has(target: T): boolean {
+    return this._selection.has(target);
   }
 
   /**

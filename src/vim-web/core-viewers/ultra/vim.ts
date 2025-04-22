@@ -58,7 +58,7 @@ export class Vim implements IVim<Element3D> {
       NodeState.VISIBLE // default state
     );
   }
-  getObjectFromInstance(instance: number): Element3D {
+  getElementFromInstanceIndex(instance: number): Element3D {
     if (this._objects.has(instance)) {
       return this._objects.get(instance)!;
     }
@@ -66,16 +66,16 @@ export class Vim implements IVim<Element3D> {
     this._objects.set(instance, object);
     return object;
   }
-  getObjectsFromElementId(id: number): Element3D[] {
+  getElementFromId(id: number): Element3D[] {
     throw new Error('Method not implemented.');
   }
-  getObjectFromElementIndex(element: number): Element3D {
+  getElementFromIndex(element: number): Element3D {
     throw new Error('Method not implemented.');
   }
   getObjectsInBox(box: THREE.Box3): Element3D[] {
     throw new Error('Method not implemented.');
   }
-  getAllObjects(): Element3D[] {
+  getAllElements(): Element3D[] {
     throw new Error('Method not implemented.');
   }
 
