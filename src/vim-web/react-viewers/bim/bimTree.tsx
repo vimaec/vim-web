@@ -113,8 +113,8 @@ export function BimTree (props: {
   // Display loading if no elements
   if (!props.treeData) {
     return (
-      <div className="vim-bim-tree" ref={div}>
-        Loading . . .
+      <div className="vim-bim-tree vc-mt-4" ref={div}>
+        Bim data not available . . .
       </div>
     )
   }

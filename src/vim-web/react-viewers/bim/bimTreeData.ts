@@ -4,7 +4,7 @@
 import * as Core from '../../core-viewers'
 
 import { TreeItem } from 'react-complex-tree'
-import { MapTree, sort, toMapTree } from '../helpers/data'
+import { emptyTree, MapTree, sort, toMapTree } from '../helpers/data'
 import { AugmentedElement } from '../helpers/element'
 
 /**
@@ -35,7 +35,7 @@ export function toTreeData (
   grouping: Grouping
 ) {
   if(!vim) return
-  if (!elements?.length) return
+  if (!elements?.length) return 
 
   const main: (e: AugmentedElement) => string =
     grouping === 'Family'

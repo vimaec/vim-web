@@ -1,26 +1,25 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import MessageBox, { MessageBoxProps, MessageBoxPropsTyped } from './messageBox'
 import { LoadingBox, LoadingBoxProps, LoadingBoxPropsTyped } from './loadingBox'
-import { HelpProps, HelpPropsTyped, MenuHelp } from './help'
+import { HelpPropsTyped, MenuHelp } from './help'
 import * as Icons from '../icons'
 
-export type ModalProps = MessageBoxProps | LoadingBoxProps | HelpProps
-export type ModalPropsTyped = (MessageBoxPropsTyped | LoadingBoxPropsTyped | HelpPropsTyped) & {
+export type ModalProps = (MessageBoxPropsTyped | LoadingBoxPropsTyped | HelpPropsTyped) & {
   canClose?: boolean
   onClose?: () => void
 }
 
 export type ModalHandle = {
-  getActiveState(): ModalPropsTyped | undefined
+  getActiveState(): ModalProps | undefined
   loading (content: LoadingBoxProps | undefined): void
   message (content: MessageBoxProps | undefined): void
   help (show: boolean): void
 }
 
 export const Modal = forwardRef<ModalHandle, {canFollowLinks: boolean}>((props, ref) =>{
-  const [state, setState ] = useState<(ModalPropsTyped)[]>()
+  const [state, setState ] = useState<(ModalProps)[]>()
 
-  const update = (value: ModalPropsTyped | undefined, index: number) => {
+  const update = (value: ModalProps | undefined, index: number) => {
     setState((prev) => {
       const newState = [...(prev ?? [])]
       newState[index] = value
@@ -43,7 +42,7 @@ export const Modal = forwardRef<ModalHandle, {canFollowLinks: boolean}>((props, 
     },
     help (show: boolean) {
       if (show) {
-        update({ type: 'help', link: props.canFollowLinks, canClose: true, onClose: () => update(undefined, 0) }, 0)
+        update({ type: 'help', canClose: true, onClose: () => update(undefined, 0) }, 0)
       } else {
         update(undefined, 0)
       }
@@ -86,13 +85,13 @@ function closeButton (onButton: () => void) {
   )
 }
 
-function modalContent (modal: ModalPropsTyped) {
-  if (modal.type === 'help') {
-    return <MenuHelp value={modal}/>
+function modalContent (props: ModalProps) {
+  if (props.type === 'help') {
+    return <MenuHelp/>
   }
-  if (modal.type === 'message') {
-    return <MessageBox value={modal} />
+  if (props.type === 'message') {
+    return <MessageBox value={props} />
   } else {
-    return <LoadingBox content={modal} />
+    return <LoadingBox content={props} />
   }
 }

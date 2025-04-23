@@ -216,14 +216,21 @@
     margin-left: max(-2cqmin, -0.75rem);
   }
 
-  .vim-axes-panel{
+  .vim-axes-panel,
+  .vim-axes-panel-empty {
     border-radius: min(3cqmin, 1rem);
     top: min(2cqmin, 1.5rem);
     right: min(2cqmin, 1.5rem);
     width: min(22cqmin, 112px);
+  }
+  
+  .vim-axes-panel {
     height: min(28cqmin, 144px);
   }
-
+  
+  .vim-axes-panel-empty {
+    height: min(22cqmin, 112px);
+  }
   .vim-axes-panel-gizmo{
     top: min(1cqmin, 0.5rem);
     left: min(1cqmin, 0.5rem);

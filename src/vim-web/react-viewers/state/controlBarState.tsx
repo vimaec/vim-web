@@ -141,18 +141,6 @@ function controlBarPointer(
         isOn: () => pointer.mode === PointerMode.ZOOM,
         style: Style.buttonDefaultStyle,
       },
-      {
-        id: Ids.buttonCameraZoomWindow,
-        enabled: () => isTrue(settings.ui.zoomWindow),
-        tip: 'Zoom Window',
-        action: () => {
-          pointer.onButton(PointerMode.RECT);
-        },
-        icon: Icons.frameRect,
-        isOn: () => pointer.mode === PointerMode.RECT,
-        style: Style.buttonDefaultStyle,
-      },
-
     ],
   };
 }

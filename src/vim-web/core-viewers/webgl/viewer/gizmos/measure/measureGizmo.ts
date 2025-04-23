@@ -64,7 +64,6 @@ class MeasureLine {
     this._meshLine.geometry.addGroup(0, Infinity, 1)
     this.mesh.frustumCulled = false
     
-    this._meshLine.layers.set(Layers.NoRaycast)
     this.mesh.layers.set(Layers.NoRaycast)
 
   }

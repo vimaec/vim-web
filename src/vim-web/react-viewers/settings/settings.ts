@@ -25,7 +25,6 @@ export type RecursivePartial<T> = {
  */
 export type Settings = {
   materials: {
-    useFastMaterial: boolean
     useGhostMaterial: boolean
     smallGhostThreshold: number
   }
@@ -49,7 +48,6 @@ export type Settings = {
     axesPanel: UserBoolean
     orthographic: UserBoolean
     resetCamera: UserBoolean
-    enableGhost: UserBoolean
 
     // Control bar
     controlBar: UserBoolean
@@ -90,7 +88,6 @@ export type PartialSettings = RecursivePartial<Settings>
 export function getDefaultSettings(): Settings {
   return {
     materials: {
-      useFastMaterial: false,
       useGhostMaterial: true,
       smallGhostThreshold: 10
     },
@@ -113,7 +110,6 @@ export function getDefaultSettings(): Settings {
       axesPanel: true,
       orthographic: true,
       resetCamera: true,
-      enableGhost: true,
   
       // Control bar
       controlBar: true,

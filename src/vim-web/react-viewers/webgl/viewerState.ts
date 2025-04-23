@@ -26,22 +26,26 @@ export function useViewerState (viewer: Core.Webgl.Viewer) : ViewerState {
 
   const vim = useStateRef<Core.Webgl.Vim>(getVim())
   const selection = useStateRef<Core.Webgl.Element3D[]>(getSelection())
-  const elements = useStateRef<AugmentedElement[] | undefined>([])
+  const allElements = useStateRef<AugmentedElement[] | undefined>([])
+  const filteredElements = useStateRef<AugmentedElement[]>([])
   const filter = useStateRef<string>('')
 
-  const updateElements = (element: AugmentedElement[]) =>{
-    const filtered = filterElements(element, filter.get())
-    elements.set(filtered)
+  const applyFilter = () =>{
+    const filtered = filterElements(allElements.get(), filter.get())
+    filteredElements.set(filtered)
   }
 
   vim.useOnChange(async (v) => {
-    
     const elements = await getElements(v)
-    updateElements(elements)
+    allElements.set(elements)
   })
 
   filter.useOnChange((f) => {
-    updateElements(elements.get())
+    applyFilter()
+  })
+
+  allElements.useOnChange((elements) => {
+    applyFilter()
   })
 
   useEffect(() => {
@@ -63,7 +67,7 @@ export function useViewerState (viewer: Core.Webgl.Viewer) : ViewerState {
   return {
     vim,
     selection,
-    elements,
+    elements: filteredElements,
     filter
   }
 }

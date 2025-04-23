@@ -24,6 +24,10 @@ function createAdapter(viewer: Viewer ) : IInputAdapter {
       size.multiply(value)
       viewer.camera.snap().move2(size, 'XZ')
     },
+    dollyCamera: (value: THREE.Vector2) => {
+      const dist = viewer.camera.orbitDistance * value.y
+      viewer.camera.snap().move1(dist, 'Y')
+    },
 
     toggleOrthographic: () => {
       viewer.camera.orthographic = !viewer.camera.orthographic

@@ -83,7 +83,7 @@ export class KeyboardHandler extends BaseInputHandler {
       'KeyS', 'ArrowDown',  // Move backward
       'KeyE',               // Move up
       'KeyQ',               // Move down
-      'ShiftLeft', 'ShiftRight' // Speed boost
+      // 'ShiftLeft', 'ShiftRight' // Speed boost. They don't provoke any movement. Don't register.
     ];
   
     // Register movement keys for both key down and key up
@@ -203,7 +203,8 @@ export class KeyboardHandler extends BaseInputHandler {
     const moveY = (this.isKeyPressed('KeyE') ? 1 : 0)
                 - (this.isKeyPressed('KeyQ') ? 1 : 0);
 
-    // Create the movement vector.
+
+
     let move = new THREE.Vector3(moveX, moveY, moveZ);
     
     // Apply speed multiplier if Shift is held.
