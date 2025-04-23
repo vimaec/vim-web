@@ -46,8 +46,8 @@ export abstract class CameraMovement {
   move1 (amount: number, axis: 'X' | 'Y' | 'Z'): void {
     const direction = new THREE.Vector3(
       axis === 'X' ? -amount : 0,
+      axis === 'Z' ? amount : 0,
       axis === 'Y' ? amount : 0,
-      axis === 'Z' ? amount : 0
     )
 
     this.move3(direction)

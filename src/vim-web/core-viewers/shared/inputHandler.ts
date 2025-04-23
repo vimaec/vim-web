@@ -25,6 +25,7 @@ export interface IInputAdapter{
   orbitCamera: (value: THREE.Vector2) => void
   rotateCamera: (value: THREE.Vector2) => void
   panCamera: (value: THREE.Vector2) => void
+  dollyCamera: (value: THREE.Vector2) => void
 
   // Raw input handlers for Ultra
   keyDown: (keyCode: string) => boolean
@@ -124,6 +125,8 @@ export class InputHandler extends BaseInputHandler {
       if(button === 0){
         if(this._pointerActive === PointerMode.ORBIT) adapter.orbitCamera(toRotation(delta, this.orbitSpeed))
         if(this._pointerActive === PointerMode.LOOK) adapter.rotateCamera(toRotation(delta, this.rotateSpeed))
+        if(this._pointerActive === PointerMode.PAN) adapter.panCamera(delta)
+        if(this._pointerActive === PointerMode.ZOOM) adapter.dollyCamera(delta)
       } 
       if(button === 2) adapter.rotateCamera(toRotation(delta,1))
       if(button === 1) adapter.panCamera(delta)
@@ -133,11 +136,11 @@ export class InputHandler extends BaseInputHandler {
     this.mouse.onDoubleClick = adapter.frameAtPointer
     this.mouse.onWheel = (value: number, ctrl: boolean) => {
       if(ctrl){
+        console.log('ctrl', value)
         this.moveSpeed -= Math.sign(value)
       }
       else{
-        const zoom = Math.pow(this.scrollSpeed, value)
-        adapter.zoom(zoom)
+        adapter.zoom(this.getZoomValue(value))
       }
     }
 
@@ -147,6 +150,10 @@ export class InputHandler extends BaseInputHandler {
     this.touch.onDrag = (delta: THREE.Vector2) => adapter.orbitCamera(delta)
     this.touch.onPinchOrSpread = adapter.zoom
     this.touch.onDoubleDrag = (value : THREE.Vector2) => adapter.panCamera(value)
+  }
+
+  getZoomValue (value: number) {
+    return Math.pow(this.scrollSpeed, value)
   }
 
   init(){
@@ -198,9 +205,10 @@ export class InputHandler extends BaseInputHandler {
    * Changes pointer interaction mode. Look mode will set camera orbitMode to false.
    */
   set pointerActive (value: PointerMode) {
-    console.log('set pointerActive', value)
+    if (value === this._pointerActive) return
+    this._pointerActive = value
+    this._onPointerModeChanged.dispatch()
   }
-
 
   /**
    * Event called when pointer interaction mode changes.

@@ -25,15 +25,6 @@ async function loadFile (viewer: ViewerRef) {
   const request = viewer.load({url:getPathFromUrl() ?? Urls.residence})
   const load = await request.getResult()
   await viewer.core.camera.frameAll(0)
-  if(load.isSuccess){
-    console.log('Load success')
-    viewer.core.selection.onSelectionChanged.subscribe(() => {
-      load.vim.nodeState.setAllNodesState(NodeState.HIGHLIGHTED, true)
-      load.vim.nodeState.replaceState(NodeState.HIGHLIGHTED, NodeState.VISIBLE)
-      viewer.core.selection.getAll().forEach((element) =>element.state = NodeState.HIGHLIGHTED)
-    })
-  }
-  
   globalThis.viewer = viewer
 }
 

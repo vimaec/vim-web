@@ -34,7 +34,6 @@ export function BimSearch (props: {
     changeTimeout.current = setTimeout(
       () => {
         props.setFilter(value)
-        console.log('set filter ' + value)
       },
 
       SEARCH_DELAY_MS
@@ -42,7 +41,6 @@ export function BimSearch (props: {
   }
 
   const onClear = () => {
-    console.log('clear filter')
     setText('')
     clearTimeout(changeTimeout.current)
     props.setFilter('')

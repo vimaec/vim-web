@@ -61,15 +61,14 @@ export function BimPanel (props: {
     return t
   },[props.viewerState.vim.get(), props.viewerState.elements.get()])
 
-  const last =
-    props.viewerState.selection.get()[props.viewerState.selection.get().length - 1]
+  const selection = props.viewerState.selection.get()
+  const last = selection[selection.length - 1] 
   const fullTree = isFalse(props.settings.ui.bimInfoPanel)
   const fullInfo = isFalse(props.settings.ui.bimTreePanel)
-
   return (
     <div className={`vim-bim-panel vc-inset-0 vc-absolute vc-h-full vc-w-full ${fullTree ? 'full-tree' : ''} ${props.visible ? '' : 'vc-hidden'}`}>
       {whenTrue(props.settings.ui.bimTreePanel,
-        <div className={`vim-bim-upper vc-flex vc-flex-col vc-absolute vc-w-full ${fullTree ? 'vc-h-full' : 'vc-h-[49%]'} ${props.viewerState.elements.get().length > 0 ? '' : 'vc-hidden'}`}>
+        <div className={`vim-bim-upper vc-flex vc-flex-col vc-absolute vc-w-full ${fullTree ? 'vc-h-full' : 'vc-h-[49%]'} `}>
           {<h2
             className="vim-bim-upper-title vc-title vc-text-xs vc-font-bold vc-uppercase">
             Project Inspector

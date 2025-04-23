@@ -2,7 +2,8 @@
  * @module viw-webgl-react
  */
 
-import React from 'react'
+import React, { ReactNode } from 'react'
+import { Urls } from '..';
 
 export type ProgressMode = '%' | 'bytes'
 
@@ -16,6 +17,7 @@ export type LoadingBoxProps = {
   message?: string;
   progress?: number;
   mode? : ProgressMode;
+  more?: ReactNode;
 };
 
 export type LoadingBoxPropsTyped = LoadingBoxProps & {
@@ -29,9 +31,11 @@ export type LoadingBoxPropsTyped = LoadingBoxProps & {
  */
 export function LoadingBox (props: { content: LoadingBoxProps }) {
   return (
-    <div className="vim-loading-box vc-flex vc-box-content vc-gap-2 vc-flex-col vc-max-w-[320px] vc-max-h-[48px] vc-w-[72%] vc-h-[50%] vc-self-center vc-rounded vc-bg-white vc-px-5 vc-py-4 vc-shadow-lg">
+    <div className="vim-loading-box vc-flex vc-box-content vc-gap-2 vc-flex-col vc-max-w-[320px] vc-w-[72%] vc-self-center vc-rounded vc-bg-white vc-px-5 vc-py-4 vc-shadow-lg">
+
       {content(props.content)}
       <div className="vim-loading-widget vc-mt-2"></div>
+      {props.content.more ?? null}
     </div>
   )
 }
@@ -66,4 +70,24 @@ function formatProgress (progress: number, mode? : ProgressMode): string {
     const BYTES_IN_MB = 1_000_000
     return `${(progress / BYTES_IN_MB).toFixed(2)} MB`
   }
+}
+
+export function UltraSuggestion() {
+  return (
+    <div className="vc-text-secondary-yellow vc-text-sm vc-text-center vc-max-w-md vc-mx-auto vc-mt-2">
+      <span>Large model? Long wait time?</span>
+      <div>
+        Check out {' '}
+        <a
+          className='vc-text-primary vc-underline vc-font-bold'
+          href={Urls.supportUltra}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          VIM Ultra
+        </a>
+        {' '} for free.
+      </div>
+    </div>
+  );
 }

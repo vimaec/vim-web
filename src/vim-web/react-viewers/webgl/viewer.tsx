@@ -19,7 +19,7 @@ import {
 } from '../panels/contextMenu'
 import { SidePanelMemo } from '../panels/sidePanel'
 import { useSideState } from '../state/sideState'
-import { MenuSettings } from '../settings/menuSettings'
+import { SettingsPanel } from '../settings/settingsPanel'
 import { MenuToastMemo } from '../panels/toast'
 import { Overlay } from '../panels/overlay'
 import { addPerformanceCounter } from '../panels/performance'
@@ -199,7 +199,7 @@ export function Viewer (props: {
         settings={settings.value}
         bimInfoRef={bimInfoRef}
       />}
-      <MenuSettings
+      <SettingsPanel
         visible={side.getContent() === 'settings'}
         viewer={props.viewer}
         settings={settings}

@@ -56,8 +56,6 @@ export const contextMenuElementIds = {
   showObject: 'showObject',
   clearSelection: 'clearSelection',
   showAll: 'showAll',
-  dividerMeasure: 'dividerMeasure',
-  deleteMeasurement: 'deleteMeasurement',
   dividerSection: 'dividerSection',
   ignoreSection: 'ignoreSection',
   resetSection: 'resetSection',
@@ -205,7 +203,7 @@ export function ContextMenu (props: {
     },
     {
       id: contextMenuElementIds.zoomToFit,
-      label: 'Focus Camera',
+      label: 'Frame Camera',
       keyboard: 'F',
       action: onCameraFrameBtn,
       enabled: hasSelection
@@ -241,14 +239,6 @@ export function ContextMenu (props: {
       keyboard: 'Esc',
       action: onShowAllBtn,
       enabled: visibility !== 'all'
-    },
-    { id: contextMenuElementIds.dividerMeasure, enabled: measuring },
-    {
-      id: contextMenuElementIds.deleteMeasurement,
-      label: 'Delete Measurement',
-      keyboard: '',
-      action: onMeasureDeleteBtn,
-      enabled: measuring
     }
   ]
   elements = props.customization?.(elements) ?? elements

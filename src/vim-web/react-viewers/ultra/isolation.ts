@@ -20,7 +20,7 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
   const hide = (objects: Element3D[] | 'all') =>{
     const state = ghost.get() ? NodeState.GHOSTED : NodeState.HIDDEN
     if(objects === 'all'){
-      viewer.vims.getAll().forEach(vim => {vim.nodeState.setAllNodesState(state, true)})
+      viewer.vims.getAll().forEach(vim => {vim.nodeState.setAllNodesState(state)})
       return
     }
     objects.forEach(obj => {obj.state = state})
@@ -58,7 +58,7 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
     },
     showAll: () => {
       for(const vim of viewer.vims.getAll()){
-        vim.nodeState.setAllNodesState(NodeState.VISIBLE, true)
+        vim.nodeState.setAllNodesState(NodeState.VISIBLE)
       }
       viewer.selection.getAll().forEach(obj => {
         obj.state = NodeState.HIGHLIGHTED
@@ -90,7 +90,6 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
       hide(objs)
     },
     showGhost: (show: boolean) => {
-      console.log('showGhost', show)
       ghost.set(show)
       
       for(const vim of viewer.vims.getAll()){

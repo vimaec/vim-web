@@ -107,8 +107,8 @@ export class StateSynchronizer {
    * @param state - The state to apply to all nodes
    * @param clear - If true, clears all node-specific overrides
    */
-  setAllNodesState(state: NodeState, clear: boolean): void {
-    this._tracker.setAll(state, clear);
+  setAllNodesState(state: NodeState): void {
+    this._tracker.setAll(state);
     this.scheduleUpdate();
   }
 
@@ -183,7 +183,6 @@ export class StateSynchronizer {
     if (!this._isConnected()) {
       return;
     }
-    
     switch (state) {
       case NodeState.VISIBLE:
         this._rpc.RPCShowAll(this._getHandle());
@@ -258,15 +257,11 @@ class StateTracker {
    * @param state - The new default state
    * @param clearNodes - If true, clears all node-specific overrides
    */
-  setAll(state: NodeState, clearNodes: boolean): void {
+  setAll(state: NodeState): void {
     this._default = state;
     this._updatedDefault = true;
-    if (clearNodes) {
-      this._state.clear();
-      this._updates.clear();
-    } else {
-      this.reapply();
-    }
+    this._state.clear();
+    this._updates.clear();
   }
 
   /**

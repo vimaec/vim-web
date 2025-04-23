@@ -24,9 +24,11 @@ export class GizmoAxes {
   // setup
   private _rect: DOMRect
   private _reparentConnection: () => void
+  private _resizeConnection: () => void
   private _axes: Axis[]
 
   // state
+  private _resized = false
   private _pointerInside = false
   private _isDragging = false
   private _isDragSignificant = false
@@ -49,6 +51,7 @@ export class GizmoAxes {
     this._options = createAxesSettings(options)
     this._camera = camera
     this._reparentConnection = viewport.onReparent.subscribe(() => this.reparent(viewport.parent))
+    this._resizeConnection = viewport.onResize.subscribe(() => {this._resized = true})
     this._canvas = this.createCanvas()
 
     this._context = this._canvas.getContext('2d')!
@@ -197,9 +200,10 @@ export class GizmoAxes {
   }
 
   public update = () => {
-    if (!this._camera.hasMoved && !this._pointerInside && !this._isDragging) {
+    if (!this._camera.hasMoved && !this._pointerInside && !this._isDragging && !this._resized) {
       return
     }
+    this._resized = false
 
     this._invRotMat.extractRotation(this._camera.matrix).invert()
 
@@ -312,6 +316,9 @@ export class GizmoAxes {
   dispose () {
     this._reparentConnection?.()
     this._reparentConnection = undefined
+
+    this._resizeConnection?.()
+    this._resizeConnection = undefined
 
     this._canvas.removeEventListener('pointerdown', this.onPointerDown, false)
     this._canvas.removeEventListener('pointerenter', this.onPointerEnter, false)

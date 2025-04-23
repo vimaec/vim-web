@@ -2,12 +2,14 @@
  * @module viw-webgl-react
  */
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import * as Core from '../../core-viewers'
 import { Settings } from './settings'
 import { UserBoolean } from './userBoolean'
 import { SettingsState } from './settingsState'
 import * as THREE from 'three'
+
+// TODO Use generic panels for all settings
 
 /**
  * JSX Component to interact with settings.
@@ -16,7 +18,7 @@ import * as THREE from 'three'
  * @param visible will return null if this is false.
  * @returns
  */
-export function MenuSettings (props: {
+export function SettingsPanel (props: {
   viewer: Core.Webgl.Viewer
   settings: SettingsState
   visible: boolean
@@ -56,6 +58,12 @@ export function MenuSettings (props: {
     transform : (value:number) => number,
     getter: (settings: Settings) => number,
     setter: (settings: Settings, b: number) => void) => {
+    const ref = React.useRef<HTMLInputElement>(null)
+
+    useEffect(() => {
+      ref.current.value = props.viewer.inputs.scrollSpeed.toFixed(2)
+    },[])
+
     const value = getter(props.settings.value).toString()
     const update = (event: React.FocusEvent<HTMLInputElement, Element>) => {
       const str = event.target.value
@@ -71,7 +79,7 @@ export function MenuSettings (props: {
 
     return <div className="vc-box-input vc-my-1">
       <label htmlFor="textbox" className='vc-w-3 vc-h-2'>{label}:</label>
-      <input type="text" placeholder={value} className='vim-settings-textbox vc-w-14 vc-ml-1 vc-p-1' onBlur={e => update(e)}/>
+      <input ref={ref} type="text" className='vim-settings-textbox vc-w-14 vc-ml-1 vc-p-1' onBlur={e => update(e)}/>
       <label htmlFor="textbox" className='vc-w-3 vc-h-2 vc-text-gray vc-ml-1'>{info}</label>
     </div>
   }
@@ -94,21 +102,6 @@ export function MenuSettings (props: {
           n => THREE.MathUtils.clamp(n, 0.1, 10),
           s => props.viewer.inputs.scrollSpeed,
           (s, v) => { props.viewer.inputs.scrollSpeed = v }
-        )}
-        {settingsSubtitle('Materials')}
-        {settingsToggle(
-          'Use Ghost Material',
-          (settings) => settings.materials.useGhostMaterial,
-          (settings, value) => {
-            settings.materials.useGhostMaterial = value
-          }
-        )}
-        {settingsToggle(
-          'Use Performance Material',
-          (settings) => settings.materials.useFastMaterial,
-          (settings, value) => {
-            settings.materials.useFastMaterial = value
-          }
         )}
         {settingsSubtitle('Panels')}
         {settingsToggle(
@@ -148,11 +141,6 @@ export function MenuSettings (props: {
           (settings) => settings.ui.resetCamera,
           (settings, value) => (settings.ui.resetCamera = value)
         )}
-        {settingsToggle(
-          'Show Toggle Ghost Button',
-          (settings) => settings.ui.enableGhost,
-          (settings, value) => (settings.ui.enableGhost = value)
-        )}
         {settingsSubtitle('Control Bar')}
         {settingsToggle(
           'Show Control Bar',
@@ -185,26 +173,11 @@ export function MenuSettings (props: {
           (settings) => settings.ui.zoomWindow,
           (settings, value) => (settings.ui.zoomWindow = value)
         )}
-        {settingsToggle(
-          'Show Zoom Frame Selection Button',
-          (settings) => settings.ui.frameSelection,
-          (settings, value) => (settings.ui.frameSelection = value)
-        )}
         {settingsSubtitle('Control Bar - Tools')}
-        {settingsToggle(
-          'Show Sectioning Mode Button ',
-          (settings) => settings.ui.sectioningMode,
-          (settings, value) => (settings.ui.sectioningMode = value)
-        )}
         {settingsToggle(
           'Show Measuring Mode Button',
           (settings) => settings.ui.measuringMode,
           (settings, value) => (settings.ui.measuringMode = value)
-        )}
-        {settingsToggle(
-          'Show Toggle Isolation Button',
-          (settings) => settings.ui.toggleIsolation,
-          (settings, value) => (settings.ui.toggleIsolation = value)
         )}
         {settingsSubtitle('Control Bar - Settings')}
         {settingsToggle(

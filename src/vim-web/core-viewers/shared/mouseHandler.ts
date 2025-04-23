@@ -26,11 +26,13 @@ export class MouseHandler extends BaseInputHandler {
   }
 
   protected addListeners(): void {
+    
     this.reg<PointerEvent>(this._canvas, 'pointerdown', e => { this.onPointerDown(e); });
     this.reg<PointerEvent>(this._canvas, 'pointerup', e => { this.onPointerUp(e); });
     this.reg<PointerEvent>(this._canvas, 'pointermove', e => { this.onPointerMove(e); });
     this.reg<WheelEvent>(this._canvas, 'wheel', e => { this.onMouseScroll(e); });
     this.reg<MouseEvent>(this._canvas, 'dblclick', e => { this._onDoubleClick(e); });
+    
   }
 
   dispose(): void {
@@ -124,10 +126,10 @@ class CaptureStateMachine {
       this._canvas.releasePointerCapture(this.id);
     }
     this.id = event.pointerId;
-    this.state = 'captured';
+    this.state = 'capture';
   }
 
-  onPointerMove(event: PointerEvent) {
+  onPointerMove(_event: PointerEvent) {
     if (this.state === 'capture') {
       this._canvas.setPointerCapture(this.id);
       this.state = 'captured';

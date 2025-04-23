@@ -44,6 +44,9 @@ function createAdapter(viewer: Viewer ) : Shared.IInputAdapter {
     panCamera: (value: THREE.Vector2) => {
       // handled server side
     },
+    dollyCamera: (value: THREE.Vector2) => {
+      // handled server side
+    },
     toggleOrthographic: () => {
       console.log('toggleOrthographic. Not supported yet')
     },

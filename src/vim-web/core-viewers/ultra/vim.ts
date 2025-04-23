@@ -178,10 +178,9 @@ export class Vim implements IVim<Element3D> {
       return INVALID_HANDLE;
     }
     if (handle === INVALID_HANDLE) {
-      result.error('downloadingError');
+      result.error('downloadingError', 'Unknown error occurred');
       return INVALID_HANDLE;
     }
-    console.log('handle :', handle);
     return handle;
   }
 

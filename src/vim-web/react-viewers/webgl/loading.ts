@@ -6,6 +6,7 @@ import * as Errors from '../errors'
 import * as Core from '../../core-viewers'
 import { LoadRequest } from '../helpers/loadRequest'
 import { ModalHandle } from '../panels/modal'
+import { UltraSuggestion } from '../panels/loadingBox'
 
 type AddSettings = {
   /**
@@ -48,7 +49,8 @@ export class ComponentLoader {
     this._modal.current?.loading({
       message: 'Loading in WebGL Mode',
       progress: p.loaded,
-      mode: 'bytes'
+      mode: 'bytes',
+      more: UltraSuggestion()
     })
   }
 
