@@ -106,7 +106,6 @@ function AxesPanel (props: { viewer: Core.Webgl.Viewer, camera: CameraRef, setti
       <div className='vim-axes-panel-bar vc-absolute vc-top-[75%] vc-bottom-0 vc-right-0 vc-left-0'>
         <div className="vim-axes-panel-buttons vc-absolute vc-inset-0 vc-pointer-events-auto vc-order-2 vc-flex vc-items-center vc-justify-evenly vc-bg-white">
           {whenAllTrue([
-            props.settings.value.capacity.useOrthographicCamera,
             props.settings.value.ui.orthographic
           ], btnOrtho)}
           {whenTrue(props.settings.value.ui.resetCamera, btnHome)}

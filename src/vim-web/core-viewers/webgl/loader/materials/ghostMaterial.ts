@@ -22,10 +22,19 @@ export function createGhostMaterial() {
     },
     uniforms: {
       // Uniform controlling the overall transparency of the non-visible objects.
-      opacity: { value: 0.001 },
+      opacity: { value: 0.25 },
       // Uniform specifying the fill color for non-visible objects.
-      fillColor: { value: new THREE.Vector3(0, 0, 0) }
+      fillColor: { value: new THREE.Vector3(14/255, 14/255, 14/255) }
     },
+    
+    /*
+    blending: THREE.CustomBlending,
+    blendSrc: THREE.SrcAlphaFactor,
+    blendEquation: THREE.AddEquation,
+    blendDst: THREE.OneMinusDstColorFactor,
+    */
+    
+    
     // Render only the front side of faces to prevent drawing internal geometry.
     side: THREE.FrontSide,
     // Enable support for vertex colors.
@@ -70,7 +79,8 @@ export function createGhostMaterial() {
         // Handle clipping planes to discard fragments outside the defined planes.
         #include <clipping_planes_fragment>
         // Set the fragment color to the specified fill color and opacity.
-        gl_FragColor = vec4(fillColor, opacity);
+        // Divided by 10 just to match Ultra ghost opacity at 0.25
+        gl_FragColor = vec4(fillColor, opacity / 10.0);
       }
     `
   });

@@ -24,18 +24,11 @@ export type RecursivePartial<T> = {
  * @interface Settings
  */
 export type Settings = {
-  materials: {
-    useGhostMaterial: boolean
-    smallGhostThreshold: number
-  }
-  isolation: {
-    enable: boolean
-  }
   capacity: {
     canFollowUrl: boolean
     canGoFullScreen: boolean
-    useOrthographicCamera: boolean
     canDownload: boolean
+    canReadLocalStorage: boolean
   }
   ui: {
     // panels
@@ -87,18 +80,11 @@ export type PartialSettings = RecursivePartial<Settings>
  */
 export function getDefaultSettings(): Settings {
   return {
-    materials: {
-      useGhostMaterial: true,
-      smallGhostThreshold: 10
-    },
-    isolation: {
-      enable: true,
-    },
     capacity: {
       canFollowUrl: true,
       canGoFullScreen: true,
-      useOrthographicCamera: true,
-      canDownload: true
+      canDownload: true,
+      canReadLocalStorage: true
     },
     ui: {
       logo: true,
