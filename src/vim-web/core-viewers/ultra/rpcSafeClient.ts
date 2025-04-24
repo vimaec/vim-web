@@ -624,7 +624,8 @@ export class RpcSafeClient {
    */
   RPCSetGhostColor(ghostColor: RpcTypes.RGBA): void {
     const color = Validation.clampRGBA01(ghostColor)
-    this.rpc.RPCSetGhostColor(color)
+    // RPCGhostColor is deprecated, use RPCSetGhostColor2 instead
+    this.rpc.RPCSetGhostColor2(color)
   }
 
   /**

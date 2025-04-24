@@ -428,6 +428,13 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
+  RPCSetGhostColor2(ghostColor: RpcTypes.RGBA): void {
+    const marshal = new Marshal();
+    marshal.writeString("RPCSetGhostColor2");
+    marshal.writeRGBA(ghostColor);
+    this._socket.sendRPC(marshal);
+  }
+
   RPCSetIblRotation(transform: RpcTypes.Matrix44): void {
     const marshal = new Marshal();
     marshal.writeString("RPCSetIblRotation");
