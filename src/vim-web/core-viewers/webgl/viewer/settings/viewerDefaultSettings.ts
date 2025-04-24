@@ -72,8 +72,8 @@ export function getDefaultViewerSettings(): ViewerSettings {
         opacity: 0.5
       },
       ghost: {
-        color: new THREE.Color(0x4E525C),
-        opacity: 0.01
+        color: new THREE.Color(0x0E0E0E),
+        opacity: 0.25
       },
       section: {
         strokeWidth: 0.01,

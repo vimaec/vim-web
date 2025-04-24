@@ -66,5 +66,4 @@ export function applySettings (viewer: Core.Webgl.Viewer, settings: Settings) {
       performance.classList.add('vc-hidden')
     }
   }
-  viewer.renderer.smallGhostThreshold = settings.materials.smallGhostThreshold
 }
