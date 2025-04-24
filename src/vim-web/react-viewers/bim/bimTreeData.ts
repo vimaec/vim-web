@@ -4,7 +4,7 @@
 import * as Core from '../../core-viewers'
 
 import { TreeItem } from 'react-complex-tree'
-import { emptyTree, MapTree, sort, toMapTree } from '../helpers/data'
+import { MapTree, sort, toMapTree } from '../helpers/data'
 import { AugmentedElement } from '../helpers/element'
 
 /**
