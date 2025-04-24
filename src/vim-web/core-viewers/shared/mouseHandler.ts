@@ -32,7 +32,6 @@ export class MouseHandler extends BaseInputHandler {
     this.reg<PointerEvent>(this._canvas, 'pointerup', e => { this.handlePointerUp(e); });
     this.reg<PointerEvent>(this._canvas, 'pointermove', e => { this.handlePointerMove(e); });
     this.reg<WheelEvent>(this._canvas, 'wheel', e => { this.onMouseScroll(e); });
-    this.reg<MouseEvent>(this._canvas, 'dblclick', e => { this.handleDoubleClick(e); });
   }
 
   dispose(): void {
@@ -72,7 +71,6 @@ export class MouseHandler extends BaseInputHandler {
   private async handleMouseClick(event: PointerEvent): Promise<void> {
     if (event.pointerType !== 'mouse') return;
     if(event.button !== 0) return;
-    console.log('click!')
     
     const pos = this.relativePosition(event);
 
@@ -95,7 +93,6 @@ export class MouseHandler extends BaseInputHandler {
   }
 
   private async handleDoubleClick(event: MouseEvent): Promise<void> {
-    console.log('double click!')
     const pos = this.relativePosition(event);
     this.onDoubleClick?.(pos);
     event.preventDefault();
