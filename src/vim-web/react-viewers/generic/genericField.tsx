@@ -20,6 +20,9 @@ export interface GenericTextEntry extends BaseGenericEntry {
 export interface GenericNumberEntry extends BaseGenericEntry {
   type: "number";
   state: StateRef<number>;
+  min?: number;
+  max?: number;
+  step?: number;
 }
 
 // A boolean field.
@@ -59,7 +62,7 @@ export function GenericEntry(field: GenericEntryType): React.ReactNode {
 function GenericField(props:{field: GenericEntryType, disabled?: boolean}): React.ReactNode {
   switch (props.field.type) {
     case "number":
-      return <InputNumber state={props.field.state} disabled={props.field.enabled?.() === false} />;
+      return <InputNumber entry={props.field}/>;
     case "text":
       return <GenericTextField state={props.field.state} disabled={props.field.enabled?.() === false} />;
     case "bool":
