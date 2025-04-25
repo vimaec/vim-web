@@ -1,4 +1,4 @@
-import { createButton, IControlBarButtonItem, isControlBarButtonItem } from './controlBarButton'
+import { createButton, IControlBarButtonItem } from './controlBarButton'
 import * as Style from './style'
 
 export interface IControlBarSection {

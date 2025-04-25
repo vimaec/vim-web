@@ -13,7 +13,7 @@ import { ModelMaterial } from './materials/materials'
  * Keeps track of what VIM instances are part of this mesh.
  * Is either merged on instanced.
  */
-export class WebglMesh {
+export class Mesh {
   /**
    * the wrapped THREE mesh
    */
@@ -77,7 +77,7 @@ export class WebglMesh {
     boxes: THREE.Box3[],
     submeshes: number[]
   ) {
-    const result = new WebglMesh(mesh, instances, boxes)
+    const result = new Mesh(mesh, instances, boxes)
     result.merged = true
     result.submeshes = submeshes
     return result
@@ -88,7 +88,7 @@ export class WebglMesh {
     instances: number[],
     boxes: THREE.Box3[]
   ) {
-    const result = new WebglMesh(mesh, instances, boxes)
+    const result = new Mesh(mesh, instances, boxes)
     result.merged = false
     return result
   }
@@ -179,10 +179,10 @@ export class SimpleInstanceSubmesh {
 }
 
 export class StandardSubmesh {
-  mesh: WebglMesh
+  mesh: Mesh
   index: number
 
-  constructor (mesh: WebglMesh, index: number) {
+  constructor (mesh: Mesh, index: number) {
     this.mesh = mesh
     this.index = index
   }

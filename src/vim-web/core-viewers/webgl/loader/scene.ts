@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { WebglMesh, Submesh } from './mesh'
+import { Mesh, Submesh } from './mesh'
 import { Vim } from './vim'
 import { estimateBytesUsed } from 'three/examples/jsm/utils/BufferGeometryUtils'
 import { InsertableMesh } from './progressive/insertableMesh'
@@ -17,9 +17,9 @@ import { Renderer } from '../viewer/rendering/renderer'
  */
 export interface IRenderer {
   // eslint-disable-next-line no-use-before-define
-  add(scene: WebglScene | THREE.Object3D)
+  add(scene: Scene | THREE.Object3D)
   // eslint-disable-next-line no-use-before-define
-  remove(scene: WebglScene)
+  remove(scene: Scene)
   updateBox(box: THREE.Box3)
   notifySceneUpdate()
 }
@@ -29,7 +29,7 @@ export interface IRenderer {
  * It tracks the global bounding box as meshes are added and maintains a mapping between g3d instance indices and meshes.
  */
 // TODO: Only expose what should be public to vim.scene
-export class WebglScene {
+export class Scene {
   // Dependencies
   private _renderer: Renderer
   private _vim: Vim | undefined
@@ -37,7 +37,7 @@ export class WebglScene {
 
   // State
   insertables: InsertableMesh[] = []
-  meshes: (WebglMesh | InsertableMesh | InstancedMesh)[] = []
+  meshes: (Mesh | InsertableMesh | InstancedMesh)[] = []
 
   private _boundingBox: THREE.Box3
 
@@ -161,7 +161,7 @@ export class WebglScene {
    * userData.instances = number[] (indices of the g3d instances that went into creating the mesh)
    * userData.boxes = THREE.Box3[] (bounding box of each instance)
    */
-  addMesh (mesh: WebglMesh | InsertableMesh | InstancedMesh) {
+  addMesh (mesh: Mesh | InsertableMesh | InstancedMesh) {
     this.renderer?.add(mesh.mesh)
     mesh.vim = this.vim
 
@@ -180,7 +180,7 @@ export class WebglScene {
   /**
    * Adds the content of other Scene to this Scene and recomputes fields as needed.
    */
-  merge (other: WebglScene) {
+  merge (other: Scene) {
     if (!other) return this
     other.meshes.forEach((mesh) => this.meshes.push(mesh))
     other._instanceToMeshes.forEach((meshes, instance) => {

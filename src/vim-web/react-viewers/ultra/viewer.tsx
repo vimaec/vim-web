@@ -4,7 +4,6 @@ import * as Core from '../../core-viewers'
 import React, {useRef, RefObject, useEffect, useState } from 'react'
 import { Container, createContainer } from '../container'
 import { createRoot } from 'react-dom/client'
-import { DeferredPromise } from '../helpers/deferredPromise'
 import { Overlay } from '../panels/overlay'
 import { Modal, ModalHandle } from '../panels/modal'
 import { getRequestErrorMessage } from './errors/ultraErrors'
@@ -24,6 +23,7 @@ import { useViewerInput } from '../state/viewerInputs'
 import { useUltraIsolation } from './isolation'
 import { IsolationPanel } from '../panels/isolationPanel'
 import { GenericPanelHandle } from '../generic/genericPanel'
+import { ControllablePromise } from '../../utils'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React viewer.
@@ -33,7 +33,7 @@ import { GenericPanelHandle } from '../generic/genericPanel'
 export function createViewer (
   container?: Container | HTMLElement
 ) : Promise<ViewerRef> {
-  const promise = new DeferredPromise<ViewerRef>()
+  const controllablePromise = new ControllablePromise<ViewerRef>()
   const cmpContainer = container instanceof HTMLElement
     ? createContainer(container)
     : container ?? createContainer()
@@ -58,10 +58,10 @@ export function createViewer (
     <Viewer
       container={cmpContainer}
       core={core}
-      onMount = {(cmp : ViewerRef) => promise.resolve(attachDispose(cmp))}
+      onMount = {(cmp : ViewerRef) => controllablePromise.resolve(attachDispose(cmp))}
     />
   )
-  return promise
+  return controllablePromise.promise
 }
 
 /**

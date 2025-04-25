@@ -19,7 +19,7 @@ import { ISignal, SignalDispatcher } from 'ste-signals'
 import type {InputHandler} from '../../shared'
 import { Materials } from '../loader/materials/materials'
 import { Vim } from '../loader/vim'
-import { createInputHandler } from './inputsAdapter'
+import { createInputHandler } from './inputAdapter'
 import { Renderer } from './rendering/renderer'
 
 /**

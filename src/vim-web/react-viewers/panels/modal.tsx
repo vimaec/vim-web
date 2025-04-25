@@ -1,5 +1,5 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
-import MessageBox, { MessageBoxProps, MessageBoxPropsTyped } from './messageBox'
+import {MessageBox, MessageBoxProps, MessageBoxPropsTyped } from './messageBox'
 import { LoadingBox, LoadingBoxProps, LoadingBoxPropsTyped } from './loadingBox'
 import { HelpPropsTyped, MenuHelp } from './help'
 import * as Icons from '../icons'

@@ -11,7 +11,7 @@ export type IUltraRaycaster = IRaycaster<Element3D>;
 /**
  * Represents the result of a hit test operation.
  */
-export class UltraRaycastResult implements IRaycastResult<Element3D> {
+export class UltraRaycastResult implements IUltraRaycastResult {
 
   /** The model Object hit */
   object: Element3D
@@ -37,7 +37,7 @@ export class UltraRaycastResult implements IRaycastResult<Element3D> {
  * Handles raycasting operations in the Ultra system, enabling picking and
  * interaction with 3D objects in the scene.
  */
-export class Raycaster implements IRaycaster<Element3D> {
+export class Raycaster implements IUltraRaycaster {
   private _rpc: RpcSafeClient;
   private _vims: IReadonlyVimCollection;
 

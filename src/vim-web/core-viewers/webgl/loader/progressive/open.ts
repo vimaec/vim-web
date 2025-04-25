@@ -6,7 +6,7 @@ import {
 } from '../vimSettings'
 
 import { Vim } from '../vim'
-import { WebglScene } from '../scene'
+import { Scene } from '../scene'
 import { Vimx } from './vimx'
 
 import { VimSource } from '../..'
@@ -91,7 +91,7 @@ async function loadFromVimX (
   const vimx = await Vimx.fromRemote(remoteVimx, !settings.progressive)
 
   // Create scene
-  const scene = new WebglScene(settings.matrix)
+  const scene = new Scene(settings.matrix)
   const mapping = new ElementMapping2(vimx.scene)
 
   // wait for bim data.
@@ -141,7 +141,7 @@ async function loadFromVim (
   const materials = new G3dMaterial(g3d.materialColors)
 
   // Create scene
-  const scene = new WebglScene(settings.matrix)
+  const scene = new Scene(settings.matrix)
   const factory = new VimMeshFactory(g3d, materials, scene)
 
   // Create legacy mapping

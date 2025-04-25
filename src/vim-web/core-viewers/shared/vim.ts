@@ -1,10 +1,25 @@
 import { THREE } from "../.."
 
+/**
+ * Interface for a Vim element.
+ */
 export interface IVimElement{
+  
+  /**
+   * The vim from which this object came.
+   */
   vim: IVim<IVimElement>
-  getBoundingBox(): Promise<THREE.Box3>
+
+  /**
+   * The bounding box of the object.
+   */
+  getBoundingBox(): Promise<THREE.Box3 | undefined>
 }
 
+/**
+ * Interface for a Vim object.
+ * @template T - The type of element contained in the Vim.
+ */
 export interface IVim<T extends IVimElement> {
     /**
      * Retrieves the element associated with the specified instance index.
@@ -18,7 +33,7 @@ export interface IVim<T extends IVimElement> {
      * @param id - The element ID to retrieve objects for.
      * @returns An array of element corresponding to the given id.
      */
-    getElementFromId(id: number): T[]
+    getElementsFromId(id: number): T[]
   
     /**
      * Retrieves the element associated with the given index.

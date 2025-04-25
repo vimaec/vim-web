@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { WebglScene } from '../../loader/scene'
+import { Scene } from '../../loader/scene'
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer'
 import { ModelMaterial } from '../../loader/materials/materials'
 import { InstancedMesh } from '../../loader/progressive/instancedMesh'
@@ -20,7 +20,7 @@ export class RenderScene {
   // public value
   smallGhostThreshold: number | undefined = 10
 
-  private _vimScenes: WebglScene[] = []
+  private _vimScenes: Scene[] = []
   private _boundingBox: THREE.Box3 | undefined
   private _memory = 0
   private _2dCount = 0
@@ -77,8 +77,8 @@ export class RenderScene {
   /**
    * Add object to be rendered
    */
-  add (target: WebglScene | THREE.Object3D) {
-    if (target instanceof WebglScene) {
+  add (target: Scene | THREE.Object3D) {
+    if (target instanceof Scene) {
       this.addScene(target)
       target.material = this._modelMaterial
       return
@@ -108,8 +108,8 @@ export class RenderScene {
   /**
    * Remove object from rendering
    */
-  remove (target: WebglScene | THREE.Object3D) {
-    if (target instanceof WebglScene) {
+  remove (target: Scene | THREE.Object3D) {
+    if (target instanceof Scene) {
       this.removeScene(target)
       return
     }
@@ -159,7 +159,7 @@ export class RenderScene {
     }
   }
 
-  private addScene (scene: WebglScene) {
+  private addScene (scene: Scene) {
     this._vimScenes.push(scene)
     scene.meshes.forEach((m) => {
       this.threeScene.add(m.mesh)
@@ -177,7 +177,7 @@ export class RenderScene {
     this._boundingBox = this._boundingBox ? this._boundingBox.union(box) : box
   }
 
-  private removeScene (scene: WebglScene) {
+  private removeScene (scene: Scene) {
     // Remove from array
     this._vimScenes = this._vimScenes.filter((f) => f !== scene)
 

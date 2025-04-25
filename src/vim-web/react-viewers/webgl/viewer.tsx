@@ -34,7 +34,6 @@ import { LogoMemo } from '../panels/logo'
 import { ViewerRef } from './viewerRef'
 import { useBimInfo } from '../bim/bimInfoData'
 import { whenTrue } from '../helpers/utils'
-import { DeferredPromise } from '../helpers/deferredPromise'
 import { ComponentLoader } from './loading'
 import { Modal, ModalHandle } from '../panels/modal'
 import { SectionBoxPanel } from '../panels/sectionBoxPanel'
@@ -44,6 +43,7 @@ import { useViewerInput } from '../state/viewerInputs'
 import { IsolationPanel } from '../panels/isolationPanel'
 import { useWebglIsolation } from './isolation'
 import { GenericPanelHandle } from '../generic'
+import { ControllablePromise } from '../../utils'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React viewer.
@@ -57,7 +57,7 @@ export function createViewer (
   settings: PartialSettings = {},
   coreSettings: Core.Webgl.PartialViewerSettings = {}
 ) : Promise<ViewerRef> {
-  const promise = new DeferredPromise<ViewerRef>()
+  const controllablePromise = new ControllablePromise<ViewerRef>()
 
   // Create the container
   const cmpContainer = container instanceof HTMLElement
@@ -85,11 +85,11 @@ export function createViewer (
     <Viewer
       container={cmpContainer}
       viewer={viewer}
-      onMount = {(cmp : ViewerRef) => promise.resolve(patchRef(cmp))}
+      onMount = {(cmp : ViewerRef) => controllablePromise.resolve(patchRef(cmp))}
       settings={settings}
     />
   )
-  return promise
+  return controllablePromise.promise
 }
 
 /**

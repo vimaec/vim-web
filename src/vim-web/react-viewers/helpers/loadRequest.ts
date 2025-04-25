@@ -1,6 +1,6 @@
 import * as Core from '../../core-viewers'
-import { DeferredPromise } from './deferredPromise'
 import { LoadingError } from '../webgl/loading'
+import { ControllablePromise } from '../../utils'
 
 type RequestCallbacks = {
   onProgress: (p: Core.Webgl.IProgressLogs) => void
@@ -17,10 +17,10 @@ export class LoadRequest {
   private _request: Core.Webgl.VimRequest
 
   private _progress: Core.Webgl.IProgressLogs = { loaded: 0, total: 0, all: new Map() }
-  private _progressPromise = new DeferredPromise<void>()
+  private _progressPromise = new ControllablePromise<void>()
 
   private _isDone: boolean = false
-  private _completionPromise = new DeferredPromise<void>()
+  private _completionPromise = new ControllablePromise<void>()
 
   constructor (callbacks: RequestCallbacks, source: Core.Webgl.RequestSource, settings?: Core.Webgl.VimPartialSettings) {
     this.source = source
@@ -45,7 +45,7 @@ export class LoadRequest {
     this._callbacks.onProgress(progress)
     this._progress = progress
     this._progressPromise.resolve()
-    this._progressPromise = new DeferredPromise<void>()
+    this._progressPromise = new ControllablePromise<void>()
   }
 
   private onSuccess () {
@@ -69,7 +69,7 @@ export class LoadRequest {
 
   async * getProgress () : AsyncGenerator<Core.Webgl.IProgressLogs, void, void> {
     while (!this._isDone) {
-      await this._progressPromise
+      await this._progressPromise.promise
       yield this._progress
     }
   }

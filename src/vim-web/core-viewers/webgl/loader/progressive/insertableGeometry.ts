@@ -4,7 +4,7 @@
 
 import * as THREE from 'three'
 import { G3d, G3dMesh, G3dMaterial } from 'vim-format'
-import { WebglScene } from '../scene'
+import { Scene } from '../scene'
 import { G3dMeshOffsets } from './g3dOffsets'
 
 // TODO Merge both submeshes class.
@@ -22,7 +22,7 @@ export class GeometrySubmesh {
 }
 
 export class InsertableGeometry {
-  _scene: WebglScene
+  _scene: Scene
   materials: G3dMaterial
   offsets: G3dMeshOffsets
   geometry: THREE.BufferGeometry
