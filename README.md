@@ -17,8 +17,6 @@ https://www.npmjs.com/package/vim-web
 - **[Small - Residence](https://vimaec.github.io/vim-web/ultra)**
 - **[Medium - Medical Tower](https://vimaec.github.io/vim-web/ultra?vim=https://storage.cdn.vimaec.com/samples/Medical_Tower.vim)**
 
-Find detailed camera controls here: [Camera Controls](https://docs.vimaec.com/docs/vim-cloud/webgl-navigation-and-controls-guide).
-
 ## Overview
 
 The **VIM-Web** repository consists of four primary components, divided into two layers:
