@@ -19,7 +19,15 @@ export const IsolationPanel = forwardRef<GenericPanelHandle, { state: IsolationR
         entries={[
           { type: "bool", id: Ids.showGhost, label: "Show Ghost", state: props.state.showGhost },
           // { type: "bool", id: "showRooms", label: "Show Rooms", state: props.state.showRooms },
-          { type: "number", id: Ids.ghostOpacity, label: "Ghost Opacity", state: props.state.ghostOpacity, enabled: () => props.state.showGhost.get() },
+          {
+            type: "number",
+            id: Ids.ghostOpacity,
+            label: "Ghost Opacity",
+            state: props.state.ghostOpacity,
+            enabled: () => props.state.showGhost.get(),
+            min: 0,
+            max: 1,
+            step: 0.05 },
         ]}
       />
     );

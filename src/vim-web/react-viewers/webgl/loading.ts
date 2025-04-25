@@ -7,6 +7,7 @@ import * as Core from '../../core-viewers'
 import { LoadRequest } from '../helpers/loadRequest'
 import { ModalHandle } from '../panels/modal'
 import { UltraSuggestion } from '../panels/loadingBox'
+import { Settings } from '../settings'
 
 type AddSettings = {
   /**
@@ -36,10 +37,13 @@ export type LoadingError = {
 export class ComponentLoader {
   private _viewer : Core.Webgl.Viewer
   private _modal: React.RefObject<ModalHandle>
+  private _addLink : boolean = false
 
-  constructor (viewer : Core.Webgl.Viewer, modal: React.RefObject<ModalHandle>) {
+  constructor (viewer : Core.Webgl.Viewer, modal: React.RefObject<ModalHandle>, settings: Settings) {
     this._viewer = viewer
     this._modal = modal
+    // TODO: Enable this when we are ready to support it
+    this._addLink = /* settings.capacity.canFollowUrl */false
   }
 
   /**
@@ -50,7 +54,7 @@ export class ComponentLoader {
       message: 'Loading in WebGL Mode',
       progress: p.loaded,
       mode: 'bytes',
-      more: UltraSuggestion()
+      more: this._addLink ? UltraSuggestion() : undefined
     })
   }
 

@@ -114,7 +114,7 @@ export function Viewer (props: {
 
   const camera = useWebglCamera(props.viewer, sectionBoxRef)
   const cursor = useMemo(() => new CursorManager(props.viewer), [])
-  const loader = useRef(new ComponentLoader(props.viewer, modal))
+  const loader = useRef(new ComponentLoader(props.viewer, modal, settings.value))
   useViewerInput(props.viewer.inputs, camera)
 
   const side = useSideState(
