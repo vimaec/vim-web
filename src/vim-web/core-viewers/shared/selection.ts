@@ -8,7 +8,7 @@ export interface ISelectionAdapter<T extends IVimElement> {
 }
 
 /**
- * Represents a selection manager that supports adding, removing, toggling, and querying selected objects.
+ * Selection manager that supports adding, removing, toggling, and querying selected objects.
  * The selection change signal is debounced to dispatch only once per animation frame.
  */
 export class Selection<T extends IVimElement>{

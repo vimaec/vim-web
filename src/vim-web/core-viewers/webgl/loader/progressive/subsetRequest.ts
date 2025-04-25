@@ -4,7 +4,7 @@
 
 import { InsertableMesh } from './insertableMesh'
 import { InstancedMeshFactory } from './instancedMeshFactory'
-import { Vimx, WebglScene } from '../..'
+import { Vimx, Scene } from '../..'
 
 import { G3dMesh } from 'vim-format'
 import { G3dSubset } from './g3dSubset'
@@ -45,13 +45,13 @@ export class SubsetRequest {
   private _disposed: boolean = false
   private _started: boolean = false
 
-  private _scene: WebglScene
+  private _scene: Scene
 
   getBoundingBox () {
     return this._subset.getBoundingBox()
   }
 
-  constructor (scene: WebglScene, localVimx: Vimx, subset: G3dSubset) {
+  constructor (scene: Scene, localVimx: Vimx, subset: G3dSubset) {
     this._subset = subset
     this._scene = scene
 

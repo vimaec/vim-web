@@ -64,5 +64,3 @@ function footer (content: string | JSX.Element) {
 function divider () {
   return <div className="vim-divider vc-border-b vc-border-[#DFDFE1] vc-my-6"></div>
 }
-
-export default MessageBox

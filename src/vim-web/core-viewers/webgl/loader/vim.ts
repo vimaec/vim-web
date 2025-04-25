@@ -4,9 +4,9 @@
 
 import * as THREE from 'three'
 import { VimDocument, G3d, VimHeader, FilterMode } from 'vim-format'
-import { WebglScene } from './scene'
+import { Scene } from './scene'
 import { VimSettings } from './vimSettings'
-import { Element3D as WebglElement3D } from './element3d'
+import { Element3D } from './element3d'
 import {
   ElementMapping,
   ElementMapping2,
@@ -24,7 +24,7 @@ type VimFormat = 'vim' | 'vimx'
  * Represents a container for the built three.js meshes and the vim data from which they were constructed.
  * Facilitates high-level scene manipulation by providing access to objects.
  */
-export class Vim implements IVim<WebglElement3D> {
+export class Vim implements IVim<Element3D> {
   /**
    * Indicates whether the vim was opened from a vim or vimx file.
    */
@@ -58,7 +58,7 @@ export class Vim implements IVim<WebglElement3D> {
   /**
    * Mostly Internal - The scene in which the vim geometry is added.
    */
-  readonly scene: WebglScene
+  readonly scene: Scene
 
   /**
    * The mapping from Bim to Geometry for this vim.
@@ -67,7 +67,7 @@ export class Vim implements IVim<WebglElement3D> {
 
   private readonly _builder: SubsetBuilder
   private readonly _loadedInstances = new Set<number>()
-  private readonly _elementToObject = new Map<number, WebglElement3D>()
+  private readonly _elementToObject = new Map<number, Element3D>()
 
   /**
    * Getter for accessing the event dispatched whenever a subset begins or finishes loading.
@@ -100,7 +100,7 @@ export class Vim implements IVim<WebglElement3D> {
  * @param {VimHeader | undefined} header - The Vim header, if available.
  * @param {VimDocument} document - The Vim document.
  * @param {G3d | undefined} g3d - The G3d object, if available.
- * @param {WebglScene} scene - The scene containing the vim's geometry.
+ * @param {Scene} scene - The scene containing the vim's geometry.
  * @param {VimSettings} settings - The settings used to open this vim.
  * @param {ElementMapping | ElementNoMapping | ElementMapping2} map - The element mapping.
  * @param {SubsetBuilder} builder - The subset builder for constructing subsets of the Vim object.
@@ -112,7 +112,7 @@ export class Vim implements IVim<WebglElement3D> {
     header: VimHeader | undefined,
     document: VimDocument,
     g3d: G3d | undefined,
-    scene: WebglScene,
+    scene: Scene,
     settings: VimSettings,
     map: ElementMapping | ElementNoMapping | ElementMapping2,
     builder: SubsetBuilder,
@@ -160,11 +160,11 @@ export class Vim implements IVim<WebglElement3D> {
    * @param {number} id - The element ID to retrieve objects for.
    * @returns {THREE.Object3D[]} An array of objects corresponding to the element ID, or an empty array if none are found.
    */
-  getElementFromId (id: number) {
+  getElementsFromId (id: number) {
     const elements = this.map.getElementsFromElementId(id)
     return elements
       ?.map((e) => this.getElementFromIndex(e))
-      .filter((o): o is WebglElement3D => o !== undefined) ?? []
+      .filter((o): o is Element3D => o !== undefined) ?? []
   }
 
   /**
@@ -172,7 +172,7 @@ export class Vim implements IVim<WebglElement3D> {
    * @param {number} element - The index of the Vim element.
    * @returns {WebglElement3D | undefined} The Vim object corresponding to the element index, or undefined if not found.
    */
-  getElementFromIndex (element: number): WebglElement3D | undefined {
+  getElementFromIndex (element: number): Element3D | undefined {
     if (!this.map.hasElement(element)) return
 
     if (this._elementToObject.has(element)) {
@@ -182,7 +182,7 @@ export class Vim implements IVim<WebglElement3D> {
     const instances = this.map.getInstancesFromElement(element)
     const meshes = this.scene.getMeshesFromInstances(instances)
 
-    const result = new WebglElement3D(this, element, instances, meshes)
+    const result = new Element3D(this, element, instances, meshes)
     this._elementToObject.set(element, result)
     return result
   }
@@ -192,7 +192,7 @@ export class Vim implements IVim<WebglElement3D> {
    * @returns {WebglElement3D[]} An array containing all objects within the Vim.
    */
   getAllElements () {
-    const result : WebglElement3D[] = []
+    const result : Element3D[] = []
     for (const e of this.map.getElements()) {
       const obj = this.getElementFromIndex(e)
       result.push(obj)
@@ -206,8 +206,8 @@ export class Vim implements IVim<WebglElement3D> {
    * @returns {WebglElement3D[]} An array of objects within the specified subset.
    */
   getObjectsInSubset (subset: G3dSubset) {
-    const set = new Set<WebglElement3D>()
-    const result: WebglElement3D[] = []
+    const set = new Set<Element3D>()
+    const result: Element3D[] = []
     const count = subset.getInstanceCount()
     for (let i = 0; i < count; i++) {
       const instance = subset.getVimInstance(i)

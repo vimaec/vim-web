@@ -4,7 +4,7 @@
 
 import * as THREE from 'three'
 import { Element3D } from '../loader/element3d'
-import { WebglMesh } from '../loader/mesh'
+import { Mesh } from '../loader/mesh'
 import { RenderScene } from './rendering/renderScene'
 import { Camera } from './camera/camera'
 import { Renderer } from './rendering/renderer'
@@ -130,7 +130,7 @@ export class Raycaster implements IRaycaster {
    * Extracts the core model object from a raycast hit.
    */
   private getVimObjectFromHit(hit: THREE.Intersection): Element3D | undefined {
-    const mesh = hit.object.userData.vim as WebglMesh
+    const mesh = hit.object.userData.vim as Mesh
     if (!mesh) return undefined
     const sub = mesh.merged
       ? mesh.getSubmeshFromFace(hit.faceIndex)

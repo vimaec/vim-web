@@ -1,4 +1,5 @@
-import {InputHandler, type IInputAdapter} from "../../shared/inputHandler"
+import {type IInputAdapter} from "../../shared/inputAdapter"
+import {InputHandler} from "../../shared/inputHandler"
 import { Viewer } from "./viewer"
 import * as THREE from 'three'
 

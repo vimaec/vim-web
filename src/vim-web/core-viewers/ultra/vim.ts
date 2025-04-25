@@ -66,7 +66,7 @@ export class Vim implements IVim<Element3D> {
     this._objects.set(instance, object);
     return object;
   }
-  getElementFromId(id: number): Element3D[] {
+  getElementsFromId(id: number): Element3D[] {
     throw new Error('Method not implemented.');
   }
   getElementFromIndex(element: number): Element3D {

@@ -1,7 +1,8 @@
 export * from './gizmos';   
 export * from './gizmoLoading';
-export type * from './gizmoOrbit';
 
+// Type exports
+export type * from './gizmoOrbit';
 export type * from './axes';
 export type * from './markers';
 export type * from './measure';

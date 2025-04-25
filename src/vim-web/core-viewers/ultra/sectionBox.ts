@@ -1,14 +1,14 @@
 import { SignalDispatcher } from "ste-signals"
-import { Box3, Vector3 } from "../../utils/math3d"
 import { RpcSafeClient } from "./rpcSafeClient"
 import { safeBox } from "../../utils/threeUtils"
+import * as THREE from "three"
 
 export class SectionBox {
 
   private _visible: boolean = false
   private _interactible: boolean = false
   private _clip: boolean = false
-  private _box : Box3 | undefined
+  private _box : THREE.Box3 | undefined
   private _rpc: RpcSafeClient
   
   private _interval: ReturnType<typeof setInterval>
@@ -109,13 +109,13 @@ export class SectionBox {
    * Fits the given box, invalid dimensions will be reversed.
    * @param box - The new bounding box.
    */
-  fitBox(box: Box3) {
+  fitBox(box: THREE.Box3) {
     box = safeBox(box)
     this._box = box
     this.scheduleUpdate()
   }
 
-  getBox() : Box3 | undefined{
+  getBox() : THREE.Box3 | undefined{
     return this._box?.clone()
   }
 

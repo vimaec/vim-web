@@ -8,7 +8,7 @@ type DragCallback = (delta: THREE.Vector2, button: number) => void;
 // Existing MouseHandler class
 export class MouseHandler extends BaseInputHandler {
   private _lastMouseDownPosition = new THREE.Vector2(0, 0);
-  private _capture: CaptureStateMachine;
+  private _capture: CaptureHandler;
   private _dragHandler: DragHandler;
   private _doubleClickHandler: DoubleClickHandler = new DoubleClickHandler();
 
@@ -22,7 +22,7 @@ export class MouseHandler extends BaseInputHandler {
 
   constructor(canvas: HTMLCanvasElement) {
     super(canvas);
-    this._capture = new CaptureStateMachine(canvas);
+    this._capture = new CaptureHandler(canvas);
     this._dragHandler = new DragHandler((delta: THREE.Vector2, button:number) => this.onDrag(delta, button));
   }
 
@@ -85,7 +85,6 @@ export class MouseHandler extends BaseInputHandler {
   private handlePointerMove(event: PointerEvent): void {
     if (event.pointerType !== 'mouse') return;
     this._canvas.focus();
-    this._capture.onPointerMove(event);
     const pos = this.relativePosition(event);
 
     this._dragHandler.onPointerMove(pos);
@@ -113,41 +112,29 @@ export class MouseHandler extends BaseInputHandler {
 }
 
 /**
- * The point of this class is to only capture the pointer when the drag starts instead of on pointerdown.
- * This is because capturing the pointer on pointerdown prevents double click events from firing.
+ * Small helper class to manage pointer capture on the canvas.
  */
-class CaptureStateMachine {
+class CaptureHandler {
   private _canvas: HTMLCanvasElement;
-  private state: 'none' | 'capture' | 'captured';
-  private id: number;
+  private _id: number;
 
   constructor(canvas: HTMLCanvasElement) {
     this._canvas = canvas;
-    this.state = 'none';
-    this.id = -1;
+    this._id = -1;
   }
 
   onPointerDown(event: PointerEvent): void {
-    if (this.state === 'captured') {
-      this._canvas.releasePointerCapture(this.id);
+    if (this._id >= 0 ) {
+      this._canvas.releasePointerCapture(this._id);
     }
-    this.id = event.pointerId;
-    this.state = 'capture';
-  }
-
-  onPointerMove(_event: PointerEvent) {
-    if (this.state === 'capture') {
-      this._canvas.setPointerCapture(this.id);
-      this.state = 'captured';
-    }
+    
+    this._canvas.setPointerCapture(event.pointerId);
+    this._id = event.pointerId;
   }
 
   onPointerUp(event: PointerEvent) {
-    if (this.state === 'captured') {
-      this._canvas.releasePointerCapture(this.id);
-      this.state = 'none';
-      this.id = -1;
-    }
+    this._canvas.releasePointerCapture(this._id);
+    this._id = -1;
   }
 }
 
