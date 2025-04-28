@@ -82,7 +82,7 @@ export class VimRequest {
   }
 
   async getResult (): Promise<Result<Vim>> {
-    await this._completionPromise
+    await this._completionPromise.promise
     return this._error ? new ErrorResult(this._error) : new SuccessResult(this._vimResult)
   }
 

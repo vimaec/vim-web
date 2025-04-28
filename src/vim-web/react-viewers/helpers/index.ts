@@ -1,9 +1,6 @@
 // full export 
 export * as ReactUtils from './reactUtils';
 
-// To delete. Replace with controllable promise
-export * from './deferredPromise';
-
 // Type exports
 export type * from './cursor';
 export type * from './data';
