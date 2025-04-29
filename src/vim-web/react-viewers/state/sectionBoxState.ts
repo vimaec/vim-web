@@ -55,6 +55,7 @@ export function useSectionBox(
   const topOffset = useStateRef(1);
   const sideOffset = useStateRef(1);
   const bottomOffset = useStateRef(1);
+  const requestId = useRef(0);
 
   // The reference box on which the offsets are applied.
   const boxRef = useRef<THREE.Box3>(adapter.getBox());
@@ -100,21 +101,27 @@ export function useSectionBox(
   visible.useOnChange((v) => adapter.setVisible(v));
 
   // Update the box by combining the base box and the computed offsets.
-  const sectionBox = useArgActionRef((baseBox: THREE.Box3) => {
-    if(baseBox === undefined) return
-    boxRef.current = baseBox;
-    const newBox = addBox(baseBox, offsetsToBox3_(topOffset.get(), sideOffset.get(), bottomOffset.get()));
+  const sectionBox = useArgActionRef((box: THREE.Box3) => {
+    if(box === undefined) return
+    requestId.current ++;
+
+    boxRef.current = box;
+    const newBox = addBox(box, offsetsToBox3_(topOffset.get(), sideOffset.get(), bottomOffset.get()));
     adapter.setBox(newBox);
   });
 
   // Sets the box to the selection box or the renderer box if no selection.
   const sectionSelection = useFuncRef(async () => {
+    const id = requestId.current;
     const box = (await getSelectionBox.call()) ?? (await getSceneBox.call());
+    if(requestId.current !== id) return // cancel outdated request.
     sectionBox.call(box);
   })
   
   const sectionScene = useFuncRef(async () => {
+    const id = requestId.current;
     const box = await getSceneBox.call();
+    if(requestId.current !== id) return // cancel outdated request.
     sectionBox.call(box);
   });
 
