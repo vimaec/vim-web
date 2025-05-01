@@ -75,8 +75,10 @@ export function createViewer (
   const patchRef = (cmp : ViewerRef) => {
     cmp.dispose = () => {
       viewer.dispose()
-      cmpContainer.dispose()
-      reactRoot.unmount()
+      cmpContainer.dispose()  
+      queueMicrotask(() => {
+        reactRoot.unmount();
+      });
     }
     return cmp
   }
