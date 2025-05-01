@@ -132,7 +132,7 @@ export class Vim implements IVim<Element3D> {
   }
 
   getBoundingBox(): Promise<THREE.Box3> {
-    const box = this.getFullSet().getBoundingBox()  
+    const box = this.scene.getBoundingBox()
     return Promise.resolve(box)
   }
 
