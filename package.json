@@ -21,18 +21,15 @@
     "url": "https://github.com/vimaec/vim-web"
   },
   "scripts": {
-    "dev": "vite --host --config vite.config.website.js",
+    "dev": "vite",
     "eslint": "eslint --ext .js,.ts,.tsx src --fix",
-    "release-dev": "npm version prerelease --preid=dev && npm run build:libs && npm publish && git push",
-    "release-patch": "npm version patch && npm run release-current",
-    "release-minor": "npm version minor && npm run release-current",
-    "release-major": "npm version major && npm run release-current",
-    "release-current": "npm run build:website && npm run build:libs && npm publish && git push",
-    "build:libs": "vite build --config vite.config.libs.js && npm run declarations:libs",
-    "package:libs": "npm run build:libs && npm publish",
-    "declarations:libs": "tsc --project tsconfig.libs.json --declaration --emitDeclarationOnly --outdir ./dist/types",
-    "documentation:libs": "typedoc --entryPoints src/vim-web/index.ts --entryPointStrategy expand --out docs --excludeProtected --excludeExternals --excludePrivate",
-    "public:documentation": "npm run documentation:libs && gh-pages -d docs"
+    "documentation": "typedoc --entryPoints src/vim-web/index.ts --entryPointStrategy expand --out docs --excludeProtected --excludeExternals --excludePrivate",
+    "declarations": "tsc --project tsconfig.json --declaration --emitDeclarationOnly --outdir ./dist/types",
+    "build": "vite build --config vite.config.js && npm run declarations",
+    "package": "npm run build && npm publish",  
+    "publish:package": "npm run build && npm publish",
+    "publish:documentation": "npm run documentation && gh-pages -d docs",
+    "publish": "npm run publish:package && npm run publish:documentation"
   },
   "devDependencies": {
     "@types/dom-webcodecs": "^0.1.13",
