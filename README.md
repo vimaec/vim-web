@@ -1,4 +1,8 @@
-# VIM WebGL Component
+# VIM Web
+
+## Live Demo
+
+Visit our [Demo page](https://vimaec.github.io/vim-web-demo)
 
 ### Documentation
 
@@ -7,15 +11,6 @@ Explore the full [API Documentation](https://vimaec.github.io/vim-web/api/).
 ### Package
 https://www.npmjs.com/package/vim-web
 
-## Live Demo
-
-### WebGL Viewer
-- **[Small - Residence](https://vimaec.github.io/vim-web/webgl)**
-- **[Medium - Medical Tower](https://vimaec.github.io/vim-web/webgl?vim=https://storage.cdn.vimaec.com/samples/Medical_Tower.vim)**
-
-### Ultra Viewer
-- **[Small - Residence](https://vimaec.github.io/vim-web/ultra)**
-- **[Medium - Medical Tower](https://vimaec.github.io/vim-web/ultra?vim=https://storage.cdn.vimaec.com/samples/Medical_Tower.vim)**
 
 ## Overview
 
