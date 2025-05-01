@@ -14,7 +14,7 @@ import { Submesh } from './mesh'
 import { IVimElement } from '../../shared/vim'
 
 /**
- * High level api to interact with the loaded vim geometry and data.
+ * High level api to interact with the loaded vim   ometry and data.
  */
 export class Element3D implements IVimElement {
   private _color: THREE.Color | undefined
@@ -207,7 +207,7 @@ export class Element3D implements IVimElement {
 
   /**
    * Retrieves the bounding box of the object from cache or computes it if needed.
-   * Returns undefined if the object has no geometry.
+   * Returns undefined if the element is abstract.
    * @returns {THREE.Box3 | undefined} The bounding box of the object, or undefined if the object has no geometry.
    */
   async getBoundingBox () {
