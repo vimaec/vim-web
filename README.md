@@ -6,7 +6,7 @@ Visit our [Demo page](https://vimaec.github.io/vim-web-demo)
 
 ### Documentation
 
-Explore the full [API Documentation](https://vimaec.github.io/vim-web/api/).
+Explore the full [API Documentation](https://vimaec.github.io/vim-web).
 
 ### Package
 https://www.npmjs.com/package/vim-web
