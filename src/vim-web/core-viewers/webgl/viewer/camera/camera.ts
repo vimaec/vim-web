@@ -8,7 +8,7 @@ import { ISignal, SignalDispatcher } from 'ste-signals'
 import { RenderScene } from '../rendering/renderScene'
 import { ViewerSettings } from '../settings/viewerSettings'
 import { Viewport } from '../viewport'
-import { ICamera } from './cameraInterface'
+import { CameraSaveState, ICamera } from './cameraInterface'
 import { CameraMovement } from './cameraMovement'
 import { CameraLerp } from './cameraMovementLerp'
 import { CameraMovementSnap } from './cameraMovementSnap'
@@ -23,7 +23,7 @@ export class Camera implements ICamera {
   camOrthographic: OrthographicCamera
 
   private _viewport: Viewport
-  _scene: RenderScene // make private again
+  private _scene: RenderScene // make private again
   private _lerp: CameraLerp
   private _movement: CameraMovementSnap
 
@@ -45,8 +45,7 @@ export class Camera implements ICamera {
   private _tmp2 = new THREE.Vector3()
 
   // saves
-  _savedPosition: THREE.Vector3 = new THREE.Vector3(0, 0, -5)
-  _savedTarget: THREE.Vector3 = new THREE.Vector3(0, 0, 0)
+  private _savedState = new CameraSaveState(this)
 
   /**
    * A signal that is dispatched when camera settings change.
@@ -134,21 +133,31 @@ export class Camera implements ICamera {
   private _velocityBlendFactor: number = 0.0001
 
   constructor (scene: RenderScene, viewport: Viewport, settings: ViewerSettings) {
-    this.camPerspective = new PerspectiveCamera(new THREE.PerspectiveCamera())
+    this.camPerspective = new PerspectiveCamera(new THREE.PerspectiveCamera(), settings)
     this.camPerspective.camera.up = new THREE.Vector3(0, 0, 1)
     this.camPerspective.camera.lookAt(new THREE.Vector3(0, 1, 0))
 
     this.camOrthographic = new OrthographicCamera(
-      new THREE.OrthographicCamera()
+      new THREE.OrthographicCamera(),
+      settings
     )
 
-    this._movement = new CameraMovementSnap(this)
-    this._lerp = new CameraLerp(this, this._movement)
+    this._savedState = new CameraSaveState(this)
+    this._movement = new CameraMovementSnap(this, this._savedState, () => this._scene.getBoundingBox())
+    this._lerp = new CameraLerp(this, this._movement, this._savedState, () => this._scene.getBoundingBox())
 
     this._scene = scene
     this._viewport = viewport
     this._viewport.onResize.sub(() => this.updateProjection())
-    this.applySettings(settings)
+    
+    this.defaultForward = settings.camera.forward
+    this._orthographic = settings.camera.orthographic
+    this.allowedMovement = settings.camera.allowedMovement
+    this.allowedRotation = settings.camera.allowedRotation
+
+    // Values
+    this._onValueChanged.dispatch()
+
     this.snap(true).setDistance(-1000)
     this.snap(true).orbitTowards(this._defaultForward)
     this.updateProjection()
@@ -262,18 +271,10 @@ export class Camera implements ICamera {
     return this._target
   }
 
-  applySettings (settings: ViewerSettings) {
+  private applySettings (settings: ViewerSettings) {
     // Camera
 
-    this.defaultForward = settings.camera.forward
-    this._orthographic = settings.camera.orthographic
-    this.allowedMovement = settings.camera.allowedMovement
-    this.allowedRotation = settings.camera.allowedRotation
-    this.camPerspective.applySettings(settings)
-    this.camOrthographic.applySettings(settings)
 
-    // Values
-    this._onValueChanged.dispatch()
   }
 
   /**
@@ -288,8 +289,7 @@ export class Camera implements ICamera {
    */
   save () {
     this._lerp.cancel()
-    this._savedPosition.copy(this.position)
-    this._savedTarget.copy(this._target)
+    this._savedState.save()
   }
 
   /**

@@ -118,3 +118,24 @@ export interface ICamera {
    */
   orthographic: boolean;
 }
+
+export class CameraSaveState{
+  private _camera: ICamera
+  private _position: THREE.Vector3 = new THREE.Vector3() 
+  private _target: THREE.Vector3 = new THREE.Vector3()
+
+  constructor (camera: ICamera) {
+    this._camera = camera
+  }
+  save () {
+    this._position.copy(this._camera.position)
+    this._target.copy(this._camera.target)
+  }
+  get position () {
+    return this._position
+  }
+
+  get target () {
+    return this._target
+  } 
+}

@@ -9,12 +9,10 @@ import { Layers } from '../raycaster'
 export class PerspectiveCamera {
   camera: THREE.PerspectiveCamera
 
-  constructor (camera: THREE.PerspectiveCamera) {
+  constructor (camera: THREE.PerspectiveCamera, settings: ViewerSettings) {
     this.camera = camera
     this.camera.layers.enable(Layers.NoRaycast)
-  }
 
-  applySettings (settings: ViewerSettings) {
     this.camera.fov = settings.camera.fov
     this.camera.zoom = settings.camera.zoom
     this.camera.near = settings.camera.near

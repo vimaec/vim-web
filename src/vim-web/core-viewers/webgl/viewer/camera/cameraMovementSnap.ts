@@ -6,6 +6,7 @@ import { CameraMovement } from './cameraMovement'
 import { Element3D } from '../../loader/element3d'
 import * as THREE from 'three'
 
+
 export class CameraMovementSnap extends CameraMovement {
   /**
    * Moves the camera closer or farther away from orbit target.
@@ -14,10 +15,6 @@ export class CameraMovementSnap extends CameraMovement {
   zoom (amount: number): void {
     const dist = this._camera.orbitDistance * amount
     this.setDistance(dist)
-  }
-
-  reset () {
-    this.set(this._camera._savedPosition, this._camera._savedTarget)
   }
 
   setDistance (dist: number): void {
