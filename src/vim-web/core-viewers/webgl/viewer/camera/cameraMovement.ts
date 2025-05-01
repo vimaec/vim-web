@@ -8,12 +8,19 @@ import { Selectable } from '../selection'
 import * as THREE from 'three'
 import { Marker } from '../gizmos/markers/gizmoMarker'
 import { Vim } from '../../loader/vim'
+import { CameraSaveState } from './cameraInterface'
+
+
 
 export abstract class CameraMovement {
   protected _camera: Camera
+  private _savedState: CameraSaveState
+  private _getBoundingBox: () => THREE.Box3
 
-  constructor (camera: Camera) {
+  constructor (camera: Camera, savedState: CameraSaveState, getBoundingBox: () => THREE.Box3) {
     this._camera = camera
+    this._savedState = savedState
+    this._getBoundingBox = getBoundingBox
   }
 
   /**
@@ -127,7 +134,9 @@ export abstract class CameraMovement {
   /**
    * Resets the camera to its last saved position and orientation.
    */
-  abstract reset(): void
+  reset () {
+    this.set(this._savedState.position, this._savedState.target)
+  }
 
   /**
    * Moves both the camera and its target to the given positions.
@@ -153,7 +162,7 @@ export abstract class CameraMovement {
     }
     if (target === 'all') {
       console.log('frame all')
-      target = this._camera._scene.getAverageBoundingBox()
+      target = this._getBoundingBox()
     }
     if (target instanceof THREE.Box3) {
       target = target.getBoundingSphere(new THREE.Sphere())

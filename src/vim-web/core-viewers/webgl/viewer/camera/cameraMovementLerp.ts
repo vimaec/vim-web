@@ -7,6 +7,9 @@ import { Camera } from './camera'
 import { Element3D } from '../../loader/element3d'
 import { CameraMovementSnap } from './cameraMovementSnap'
 import { CameraMovement } from './cameraMovement'
+import { CameraSaveState } from './cameraInterface'
+
+
 
 export class CameraLerp extends CameraMovement {
   _movement: CameraMovementSnap
@@ -17,8 +20,8 @@ export class CameraLerp extends CameraMovement {
 
   _duration = 1
 
-  constructor (camera: Camera, movement: CameraMovementSnap) {
-    super(camera)
+  constructor (camera: Camera, movement: CameraMovementSnap, savedState: CameraSaveState, getBoundingBox:() => THREE.Box3) {
+    super(camera, savedState, getBoundingBox)
     this._movement = movement
   }
 
@@ -61,11 +64,12 @@ export class CameraLerp extends CameraMovement {
     const end = this._camera.position.clone().add(v)
     const pos = new THREE.Vector3()
 
+    const offset = this._camera.forward.multiplyScalar(this._camera.orbitDistance)
+
     this.onProgress = (progress) => {
-      console.log('progress', progress)
       pos.copy(start)
       pos.lerp(end, progress)
-      this._movement.move3(pos)
+      this._movement.set(pos, pos.clone().add(offset))
     }
   }
 
@@ -135,10 +139,6 @@ export class CameraLerp extends CameraMovement {
       const r = start.clone().slerp(rot, progress)
       this._movement.applyRotation(r)
     }
-  }
-
-  reset (): void {
-    this.set(this._camera._savedPosition, this._camera._savedTarget)
   }
 
   set (position: THREE.Vector3, target?: THREE.Vector3) {
