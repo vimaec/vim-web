@@ -31,10 +31,8 @@
     "build:libs": "vite build --config vite.config.libs.js && npm run declarations:libs",
     "package:libs": "npm run build:libs && npm publish",
     "declarations:libs": "tsc --project tsconfig.libs.json --declaration --emitDeclarationOnly --outdir ./dist/types",
-    "documentation:libs": "typedoc --entryPoints src/vim-web/index.ts --entryPointStrategy expand --out docs/api --excludeProtected --excludeExternals --excludePrivate",
-    "build:website": "vite build --config vite.config.website.js && node scripts/copyIndex.js && npm run documentation:libs && npm run commit:website",
-    "serve:website": "vite preview --outDir docs",
-    "commit:website": "git add docs && git commit -m BuildWebsite && git push"
+    "documentation:libs": "typedoc --entryPoints src/vim-web/index.ts --entryPointStrategy expand --out docs --excludeProtected --excludeExternals --excludePrivate",
+    "public:documentation": "npm run documentation:libs && gh-pages -d docs"
   },
   "devDependencies": {
     "@types/dom-webcodecs": "^0.1.13",
@@ -58,7 +56,8 @@
     "tailwindcss-scoped-preflight": "^3.4.9",
     "typedoc": "^0.27.3",
     "typescript": "^5.7.2",
-    "vite": "^6.0.2"
+    "vite": "^6.0.2",
+    "gh-pages": "^6.3.0"
   },
   "dependencies": {
     "@firefox-devtools/react-contextmenu": "^5.1.1",
