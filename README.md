@@ -28,7 +28,8 @@ The **VIM-Web** repository consists of four primary components, divided into two
 
 The **VIM** file format is a high-performance 3D scene format that supports rich BIM data. It can also be extended to accommodate other relational and non-relational datasets. Unlike **IFC**, the VIM format is pre-tessellated, allowing for rapid loading and rendering.
 
-Learn more about the VIM format here: [VIM GitHub Repository](https://github.com/vimaec/vim).
+Learn more about the VIM format here: [VIM Format Repository](https://github.com/vimaec/vim-format)
+).
 
 ### Built With
 - [VIM WebGL Viewer](https://github.com/vimaec/vim-webgl-viewer)
