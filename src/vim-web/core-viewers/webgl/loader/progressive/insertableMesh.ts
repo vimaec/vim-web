@@ -8,7 +8,7 @@ import { InsertableGeometry } from './insertableGeometry'
 import { InsertableSubmesh } from './insertableSubmesh'
 import { G3dMeshOffsets } from './g3dOffsets'
 import { Vim } from '../vim'
-import { ModelMaterial, ViewerMaterials } from '../materials/viewerMaterials'
+import { ModelMaterial, Materials } from '../materials/materials'
 
 export class InsertableMesh {
   offsets: G3dMeshOffsets
@@ -57,8 +57,8 @@ export class InsertableMesh {
     this.geometry = new InsertableGeometry(offsets, materials, transparent)
 
     this._material = transparent
-      ? ViewerMaterials.getInstance().transparent.material
-      : ViewerMaterials.getInstance().opaque.material
+      ? Materials.getInstance().transparent.material
+      : Materials.getInstance().opaque.material
 
     this.mesh = new THREE.Mesh(this.geometry.geometry, this._material)
     this.mesh.userData.vim = this

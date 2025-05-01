@@ -1,7 +1,7 @@
 /**
  * @module viw-webgl-react
  */
-import * as VIM from '../../core-viewers/webgl/index'
+import * as Core from '../../core-viewers'
 
 import { TreeItem } from 'react-complex-tree'
 import { MapTree, sort, toMapTree } from '../helpers/data'
@@ -30,11 +30,12 @@ export type VimTreeNode = TreeItem<AugmentedElement> & {
  * @returns
  */
 export function toTreeData (
-  vim: VIM.Vim,
+  vim: Core.Webgl.Vim,
   elements: AugmentedElement[],
   grouping: Grouping
 ) {
-  if (!elements?.length) return
+  if(!vim) return
+  if (!elements?.length) return 
 
   const main: (e: AugmentedElement) => string =
     grouping === 'Family'
@@ -52,23 +53,24 @@ export function toTreeData (
   ])
   sort(tree)
 
-  const result = new BimTreeData(tree)
-  result.updateVisibility(vim)
+  const result = new BimTreeData(vim, tree)
+  result.updateVisibility()
   return result
 }
 
 export class BimTreeData {
+  vim : Core.Webgl.Vim
   nodes: Record<number, VimTreeNode>
   elementToNode: Map<number, number>
 
-  constructor (map: MapTree<string, AugmentedElement>) {
+  constructor (vim: Core.Webgl.Vim, map: MapTree<string, AugmentedElement>) {
+    this.vim = vim
     this.nodes = {}
     this.elementToNode = new Map<number, number>()
-
     this.flatten(map)
   }
 
-  updateVisibility (vim: VIM.Vim) {
+  updateVisibility () {
     const set = new Set<VimTreeNode>()
     const updateOne = (node: VimTreeNode): NodeVisibility => {
       if (set.has(node)) {
@@ -90,7 +92,7 @@ export class BimTreeData {
             : 'vim-undefined'
         return node.visible
       } else {
-        const obj = vim.getObjectFromElement(node.data?.index)
+        const obj = this.vim.getElementFromIndex(node.data?.index)
         node.visible = obj?.visible ? 'vim-visible' : 'vim-hidden'
         return node.visible
       }
@@ -229,7 +231,7 @@ export class BimTreeData {
           this.nodes[++i] = {
             index: i,
             parent: self,
-            title: `${e.name} ${e.id ? `[${e.id}]` : ''}`,
+            title: `${e.id ? `#${e.id}` : 'N/A'}`,
             isFolder: false,
             data: e,
             children: [],

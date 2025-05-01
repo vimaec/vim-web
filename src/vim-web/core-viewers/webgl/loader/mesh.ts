@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { InsertableSubmesh } from './progressive/insertableSubmesh'
 import { Vim } from './vim'
 import { InstancedSubmesh } from './progressive/instancedSubmesh'
-import { ModelMaterial } from './materials/viewerMaterials'
+import { ModelMaterial } from './materials/materials'
 
 /**
  * Wrapper around THREE.Mesh
@@ -239,6 +239,6 @@ export class StandardSubmesh {
    * Returns vim object for this submesh.
    */
   get object () {
-    return this.mesh.vim.getObjectFromInstance(this.instance)
+    return this.mesh.vim.getElementFromInstanceIndex(this.instance)
   }
 }

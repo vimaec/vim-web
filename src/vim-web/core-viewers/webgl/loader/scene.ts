@@ -9,7 +9,8 @@ import { estimateBytesUsed } from 'three/examples/jsm/utils/BufferGeometryUtils'
 import { InsertableMesh } from './progressive/insertableMesh'
 import { InstancedMesh } from './progressive/instancedMesh'
 import { getAverageBoundingBox } from './averageBoundingBox'
-import { ModelMaterial } from './materials/viewerMaterials'
+import { ModelMaterial } from './materials/materials'
+import { Renderer } from '../viewer/rendering/renderer'
 
 /**
  * Interface for a renderer object, providing methods to add and remove objects from a scene, update bounding boxes, and notify scene updates.
@@ -30,7 +31,7 @@ export interface IRenderer {
 // TODO: Only expose what should be public to vim.scene
 export class Scene {
   // Dependencies
-  private _renderer: IRenderer
+  private _renderer: Renderer
   private _vim: Vim | undefined
   private _matrix = new THREE.Matrix4()
 
@@ -38,7 +39,6 @@ export class Scene {
   insertables: InsertableMesh[] = []
   meshes: (Mesh | InsertableMesh | InstancedMesh)[] = []
 
-  private _outlineCount: number = 0
   private _boundingBox: THREE.Box3
 
   private _averageBoundingBox: THREE.Box3 | undefined
@@ -52,20 +52,6 @@ export class Scene {
 
   setDirty () {
     this.renderer?.notifySceneUpdate()
-  }
-
-  hasOutline () {
-    return this._outlineCount > 0
-  }
-
-  addOutline () {
-    this._outlineCount++
-    this.setDirty()
-  }
-
-  removeOutline () {
-    this._outlineCount--
-    this.setDirty()
   }
 
   clearUpdateFlag () {
@@ -142,7 +128,7 @@ export class Scene {
     return this._renderer
   }
 
-  set renderer (value: IRenderer) {
+  set renderer (value: Renderer) {
     this._renderer = value
   }
 
@@ -164,7 +150,7 @@ export class Scene {
     this._instanceToMeshes.set(submesh.instance, meshes)
     this.setDirty()
     if (this.vim) {
-      const obj = this.vim.getObjectFromInstance(submesh.instance)
+      const obj = this.vim.getElementFromInstanceIndex(submesh.instance)
       obj._addMesh(submesh)
     }
   }

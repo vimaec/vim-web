@@ -1,6 +1,6 @@
 // loader
 import {
-  getFullSettings,
+  createVimSettings,
   VimPartialSettings,
   VimSettings
 } from '../vimSettings'
@@ -38,7 +38,7 @@ export async function open (
   onProgress?: (p: IProgressLogs) => void
 ) {
   const bfast = source instanceof BFast ? source : new BFast(source)
-  const fullSettings = getFullSettings(settings)
+  const fullSettings = createVimSettings(settings)
   const type = await determineFileType(bfast, fullSettings)
 
   if (type === 'vim') {
@@ -126,7 +126,7 @@ async function loadFromVim (
   settings: VimSettings,
   onProgress?: (p: IProgressLogs) => void
 ) {
-  const fullSettings = getFullSettings(settings)
+  const fullSettings = createVimSettings(settings)
 
   if (bfast.source instanceof RemoteBuffer) {
     bfast.source.onProgress = onProgress

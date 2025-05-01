@@ -1,6 +1,9 @@
 import React, { useRef } from 'react'
-import { UltraReact, UltraViewer } from '../../vim-web'
+import * as VIM from '../../vim-web'
 import { useUltraWithWolford } from './ultraPageUtils'
+
+import ViewerRef = VIM.React.Ultra.ViewerRef
+import RGBA = VIM.Core.Ultra.RGBA
 
 export function UltraIblLock () {
   const div = useRef<HTMLDivElement>(null)
@@ -15,13 +18,13 @@ export function UltraIblLock () {
   )
 }
 
-async function toggleLock (ultra: UltraReact.UltraComponentRef) {
-  ultra.viewer.renderer.backgroundBlur = 0
-  ultra.viewer.renderer.backgroundColor = new UltraViewer.RGBA(0, 0, 0, 0)
+async function toggleLock (ultra: ViewerRef) {
+  ultra.core.renderer.backgroundBlur = 0
+  ultra.core.renderer.backgroundColor = new RGBA(0, 0, 0, 0)
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    ultra.viewer.renderer.lockIblRotation = !ultra.viewer.renderer.lockIblRotation
+    ultra.core.renderer.lockIblRotation = !ultra.core.renderer.lockIblRotation
     await new Promise(resolve => setTimeout(resolve, 3000))
   }
 }

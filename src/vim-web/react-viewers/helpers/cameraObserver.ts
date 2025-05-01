@@ -1,12 +1,12 @@
 
-import * as VIM from '../../core-viewers/webgl/index'
+import * as Core from '../../core-viewers'
 
 export class CameraObserver {
   onChange : ((moving: boolean) => void) | undefined
   private _timeOut : ReturnType<typeof setTimeout>
   private _sub : () => void
 
-  constructor (viewer: VIM.Viewer, delay: number) {
+  constructor (viewer: Core.Webgl.Viewer, delay: number) {
     this._sub = viewer.camera.onMoved.subscribe(() => {
       this.onChange?.(true)
       clearTimeout(this._timeOut)

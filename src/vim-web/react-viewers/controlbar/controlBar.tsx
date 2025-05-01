@@ -6,11 +6,16 @@ import { useEffect } from 'react'
 import ReactTooltip from 'react-tooltip'
 import { createSection, IControlBarSection } from './controlBarSection'
 
-export * from './controlBarSection'
-export * from './controlBarButton'
-export * from './controlBarSection'
-export * from './controlBarIds'
-
+/**
+ * Reference to manage control bar functionality in the viewer.
+ */
+export type ControlBarRef = {
+  /**
+   * Defines a callback function to dynamically customize the control bar.
+   * @param customization The configuration object specifying the customization options for the control bar.
+   */
+  customize: (customization: ControlBarCustomization) => void
+}
 
 /**
  * A map function that changes the context menu.

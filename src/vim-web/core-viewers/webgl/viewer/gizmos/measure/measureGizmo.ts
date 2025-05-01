@@ -11,7 +11,8 @@ import {
   MeasureStyle,
   MeasureElement
 } from './measureHtml'
-import { ICamera } from '../../camera/ICamera'
+import { ICamera } from '../../camera/cameraInterface'
+import { Layers } from '../../raycaster'
 
 /**
  * Wrapper for a two points line drawn using MeshLine
@@ -62,6 +63,9 @@ class MeasureLine {
     this._meshLine.geometry.addGroup(0, Infinity, 0)
     this._meshLine.geometry.addGroup(0, Infinity, 1)
     this.mesh.frustumCulled = false
+    
+    this.mesh.layers.set(Layers.NoRaycast)
+
   }
 
   setPoints (start: THREE.Vector3, end: THREE.Vector3) {

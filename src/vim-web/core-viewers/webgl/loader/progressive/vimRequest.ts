@@ -4,14 +4,14 @@ import {
 } from '../vimSettings'
 
 import { Vim } from '../vim'
-import { RequestResult, ErrorResult, SuccessResult } from '../../../utils/requestResult'
+import { Result, ErrorResult, SuccessResult } from '../../../../utils/result'
 import { open } from './open'
 
 import { VimSource } from '../..'
 import {
   BFast, IProgressLogs
 } from 'vim-format'
-import { ControllablePromise } from '../../../utils/promise'
+import { ControllablePromise } from '../../../../utils/promise'
 
 export type RequestSource = {
   url?: string,
@@ -25,7 +25,7 @@ export type RequestSource = {
  * @param settings the settings to configure how the vim will be loaded.
  * @returns a request object that can be used to track progress and get the result.
  */
-export function request (options: RequestSource, settings? : VimPartialSettings) {
+export function requestVim (options: RequestSource, settings? : VimPartialSettings) {
   return new VimRequest(options, settings)
 }
 
@@ -81,8 +81,8 @@ export class VimRequest {
     this._completionPromise.resolve()
   }
 
-  async getResult (): Promise<RequestResult<Vim>> {
-    await this._completionPromise
+  async getResult (): Promise<Result<Vim>> {
+    await this._completionPromise.promise
     return this._error ? new ErrorResult(this._error) : new SuccessResult(this._vimResult)
   }
 

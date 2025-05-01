@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react'
-import * as VIM from '../../core-viewers/webgl/index'
+import * as Core from '../../core-viewers'
 import ReactTooltip from 'react-tooltip'
 import { BimBody } from './bimInfoBody'
 import { BimHeader } from './bimInfoHeader'
@@ -10,14 +10,14 @@ import { AugmentedElement } from '../helpers/element'
 import { Data, BimInfoPanelRef } from './bimInfoData'
 
 export function BimInfoPanel (props : {
-    object: VIM.Object3D,
-    vim: VIM.Vim,
+    object: Core.Webgl.Element3D,
+    vim: Core.Webgl.Vim,
     elements: AugmentedElement[],
     full : boolean
     bimInfoRef: BimInfoPanelRef
   }
 ) {
-  const target = props.object?.type === 'Object3D' ? props.object : undefined
+  const target = props.object?.type === 'Element3D' ? props.object : undefined
   useEffect(() => {
     ReactTooltip.rebuild()
   })
@@ -33,6 +33,7 @@ export function BimInfoPanel (props : {
       data = await props.bimInfoRef.onData(data, target ?? props.vim)
       setData(data)
     }
+    
     // UseEffect doesn't accept async functions so we need to wrap it
     update()
   }

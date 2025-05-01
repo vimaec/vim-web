@@ -5,23 +5,22 @@
 import * as THREE from 'three'
 
 // internal
-import { ViewerSettings, getViewerSettings, PartialViewerSettings } from './settings/viewerSettings'
 import { Camera } from './camera/camera'
-import { ICamera } from './camera/ICamera'
-import { Selection } from './selection'
 import { Environment } from './environment/environment'
-import { Raycaster } from './raycaster'
-import { RenderScene } from './rendering/renderScene'
-import { Viewport } from './viewport'
 import { Gizmos } from './gizmos/gizmos'
+import { IRaycaster, Raycaster } from './raycaster'
+import { RenderScene } from './rendering/renderScene'
+import { createSelection, ISelection } from './selection'
+import { createViewerSettings, PartialViewerSettings, ViewerSettings } from './settings/viewerSettings'
+import { Viewport } from './viewport'
 
 // loader
-import { Renderer } from './rendering/renderer'
 import { ISignal, SignalDispatcher } from 'ste-signals'
-import { ViewerMaterials } from '../loader/materials/viewerMaterials'
+import type {InputHandler} from '../../shared'
+import { Materials } from '../loader/materials/materials'
 import { Vim } from '../loader/vim'
-import { CoreInputHandler } from '../../shared/coreInputHandler'
-import { webglInputHandler } from './webglInputsAdapter'
+import { createInputHandler } from './inputAdapter'
+import { Renderer } from './rendering/renderer'
 
 /**
  * Viewer and loader for vim files.
@@ -46,22 +45,22 @@ export class Viewer {
   /**
    * The interface for managing viewer selection.
    */
-  readonly selection: Selection
+  readonly selection: ISelection
 
   /**
    * The interface for manipulating default viewer inputs.
    */
-  readonly inputs: CoreInputHandler
+  readonly inputs: InputHandler
 
   /**
    * The interface for performing raycasting into the scene to find objects.
    */
-  readonly raycaster: Raycaster
+  readonly raycaster: IRaycaster
 
   /**
    * The materials used by the viewer to render the vims.
    */
-  readonly materials: ViewerMaterials
+  readonly materials: Materials
 
   /**
    * The environment of the viewer, including the ground plane and lights.
@@ -72,7 +71,7 @@ export class Viewer {
    * The interface for manipulating the viewer's camera.
    */
   get camera () {
-    return this._camera as ICamera
+    return this._camera as Camera
   }
 
   /**
@@ -96,9 +95,9 @@ export class Viewer {
   private _updateId: number
 
   constructor (settings?: PartialViewerSettings) {
-    this.settings = getViewerSettings(settings)
+    this.settings = createViewerSettings(settings)
 
-    this.materials = ViewerMaterials.getInstance()
+    this.materials = Materials.getInstance()
 
     const scene = new RenderScene()
     this.viewport = new Viewport(this.settings)
@@ -111,7 +110,7 @@ export class Viewer {
       this.settings
     )
 
-    this.inputs = webglInputHandler(this)
+    this.inputs = createInputHandler(this)
     this.gizmos = new Gizmos(this, this._camera)
     this.materials.applySettings(this.settings)
 
@@ -119,7 +118,7 @@ export class Viewer {
     this.environment = new Environment(this.camera, this.renderer, this.materials, this.settings)
 
     // Input and Selection
-    this.selection = new Selection(this.materials)
+    this.selection = createSelection()
     this.raycaster = new Raycaster(
       this._camera,
       scene,
@@ -141,7 +140,6 @@ export class Viewer {
     this.renderer.needsUpdate = this._camera.update(deltaTime)
 
     // Gizmos
-    this.selection.update()
     this.gizmos.updateAfterCamera()
 
     // Rendering
@@ -193,9 +191,7 @@ export class Viewer {
     }
     this._vims.delete(vim)
     this.renderer.remove(vim.scene)
-    if (this.selection.vim === vim) {
-      this.selection.clear()
-    }
+    this.selection.removeFromVim(vim)
     this._onVimLoaded.dispatch()
   }
 
@@ -211,7 +207,6 @@ export class Viewer {
    */
   dispose () {
     cancelAnimationFrame(this._updateId)
-    this.selection.dispose()
     this.environment.dispose()
     this.selection.clear()
     this.viewport.dispose()

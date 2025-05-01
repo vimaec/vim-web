@@ -3,12 +3,19 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react'
-import * as VIM from '../../core-viewers/webgl/index'
-import * as Icons from './icons'
+import * as Core from '../../core-viewers'
+import * as Icons from '../icons'
 import { CameraRef } from '../state/cameraState'
-import { anyUiAxesButton, isTrue } from '../settings/settings'
+import { isTrue, Settings } from '../settings'
 import { SettingsState } from '../settings/settingsState'
 import { whenAllTrue, whenTrue } from '../helpers/utils'
+
+function anyUiAxesButton (settings: Settings) {
+  return (
+    settings.ui.orthographic ||
+    settings.ui.resetCamera
+  )
+}
 
 /**
  * Memoized version of the AxesPanelMemo.
@@ -18,7 +25,7 @@ export const AxesPanelMemo = React.memo(AxesPanel)
 /**
  * JSX Component for axes gizmo.
  */
-function AxesPanel (props: { viewer: VIM.Viewer, camera: CameraRef, settings: SettingsState }) {
+function AxesPanel (props: { viewer: Core.Webgl.Viewer, camera: CameraRef, settings: SettingsState }) {
   const viewer = props.viewer
 
   const [ortho, setOrtho] = useState<boolean>(viewer.camera.orthographic)
@@ -56,39 +63,12 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: CameraRef, settings: Se
     }
   }, [])
 
-  const onIsolationBtn = () => {
-    props.settings.update(
-      (s) => (s.materials.useGhostMaterial = !s.materials.useGhostMaterial)
-    )
-  }
-
   const onHomeBtn = () => {
     props.camera.reset.call()
   }
 
   const btnStyle =
     'vim-axes-button vc-flex vc-items-center vc-justify-center vc-text-gray-medium vc-transition-all hover:vc-text-primary-royal'
-
-  const btnIsolation = (
-    <button
-      data-tip={
-        props.settings.value.materials.useGhostMaterial
-          ? 'Disable Ghosting'
-          : 'Enable Ghosting'
-      }
-      onClick={onIsolationBtn}
-      className={'vim-isolation-btn ' + btnStyle}
-      type="button"
-    >
-      {props.settings.value.materials.useGhostMaterial
-        ? (
-        <Icons.ghost height={20} width={20} fill="currentColor" />
-          )
-        : (
-        <Icons.ghostDead height={20} width={20} fill="currentColor" />
-          )}
-    </button>
-  )
 
   const btnHome = (
     <button
@@ -118,22 +98,18 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: CameraRef, settings: Se
   )
 
   const hidden = isTrue(props.settings.value.ui.axesPanel) ? '' : ' vc-hidden'
+  const empty = !anyUiAxesButton(props.settings.value)
 
   const createBar = () => {
-    if (!anyUiAxesButton(props.settings.value)) {
-      return (
-        // Keeps layout when all buttons are disabled.
-        <span className="vc-pointer-events-auto vc-absolute vc-inset-0 vc-order-2 vc-flex justify-evenly vc-bg-white" />
-      )
-    }
+    if (empty) return null
     return (
-      <div className="vim-axes-panel-buttons vc-absolute vc-inset-0 vc-pointer-events-auto vc-order-2 vc-flex vc-items-center vc-justify-evenly vc-bg-white">
-        {whenAllTrue([
-          props.settings.value.capacity.useOrthographicCamera,
-          props.settings.value.ui.orthographic
-        ], btnOrtho)}
-        {whenTrue(props.settings.value.ui.resetCamera, btnHome)}
-        {whenTrue(props.settings.value.ui.enableGhost, btnIsolation)}
+      <div className='vim-axes-panel-bar vc-absolute vc-top-[75%] vc-bottom-0 vc-right-0 vc-left-0'>
+        <div className="vim-axes-panel-buttons vc-absolute vc-inset-0 vc-pointer-events-auto vc-order-2 vc-flex vc-items-center vc-justify-evenly vc-bg-white">
+          {whenAllTrue([
+            props.settings.value.ui.orthographic
+          ], btnOrtho)}
+          {whenTrue(props.settings.value.ui.resetCamera, btnHome)}
+        </div>
       </div>
     )
   }
@@ -141,14 +117,12 @@ function AxesPanel (props: { viewer: VIM.Viewer, camera: CameraRef, settings: Se
   return (
     <div
       className={
-        'vim-axes-panel vc-pointer-events-none vc-absolute vc-overflow-hidden vc-z-20 vc-flex vc-flex-col vc-border vc-border-white vc-opacity-50 vc-shadow-lg vc-saturate-0 vc-transition-all hover:vc-opacity-100 hover:vc-saturate-100' +
+        `vim-axes-panel${empty ? '-empty':''} vc-pointer-events-none vc-absolute vc-overflow-hidden vc-z-20 vc-flex vc-flex-col vc-border vc-border-white vc-opacity-50 vc-shadow-lg vc-saturate-0 vc-transition-all hover:vc-opacity-100 hover:vc-saturate-100` +
         hidden
       }
     >
       <div ref={gizmoDiv} className='vim-axes-panel-gizmo vc-absolute vc-pointer-events-auto'/>
-      <div className='vim-axes-panel-bar vc-absolute vc-top-[75%] vc-bottom-0 vc-right-0 vc-left-0'>
-        {createBar()}
-      </div>
+      {createBar()}
     </div>
   )
 }

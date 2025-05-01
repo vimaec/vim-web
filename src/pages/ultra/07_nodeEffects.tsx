@@ -1,6 +1,10 @@
 import React, { useRef } from 'react'
-import { UltraReact, UltraViewer } from '../../vim-web'
+import * as VIM  from '../../vim-web'
 import { useUltraWithTower } from './ultraPageUtils'
+
+import ViewerRef = VIM.React.Ultra.ViewerRef
+import Vim = VIM.Core.Ultra.Vim
+import NodeState = VIM.Core.Ultra.NodeState
 
 export function UltraNodeEffects () {
   const div = useRef<HTMLDivElement>(null)
@@ -14,20 +18,21 @@ export function UltraNodeEffects () {
   )
 }
 
-async function changeState (ultra: UltraReact.UltraComponentRef, tower: UltraViewer.Vim) {
+async function changeState (ultra: ViewerRef, tower: Vim) {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const indices = Array.from({ length: 200000 }, (_, i) => i)
-    tower.highlight(indices)
-    await new Promise(resolve => setTimeout(resolve, 3000))
+    
+    indices.forEach((i) => tower.getElementFromInstanceIndex(i).state = NodeState.HIGHLIGHTED)
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    indices.forEach((i) => tower.getElementFromInstanceIndex(i).state = NodeState.GHOSTED)
+    await new Promise(resolve => setTimeout(resolve, 2000))
 
-    tower.ghost(indices)
-    await new Promise(resolve => setTimeout(resolve, 3000))
+    indices.forEach((i) => tower.getElementFromInstanceIndex(i).state = NodeState.HIDDEN)
+    await new Promise(resolve => setTimeout(resolve, 2000))
 
-    tower.hide(indices)
-    await new Promise(resolve => setTimeout(resolve, 3000))
-
-    tower.show(indices)
-    await new Promise(resolve => setTimeout(resolve, 3000))
+    indices.forEach((i) => tower.getElementFromInstanceIndex(i).state = NodeState.VISIBLE)
+    await new Promise(resolve => setTimeout(resolve, 2000))
   }
 }
