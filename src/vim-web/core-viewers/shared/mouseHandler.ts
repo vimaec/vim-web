@@ -124,17 +124,20 @@ class CaptureHandler {
   }
 
   onPointerDown(event: PointerEvent): void {
-    if (this._id >= 0 ) {
-      this._canvas.releasePointerCapture(this._id);
-    }
-    
+    this.release()
     this._canvas.setPointerCapture(event.pointerId);
     this._id = event.pointerId;
   }
 
   onPointerUp(event: PointerEvent) {
-    this._canvas.releasePointerCapture(this._id);
-    this._id = -1;
+    this.release()
+  }
+
+  private release(){
+    if (this._id >= 0 ) {
+      this._canvas.releasePointerCapture(this._id);
+      this._id = -1;
+    }
   }
 }
 
