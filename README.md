@@ -17,12 +17,12 @@ https://www.npmjs.com/package/vim-web
 The **VIM-Web** repository consists of four primary components, divided into two layers:
 
 ### Core Viewers
-- **WebGL Viewer:** A WebGL-based viewer for the VIM format. Includes features like outlines, ghosting, and sectioning, but without UI components.
-- **Ultra Viewer:** A high-performance viewer for the VIM Ultra Render Server, optimized for scale and speed.
+- **WebGL Core Viewer:** A WebGL-based viewer for the VIM format. Includes features like outlines, ghosting, and sectioning, but without UI components.
+- **Ultra Core Viewer:** A high-performance viewer for the VIM Ultra Render Server, optimized for scale and speed.
 
 ### React Viewers
-- **WebGL Component:** A React-based wrapper for the WebGL viewer, providing interactive UI elements and a BIM explorer.
-- **Ultra Component:** A React-based wrapper for the Ultra viewer, featuring a UI for real-time interactions.
+- **WebGL Viewer:** A React-based wrapper for the WebGL viewer, providing interactive UI elements and a BIM explorer.
+- **Ultra Viewer:** A React-based wrapper for the Ultra viewer, featuring a UI for real-time interactions.
 
 ## VIM Format
 
