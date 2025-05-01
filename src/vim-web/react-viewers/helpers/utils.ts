@@ -1,4 +1,4 @@
-import { isTrue, isFalse, UserBoolean } from '../settings/settings'
+import { isTrue, isFalse, UserBoolean } from '../settings'
 
 export function whenTrue (value: UserBoolean | boolean, element: JSX.Element) {
   return isTrue(value) ? element : null

@@ -2,7 +2,7 @@
  * @module viw-webgl-react
  */
 
-import * as VIM from '../../core-viewers/webgl/index'
+import * as Core from '../../core-viewers'
 import * as BIM from 'vim-format'
 
 export type AugmentedElement = BIM.IElement & {
@@ -12,7 +12,7 @@ export type AugmentedElement = BIM.IElement & {
   levelName: string
   worksetName: string
 }
-export async function getElements (vim: VIM.Vim) {
+export async function getElements (vim: Core.Webgl.Vim) {
   if (!vim.bim) return []
   const [elements, bimDocument, category, levels, worksets] = await Promise.all(
     [
@@ -35,7 +35,7 @@ export async function getElements (vim: VIM.Vim) {
     worksetName: worksets ? worksets[e?.worksetIndex ?? -1] : undefined
   })) as AugmentedElement[]
 
-  const real = result.filter(e => vim.getObjectFromElement(e.index).hasMesh)
+  const real = result.filter(e => vim.getElementFromIndex(e.index).hasMesh)
 
   return real
 }
@@ -68,4 +68,20 @@ async function getFamilyTypeNameMap (document: BIM.VimDocument) {
       return [e, name]
     })
   )
+}
+
+export function filterElements (
+  elements: AugmentedElement[],
+  filter: string
+) {
+  const filterLower = filter.toLocaleLowerCase()
+  const filtered = elements.filter(
+    (e) =>
+      (e.id?.toString() ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.name ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.category?.name ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.familyName ?? '').toLocaleLowerCase().includes(filterLower) ||
+      (e.type ?? '').toLocaleLowerCase().includes(filterLower)
+  )
+  return filtered
 }

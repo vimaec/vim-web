@@ -1,13 +1,20 @@
 import React, { useEffect, useRef } from 'react'
-import { THREE, WebglReact } from '../../vim-web'
+
 import * as Urls from '../devUrls'
-import { Box3, Vector3 } from 'three'
+import * as VIM from '../../vim-web'
+
+import ViewerRef = VIM.React.Webgl.ViewerRef
 
 export function WebglHome () {
+
   const div = useRef<HTMLDivElement>(null)
-  const cmp = useRef<WebglReact.Refs.VimComponentRef>()
+  const cmp = useRef<ViewerRef>()
   useEffect(() => {
-    createComponent(div.current, cmp)
+    createComponent(div.current, cmp).then(() => {
+      console.log('Component created')
+    })
+      
+
     return () => cmp.current?.dispose()
   }, [])
 
@@ -16,15 +23,14 @@ export function WebglHome () {
   )
 }
 
-async function createComponent (div: HTMLDivElement, ref: React.MutableRefObject<WebglReact.Refs.VimComponentRef>) {
-  const webgl = await WebglReact.createWebglComponent(div)
+async function createComponent (div: HTMLDivElement, ref: React.MutableRefObject<ViewerRef>) {
+  const webgl = await VIM.React.Webgl.createViewer(div)
   ref.current = webgl
   globalThis.viewer = webgl
-  globalThis.THREE = THREE
 
   const url = getPathFromUrl() ?? Urls.residence
   const request = webgl.loader.request(
-    { url }
+    { url }, 
   )
   const result = await request.getResult()
   if (result.isSuccess()) {
@@ -32,7 +38,6 @@ async function createComponent (div: HTMLDivElement, ref: React.MutableRefObject
     webgl.camera.frameScene.call()
   }
 }
-
 
 function getPathFromUrl () {
   const params = new URLSearchParams(window.location.search)

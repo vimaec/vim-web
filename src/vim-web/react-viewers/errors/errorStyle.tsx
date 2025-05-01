@@ -1,5 +1,3 @@
-import React from 'react'
-
 export const vcColorPrimary = 'vc-text-[#212733]'
 export const vcColorSecondary = 'vc-text-[#787C83]'
 export const vcColorLink = 'vc-text-[#0590CC]'

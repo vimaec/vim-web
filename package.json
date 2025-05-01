@@ -1,6 +1,6 @@
 {
   "name": "vim-web",
-  "version": "0.3.44-dev.46", 
+  "version": "0.4.1", 
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "type": "module",
   "files": [
@@ -18,7 +18,7 @@
   "author": "VIM <hello@vimaec.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vimaec/vim-web.git"
+    "url": "https://github.com/vimaec/vim-web"
   },
   "scripts": {
     "dev": "vite --host --config vite.config.website.js",
@@ -67,7 +67,7 @@
     "deepmerge": "^4.3.1",
     "is-plain-object": "^5.0.0",
     "re-resizable": "^6.9.9",
-    "react-complex-tree": "^2.4.6",
+    "react-complex-tree": "^2.6.0",
     "react-tooltip": "^4.2.21",
     "stats-js": "^1.0.1",
     "ste-events": "^3.0.11",

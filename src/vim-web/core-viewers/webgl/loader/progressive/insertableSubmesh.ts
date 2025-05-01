@@ -69,7 +69,7 @@ export class InsertableSubmesh {
    * Returns vim object for this submesh.
    */
   get object () {
-    return this.mesh.vim.getObjectFromInstance(this.instance)
+    return this.mesh.vim.getElementFromInstanceIndex(this.instance)
   }
 
   saveColors (colors: Float32Array) {

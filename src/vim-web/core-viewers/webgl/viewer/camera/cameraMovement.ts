@@ -3,17 +3,24 @@
  */
 
 import { Camera } from './camera'
-import { Object3D } from '../../loader/object3D'
-import { SelectableObject } from '../selection'
+import { Element3D } from '../../loader/element3d'
+import { Selectable } from '../selection'
 import * as THREE from 'three'
-import { GizmoMarker } from '../gizmos/markers/gizmoMarker'
+import { Marker } from '../gizmos/markers/gizmoMarker'
 import { Vim } from '../../loader/vim'
+import { CameraSaveState } from './cameraInterface'
+
+
 
 export abstract class CameraMovement {
   protected _camera: Camera
+  private _savedState: CameraSaveState
+  private _getBoundingBox: () => THREE.Box3
 
-  constructor (camera: Camera) {
+  constructor (camera: Camera, savedState: CameraSaveState, getBoundingBox: () => THREE.Box3) {
     this._camera = camera
+    this._savedState = savedState
+    this._getBoundingBox = getBoundingBox
   }
 
   /**
@@ -46,8 +53,8 @@ export abstract class CameraMovement {
   move1 (amount: number, axis: 'X' | 'Y' | 'Z'): void {
     const direction = new THREE.Vector3(
       axis === 'X' ? -amount : 0,
+      axis === 'Z' ? amount : 0,
       axis === 'Y' ? amount : 0,
-      axis === 'Z' ? amount : 0
     )
 
     this.move3(direction)
@@ -120,14 +127,16 @@ export abstract class CameraMovement {
 
   /**
    * Rotates the camera without moving so that it looks at the specified target.
-   * @param {Object3D | THREE.Vector3} target - The target object or position to look at.
+   * @param {Element3D | THREE.Vector3} target - The target object or position to look at.
    */
-  abstract target(target: Object3D | THREE.Vector3): void
+  abstract target(target: Element3D | THREE.Vector3): void
 
   /**
    * Resets the camera to its last saved position and orientation.
    */
-  abstract reset(): void
+  reset () {
+    this.set(this._savedState.position, this._savedState.target)
+  }
 
   /**
    * Moves both the camera and its target to the given positions.
@@ -141,19 +150,19 @@ export abstract class CameraMovement {
    * @param {IObject | Vim | THREE.Sphere | THREE.Box3 | 'all' | undefined} target - The target object, or 'all' to frame all objects.
    * @param {THREE.Vector3} [forward] - Optional forward direction after framing.
    */
-  frame (
-    target: SelectableObject | Vim | THREE.Sphere | THREE.Box3 | 'all' | undefined,
+  async frame (
+    target: Selectable | Vim | THREE.Sphere | THREE.Box3 | 'all' | undefined,
     forward?: THREE.Vector3
-  ): void {
-    if ((target instanceof GizmoMarker) || (target instanceof Object3D)) {
-      target = target.getBoundingBox()
+  ) {
+    if ((target instanceof Marker) || (target instanceof Element3D)) {
+      target = await target.getBoundingBox()
     }
     if ((target instanceof Vim)) {
       target = target.scene.getAverageBoundingBox()
     }
     if (target === 'all') {
       console.log('frame all')
-      target = this._camera._scene.getAverageBoundingBox()
+      target = this._getBoundingBox()
     }
     if (target instanceof THREE.Box3) {
       target = target.getBoundingSphere(new THREE.Sphere())

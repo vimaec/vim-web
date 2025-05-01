@@ -1,2 +1,2 @@
-export * from './ultraComponent'
-export * from './ultraComponentRef'
+export * from './viewer'
+export * from './viewerRef'

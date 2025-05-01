@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils';
-import { Camera, ICamera } from '../../camera/camera';
-export type Axis = 'x' | 'y' | 'z';
+import { ICamera } from '../../camera';
+export type AxisName = 'x' | 'y' | 'z';
 
 export class SectionBoxHandle extends THREE.Mesh {
-  readonly axis : Axis
+  readonly axis : AxisName
   readonly sign: number;
   private _forward: THREE.Vector3;
 
@@ -16,7 +16,7 @@ export class SectionBoxHandle extends THREE.Mesh {
   private _camera : ICamera | undefined
   private _camSub : () => void
 
-  constructor(axes: Axis, sign: number, size: number, color?: THREE.Color) {
+  constructor(axes: AxisName, sign: number, size: number, color?: THREE.Color) {
 
     const geo = createDoubleCone(size);
 

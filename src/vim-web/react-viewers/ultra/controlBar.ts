@@ -1,0 +1,23 @@
+
+import * as Core from '../../core-viewers/ultra'
+import { ControlBarCustomization } from '../controlbar/controlBar'
+import { CameraRef } from '../state/cameraState'
+import { controlBarCamera, controlBarSectionBox, controlBarSelection } from '../state/controlBarState'
+import { SectionBoxRef } from '../state/sectionBoxState'
+import { IsolationRef } from '../state/sharedIsolation'
+
+export function useUltraControlBar (
+  viewer: Core.Viewer,
+  section: SectionBoxRef,
+  isolation: IsolationRef,
+  camera: CameraRef,
+  customization: ControlBarCustomization | undefined
+) {
+  const sectionSectionBox = controlBarSectionBox(section, viewer.selection.any())
+  const selection = controlBarSelection(isolation)
+  const sectionCamera = controlBarCamera(camera)
+  let bar = [selection, sectionCamera, sectionSectionBox]
+  bar = customization?.(bar) ?? bar
+  return bar
+}
+

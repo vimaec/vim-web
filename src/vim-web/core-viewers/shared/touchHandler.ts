@@ -3,12 +3,12 @@
  */
 
 import * as THREE from 'three'
-import { InputHandler } from './inputHandler';
+import { BaseInputHandler } from './baseInputHandler';
 
 /**
  * Manages user touch inputs.
  */
-export class TouchHandler extends InputHandler {
+export class TouchHandler extends BaseInputHandler {
   private readonly TAP_DURATION_MS: number = 500
   private readonly DOUBLE_TAP_DELAY_MS = 500
   private readonly TAP_MAX_MOVE_PIXEL = 5

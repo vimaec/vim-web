@@ -5,14 +5,14 @@
 import * as THREE from 'three'
 import { Scene } from '../../loader/scene'
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer'
-import { ModelMaterial } from '../../loader/materials/viewerMaterials'
+import { ModelMaterial } from '../../loader/materials/materials'
 import { InstancedMesh } from '../../loader/progressive/instancedMesh'
 
 /**
  * Wrapper around the THREE scene that tracks bounding box and other information.
  */
 export class RenderScene {
-  scene: THREE.Scene
+  threeScene: THREE.Scene
 
   // state
   boxUpdated = false
@@ -24,6 +24,7 @@ export class RenderScene {
   private _boundingBox: THREE.Box3 | undefined
   private _memory = 0
   private _2dCount = 0
+  private _outlineCount = 0
   private _modelMaterial: ModelMaterial
 
   get meshes() {
@@ -31,7 +32,7 @@ export class RenderScene {
   }
 
   constructor () {
-    this.scene = new THREE.Scene()
+    this.threeScene = new THREE.Scene()
   }
 
   get estimatedMemory () {
@@ -41,13 +42,6 @@ export class RenderScene {
   has2dObjects () {
     return this._2dCount > 0
   } 
-
-  hasOutline () {
-    for (const s of this._vimScenes) {
-      if (s.hasOutline()) return true
-    }
-    return false
-  }
 
   /** Clears the scene updated flags */
   clearUpdateFlags () {
@@ -91,23 +85,13 @@ export class RenderScene {
     }
 
     this._2dCount += this.count2dObjects(target)
-    this.scene.add(target)
+    this.threeScene.add(target)
   }
 
   private count2dObjects (target : THREE.Object3D) {
-    if (target instanceof CSS2DObject) {
-      return 1
-    }
-    if (target instanceof THREE.Group) {
-      let result = 0
-      for (const child of target.children) {
-        if (child instanceof CSS2DObject) {
-          result++
-        }
-      }
-      return result
-    }
-    return 0
+    let count =0
+    target.traverse((child) => {if(child instanceof CSS2DObject) count++})
+    return count
   }
 
   private unparent2dObjects (target : THREE.Object3D) {
@@ -132,14 +116,14 @@ export class RenderScene {
 
     this._2dCount -= this.count2dObjects(target)
     this.unparent2dObjects(target)
-    this.scene.remove(target)
+    this.threeScene.remove(target)
   }
 
   /**
    * Removes all rendered objects
    */
   clear () {
-    this.scene.clear()
+    this.threeScene.clear()
     this._boundingBox = undefined
     this._memory = 0
   }
@@ -178,7 +162,7 @@ export class RenderScene {
   private addScene (scene: Scene) {
     this._vimScenes.push(scene)
     scene.meshes.forEach((m) => {
-      this.scene.add(m.mesh)
+      this.threeScene.add(m.mesh)
     })
 
     this.updateBox(scene.getBoundingBox())
@@ -199,7 +183,7 @@ export class RenderScene {
 
     // Remove all meshes from three scene
     for (let i = 0; i < scene.meshes.length; i++) {
-      this.scene.remove(scene.meshes[i].mesh)
+      this.threeScene.remove(scene.meshes[i].mesh)
     }
 
     // Recompute bounding box

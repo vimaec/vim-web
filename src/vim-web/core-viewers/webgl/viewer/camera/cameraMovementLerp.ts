@@ -4,9 +4,12 @@
 
 import * as THREE from 'three'
 import { Camera } from './camera'
-import { Object3D } from '../../loader/object3D'
+import { Element3D } from '../../loader/element3d'
 import { CameraMovementSnap } from './cameraMovementSnap'
 import { CameraMovement } from './cameraMovement'
+import { CameraSaveState } from './cameraInterface'
+
+
 
 export class CameraLerp extends CameraMovement {
   _movement: CameraMovementSnap
@@ -17,8 +20,8 @@ export class CameraLerp extends CameraMovement {
 
   _duration = 1
 
-  constructor (camera: Camera, movement: CameraMovementSnap) {
-    super(camera)
+  constructor (camera: Camera, movement: CameraMovementSnap, savedState: CameraSaveState, getBoundingBox:() => THREE.Box3) {
+    super(camera, savedState, getBoundingBox)
     this._movement = movement
   }
 
@@ -61,11 +64,12 @@ export class CameraLerp extends CameraMovement {
     const end = this._camera.position.clone().add(v)
     const pos = new THREE.Vector3()
 
+    const offset = this._camera.forward.multiplyScalar(this._camera.orbitDistance)
+
     this.onProgress = (progress) => {
-      console.log('progress', progress)
       pos.copy(start)
       pos.lerp(end, progress)
-      this._movement.move3(pos)
+      this._movement.set(pos, pos.clone().add(offset))
     }
   }
 
@@ -123,8 +127,8 @@ export class CameraLerp extends CameraMovement {
     }
   }
 
-  target (target: Object3D | THREE.Vector3): void {
-    const pos = target instanceof Object3D ? target.getCenter() : target
+  async target (target: Element3D | THREE.Vector3) {
+    const pos = target instanceof Element3D ? (await target.getCenter()) : target
     const next = pos.clone().sub(this._camera.position)
     const start = this._camera.quaternion.clone()
     const rot = new THREE.Quaternion().setFromUnitVectors(
@@ -135,10 +139,6 @@ export class CameraLerp extends CameraMovement {
       const r = start.clone().slerp(rot, progress)
       this._movement.applyRotation(r)
     }
-  }
-
-  reset (): void {
-    this.set(this._camera._savedPosition, this._camera._savedTarget)
   }
 
   set (position: THREE.Vector3, target?: THREE.Vector3) {

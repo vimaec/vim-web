@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { VimDocument, G3d, VimHeader, FilterMode } from 'vim-format'
 import { Scene } from './scene'
 import { VimSettings } from './vimSettings'
-import { Object3D } from './object3D'
+import { Element3D } from './element3d'
 import {
   ElementMapping,
   ElementMapping2,
@@ -16,6 +16,7 @@ import { ISignal, SignalDispatcher } from 'ste-signals'
 import { G3dSubset } from './progressive/g3dSubset'
 import { SubsetBuilder } from './progressive/subsetBuilder'
 import { LoadPartialSettings } from './progressive/subsetRequest'
+import { IVim } from '../../shared/vim'
 
 type VimFormat = 'vim' | 'vimx'
 
@@ -23,7 +24,7 @@ type VimFormat = 'vim' | 'vimx'
  * Represents a container for the built three.js meshes and the vim data from which they were constructed.
  * Facilitates high-level scene manipulation by providing access to objects.
  */
-export class Vim {
+export class Vim implements IVim<Element3D> {
   /**
    * Indicates whether the vim was opened from a vim or vimx file.
    */
@@ -66,7 +67,7 @@ export class Vim {
 
   private readonly _builder: SubsetBuilder
   private readonly _loadedInstances = new Set<number>()
-  private readonly _elementToObject = new Map<number, Object3D>()
+  private readonly _elementToObject = new Map<number, Element3D>()
 
   /**
    * Getter for accessing the event dispatched whenever a subset begins or finishes loading.
@@ -130,6 +131,11 @@ export class Vim {
     this.format = format
   }
 
+  getBoundingBox(): Promise<THREE.Box3> {
+    const box = this.scene.getBoundingBox()
+    return Promise.resolve(box)
+  }
+
   /**
    * Retrieves the matrix representation of the Vim object's position, rotation, and scale.
    * @returns {THREE.Matrix4} The matrix representing the Vim object's transformation.
@@ -143,10 +149,10 @@ export class Vim {
    * @param {number} instance - The instance number of the object.
    * @returns {THREE.Object3D | undefined} The object corresponding to the instance, or undefined if not found.
    */
-  getObjectFromInstance (instance: number) {
+  getElementFromInstanceIndex (instance: number) {
     const element = this.map.getElementFromInstance(instance)
     if (element === undefined) return
-    return this.getObjectFromElement(element)
+    return this.getElementFromIndex(element)
   }
 
   /**
@@ -154,19 +160,19 @@ export class Vim {
    * @param {number} id - The element ID to retrieve objects for.
    * @returns {THREE.Object3D[]} An array of objects corresponding to the element ID, or an empty array if none are found.
    */
-  getObjectsFromElementId (id: number) {
+  getElementsFromId (id: number) {
     const elements = this.map.getElementsFromElementId(id)
     return elements
-      ?.map((e) => this.getObjectFromElement(e))
-      .filter((o): o is Object3D => o !== undefined) ?? []
+      ?.map((e) => this.getElementFromIndex(e))
+      .filter((o): o is Element3D => o !== undefined) ?? []
   }
 
   /**
    * Retrieves the Vim object associated with the given Vim element index.
    * @param {number} element - The index of the Vim element.
-   * @returns {Object3D | undefined} The Vim object corresponding to the element index, or undefined if not found.
+   * @returns {WebglElement3D | undefined} The Vim object corresponding to the element index, or undefined if not found.
    */
-  getObjectFromElement (element: number): Object3D | undefined {
+  getElementFromIndex (element: number): Element3D | undefined {
     if (!this.map.hasElement(element)) return
 
     if (this._elementToObject.has(element)) {
@@ -176,37 +182,19 @@ export class Vim {
     const instances = this.map.getInstancesFromElement(element)
     const meshes = this.scene.getMeshesFromInstances(instances)
 
-    const result = new Object3D(this, element, instances, meshes)
+    const result = new Element3D(this, element, instances, meshes)
     this._elementToObject.set(element, result)
     return result
   }
 
   /**
-   * Retrieves an array containing all Vim objects strictly contained within the specified bounding box.
-   * @param {THREE.Box3} box - The bounding box to search within.
-   * @returns {Object3D[]} An array of Vim objects strictly contained within the bounding box.
-   */
-  getObjectsInBox (box: THREE.Box3) {
-    const result: Object3D[] = []
-
-    for (const obj of this.getObjects()) {
-      const b = obj.getBoundingBox()
-      if (!b) continue
-      if (box.containsBox(b)) {
-        result.push(obj)
-      }
-    }
-    return result
-  }
-
-  /**
    * Retrieves an array of all objects within the Vim.
-   * @returns {Object3D[]} An array containing all objects within the Vim.
+   * @returns {WebglElement3D[]} An array containing all objects within the Vim.
    */
-  getObjects () {
-    const result : Object3D[] = []
+  getAllElements () {
+    const result : Element3D[] = []
     for (const e of this.map.getElements()) {
-      const obj = this.getObjectFromElement(e)
+      const obj = this.getElementFromIndex(e)
       result.push(obj)
     }
     return result
@@ -215,15 +203,15 @@ export class Vim {
   /**
    * Retrieves an array containing all objects within the specified subset.
    * @param {G3dSubset} subset - The subset to retrieve objects from.
-   * @returns {Object3D[]} An array of objects within the specified subset.
+   * @returns {WebglElement3D[]} An array of objects within the specified subset.
    */
   getObjectsInSubset (subset: G3dSubset) {
-    const set = new Set<Object3D>()
-    const result: Object3D[] = []
+    const set = new Set<Element3D>()
+    const result: Element3D[] = []
     const count = subset.getInstanceCount()
     for (let i = 0; i < count; i++) {
       const instance = subset.getVimInstance(i)
-      const obj = this.getObjectFromInstance(instance)
+      const obj = this.getElementFromInstanceIndex(instance)
       if (!set.has(obj)) {
         result.push(obj)
         set.add(obj)
