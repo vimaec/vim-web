@@ -46,7 +46,7 @@ return this._socket.state.status === "connected"
     this._socket = _socket
   }
   // RPC Generated Code
-  readonly API_VERSION = "5.1.0"
+  readonly API_VERSION = "6.0.0"
 
   RPCAddNodeFlags(componentHandle: number, nodes: number[], flags: number): void {
     const marshal = new Marshal();
