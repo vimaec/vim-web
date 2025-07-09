@@ -3,6 +3,7 @@ import { MaterialHandle, RpcClient } from "./rpcClient"
 import { Validation } from "../../utils";
 import { batchArray, batchArrays } from "../../utils/array"
 import { INVALID_HANDLE } from "./viewer"
+import { VisibilityState } from "./nodeState";
 
 const defaultBatchSize = 10000
 
@@ -111,17 +112,8 @@ export class RpcSafeClient {
       Validation.clampRGBA01(s.backgroundColor)
     )
   }
+ 
 
-  RPCLockIblRotation(lock: boolean): void {
-    this.rpc.RPCLockIblRotation(lock)
-  }
-
-  RPCGetSceneAABB(): Promise<RpcTypes.Box3 | undefined> {
-    return this.safeCall(
-      () => this.rpc.RPCGetSceneAABB(),
-      undefined
-    )
-  }
 
   /*******************************************************************************
    * NODE VISIBILITY METHODS
@@ -130,131 +122,44 @@ export class RpcSafeClient {
    ******************************************************************************/
 
   /**
-   * Hides all nodes in a component, making the entire component invisible.
-   * @param componentHandle - The component to hide entirely
-   * @throws {Error} If the component handle is invalid
-   */
-  RPCHideAll(componentHandle: number): void {
-    if (!Validation.isComponentHandle(componentHandle)) return
-    this.rpc.RPCHideAll(componentHandle)
-  }
-
-  /**
-   * Shows all nodes in a component, making the entire component visible.
-   * @param componentHandle - The component to show entirely
-   * @throws {Error} If the component handle is invalid
-   */ 
-  RPCShowAll(componentHandle: number): void {
-    // Validation
-    if (!Validation.isComponentHandle(componentHandle)) return
-
-    // Run
-    this.rpc.RPCShowAll(componentHandle)
-  }
-
-  /**
-   * Makes all nodes in a component semi-transparent (ghosted).
-   * @param componentHandle - The component to ghost entirely
-   * @throws {Error} If the component handle is invalid
-   */
-  RPCGhostAll(componentHandle: number): void {
-    // Validation
-    if (!Validation.isComponentHandle(componentHandle)) return
-
-    // Run
-    this.rpc.RPCGhostAll(componentHandle)
-  }
-
-  /**
-   * Highlights all nodes in a component.
-   * @param componentHandle - The component to highlight entirely
-   * @throws {Error} If the component handle is invalid
-   */
-    RPCHighlightAll(componentHandle: number): void {
-    // Validation
-    if (!Validation.isComponentHandle(componentHandle)) return
-
-    // Run
-    this.rpc.RPCHighlightAll(componentHandle)
-  }
-
-  /**
-   * Hides specified nodes in a component, making them invisible.
-   * Large node arrays are automatically processed in batches.
-   * @param componentHandle - The component containing the nodes
-   * @param nodes - Array of node indices to hide
-   * @throws {Error} If the component handle is invalid or nodes array is invalid
-   */
-  RPCHide(componentHandle: number, nodes: number[]): void {
-    
-    if (!Validation.isComponentHandle(componentHandle)) return
-    if (!Validation.areComponentHandles(nodes)) return
-
-    const batches = batchArray(nodes, this.batchSize)
-    for (const batch of batches) {
-      this.rpc.RPCHide(componentHandle, batch)
-    }
-  }
-
-  /**
-   * Shows specified nodes in a component, making them visible.
-   * Large node arrays are automatically processed in batches.
-   * @param componentHandle - The component containing the nodes
-   * @param nodes - Array of node indices to show
-   * @throws {Error} If the component handle is invalid or nodes array is invalid
-   */
-  RPCShow(componentHandle: number, nodes: number[]): void {
-    if(nodes.length === 0) return
-    // Validation
-    if (!Validation.isComponentHandle(componentHandle)) return
-    if (!Validation.areComponentHandles(nodes)) return
-
-    // Run
-    const batches = batchArray(nodes, this.batchSize)
-    for (const batch of batches) {
-      this.rpc.RPCShow(componentHandle, batch)
-    }
-  }
-
-  /**
-   * Makes specified nodes semi-transparent (ghosted) in a component.
-   * Large node arrays are automatically processed in batches.
-   * @param componentHandle - The component containing the nodes
-   * @param nodes - Array of node indices to ghost
-   * @throws {Error} If the component handle is invalid or nodes array is invalid
-   */
-  RPCGhost(componentHandle: number, nodes: number[]): void {
-    if(nodes.length === 0) return
-    // Validation
-    if (!Validation.isComponentHandle(componentHandle)) return
-    if (!Validation.areComponentHandles(nodes)) return
-
-    // Run
-    const batches = batchArray(nodes, this.batchSize)
-    for (const batch of batches) {
-      this.rpc.RPCGhost(componentHandle, batch)
-    }
-  }
-
-  /**
    * Highlights specified nodes in a component.
    * Large node arrays are automatically processed in batches.
    * @param componentHandle - The component containing the nodes
    * @param nodes - Array of node indices to highlight
    * @throws {Error} If the component handle is invalid or nodes array is invalid
    */
-  RPCHighlight(componentHandle: number, nodes: number[]): void {
-    if(nodes.length === 0) return
+  RPCSetStateElements(componentHandle: number, elements: number[], state: VisibilityState): void {
+    if(elements.length === 0) return
     // Validation
     if (!Validation.isComponentHandle(componentHandle)) return
-    if (!Validation.areComponentHandles(nodes)) return
+    if (!Validation.areComponentHandles(elements)) return
 
     // Run
-    const batches = batchArray(nodes, this.batchSize)
+    const batches = batchArray(elements, this.batchSize)
     for (const batch of batches) {
-      this.rpc.RPCHighlight(componentHandle, batch)
+      this.rpc.RPCSetStateElements(componentHandle, batch, state)
     }
   }
+
+  RPCSetStatesElements(componentHandle: number, elements: number[], states: VisibilityState[]): void {
+    if (!Validation.isComponentHandle(componentHandle)) return
+    if (!Validation.areComponentHandles(elements)) return
+    if (!Validation.areSameLength(elements, states)) return
+
+
+    const batches = batchArrays(elements, states, this.batchSize)
+    for (const [batchedElements, batchedStates] of batches) {
+      this.rpc.RPCSetStatesElements(componentHandle, batchedElements, batchedStates)
+    }
+  }
+
+
+
+  RPCSetStateVim(componentHandle: number, state: VisibilityState): void {
+    if (!Validation.isComponentHandle(componentHandle)) return
+    this.rpc.RPCSetStateVim(componentHandle, state)
+  }
+
 
   /*******************************************************************************
    * TEXT AND UI METHODS
@@ -331,9 +236,9 @@ export class RpcSafeClient {
    * Retrieves the current camera position and orientation.
    * @returns Promise resolving to a segment representing the camera's current position and target
    */
-  async RPCGetCameraPosition(): Promise<RpcTypes.Segment | undefined> {
+  async RPCGetCameraView(): Promise<RpcTypes.Segment | undefined> {
     return await this.safeCall(
-      () => this.rpc.RPCGetCameraPosition(),
+      () => this.rpc.RPCGetCameraView(),
       undefined
     )
   }
@@ -342,20 +247,72 @@ export class RpcSafeClient {
    * Sets the camera position and orientation.
    * @param segment - The desired camera position and target
    * @param blendTime - Duration of the camera transition in seconds (non-negative)
-   * @throws {Error} If segment is invalid or blendTime is negative
    */
-  RPCSetCameraPosition(segment: RpcTypes.Segment, blendTime: number): void {
+  RPCSetCameraView(segment: RpcTypes.Segment, blendTime: number): void {
     // Validation
     if (!Validation.isValidSegment(segment)) return
     blendTime = Validation.clamp01(blendTime)
 
     // Run
-    this.rpc.RPCSetCameraPosition(segment, blendTime)
+    this.rpc.RPCSetCameraView(segment, blendTime)
   }
 
-  async RPCGetBoundingBoxAll(componentHandle: number): Promise<RpcTypes.Box3 | undefined> {
+  /**
+   * Sets the camera's position without changing its target.
+   * The camera will move to the specified position while maintaining its current look-at direction.
+   *
+   * @param position - The new position of the camera in world space
+   * @param blendTime - Duration of the camera transition in seconds (non-negative)
+   */
+  RPCSetCameraPosition(position: RpcTypes.Vector3, blendTime: number): void {
+    // Validation
+    if (!Validation.isValidVector3(position)) return
+    blendTime = Validation.clamp01(blendTime)
+
+    // Run
+    this.rpc.RPCSetCameraPosition(position, blendTime)
+  }
+
+  /**
+   * Sets the camera's look-at target without changing its position.
+   * The camera will rotate to face the specified target while remaining at its current position.
+   *
+   * @param target - The new look-at target of the camera in world space
+   * @param blendTime - Duration of the camera transition in seconds (non-negative)
+   */
+  RPCSetCameraTarget(target: RpcTypes.Vector3, blendTime: number): void {
+    // Validation
+    if (!Validation.isValidVector3(target)) return
+    blendTime = Validation.clamp01(blendTime)
+
+    // Run
+    this.rpc.RPCSetCameraTarget(target, blendTime)
+  }
+
+  
+  /**
+   * Retrieves the axis-aligned bounding box (AABB) that encompasses the entire scene.
+   * This includes all loaded geometry across all VIM components.
+   *
+   * @returns Promise resolving to the global AABB of the scene, or undefined on failure
+   */
+  RPCGetAABBForAll(): Promise<RpcTypes.Box3 | undefined> {
+    return this.safeCall(
+      () => this.rpc.RPCGetAABBForAll(),
+      undefined
+    )
+  }
+
+  /**
+   * Retrieves the axis-aligned bounding box (AABB) for a specific VIM component.
+   * This bounding box represents the spatial bounds of all geometry within the given component.
+   *
+   * @param componentHandle - The handle of the VIM component to query
+   * @returns Promise resolving to the component’s bounding box, or undefined on failure
+   */
+  async RPCGetAABBForVim(componentHandle: number): Promise<RpcTypes.Box3 | undefined> {
     return await this.safeCall(
-      () => this.rpc.RPCGetBoundingBoxAll(componentHandle),
+      () => this.rpc.RPCGetAABBForVim(componentHandle),
       undefined
     )
   }
@@ -364,37 +321,37 @@ export class RpcSafeClient {
    * Calculates the bounding box for specified nodes in a component.
    * Large node arrays are automatically processed in batches for better performance.
    * @param componentHandle - The component containing the nodes
-   * @param nodes - Array of node indices to calculate bounds for
+   * @param elements - Array of node indices to calculate bounds for
    * @returns Promise resolving to the combined bounding box
    * @throws {Error} If the component handle is invalid or nodes array is invalid
    */
-  async RPCGetBoundingBox(
+  async RPCGetAABBForElements(
     componentHandle: number,
-    nodes: number[]
+    elements: number[]
   ): Promise<RpcTypes.Box3 | undefined> {
     // Validation
     if (!Validation.isComponentHandle(componentHandle)) return
-    if (!Validation.areComponentHandles(nodes)) return
+    if (!Validation.areComponentHandles(elements)) return
 
     // Run
     return await this.safeCall(
-      () => this.getBoundingBoxBatched(componentHandle, nodes),
+      () => this.RPCGetAABBForElementsBatched(componentHandle, elements),
       undefined
     )
   }
 
-  private async getBoundingBoxBatched(
+  private async RPCGetAABBForElementsBatched(
     componentHandle: number,
-    nodes: number[]
+    elements: number[]
   ): Promise<RpcTypes.Box3> {
 
-    if(nodes.length === 0){
+    if(elements.length === 0){
       return new RpcTypes.Box3()
     }
 
-    const batches = batchArray(nodes, this.batchSize)
+    const batches = batchArray(elements, this.batchSize)
     const promises = batches.map(async (batch) => {
-      const aabb = await this.rpc.RPCGetBoundingBox(componentHandle, batch)
+      const aabb = await this.rpc.RPCGetAABBForElements(componentHandle, batch)
       const v1 = new RpcTypes.Vector3(aabb.min.x, aabb.min.y, aabb.min.z)
       const v2 = new RpcTypes.Vector3(aabb.max.x, aabb.max.y, aabb.max.z)
       return new RpcTypes.Box3(v1, v2)
@@ -444,35 +401,35 @@ export class RpcSafeClient {
    * Frames specific instances within a component. For large numbers of instances,
    * automatically switches to bounding box framing for better performance.
    * @param componentHandle - The component containing the instances
-   * @param nodes - Array of node indices to frame
+   * @param elements - Array of node indices to frame
    * @param blendTime - Duration of the camera transition in seconds (non-negative)
    * @returns Promise resolving to camera segment representing the final position
    * @throws {Error} If the component handle is invalid or nodes array is empty
    */
-  async RPCFrameInstances(
+  async RPCFrameElements(
     componentHandle: number,
-    nodes: number[],
+    elements: number[],
     blendTime: number
   ): Promise<RpcTypes.Segment | undefined> {
     // Validation
     if (!Validation.isComponentHandle(componentHandle)) return
-    if (!Validation.areComponentHandles(nodes)) return 
+    if (!Validation.areComponentHandles(elements)) return 
     blendTime = Validation.clamp01(blendTime)
 
     // Run
-    if (nodes.length < this.batchSize) {
+    if (elements.length < this.batchSize) {
       return await this.safeCall(
-        () => this.rpc.RPCFrameInstances(componentHandle, nodes, blendTime),
+        () => this.rpc.RPCFrameElements(componentHandle, elements, blendTime),
         undefined
       )
     } else {
       const box = await this.safeCall(
-        () => this.getBoundingBoxBatched(componentHandle, nodes),
+        () => this.RPCGetAABBForElementsBatched(componentHandle, elements),
         undefined
       )
       if(!box) return undefined
       return await this.safeCall(
-        () => this.rpc.RPCFrameBox(box, blendTime),
+        () => this.rpc.RPCFrameAABB(box, blendTime),
         undefined
       )
     }
@@ -484,14 +441,14 @@ export class RpcSafeClient {
    * @param blendTime - Duration of the camera transition in seconds (non-negative)
    * @throws {Error} If the box is invalid (min values must be less than max values)
    */
-  async RPCFrameBox(box: RpcTypes.Box3, blendTime: number): Promise<RpcTypes.Segment | undefined> {
+  async RPCFrameAABB(box: RpcTypes.Box3, blendTime: number): Promise<RpcTypes.Segment | undefined> {
     // Validation
     if (!Validation.isValidBox(box)) return
     blendTime = Validation.clamp01(blendTime)
 
     // Run
     return await this.safeCall(
-      () => this.rpc.RPCFrameBox(box, blendTime),
+      () => this.rpc.RPCFrameAABB(box, blendTime),
       undefined
     )
   }
@@ -506,12 +463,12 @@ export class RpcSafeClient {
    * @param speed - The desired movement speed (must be positive)
    * @throws {Error} If speed is not positive
    */
-  RPCSetMoveSpeed(speed: number) {
+  RPCSetCameraSpeed(speed: number) {
     // Validation
     speed = Validation.min0(speed)
 
     // Run
-    this.rpc.RPCSetMoveSpeed(speed)
+    this.rpc.RPCSetCameraSpeed(speed)
   }
 
   RPCSetCameraMode(mode: InputMode): void {
@@ -524,13 +481,13 @@ export class RpcSafeClient {
    * @param height - The height component of the aspect ratio
    * @throws {Error} If width or height are not positive integers
    */
-  RPCSetAspectRatio(width: number, height: number): void {
+  RPCSetCameraAspectRatio(width: number, height: number): void {
     // Validation
     if (!Validation.isPositiveInteger(width)) return
     if (!Validation.isPositiveInteger(height)) return
 
     // Run
-    this.rpc.RPCSetAspectRatio(width, height)
+    this.rpc.RPCSetCameraAspectRatio(width, height)
   }
 
   /*******************************************************************************
@@ -614,8 +571,8 @@ export class RpcSafeClient {
   /**
    * Clears the entire scene, removing all components and resetting to initial state.
    */
-  RPCClearScene(): void {
-    this.rpc.RPCClearScene()
+  RPCUnloadAll(): void {
+    this.rpc.RPCUnloadAll()
   }
 
   /**
@@ -624,8 +581,7 @@ export class RpcSafeClient {
    */
   RPCSetGhostColor(ghostColor: RpcTypes.RGBA): void {
     const color = Validation.clampRGBA01(ghostColor)
-    // RPCGhostColor is deprecated, use RPCSetGhostColor2 instead
-    this.rpc.RPCSetGhostColor2(color)
+    this.rpc.RPCSetGhostColor(color)
   }
 
   /**
@@ -899,62 +855,6 @@ export class RpcSafeClient {
    */
   RPCTriggerRenderDocCapture(): void {
     this.rpc.RPCTriggerRenderDocCapture()
-  }
-
-  /**
-   * Shows axis-aligned bounding boxes (AABBs) for specified nodes with custom colors.
-   * Large arrays are automatically processed in batches for better performance.
-   * @param componentHandle - The component containing the nodes
-   * @param nodes - Array of node indices to show AABBs for
-   * @param colors - Array of colors for each AABB (must match nodes length)
-   * @throws {Error} If arrays have different lengths or component handle is invalid
-   */
-  RPCShowAABBs(
-    componentHandle: number,
-    nodes: number[],
-    colors: RpcTypes.RGBA32[]
-  ): void {
-    // Validation
-    if (!Validation.isComponentHandle(componentHandle)) return
-    if (!Validation.areComponentHandles(nodes)) return
-
-    // Run
-    const batches = batchArrays(nodes, colors, this.batchSize)
-    for (const [batchedNodes, batchedColors] of batches) {
-      this.rpc.RPCShowAABBs(componentHandle, batchedNodes, batchedColors)
-    }
-  }
-
-  /**
-   * Hides the axis-aligned bounding boxes (AABBs) for specified nodes.
-   * Large node arrays are automatically processed in batches.
-   * @param componentHandle - The component containing the nodes
-   * @param nodes - Array of node indices whose AABBs should be hidden
-   * @throws {Error} If the component handle is invalid or nodes array is invalid
-   */
-  RPCHideAABBs(componentHandle: number, nodes: number[]): void {
-    // Validation
-    if (!Validation.isComponentHandle(componentHandle)) return
-    if (!Validation.areComponentHandles(nodes)) return
-
-    // Run
-    const batches = batchArray(nodes, this.batchSize)
-    for (const batch of batches) {
-      this.rpc.RPCHideAABBs(componentHandle, batch)
-    }
-  }
-
-  /**
-   * Hides all axis-aligned bounding boxes (AABBs) in a component.
-   * @param componentHandle - The component whose AABBs should be hidden
-   * @throws {Error} If the component handle is invalid
-   */
-  RPCHideAllAABBs(componentHandle: number): void {
-    // Validation
-    if (!Validation.isComponentHandle(componentHandle)) return
-
-    // Run
-    this.rpc.RPCHideAllAABBs(componentHandle)
   }
 
   private async safeCall<T, TDefault>(func: () => Promise<T>, defaultValue: TDefault): Promise<T | TDefault> {

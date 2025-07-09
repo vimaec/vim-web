@@ -103,9 +103,10 @@ export class Marshal {
   // -------------------- HitCheckResult -------------------
 
   public writeHitCheckResult(data: RpcTypes.HitCheckResult): void {
-    this.ensureCapacity(4 + 4 + 4 * 3 + 4 * 3)
+    this.ensureCapacity(4 + 4 +4 + 4 * 3 + 4 * 3)
     this.writeUInt(data.vimHandle)
     this.writeUInt(data.nodeIndex)
+    this.writeUInt(data.elementIndex)
     this.writeVector3(data.worldPosition)
     this.writeVector3(data.worldNormal)
   }
@@ -291,6 +292,12 @@ export class ReadMarshal{
     return value
   }
 
+  //TODO: Maybe wrong
+  public readUInt64(): bigint {
+    const low = this.readUInt();  // lower 32 bits
+    const high = this.readUInt(); // upper 32 bits
+    return (BigInt(high) << 32n) | BigInt(low);
+  }
 
   public readFloat(): number {
     const value = this._dataView.getFloat32(this._offset, true)
@@ -315,6 +322,7 @@ export class ReadMarshal{
   public readHitCheckResult(): RpcTypes.HitCheckResult {
     const vimHandle = this.readUInt()
     const nodeIndex = this.readUInt()
+    const mElementIndex = this.readUInt()
 
     const worldPosition = this.readVector3()
     const worldNormal = this.readVector3()
@@ -322,6 +330,7 @@ export class ReadMarshal{
     return {
       vimHandle,
       nodeIndex,
+      elementIndex: mElementIndex,
       worldPosition,
       worldNormal
     }
@@ -407,7 +416,15 @@ export class ReadMarshal{
     return this.readArray(() => this.readUInt())
   }
 
-
+  public readArrayOfUInt64(): bigint[] {
+    const length = this.readUInt();
+    const array: bigint[] = [];
+    for (let i = 0; i < length; i++) {
+      array.push(this.readUInt64());
+    }
+    return array;
+  }
+  
   public readArrayOfFloat(): number[] {
     return this.readArray(() => this.readFloat())
   }

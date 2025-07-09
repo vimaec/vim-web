@@ -71,7 +71,7 @@ export class Raycaster implements IUltraRaycaster {
     const vim = this._vims.getFromHandle(test.vimHandle);
     if (!vim) return undefined;
 
-    const object = vim.getElementFromInstanceIndex(test.nodeIndex);
+    const object = vim.getElement(test.elementIndex);
     if (!object) return undefined;
 
     return new UltraRaycastResult(

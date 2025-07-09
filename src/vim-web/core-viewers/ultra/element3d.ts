@@ -1,5 +1,5 @@
 import { IVimElement } from "../shared/vim";
-import { NodeState } from "./nodeState";
+import { VisibilityState } from "./nodeState";
 import { Box3, RGBA32 } from "./rpcTypes";
 import { Vim } from "./vim";
 
@@ -19,7 +19,7 @@ export class Element3D implements IVimElement {
   /**
    * The internal instance index within the `Vim` model.
    */
-  readonly instance: number;
+  readonly element: number;
 
   /**
    * The unique handle of the parent `Vim` model.
@@ -31,31 +31,31 @@ export class Element3D implements IVimElement {
   /**
    * Creates a new `Element3D` instance.
    * @param vim - The parent `Vim` model.
-   * @param instance - The internal instance index.
+   * @param element - The internal instance index.
    */
-  constructor(vim: Vim, instance: number) {
+  constructor(vim: Vim, element: number) {
     this.vim = vim;
-    this.instance = instance;
+    this.element = element;
   }
 
   /**
    * Gets or sets the display state of the element (e.g., visible, hidden).
    */
-  get state(): NodeState {
-    return this.vim.nodeState.getNodeState(this.instance);
+  get state(): VisibilityState {
+    return this.vim.nodeState.getElementState(this.element);
   }
-  set state(state: NodeState) {
-    this.vim.nodeState.setNodeState(this.instance, state);
+  set state(state: VisibilityState) {
+    this.vim.nodeState.setElementState(this.element, state);
   }
 
   /**
    * Gets or sets the color override of the element.
    */
   get color(): RGBA32 | undefined {
-    return this.vim.getColor(this.instance);
+    return this.vim.getColor(this.element);
   }
   set color(color: RGBA32 | undefined) {
-    this.vim.setColor([this.instance], color);
+    this.vim.setColor([this.element], color);
   }
 
   /**
@@ -64,6 +64,6 @@ export class Element3D implements IVimElement {
    * @returns A promise resolving to the element's bounding box.
    */
   async getBoundingBox(): Promise<Box3 | undefined> {
-    return this.vim.getBoundingBoxNodes([this.instance]);
+    return this.vim.getBoundingBoxNodes([this.element]);
   }
 }

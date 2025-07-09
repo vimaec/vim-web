@@ -10,8 +10,6 @@ import { ClientStreamError } from "./socketClient";
  * Render settings that extend SceneSettings with additional rendering-specific properties
  */
 export type RenderSettings = SceneSettings & {
-  /** Whether to lock the Image-Based Lighting rotation */
-  lockIblRotation: boolean
   /** Color used for ghost/transparent rendering */
   ghostColor: RGBA
 }
@@ -21,7 +19,6 @@ export type RenderSettings = SceneSettings & {
  */
 export const defaultRenderSettings: RenderSettings = {
   ...defaultSceneSettings,
-  lockIblRotation: true,
   ghostColor: new RGBA(14/255, 14/255, 14/255, 64/255)
 }
 
@@ -31,7 +28,6 @@ export const defaultRenderSettings: RenderSettings = {
 export interface IRenderer {
   onSceneUpdated: ISignal
   ghostColor: RGBA
-  lockIblRotation: boolean
   hdrScale: number
   toneMappingWhitePoint: number
   hdrBackgroundScale: number
@@ -53,7 +49,6 @@ export class Renderer implements IRenderer {
   private _animationFrame: number | undefined = undefined;
   private _updateLighting: boolean = false;
   private _updateGhostColor: boolean = false;
-  private _updateIblRotation: boolean = false;
 
   private readonly _onSceneUpdated = new SignalDispatcher()
   get onSceneUpdated() {
@@ -98,7 +93,6 @@ export class Renderer implements IRenderer {
    */
   onConnect(){
     this._rpc.RPCSetGhostColor(this._settings.ghostColor)
-    this._rpc.RPCLockIblRotation(this._settings.lockIblRotation)
   }
 
   notifySceneUpdated() {
@@ -113,14 +107,6 @@ export class Renderer implements IRenderer {
    */
   get ghostColor(): RGBA {
     return this._settings.ghostColor
-  }
-
-  /**
-   * Gets the IBL rotation lock setting
-   * @returns Whether IBL rotation is locked
-   */
-  get lockIblRotation(): boolean {
-    return this._settings.lockIblRotation
   }
 
   /**
@@ -182,17 +168,6 @@ export class Renderer implements IRenderer {
     if(this._settings.ghostColor.equals(value)) return
     this._settings.ghostColor = value
     this._updateGhostColor = true
-    this.requestSettingsUpdate()
-  }
-
-  /**
-   * Updates the IBL rotation lock setting
-   * @param value - Whether to lock IBL rotation
-   */
-  set lockIblRotation(value: boolean){
-    if(this._settings.lockIblRotation === value) return
-    this._settings.lockIblRotation = value
-    this._updateIblRotation = true
     this.requestSettingsUpdate()
   }
 
@@ -269,7 +244,7 @@ export class Renderer implements IRenderer {
   }
 
   getBoundingBox(): Promise<THREE.Box3 | undefined> {
-    return this._rpc.RPCGetSceneAABB()
+    return this._rpc.RPCGetAABBForAll()
   }
 
   /**
@@ -287,12 +262,10 @@ export class Renderer implements IRenderer {
   private async applySettings(){
     if(this._updateLighting) await this._rpc.RPCSetLighting(this._settings);
     if(this._updateGhostColor) await this._rpc.RPCSetGhostColor(this._settings.ghostColor);
-    if(this._updateIblRotation) await this._rpc.RPCLockIblRotation(this._settings.lockIblRotation);
 
     // Reset dirty flags
     this._updateLighting = false;
     this._updateGhostColor = false;
-    this._updateIblRotation = false;
     this._animationFrame = undefined;
   }
 

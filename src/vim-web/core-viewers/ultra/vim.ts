@@ -4,7 +4,7 @@ import type { ILogger } from './logger';
 import { ColorManager } from './colorManager';
 import { Element3D } from './element3d';
 import { LoadRequest } from './loadRequest';
-import { NodeState, StateSynchronizer } from './nodeState';
+import { VisibilityState, StateSynchronizer } from './nodeState';
 import { Renderer } from './renderer';
 import { MaterialHandles } from './rpcClient';
 import { RpcSafeClient, VimLoadingStatus, VimSource } from './rpcSafeClient';
@@ -55,15 +55,15 @@ export class Vim implements IVim<Element3D> {
       () => this._handle,
       () => this.connected,
       () => this._renderer.notifySceneUpdated(),
-      NodeState.VISIBLE // default state
+      VisibilityState.VISIBLE // default state
     );
   }
-  getElementFromInstanceIndex(instance: number): Element3D {
-    if (this._objects.has(instance)) {
-      return this._objects.get(instance)!;
+  getElement(elementIndex: number): Element3D {
+    if (this._objects.has(elementIndex)) {
+      return this._objects.get(elementIndex)!;
     }
-    const object = new Element3D(this, instance);
-    this._objects.set(instance, object);
+    const object = new Element3D(this, elementIndex);
+    this._objects.set(elementIndex, object);
     return object;
   }
   getElementsFromId(id: number): Element3D[] {
@@ -189,16 +189,16 @@ export class Vim implements IVim<Element3D> {
       return Promise.resolve(undefined);
     }
     if (nodes === 'all') {
-      return await this._rpc.RPCGetBoundingBoxAll(this._handle);
+      return await this._rpc.RPCGetAABBForVim(this._handle);
     }
-    return await this._rpc.RPCGetBoundingBox(this._handle, nodes);
+    return await this._rpc.RPCGetAABBForElements(this._handle, nodes);
   }
 
   async getBoundingBox(): Promise<THREE.Box3 | undefined> {
     if (!this.connected ) {
       return Promise.resolve(undefined);
     }
-    return await this._rpc.RPCGetBoundingBoxAll(this._handle);
+    return await this._rpc.RPCGetAABBForVim(this._handle);
   }
 
   getColor(node: number): RGBA32 | undefined {
@@ -290,16 +290,16 @@ function wait(ms: number): Promise<void> {
  * but the change is still tracked for remote updates.
  */
 class StateTracker {
-  private _state = new Map<number, NodeState>();
+  private _state = new Map<number, VisibilityState>();
   private _updates = new Set<number>();
-  private _default: NodeState;
+  private _default: VisibilityState;
   private _updatedDefault: boolean = false;
 
-  constructor(defaultState: NodeState = NodeState.VISIBLE) {
+  constructor(defaultState: VisibilityState = VisibilityState.VISIBLE) {
     this._default = defaultState;
   }
 
-  setAll(state: NodeState, clearNodes: boolean) {
+  setAll(state: VisibilityState, clearNodes: boolean) {
     this._default = state;
     this._updatedDefault = true;
     if (clearNodes) {
@@ -323,7 +323,7 @@ class StateTracker {
     toRemove.forEach(k => this._state.delete(k));
   }
 
-  set(key: number, value: NodeState) {
+  set(key: number, value: VisibilityState) {
     if (this._default === value) {
       this.delete(key);
     } else {
@@ -344,7 +344,7 @@ class StateTracker {
   /**
    * Update nodes in bulk. If 'all' is specified, the default is updated.
    */
-  updateNodes(nodes: Utils.ForEachable<number> | 'all', state: NodeState): void {
+  updateNodes(nodes: Utils.ForEachable<number> | 'all', state: VisibilityState): void {
     if (nodes === 'all') {
       this.setAll(state, true);
     } else {
@@ -358,18 +358,18 @@ class StateTracker {
     }
   }
 
-  get(key: number): NodeState | undefined {
+  get(key: number): VisibilityState | undefined {
     return this._state.get(key);
   }
 
-  getDefault(): NodeState {
+  getDefault(): VisibilityState {
     return this._default;
   }
 
   /**
    * Returns whether every node (override or not) is in the given state(s).
    */
-  areAll(state: NodeState | NodeState[]): boolean {
+  areAll(state: VisibilityState | VisibilityState[]): boolean {
     if (!this.matchesState(this._default, state)) {
       return false;
     }
@@ -384,7 +384,7 @@ class StateTracker {
   /**
    * Returns a node’s effective state.
    */
-  getState(node: number): NodeState {
+  getState(node: number): VisibilityState {
     return this._state.get(node) ?? this._default;
   }
 
@@ -392,7 +392,7 @@ class StateTracker {
    * Returns either 'all' if every node is in the given state, or an array
    * of node IDs (from the overrides) whose state equals the provided state.
    */
-  getAll(state: NodeState): number[] | 'all' {
+  getAll(state: VisibilityState): number[] | 'all' {
     if (this.areAll(state)) return 'all';
     const nodes: number[] = [];
     for (const [node, nodeState] of this._state.entries()) {
@@ -406,9 +406,9 @@ class StateTracker {
   /**
    * Returns a mapping from state to an array of updated node IDs.
    */
-  getUpdates(): Map<NodeState, number[]> {
-    const nodesByState = new Map<NodeState, number[]>();
-    Object.values(NodeState).forEach((state) => {
+  getUpdates(): Map<VisibilityState, number[]> {
+    const nodesByState = new Map<VisibilityState, number[]>();
+    Object.values(VisibilityState).forEach((state) => {
       nodesByState.set(state, []);
     });
 
@@ -428,14 +428,14 @@ class StateTracker {
     this._updatedDefault = false;
   }
 
-  entries(): IterableIterator<[number, NodeState]> {
+  entries(): IterableIterator<[number, VisibilityState]> {
     return this._state.entries();
   }
 
   /**
    * Helper: checks if a node state matches one or more target states.
    */
-  matchesState(nodeState: NodeState, state: NodeState | NodeState[]): boolean {
+  matchesState(nodeState: VisibilityState, state: VisibilityState | VisibilityState[]): boolean {
     if (Array.isArray(state)) {
       return state.includes(nodeState);
     }
@@ -446,7 +446,7 @@ class StateTracker {
    * Replaces all nodes that match the provided state(s) with a new state.
    * If all nodes are in the given state(s), the default is updated.
    */
-  replace(from: NodeState | NodeState[], to: NodeState): void {
+  replace(from: VisibilityState | VisibilityState[], to: VisibilityState): void {
     if (this.areAll(from)) {
       this.setAll(to, false);
     }

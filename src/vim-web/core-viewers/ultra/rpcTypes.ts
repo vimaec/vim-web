@@ -210,6 +210,7 @@ export class RGBA32 {
 export type HitCheckResult = {
   vimHandle: number;         // uint32_t equivalent
   nodeIndex: number;         // uint32_t equivalent
+  elementIndex: number      // uint32_t equivalent
   worldPosition: THREE.Vector3;  // 3-element array of floats
   worldNormal: THREE.Vector3;    // 3-element array of floats
 }

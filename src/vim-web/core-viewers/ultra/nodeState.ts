@@ -1,14 +1,16 @@
 import { RpcSafeClient } from './rpcSafeClient';
 
 /**
- * Represents the possible states a node can have in the UltraVim system.
+ * Represents the possible states an element can have in the UltraVim system.
  */
-// TODO: Rename without Node
-export enum NodeState {
-  VISIBLE = 'visible',
-  HIDDEN = 'hidden',
-  GHOSTED = 'ghosted',
-  HIGHLIGHTED = 'highlighted'
+export enum VisibilityState {
+  //TODO: Make this better support the fact that Higlight can be combined with other states
+  VISIBLE = 0,
+  HIDDEN = 1,
+  GHOSTED = 2,
+  HIGHLIGHTED = 16,
+  HIDDEN_HIGHLIGHTED = 17,
+  GHOSTED_HIGHLIGHTED = 18
 }
 
 /**
@@ -16,6 +18,7 @@ export enum NodeState {
  * It batches updates to optimize performance and handles the communication with the remote system.
  */
 export class StateSynchronizer {
+  //TODO: Take advantage of the new rpcs that can take multiple states at once
   private _tracker: StateTracker;
   private _rpc: RpcSafeClient;
   
@@ -31,14 +34,14 @@ export class StateSynchronizer {
    * @param getHandle - Function that returns the current handle identifier
    * @param isConnected - Function that returns whether the connection to the remote system is active
    * @param onUpdate - Callback function invoked when updates are sent to the remote system
-   * @param defaultState - The default state for nodes when not explicitly set (defaults to VISIBLE)
+   * @param defaultState - The default state for elements when not explicitly set (defaults to VISIBLE)
    */
   constructor(
     rpc: RpcSafeClient,
     getHandle: () => number,
     isConnected: () => boolean,
     onUpdate: () => void,
-    defaultState: NodeState = NodeState.VISIBLE
+    defaultState: VisibilityState = VisibilityState.VISIBLE
   ) {
     this._tracker = new StateTracker(defaultState);
     this._rpc = rpc;
@@ -50,75 +53,75 @@ export class StateSynchronizer {
   // --- Getters ---
 
   /**
-   * Checks if all nodes are in the specified state(s).
+   * Checks if all elements are in the specified state(s).
    * 
    * @param state - A single state or array of states to check against
-   * @returns True if all nodes are in the specified state(s), false otherwise
+   * @returns True if all elements are in the specified state(s), false otherwise
    */
-  areAllInState(state: NodeState | NodeState[]): boolean {
+  areAllInState(state: VisibilityState | VisibilityState[]): boolean {
     return this._tracker.areAll(state);
   }
 
   /**
-   * Gets the current state of a specific node.
+   * Gets the current state of a specific element.
    * 
-   * @param node - The node identifier
-   * @returns The current state of the node
+   * @param elementIndex - The element index
+   * @returns The current state of the element
    */
-  getNodeState(node: number): NodeState {
-    return this._tracker.getState(node);
+  getElementState(elementIndex: number): VisibilityState {
+    return this._tracker.getState(elementIndex);
   }
 
   /**
-   * Gets all nodes that are currently in the specified state.
+   * Gets all elements that are currently in the specified state.
    * 
    * @param state - The state to query
-   * @returns Either 'all' if all nodes are in this state, or an array of node IDs
+   * @returns Either 'all' if all elements are in this state, or an array of element indices
    */
-  getNodesInState(state: NodeState): number[] | 'all' {
+  getElementsInState(state: VisibilityState): number[] | 'all' {
     return this._tracker.getAll(state);
   }
 
   /**
-   * Gets the default state used for nodes without explicit state settings.
+   * Gets the default state used for elements without explicit state settings.
    * 
    * @returns The current default state
    */
-  getDefaultState(): NodeState {
+  getDefaultState(): VisibilityState {
     return this._tracker.getDefault();
   }
 
   // --- Setters ---
 
   /**
-   * Sets the state of a specific node.
+   * Sets the state of a specific elements.
    * 
-   * @param nodeId - The identifier of the node
+   * @param elementIndex - The element index to update
    * @param state - The new state to apply
    */
-  setNodeState(nodeId: number, state: NodeState): void {
-    this._tracker.setState(nodeId, state);
+  setElementState(elementIndex: number, state: VisibilityState): void {
+    this._tracker.setState(elementIndex, state);
     this.scheduleUpdate();
   }
 
   /**
-   * Sets the state of all nodes to the specified value.
+   * Sets the state of all elements to the specified value.
    * 
-   * @param state - The state to apply to all nodes
-   * @param clear - If true, clears all node-specific overrides
+   * @param state - The state to apply to all elements
+   * @param clear - If true, clears all elements-specific overrides
    */
-  setAllNodesState(state: NodeState): void {
+  setAllState(state: VisibilityState): void {
     this._tracker.setAll(state);
     this.scheduleUpdate();
   }
 
   /**
-   * Replaces all nodes in one state (or states) with another state.
+   * Replaces all elements in one state (or states) with another state.
    * 
    * @param fromState - The state(s) to replace
    * @param toState - The new state to apply
    */
-  replaceState(fromState: NodeState | NodeState[], toState: NodeState): void {
+  replaceState(fromState: VisibilityState | VisibilityState[], toState: VisibilityState): void {
     this._tracker.replace(fromState, toState);
     this.scheduleUpdate();
   }
@@ -155,109 +158,54 @@ export class StateSynchronizer {
    */
   private remoteUpdate(): void {
     // Get the updates then reset right away to let new updates be set
-    const [defaultUpdate, nodeUpdates] = this._tracker.getUpdates();
+    const [defaultUpdate, elementUpdates] = this._tracker.getUpdates();
     this._tracker.reset();
 
     // First handle any default state changes
-    if (defaultUpdate) {
-      this.callRPCForStateAll(defaultUpdate);
+    if (defaultUpdate !== undefined) {
+      this._rpc.RPCSetStateVim(this._getHandle(), defaultUpdate);
     }
     
-    // Then handle individual node updates
-    for (const [state, nodes] of nodeUpdates.entries()) {
-      if (nodes.length === 0) continue;
-      this.callRPCForStateNodes(state, nodes);
+    // Then handle individual element updates
+    for (const [state, elements] of elementUpdates.entries()) {
+      if (elements.length === 0) continue;
+      this._rpc.RPCSetStateElements(this._getHandle(), elements, state);
     }
     
     // Notify that updates have been sent
     this._onUpdate();
   }
-
-  /**
-   * Calls the appropriate RPC method to update the state of all nodes.
-   * 
-   * @param state - The state to apply to all nodes
-   * @private
-   */
-  private callRPCForStateAll(state: NodeState): void {
-    if (!this._isConnected()) {
-      return;
-    }
-    switch (state) {
-      case NodeState.VISIBLE:
-        this._rpc.RPCShowAll(this._getHandle());
-        break;
-      case NodeState.HIDDEN:
-        this._rpc.RPCHideAll(this._getHandle());
-        break;
-      case NodeState.GHOSTED:
-        this._rpc.RPCGhostAll(this._getHandle());
-        break;
-      case NodeState.HIGHLIGHTED:
-        this._rpc.RPCHighlightAll(this._getHandle());
-        break;
-    }
-  }
-
-  /**
-   * Calls the appropriate RPC method to update the state of specific nodes.
-   * 
-   * @param state - The state to apply
-   * @param nodes - Array of node IDs to update
-   * @private
-   */
-  private callRPCForStateNodes(state: NodeState, nodes: number[]): void {
-    if (!this._isConnected()) {
-      return;
-    }
-    
-    switch (state) {
-      case NodeState.VISIBLE:
-        this._rpc.RPCShow(this._getHandle(), nodes);
-        break;
-      case NodeState.HIDDEN:
-        this._rpc.RPCHide(this._getHandle(), nodes);
-        break;
-      case NodeState.GHOSTED:
-        this._rpc.RPCGhost(this._getHandle(), nodes);
-        break;
-      case NodeState.HIGHLIGHTED:
-        this._rpc.RPCHighlight(this._getHandle(), nodes);
-        break;
-    }
-  }
 }
 
 /**
- * A tracker for node state overrides.
- * It stores per-node state overrides against a default state.
- * When a node's state is set equal to the default, its override is removed
+ * A tracker for element state overrides.
+ * It stores per-element state overrides against a default state.
+ * When a element's state is set equal to the default, its override is removed
  * but the change is still tracked for remote updates.
  * 
  * @private Not exported, used internally by StateSynchronizer
  */
 class StateTracker {
-  private _state = new Map<number, NodeState>();
+  private _state = new Map<number, VisibilityState>();
   private _updates = new Set<number>();
-  private _default: NodeState;
+  private _default: VisibilityState;
   private _updatedDefault: boolean = false;
 
   /**
    * Creates a new StateTracker instance.
    * 
-   * @param defaultState - The default state for nodes when not explicitly set
+   * @param defaultState - The default state for elements when not explicitly set
    */
-  constructor(defaultState: NodeState = NodeState.VISIBLE) {
+  constructor(defaultState: VisibilityState = VisibilityState.VISIBLE) {
     this._default = defaultState;
   }
 
   /**
-   * Sets the default state for all nodes and optionally clears node-specific overrides.
+   * Sets the default state for all elements and optionally clears element-specific overrides.
    * 
    * @param state - The new default state
-   * @param clearNodes - If true, clears all node-specific overrides
    */
-  setAll(state: NodeState): void {
+  setAll(state: VisibilityState): void {
     this._default = state;
     this._updatedDefault = true;
     this._state.clear();
@@ -272,39 +220,39 @@ class StateTracker {
     this._updates.clear();
     const toRemove = new Set<number>();
     
-    for (const [nodeId, state] of this._state.entries()) {
+    for (const [elementIndex, state] of this._state.entries()) {
       if (state === this._default) {
-        // If a node's explicit state matches the default, we can remove the override
-        toRemove.add(nodeId);
+        // If a element's explicit state matches the default, we can remove the override
+        toRemove.add(elementIndex);
       } else {
-        // Otherwise, mark this node as needing an update
-        this._updates.add(nodeId);
+        // Otherwise, mark this element as needing an update
+        this._updates.add(elementIndex);
       }
     }
     
     // Clean up redundant overrides
-    toRemove.forEach(nodeId => this._state.delete(nodeId));
+    toRemove.forEach(elementIndex => this._state.delete(elementIndex));
   }
 
   /**
-   * Sets the state of a specific node.
+   * Sets the state of a specific element.
    * 
-   * @param nodeId - The node identifier
+   * @param elementIndex - The element index to update
    * @param state - The new state to apply
    */
-  setState(nodeId: number, state: NodeState): void {
+  setState(elementIndex: number, state: VisibilityState): void {
     if (this._default === state) {
       // If the new state matches the default, remove the override
-      this._state.delete(nodeId);
+      this._state.delete(elementIndex);
       
       // Only mark for update if we haven't already changed the default
       if (!this._updatedDefault) {
-        this._updates.add(nodeId);
+        this._updates.add(elementIndex);
       }
     } else {
       // Otherwise set the override and mark for update
-      this._state.set(nodeId, state);
-      this._updates.add(nodeId);
+      this._state.set(elementIndex, state);
+      this._updates.add(elementIndex);
     }
   }
 
@@ -313,25 +261,25 @@ class StateTracker {
    * 
    * @returns The current default state
    */
-  getDefault(): NodeState {
+  getDefault(): VisibilityState {
     return this._default;
   }
 
   /**
-   * Returns whether every node (override or not) is in the given state(s).
+   * Returns whether every element (override or not) is in the given state(s).
    * 
    * @param state - A single state or array of states to check against
-   * @returns True if all nodes are in the specified state(s), false otherwise
+   * @returns True if all element are in the specified state(s), false otherwise
    */
-  areAll(state: NodeState | NodeState[]): boolean {
+  areAll(state: VisibilityState | VisibilityState[]): boolean {
     // First check if the default state matches
     if (!matchesState(this._default, state)) {
       return false;
     }
     
     // Then check all overrides
-    for (const nodeState of this._state.values()) {
-      if (!matchesState(nodeState, state)) {
+    for (const currentState of this._state.values()) {
+      if (!matchesState(currentState, state)) {
         return false;
       }
     }
@@ -340,57 +288,58 @@ class StateTracker {
   }
 
   /**
-   * Returns a node's effective state.
+   * Returns an element effective state.
    * 
-   * @param node - The node identifier
-   * @returns The current state of the node (override or default)
+   * @param elementIndex - The element index
+   * @returns The current state of the element (override or default)
    */
-  getState(node: number): NodeState {
-    return this._state.get(node) ?? this._default;
+  getState(elementIndex: number): VisibilityState {
+    return this._state.get(elementIndex) ?? this._default;
   }
 
   /**
-   * Returns either 'all' if every node is in the given state, or an array
-   * of node IDs (from the overrides) whose state equals the provided state.
+   * Returns either 'all' if every element is in the given state, or an array
+   * of element index (from the overrides) whose state equals the provided state.
    * 
    * @param state - The state to query
-   * @returns Either 'all' if all nodes are in this state, or an array of node IDs
+   * @returns Either 'all' if all elements are in this state, or an array of element indices
    */
-  getAll(state: NodeState): number[] | 'all' {
+  getAll(state: VisibilityState): number[] | 'all' {
     if (this.areAll(state)) return 'all';
     
-    const nodes: number[] = [];
-    for (const [nodeId, nodeState] of this._state.entries()) {
-      if (nodeState === state) {
-        nodes.push(nodeId);
+    const elements: number[] = [];
+    for (const [elementIndex, currentState] of this._state.entries()) {
+      if (matchesState(currentState, state)) {
+        elements.push(elementIndex);
       }
     }
     
-    return nodes;
+    return elements;
   }
 
   /**
-   * Returns a mapping from state to an array of updated node IDs.
-   * 
-   * @returns A tuple with the updated default state (if any) and a map of states to node IDs
+   * Returns a mapping from state to an array of updated elementIndices.
+   * @returns A tuple with the updated default state (if any) and a map of states to element Indices
    */
-  getUpdates(): [NodeState | undefined, Map<NodeState, number[]>] {
+  getUpdates(): [VisibilityState | undefined, Map<VisibilityState, number[]>] {
     // Initialize the map with all possible states
-    const nodesByState = new Map<NodeState, number[]>();
-    Object.values(NodeState).forEach(state => {
-      nodesByState.set(state, []);
+    const elementsByState = new Map<VisibilityState, number[]>();
+    Object.values(VisibilityState)
+      .filter((v): v is VisibilityState => typeof v === "number")
+      .forEach(state => {
+        elementsByState.set(state, []);
     });
     
-    // Populate the map with nodes that need updates
-    for (const nodeId of this._updates) {
-      const state = this._state.get(nodeId) ?? this._default;
-      const nodesArray = nodesByState.get(state);
-      if (nodesArray) {
-        nodesArray.push(nodeId);
+    // Populate the map with elements that need updates
+    for (const elementIndex of this._updates) {
+      const state = this._state.get(elementIndex) ?? this._default;
+      const elementArray = elementsByState.get(state);
+      if (elementArray) {
+        elementArray.push(elementIndex);
       }
     }
     
-    return [this._updatedDefault ? this._default : undefined, nodesByState];
+    return [this._updatedDefault ? this._default : undefined, elementsByState];
   }
 
   /**
@@ -403,7 +352,7 @@ class StateTracker {
   }
 
   /**
-   * Resets the update tracking, clearing the list of nodes that need updates.
+   * Resets the update tracking, clearing the list of elements that need updates.
    */
   reset(): void {
     this._updates.clear();
@@ -411,22 +360,22 @@ class StateTracker {
   }
 
   /**
-   * Returns an iterator over all node overrides.
+   * Returns an iterator over all elements overrides.
    * 
-   * @returns An iterator of [nodeId, state] pairs
+   * @returns An iterator of [elementIndex, state] pairs
    */
-  entries(): IterableIterator<[number, NodeState]> {
+  entries(): IterableIterator<[number, VisibilityState]> {
     return this._state.entries();
   }
 
   /**
-   * Replaces all nodes that match the provided state(s) with a new state.
-   * If all nodes are in the given state(s), the default is updated.
+   * Replaces all elements that match the provided state(s) with a new state.
+   * If all elements are in the given state(s), the default is updated.
    * 
    * @param fromState - The state(s) to replace
    * @param toState - The new state to apply
    */
-  replace(fromState: NodeState | NodeState[], toState: NodeState): void {
+  replace(fromState: VisibilityState | VisibilityState[], toState: VisibilityState): void {
     this.purge(); // Clean up redundant overrides
     
     // If the default state matches what we're replacing, update it
@@ -437,11 +386,11 @@ class StateTracker {
       return
     }
 
-    // Update all matching node overrides
-    for (const [nodeId, state] of this._state.entries()) {
+    // Update all matching elements overrides
+    for (const [elementIndex, state] of this._state.entries()) {
       if (matchesState(state, fromState)) {
-        this._state.set(nodeId, toState);
-        this._updates.add(nodeId);
+        this._state.set(elementIndex, toState);
+        this._updates.add(elementIndex);
       }
     }
   }
@@ -450,28 +399,28 @@ class StateTracker {
   private purge(){
     const toRemove : number[] = [];
     
-    for (const [nodeId, state] of this._state.entries()) {
+    for (const [elementIndex, state] of this._state.entries()) {
       if (state === this._default) {
-        toRemove.push(nodeId);
+        toRemove.push(elementIndex);
       }
     }
     
-    toRemove.forEach(nodeId => this._state.delete(nodeId));
+    toRemove.forEach(elementIndex => this._state.delete(elementIndex));
   }
 }
 
 
 
 /**
- * Helper function that checks if a node state matches one or more target states.
+ * Helper function that checks if an element state matches one or more target states.
  * 
- * @param nodeState - The current state of a node
- * @param state - A single state or array of states to check against
- * @returns True if the node state matches any of the target states
+ * @param state - The current state of an element
+ * @param targetState - A single state or array of states to check against
+ * @returns True if the state matches any of the target states
  */
-function matchesState(nodeState: NodeState, state: NodeState | NodeState[]): boolean {
-  if (Array.isArray(state)) {
-    return state.includes(nodeState);
+function matchesState(state: VisibilityState, targetState: VisibilityState | VisibilityState[]): boolean {
+  if (Array.isArray(targetState)) {
+    return targetState.includes(state);
   }
-  return nodeState === state;
+  return state === targetState;
 }

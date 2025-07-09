@@ -40,7 +40,7 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
     show: (instances: number[]) => {
       for(let i of instances){
         for(let v of viewer.vims){
-          const o = v.getElementFromInstanceIndex(i)
+          const o = v.getElement(i)
             o.visible = true
         }
       }
@@ -49,7 +49,7 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
     hide: (instances: number[]) => {
       for(let i of instances){
         for(let v of viewer.vims){
-          const o = v.getElementFromInstanceIndex(i)
+          const o = v.getElement(i)
             o.visible = false;
         }
       }

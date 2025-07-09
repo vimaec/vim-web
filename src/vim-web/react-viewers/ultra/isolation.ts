@@ -2,7 +2,7 @@ import { IsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityS
 import * as Core from "../../core-viewers";
 import { useStateRef } from "../helpers/reactUtils";
 
-import NodeState = Core.Ultra.NodeState
+import VisibilityState = Core.Ultra.VisibilityState
 import Viewer = Core.Ultra.Viewer
 import Vim = Core.Ultra.Vim
 import Element3D = Core.Ultra.Element3D
@@ -18,12 +18,22 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
 
   // Helper function to hide objects in ghost or hidden state
   const hide = (objects: Element3D[] | 'all') =>{
-    const state = ghost.get() ? NodeState.GHOSTED : NodeState.HIDDEN
+    const state = ghost.get() ? VisibilityState.GHOSTED : VisibilityState.HIDDEN
     if(objects === 'all'){
-      viewer.vims.getAll().forEach(vim => {vim.nodeState.setAllNodesState(state)})
+      viewer.vims.getAll().forEach(vim => {vim.nodeState.setAllState(state)})
       return
     }
-    objects.forEach(obj => {obj.state = state})
+    
+    for(const obj of objects){
+      if(viewer.selection.has(obj)){
+        obj.state = state == VisibilityState.GHOSTED
+         ? VisibilityState.GHOSTED_HIGHLIGHTED
+         : VisibilityState.HIDDEN_HIGHLIGHTED
+      }
+      else{
+        obj.state = state
+      }
+    }
   }
 
   return {
@@ -31,8 +41,8 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
     onSelectionChanged: viewer.selection.onSelectionChanged,
     computeVisibility: () => getVisibilityState(viewer),
     hasSelection: () => viewer.selection.any(),
-    hasVisibleSelection: () => checkSelectionState(viewer, s => s === 'visible' || s === 'highlighted'),
-    hasHiddenSelection: () => checkSelectionState(viewer, s => s === 'hidden' || s === 'ghosted'),
+    hasVisibleSelection: () => checkSelectionState(viewer, s => s === VisibilityState.VISIBLE || s === VisibilityState.HIGHLIGHTED),
+    hasHiddenSelection: () => checkSelectionState(viewer, s => s === VisibilityState.HIDDEN || s === VisibilityState.GHOSTED),
 
     clearSelection: () => viewer.selection.clear(),
 
@@ -40,7 +50,7 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
       hide('all') 
 
       for(const obj of viewer.selection.getAll()){
-        obj.state = NodeState.HIGHLIGHTED
+        obj.state = VisibilityState.HIGHLIGHTED
       }
     },
     hideSelection: () => {
@@ -49,7 +59,7 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
     },
     showSelection: () => {
       viewer.selection.getAll().forEach(obj => {
-        obj.state = NodeState.VISIBLE
+        obj.state = VisibilityState.VISIBLE
       })
     },
 
@@ -58,23 +68,23 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
     },
     showAll: () => {
       for(const vim of viewer.vims.getAll()){
-        vim.nodeState.setAllNodesState(NodeState.VISIBLE)
+        vim.nodeState.setAllState(VisibilityState.VISIBLE)
       }
       viewer.selection.getAll().forEach(obj => {
-        obj.state = NodeState.HIGHLIGHTED
+        obj.state = VisibilityState.HIGHLIGHTED
       })
     },
 
     isolate: (instances: number[]) => {
       hide('all') // Hide all objects
       viewer.selection.getAll().forEach(obj => {
-        obj.state = NodeState.HIGHLIGHTED
+        obj.state = VisibilityState.HIGHLIGHTED
       })
     },
     show: (instances: number[]) => {
       for(const vim of viewer.vims.getAll()){
         for(const i of instances){
-          vim.getElementFromInstanceIndex(i).state = NodeState.VISIBLE
+          vim.getElement(i).state = VisibilityState.VISIBLE
         }
       }
     },
@@ -82,7 +92,7 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
     hide: (instances: number[]) => {
       for(const vim of viewer.vims.getAll()){
         for(const i of instances){
-          const obj = vim.getElementFromInstanceIndex(i)
+          const obj = vim.getElement(i)
           hide([obj])
         }
       }
@@ -94,9 +104,9 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
       
       for(const vim of viewer.vims.getAll()){
         if(show){
-          vim.nodeState.replaceState(NodeState.HIDDEN, NodeState.GHOSTED)
+          vim.nodeState.replaceState(VisibilityState.HIDDEN, VisibilityState.GHOSTED)
         } else {
-          vim.nodeState.replaceState(NodeState.GHOSTED, NodeState.HIDDEN)
+          vim.nodeState.replaceState(VisibilityState.GHOSTED, VisibilityState.HIDDEN)
         }
       }
     },
@@ -115,7 +125,7 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
   };
 }
 
-function checkSelectionState(viewer: Viewer, test: (state: NodeState) => boolean): boolean {
+function checkSelectionState(viewer: Viewer, test: (state: VisibilityState) => boolean): boolean {
   if(!viewer.selection.any()){
     return false
   }
@@ -130,8 +140,8 @@ function getVisibilityState(viewer: Viewer): VisibilityStatus {
   let onlySelectionFlag = true;
 
   for (let v of viewer.vims.getAll()) {
-    const allVisible = v.nodeState.areAllInState([NodeState.VISIBLE, NodeState.HIGHLIGHTED])
-    const allHidden = v.nodeState.areAllInState([NodeState.HIDDEN, NodeState.GHOSTED])
+    const allVisible = v.nodeState.areAllInState([VisibilityState.VISIBLE, VisibilityState.HIGHLIGHTED])
+    const allHidden = v.nodeState.areAllInState([VisibilityState.HIDDEN, VisibilityState.GHOSTED])
 
     all = all && allVisible
     none = none && allHidden
