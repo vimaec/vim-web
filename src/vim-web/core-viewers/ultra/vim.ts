@@ -25,7 +25,7 @@ export class Vim implements IVim<Element3D> {
   private _logger: ILogger;
 
   // The StateSynchronizer wraps a StateTracker and handles RPC synchronization.
-  readonly nodeState: StateSynchronizer;
+  readonly visibility: StateSynchronizer;
 
   // Color tracking remains unchanged.
   private _nodeColors: Map<number, RGBA32> = new Map();
@@ -50,7 +50,7 @@ export class Vim implements IVim<Element3D> {
     this._logger = logger;
 
     // Instantiate the synchronizer with a new StateTracker.
-    this.nodeState = new StateSynchronizer(
+    this.visibility = new StateSynchronizer(
       this._rpc,
       () => this._handle,
       () => this.connected,
@@ -99,7 +99,7 @@ export class Vim implements IVim<Element3D> {
       if (result.isSuccess) {
         // Reapply Node state and colors in case this is a reconnection
         this._logger.log('Successfully loaded vim: ', this.source);
-        this.nodeState.reapplyStates();
+        this.visibility.reapplyStates();
         this.reapplyColors()
 
       } else {
@@ -281,183 +281,4 @@ export class Vim implements IVim<Element3D> {
  */
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/**
- * A tracker for node state overrides.
- * It stores per-node state overrides against a default state.
- * When a node’s state is set equal to the default, its override is removed
- * but the change is still tracked for remote updates.
- */
-class StateTracker {
-  private _state = new Map<number, VisibilityState>();
-  private _updates = new Set<number>();
-  private _default: VisibilityState;
-  private _updatedDefault: boolean = false;
-
-  constructor(defaultState: VisibilityState = VisibilityState.VISIBLE) {
-    this._default = defaultState;
-  }
-
-  setAll(state: VisibilityState, clearNodes: boolean) {
-    this._default = state;
-    this._updatedDefault = true;
-    if (clearNodes) {
-      this._state.clear();
-      this._updates.clear();
-    } else {
-      this.reapply();
-    }
-  }
-
-  reapply() {
-    this._updates.clear();
-    const toRemove = new Set<number>();
-    for (const [k, s] of this._state.entries()) {
-      if (s === this._default) {
-        toRemove.add(k);
-      } else {
-        this._updates.add(k);
-      }
-    }
-    toRemove.forEach(k => this._state.delete(k));
-  }
-
-  set(key: number, value: VisibilityState) {
-    if (this._default === value) {
-      this.delete(key);
-    } else {
-      this._state.set(key, value);
-      this._updates.add(key);
-    }
-  }
-
-  delete(key: number) {
-    if (this._state.has(key)) {
-      this._state.delete(key);
-      this._updates.add(key);
-    } else {
-      this._updates.add(key);
-    }
-  }
-
-  /**
-   * Update nodes in bulk. If 'all' is specified, the default is updated.
-   */
-  updateNodes(nodes: Utils.ForEachable<number> | 'all', state: VisibilityState): void {
-    if (nodes === 'all') {
-      this.setAll(state, true);
-    } else {
-      nodes.forEach((n) => {
-        if (state === this._default) {
-          this.delete(n);
-        } else {
-          this.set(n, state);
-        }
-      });
-    }
-  }
-
-  get(key: number): VisibilityState | undefined {
-    return this._state.get(key);
-  }
-
-  getDefault(): VisibilityState {
-    return this._default;
-  }
-
-  /**
-   * Returns whether every node (override or not) is in the given state(s).
-   */
-  areAll(state: VisibilityState | VisibilityState[]): boolean {
-    if (!this.matchesState(this._default, state)) {
-      return false;
-    }
-    for (const st of this._state.values()) {
-      if (!this.matchesState(st, state)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /**
-   * Returns a node’s effective state.
-   */
-  getState(node: number): VisibilityState {
-    return this._state.get(node) ?? this._default;
-  }
-
-  /**
-   * Returns either 'all' if every node is in the given state, or an array
-   * of node IDs (from the overrides) whose state equals the provided state.
-   */
-  getAll(state: VisibilityState): number[] | 'all' {
-    if (this.areAll(state)) return 'all';
-    const nodes: number[] = [];
-    for (const [node, nodeState] of this._state.entries()) {
-      if (nodeState === state) {
-        nodes.push(node);
-      }
-    }
-    return nodes;
-  }
-
-  /**
-   * Returns a mapping from state to an array of updated node IDs.
-   */
-  getUpdates(): Map<VisibilityState, number[]> {
-    const nodesByState = new Map<VisibilityState, number[]>();
-    Object.values(VisibilityState).forEach((state) => {
-      nodesByState.set(state, []);
-    });
-
-    for (const node of this._updates) {
-      const state = this._state.get(node) ?? this._default;
-      nodesByState.get(state).push(node);
-    }
-    return nodesByState;
-  }
-
-  isDefaultUpdated(): boolean {
-    return this._updatedDefault;
-  }
-
-  reset() {
-    this._updates.clear();
-    this._updatedDefault = false;
-  }
-
-  entries(): IterableIterator<[number, VisibilityState]> {
-    return this._state.entries();
-  }
-
-  /**
-   * Helper: checks if a node state matches one or more target states.
-   */
-  matchesState(nodeState: VisibilityState, state: VisibilityState | VisibilityState[]): boolean {
-    if (Array.isArray(state)) {
-      return state.includes(nodeState);
-    }
-    return nodeState === state;
-  }
-
-  /**
-   * Replaces all nodes that match the provided state(s) with a new state.
-   * If all nodes are in the given state(s), the default is updated.
-   */
-  replace(from: VisibilityState | VisibilityState[], to: VisibilityState): void {
-    if (this.areAll(from)) {
-      this.setAll(to, false);
-    }
-    for (const [node, state] of this._state.entries()) {
-      if (this.matchesState(state, from)) {
-        if (to === this._default) {
-          this.delete(node);
-        } else {
-          this.set(node, to);
-        }
-      }
-    }
-  }
 }

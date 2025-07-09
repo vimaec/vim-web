@@ -42,10 +42,10 @@ export class Element3D implements IVimElement {
    * Gets or sets the display state of the element (e.g., visible, hidden).
    */
   get state(): VisibilityState {
-    return this.vim.nodeState.getElementState(this.element);
+    return this.vim.visibility.getElementState(this.element);
   }
   set state(state: VisibilityState) {
-    this.vim.nodeState.setElementState(this.element, state);
+    this.vim.visibility.setElementState(this.element, state);
   }
 
   /**

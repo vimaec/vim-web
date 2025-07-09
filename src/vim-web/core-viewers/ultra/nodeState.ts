@@ -110,7 +110,7 @@ export class StateSynchronizer {
    * @param state - The state to apply to all elements
    * @param clear - If true, clears all elements-specific overrides
    */
-  setAllState(state: VisibilityState): void {
+  setStateForAll(state: VisibilityState): void {
     this._tracker.setAll(state);
     this.scheduleUpdate();
   }

@@ -20,10 +20,10 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
   const hide = (objects: Element3D[] | 'all') =>{
     const state = ghost.get() ? VisibilityState.GHOSTED : VisibilityState.HIDDEN
     if(objects === 'all'){
-      viewer.vims.getAll().forEach(vim => {vim.nodeState.setAllState(state)})
+      viewer.vims.getAll().forEach(vim => {vim.visibility.setStateForAll(state)})
       return
     }
-    
+
     for(const obj of objects){
       if(viewer.selection.has(obj)){
         obj.state = state == VisibilityState.GHOSTED
@@ -68,7 +68,7 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
     },
     showAll: () => {
       for(const vim of viewer.vims.getAll()){
-        vim.nodeState.setAllState(VisibilityState.VISIBLE)
+        vim.visibility.setStateForAll(VisibilityState.VISIBLE)
       }
       viewer.selection.getAll().forEach(obj => {
         obj.state = VisibilityState.HIGHLIGHTED
@@ -104,9 +104,9 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
       
       for(const vim of viewer.vims.getAll()){
         if(show){
-          vim.nodeState.replaceState(VisibilityState.HIDDEN, VisibilityState.GHOSTED)
+          vim.visibility.replaceState(VisibilityState.HIDDEN, VisibilityState.GHOSTED)
         } else {
-          vim.nodeState.replaceState(VisibilityState.GHOSTED, VisibilityState.HIDDEN)
+          vim.visibility.replaceState(VisibilityState.GHOSTED, VisibilityState.HIDDEN)
         }
       }
     },
@@ -140,8 +140,8 @@ function getVisibilityState(viewer: Viewer): VisibilityStatus {
   let onlySelectionFlag = true;
 
   for (let v of viewer.vims.getAll()) {
-    const allVisible = v.nodeState.areAllInState([VisibilityState.VISIBLE, VisibilityState.HIGHLIGHTED])
-    const allHidden = v.nodeState.areAllInState([VisibilityState.HIDDEN, VisibilityState.GHOSTED])
+    const allVisible = v.visibility.areAllInState([VisibilityState.VISIBLE, VisibilityState.HIGHLIGHTED])
+    const allHidden = v.visibility.areAllInState([VisibilityState.HIDDEN, VisibilityState.GHOSTED])
 
     all = all && allVisible
     none = none && allHidden
@@ -158,52 +158,12 @@ function getVisibilityState(viewer: Viewer): VisibilityStatus {
   return 'some';
 }
 
+//returns true if only the selection is visible
 function onlySelection(viewer: Viewer, vim: Vim): boolean {
   return false
-  /*
-  const selectedInstances = viewer.selection.get().get(vim)
-  if(selectedInstances === undefined) return false
-
-  // Base state should be hidden or ghosted
-  const baseState = vim.nodeState.getDefaultState()
-  if(baseState === 'visible') return false
-  if(baseState === 'highlighted') return false
-
-  // Assumes that not all instances are selected
-  const visibleInstances = vim.nodeState.getNodesInState(UltraVimNodeState.VISIBLE)
-  if(visibleInstances === 'all') return false
-
-  // Check that visible set === selected set
-  const visibleSet = new Set(visibleInstances)
-  if(!visibleSet.isSubsetOf(selectedInstances)) return false
-  if(!visibleSet.isSupersetOf(selectedInstances)) return false
-  
-  return true
-  */
 }
 
+//returns true if only the selection is hidden
 function allButSelection(viewer: Viewer, vim: Vim): boolean {
   return false
-  /*
-  const selectedInstances = viewer.selection.get().get(vim)
-  if(selectedInstances === undefined) return false
-  
-  // Base state should be visible or highlighted
-  const baseState = vim.nodeState.getDefaultState()
-  if(baseState === 'hidden') return false
-  if(baseState === 'ghosted') return false
-
-  // Assumes that not all instances are selected
-  const hiddenInstances = vim.nodeState.getNodesInState(UltraVimNodeState.HIDDEN)
-  const ghostedInstances = vim.nodeState.getNodesInState(UltraVimNodeState.GHOSTED)
-  if(hiddenInstances === 'all') return false
-  if(ghostedInstances === 'all') return false
-
-  // Check that visible set === selected set
-  const hiddenSet = new Set([...hiddenInstances, ...ghostedInstances])
-  if(!hiddenSet.isSubsetOf(selectedInstances)) return false
-  if(!hiddenSet.isSupersetOf(selectedInstances)) return false
-
-  return true
-  */
 }
