@@ -1,6 +1,6 @@
 import {Selection, ISelectionAdapter} from "../shared/selection";
 import { Element3D } from "./element3d";
-import { VisibilityState } from "./nodeState";
+import { VisibilityState } from "./visibility";
 
 export type ISelection = Selection<Element3D>
 export function createSelection(): ISelection {

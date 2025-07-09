@@ -10,13 +10,13 @@ export {RGB, RGBA, RGBA32, Segment, type SectionBoxState, type HitCheckResult, t
 // We don't want to export RPCClient
 export {materialHandles, MaterialHandles, type MaterialHandle, } from './rpcClient'
 export {InputMode, VimLoadingStatus} from './rpcSafeClient';
-export {VisibilityState} from './nodeState'; //Runtime values for enum
+export {VisibilityState} from './visibility'; //Runtime values for enum
 
 // Type exports
 export type * from './camera';
 export type * from './colorManager';
 export type * from './decoder';
-export type * from './nodeState';
+export type * from './visibility';
 export type * from './element3d';
 export type * from './inputAdapter';
 export type * from './loadRequest';

@@ -4,7 +4,7 @@ import type { ILogger } from './logger';
 import { ColorManager } from './colorManager';
 import { Element3D } from './element3d';
 import { LoadRequest } from './loadRequest';
-import { VisibilityState, StateSynchronizer } from './nodeState';
+import { VisibilityState, StateSynchronizer } from './visibility';
 import { Renderer } from './renderer';
 import { MaterialHandles } from './rpcClient';
 import { RpcSafeClient, VimLoadingStatus, VimSource } from './rpcSafeClient';

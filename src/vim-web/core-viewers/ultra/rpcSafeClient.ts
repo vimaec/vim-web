@@ -3,7 +3,7 @@ import { MaterialHandle, RpcClient } from "./rpcClient"
 import { Validation } from "../../utils";
 import { batchArray, batchArrays } from "../../utils/array"
 import { INVALID_HANDLE } from "./viewer"
-import { VisibilityState } from "./nodeState";
+import { VisibilityState } from "./visibility";
 
 const defaultBatchSize = 10000
 

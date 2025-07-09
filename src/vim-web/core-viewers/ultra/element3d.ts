@@ -1,5 +1,5 @@
 import { IVimElement } from "../shared/vim";
-import { VisibilityState } from "./nodeState";
+import { VisibilityState } from "./visibility";
 import { Box3, RGBA32 } from "./rpcTypes";
 import { Vim } from "./vim";
 
