@@ -157,16 +157,16 @@ export class Camera implements ICamera {
   /**
    * Frames specific nodes of a Vim model in the camera view
    * @param vim - The Vim model containing the nodes to frame
-   * @param nodes - Array of node indices to frame, or 'all' to frame the entire model
+   * @param elements - Array of element indices to frame, or 'all' to frame the entire model
    * @param blendTime - Duration of the camera animation in seconds (defaults to 0.5)
    * @returns Promise that resolves when the framing animation is complete
    */
-  async frameVim(vim: Vim, nodes: number[] | 'all', blendTime: number = this._defaultBlendTime): Promise<Segment | undefined> {
+  async frameVim(vim: Vim, elements: number[] | 'all', blendTime: number = this._defaultBlendTime): Promise<Segment | undefined> {
     let segment: Segment | undefined
-    if (nodes === 'all') {
+    if (elements === 'all') {
       segment = await this._rpc.RPCFrameVim(vim.handle, blendTime);
     } else {
-      segment = await this._rpc.RPCFrameElements(vim.handle, nodes, blendTime);
+      segment = await this._rpc.RPCFrameElements(vim.handle, elements, blendTime);
     }
     this._savedPosition = this._savedPosition ?? segment
     return segment

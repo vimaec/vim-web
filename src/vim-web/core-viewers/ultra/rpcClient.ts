@@ -62,10 +62,9 @@ return this._socket.state.status === "connected"
   // RPC Generated Code
   readonly API_VERSION = "6.0.0"
 
-  RPCClearMaterialOverrides(componentHandle: number): void {
+  RPCClearMaterialOverrides(): void {
     const marshal = new Marshal();
     marshal.writeString("RPCClearMaterialOverrides");
-    marshal.writeUInt(componentHandle);
     this._socket.sendRPC(marshal);
   }
 
@@ -410,19 +409,26 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  RPCSetStateVim(componentHandle: number, state: number): void {
-    const marshal = new Marshal();
-    marshal.writeString("RPCSetStateVim");
-    marshal.writeUInt(componentHandle);
-    marshal.writeUInt(state);
-    this._socket.sendRPC(marshal);
-  }
-
   RPCSetStateElements(componentHandle: number, elementIndices: number[], state: number): void {
     const marshal = new Marshal();
     marshal.writeString("RPCSetStateElements");
     marshal.writeUInt(componentHandle);
     marshal.writeArrayOfUInt(elementIndices);
+    marshal.writeUInt(state);
+    this._socket.sendRPC(marshal);
+  }
+
+  RPCSetStateScene(state: number): void {
+    const marshal = new Marshal();
+    marshal.writeString("RPCSetStateScene");
+    marshal.writeUInt(state);
+    this._socket.sendRPC(marshal);
+  }
+
+  RPCSetStateVim(componentHandle: number, state: number): void {
+    const marshal = new Marshal();
+    marshal.writeString("RPCSetStateVim");
+    marshal.writeUInt(componentHandle);
     marshal.writeUInt(state);
     this._socket.sendRPC(marshal);
   }

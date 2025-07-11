@@ -231,18 +231,18 @@ export class Vim implements IVim<Element3D> {
     this.scheduleColorUpdate();
   }
 
-  clearColor(nodes: number[] | 'all'): void {
-    if (nodes === 'all') {
+  clearColor(elements: number[] | 'all'): void {
+    if (elements === 'all') {
       this._nodeColors.clear();
     } else {
-      nodes.forEach((n) => this._nodeColors.delete(n));
+      elements.forEach((n) => this._nodeColors.delete(n));
     }
     if (!this.connected) return;
-    if (nodes === 'all') {
-      this._rpc.RPCClearMaterialOverrides(this._handle);
+    if (elements === 'all') {
+      this._rpc.RPCClearMaterialOverrides();
     } else {
-      const ids = new Array(nodes.length).fill(MaterialHandles.Invalid);
-      this._rpc.RPCSetMaterialOverrides(this._handle, nodes, ids);
+      const ids = new Array(elements.length).fill(MaterialHandles.Invalid);
+      this._rpc.RPCSetMaterialOverrides(this._handle, elements, ids);
     }
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "vim-web",
-  "version": "0.4.1", 
+  "version": "0.5.0-dev.2", 
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "type": "module",
   "files": [
@@ -24,11 +24,10 @@
     "dev": "vite",
     "eslint": "eslint --ext .js,.ts,.tsx src --fix",
     "documentation": "typedoc --entryPoints src/vim-web/index.ts --entryPointStrategy expand --out docs2 --excludeProtected --excludeExternals --excludePrivate",
-    "declarations": "tsc --project tsconfig.json --declaration --emitDeclarationOnly --outdir ./dist/types",
-    "build": "vite build --config vite.config.js && npm run declarations",
-    "package": "npm run build && npm publish",  
+    "declarations": "tsc -p tsconfig.types.json",
+    "build": "vite build && npm run declarations",
     "publish:package": "npm run build && npm publish",
-    "publ ish:documentation": "npm run documentation && gh-pages -d docs2",
+    "publish:documentation": "npm run documentation && gh-pages -d docs2",
     "publish": "npm run publish:package && npm run publish:documentation"
   },
   "devDependencies": {

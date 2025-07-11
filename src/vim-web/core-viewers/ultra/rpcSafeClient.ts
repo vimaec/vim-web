@@ -799,12 +799,9 @@ export class RpcSafeClient {
    * @param componentHandle - The unique identifier of the component
    * @throws {Error} If the component handle is invalid or INVALID_HANDLE
    */
-  RPCClearMaterialOverrides(componentHandle: number): void {
-    // Validation
-    if (!Validation.isComponentHandle(componentHandle)) return
-
+  RPCClearMaterialOverrides(): void {
     // Run
-    this.rpc.RPCClearMaterialOverrides(componentHandle)
+    this.rpc.RPCClearMaterialOverrides()
   }
 
   /*******************************************************************************
