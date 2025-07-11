@@ -104,14 +104,12 @@ export class Marshal {
 
   public writeHitCheckResult(data: RpcTypes.HitCheckResult): void {
     this.ensureCapacity(4 + 4 +4 + 4 * 3 + 4 * 3)
-    this.writeUInt(data.vimHandle)
-    this.writeUInt(data.nodeIndex)
-    this.writeUInt(data.elementIndex)
+    this.writeUInt(data.vimIndex)
+    this.writeUInt(data.vimElementIndex)
+    this.writeUInt(data.sceneElementIndex)
     this.writeVector3(data.worldPosition)
     this.writeVector3(data.worldNormal)
   }
-
-
 
   // -------------------- VimStatus -------------------
 
@@ -121,7 +119,6 @@ export class Marshal {
     this.writeFloat(data.progress)
   }
 
-
   // -------------------- Vector2 -------------------
 
   public writeVector2(data: RpcTypes.Vector2): void {
@@ -129,8 +126,6 @@ export class Marshal {
     this.writeFloat(data.x)
     this.writeFloat(data.y)
   }
-
-
 
   // -------------------- Vector3 -------------------
 
@@ -320,17 +315,16 @@ export class ReadMarshal{
   }
 
   public readHitCheckResult(): RpcTypes.HitCheckResult {
-    const vimHandle = this.readUInt()
-    const nodeIndex = this.readUInt()
-    const mElementIndex = this.readUInt()
-
+    const vimIndex = this.readUInt()
+    const vimElementIndex = this.readUInt()
+    const sceneElementIndex = this.readUInt()
     const worldPosition = this.readVector3()
     const worldNormal = this.readVector3()
 
     return {
-      vimHandle,
-      nodeIndex,
-      elementIndex: mElementIndex,
+      vimIndex,
+      vimElementIndex,
+      sceneElementIndex,
       worldPosition,
       worldNormal
     }
