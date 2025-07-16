@@ -297,6 +297,10 @@ export class Viewer {
     this._vims.clear()
   }
 
+  getElement3Ds() : Promise<number> {
+    return this.rpc.RPCGetElementCountForScene()  
+  }
+
   /**
    * Disposes all resources used by the viewer and disconnects from the server.
    */

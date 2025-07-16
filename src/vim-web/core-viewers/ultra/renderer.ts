@@ -146,7 +146,7 @@ export class Renderer implements IRenderer {
    * @returns Current background blur
    */
   get backgroundBlur(): number {
-    return this._settings.backGroundBlur;
+    return this._settings.backgroundBlur;
   }
 
   /**
@@ -225,8 +225,8 @@ export class Renderer implements IRenderer {
    */
   set backgroundBlur(value: number) {
     value = Validation.clamp01(value)
-    if (this._settings.backGroundBlur === value) return;
-    this._settings.backGroundBlur = value;
+    if (this._settings.backgroundBlur === value) return;
+    this._settings.backgroundBlur = value;
     this._updateLighting = true
     this.requestSettingsUpdate();
   }
@@ -244,7 +244,7 @@ export class Renderer implements IRenderer {
   }
 
   getBoundingBox(): Promise<THREE.Box3 | undefined> {
-    return this._rpc.RPCGetAABBForAll()
+    return this._rpc.RPCGetAABBForScene()
   }
 
   /**

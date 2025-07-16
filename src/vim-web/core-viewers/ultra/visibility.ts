@@ -17,9 +17,9 @@ export enum VisibilityState {
  * A class that wraps a StateTracker and is responsible for synchronizing its state updates with the remote RPCs.
  * It batches updates to optimize performance and handles the communication with the remote system.
  */
-export class StateSynchronizer {
+export class VisibilitySynchronizer {
   //TODO: Take advantage of the new rpcs that can take multiple states at once
-  private _tracker: StateTracker;
+  private _tracker: VisibilityTracker;
   private _rpc: RpcSafeClient;
   
   private _getHandle: () => number;
@@ -43,7 +43,7 @@ export class StateSynchronizer {
     onUpdate: () => void,
     defaultState: VisibilityState = VisibilityState.VISIBLE
   ) {
-    this._tracker = new StateTracker(defaultState);
+    this._tracker = new VisibilityTracker(defaultState);
     this._rpc = rpc;
     this._onUpdate = onUpdate;
     this._getHandle = getHandle;
@@ -99,7 +99,7 @@ export class StateSynchronizer {
    * @param elementIndex - The element index to update
    * @param state - The new state to apply
    */
-  setElementState(elementIndex: number, state: VisibilityState): void {
+  setStateForElement(elementIndex: number, state: VisibilityState): void {
     this._tracker.setState(elementIndex, state);
     this.scheduleUpdate();
   }
@@ -185,7 +185,7 @@ export class StateSynchronizer {
  * 
  * @private Not exported, used internally by StateSynchronizer
  */
-class StateTracker {
+class VisibilityTracker {
   private _state = new Map<number, VisibilityState>();
   private _updates = new Set<number>();
   private _default: VisibilityState;

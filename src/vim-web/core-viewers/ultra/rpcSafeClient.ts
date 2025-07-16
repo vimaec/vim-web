@@ -4,67 +4,166 @@ import { Validation } from "../../utils";
 import { batchArray, batchArrays } from "../../utils/array"
 import { INVALID_HANDLE } from "./viewer"
 import { VisibilityState } from "./visibility";
-
+/**
+ * Default maximum number of items to include in a single RPC batch operation.
+ */
 const defaultBatchSize = 10000
 
-//TODO: Share both VIMSource
+/**
+ * Describes the source location and optional authentication for loading a VIM file.
+ */
 export type VimSource = {
+  /**
+   * URL to the VIM file.
+   * Can be a local path (file://) or remote URL (http:// or https://).
+   */
   url: string;
-  authToken? : string;
+
+  /**
+   * Optional authentication token for accessing protected resources.
+   */
+  authToken?: string;
 }
 
+/**
+ * Represents the loading state and progress for a single vim.
+ */
 export type VimLoadingState = {
+  /**
+   * Current loading status.
+   */
   status: VimLoadingStatus;
+
+  /**
+   * Loading progress as a percentage from 0 to 100.
+   */
   progress: number;
 }
 
+/**
+ * Defines supported input modes for camera control in the viewer.
+ */
 export enum InputMode {
+  /**
+   * Orbit mode — rotates around a fixed point.
+   */
   Orbit = 'orbit',
+
+  /**
+   * Free mode — allows unrestricted movement.
+   */
   Free = 'free'
 }
 
+/**
+ * Scene-wide rendering and lighting configuration options.
+ */
 export type SceneSettings = {
-  toneMappingWhitePoint: number
-  hdrScale: number
-  hdrBackgroundScale: number
-  hdrBackgroundSaturation: number
-  backGroundBlur: number
-  backgroundColor: RpcTypes.RGBA
+  /**
+   * White point for tone mapping (clamped between 0 and 1).
+   */
+  toneMappingWhitePoint: number;
+
+  /**
+   * Global HDR intensity multiplier (floored to 0).
+   */
+  hdrScale: number;
+
+  /**
+   * HDR scale for the background (clamped between 0 and 1).
+   */
+  hdrBackgroundScale: number;
+
+  /**
+   * Background saturation (clamped between 0 and 1).
+   */
+  hdrBackgroundSaturation: number;
+
+  /**
+   * Background blur strength (clamped between 0 and 1).
+   */
+  backgroundBlur: number;
+
+  /**
+   * Background color in linear RGBA format.
+   */
+  backgroundColor: RpcTypes.RGBA;
 }
 
+/**
+ * Default scene settings used when none are explicitly provided.
+ */
 export const defaultSceneSettings: SceneSettings = {
   toneMappingWhitePoint: 0.1009,
   hdrScale: 1.37,
   hdrBackgroundScale: 1.0,
   hdrBackgroundSaturation: 1.0,
-  backGroundBlur: 1.0,
+  backgroundBlur: 1.0,
   backgroundColor: new RpcTypes.RGBA(0.9, 0.9, 0.9, 1.0)
 }
 
+/**
+ * Enumerates the possible states of VIM file loading.
+ */
 export enum VimLoadingStatus {
+  /**
+   * No known loading activity.
+   */
   Unknown = 0,
+
+  /**
+   * Actively loading VIM data.
+   */
   Loading = 1,
+
+  /**
+   * Downloading VIM file from a remote source.
+   */
   Downloading = 2,
+
+  /**
+   * Load completed successfully.
+   */
   Done = 3,
+
+  /**
+   * Download failed (e.g., due to network or permission issues).
+   */
   FailedToDownload = 4,
+
+  /**
+   * VIM file could not be parsed or initialized correctly.
+   */
   FailedToLoad = 5
 }
 /**
  * Provides safe, validated methods to interact with the RpcClient.
- * This class wraps the raw RPC methods with input validation and batching support for large operations.
+ * This class wraps low-level RPC calls with input validation, error handling,
+ * and batching support to ensure robustness and performance when dealing with large data.
  */
 export class RpcSafeClient {
   private readonly rpc: RpcClient
   private readonly batchSize: number
 
+  /**
+   * The URL used by the underlying RPC connection.
+   */
   get url(): string {
     return this.rpc.url
   }
 
+  /**
+   * Indicates whether the RPC client is currently connected.
+   */
   get connected(): boolean {
     return this.rpc.connected
   }
 
+  /**
+   * Creates a new RpcSafeClient instance.
+   * @param rpc - The underlying RpcClient used for communication
+   * @param batchSize - Maximum size of batched data for operations (default: 10000)
+   */
   constructor(rpc: RpcClient, batchSize: number = defaultBatchSize) {
     this.rpc = rpc
     this.batchSize = batchSize
@@ -77,9 +176,10 @@ export class RpcSafeClient {
    ******************************************************************************/
 
   /**
-   * Initializes and starts the scene with specified settings.
+   * Initializes and starts the scene with the given settings.
    * @param settings - Optional partial scene settings to override defaults
-   * @remarks If no settings are provided, default values will be used
+   * @returns Promise resolving to true if the scene started successfully, false otherwise
+   * @remarks Missing values will be filled from {@link defaultSceneSettings}
    */
   async RPCStartScene(settings?: Partial<SceneSettings>): Promise<boolean> {
     const s = { ...defaultSceneSettings, ...(settings ?? {}) }
@@ -90,7 +190,7 @@ export class RpcSafeClient {
         Validation.min0(s.hdrScale),
         Validation.clamp01(s.hdrBackgroundScale),
         Validation.clamp01(s.hdrBackgroundSaturation),
-        Validation.clamp01(s.backGroundBlur),
+        Validation.clamp01(s.backgroundBlur),
         Validation.clampRGBA01(s.backgroundColor)
       ),
       false
@@ -98,8 +198,8 @@ export class RpcSafeClient {
   }
 
   /**
-   * Sets the lighting settings for the scene.
-   * @param settings - The lighting settings to apply
+   * Updates the scene’s lighting configuration.
+   * @param settings - The complete lighting and background settings to apply
    */
   RPCSetLighting(settings: SceneSettings): void {
     const s = settings
@@ -108,56 +208,83 @@ export class RpcSafeClient {
       Validation.min0(s.hdrScale),
       Validation.clamp01(s.hdrBackgroundScale),
       Validation.clamp01(s.hdrBackgroundSaturation),
-      Validation.clamp01(s.backGroundBlur),
+      Validation.clamp01(s.backgroundBlur),
       Validation.clampRGBA01(s.backgroundColor)
     )
   }
- 
-
-
-  /*******************************************************************************
-   * NODE VISIBILITY METHODS
-   * Methods for controlling node visibility, including show/hide, ghosting,
-   * and highlighting functionality.
-   ******************************************************************************/
 
   /**
-   * Highlights specified nodes in a component.
-   * Large node arrays are automatically processed in batches.
-   * @param componentHandle - The component containing the nodes
-   * @param nodes - Array of node indices to highlight
-   * @throws {Error} If the component handle is invalid or nodes array is invalid
+   * Retrieves the total number of elements across the entire scene.
+   * @returns Promise resolving to the total number of elements (0 on failure).
    */
-  RPCSetStateElements(componentHandle: number, elements: number[], state: VisibilityState): void {
-    if(elements.length === 0) return
-    // Validation
-    if (!Validation.isComponentHandle(componentHandle)) return
-    if (!Validation.areComponentHandles(elements)) return
+  RPCGetElementCountForScene(): Promise<number> {
+    return this.safeCall(
+      () => this.rpc.RPCGetElementCountForScene(), 0)
+  }
 
-    // Run
-    const batches = batchArray(elements, this.batchSize)
+  /**
+   * Retrieves the number of elements within a specific loaded vim.
+   * @param vimIndex - Index of the loaded vim to query
+   * @returns Promise resolving to the element count (0 on failure)
+   */
+  RPCGetElementCountForVim(vimIndex: number): Promise<number> {
+    return this.safeCall(
+      () => this.rpc.RPCGetElementCountForVim(vimIndex), 0)
+  }
+
+  /*******************************************************************************
+   * ELEMENTS VISIBILITY METHODS
+   * Methods for controlling element visibility, including show/hide, ghosting,
+   * and highlighting functionality.
+   ******************************************************************************/
+  /**
+   * Sets a single visibility state for given elements within a loaded vim.
+   * The operation is automatically split into batches if the array is large.
+   *
+   * @param vimIndex - The index of the loaded vim containing the elements
+   * @param vimElementIndices - Array of vim-based element indices to apply the state to
+   * @param state - The visibility state to apply (e.g., VISIBLE, HIDDEN)
+   */
+  RPCSetStateElements(vimIndex: number, vimElementIndices: number[], state: VisibilityState): void {
+    if (vimElementIndices.length === 0) return
+    if (!Validation.isIndex(vimIndex)) return
+    if (!Validation.areIndices(vimElementIndices)) return
+
+    const batches = batchArray(vimElementIndices, this.batchSize)
     for (const batch of batches) {
-      this.rpc.RPCSetStateElements(componentHandle, batch, state)
+      this.rpc.RPCSetStateElements(vimIndex, batch, state)
     }
   }
 
-  RPCSetStatesElements(componentHandle: number, elements: number[], states: VisibilityState[]): void {
-    if (!Validation.isComponentHandle(componentHandle)) return
-    if (!Validation.areComponentHandles(elements)) return
-    if (!Validation.areSameLength(elements, states)) return
+  /**
+   * Sets individual visibility states for multiple elements in a vim.
+   * Each element receives a corresponding visibility state from the input array.
+   * The operation is automatically split into batches if the array is large.
+   *
+   * @param vimIndex - The index of the loaded vim
+   * @param vimElementIndices - Array of vim-based element indices
+   * @param states - Array of visibility states to apply, one per element
+   */
+  RPCSetStatesElements(vimIndex: number, vimElementIndices: number[], states: VisibilityState[]): void {
+    if (!Validation.isIndex(vimIndex)) return
+    if (!Validation.areIndices(vimElementIndices)) return
+    if (!Validation.areSameLength(vimElementIndices, states)) return
 
-
-    const batches = batchArrays(elements, states, this.batchSize)
+    const batches = batchArrays(vimElementIndices, states, this.batchSize)
     for (const [batchedElements, batchedStates] of batches) {
-      this.rpc.RPCSetStatesElements(componentHandle, batchedElements, batchedStates)
+      this.rpc.RPCSetStatesElements(vimIndex, batchedElements, batchedStates)
     }
   }
 
-
-
-  RPCSetStateVim(componentHandle: number, state: VisibilityState): void {
-    if (!Validation.isComponentHandle(componentHandle)) return
-    this.rpc.RPCSetStateVim(componentHandle, state)
+  /**
+   * Applies a single visibility state to all elements of a loaded vim.
+   *
+   * @param vimIndex - The index of the loaded vim
+   * @param state - The visibility state to apply (e.g., VISIBLE, HIDDEN)
+   */
+  RPCSetStateVim(vimIndex: number, state: VisibilityState): void {
+    if (!Validation.isIndex(vimIndex)) return
+    this.rpc.RPCSetStateVim(vimIndex, state)
   }
 
 
@@ -172,7 +299,6 @@ export class RpcSafeClient {
    * @param color - The color of the text
    * @param text - The content to display
    * @returns Promise resolving to the handle of the created text component
-   * @throws {Error} If the text is empty
    */
   async RPCCreateText(
     position: RpcTypes.Vector3,
@@ -193,11 +319,10 @@ export class RpcSafeClient {
   /**
    * Destroys a text component, removing it from the scene.
    * @param componentHandle - The handle of the text component to destroy
-   * @throws {Error} If the component handle is invalid
    */
   RPCDestroyText(componentHandle: number): void {
     // Validation
-    if (!Validation.isComponentHandle(componentHandle)) return
+    if (!Validation.isIndex(componentHandle)) return
 
     // Run
     this.rpc.RPCDestroyText(componentHandle)
@@ -208,10 +333,18 @@ export class RpcSafeClient {
    * Methods for controlling section box visibility and position.
    ******************************************************************************/
   
+  /**
+   * Enables or disables the section box.
+   * @param enable - True to enable the section box, false to disable it
+   */
   RPCEnableSectionBox(enable: boolean): void {
     this.rpc.RPCEnableSectionBox(enable)
   }
 
+  /**
+   * Sets the parameters of the section box.
+   * @param state - The new section box state, including visibility and bounding box
+   */
   RPCSetSectionBox(state: RpcTypes.SectionBoxState): void {
     this.rpc.RPCSetSectionBox(
       {
@@ -220,6 +353,10 @@ export class RpcSafeClient {
       })
   }
 
+  /**
+   * Retrieves the current section box state.
+   * @returns Promise resolving to the section box state or undefined on failure
+   */
   async RPCGetSectionBox(): Promise<RpcTypes.SectionBoxState | undefined> {
     return await this.safeCall(
       () => this.rpc.RPCGetSectionBox(),
@@ -292,66 +429,66 @@ export class RpcSafeClient {
   
   /**
    * Retrieves the axis-aligned bounding box (AABB) that encompasses the entire scene.
-   * This includes all loaded geometry across all VIM components.
+   * This includes all loaded geometry across all loaded vims.
    *
    * @returns Promise resolving to the global AABB of the scene, or undefined on failure
    */
-  RPCGetAABBForAll(): Promise<RpcTypes.Box3 | undefined> {
+  RPCGetAABBForScene(): Promise<RpcTypes.Box3 | undefined> {
     return this.safeCall(
-      () => this.rpc.RPCGetAABBForAll(),
+      () => this.rpc.RPCGetAABBForScene(),
       undefined
     )
   }
 
   /**
-   * Retrieves the axis-aligned bounding box (AABB) for a specific VIM component.
-   * This bounding box represents the spatial bounds of all geometry within the given component.
+   * Retrieves the axis-aligned bounding box (AABB) for a specific loaded vim.
+   * This bounding box represents the spatial bounds of all geometry within the given loaded vim.
    *
-   * @param componentHandle - The handle of the VIM component to query
-   * @returns Promise resolving to the component’s bounding box, or undefined on failure
+   * @param vimIndex - The index of the loaded vim to query
+   * @returns Promise resolving to the vim bounding box, or undefined on failure
    */
-  async RPCGetAABBForVim(componentHandle: number): Promise<RpcTypes.Box3 | undefined> {
+  async RPCGetAABBForVim(vimIndex: number): Promise<RpcTypes.Box3 | undefined> {
+    if (!Validation.isIndex(vimIndex)) return undefined
     return await this.safeCall(
-      () => this.rpc.RPCGetAABBForVim(componentHandle),
+      () => this.rpc.RPCGetAABBForVim(vimIndex),
       undefined
     )
   }
 
   /**
-   * Calculates the bounding box for specified nodes in a component.
-   * Large node arrays are automatically processed in batches for better performance.
-   * @param componentHandle - The component containing the nodes
-   * @param elements - Array of node indices to calculate bounds for
-   * @returns Promise resolving to the combined bounding box
-   * @throws {Error} If the component handle is invalid or nodes array is invalid
+   * Calculates the bounding box for specified elements of a loaded vim.
+   * Large element arrays are automatically processed in batches.
+   * @param vimIndex - The index of the loaded vim
+   * @param vimElementIndices - Array of vim-based element indices to calculate bounds for
+   * @returns Promise resolving to the combined bounding box or undefined on failure
    */
   async RPCGetAABBForElements(
-    componentHandle: number,
-    elements: number[]
+    vimIndex: number,
+    vimElementIndices: number[]
   ): Promise<RpcTypes.Box3 | undefined> {
     // Validation
-    if (!Validation.isComponentHandle(componentHandle)) return
-    if (!Validation.areComponentHandles(elements)) return
+    if (!Validation.isIndex(vimIndex)) return
+    if (!Validation.areIndices(vimElementIndices)) return
 
     // Run
     return await this.safeCall(
-      () => this.RPCGetAABBForElementsBatched(componentHandle, elements),
+      () => this.RPCGetAABBForElementsBatched(vimIndex, vimElementIndices),
       undefined
     )
   }
 
   private async RPCGetAABBForElementsBatched(
-    componentHandle: number,
-    elements: number[]
+    vimIndex: number,
+    vimElementIndices: number[]
   ): Promise<RpcTypes.Box3> {
 
-    if(elements.length === 0){
+    if(vimElementIndices.length === 0){
       return new RpcTypes.Box3()
     }
 
-    const batches = batchArray(elements, this.batchSize)
+    const batches = batchArray(vimElementIndices, this.batchSize)
     const promises = batches.map(async (batch) => {
-      const aabb = await this.rpc.RPCGetAABBForElements(componentHandle, batch)
+      const aabb = await this.rpc.RPCGetAABBForElements(vimIndex, batch)
       const v1 = new RpcTypes.Vector3(aabb.min.x, aabb.min.y, aabb.min.z)
       const v2 = new RpcTypes.Vector3(aabb.max.x, aabb.max.y, aabb.max.z)
       return new RpcTypes.Box3(v1, v2)
@@ -363,68 +500,66 @@ export class RpcSafeClient {
   }
 
   /**
-   * Frames the camera to show all components in the scene.
+   * Frames the camera to show all elements in the scene.
    * @param blendTime - Duration of the camera transition in seconds (non-negative)
    * @returns Promise resolving to camera segment representing the final position
    */
-  async RPCFrameAll(blendTime: number): Promise<RpcTypes.Segment | undefined> {
+  async RPCFrameScene(blendTime: number): Promise<RpcTypes.Segment | undefined> {
     // Validation
     blendTime = Validation.clamp01(blendTime)
 
     // Run
     return await this.safeCall(
-      () => this.rpc.RPCFrameAll(blendTime),
+      () => this.rpc.RPCFrameScene(blendTime),
       undefined
     )
   }
 
   /**
-   * Frames a specific VIM component in the scene.
-   * @param componentHandle - The handle of the VIM component to frame
+   * Frames a specific vim in the scene.
+   * @param vimIndex - The index of the loaded vim to frame
    * @param blendTime - Duration of the camera transition in seconds (non-negative)
    * @returns Promise resolving to camera segment representing the final position
-   * @throws {Error} If the component handle is invalid
    */
-  async RPCFrameVim(componentHandle: number, blendTime: number): Promise<RpcTypes.Segment | undefined> {
+  async RPCFrameVim(vimIndex: number, blendTime: number): Promise<RpcTypes.Segment | undefined> {
     // Validation
-    if (!Validation.isComponentHandle(componentHandle)) return 
+    if (!Validation.isIndex(vimIndex)) return 
     blendTime = Validation.clamp01(blendTime)
 
     // Run
     return await this.safeCall(
-      () => this.rpc.RPCFrameVim(componentHandle, blendTime),
+      () => this.rpc.RPCFrameVim(vimIndex, blendTime),
       undefined
     )
   }
 
   /**
-   * Frames specific instances within a component. For large numbers of instances,
-   * automatically switches to bounding box framing for better performance.
-   * @param componentHandle - The component containing the instances
-   * @param elements - Array of node indices to frame
+   * Frames specific elements of a loaded vim.
+   * Automatically batches large arrays of elements.
+   * @param vimIndex - The index of the loaded vim
+   * @param vimElementIndices - Array of vim-based element indices to frame
    * @param blendTime - Duration of the camera transition in seconds (non-negative)
    * @returns Promise resolving to camera segment representing the final position
-   * @throws {Error} If the component handle is invalid or nodes array is empty
    */
   async RPCFrameElements(
-    componentHandle: number,
-    elements: number[],
+    vimIndex: number,
+    vimElementIndices: number[],
     blendTime: number
   ): Promise<RpcTypes.Segment | undefined> {
     // Validation
-    if (!Validation.isComponentHandle(componentHandle)) return
-    if (!Validation.areComponentHandles(elements)) return 
+    if (!Validation.isIndex(vimIndex)) return
+    if (!Validation.areIndices(vimElementIndices)) return 
     blendTime = Validation.clamp01(blendTime)
 
     // Run
-    if (elements.length < this.batchSize) {
+    if (vimElementIndices.length < this.batchSize) {
       return await this.safeCall(
-        () => this.rpc.RPCFrameElements(componentHandle, elements, blendTime),
+        () => this.rpc.RPCFrameElements(vimIndex, vimElementIndices, blendTime),
         undefined
       )
     } else {
       const box = await this.safeCall(
-        () => this.RPCGetAABBForElementsBatched(componentHandle, elements),
+        () => this.RPCGetAABBForElementsBatched(vimIndex, vimElementIndices),
         undefined
       )
       if(!box) return undefined
@@ -439,7 +574,6 @@ export class RpcSafeClient {
    * Frames the camera to show a specific bounding box.
    * @param box - The bounding box to frame
    * @param blendTime - Duration of the camera transition in seconds (non-negative)
-   * @throws {Error} If the box is invalid (min values must be less than max values)
    */
   async RPCFrameAABB(box: RpcTypes.Box3, blendTime: number): Promise<RpcTypes.Segment | undefined> {
     // Validation
@@ -461,7 +595,6 @@ export class RpcSafeClient {
   /**
    * Sets the camera movement speed.
    * @param speed - The desired movement speed (must be positive)
-   * @throws {Error} If speed is not positive
    */
   RPCSetCameraSpeed(speed: number) {
     // Validation
@@ -471,15 +604,18 @@ export class RpcSafeClient {
     this.rpc.RPCSetCameraSpeed(speed)
   }
 
+  /**
+   * Sets the camera control mode.
+   * @param mode - The desired input mode (e.g., {@link InputMode.Orbit} or {@link InputMode.Free})
+   */
   RPCSetCameraMode(mode: InputMode): void {
     this.rpc.RPCSetCameraMode(mode === InputMode.Orbit)
   }
 
   /**
    * Sets the viewer's aspect ratio.
-   * @param width - The width component of the aspect ratio
-   * @param height - The height component of the aspect ratio
-   * @throws {Error} If width or height are not positive integers
+   * @param width - The width of the desired aspect ratio
+   * @param height - The height of the desired aspect ratio
    */
   RPCSetCameraAspectRatio(width: number, height: number): void {
     // Validation
@@ -492,14 +628,13 @@ export class RpcSafeClient {
 
   /*******************************************************************************
    * VIM FILE MANAGEMENT METHODS
-   * Methods for loading, unloading, and managing VIM files and components.
+   * Methods for loading, unloading, and managing VIM files.
    ******************************************************************************/
 
   /**
    * Loads a VIM file from the local filesystem.
    * @param source - The path to the VIM file (supports file:// protocol)
-   * @returns Promise resolving to the handle of the loaded VIM component
-   * @throws {Error} If the filename is invalid or empty
+   * @returns Promise resolving to the index of the loaded vim
    */
   async RPCLoadVim(source: VimSource): Promise<number> {
     // Validation
@@ -515,9 +650,8 @@ export class RpcSafeClient {
 
   /**
    * Loads a VIM file from a remote URL.
-   * @param url - The URL of the VIM file to load
-   * @returns Promise resolving to the handle of the loaded VIM component
-   * @throws {Error} If the URL is invalid
+   * @param source - The URL or file path of the VIM file to load
+   * @returns Promise resolving to the index of the loaded vim
    */
   async RPCLoadVimURL(source: VimSource): Promise<number> {
     // Validation
@@ -531,20 +665,19 @@ export class RpcSafeClient {
   }
 
   /**
-   * Retrieves the current loading state and progress of a VIM component.
-   * @param componentHandle - The handle of the VIM component
+   * Retrieves the current loading state and progress of a vim.
+   * @param vimIndex - The index of the vim being loaded
    * @returns Promise resolving to the current loading state and progress
-   * @throws {Error} If the component handle is invalid
    */
-  async RPCGetVimLoadingState(componentHandle: number): Promise<VimLoadingState> {
+  async RPCGetVimLoadingState(vimIndex: number): Promise<VimLoadingState> {
     // Validation
-    if (!Validation.isComponentHandle(componentHandle)) {
+    if (!Validation.isIndex(vimIndex)) {
       return { status: VimLoadingStatus.Unknown, progress: 0 }
     }
     
     // Run
     const result = await this.safeCall(
-      () => this.rpc.RPCGetVimLoadingState(componentHandle),
+      () => this.rpc.RPCGetVimLoadingState(vimIndex),
       { status: VimLoadingStatus.Unknown, progress: 0 }
     )
 
@@ -556,20 +689,7 @@ export class RpcSafeClient {
   }
 
   /**
-   * Unloads a VIM component and frees associated resources.
-   * @param componentHandle - The handle of the component to unload
-   * @throws {Error} If the component handle is invalid
-   */
-  RPCUnloadVim(componentHandle: number): void {
-    // Validation
-    if (!Validation.isComponentHandle(componentHandle)) return
-
-    // Run
-    this.rpc.RPCUnloadVim(componentHandle)
-  }
-
-  /**
-   * Clears the entire scene, removing all components and resetting to initial state.
+   * Clears the entire scene, unloading all vims and resetting to initial state.
    */
   RPCUnloadAll(): void {
     this.rpc.RPCUnloadAll()
@@ -587,7 +707,7 @@ export class RpcSafeClient {
   /**
    * Performs hit testing at a specified screen position.
    * @param pos - Normalized screen coordinates (0-1, 0-1)
-   * @returns Promise resolving to hit test result if something was hit, undefined otherwise
+   * @returns Promise resolving to hit test result if a valid hit was detected, undefined otherwise
    */
   async RPCPerformHitTest(pos: RpcTypes.Vector2): Promise<RpcTypes.HitCheckResult | undefined> {
     // Validation
@@ -598,7 +718,7 @@ export class RpcSafeClient {
       () => this.rpc.RPCPerformHitTest(pos),
       undefined
     )
-    if (!result || result.nodeIndex < 0){
+    if (!result || result.vimIndex === INVALID_HANDLE) {
       return undefined
     }
     return result
@@ -609,7 +729,6 @@ export class RpcSafeClient {
    * @param position - The normalized screen coordinates (0-1, 0-1)
    * @param mouseButton - The mouse button code (0=left, 1=middle, 2=right)
    * @param down - True if button is pressed down, false if released
-   * @throws {Error} If mouseButton is not a valid positive integer
    */
   RPCMouseButtonEvent(
     position: RpcTypes.Vector2,
@@ -628,7 +747,6 @@ export class RpcSafeClient {
    * Sends a mouse double-click event to the viewer.
    * @param position - The normalized screen coordinates (0-1, 0-1)
    * @param mouseButton - The mouse button code (0=left, 1=middle, 2=right)
-   * @throws {Error} If mouseButton is not a valid positive integer
    */
   RPCMouseDoubleClickEvent(
     position: RpcTypes.Vector2,
@@ -669,7 +787,6 @@ export class RpcSafeClient {
    * Sends a mouse selection event to the viewer.
    * @param position - The normalized screen coordinates (0-1, 0-1)
    * @param mouseButton - The mouse button code (0=left, 1=middle, 2=right)
-   * @throws {Error} If mouseButton is not a valid positive integer
    */
   RPCMouseSelectEvent(
     position: RpcTypes.Vector2,
@@ -708,7 +825,6 @@ export class RpcSafeClient {
    * @param smoothness - The smoothness value to apply (clamped between 0 and 1)
    * @param colors - Array of colors for each material instance
    * @returns Array of handles for the created material instances
-   * @throws {Error} If the material handle is invalid or smoothness is out of range
    */
   async RPCCreateMaterialInstances(
     materialHandle: MaterialHandle,
@@ -742,62 +858,58 @@ export class RpcSafeClient {
 
   /**
    * Destroys multiple material instances, freeing associated resources.
-   * @param materialInstanceHandle - Array of handles for material instances to destroy
-   * @throws {Error} If any handle in the array is invalid
+   * @param materialInstanceHandles - Array of handles for material instances to destroy
    */
-  RPCDestroyMaterialInstances(materialInstanceHandle: number[]): void {
+  RPCDestroyMaterialInstances(materialInstanceHandles: number[]): void {
     // Validation
-    if (!Validation.areComponentHandles(materialInstanceHandle)) return
+    if (!Validation.areIndices(materialInstanceHandles)) return
 
     // Run
-    this.rpc.RPCDestroyMaterialInstances(materialInstanceHandle)
+    this.rpc.RPCDestroyMaterialInstances(materialInstanceHandles)
   }
 
   /**
-   * Sets material overrides for specific nodes in a component.
-   * Large arrays are automatically processed in batches for better performance.
-   * @param componentHandle - The component containing the nodes
-   * @param nodes - Array of node indices to override
-   * @param materialInstanceHandles - Array of material instance handles to apply (must match nodes length)
-   * @throws {Error} If arrays have different lengths or any handle is invalid
+   * Sets material overrides for specific elements in a loaded vim.
+   * Large arrays are automatically processed in batches.
+   * @param vimIndex - The index of the loaded vim
+   * @param vimElementIndices - Array of vim-based element indices to override
+   * @param materialInstanceHandles - Array of material instance handles to apply (must match element length)
    */
-  RPCSetMaterialOverrides(
-    componentHandle: number,
-    nodes: number[],
+  RPCSetMaterialOverridesForElements(
+    vimIndex: number,
+    vimElementIndices: number[],
     materialInstanceHandles: number[]
   ): void {
     // Validation
-    if (!Validation.areSameLength(nodes, materialInstanceHandles)) return
-    if (!Validation.isComponentHandle(componentHandle)) return
-    if (!Validation.areComponentHandles(nodes)) return
+    if (!Validation.areSameLength(vimElementIndices, materialInstanceHandles)) return
+    if (!Validation.isIndex(vimIndex)) return
+    if (!Validation.areIndices(vimElementIndices)) return
     if (!Validation.areIntegers(materialInstanceHandles)) return
 
     // Run
     this.setMaterialOverridesBatched(
-      componentHandle,
-      nodes,
+      vimIndex,
+      vimElementIndices,
       materialInstanceHandles
     )
   }
 
   private setMaterialOverridesBatched(
-    componentHandle: number,
-    nodes: number[],
+    vimIndex: number,
+    vimElementIndices: number[],
     materialInstanceHandles: number[]
   ): void {
 
     // Run
-    const batches = batchArrays(nodes, materialInstanceHandles, this.batchSize)
+    const batches = batchArrays(vimElementIndices, materialInstanceHandles, this.batchSize)
   
-    for (const [batchedNodes, batchedMaterials] of batches) {
-      this.rpc.RPCSetMaterialOverrides(componentHandle, batchedNodes, batchedMaterials)
+    for (const [batchedElements, batchedMaterials] of batches) {
+      this.rpc.RPCSetMaterialOverridesForElements(vimIndex, batchedElements, batchedMaterials)
     }
   }
 
   /**
-   * Clears all material overrides for the specified component, restoring default materials.
-   * @param componentHandle - The unique identifier of the component
-   * @throws {Error} If the component handle is invalid or INVALID_HANDLE
+   * Clears all material overrides for the entire scene.
    */
   RPCClearMaterialOverrides(): void {
     // Run

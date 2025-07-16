@@ -4,7 +4,7 @@ import type { ILogger } from './logger';
 import { ColorManager } from './colorManager';
 import { Element3D } from './element3d';
 import { LoadRequest } from './loadRequest';
-import { VisibilityState, StateSynchronizer } from './visibility';
+import { VisibilityState, VisibilitySynchronizer } from './visibility';
 import { Renderer } from './renderer';
 import { MaterialHandles } from './rpcClient';
 import { RpcSafeClient, VimLoadingStatus, VimSource } from './rpcSafeClient';
@@ -25,7 +25,8 @@ export class Vim implements IVim<Element3D> {
   private _logger: ILogger;
 
   // The StateSynchronizer wraps a StateTracker and handles RPC synchronization.
-  readonly visibility: StateSynchronizer;
+  // Should be private
+  readonly visibility: VisibilitySynchronizer;
 
   // Color tracking remains unchanged.
   private _nodeColors: Map<number, RGBA32> = new Map();
@@ -34,6 +35,7 @@ export class Vim implements IVim<Element3D> {
   // Delayed update flag.
   private _updateScheduled: boolean = false;
 
+  private _elementCount: number = 0;
   private _objects: Map<number, Element3D> = new Map();
 
   constructor(
@@ -50,7 +52,7 @@ export class Vim implements IVim<Element3D> {
     this._logger = logger;
 
     // Instantiate the synchronizer with a new StateTracker.
-    this.visibility = new StateSynchronizer(
+    this.visibility = new VisibilitySynchronizer(
       this._rpc,
       () => this._handle,
       () => this.connected,
@@ -76,7 +78,10 @@ export class Vim implements IVim<Element3D> {
     throw new Error('Method not implemented.');
   }
   getAllElements(): Element3D[] {
-    throw new Error('Method not implemented.');
+    for(var i = 0; i < this._elementCount; i++) {
+      this.getElement(i);
+    }
+    return Array.from(this._objects.values());
   }
 
   get handle(): number {
@@ -113,7 +118,6 @@ export class Vim implements IVim<Element3D> {
     this._request?.error('cancelled', 'The request was cancelled');
     this._request = undefined;
     if (this.connected) {
-      this._rpc.RPCUnloadVim(this._handle);
       this._handle = -1;
     }
   }
@@ -136,12 +140,12 @@ export class Vim implements IVim<Element3D> {
           case VimLoadingStatus.FailedToDownload:
           case VimLoadingStatus.FailedToLoad:
           case VimLoadingStatus.Unknown:
-            this._rpc.RPCUnloadVim(handle);
             const details = await this._rpc.RPCGetLastError();
             const error = this.getErrorType(state.status);
             return result.error(error, details);
           case VimLoadingStatus.Done:
             this._handle = handle;
+            this._elementCount = await this._rpc.RPCGetElementCountForVim(handle);
             return result.success(this);
         }
       } catch (e) {
@@ -242,7 +246,7 @@ export class Vim implements IVim<Element3D> {
       this._rpc.RPCClearMaterialOverrides();
     } else {
       const ids = new Array(elements.length).fill(MaterialHandles.Invalid);
-      this._rpc.RPCSetMaterialOverrides(this._handle, elements, ids);
+      this._rpc.RPCSetMaterialOverridesForElements(this._handle, elements, ids);
     }
   }
 
@@ -271,7 +275,7 @@ export class Vim implements IVim<Element3D> {
     const colors = nodes.map(n => this._nodeColors.get(n));
     const remoteColors = await this._colors.getColors(colors);
     const colorIds = remoteColors.map((c) => c?.id ?? -1);
-    this._rpc.RPCSetMaterialOverrides(this._handle, nodes, colorIds);
+    this._rpc.RPCSetMaterialOverridesForElements(this._handle, nodes, colorIds);
     this._updatedColors.clear();
   }
 }

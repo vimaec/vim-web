@@ -60,17 +60,17 @@ export class Validation {
   //= ===========================================================================
   // HANDLE VALIDATIONS
   //= ===========================================================================
-  static isComponentHandle (handle: number): boolean {
-    if (!this.isPositiveInteger(handle)) return false
-    if (handle === Core.Ultra.INVALID_HANDLE) {
-      console.warn(`Invalid handle ${handle}. Aborting operation.`)
+  static isIndex (index: number): boolean {
+    if (!this.isPositiveInteger(index)) return false
+    if (index === Core.Ultra.INVALID_HANDLE) {
+      console.warn(`Invalid index ${index}. Aborting operation.`)
       return false
     }
     return true
   }
 
-  static areComponentHandles (handles: number[]): boolean {
-    return handles.every((h) => this.isComponentHandle(h))
+  static areIndices (indices: number[]): boolean {
+    return indices.every((h) => this.isIndex(h))
   }
 
   static isMaterialHandle (handle: number): boolean {
