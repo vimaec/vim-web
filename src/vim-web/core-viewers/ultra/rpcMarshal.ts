@@ -431,7 +431,6 @@ export class ReadMarshal{
     return this.readArray(() => this.readRGBA32())
   }
 
-
   public readArray<T>(read: () => T): T[] {
     const length = this.readUInt()
     const array = []

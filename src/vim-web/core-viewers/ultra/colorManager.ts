@@ -1,7 +1,8 @@
 import { MaterialHandles } from './rpcClient'
 import { RpcSafeClient } from './rpcSafeClient'
 import { RemoteColor } from './remoteColor'
-import { RGBA32 } from './rpcTypes'
+import * as RpcUtils from './rpcUtils'
+import * as THREE from 'three'
 
 const MAX_BATCH_SIZE = 3000
 
@@ -30,8 +31,8 @@ export class ColorManager {
    * @param hex - The RGBA32 color value
    * @returns Promise resolving to a ColorHandle, or undefined if creation fails
    */
-  async getColor (hex: RGBA32) : Promise<RemoteColor | undefined> {
-    const colors = await this.getColors([hex])
+  async getColor (color: THREE.Color) : Promise<RemoteColor | undefined> {
+    const colors = await this.getColors([color])
     if (!colors) return undefined
     return colors[0]
   }
@@ -42,23 +43,24 @@ export class ColorManager {
    * @returns Promise resolving to an array of ColorHandles in the same order as input, or undefined if creation fails
    * @remarks Duplicate hex values will be mapped to the same color instance for efficiency
    */
-  async getColors (c : RGBA32[]) {
+  async getColors (c : THREE.Color[]) {
     const result = new Array<RemoteColor>(c.length)
     const hexToIndices = new Map<number, number[]>()
-    const toCreate: RGBA32[] = []
+    const toCreate: THREE.Color[] = []
     for (let i = 0; i < c.length; i++) {
       const color = c[i]
-
-      if (this._hexToColor.has(color.hex)) {
+      const hex = color.getHex()
+      
+      if (this._hexToColor.has(hex)) {
         // If the color already exists, reuse it
-        result[i] = this._hexToColor.get(color.hex)!
-      } else if (hexToIndices.has(color.hex)) {
+        result[i] = this._hexToColor.get(hex)!
+      } else if (hexToIndices.has(hex)) {
         // If the color is being created, add the index to the list
-        hexToIndices.get(color.hex).push(i)
+        hexToIndices.get(hex)!.push(i)
       } else {
         // If the color is new, add it to the list to be created
         toCreate.push(color)
-        hexToIndices.set(color.hex, [i])
+        hexToIndices.set(hex, [i])
       }
     }
 
@@ -68,7 +70,7 @@ export class ColorManager {
 
     for (let i = 0; i < colors.length; i++) {
       const color = toCreate[i]
-      const indices = hexToIndices.get(color.hex)
+      const indices = hexToIndices.get(color.getHex())
       for (const index of indices) {
         result[index] = colors[i]
       }
@@ -113,13 +115,14 @@ export class ColorManager {
    * @returns Promise resolving to an array of ColorHandles, or undefined if creation fails
    * @private
    */
-  private async _createColors (colors : RGBA32[]) : Promise<RemoteColor[] | undefined> {
+  private async _createColors (colors : THREE.Color[]) : Promise<RemoteColor[] | undefined> {
     const result : RemoteColor[] = []
     if (colors.length === 0) {
       return result
     }
 
-    const instances = await this._rpc.RPCCreateMaterialInstances(MaterialHandles.StandardOpaque, 1, colors)
+    const rpcColors = colors.map(c => RpcUtils.RGBA32fromThree(c))
+    const instances = await this._rpc.RPCCreateMaterialInstances(MaterialHandles.StandardOpaque, 1, rpcColors)
     if (!instances) return undefined
 
     for (let i = 0; i < colors.length; i++) {
@@ -136,9 +139,9 @@ export class ColorManager {
    * @returns The created ColorHandle
    * @private
    */
-  private _createColor (color: RGBA32, id: number) {
+  private _createColor (color: THREE.Color, id: number) {
     const handle = new RemoteColor(color, id, this)
-    this._hexToColor.set(color.hex, handle)
+    this._hexToColor.set(color.getHex(), handle)
     this._idToColor.set(handle.id, handle)
     return handle
   }

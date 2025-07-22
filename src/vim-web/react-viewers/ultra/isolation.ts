@@ -111,11 +111,9 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
       }
     },
 
-    getGhostOpacity: () => viewer.renderer.ghostColor.a,
+    getGhostOpacity: () => viewer.renderer.ghostOpacity,
     setGhostOpacity: (opacity: number) => {
-      const c = viewer.renderer.ghostColor.clone()
-      c.a = opacity
-      viewer.renderer.ghostColor = c
+      viewer.renderer.ghostOpacity = opacity
     },
 
     getShowRooms: () => true,

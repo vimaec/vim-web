@@ -5,7 +5,7 @@ export * from './viewer';
 
 // Partial export
 // We don't want to reexport THREE.Box3 and THREE.Vector3
-export {RGB, RGBA, RGBA32, Segment, type SectionBoxState, type HitCheckResult, type VimStatus} from './rpcTypes'
+export {Segment, type SectionBoxState, type HitCheckResult, type VimStatus} from './rpcTypes'
 
 // We don't want to export RPCClient
 export {materialHandles, MaterialHandles, type MaterialHandle, } from './rpcClient'

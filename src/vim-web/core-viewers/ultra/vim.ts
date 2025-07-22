@@ -11,8 +11,6 @@ import { RpcSafeClient, VimLoadingStatus, VimSource } from './rpcSafeClient';
 import { INVALID_HANDLE } from './viewer';
 
 import * as THREE from 'three';
-import { RGBA32 } from './rpcTypes';
-
 
 export class Vim implements IVim<Element3D> {
   readonly source: VimSource;
@@ -29,7 +27,7 @@ export class Vim implements IVim<Element3D> {
   readonly visibility: VisibilitySynchronizer;
 
   // Color tracking remains unchanged.
-  private _nodeColors: Map<number, RGBA32> = new Map();
+  private _elementColors: Map<number, THREE.Color> = new Map();
   private _updatedColors = new Set<number>();
 
   // Delayed update flag.
@@ -205,30 +203,30 @@ export class Vim implements IVim<Element3D> {
     return await this._rpc.RPCGetAABBForVim(this._handle);
   }
 
-  getColor(node: number): RGBA32 | undefined {
-    return this._nodeColors.get(node);
+  getColor(elementIndex: number): THREE.Color | undefined {
+    return this._elementColors.get(elementIndex);
   }
 
-  async setColor(nodes: number[], color: RGBA32 | undefined) {
-    const colors = new Array<RGBA32 | undefined>(nodes.length).fill(color);
-    this.applyColor(nodes, colors);
+  async setColor(elementIndex: number[], color: THREE.Color | undefined) {
+    const colors = new Array<THREE.Color | undefined>(elementIndex.length).fill(color);
+    this.applyColor(elementIndex, colors);
   }
 
-  async setColors(nodes: number[], color: (RGBA32 | undefined)[]) {
+  async setColors(nodes: number[], color: (THREE.Color | undefined)[]) {
     if (color.length !== nodes.length) {
       throw new Error('Color and nodes length must be equal');
     }
     this.applyColor(nodes, color);
   }
 
-  private applyColor(nodes: number[], color: (RGBA32 | undefined)[]) {
+  private applyColor(nodes: number[], color: (THREE.Color | undefined)[]) {
     for (let i = 0; i < color.length; i++) {
       const c = color[i];
       const n = nodes[i];
       if (c === undefined) {
-        this._nodeColors.delete(n);
+        this._elementColors.delete(n);
       } else {
-        this._nodeColors.set(n, c);
+        this._elementColors.set(n, c);
       }
       this._updatedColors.add(n);
     }
@@ -237,9 +235,9 @@ export class Vim implements IVim<Element3D> {
 
   clearColor(elements: number[] | 'all'): void {
     if (elements === 'all') {
-      this._nodeColors.clear();
+      this._elementColors.clear();
     } else {
-      elements.forEach((n) => this._nodeColors.delete(n));
+      elements.forEach((n) => this._elementColors.delete(n));
     }
     if (!this.connected) return;
     if (elements === 'all') {
@@ -252,7 +250,7 @@ export class Vim implements IVim<Element3D> {
 
   reapplyColors(): void {
     this._updatedColors.clear();
-    this._nodeColors.forEach((c, n) => this._updatedColors.add(n));
+    this._elementColors.forEach((c, n) => this._updatedColors.add(n));
     this.scheduleColorUpdate();
   }
 
@@ -272,7 +270,7 @@ export class Vim implements IVim<Element3D> {
 
   private async updateRemoteColors() {
     const nodes = Array.from(this._updatedColors);
-    const colors = nodes.map(n => this._nodeColors.get(n));
+    const colors = nodes.map(n => this._elementColors.get(n));
     const remoteColors = await this._colors.getColors(colors);
     const colorIds = remoteColors.map((c) => c?.id ?? -1);
     this._rpc.RPCSetMaterialOverridesForElements(this._handle, nodes, colorIds);

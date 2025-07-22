@@ -3,15 +3,17 @@ import * as THREE from "three";
 import { Validation } from "../../utils";
 import { ILogger } from "./logger";
 import { defaultSceneSettings, RpcSafeClient, SceneSettings } from "./rpcSafeClient";
-import { RGBA } from "./rpcTypes";
 import { ClientStreamError } from "./socketClient";
+
+import * as RpcUtils from "./rpcUtils";
 
 /**
  * Render settings that extend SceneSettings with additional rendering-specific properties
  */
 export type RenderSettings = SceneSettings & {
   /** Color used for ghost/transparent rendering */
-  ghostColor: RGBA
+  ghostColor: THREE.Color
+  ghostOpacity: number
 }
 
 /**
@@ -19,7 +21,8 @@ export type RenderSettings = SceneSettings & {
  */
 export const defaultRenderSettings: RenderSettings = {
   ...defaultSceneSettings,
-  ghostColor: new RGBA(14/255, 14/255, 14/255, 64/255)
+  ghostColor: new THREE.Color(14/255, 14/255, 14/255),
+  ghostOpacity: 64/255
 }
 
 /**
@@ -27,13 +30,14 @@ export const defaultRenderSettings: RenderSettings = {
  */
 export interface IRenderer {
   onSceneUpdated: ISignal
-  ghostColor: RGBA
+  ghostColor: THREE.Color
+  ghostOpacity: number
   hdrScale: number
   toneMappingWhitePoint: number
   hdrBackgroundScale: number
   hdrBackgroundSaturation: number
   backgroundBlur: number
-  backgroundColor: RGBA
+  backgroundColor: THREE.Color
   getBoundingBox(): Promise<THREE.Box3 | undefined>
 }
 
@@ -92,7 +96,8 @@ export class Renderer implements IRenderer {
    * Sets up initial scene settings, ghost color, and IBL rotation
    */
   onConnect(){
-    this._rpc.RPCSetGhostColor(this._settings.ghostColor)
+    const color = RpcUtils.RGBAfromThree(this._settings.ghostColor, this._settings.ghostOpacity)
+    this._rpc.RPCSetGhostColor(color)
   }
 
   notifySceneUpdated() {
@@ -103,10 +108,14 @@ export class Renderer implements IRenderer {
 
   /**
    * Gets the ghost color used for transparent rendering
-   * @returns Current ghost color as RGBA
+   * @returns Current ghost color as a THREE.Color
    */
-  get ghostColor(): RGBA {
+  get ghostColor(): THREE.Color {
     return this._settings.ghostColor
+  }
+
+  get ghostOpacity(): number {
+    return this._settings.ghostOpacity
   }
 
   /**
@@ -153,20 +162,27 @@ export class Renderer implements IRenderer {
    * Gets the background color
    * @returns Current background color as RGBA
    */
-  get backgroundColor(): RGBA {
-    return this._settings.backgroundColor;
+  get backgroundColor(): THREE.Color {
+    return this._settings.backgroundColor.toThree();
   }
 
   // Setters
 
   /**
    * Updates the ghost color used for transparent rendering
-   * @param value - New ghost color as RGBA
+   * @param value - New ghost color as THREE.Color
    */
-  set ghostColor(value: RGBA){
-    value = Validation.clampRGBA01(value)
+  set ghostColor(value: THREE.Color)  {
     if(this._settings.ghostColor.equals(value)) return
-    this._settings.ghostColor = value
+    this._settings.ghostColor = value 
+    this._updateGhostColor = true
+    this.requestSettingsUpdate()
+  }
+
+  set ghostOpacity(value: number) {
+    value = Validation.clamp01(value)
+    if (this._settings.ghostOpacity === value) return
+    this._settings.ghostOpacity = value
     this._updateGhostColor = true
     this.requestSettingsUpdate()
   }
@@ -233,12 +249,12 @@ export class Renderer implements IRenderer {
 
   /**
    * Sets the background color
-   * @param value - New background color as RGBA
+   * @param value - New background color as THREE.Color
    */
-  set backgroundColor(value: RGBA) {
-    value = Validation.clampRGBA01(value)
-    if (this._settings.backgroundColor.equals(value)) return;
-    this._settings.backgroundColor = value;
+  set backgroundColor(value: THREE.Color) {
+    const color = RpcUtils.RGBAfromThree(value, 1);
+    if (this._settings.backgroundColor.equals(color)) return;
+    this._settings.backgroundColor = color;
     this._updateLighting = true
     this.requestSettingsUpdate();
   }
@@ -261,7 +277,10 @@ export class Renderer implements IRenderer {
 
   private async applySettings(){
     if(this._updateLighting) await this._rpc.RPCSetLighting(this._settings);
-    if(this._updateGhostColor) await this._rpc.RPCSetGhostColor(this._settings.ghostColor);
+    if(this._updateGhostColor){
+      const color = RpcUtils.RGBAfromThree(this._settings.ghostColor, this._settings.ghostOpacity)
+      await this._rpc.RPCSetGhostColor(color);
+    }
 
     // Reset dirty flags
     this._updateLighting = false;
