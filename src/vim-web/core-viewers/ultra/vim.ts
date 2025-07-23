@@ -58,6 +58,8 @@ export class Vim implements IVim<Element3D> {
       VisibilityState.VISIBLE // default state
     );
   }
+
+  //TODO: Rename this to getElementFromNode, prefer using element instead
   getElement(elementIndex: number): Element3D {
     if (this._objects.has(elementIndex)) {
       return this._objects.get(elementIndex)!;
@@ -70,7 +72,7 @@ export class Vim implements IVim<Element3D> {
     throw new Error('Method not implemented.');
   }
   getElementFromIndex(element: number): Element3D {
-    throw new Error('Method not implemented.');
+    return this.getElement(element);
   }
   getObjectsInBox(box: THREE.Box3): Element3D[] {
     throw new Error('Method not implemented.');
@@ -212,23 +214,23 @@ export class Vim implements IVim<Element3D> {
     this.applyColor(elementIndex, colors);
   }
 
-  async setColors(nodes: number[], color: (THREE.Color | undefined)[]) {
-    if (color.length !== nodes.length) {
-      throw new Error('Color and nodes length must be equal');
+  async setColors(elements: number[], color: (THREE.Color | undefined)[]) {
+    if (color.length !== elements.length) {
+      throw new Error('Color and elements length must be equal');
     }
-    this.applyColor(nodes, color);
+    this.applyColor(elements, color);
   }
 
-  private applyColor(nodes: number[], color: (THREE.Color | undefined)[]) {
+  private applyColor(elements: number[], color: (THREE.Color | undefined)[]) {
     for (let i = 0; i < color.length; i++) {
       const c = color[i];
-      const n = nodes[i];
+      const element = elements[i];
       if (c === undefined) {
-        this._elementColors.delete(n);
+        this._elementColors.delete(element);
       } else {
-        this._elementColors.set(n, c);
+        this._elementColors.set(element, c);
       }
-      this._updatedColors.add(n);
+      this._updatedColors.add(element);
     }
     this.scheduleColorUpdate();
   }
@@ -269,11 +271,11 @@ export class Vim implements IVim<Element3D> {
   }
 
   private async updateRemoteColors() {
-    const nodes = Array.from(this._updatedColors);
-    const colors = nodes.map(n => this._elementColors.get(n));
+    const elements = Array.from(this._updatedColors);
+    const colors = elements.map(n => this._elementColors.get(n));
     const remoteColors = await this._colors.getColors(colors);
     const colorIds = remoteColors.map((c) => c?.id ?? -1);
-    this._rpc.RPCSetMaterialOverridesForElements(this._handle, nodes, colorIds);
+    this._rpc.RPCSetMaterialOverridesForElements(this._handle, elements, colorIds);
     this._updatedColors.clear();
   }
 }

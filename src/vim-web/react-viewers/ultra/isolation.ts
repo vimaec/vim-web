@@ -75,6 +75,7 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
       })
     },
 
+    // TODO: Change this api to use elements
     isolate: (instances: number[]) => {
       hide('all') // Hide all objects
       viewer.selection.getAll().forEach(obj => {

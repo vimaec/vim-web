@@ -39,40 +39,53 @@ export class ColorManager {
 
   /**
    * Creates or retrieves cached color instances for multiple hex values.
-   * @param c - Array of RGBA32 color values
+   * @param colors - Array of color values or undefined for no color
    * @returns Promise resolving to an array of ColorHandles in the same order as input, or undefined if creation fails
    * @remarks Duplicate hex values will be mapped to the same color instance for efficiency
    */
-  async getColors (c : THREE.Color[]) {
-    const result = new Array<RemoteColor>(c.length)
+  async getColors (colors : (THREE.Color | undefined)[]) {
+    const result = new Array<RemoteColor>(colors.length)
     const hexToIndices = new Map<number, number[]>()
     const toCreate: THREE.Color[] = []
-    for (let i = 0; i < c.length; i++) {
-      const color = c[i]
-      const hex = color.getHex()
-      
-      if (this._hexToColor.has(hex)) {
-        // If the color already exists, reuse it
-        result[i] = this._hexToColor.get(hex)!
-      } else if (hexToIndices.has(hex)) {
-        // If the color is being created, add the index to the list
-        hexToIndices.get(hex)!.push(i)
-      } else {
-        // If the color is new, add it to the list to be created
-        toCreate.push(color)
-        hexToIndices.set(hex, [i])
+    for (let i = 0; i < colors.length; i++) {
+      const color = colors[i]
+
+      // If the color is undefined, no need to create it
+      if(color === undefined) {
+        result[i] = undefined
+        continue
       }
+
+      const hex = color?.getHex() ?? -1
+
+      // If remote color already exists, reuse it
+      const remoteColor = this._hexToColor.get(hex)
+      if (remoteColor) {
+        result[i] = remoteColor
+        continue
+      }
+
+      // If remote color is being created, join the existing creation
+      const indices = hexToIndices.get(hex)
+      if(indices){
+        hexToIndices.get(hex)!.push(i)
+        continue
+      } 
+
+      // If the color is new, add it to the list to be created
+      toCreate.push(color)
+      hexToIndices.set(hex, [i])
     }
 
     // Create the colors and map them to the indices
-    const colors = await this._createColors(toCreate)
-    if (!colors) return undefined
+    const remoteColors = await this._createColors(toCreate)
+    if (!remoteColors) return undefined
 
-    for (let i = 0; i < colors.length; i++) {
+    for (let i = 0; i < remoteColors.length; i++) {
       const color = toCreate[i]
       const indices = hexToIndices.get(color.getHex())
       for (const index of indices) {
-        result[index] = colors[i]
+        result[index] = remoteColors[i]
       }
     }
 
