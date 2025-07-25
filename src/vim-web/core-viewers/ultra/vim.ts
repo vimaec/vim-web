@@ -13,6 +13,8 @@ import { INVALID_HANDLE } from './viewer';
 import * as THREE from 'three';
 
 export class Vim implements IVim<Element3D> {
+  readonly type = 'ultra';
+
   readonly source: VimSource;
   private _handle: number = -1;
   private _request: LoadRequest | undefined;
@@ -188,14 +190,14 @@ export class Vim implements IVim<Element3D> {
     return handle;
   }
 
-  async getBoundingBoxNodes(nodes: number[] | 'all'): Promise<THREE.Box3 | undefined> {
-    if (!this.connected || (nodes !== 'all' && nodes.length === 0)) {
+  async getBoundingBoxForElements(elements: number[] | 'all'): Promise<THREE.Box3 | undefined> {
+    if (!this.connected || (elements !== 'all' && elements.length === 0)) {
       return Promise.resolve(undefined);
     }
-    if (nodes === 'all') {
+    if (elements === 'all') {
       return await this._rpc.RPCGetAABBForVim(this._handle);
     }
-    return await this._rpc.RPCGetAABBForElements(this._handle, nodes);
+    return await this._rpc.RPCGetAABBForElements(this._handle, elements);
   }
 
   async getBoundingBox(): Promise<THREE.Box3 | undefined> {
@@ -235,6 +237,7 @@ export class Vim implements IVim<Element3D> {
     this.scheduleColorUpdate();
   }
 
+  //TODO: Remove and rely on element.color
   clearColor(elements: number[] | 'all'): void {
     if (elements === 'all') {
       this._elementColors.clear();
@@ -243,10 +246,9 @@ export class Vim implements IVim<Element3D> {
     }
     if (!this.connected) return;
     if (elements === 'all') {
-      this._rpc.RPCClearMaterialOverrides();
+      this._rpc.RPCClearMaterialOverridesForVim(this._handle);
     } else {
-      const ids = new Array(elements.length).fill(MaterialHandles.Invalid);
-      this._rpc.RPCSetMaterialOverridesForElements(this._handle, elements, ids);
+      this._rpc.RPCClearMaterialOverridesForElements(this._handle, elements);
     }
   }
 

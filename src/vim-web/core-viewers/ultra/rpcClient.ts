@@ -62,9 +62,24 @@ return this._socket.state.status === "connected"
   // RPC Generated Code
   readonly API_VERSION = "6.0.0"
 
-  RPCClearMaterialOverrides(): void {
+  RPCClearMaterialOverridesForElements(vimIndex: number, elementIndices: number[]): void {
     const marshal = new Marshal();
-    marshal.writeString("RPCClearMaterialOverrides");
+    marshal.writeString("RPCClearMaterialOverridesForElements");
+    marshal.writeUInt(vimIndex);
+    marshal.writeArrayOfUInt(elementIndices);
+    this._socket.sendRPC(marshal);
+  }
+
+  RPCClearMaterialOverridesForScene(): void {
+    const marshal = new Marshal();
+    marshal.writeString("RPCClearMaterialOverridesForScene");
+    this._socket.sendRPC(marshal);
+  }
+
+  RPCClearMaterialOverridesForVim(vimIndex: number): void {
+    const marshal = new Marshal();
+    marshal.writeString("RPCClearMaterialOverridesForVim");
+    marshal.writeUInt(vimIndex);
     this._socket.sendRPC(marshal);
   }
 
@@ -186,9 +201,9 @@ return this._socket.state.status === "connected"
     return ret;
   }
 
-  async RPCGetCameraView(): Promise<RpcTypes.Segment> {
+  async RPCGetCameraPose(): Promise<RpcTypes.Segment> {
     const marshal = new Marshal();
-    marshal.writeString("RPCGetCameraView");
+    marshal.writeString("RPCGetCameraPose");
     const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readSegment(); 
     return ret;
@@ -351,6 +366,14 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
+  RPCSetCameraPose(state: RpcTypes.Segment, blendTime: number): void {
+    const marshal = new Marshal();
+    marshal.writeString("RPCSetCameraPose");
+    marshal.writeSegment(state);
+    marshal.writeFloat(blendTime);
+    this._socket.sendRPC(marshal);
+  }
+
   RPCSetCameraPosition(position: RpcTypes.Vector3, blendTime: number): void {
     const marshal = new Marshal();
     marshal.writeString("RPCSetCameraPosition");
@@ -370,14 +393,6 @@ return this._socket.state.status === "connected"
     const marshal = new Marshal();
     marshal.writeString("RPCSetCameraTarget");
     marshal.writeVector3(target);
-    marshal.writeFloat(blendTime);
-    this._socket.sendRPC(marshal);
-  }
-
-  RPCSetCameraView(state: RpcTypes.Segment, blendTime: number): void {
-    const marshal = new Marshal();
-    marshal.writeString("RPCSetCameraView");
-    marshal.writeSegment(state);
     marshal.writeFloat(blendTime);
     this._socket.sendRPC(marshal);
   }

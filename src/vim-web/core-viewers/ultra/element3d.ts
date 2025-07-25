@@ -64,6 +64,6 @@ export class Element3D implements IVimElement {
    * @returns A promise resolving to the element's bounding box.
    */
   async getBoundingBox(): Promise<THREE.Box3 | undefined> {
-    return this.vim.getBoundingBoxNodes([this.element]);
+    return this.vim.getBoundingBoxForElements([this.element]);
   }
 }

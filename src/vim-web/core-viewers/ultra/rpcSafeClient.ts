@@ -375,7 +375,7 @@ export class RpcSafeClient {
    */
   async RPCGetCameraView(): Promise<RpcTypes.Segment | undefined> {
     return await this.safeCall(
-      () => this.rpc.RPCGetCameraView(),
+      () => this.rpc.RPCGetCameraPose(),
       undefined
     )
   }
@@ -391,7 +391,7 @@ export class RpcSafeClient {
     blendTime = Validation.clamp01(blendTime)
 
     // Run
-    this.rpc.RPCSetCameraView(segment, blendTime)
+    this.rpc.RPCSetCameraPose(segment, blendTime)
   }
 
   /**
@@ -911,9 +911,28 @@ export class RpcSafeClient {
   /**
    * Clears all material overrides for the entire scene.
    */
-  RPCClearMaterialOverrides(): void {
+  RPCClearMaterialOverridesForScene(): void {
     // Run
-    this.rpc.RPCClearMaterialOverrides()
+    this.rpc.RPCClearMaterialOverridesForScene()
+  }
+
+  /**
+   * Clears all material overrides for a specific loaded vim.
+   * @param vimIndex - The index of the loaded vim
+   */
+  RPCClearMaterialOverridesForVim(vimIndex: number): void {
+    // Run
+    this.rpc.RPCClearMaterialOverridesForVim(vimIndex)
+  }
+
+  /**
+   * Clears all material overrides for specific elements in a loaded vim.
+   * @param vimIndex - The index of the loaded vim
+   * @param vimElementIndices - Array of vim-based element indices to clear overrides for
+   */
+  RPCClearMaterialOverridesForElements(vimIndex: number, vimElementIndices: number[]): void {
+    // Run
+    this.rpc.RPCClearMaterialOverridesForElements(vimIndex, vimElementIndices)
   }
 
   /*******************************************************************************

@@ -26,6 +26,12 @@ type VimFormat = 'vim' | 'vimx'
  */
 export class Vim implements IVim<Element3D> {
   /**
+   * The type of the viewer, indicating it is a WebGL viewer.
+   * Useful for distinguishing between different viewer types in a multi-viewer application.
+   */
+  readonly type = 'webgl';  
+
+  /**
    * Indicates whether the vim was opened from a vim or vimx file.
    */
   readonly format: VimFormat

@@ -1,6 +1,6 @@
 {
   "name": "vim-web",
-  "version": "0.5.0-dev.3", 
+  "version": "0.5.0-dev.10", 
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "type": "module",
   "files": [
@@ -28,7 +28,7 @@
     "build": "vite build && npm run declarations",
     "publish:package": "npm run build && npm publish",
     "publish:documentation": "npm run documentation && gh-pages -d docs2",
-    "publish": "npm run publish:package && npm run publish:documentation"
+    "publish:both": "npm run publish:package && npm run publish:documentation"
   },
   "devDependencies": {
     "@types/dom-webcodecs": "^0.1.13",
