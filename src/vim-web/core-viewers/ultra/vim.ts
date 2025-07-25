@@ -31,6 +31,7 @@ export class Vim implements IVim<Element3D> {
   // Color tracking remains unchanged.
   private _elementColors: Map<number, THREE.Color> = new Map();
   private _updatedColors = new Set<number>();
+  private _removedColors = new Set<number>();
 
   // Delayed update flag.
   private _updateScheduled: boolean = false;
@@ -223,16 +224,20 @@ export class Vim implements IVim<Element3D> {
     this.applyColor(elements, color);
   }
 
-  private applyColor(elements: number[], color: (THREE.Color | undefined)[]) {
-    for (let i = 0; i < color.length; i++) {
-      const c = color[i];
+  private applyColor(elements: number[], colors: (THREE.Color | undefined)[]) {
+    for (let i = 0; i < colors.length; i++) {
+      const color = colors[i];
       const element = elements[i];
-      if (c === undefined) {
+      const existingColor = this._elementColors.get(element);
+
+      if (color === undefined && existingColor !== undefined) {
         this._elementColors.delete(element);
-      } else {
-        this._elementColors.set(element, c);
+        this._removedColors.add(element);
       }
-      this._updatedColors.add(element);
+      else if (color !== existingColor){
+        this._elementColors.set(element, color);
+        this._updatedColors.add(element);
+      }
     }
     this.scheduleColorUpdate();
   }
@@ -254,6 +259,7 @@ export class Vim implements IVim<Element3D> {
 
   reapplyColors(): void {
     this._updatedColors.clear();
+    this._removedColors.clear();
     this._elementColors.forEach((c, n) => this._updatedColors.add(n));
     this.scheduleColorUpdate();
   }
@@ -273,12 +279,19 @@ export class Vim implements IVim<Element3D> {
   }
 
   private async updateRemoteColors() {
-    const elements = Array.from(this._updatedColors);
-    const colors = elements.map(n => this._elementColors.get(n));
+    const updatedElement = Array.from(this._updatedColors);
+    const removedElement = Array.from(this._removedColors);
+
+    const colors = updatedElement.map(n => this._elementColors.get(n));
     const remoteColors = await this._colors.getColors(colors);
     const colorIds = remoteColors.map((c) => c?.id ?? -1);
-    this._rpc.RPCSetMaterialOverridesForElements(this._handle, elements, colorIds);
+
+    this._rpc.RPCClearMaterialOverridesForElements(this._handle, removedElement);
+    this._rpc.RPCSetMaterialOverridesForElements(this._handle, updatedElement, colorIds);
+    
+
     this._updatedColors.clear();
+    this._removedColors.clear();
   }
 }
 
