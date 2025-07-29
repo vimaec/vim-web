@@ -143,13 +143,25 @@ class CaptureHandler {
 
 class DoubleClickHandler {
   private _lastClickTime: number = 0;
-  private _clickDelay: number = 300; // Delay in milliseconds to consider a double click
+  private _clickDelay: number = 300; // Max time between clicks for double-click
+  private _lastClickPosition: THREE.Vector2 | null = null;
+  private _positionThreshold: number = 5; // Max pixel distance between clicks
 
-  checkForDoubleClick(event: MouseEvent) {
+  checkForDoubleClick(event: MouseEvent): boolean {
     const currentTime = Date.now();
+    const currentPosition = new THREE.Vector2(event.clientX, event.clientY);
     const timeDiff = currentTime - this._lastClickTime;
+
+    const isClose =
+      this._lastClickPosition !== null &&
+      this._lastClickPosition.distanceTo(currentPosition) < this._positionThreshold;
+
+    const isWithinTime = timeDiff < this._clickDelay;
+
     this._lastClickTime = currentTime;
-    return timeDiff < this._clickDelay;
+    this._lastClickPosition = currentPosition;
+
+    return isClose && isWithinTime;
   }
 }
 
