@@ -78,11 +78,7 @@ export class InputHandler extends BaseInputHandler {
     this.keyboard.registerKeyUp('KeyP', 'replace', () => adapter.toggleOrthographic());
     this.keyboard.registerKeyUp('Equal', 'replace', () => this.moveSpeed++);
     this.keyboard.registerKeyUp('Minus', 'replace', () => this.moveSpeed--);
-    this.keyboard.registerKeyUp('Space', 'replace', () => {
-      this._pointerActive = this._pointerActive === PointerMode.ORBIT ? PointerMode.LOOK : PointerMode.ORBIT;
-      this._pointerFallback = this._pointerActive;
-      this._onPointerModeChanged.dispatch();
-    });
+    this.keyboard.registerKeyUp('Space', 'replace', () => adapter.toggleCameraOrbitMode());
     this.keyboard.registerKeyUp('Home', 'replace', () => adapter.resetCamera());
     this.keyboard.registerKeyUp('Escape', 'replace', () => adapter.clearSelection());
     this.keyboard.registerKeyUp('KeyF', 'replace', () => {

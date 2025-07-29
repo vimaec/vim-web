@@ -7,6 +7,7 @@ import * as THREE from 'three';
  * Maps keyboard `code` strings to numeric keycodes.
  */
 const CODE_TO_KEYCODE: Record<string, number> = {
+  'Space': 32,
   'ArrowUp': 38,
   'ArrowDown': 40,
   'ArrowLeft': 37,
@@ -55,6 +56,10 @@ function createAdapter(viewer: Viewer): IInputAdapter {
     },
     toggleOrthographic: () => {
       console.log('toggleOrthographic. Not supported yet');
+    },
+    toggleCameraOrbitMode: () => {
+      // A bit hacky, but we send a space key event to toggle orbit mode
+      viewer.rpc.RPCKeyEvent(CODE_TO_KEYCODE['Space'], true);
     },
     resetCamera: () => {
       viewer.camera.restoreSavedPosition();

@@ -4,6 +4,7 @@ export interface IInputAdapter{
   init: () => void
 
   toggleOrthographic: () => void
+  toggleCameraOrbitMode: () => void
   resetCamera: () => void
   clearSelection: () => void
   frameCamera: () => void
