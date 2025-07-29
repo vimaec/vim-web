@@ -138,8 +138,8 @@ export function Viewer (props: {
       content={controlBarCustom(controlBar)}
       show={true}
     />
-    <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBox}/>
-    <IsolationPanel ref={isolationPanelHandle} state={isolation} />
+    <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBoxRef}/>
+    <IsolationPanel ref={isolationPanelHandle} state={isolationRef} />
   </>
   }}/>
   
