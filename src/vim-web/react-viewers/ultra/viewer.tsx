@@ -77,8 +77,8 @@ export function Viewer (props: {
   onMount: (viewer: ViewerRef) => void}) {
 
 
-  const sectionBox = useUltraSectionBox(props.core)
-  const camera = useUltraCamera(props.core, sectionBox)
+  const sectionBoxRef = useUltraSectionBox(props.core)
+  const camera = useUltraCamera(props.core, sectionBoxRef)
   const isolationPanelHandle = useRef<GenericPanelHandle>(null)
   const sectionBoxPanelHandle = useRef<GenericPanelHandle>(null)
   const modalHandle = useRef<ModalHandle>(null)
@@ -86,12 +86,25 @@ export function Viewer (props: {
   const side = useSideState(true, 400)
   const [_, setSelectState] = useState(0)
   const [controlBarCustom, setControlBarCustom] = useState<ControlBarCustomization>(() => c => c)
-  const isolation = useUltraIsolation(props.core)
-  const controlBar = useUltraControlBar(props.core, sectionBox, isolation, camera, _ =>_)
+  const isolationRef = useUltraIsolation(props.core)
+  const controlBar = useUltraControlBar(props.core, sectionBoxRef, isolationRef, camera, _ =>_)
   
   useViewerInput(props.core.inputs, camera)
 
+  // On First render
   useEffect(() => {
+    // Close isolation panel when offset panel is shown and vice versa
+    sectionBoxRef.showOffsetPanel.onChange.subscribe((show) => {
+      if(show) {
+        isolationRef.showPanel.set(false)
+      }
+    })
+    isolationRef.showPanel.onChange.subscribe((show) => {
+      if(show) {
+        sectionBoxRef.showOffsetPanel.set(false)
+      }
+    })
+
     props.core.onStateChanged.subscribe(state => updateModal(modalHandle, state))
     props.core.selection.onSelectionChanged.subscribe(() =>{
       setSelectState(i => (i+1)%2)
@@ -99,8 +112,8 @@ export function Viewer (props: {
     props.onMount({
       core: props.core,
       get modal() { return modalHandle.current },
-      isolation,
-      sectionBox,
+      isolation: isolationRef,
+      sectionBox: sectionBoxRef,
       camera,
       get isolationPanel(){
         return isolationPanelHandle.current

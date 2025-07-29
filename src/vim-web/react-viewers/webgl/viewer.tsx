@@ -135,12 +135,27 @@ export function Viewer (props: {
 
   const controlBar = useControlBar(props.viewer, camera, modal.current, side, cursor, settings.value, sectionBoxRef, isolationRef, controlBarCustom)
 
+
+
+
   useEffect(() => {
     side.setHasBim(viewerState.vim.get()?.bim !== undefined)
   })
 
   // On first render
   useEffect(() => {
+    // Close isolation panel when offset panel is shown and vice versa
+    sectionBoxRef.showOffsetPanel.onChange.subscribe((show) => {
+      if(show) {
+        isolationRef.showPanel.set(false)
+      }
+    })
+    isolationRef.showPanel.onChange.subscribe((show) => {
+      if(show) {
+        sectionBoxRef.showOffsetPanel.set(false)
+      }
+    })
+
     if (performanceRef.current) {
       addPerformanceCounter(performanceRef.current)
     }
