@@ -15,7 +15,7 @@ export type MessageBoxPropsTyped = MessageBoxProps & {
 }
 
 export function MessageBox (props: {value: MessageBoxProps}) {
-  const [minimized, setMinimized] = React.useState(true)
+  const [minimized, setMinimized] = React.useState(false)
 
   const p = props.value
   if (!p.title || !p.body) return null
