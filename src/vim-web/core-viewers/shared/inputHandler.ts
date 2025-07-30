@@ -63,10 +63,6 @@ export class InputHandler extends BaseInputHandler {
     this.rotateSpeed = settings.rotateSpeed ?? 1
     this.orbitSpeed = settings.orbitSpeed ?? 1
 
-    this.reg(document, 'contextmenu', (e: MouseEvent) => {
-      this._onContextMenu.dispatch(new THREE.Vector2(e.clientX, e.clientY))
-      e.preventDefault()
-    })
     this.keyboard = new KeyboardHandler(canvas)
     this.mouse = new MouseHandler(canvas)
     this.touch = new TouchHandler(canvas)
@@ -91,18 +87,29 @@ export class InputHandler extends BaseInputHandler {
     } 
 
     // Mouse controls
+    this.mouse.onContextMenu = (pos: THREE.Vector2) => this._onContextMenu.dispatch(pos);
     this.mouse.onButtonDown = adapter.mouseDown
     this.mouse.onMouseMove = adapter.mouseMove
-    this.mouse.onButtonUp = adapter.mouseUp
+    this.mouse.onButtonUp = (pos: THREE.Vector2, button: number) => {
+      this.pointerOverride = undefined
+      adapter.mouseUp(pos, button)
+    }
     this.mouse.onDrag = (delta: THREE.Vector2, button: number) =>{
       if(button === 0){
-        if(this._pointerActive === PointerMode.ORBIT) adapter.orbitCamera(toRotation(delta, this.orbitSpeed))
-        if(this._pointerActive === PointerMode.LOOK) adapter.rotateCamera(toRotation(delta, this.rotateSpeed))
-        if(this._pointerActive === PointerMode.PAN) adapter.panCamera(delta)
-        if(this._pointerActive === PointerMode.ZOOM) adapter.dollyCamera(delta)
+        if(this.pointerActive === PointerMode.ORBIT) adapter.orbitCamera(toRotation(delta, this.orbitSpeed))
+        if(this.pointerActive === PointerMode.LOOK) adapter.rotateCamera(toRotation(delta, this.rotateSpeed))
+        if(this.pointerActive === PointerMode.PAN) adapter.panCamera(delta)
+        if(this.pointerActive === PointerMode.ZOOM) adapter.dollyCamera(delta)
       } 
-      if(button === 2) adapter.rotateCamera(toRotation(delta,1))
-      if(button === 1) adapter.panCamera(delta)
+      if(button === 2){
+        this.pointerOverride = PointerMode.LOOK
+        adapter.rotateCamera(toRotation(delta,1))
+        
+      } 
+      if(button === 1){
+        this.pointerOverride = PointerMode.PAN
+        adapter.panCamera(delta)
+      }
     }
 
     this.mouse.onClick = (pos: THREE.Vector2, modif: boolean) => adapter.selectAtPointer(pos, modif)

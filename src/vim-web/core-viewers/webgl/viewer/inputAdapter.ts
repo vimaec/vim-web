@@ -34,9 +34,9 @@ function createAdapter(viewer: Viewer ) : IInputAdapter {
       viewer.camera.orthographic = !viewer.camera.orthographic
     },
     toggleCameraOrbitMode: () => {
-      this._pointerActive = this._pointerActive === PointerMode.ORBIT ? PointerMode.LOOK : PointerMode.ORBIT;
-      this._pointerFallback = this._pointerActive;
-      this._onPointerModeChanged.dispatch();
+      viewer.inputs.pointerActive = viewer.inputs.pointerActive === PointerMode.ORBIT
+        ? PointerMode.LOOK
+        : PointerMode.ORBIT;
     },
 
     resetCamera: () => {

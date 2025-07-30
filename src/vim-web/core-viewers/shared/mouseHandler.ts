@@ -19,6 +19,7 @@ export class MouseHandler extends BaseInputHandler {
   onClick: (position: THREE.Vector2, ctrl: boolean) => void;
   onDoubleClick: (position: THREE.Vector2) => void;
   onWheel: (value: number, ctrl: boolean) => void;
+  onContextMenu: (position: THREE.Vector2) => void;
 
   constructor(canvas: HTMLCanvasElement) {
     super(canvas);
@@ -64,6 +65,7 @@ export class MouseHandler extends BaseInputHandler {
       this.handleDoubleClick(event);
     }else{
       this.handleMouseClick(event);
+      this.handleContextMenu(event);
     }
     event.preventDefault();
   }
@@ -81,6 +83,20 @@ export class MouseHandler extends BaseInputHandler {
     const modif = event.getModifierState('Shift') || event.getModifierState('Control');
     this.onClick?.(pos, modif);
   }
+
+    private async handleContextMenu(event: PointerEvent): Promise<void> {
+    if (event.pointerType !== 'mouse') return;
+    if(event.button !== 2) return;
+    
+    const pos = this.relativePosition(event);
+
+    if (!Utils.almostEqual(this._lastMouseDownPosition, pos, 0.01)) {
+      return;
+    }
+
+    this.onContextMenu?.(new THREE.Vector2(event.clientX, event.clientY));
+  }
+  
 
   private handlePointerMove(event: PointerEvent): void {
     if (event.pointerType !== 'mouse') return;
