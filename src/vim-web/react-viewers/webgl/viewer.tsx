@@ -11,7 +11,7 @@ import { AxesPanelMemo } from '../panels/axesPanel'
 import { ControlBar, ControlBarCustomization } from '../controlbar/controlBar'
 import { useControlBar } from '../state/controlBarState'
 import { RestOfScreen } from '../panels/restOfScreen'
-import { OptionalBimPanel } from '../bim/bimPanel'
+import { OptionalBimPanel } from '../bim/bimPanel'  
 import {
   ContextMenuCustomization,
   showContextMenu,

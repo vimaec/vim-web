@@ -328,7 +328,7 @@ function scrollToSelection (div: HTMLDivElement) {
 
   // Scroll to Top
   if (rectElem.top < rectContainer.top || rectElem.top < 0) {
-    selection.scrollIntoView()
+    selection.scrollIntoView({ block: 'nearest', inline: 'nearest' })
   }
 }
 
