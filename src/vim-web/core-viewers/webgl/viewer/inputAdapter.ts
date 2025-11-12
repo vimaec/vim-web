@@ -1,5 +1,5 @@
 import {type IInputAdapter} from "../../shared/inputAdapter"
-import {InputHandler} from "../../shared/inputHandler"
+import {InputHandler, PointerMode} from "../../shared/inputHandler"
 import { Viewer } from "./viewer"
 import * as THREE from 'three'
 
@@ -33,6 +33,11 @@ function createAdapter(viewer: Viewer ) : IInputAdapter {
     toggleOrthographic: () => {
       viewer.camera.orthographic = !viewer.camera.orthographic
     },
+    toggleCameraOrbitMode: () => {
+      viewer.inputs.pointerActive = viewer.inputs.pointerActive === PointerMode.ORBIT
+        ? PointerMode.LOOK
+        : PointerMode.ORBIT;
+    },
 
     resetCamera: () => {
       viewer.camera.lerp(0.75).reset()
@@ -63,7 +68,7 @@ function createAdapter(viewer: Viewer ) : IInputAdapter {
     frameAtPointer: async (pos: THREE.Vector2) => {
       //TODO: This logic should happen in shared code
       const result = await viewer.raycaster.raycastFromScreen(pos)
-      viewer.camera.lerp(0.75).frame(result.object)
+      viewer.camera.lerp(0.75).frame(result.object ?? 'all')
     },
     zoom: (value: number) => {
       viewer.camera.lerp(0.75).zoom(value)

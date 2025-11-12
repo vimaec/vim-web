@@ -3,7 +3,8 @@
     "jsx": "react-jsx",
     "target": "ESNext",
     "module": "ESNext",
-
+    "rootDir": "src",
+    "outDir": "dist",
     "useDefineForClassFields": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,

@@ -45,6 +45,14 @@ export class RGBA {
     this.a = a
   }
 
+  static fromThree (color: THREE.Color, opacity: number = 1): RGBA {
+    return new RGBA(color.r, color.g, color.b, opacity)
+  }
+
+  toThree(): THREE.Color {
+    return new THREE.Color(this.r, this.g, this.b)
+  }
+
   clone(): RGBA {
     return new RGBA(this.r, this.g, this.b, this.a)
   }
@@ -115,6 +123,10 @@ export class RGBA32 {
       throw new Error('Invalid value: must be a 32-bit unsigned integer')
     }
     this.hex = hex
+  }
+
+  static fromThree (color: THREE.Color, opacity: number = 1): RGBA32 {
+    return this.fromFloats(color.r, color.g, color.b, opacity)
   }
 
   static fromInts (r: number, g: number, b: number, a: number = 1): RGBA32 {
@@ -208,8 +220,9 @@ export class RGBA32 {
 }
 
 export type HitCheckResult = {
-  vimHandle: number;         // uint32_t equivalent
-  nodeIndex: number;         // uint32_t equivalent
+  vimIndex: number;         // uint32_t equivalent
+  vimElementIndex: number; // uint32_t equivalent
+  sceneElementIndex: number; // uint32_t equivalent
   worldPosition: THREE.Vector3;  // 3-element array of floats
   worldNormal: THREE.Vector3;    // 3-element array of floats
 }

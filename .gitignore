@@ -1,4 +1,5 @@
 node_modules
 dist
 docs
+docs2
 src/pages/*.vim

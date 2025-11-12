@@ -27,6 +27,11 @@ import { Renderer } from './rendering/renderer'
  */
 export class Viewer {
   /**
+   * The type of the viewer, indicating it is a WebGL viewer.
+   * Useful for distinguishing between different viewer types in a multi-viewer application.
+   */
+  public readonly type = 'webgl'
+  /**
    * The settings configuration used by the viewer.
    */
   readonly settings: ViewerSettings

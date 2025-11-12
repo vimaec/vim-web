@@ -8,7 +8,6 @@ export const Ids = {
 }
 
 export const IsolationPanel = forwardRef<GenericPanelHandle, { state: IsolationRef }>(
-
   (props, ref) => {
     return (
       <GenericPanel

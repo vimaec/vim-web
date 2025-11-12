@@ -25,6 +25,12 @@ export const INVALID_HANDLE = 0xffffffff
  * handling connections, and coordinating various components like the camera, decoder, and inputs.
  */
 export class Viewer {
+  /**
+   * The type of the viewer, indicating it is a WebGL viewer.
+   * Useful for distinguishing between different viewer types in a multi-viewer application.
+   */
+  public readonly type = 'ultra'
+  
   private readonly _decoder: Decoder | DecoderWithWorker
   private readonly _socketClient: SocketClient
   private readonly _input: InputHandler
@@ -295,6 +301,10 @@ export class Viewer {
   clearVims (): void {
     this._vims.getAll().forEach((vim) => vim.disconnect())
     this._vims.clear()
+  }
+
+  getElement3Ds() : Promise<number> {
+    return this.rpc.RPCGetElementCountForScene()  
   }
 
   /**

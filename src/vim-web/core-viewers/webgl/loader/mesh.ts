@@ -239,6 +239,6 @@ export class StandardSubmesh {
    * Returns vim object for this submesh.
    */
   get object () {
-    return this.mesh.vim.getElementFromInstanceIndex(this.instance)
+    return this.mesh.vim.getElement(this.instance)
   }
 }

@@ -18,6 +18,20 @@ export class MaterialHandles {
   static readonly Invisible: MaterialHandle = 8
 }
 
+export type VisibilityState = 0 | 1 | 2 | 3 | 16;
+export class VisibilityStates {
+  static readonly Visible: VisibilityState = 0;
+  static readonly Hidden: VisibilityState = 1;
+  static readonly Ghosted: VisibilityState = 2;
+  static readonly Highlighted: VisibilityState = 16;
+};
+
+export type RenderingMode = 0 | 1;
+export class RenderingModes {
+  static readonly Standard: RenderingMode = 0;
+  static readonly FlatShaded: RenderingMode = 1;
+};
+
 export const materialHandles : MaterialHandle[] = [
   MaterialHandles.Invalid,
   MaterialHandles.Wireframe,
@@ -46,27 +60,26 @@ return this._socket.state.status === "connected"
     this._socket = _socket
   }
   // RPC Generated Code
-  readonly API_VERSION = "5.1.0"
+  readonly API_VERSION = "6.0.0"
 
-  RPCAddNodeFlags(componentHandle: number, nodes: number[], flags: number): void {
+  RPCClearMaterialOverridesForElements(vimIndex: number, elementIndices: number[]): void {
     const marshal = new Marshal();
-    marshal.writeString("RPCAddNodeFlags");
-    marshal.writeUInt(componentHandle);
-    marshal.writeArrayOfUInt(nodes);
-    marshal.writeUInt(flags);
+    marshal.writeString("RPCClearMaterialOverridesForElements");
+    marshal.writeUInt(vimIndex);
+    marshal.writeArrayOfUInt(elementIndices);
     this._socket.sendRPC(marshal);
   }
 
-  RPCClearMaterialOverrides(componentHandle: number): void {
+  RPCClearMaterialOverridesForScene(): void {
     const marshal = new Marshal();
-    marshal.writeString("RPCClearMaterialOverrides");
-    marshal.writeUInt(componentHandle);
+    marshal.writeString("RPCClearMaterialOverridesForScene");
     this._socket.sendRPC(marshal);
   }
 
-  RPCClearScene(): void {
+  RPCClearMaterialOverridesForVim(vimIndex: number): void {
     const marshal = new Marshal();
-    marshal.writeString("RPCClearScene");
+    marshal.writeString("RPCClearMaterialOverridesForVim");
+    marshal.writeUInt(vimIndex);
     this._socket.sendRPC(marshal);
   }
 
@@ -92,10 +105,10 @@ return this._socket.state.status === "connected"
     return ret;
   }
 
-  RPCDestroyMaterialInstances(materialInstanceHandle: number[]): void {
+  RPCDestroyMaterialInstances(materialInstanceHandles: number[]): void {
     const marshal = new Marshal();
     marshal.writeString("RPCDestroyMaterialInstances");
-    marshal.writeArrayOfUInt(materialInstanceHandle);
+    marshal.writeArrayOfUInt(materialInstanceHandles);
     this._socket.sendRPC(marshal);
   }
 
@@ -113,18 +126,9 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  async RPCFrameAll(blendTime: number): Promise<RpcTypes.Segment> {
+  async RPCFrameAABB(box: RpcTypes.Box3, blendTime: number): Promise<RpcTypes.Segment> {
     const marshal = new Marshal();
-    marshal.writeString("RPCFrameAll");
-    marshal.writeFloat(blendTime);
-    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
-    const ret = returnMarshal.readSegment(); 
-    return ret;
-  }
-
-  async RPCFrameBox(box: RpcTypes.Box3, blendTime: number): Promise<RpcTypes.Segment> {
-    const marshal = new Marshal();
-    marshal.writeString("RPCFrameBox");
+    marshal.writeString("RPCFrameAABB");
     marshal.writeBox3(box);
     marshal.writeFloat(blendTime);
     const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
@@ -132,24 +136,60 @@ return this._socket.state.status === "connected"
     return ret;
   }
 
-  async RPCFrameInstances(componentHandle: number, nodes: number[], blendTime: number): Promise<RpcTypes.Segment> {
+  async RPCFrameElements(vimIndex: number, elementIndices: number[], blendTime: number): Promise<RpcTypes.Segment> {
     const marshal = new Marshal();
-    marshal.writeString("RPCFrameInstances");
-    marshal.writeUInt(componentHandle);
-    marshal.writeArrayOfUInt(nodes);
+    marshal.writeString("RPCFrameElements");
+    marshal.writeUInt(vimIndex);
+    marshal.writeArrayOfUInt(elementIndices);
     marshal.writeFloat(blendTime);
     const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readSegment(); 
     return ret;
   }
 
-  async RPCFrameVim(componentHandle: number, blendTime: number): Promise<RpcTypes.Segment> {
+  async RPCFrameScene(blendTime: number): Promise<RpcTypes.Segment> {
     const marshal = new Marshal();
-    marshal.writeString("RPCFrameVim");
-    marshal.writeUInt(componentHandle);
+    marshal.writeString("RPCFrameScene");
     marshal.writeFloat(blendTime);
     const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readSegment(); 
+    return ret;
+  }
+
+  async RPCFrameVim(vimIndex: number, blendTime: number): Promise<RpcTypes.Segment> {
+    const marshal = new Marshal();
+    marshal.writeString("RPCFrameVim");
+    marshal.writeUInt(vimIndex);
+    marshal.writeFloat(blendTime);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
+    const ret = returnMarshal.readSegment(); 
+    return ret;
+  }
+
+  async RPCGetAABBForElements(vimIndex: number, elementIndices: number[]): Promise<RpcTypes.Box3> {
+    const marshal = new Marshal();
+    marshal.writeString("RPCGetAABBForElements");
+    marshal.writeUInt(vimIndex);
+    marshal.writeArrayOfUInt(elementIndices);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
+    const ret = returnMarshal.readBox3(); 
+    return ret;
+  }
+
+  async RPCGetAABBForScene(): Promise<RpcTypes.Box3> {
+    const marshal = new Marshal();
+    marshal.writeString("RPCGetAABBForScene");
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
+    const ret = returnMarshal.readBox3(); 
+    return ret;
+  }
+
+  async RPCGetAABBForVim(vimIndex: number): Promise<RpcTypes.Box3> {
+    const marshal = new Marshal();
+    marshal.writeString("RPCGetAABBForVim");
+    marshal.writeUInt(vimIndex);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
+    const ret = returnMarshal.readBox3(); 
     return ret;
   }
 
@@ -161,38 +201,37 @@ return this._socket.state.status === "connected"
     return ret;
   }
 
-  async RPCGetBoundingBox(componentHandle: number, nodes: number[]): Promise<RpcTypes.Box3> {
+  async RPCGetCameraPose(): Promise<RpcTypes.Segment> {
     const marshal = new Marshal();
-    marshal.writeString("RPCGetBoundingBox");
-    marshal.writeUInt(componentHandle);
-    marshal.writeArrayOfUInt(nodes);
-    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
-    const ret = returnMarshal.readBox3(); 
-    return ret;
-  }
-
-  async RPCGetBoundingBoxAll(componentHandle: number): Promise<RpcTypes.Box3> {
-    const marshal = new Marshal();
-    marshal.writeString("RPCGetBoundingBoxAll");
-    marshal.writeUInt(componentHandle);
-    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
-    const ret = returnMarshal.readBox3(); 
-    return ret;
-  }
-
-  async RPCGetCameraPosition(): Promise<RpcTypes.Segment> {
-    const marshal = new Marshal();
-    marshal.writeString("RPCGetCameraPosition");
+    marshal.writeString("RPCGetCameraPose");
     const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readSegment(); 
     return ret;
   }
 
-  async RPCGetIblRotation(): Promise<RpcTypes.Matrix44> {
+  async RPCGetElementCountForScene(): Promise<number> {
     const marshal = new Marshal();
-    marshal.writeString("RPCGetIblRotation");
+    marshal.writeString("RPCGetElementCountForScene");
     const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
-    const ret = returnMarshal.readMatrix44(); 
+    const ret = returnMarshal.readUInt(); 
+    return ret;
+  }
+
+  async RPCGetElementCountForVim(vimIndex: number): Promise<number> {
+    const marshal = new Marshal();
+    marshal.writeString("RPCGetElementCountForVim");
+    marshal.writeUInt(vimIndex);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
+    const ret = returnMarshal.readUInt(); 
+    return ret;
+  }
+
+  async RPCGetElementIds(vimIndex: number): Promise<bigint[]> {
+    const marshal = new Marshal();
+    marshal.writeString("RPCGetElementIds");
+    marshal.writeUInt(vimIndex);
+    const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
+    const ret = returnMarshal.readArrayOfUInt64(); 
     return ret;
   }
 
@@ -204,11 +243,12 @@ return this._socket.state.status === "connected"
     return ret;
   }
 
-  async RPCGetSceneAABB(): Promise<RpcTypes.Box3> {
+  async RPCGetRoomElements(vimIndex: number): Promise<number[]> {
     const marshal = new Marshal();
-    marshal.writeString("RPCGetSceneAABB");
+    marshal.writeString("RPCGetRoomElements");
+    marshal.writeUInt(vimIndex);
     const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
-    const ret = returnMarshal.readBox3(); 
+    const ret = returnMarshal.readArrayOfUInt(); 
     return ret;
   }
 
@@ -220,73 +260,13 @@ return this._socket.state.status === "connected"
     return ret;
   }
 
-  async RPCGetVimLoadingState(componentHandle: number): Promise<RpcTypes.VimStatus> {
+  async RPCGetVimLoadingState(vimIndex: number): Promise<RpcTypes.VimStatus> {
     const marshal = new Marshal();
     marshal.writeString("RPCGetVimLoadingState");
-    marshal.writeUInt(componentHandle);
+    marshal.writeUInt(vimIndex);
     const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readVimStatus(); 
     return ret;
-  }
-
-  RPCGhost(componentHandle: number, nodes: number[]): void {
-    const marshal = new Marshal();
-    marshal.writeString("RPCGhost");
-    marshal.writeUInt(componentHandle);
-    marshal.writeArrayOfUInt(nodes);
-    this._socket.sendRPC(marshal);
-  }
-
-  RPCGhostAll(componentHandle: number): void {
-    const marshal = new Marshal();
-    marshal.writeString("RPCGhostAll");
-    marshal.writeUInt(componentHandle);
-    this._socket.sendRPC(marshal);
-  }
-
-  RPCHide(componentHandle: number, nodes: number[]): void {
-    const marshal = new Marshal();
-    marshal.writeString("RPCHide");
-    marshal.writeUInt(componentHandle);
-    marshal.writeArrayOfUInt(nodes);
-    this._socket.sendRPC(marshal);
-  }
-
-  RPCHideAABBs(componentHandle: number, nodes: number[]): void {
-    const marshal = new Marshal();
-    marshal.writeString("RPCHideAABBs");
-    marshal.writeUInt(componentHandle);
-    marshal.writeArrayOfUInt(nodes);
-    this._socket.sendRPC(marshal);
-  }
-
-  RPCHideAll(componentHandle: number): void {
-    const marshal = new Marshal();
-    marshal.writeString("RPCHideAll");
-    marshal.writeUInt(componentHandle);
-    this._socket.sendRPC(marshal);
-  }
-
-  RPCHideAllAABBs(componentHandle: number): void {
-    const marshal = new Marshal();
-    marshal.writeString("RPCHideAllAABBs");
-    marshal.writeUInt(componentHandle);
-    this._socket.sendRPC(marshal);
-  }
-
-  RPCHighlight(componentHandle: number, nodes: number[]): void {
-    const marshal = new Marshal();
-    marshal.writeString("RPCHighlight");
-    marshal.writeUInt(componentHandle);
-    marshal.writeArrayOfUInt(nodes);
-    this._socket.sendRPC(marshal);
-  }
-
-  RPCHighlightAll(componentHandle: number): void {
-    const marshal = new Marshal();
-    marshal.writeString("RPCHighlightAll");
-    marshal.writeUInt(componentHandle);
-    this._socket.sendRPC(marshal);
   }
 
   RPCKeyEvent(keyCode: number, down: boolean): void {
@@ -314,13 +294,6 @@ return this._socket.state.status === "connected"
     const returnMarshal = await this._socket.sendRPCWithReturn(marshal);
     const ret = returnMarshal.readUInt(); 
     return ret;
-  }
-
-  RPCLockIblRotation(lock: boolean): void {
-    const marshal = new Marshal();
-    marshal.writeString("RPCLockIblRotation");
-    marshal.writeBoolean(lock);
-    this._socket.sendRPC(marshal);
   }
 
   RPCMouseButtonEvent(mousePos: RpcTypes.Vector2, mouseButton: number, down: boolean): void {
@@ -362,17 +335,6 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  RPCMoveCameraTo(usePosition: boolean, useTarget: boolean, position: RpcTypes.Vector3, target: RpcTypes.Vector3, blendTime: number): void {
-    const marshal = new Marshal();
-    marshal.writeString("RPCMoveCameraTo");
-    marshal.writeBoolean(usePosition);
-    marshal.writeBoolean(useTarget);
-    marshal.writeVector3(position);
-    marshal.writeVector3(target);
-    marshal.writeFloat(blendTime);
-    this._socket.sendRPC(marshal);
-  }
-
   RPCPauseRendering(pause: boolean): void {
     const marshal = new Marshal();
     marshal.writeString("RPCPauseRendering");
@@ -389,18 +351,9 @@ return this._socket.state.status === "connected"
     return ret;
   }
 
-  RPCRemoveNodeFlags(componentHandle: number, nodes: number[], flags: number): void {
+  RPCSetCameraAspectRatio(width: number, height: number): void {
     const marshal = new Marshal();
-    marshal.writeString("RPCRemoveNodeFlags");
-    marshal.writeUInt(componentHandle);
-    marshal.writeArrayOfUInt(nodes);
-    marshal.writeUInt(flags);
-    this._socket.sendRPC(marshal);
-  }
-
-  RPCSetAspectRatio(width: number, height: number): void {
-    const marshal = new Marshal();
-    marshal.writeString("RPCSetAspectRatio");
+    marshal.writeString("RPCSetCameraAspectRatio");
     marshal.writeUInt(width);
     marshal.writeUInt(height);
     this._socket.sendRPC(marshal);
@@ -413,10 +366,33 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  RPCSetCameraPosition(state: RpcTypes.Segment, blendTime: number): void {
+  RPCSetCameraPose(state: RpcTypes.Segment, blendTime: number): void {
+    const marshal = new Marshal();
+    marshal.writeString("RPCSetCameraPose");
+    marshal.writeSegment(state);
+    marshal.writeFloat(blendTime);
+    this._socket.sendRPC(marshal);
+  }
+
+  RPCSetCameraPosition(position: RpcTypes.Vector3, blendTime: number): void {
     const marshal = new Marshal();
     marshal.writeString("RPCSetCameraPosition");
-    marshal.writeSegment(state);
+    marshal.writeVector3(position);
+    marshal.writeFloat(blendTime);
+    this._socket.sendRPC(marshal);
+  }
+
+  RPCSetCameraSpeed(speed: number): void {
+    const marshal = new Marshal();
+    marshal.writeString("RPCSetCameraSpeed");
+    marshal.writeFloat(speed);
+    this._socket.sendRPC(marshal);
+  }
+
+  RPCSetCameraTarget(target: RpcTypes.Vector3, blendTime: number): void {
+    const marshal = new Marshal();
+    marshal.writeString("RPCSetCameraTarget");
+    marshal.writeVector3(target);
     marshal.writeFloat(blendTime);
     this._socket.sendRPC(marshal);
   }
@@ -425,20 +401,6 @@ return this._socket.state.status === "connected"
     const marshal = new Marshal();
     marshal.writeString("RPCSetGhostColor");
     marshal.writeRGBA(ghostColor);
-    this._socket.sendRPC(marshal);
-  }
-
-  RPCSetGhostColor2(ghostColor: RpcTypes.RGBA): void {
-    const marshal = new Marshal();
-    marshal.writeString("RPCSetGhostColor2");
-    marshal.writeRGBA(ghostColor);
-    this._socket.sendRPC(marshal);
-  }
-
-  RPCSetIblRotation(transform: RpcTypes.Matrix44): void {
-    const marshal = new Marshal();
-    marshal.writeString("RPCSetIblRotation");
-    marshal.writeMatrix44(transform);
     this._socket.sendRPC(marshal);
   }
 
@@ -454,19 +416,12 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  RPCSetMaterialOverrides(componentHandle: number, nodes: number[], materialInstanceHandles: number[]): void {
+  RPCSetMaterialOverridesForElements(vimIndex: number, elementIndices: number[], materialInstanceHandles: number[]): void {
     const marshal = new Marshal();
-    marshal.writeString("RPCSetMaterialOverrides");
-    marshal.writeUInt(componentHandle);
-    marshal.writeArrayOfUInt(nodes);
+    marshal.writeString("RPCSetMaterialOverridesForElements");
+    marshal.writeUInt(vimIndex);
+    marshal.writeArrayOfUInt(elementIndices);
     marshal.writeArrayOfUInt(materialInstanceHandles);
-    this._socket.sendRPC(marshal);
-  }
-
-  RPCSetMoveSpeed(speed: number): void {
-    const marshal = new Marshal();
-    marshal.writeString("RPCSetMoveSpeed");
-    marshal.writeFloat(speed);
     this._socket.sendRPC(marshal);
   }
 
@@ -477,27 +432,36 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  RPCShow(componentHandle: number, nodes: number[]): void {
+  RPCSetStateElements(vimIndex: number, elementIndices: number[], state: number): void {
     const marshal = new Marshal();
-    marshal.writeString("RPCShow");
-    marshal.writeUInt(componentHandle);
-    marshal.writeArrayOfUInt(nodes);
+    marshal.writeString("RPCSetStateElements");
+    marshal.writeUInt(vimIndex);
+    marshal.writeArrayOfUInt(elementIndices);
+    marshal.writeUInt(state);
     this._socket.sendRPC(marshal);
   }
 
-  RPCShowAABBs(componentHandle: number, nodes: number[], colors: RpcTypes.RGBA32[]): void {
+  RPCSetStateScene(state: number): void {
     const marshal = new Marshal();
-    marshal.writeString("RPCShowAABBs");
-    marshal.writeUInt(componentHandle);
-    marshal.writeArrayOfUInt(nodes);
-    marshal.writeArrayOfRGBA32(colors);
+    marshal.writeString("RPCSetStateScene");
+    marshal.writeUInt(state);
     this._socket.sendRPC(marshal);
   }
 
-  RPCShowAll(componentHandle: number): void {
+  RPCSetStateVim(vimIndex: number, state: number): void {
     const marshal = new Marshal();
-    marshal.writeString("RPCShowAll");
-    marshal.writeUInt(componentHandle);
+    marshal.writeString("RPCSetStateVim");
+    marshal.writeUInt(vimIndex);
+    marshal.writeUInt(state);
+    this._socket.sendRPC(marshal);
+  }
+
+  RPCSetStatesElements(vimIndex: number, elementIndices: number[], states: number[]): void {
+    const marshal = new Marshal();
+    marshal.writeString("RPCSetStatesElements");
+    marshal.writeUInt(vimIndex);
+    marshal.writeArrayOfUInt(elementIndices);
+    marshal.writeArrayOfUInt(states);
     this._socket.sendRPC(marshal);
   }
 
@@ -521,10 +485,9 @@ return this._socket.state.status === "connected"
     this._socket.sendRPC(marshal);
   }
 
-  RPCUnloadVim(componentHandle: number): void {
+  RPCUnloadAll(): void {
     const marshal = new Marshal();
-    marshal.writeString("RPCUnloadVim");
-    marshal.writeUInt(componentHandle);
+    marshal.writeString("RPCUnloadAll");
     this._socket.sendRPC(marshal);
   }
 

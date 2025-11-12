@@ -12,7 +12,7 @@ export function useUltraSectionBox(viewer: Core.Ultra.Viewer): SectionBoxRef {
       viewer.sectionBox.interactive = b;
     }, 
     getBox: () => viewer.sectionBox.getBox(),
-    setBox: (box) => viewer.sectionBox.fitBox(box),
+    setBox: (box) => viewer.sectionBox.setBox(box),
     onSelectionChanged: viewer.selection.onSelectionChanged,
 
 

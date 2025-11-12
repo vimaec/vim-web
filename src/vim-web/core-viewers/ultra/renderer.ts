@@ -3,17 +3,17 @@ import * as THREE from "three";
 import { Validation } from "../../utils";
 import { ILogger } from "./logger";
 import { defaultSceneSettings, RpcSafeClient, SceneSettings } from "./rpcSafeClient";
-import { RGBA } from "./rpcTypes";
 import { ClientStreamError } from "./socketClient";
+
+import * as RpcUtils from "./rpcUtils";
 
 /**
  * Render settings that extend SceneSettings with additional rendering-specific properties
  */
 export type RenderSettings = SceneSettings & {
-  /** Whether to lock the Image-Based Lighting rotation */
-  lockIblRotation: boolean
   /** Color used for ghost/transparent rendering */
-  ghostColor: RGBA
+  ghostColor: THREE.Color
+  ghostOpacity: number
 }
 
 /**
@@ -21,8 +21,8 @@ export type RenderSettings = SceneSettings & {
  */
 export const defaultRenderSettings: RenderSettings = {
   ...defaultSceneSettings,
-  lockIblRotation: true,
-  ghostColor: new RGBA(14/255, 14/255, 14/255, 64/255)
+  ghostColor: new THREE.Color(14/255, 14/255, 14/255),
+  ghostOpacity: 64/255
 }
 
 /**
@@ -30,14 +30,14 @@ export const defaultRenderSettings: RenderSettings = {
  */
 export interface IRenderer {
   onSceneUpdated: ISignal
-  ghostColor: RGBA
-  lockIblRotation: boolean
+  ghostColor: THREE.Color
+  ghostOpacity: number
   hdrScale: number
   toneMappingWhitePoint: number
   hdrBackgroundScale: number
   hdrBackgroundSaturation: number
   backgroundBlur: number
-  backgroundColor: RGBA
+  backgroundColor: THREE.Color
   getBoundingBox(): Promise<THREE.Box3 | undefined>
 }
 
@@ -53,7 +53,6 @@ export class Renderer implements IRenderer {
   private _animationFrame: number | undefined = undefined;
   private _updateLighting: boolean = false;
   private _updateGhostColor: boolean = false;
-  private _updateIblRotation: boolean = false;
 
   private readonly _onSceneUpdated = new SignalDispatcher()
   get onSceneUpdated() {
@@ -97,8 +96,8 @@ export class Renderer implements IRenderer {
    * Sets up initial scene settings, ghost color, and IBL rotation
    */
   onConnect(){
-    this._rpc.RPCSetGhostColor(this._settings.ghostColor)
-    this._rpc.RPCLockIblRotation(this._settings.lockIblRotation)
+    const color = RpcUtils.RGBAfromThree(this._settings.ghostColor, this._settings.ghostOpacity)
+    this._rpc.RPCSetGhostColor(color)
   }
 
   notifySceneUpdated() {
@@ -109,18 +108,14 @@ export class Renderer implements IRenderer {
 
   /**
    * Gets the ghost color used for transparent rendering
-   * @returns Current ghost color as RGBA
+   * @returns Current ghost color as a THREE.Color
    */
-  get ghostColor(): RGBA {
+  get ghostColor(): THREE.Color {
     return this._settings.ghostColor
   }
 
-  /**
-   * Gets the IBL rotation lock setting
-   * @returns Whether IBL rotation is locked
-   */
-  get lockIblRotation(): boolean {
-    return this._settings.lockIblRotation
+  get ghostOpacity(): number {
+    return this._settings.ghostOpacity
   }
 
   /**
@@ -160,39 +155,35 @@ export class Renderer implements IRenderer {
    * @returns Current background blur
    */
   get backgroundBlur(): number {
-    return this._settings.backGroundBlur;
+    return this._settings.backgroundBlur;
   }
 
   /**
    * Gets the background color
    * @returns Current background color as RGBA
    */
-  get backgroundColor(): RGBA {
-    return this._settings.backgroundColor;
+  get backgroundColor(): THREE.Color {
+    return this._settings.backgroundColor.toThree();
   }
 
   // Setters
 
   /**
    * Updates the ghost color used for transparent rendering
-   * @param value - New ghost color as RGBA
+   * @param value - New ghost color as THREE.Color
    */
-  set ghostColor(value: RGBA){
-    value = Validation.clampRGBA01(value)
+  set ghostColor(value: THREE.Color)  {
     if(this._settings.ghostColor.equals(value)) return
-    this._settings.ghostColor = value
+    this._settings.ghostColor = value 
     this._updateGhostColor = true
     this.requestSettingsUpdate()
   }
 
-  /**
-   * Updates the IBL rotation lock setting
-   * @param value - Whether to lock IBL rotation
-   */
-  set lockIblRotation(value: boolean){
-    if(this._settings.lockIblRotation === value) return
-    this._settings.lockIblRotation = value
-    this._updateIblRotation = true
+  set ghostOpacity(value: number) {
+    value = Validation.clamp01(value)
+    if (this._settings.ghostOpacity === value) return
+    this._settings.ghostOpacity = value
+    this._updateGhostColor = true
     this.requestSettingsUpdate()
   }
 
@@ -250,26 +241,26 @@ export class Renderer implements IRenderer {
    */
   set backgroundBlur(value: number) {
     value = Validation.clamp01(value)
-    if (this._settings.backGroundBlur === value) return;
-    this._settings.backGroundBlur = value;
+    if (this._settings.backgroundBlur === value) return;
+    this._settings.backgroundBlur = value;
     this._updateLighting = true
     this.requestSettingsUpdate();
   }
 
   /**
    * Sets the background color
-   * @param value - New background color as RGBA
+   * @param value - New background color as THREE.Color
    */
-  set backgroundColor(value: RGBA) {
-    value = Validation.clampRGBA01(value)
-    if (this._settings.backgroundColor.equals(value)) return;
-    this._settings.backgroundColor = value;
+  set backgroundColor(value: THREE.Color) {
+    const color = RpcUtils.RGBAfromThree(value, 1);
+    if (this._settings.backgroundColor.equals(color)) return;
+    this._settings.backgroundColor = color;
     this._updateLighting = true
     this.requestSettingsUpdate();
   }
 
   getBoundingBox(): Promise<THREE.Box3 | undefined> {
-    return this._rpc.RPCGetSceneAABB()
+    return this._rpc.RPCGetAABBForScene()
   }
 
   /**
@@ -286,13 +277,14 @@ export class Renderer implements IRenderer {
 
   private async applySettings(){
     if(this._updateLighting) await this._rpc.RPCSetLighting(this._settings);
-    if(this._updateGhostColor) await this._rpc.RPCSetGhostColor(this._settings.ghostColor);
-    if(this._updateIblRotation) await this._rpc.RPCLockIblRotation(this._settings.lockIblRotation);
+    if(this._updateGhostColor){
+      const color = RpcUtils.RGBAfromThree(this._settings.ghostColor, this._settings.ghostOpacity)
+      await this._rpc.RPCSetGhostColor(color);
+    }
 
     // Reset dirty flags
     this._updateLighting = false;
     this._updateGhostColor = false;
-    this._updateIblRotation = false;
     this._animationFrame = undefined;
   }
 

@@ -26,7 +26,7 @@ export interface IVim<T extends IVimElement> {
      * @param instance - The instance index of the of one of the instance included in the element.
      * @returns The object corresponding to the instance, or undefined if not found.
      */
-    getElementFromInstanceIndex(instance: number): T | undefined
+    getElement(instance: number): T | undefined
   
     /**
      * Retrieves the element associated with the specified id.

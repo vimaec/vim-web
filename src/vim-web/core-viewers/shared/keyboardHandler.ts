@@ -126,8 +126,12 @@ export class KeyboardHandler extends BaseInputHandler {
    * @param code The event.code of the key.
    * @param handler Callback invoked on key up.
    */
-  public registerKeyUp(code: string, mode: CallbackMode, handler: () => void): void {
-    this.registerKey(this.keyUpHandlers, code, mode, handler);
+  public registerKeyUp(code: string | string[], mode: CallbackMode, handler: () => void): void {
+    if (Array.isArray(code)) {
+      code.forEach(c => this.registerKey(this.keyUpHandlers, c, mode, handler));
+    } else {
+      this.registerKey(this.keyUpHandlers, code, mode, handler);
+    }
   }
 
   private registerKey(map: Map<string, () => void>, code: string, mode: CallbackMode, callback: () => void){

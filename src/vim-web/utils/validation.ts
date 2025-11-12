@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import * as Core from '../core-viewers'
 import { isURL } from './url'
+import { RGBA } from '../core-viewers/ultra/rpcTypes'
 
 export class Validation {
   //= ===========================================================================
@@ -60,17 +61,17 @@ export class Validation {
   //= ===========================================================================
   // HANDLE VALIDATIONS
   //= ===========================================================================
-  static isComponentHandle (handle: number): boolean {
-    if (!this.isPositiveInteger(handle)) return false
-    if (handle === Core.Ultra.INVALID_HANDLE) {
-      console.warn(`Invalid handle ${handle}. Aborting operation.`)
+  static isIndex (index: number): boolean {
+    if (!this.isPositiveInteger(index)) return false
+    if (index === Core.Ultra.INVALID_HANDLE) {
+      console.warn(`Invalid index ${index}. Aborting operation.`)
       return false
     }
     return true
   }
 
-  static areComponentHandles (handles: number[]): boolean {
-    return handles.every((h) => this.isComponentHandle(h))
+  static areIndices (indices: number[]): boolean {
+    return indices.every((h) => this.isIndex(h))
   }
 
   static isMaterialHandle (handle: number): boolean {
@@ -121,25 +122,6 @@ export class Validation {
   static isValidSegment (segment: Core.Ultra.Segment): boolean {
     if (!segment.isValid()) {
       console.warn('Segment is invalid. Origin must be different from target')
-      return false
-    }
-    return true
-  }
-
-  //= ===========================================================================
-  // COLOR VALIDATIONS
-  //= ===========================================================================
-  static isRelativeRGBA (color: Core.Ultra.RGBA): boolean {
-    if (color.r < 0 || color.r > 1 || color.g < 0 || color.g > 1 || color.b < 0 || color.b > 1) {
-      console.warn('Invalid value: must be a relative color (0-1, 0-1, 0-1)')
-      return false
-    }
-    return true
-  }
-
-  static isRelativeRGB (color: Core.Ultra.RGB): boolean {
-    if (color.r < 0 || color.r > 1 || color.g < 0 || color.g > 1 || color.b < 0 || color.b > 1) {
-      console.warn('Invalid value: must be a relative color (0-1, 0-1, 0-1)')
       return false
     }
     return true
@@ -241,8 +223,17 @@ export class Validation {
     return value
   }
 
-  static clampRGBA01 (value: Core.Ultra.RGBA): Core.Ultra.RGBA {
-    return new Core.Ultra.RGBA(
+  static clampColor01 (value: THREE.Color):  THREE.Color {
+    return new  THREE.Color(
+      this.clamp01(value.r),
+      this.clamp01(value.g),
+      this.clamp01(value.b),
+    )
+  }
+
+
+  static clampRGBA01 (value: RGBA): RGBA {
+    return new RGBA(
       this.clamp01(value.r),
       this.clamp01(value.g),
       this.clamp01(value.b),
@@ -250,8 +241,8 @@ export class Validation {
     )
   }
 
-  static clampRGB01 (value: Core.Ultra.RGBA): Core.Ultra.RGBA {
-    return new Core.Ultra.RGBA(
+  static clampRGB01 (value: RGBA): RGBA {
+    return new RGBA(
       this.clamp01(value.r),
       this.clamp01(value.g),
       this.clamp01(value.b)

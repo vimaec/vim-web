@@ -26,6 +26,12 @@ type VimFormat = 'vim' | 'vimx'
  */
 export class Vim implements IVim<Element3D> {
   /**
+   * The type of the viewer, indicating it is a WebGL viewer.
+   * Useful for distinguishing between different viewer types in a multi-viewer application.
+   */
+  readonly type = 'webgl';  
+
+  /**
    * Indicates whether the vim was opened from a vim or vimx file.
    */
   readonly format: VimFormat
@@ -149,7 +155,7 @@ export class Vim implements IVim<Element3D> {
    * @param {number} instance - The instance number of the object.
    * @returns {THREE.Object3D | undefined} The object corresponding to the instance, or undefined if not found.
    */
-  getElementFromInstanceIndex (instance: number) {
+  getElement (instance: number) {
     const element = this.map.getElementFromInstance(instance)
     if (element === undefined) return
     return this.getElementFromIndex(element)
@@ -211,7 +217,7 @@ export class Vim implements IVim<Element3D> {
     const count = subset.getInstanceCount()
     for (let i = 0; i < count; i++) {
       const instance = subset.getVimInstance(i)
-      const obj = this.getElementFromInstanceIndex(instance)
+      const obj = this.getElement(instance)
       if (!set.has(obj)) {
         result.push(obj)
         set.add(obj)

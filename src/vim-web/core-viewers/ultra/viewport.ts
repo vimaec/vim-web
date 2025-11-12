@@ -53,7 +53,7 @@ export class Viewport {
    */
   update() {
     if(this._rpc.connected){
-      this._rpc.RPCSetAspectRatio(this.canvas.offsetWidth, this.canvas.offsetHeight)
+      this._rpc.RPCSetCameraAspectRatio(this.canvas.offsetWidth, this.canvas.offsetHeight)
     }
   }
 

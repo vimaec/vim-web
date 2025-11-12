@@ -84,7 +84,7 @@ export class Camera implements ICamera {
    * @param segment - Optional segment to save as the camera position
    */
   async save(segment?: Segment){
-    this._savedPosition = segment ?? await this._rpc.RPCGetCameraPosition()   
+    this._savedPosition = segment ?? await this._rpc.RPCGetCameraView()   
   }
 
   /**
@@ -92,7 +92,7 @@ export class Camera implements ICamera {
    */
   restoreSavedPosition(blendTime: number = this._defaultBlendTime){
     if(!this._savedPosition) return
-    this._rpc.RPCSetCameraPosition(this._savedPosition, blendTime)
+    this._rpc.RPCSetCameraView(this._savedPosition, blendTime)
   }
   
   /**
@@ -102,7 +102,7 @@ export class Camera implements ICamera {
   restoreLastPosition(blendTime: number = this._defaultBlendTime){
     if(this._lastPosition?.isValid()){
       console.log('Restoring camera position: ', this._lastPosition)
-      this._rpc.RPCSetCameraPosition(this._lastPosition, blendTime)
+      this._rpc.RPCSetCameraView(this._lastPosition, blendTime)
     }
   }
 
@@ -120,7 +120,7 @@ export class Camera implements ICamera {
   }
 
   set(position: THREE.Vector3, target: THREE.Vector3, blendTime: number = this._defaultBlendTime){
-    this._rpc.RPCSetCameraPosition(new Segment(position, target), blendTime)
+    this._rpc.RPCSetCameraView(new Segment(position, target), blendTime)
   }
 
   /**
@@ -137,7 +137,7 @@ export class Camera implements ICamera {
    * @returns Promise that resolves when the framing animation is complete
    */
   async frameAll (blendTime: number = this._defaultBlendTime): Promise<Segment | undefined> {
-    const segment = await this._rpc.RPCFrameAll(blendTime)
+    const segment = await this._rpc.RPCFrameScene(blendTime)
     this._savedPosition = this._savedPosition ?? segment
     return segment
   }
@@ -148,7 +148,8 @@ export class Camera implements ICamera {
    * @param blendTime - Duration of the camera animation in seconds (defaults to 0.5)
    */
   async frameBox(box: THREE.Box3, blendTime: number = this._defaultBlendTime) : Promise<Segment | undefined> {
-    const segment = await this._rpc.RPCFrameBox(box, blendTime)
+    
+    const segment = await this._rpc.RPCFrameAABB(box, blendTime)
     this._savedPosition = this._savedPosition ?? segment
     return segment
   }
@@ -156,23 +157,23 @@ export class Camera implements ICamera {
   /**
    * Frames specific nodes of a Vim model in the camera view
    * @param vim - The Vim model containing the nodes to frame
-   * @param nodes - Array of node indices to frame, or 'all' to frame the entire model
+   * @param elements - Array of element indices to frame, or 'all' to frame the entire model
    * @param blendTime - Duration of the camera animation in seconds (defaults to 0.5)
    * @returns Promise that resolves when the framing animation is complete
    */
-  async frameVim(vim: Vim, nodes: number[] | 'all', blendTime: number = this._defaultBlendTime): Promise<Segment | undefined> {
+  async frameVim(vim: Vim, elements: number[] | 'all', blendTime: number = this._defaultBlendTime): Promise<Segment | undefined> {
     let segment: Segment | undefined
-    if (nodes === 'all') {
+    if (elements === 'all') {
       segment = await this._rpc.RPCFrameVim(vim.handle, blendTime);
     } else {
-      segment = await this._rpc.RPCFrameInstances(vim.handle, nodes, blendTime);
+      segment = await this._rpc.RPCFrameElements(vim.handle, elements, blendTime);
     }
     this._savedPosition = this._savedPosition ?? segment
     return segment
   }
 
   async frameObject(object: Element3D, blendTime: number = this._defaultBlendTime) : Promise<Segment | undefined> {
-    const segment = await this._rpc.RPCFrameInstances(object.vim.handle, [object.instance], blendTime)
+    const segment = await this._rpc.RPCFrameElements(object.vim.handle, [object.element], blendTime)
     this._savedPosition = this._savedPosition ?? segment
     return segment
   }

@@ -4,17 +4,17 @@ import type { ILogger } from './logger';
 import { ColorManager } from './colorManager';
 import { Element3D } from './element3d';
 import { LoadRequest } from './loadRequest';
-import { NodeState, StateSynchronizer } from './nodeState';
+import { VisibilityState, VisibilitySynchronizer } from './visibility';
 import { Renderer } from './renderer';
 import { MaterialHandles } from './rpcClient';
 import { RpcSafeClient, VimLoadingStatus, VimSource } from './rpcSafeClient';
 import { INVALID_HANDLE } from './viewer';
 
 import * as THREE from 'three';
-import { RGBA32 } from './rpcTypes';
-
 
 export class Vim implements IVim<Element3D> {
+  readonly type = 'ultra';
+
   readonly source: VimSource;
   private _handle: number = -1;
   private _request: LoadRequest | undefined;
@@ -25,15 +25,18 @@ export class Vim implements IVim<Element3D> {
   private _logger: ILogger;
 
   // The StateSynchronizer wraps a StateTracker and handles RPC synchronization.
-  readonly nodeState: StateSynchronizer;
+  // Should be private
+  readonly visibility: VisibilitySynchronizer;
 
   // Color tracking remains unchanged.
-  private _nodeColors: Map<number, RGBA32> = new Map();
+  private _elementColors: Map<number, THREE.Color> = new Map();
   private _updatedColors = new Set<number>();
+  private _removedColors = new Set<number>();
 
   // Delayed update flag.
   private _updateScheduled: boolean = false;
 
+  private _elementCount: number = 0;
   private _objects: Map<number, Element3D> = new Map();
 
   constructor(
@@ -50,33 +53,38 @@ export class Vim implements IVim<Element3D> {
     this._logger = logger;
 
     // Instantiate the synchronizer with a new StateTracker.
-    this.nodeState = new StateSynchronizer(
+    this.visibility = new VisibilitySynchronizer(
       this._rpc,
       () => this._handle,
       () => this.connected,
       () => this._renderer.notifySceneUpdated(),
-      NodeState.VISIBLE // default state
+      VisibilityState.VISIBLE // default state
     );
   }
-  getElementFromInstanceIndex(instance: number): Element3D {
-    if (this._objects.has(instance)) {
-      return this._objects.get(instance)!;
+
+  //TODO: Rename this to getElementFromNode, prefer using element instead
+  getElement(elementIndex: number): Element3D {
+    if (this._objects.has(elementIndex)) {
+      return this._objects.get(elementIndex)!;
     }
-    const object = new Element3D(this, instance);
-    this._objects.set(instance, object);
+    const object = new Element3D(this, elementIndex);
+    this._objects.set(elementIndex, object);
     return object;
   }
   getElementsFromId(id: number): Element3D[] {
     throw new Error('Method not implemented.');
   }
   getElementFromIndex(element: number): Element3D {
-    throw new Error('Method not implemented.');
+    return this.getElement(element);
   }
   getObjectsInBox(box: THREE.Box3): Element3D[] {
     throw new Error('Method not implemented.');
   }
   getAllElements(): Element3D[] {
-    throw new Error('Method not implemented.');
+    for(var i = 0; i < this._elementCount; i++) {
+      this.getElement(i);
+    }
+    return Array.from(this._objects.values());
   }
 
   get handle(): number {
@@ -99,7 +107,7 @@ export class Vim implements IVim<Element3D> {
       if (result.isSuccess) {
         // Reapply Node state and colors in case this is a reconnection
         this._logger.log('Successfully loaded vim: ', this.source);
-        this.nodeState.reapplyStates();
+        this.visibility.reapplyStates();
         this.reapplyColors()
 
       } else {
@@ -113,7 +121,6 @@ export class Vim implements IVim<Element3D> {
     this._request?.error('cancelled', 'The request was cancelled');
     this._request = undefined;
     if (this.connected) {
-      this._rpc.RPCUnloadVim(this._handle);
       this._handle = -1;
     }
   }
@@ -136,12 +143,12 @@ export class Vim implements IVim<Element3D> {
           case VimLoadingStatus.FailedToDownload:
           case VimLoadingStatus.FailedToLoad:
           case VimLoadingStatus.Unknown:
-            this._rpc.RPCUnloadVim(handle);
             const details = await this._rpc.RPCGetLastError();
             const error = this.getErrorType(state.status);
             return result.error(error, details);
           case VimLoadingStatus.Done:
             this._handle = handle;
+            this._elementCount = await this._rpc.RPCGetElementCountForVim(handle);
             return result.success(this);
         }
       } catch (e) {
@@ -184,71 +191,76 @@ export class Vim implements IVim<Element3D> {
     return handle;
   }
 
-  async getBoundingBoxNodes(nodes: number[] | 'all'): Promise<THREE.Box3 | undefined> {
-    if (!this.connected || (nodes !== 'all' && nodes.length === 0)) {
+  async getBoundingBoxForElements(elements: number[] | 'all'): Promise<THREE.Box3 | undefined> {
+    if (!this.connected || (elements !== 'all' && elements.length === 0)) {
       return Promise.resolve(undefined);
     }
-    if (nodes === 'all') {
-      return await this._rpc.RPCGetBoundingBoxAll(this._handle);
+    if (elements === 'all') {
+      return await this._rpc.RPCGetAABBForVim(this._handle);
     }
-    return await this._rpc.RPCGetBoundingBox(this._handle, nodes);
+    return await this._rpc.RPCGetAABBForElements(this._handle, elements);
   }
 
   async getBoundingBox(): Promise<THREE.Box3 | undefined> {
     if (!this.connected ) {
       return Promise.resolve(undefined);
     }
-    return await this._rpc.RPCGetBoundingBoxAll(this._handle);
+    return await this._rpc.RPCGetAABBForVim(this._handle);
   }
 
-  getColor(node: number): RGBA32 | undefined {
-    return this._nodeColors.get(node);
+  getColor(elementIndex: number): THREE.Color | undefined {
+    return this._elementColors.get(elementIndex);
   }
 
-  async setColor(nodes: number[], color: RGBA32 | undefined) {
-    const colors = new Array<RGBA32 | undefined>(nodes.length).fill(color);
-    this.applyColor(nodes, colors);
+  async setColor(elementIndex: number[], color: THREE.Color | undefined) {
+    const colors = new Array<THREE.Color | undefined>(elementIndex.length).fill(color);
+    this.applyColor(elementIndex, colors);
   }
 
-  async setColors(nodes: number[], color: (RGBA32 | undefined)[]) {
-    if (color.length !== nodes.length) {
-      throw new Error('Color and nodes length must be equal');
+  async setColors(elements: number[], color: (THREE.Color | undefined)[]) {
+    if (color.length !== elements.length) {
+      throw new Error('Color and elements length must be equal');
     }
-    this.applyColor(nodes, color);
+    this.applyColor(elements, color);
   }
 
-  private applyColor(nodes: number[], color: (RGBA32 | undefined)[]) {
-    for (let i = 0; i < color.length; i++) {
-      const c = color[i];
-      const n = nodes[i];
-      if (c === undefined) {
-        this._nodeColors.delete(n);
-      } else {
-        this._nodeColors.set(n, c);
+  private applyColor(elements: number[], colors: (THREE.Color | undefined)[]) {
+    for (let i = 0; i < colors.length; i++) {
+      const color = colors[i];
+      const element = elements[i];
+      const existingColor = this._elementColors.get(element);
+
+      if (color === undefined && existingColor !== undefined) {
+        this._elementColors.delete(element);
+        this._removedColors.add(element);
       }
-      this._updatedColors.add(n);
+      else if (color !== existingColor){
+        this._elementColors.set(element, color);
+        this._updatedColors.add(element);
+      }
     }
     this.scheduleColorUpdate();
   }
 
-  clearColor(nodes: number[] | 'all'): void {
-    if (nodes === 'all') {
-      this._nodeColors.clear();
+  //TODO: Remove and rely on element.color
+  clearColor(elements: number[] | 'all'): void {
+    if (elements === 'all') {
+      this._elementColors.clear();
     } else {
-      nodes.forEach((n) => this._nodeColors.delete(n));
+      elements.forEach((n) => this._elementColors.delete(n));
     }
     if (!this.connected) return;
-    if (nodes === 'all') {
-      this._rpc.RPCClearMaterialOverrides(this._handle);
+    if (elements === 'all') {
+      this._rpc.RPCClearMaterialOverridesForVim(this._handle);
     } else {
-      const ids = new Array(nodes.length).fill(MaterialHandles.Invalid);
-      this._rpc.RPCSetMaterialOverrides(this._handle, nodes, ids);
+      this._rpc.RPCClearMaterialOverridesForElements(this._handle, elements);
     }
   }
 
   reapplyColors(): void {
     this._updatedColors.clear();
-    this._nodeColors.forEach((c, n) => this._updatedColors.add(n));
+    this._removedColors.clear();
+    this._elementColors.forEach((c, n) => this._updatedColors.add(n));
     this.scheduleColorUpdate();
   }
 
@@ -267,12 +279,19 @@ export class Vim implements IVim<Element3D> {
   }
 
   private async updateRemoteColors() {
-    const nodes = Array.from(this._updatedColors);
-    const colors = nodes.map(n => this._nodeColors.get(n));
+    const updatedElement = Array.from(this._updatedColors);
+    const removedElement = Array.from(this._removedColors);
+
+    const colors = updatedElement.map(n => this._elementColors.get(n));
     const remoteColors = await this._colors.getColors(colors);
     const colorIds = remoteColors.map((c) => c?.id ?? -1);
-    this._rpc.RPCSetMaterialOverrides(this._handle, nodes, colorIds);
+
+    this._rpc.RPCClearMaterialOverridesForElements(this._handle, removedElement);
+    this._rpc.RPCSetMaterialOverridesForElements(this._handle, updatedElement, colorIds);
+    
+
     this._updatedColors.clear();
+    this._removedColors.clear();
   }
 }
 
@@ -281,183 +300,4 @@ export class Vim implements IVim<Element3D> {
  */
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/**
- * A tracker for node state overrides.
- * It stores per-node state overrides against a default state.
- * When a node’s state is set equal to the default, its override is removed
- * but the change is still tracked for remote updates.
- */
-class StateTracker {
-  private _state = new Map<number, NodeState>();
-  private _updates = new Set<number>();
-  private _default: NodeState;
-  private _updatedDefault: boolean = false;
-
-  constructor(defaultState: NodeState = NodeState.VISIBLE) {
-    this._default = defaultState;
-  }
-
-  setAll(state: NodeState, clearNodes: boolean) {
-    this._default = state;
-    this._updatedDefault = true;
-    if (clearNodes) {
-      this._state.clear();
-      this._updates.clear();
-    } else {
-      this.reapply();
-    }
-  }
-
-  reapply() {
-    this._updates.clear();
-    const toRemove = new Set<number>();
-    for (const [k, s] of this._state.entries()) {
-      if (s === this._default) {
-        toRemove.add(k);
-      } else {
-        this._updates.add(k);
-      }
-    }
-    toRemove.forEach(k => this._state.delete(k));
-  }
-
-  set(key: number, value: NodeState) {
-    if (this._default === value) {
-      this.delete(key);
-    } else {
-      this._state.set(key, value);
-      this._updates.add(key);
-    }
-  }
-
-  delete(key: number) {
-    if (this._state.has(key)) {
-      this._state.delete(key);
-      this._updates.add(key);
-    } else {
-      this._updates.add(key);
-    }
-  }
-
-  /**
-   * Update nodes in bulk. If 'all' is specified, the default is updated.
-   */
-  updateNodes(nodes: Utils.ForEachable<number> | 'all', state: NodeState): void {
-    if (nodes === 'all') {
-      this.setAll(state, true);
-    } else {
-      nodes.forEach((n) => {
-        if (state === this._default) {
-          this.delete(n);
-        } else {
-          this.set(n, state);
-        }
-      });
-    }
-  }
-
-  get(key: number): NodeState | undefined {
-    return this._state.get(key);
-  }
-
-  getDefault(): NodeState {
-    return this._default;
-  }
-
-  /**
-   * Returns whether every node (override or not) is in the given state(s).
-   */
-  areAll(state: NodeState | NodeState[]): boolean {
-    if (!this.matchesState(this._default, state)) {
-      return false;
-    }
-    for (const st of this._state.values()) {
-      if (!this.matchesState(st, state)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /**
-   * Returns a node’s effective state.
-   */
-  getState(node: number): NodeState {
-    return this._state.get(node) ?? this._default;
-  }
-
-  /**
-   * Returns either 'all' if every node is in the given state, or an array
-   * of node IDs (from the overrides) whose state equals the provided state.
-   */
-  getAll(state: NodeState): number[] | 'all' {
-    if (this.areAll(state)) return 'all';
-    const nodes: number[] = [];
-    for (const [node, nodeState] of this._state.entries()) {
-      if (nodeState === state) {
-        nodes.push(node);
-      }
-    }
-    return nodes;
-  }
-
-  /**
-   * Returns a mapping from state to an array of updated node IDs.
-   */
-  getUpdates(): Map<NodeState, number[]> {
-    const nodesByState = new Map<NodeState, number[]>();
-    Object.values(NodeState).forEach((state) => {
-      nodesByState.set(state, []);
-    });
-
-    for (const node of this._updates) {
-      const state = this._state.get(node) ?? this._default;
-      nodesByState.get(state).push(node);
-    }
-    return nodesByState;
-  }
-
-  isDefaultUpdated(): boolean {
-    return this._updatedDefault;
-  }
-
-  reset() {
-    this._updates.clear();
-    this._updatedDefault = false;
-  }
-
-  entries(): IterableIterator<[number, NodeState]> {
-    return this._state.entries();
-  }
-
-  /**
-   * Helper: checks if a node state matches one or more target states.
-   */
-  matchesState(nodeState: NodeState, state: NodeState | NodeState[]): boolean {
-    if (Array.isArray(state)) {
-      return state.includes(nodeState);
-    }
-    return nodeState === state;
-  }
-
-  /**
-   * Replaces all nodes that match the provided state(s) with a new state.
-   * If all nodes are in the given state(s), the default is updated.
-   */
-  replace(from: NodeState | NodeState[], to: NodeState): void {
-    if (this.areAll(from)) {
-      this.setAll(to, false);
-    }
-    for (const [node, state] of this._state.entries()) {
-      if (this.matchesState(state, from)) {
-        if (to === this._default) {
-          this.delete(node);
-        } else {
-          this.set(node, to);
-        }
-      }
-    }
-  }
 }

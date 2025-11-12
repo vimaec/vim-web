@@ -109,7 +109,7 @@ export class SectionBox {
    * Fits the given box, invalid dimensions will be reversed.
    * @param box - The new bounding box.
    */
-  fitBox(box: THREE.Box3) {
+  setBox(box: THREE.Box3) {
     box = safeBox(box)
     this._box = box
     this.scheduleUpdate()

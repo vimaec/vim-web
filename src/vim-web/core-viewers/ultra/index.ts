@@ -5,18 +5,18 @@ export * from './viewer';
 
 // Partial export
 // We don't want to reexport THREE.Box3 and THREE.Vector3
-export {RGB, RGBA, RGBA32, Segment, type SectionBoxState, type HitCheckResult, type VimStatus} from './rpcTypes'
+export {Segment, type SectionBoxState, type HitCheckResult, type VimStatus} from './rpcTypes'
 
 // We don't want to export RPCClient
 export {materialHandles, MaterialHandles, type MaterialHandle, } from './rpcClient'
-export {NodeState} from './nodeState';
 export {InputMode, VimLoadingStatus} from './rpcSafeClient';
+export {VisibilityState} from './visibility'; //Runtime values for enum
 
 // Type exports
 export type * from './camera';
 export type * from './colorManager';
 export type * from './decoder';
-export type * from './nodeState';
+export type * from './visibility';
 export type * from './element3d';
 export type * from './inputAdapter';
 export type * from './loadRequest';
