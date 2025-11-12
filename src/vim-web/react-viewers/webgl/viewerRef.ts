@@ -14,6 +14,7 @@ import { ModalHandle } from '../panels/modal'
 import { SectionBoxRef } from '../state/sectionBoxState'
 import { IsolationRef } from '../state/sharedIsolation'
 import { GenericPanelHandle } from '../generic'
+import { SettingsItem } from '../settings/settingsItem'
 /**
 * Settings API managing settings applied to the viewer.
 */
@@ -32,6 +33,12 @@ export type SettingsRef = {
    * @param callback A function to be called when settings are updated, receiving the updated settings.
    */
   register : (callback: (settings: Settings) => void) => void
+
+  /**
+   * Customizes the settings panel by providing a customizer function.
+   * @param customizer A function that modifies the settings items.
+   */
+  customize : (customizer: (items: SettingsItem[]) => SettingsItem[]) => void
 
 }
 

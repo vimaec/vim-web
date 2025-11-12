@@ -44,6 +44,7 @@ import { IsolationPanel } from '../panels/isolationPanel'
 import { useWebglIsolation } from './isolation'
 import { GenericPanelHandle } from '../generic'
 import { ControllablePromise } from '../../utils'
+import { SettingsCustomizer } from '../settings/settingsItem'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React viewer.
@@ -176,7 +177,11 @@ export function Viewer (props: {
       loader: loader.current,
       isolation: isolationRef,
       camera,
-      settings,
+      settings: {
+        update : settings.update,
+        register : settings.register,
+        customize : (c: SettingsCustomizer) => settings.customizer.set(c)
+      },
       get isolationPanel(){
         return isolationPanelHandle.current
       },

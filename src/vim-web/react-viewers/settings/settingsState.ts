@@ -7,11 +7,14 @@ import * as Core from '../../core-viewers'
 import { Settings, PartialSettings, createSettings } from './settings'
 import { isTrue } from './userBoolean'
 import { saveSettingsToLocal } from './settingsStorage'
+import { ArgFuncRef, StateRef, useArgFuncRef, useFuncRef, useStateRef } from '../helpers/reactUtils'
+import { SettingsCustomizer, SettingsItem } from './settingsItem'
 
 export type SettingsState = {
   value: Settings
   update: (updater: (s: Settings) => void) => void
   register: (action: (s: Settings) => void) => void
+  customizer : StateRef<SettingsCustomizer>
 }
 
 /**
@@ -24,6 +27,7 @@ export function useSettings (
   const merged = createSettings(value)
   const [settings, setSettings] = useState(merged)
   const onUpdate = useRef<(s: Settings) => void>()
+  const customizer = useStateRef<SettingsCustomizer>(settings => settings)
 
   const update = function (updater: (s: Settings) => void) {
     const next = { ...settings } // Shallow copy
@@ -47,7 +51,8 @@ export function useSettings (
     () => ({
       value: settings,
       update,
-      register: (v) => (onUpdate.current = v)
+      register: (v) => (onUpdate.current = v),
+      customizer
     }),
     [settings]
   )

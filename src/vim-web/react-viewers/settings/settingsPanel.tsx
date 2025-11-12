@@ -2,14 +2,15 @@
  * @module viw-webgl-react
  */
 
-import React, { useEffect } from 'react'
+import React from 'react'
 import * as Core from '../../core-viewers'
-import { Settings } from './settings'
-import { UserBoolean } from './userBoolean'
 import { SettingsState } from './settingsState'
 import * as THREE from 'three'
-
-// TODO Use generic panels for all settings
+import { SettingsPanelKeys } from './settingsKeys'
+import { renderSettingsInputBox } from './settingsInputBox'
+import { renderSettingsToggle } from './settingsToggle'
+import { SettingsItem } from './settingsItem'
+import { renderSettingsSubtitle } from './settingsSubtitle'
 
 /**
  * JSX Component to interact with settings.
@@ -18,189 +19,225 @@ import * as THREE from 'three'
  * @param visible will return null if this is false.
  * @returns
  */
-export function SettingsPanel (props: {
+export function SettingsPanel(props: {
   viewer: Core.Webgl.Viewer
   settings: SettingsState
   visible: boolean
 }) {
   if (!props.visible) return null
-  const toggleElement = (label: string, state: boolean, action: () => void) => {
+
+  function renderItem(
+    viewer: Core.Webgl.Viewer,
+    settings: SettingsState,
+    item: SettingsItem,
+  ): JSX.Element | null {
     return (
-      <label className="vc-m-1 vc-block vc-select-none vc-items-center vc-py-1 vc-text-gray-warm">
-        <input
-          type="checkbox"
-          checked={state}
-          onChange={action}
-          className="vim-settings-checkbox vc-checked:bg-primary-royal vc-mr-2 vc-rounded vc-border vc-border-gray-medium "
-        ></input>{' '}
-        {label}
-      </label>
+      <React.Fragment key={item.key}>
+        {(() => {
+          switch (item.type) {
+            case 'subtitle': return renderSettingsSubtitle(item)
+            case 'toggle':   return renderSettingsToggle(viewer, settings, item)
+            case 'box':      return renderSettingsInputBox(viewer, settings, item)
+            case 'element':  return item.element
+            default: return null
+          }
+        })()}
+      </React.Fragment>
     )
   }
 
-  const settingsToggle = (
-    label: string,
-    getter: (settings: Settings) => UserBoolean,
-    setter: (settings: Settings, b: boolean) => void
-  ) => {
-    const value = getter(props.settings.value)
-    if (value === 'AlwaysTrue' || value === 'AlwaysFalse') {
-      return null
-    }
-    return toggleElement(label, value, () => {
-      const value = getter(props.settings.value)
-      props.settings.update((s) => setter(s, !value))
-    })
-  }
-
-  const settingsBox = (label: string,
-    info: string,
-    transform : (value:number) => number,
-    getter: (settings: Settings) => number,
-    setter: (settings: Settings, b: number) => void) => {
-    const ref = React.useRef<HTMLInputElement>(null)
-
-    useEffect(() => {
-      ref.current.value = props.viewer.inputs.scrollSpeed.toFixed(2)
-    },[])
-
-    const value = getter(props.settings.value).toString()
-    const update = (event: React.FocusEvent<HTMLInputElement, Element>) => {
-      const str = event.target.value
-      const n = Number.parseFloat(str)
-      if (Number.isNaN(n)) {
-        event.target.value = getter(props.settings.value).toString()
-      } else {
-        const value = transform(n)
-        event.target.value = value.toString()
-        props.settings.update(s => setter(s, value))
-      }
-    }
-
-    return <div className="vc-box-input vc-my-1">
-      <label htmlFor="textbox" className='vc-w-3 vc-h-2'>{label}:</label>
-      <input ref={ref} type="text" className='vim-settings-textbox vc-w-14 vc-ml-1 vc-p-1' onBlur={e => update(e)}/>
-      <label htmlFor="textbox" className='vc-w-3 vc-h-2 vc-text-gray vc-ml-1'>{info}</label>
-    </div>
-  }
-
-  function settingsSubtitle (title: string) {
-    return (
-      <h3 className="vc-subtitle">{title}</h3>
-    )
-  }
+  var customizer = props.settings.customizer.get()
+  var content = GetSettingsContent(props.viewer)
+  content = customizer ? customizer(content) : content
 
   return (
-    <div
-      className='vc-absolute vc-inset-0'>
-        <h3 className="vc-title">Settings </h3>
+    <div className="vc-absolute vc-inset-0">
+      <h3 className="vc-title">Settings </h3>
       <div className="vim-settings vc-absolute vc-top-6 vc-left-0 vc-bottom-0 vc-right-0 vc-overflow-y-auto">
-        {settingsSubtitle('Inputs')}
-        {settingsBox(
-          'Scroll Speed',
-          '[0.1,10]',
-          n => THREE.MathUtils.clamp(n, 0.1, 10),
-          s => props.viewer.inputs.scrollSpeed,
-          (s, v) => { props.viewer.inputs.scrollSpeed = v }
-        )}
-        {settingsSubtitle('Panels')}
-        {settingsToggle(
-          'Show Logo',
-          (settings) => settings.ui.logo,
-          (settings, value) => (settings.ui.logo = value)
-        )}
-        {settingsToggle(
-          'Show Bim Tree',
-          (settings) => settings.ui.bimTreePanel,
-          (settings, value) => (settings.ui.bimTreePanel = value)
-        )}
-        {settingsToggle(
-          'Show Bim Info',
-          (settings) => settings.ui.bimInfoPanel,
-          (settings, value) => (settings.ui.bimInfoPanel = value)
-        )}
-        {settingsToggle(
-          'Show Axes Panel',
-          (settings) => settings.ui.axesPanel,
-          (settings, value) => (settings.ui.axesPanel = value)
-        )}
-        {settingsToggle(
-          'Show Performance Panel',
-          (settings) => settings.ui.performance,
-          (settings, value) => (settings.ui.performance = value)
-        )}
-
-        {settingsSubtitle('Axes')}
-        {settingsToggle(
-          'Show Orthographic Button',
-          (settings) => settings.ui.orthographic,
-          (settings, value) => (settings.ui.orthographic = value)
-        )}
-        {settingsToggle(
-          'Show Reset Camera Button',
-          (settings) => settings.ui.resetCamera,
-          (settings, value) => (settings.ui.resetCamera = value)
-        )}
-        {settingsSubtitle('Control Bar')}
-        {settingsToggle(
-          'Show Control Bar',
-          (settings) => settings.ui.controlBar,
-          (settings, value) => (settings.ui.controlBar = value)
-        )}
-        {settingsSubtitle('Control Bar - Cursors')}
-        {settingsToggle(
-          'Show Orbit Button',
-          (settings) => settings.ui.orbit,
-          (settings, value) => (settings.ui.orbit = value)
-        )}
-        {settingsToggle(
-          'Show Look Around Button',
-          (settings) => settings.ui.lookAround,
-          (settings, value) => (settings.ui.lookAround = value)
-        )}
-        {settingsToggle(
-          'Show Pan Button',
-          (settings) => settings.ui.pan,
-          (settings, value) => (settings.ui.pan = value)
-        )}
-        {settingsToggle(
-          'Show Zoom Button',
-          (settings) => settings.ui.zoom,
-          (settings, value) => (settings.ui.zoom = value)
-        )}
-        {settingsToggle(
-          'Show Zoom Window Button',
-          (settings) => settings.ui.zoomWindow,
-          (settings, value) => (settings.ui.zoomWindow = value)
-        )}
-        {settingsSubtitle('Control Bar - Tools')}
-        {settingsToggle(
-          'Show Measuring Mode Button',
-          (settings) => settings.ui.measuringMode,
-          (settings, value) => (settings.ui.measuringMode = value)
-        )}
-        {settingsSubtitle('Control Bar - Settings')}
-        {settingsToggle(
-          'Show Project Inspector Button',
-          (settings) => settings.ui.projectInspector,
-          (settings, value) => (settings.ui.projectInspector = value)
-        )}
-        {settingsToggle(
-          'Show Settings Button',
-          (settings) => settings.ui.settings,
-          (settings, value) => (settings.ui.settings = value)
-        )}
-        {settingsToggle(
-          'Show Help Button',
-          (settings) => settings.ui.help,
-          (settings, value) => (settings.ui.help = value)
-        )}
-        {settingsToggle(
-          'Show Maximise Button',
-          (settings) => settings.ui.maximise,
-          (settings, value) => (settings.ui.maximise = value)
-        )}
+        {content.map(item => renderItem(props.viewer, props.settings, item))}
       </div>
     </div>
   )
+}
+
+function GetSettingsContent(viewer: Core.Webgl.Viewer): SettingsItem[] {
+  return [
+    {
+      type: 'subtitle',
+      key: SettingsPanelKeys.InputsSubtitle,
+      title: 'Inputs'
+    },
+    {
+      type: 'box',
+      key: SettingsPanelKeys.InputsScrollSpeedBox,
+      label: 'Scroll Speed',
+      info: '[0.1,10]',
+      transform: (n) => THREE.MathUtils.clamp(n, 0.1, 10),
+      getter: (_s) => viewer.inputs.scrollSpeed,
+      setter: (_s, v) => {
+        viewer.inputs.scrollSpeed = v
+      }
+    },
+    {
+      type: 'subtitle',
+      key: SettingsPanelKeys.PanelsSubtitle,
+      title: 'Panels'
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.PanelsShowLogoToggle,
+      label: 'Show Logo',
+      getter: (s) => s.ui.logo,
+      setter: (s, v) => (s.ui.logo = v)
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.PanelsShowBimTreeToggle,
+      label: 'Show Bim Tree',
+      getter: (s) => s.ui.bimTreePanel,
+      setter: (s, v) => (s.ui.bimTreePanel = v)
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.PanelsShowBimInfoToggle,
+      label: 'Show Bim Info',
+      getter: (s) => s.ui.bimInfoPanel,
+      setter: (s, v) => (s.ui.bimInfoPanel = v)
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.PanelsShowAxesPanelToggle,
+      label: 'Show Axes Panel',
+      getter: (s) => s.ui.axesPanel,
+      setter: (s, v) => (s.ui.axesPanel = v)
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.PanelsShowPerformancePanelToggle,
+      label: 'Show Performance Panel',
+      getter: (s) => s.ui.performance,
+      setter: (s, v) => (s.ui.performance = v)
+    },
+
+    {
+      type: 'subtitle',
+      key: SettingsPanelKeys.AxesSubtitle,
+      title: 'Axes'
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.AxesShowOrthographicButtonToggle,
+      label: 'Show Orthographic Button',
+      getter: (s) => s.ui.orthographic,
+      setter: (s, v) => (s.ui.orthographic = v)
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.AxesShowResetCameraButtonToggle,
+      label: 'Show Reset Camera Button',
+      getter: (s) => s.ui.resetCamera,
+      setter: (s, v) => (s.ui.resetCamera = v)
+    },
+
+    {
+      type: 'subtitle',
+      key: SettingsPanelKeys.ControlBarSubtitle,
+      title: 'Control Bar'
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.ControlBarShowControlBarToggle,
+      label: 'Show Control Bar',
+      getter: (s) => s.ui.controlBar,
+      setter: (s, v) => (s.ui.controlBar = v)
+    },
+
+    {
+      type: 'subtitle',
+      key: SettingsPanelKeys.ControlBarCursorsSubtitle,
+      title: 'Control Bar - Cursors'
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.ControlBarCursorsShowOrbitButtonToggle,
+      label: 'Show Orbit Button',
+      getter: (s) => s.ui.orbit,
+      setter: (s, v) => (s.ui.orbit = v)
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.ControlBarCursorsShowLookAroundButtonToggle,
+      label: 'Show Look Around Button',
+      getter: (s) => s.ui.lookAround,
+      setter: (s, v) => (s.ui.lookAround = v)
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.ControlBarCursorsShowPanButtonToggle,
+      label: 'Show Pan Button',
+      getter: (s) => s.ui.pan,
+      setter: (s, v) => (s.ui.pan = v)
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.ControlBarCursorsShowZoomButtonToggle,
+      label: 'Show Zoom Button',
+      getter: (s) => s.ui.zoom,
+      setter: (s, v) => (s.ui.zoom = v)
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.ControlBarCursorsShowZoomWindowButtonToggle,
+      label: 'Show Zoom Window Button',
+      getter: (s) => s.ui.zoomWindow,
+      setter: (s, v) => (s.ui.zoomWindow = v)
+    },
+
+    {
+      type: 'subtitle',
+      key: SettingsPanelKeys.ControlBarToolsSubtitle,
+      title: 'Control Bar - Tools'
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.ControlBarToolsShowMeasuringModeButtonToggle,
+      label: 'Show Measuring Mode Button',
+      getter: (s) => s.ui.measuringMode,
+      setter: (s, v) => (s.ui.measuringMode = v)
+    },
+
+    {
+      type: 'subtitle',
+      key: SettingsPanelKeys.ControlBarSettingsSubtitle,
+      title: 'Control Bar - Settings'
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.ControlBarSettingsShowProjectInspectorButtonToggle,
+      label: 'Show Project Inspector Button',
+      getter: (s) => s.ui.projectInspector,
+      setter: (s, v) => (s.ui.projectInspector = v)
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.ControlBarSettingsShowSettingsButtonToggle,
+      label: 'Show Settings Button',
+      getter: (s) => s.ui.settings,
+      setter: (s, v) => (s.ui.settings = v)
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.ControlBarSettingsShowHelpButtonToggle,
+      label: 'Show Help Button',
+      getter: (s) => s.ui.help,
+      setter: (s, v) => (s.ui.help = v)
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.ControlBarSettingsShowMaximiseButtonToggle,
+      label: 'Show Maximise Button',
+      getter: (s) => s.ui.maximise,
+      setter: (s, v) => (s.ui.maximise = v)
+    }
+  ]
 }
