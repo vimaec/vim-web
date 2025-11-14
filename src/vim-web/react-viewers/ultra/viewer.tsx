@@ -1,7 +1,6 @@
 
 
 import * as Core from '../../core-viewers'
-import { Settings, PartialSettings, PartialUltraSettings, getDefaultUltraSettings } from '../../react-viewers/settings/settings'
 import { useSettings } from '../../react-viewers/settings/settingsState'
 import {useRef, RefObject, useEffect, useState } from 'react'
 import { Container, createContainer } from '../container'
@@ -26,8 +25,10 @@ import { useUltraIsolation } from './isolation'
 import { IsolationPanel } from '../panels/isolationPanel'
 import { GenericPanelHandle } from '../generic/genericPanel'
 import { ControllablePromise } from '../../utils'
-import { GetUltraSettingsContent, SettingsPanel } from '../settings/settingsPanel'
+import { SettingsPanel } from '../settings/settingsPanel'
 import { SidePanelMemo } from '../panels/sidePanel'
+import { getDefaultUltraSettings, PartialUltraSettings } from './settings'
+import { getUltraSettingsContent } from './settingsPanel'
 
 
 /**
@@ -150,7 +151,7 @@ export function Viewer (props: {
     <>
       <SettingsPanel
         visible={side.getContent() === 'settings'}
-        content={GetUltraSettingsContent(props.core)}
+        content={getUltraSettingsContent(props.core)}
         settings={settings}
       />
     </>

@@ -2,8 +2,6 @@ import * as Core from "../../core-viewers";
 import { CameraRef } from './cameraState';
 import { CursorManager } from '../helpers/cursor';
 
-import { Settings, UltraSettings, UserBoolean, isTrue } from '../settings';
-
 import { SideState } from './sideState';
 import * as Icons from '../icons';
 
@@ -19,6 +17,9 @@ import { PointerMode } from '../../core-viewers/shared';
 import * as ControlBar from '../controlbar'
 import Style = ControlBar.Style;
 import Ids = ControlBar.Ids;
+import { isTrue, UserBoolean } from "../settings/userBoolean";
+import { UltraSettings } from "../ultra/settings";
+import { WebglSettings } from "../webgl/settings";
 
 export type ControlBarSectionBoxSettings = {
   sectioningEnable: UserBoolean
@@ -214,7 +215,7 @@ export function controlBarSettingsUltra(
 function controlBarSettings(
   modal: ModalHandle,
   side: SideState,
-  settings: Settings): ControlBar.IControlBarSection {
+  settings: WebglSettings): ControlBar.IControlBarSection {
   const fullScreen = getFullScreenState();
 
   return {
@@ -400,7 +401,7 @@ export function useControlBar(
   modal: ModalHandle,
   side: SideState,
   cursor: CursorManager,
-  settings: Settings,
+  settings: WebglSettings,
   section: SectionBoxRef,
   isolationRef: IsolationRef,
   customization: ControlBar.ControlBarCustomization | undefined
@@ -439,7 +440,7 @@ function anyUiCursorButton (settings: ControlBarCursorSettings) {
  * @param {Settings} settings - The viewer settings to check
  * @returns {boolean} True if any settings buttons are enabled
  */
-export function anyUiSettingButton (settings: Settings) {
+export function anyUiSettingButton (settings: WebglSettings) {
   return (
     isTrue(settings.ui.projectInspector) ||
     isTrue(settings.ui.settings) ||

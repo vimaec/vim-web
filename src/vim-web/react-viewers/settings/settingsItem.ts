@@ -1,4 +1,4 @@
-import { AnySettings, Settings } from './settings'
+import { AnySettings } from './anySettings'
 import { UserBoolean } from './userBoolean'
 
 

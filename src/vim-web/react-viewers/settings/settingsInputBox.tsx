@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react'
 import { SettingsBox } from './settingsItem'
-import * as Core from '../../core-viewers'
 import { SettingsState } from './settingsState'
-import { AnySettings } from './settings'
+import { AnySettings } from './anySettings'
 
 export function renderSettingsInputBox(settings: SettingsState<AnySettings>, item: SettingsBox<AnySettings>) {
   const ref = React.useRef<HTMLInputElement>(null)

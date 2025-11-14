@@ -1,7 +1,7 @@
 import { SettingsToggle } from './settingsItem'
 import * as Core from '../../core-viewers'
 import { SettingsState } from './settingsState'
-import { AnySettings } from './settings'
+import { AnySettings } from './anySettings'
 
 /**
  * Renders a toggle (checkbox) UI element for a given SettingsToggle item.

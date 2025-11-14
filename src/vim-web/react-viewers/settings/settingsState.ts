@@ -3,12 +3,13 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import * as Core from '../../core-viewers'
-import { Settings, PartialSettings, createSettings, UltraSettings, RecursivePartial, AnySettings } from './settings'
 import { isTrue } from './userBoolean'
 import { saveSettingsToLocal } from './settingsStorage'
-import { ArgFuncRef, StateRef, useArgFuncRef, useFuncRef, useStateRef } from '../helpers/reactUtils'
-import { SettingsCustomizer, SettingsItem } from './settingsItem'
+import { StateRef, useStateRef } from '../helpers/reactUtils'
+import { SettingsCustomizer } from './settingsItem'
+import { AnySettings } from './anySettings'
+import { RecursivePartial } from '../../utils'
+import deepmerge from 'deepmerge'
 
 export type SettingsState<T extends AnySettings> = {
   value: T
@@ -59,17 +60,11 @@ export function useSettings<T extends AnySettings> (
   )
 }
 
-/**
- * Apply given vim viewer settings to the given viewer.
- */
-export function applyWebglSettings (settings: Settings) {
-  // Show/Hide performance gizmo
-  const performance = document.getElementsByClassName('vim-performance-div')[0]
-  if (performance) {
-    if (isTrue(settings.ui.performance)) {
-      performance.classList.remove('vc-hidden')
-    } else {
-      performance.classList.add('vc-hidden')
-    }
-  }
+export function createSettings<T extends AnySettings>(settings: RecursivePartial<T>, defaultSettings: T): T {
+  return settings !== undefined
+    ? deepmerge(defaultSettings, settings as Partial<T>) as T
+    : defaultSettings
 }
+
+
+

@@ -1,13 +1,12 @@
 
 import * as Core from '../../core-viewers/ultra'
 import { ControlBarCustomization } from '../controlbar/controlBar'
-import { settings } from '../icons'
-import { Settings, UltraSettings } from '../settings/settings'
 import { CameraRef } from '../state/cameraState'
 import { controlBarCamera, controlBarSectionBox, controlBarSettingsUltra, controlBarVisibility } from '../state/controlBarState'
 import { SectionBoxRef } from '../state/sectionBoxState'
 import { IsolationRef } from '../state/sharedIsolation'
 import { SideState } from '../state/sideState'
+import { UltraSettings } from './settings'
 
 export function useUltraControlBar (
   viewer: Core.Viewer,

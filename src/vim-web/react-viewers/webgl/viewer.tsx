@@ -19,14 +19,12 @@ import {
 } from '../panels/contextMenu'
 import { SidePanelMemo } from '../panels/sidePanel'
 import { useSideState } from '../state/sideState'
-import { GetWebglSettingsContent, SettingsPanel } from '../settings/settingsPanel'
 import { MenuToastMemo } from '../panels/toast'
 import { Overlay } from '../panels/overlay'
 import { addPerformanceCounter } from '../panels/performance'
 import { applyWebglBindings } from './inputsBindings'
 import { CursorManager } from '../helpers/cursor'
-import { PartialSettings, Settings, getDefaultSettings, getDefaultUltraSettings, isTrue } from '../settings'
-import { applyWebglSettings, useSettings } from '../settings/settingsState'
+import { useSettings } from '../settings/settingsState'
 import { TreeActionRef } from '../bim/bimTree'
 import { Container, createContainer } from '../container'
 import { useViewerState } from './viewerState'
@@ -45,6 +43,10 @@ import { useWebglIsolation } from './isolation'
 import { GenericPanelHandle } from '../generic'
 import { ControllablePromise } from '../../utils'
 import { SettingsCustomizer } from '../settings/settingsItem'
+import { getDefaultSettings, PartialWebglSettings, WebglSettings } from './settings'
+import { isTrue } from '../settings/userBoolean'
+import { SettingsPanel } from '../settings/settingsPanel'
+import { applyWebglSettings, getWebglSettingsContent } from './settingsPanel'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React viewer.
@@ -55,7 +57,7 @@ import { SettingsCustomizer } from '../settings/settingsItem'
  */
 export function createViewer (
   container?: Container | HTMLElement,
-  settings: PartialSettings = {},
+  settings: PartialWebglSettings = {},
   coreSettings: Core.Webgl.PartialViewerSettings = {}
 ) : Promise<ViewerRef> {
   const controllablePromise = new ControllablePromise<ViewerRef>()
@@ -106,7 +108,7 @@ export function Viewer (props: {
   container: Container
   viewer: Core.Webgl.Viewer
   onMount: (viewer: ViewerRef) => void
-  settings?: PartialSettings
+  settings?: PartialWebglSettings
 }) {
   const settings = useSettings(props.settings ?? {}, getDefaultSettings(), (s) => applyWebglSettings(s))
   const modal = useRef<ModalHandle>(null)
@@ -176,7 +178,7 @@ export function Viewer (props: {
       settings: {
         update : settings.update,
         register : settings.register,
-        customize : (c: SettingsCustomizer<Settings>) => settings.customizer.set(c)
+        customize : (c: SettingsCustomizer<WebglSettings>) => settings.customizer.set(c)
       },
       get isolationPanel(){
         return isolationPanelHandle.current
@@ -219,7 +221,7 @@ export function Viewer (props: {
       />}
       <SettingsPanel
         visible={side.getContent() === 'settings'}
-        content={GetWebglSettingsContent(props.viewer)}
+        content={getWebglSettingsContent(props.viewer)}
         settings={settings}
       />
     </>

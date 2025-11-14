@@ -57,7 +57,6 @@ export class SettingsPanelKeys {
   static ControlBarVisibilityAutoIsolate = 'controlBar.visibility.autoIsolate'
   static ControlBarVisibilitySettings = 'controlBar.visibility.settings'
 
-
   // --- Control Bar - Settings ---
   static ControlBarSettingsSubtitle = 'controlBarSettings'
   static ControlBarSettingsShowProjectInspectorButtonToggle = 'projectInspector'

@@ -4,7 +4,7 @@
 
 import * as Core from '../../core-viewers'
 import { ContextMenuRef } from '../panels/contextMenu'
-import { Settings } from '../settings/settings'
+import { Settings } from '../settings/anySettings'
 import { CameraRef } from '../state/cameraState'
 import { Container } from '../container'
 import { BimInfoPanelRef } from '../bim/bimInfoData'
