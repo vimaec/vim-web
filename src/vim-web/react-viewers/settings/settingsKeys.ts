@@ -33,6 +33,31 @@ export class SettingsPanelKeys {
   static ControlBarToolsSubtitle = 'controlBarTools'
   static ControlBarToolsShowMeasuringModeButtonToggle = 'measuringMode'
 
+  // --- Control Bar Camera ---
+  static ControlBarCameraSubtitle = 'settingsPanel.controlBar.Camera'
+  static ControlBarAutoCamera = 'settingsPanel.controlBar.autoCamera'
+  static ControlBarFrameSelection = 'settingsPanel.controlBar.frameSelection'
+  static ControlBarFrameAll = 'settingsPanel.controlBar.frameAll'
+
+  // --- Control Bar - Sectioning ---
+  static ControlBarSectioningSubtitle = 'settingsPanel.controlBar.sectioning'
+  static ControlBarSectioningEnable = 'settingsPanel.controlBar.enableSectioning'
+  static ControlBarSectioningFitToSelection = 'settingsPanel.controlBar.fitToSelection'
+  static ControlBarSectioningReset = 'settingsPanel.controlBar.reset'
+  static ControlBarSectioningShow = 'settingsPanel.controlBar.show'
+  static ControlBarSectioningAuto = 'settingsPanel.controlBar.auto'
+  static ControlBarSectioningSettings = 'settingsPanel.controlBar.settings'
+
+  // --- Control Bar - Visibility ---
+  static ControlBarVisibilitySubtitle = 'controlBar.visibility.subtitle'
+  static ControlBarVisibilityClearSelection = 'controlBar.visibility.clearSelection'
+  static ControlBarVisibilityShowAll = 'controlBar.visibility.showAll'
+  static ControlBarVisibilityToggle = 'controlBar.visibility.toggle'
+  static ControlBarVisibilityIsolate = 'controlBar.visibility.isolate'
+  static ControlBarVisibilityAutoIsolate = 'controlBar.visibility.autoIsolate'
+  static ControlBarVisibilitySettings = 'controlBar.visibility.settings'
+
+
   // --- Control Bar - Settings ---
   static ControlBarSettingsSubtitle = 'controlBarSettings'
   static ControlBarSettingsShowProjectInspectorButtonToggle = 'projectInspector'

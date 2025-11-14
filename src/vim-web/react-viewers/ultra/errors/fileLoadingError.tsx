@@ -6,7 +6,7 @@ export function serverFileLoadingError (url: string): MessageBoxProps {
   return {
     title: 'File Loading Error',
     body: body(url),
-    footer: style.footer(Urls.support),
+    footer: style.footer(),
     canClose: false
   }
 }

@@ -1,7 +1,9 @@
 
 
-import * as Core from '../../core-viewers' 
-import React, {useRef, RefObject, useEffect, useState } from 'react'
+import * as Core from '../../core-viewers'
+import { Settings, PartialSettings, PartialUltraSettings, getDefaultUltraSettings } from '../../react-viewers/settings/settings'
+import { useSettings } from '../../react-viewers/settings/settingsState'
+import {useRef, RefObject, useEffect, useState } from 'react'
 import { Container, createContainer } from '../container'
 import { createRoot } from 'react-dom/client'
 import { Overlay } from '../panels/overlay'
@@ -24,6 +26,9 @@ import { useUltraIsolation } from './isolation'
 import { IsolationPanel } from '../panels/isolationPanel'
 import { GenericPanelHandle } from '../generic/genericPanel'
 import { ControllablePromise } from '../../utils'
+import { GetUltraSettingsContent, SettingsPanel } from '../settings/settingsPanel'
+import { SidePanelMemo } from '../panels/sidePanel'
+
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React viewer.
@@ -31,8 +36,10 @@ import { ControllablePromise } from '../../utils'
  * @returns An object containing the resulting container, reactRoot, and viewer.
  */
 export function createViewer (
-  container?: Container | HTMLElement
+  container?: Container | HTMLElement,
+  settings?: PartialUltraSettings 
 ) : Promise<ViewerRef> {
+  
   const controllablePromise = new ControllablePromise<ViewerRef>()
   const cmpContainer = container instanceof HTMLElement
     ? createContainer(container)
@@ -58,6 +65,7 @@ export function createViewer (
     <Viewer
       container={cmpContainer}
       core={core}
+      settings={settings}
       onMount = {(cmp : ViewerRef) => controllablePromise.resolve(attachDispose(cmp))}
     />
   )
@@ -74,9 +82,10 @@ export function createViewer (
 export function Viewer (props: {
   container: Container
   core: Core.Ultra.Viewer
+  settings?: PartialUltraSettings
   onMount: (viewer: ViewerRef) => void}) {
 
-
+  const settings = useSettings(props.settings ?? {}, getDefaultUltraSettings())
   const sectionBoxRef = useUltraSectionBox(props.core)
   const camera = useUltraCamera(props.core, sectionBoxRef)
   const isolationPanelHandle = useRef<GenericPanelHandle>(null)
@@ -87,7 +96,15 @@ export function Viewer (props: {
   const [_, setSelectState] = useState(0)
   const [controlBarCustom, setControlBarCustom] = useState<ControlBarCustomization>(() => c => c)
   const isolationRef = useUltraIsolation(props.core)
-  const controlBar = useUltraControlBar(props.core, sectionBoxRef, isolationRef, camera, _ =>_)
+  const controlBar = useUltraControlBar(
+    props.core,
+    sectionBoxRef,
+    isolationRef,
+    camera,
+    settings.value,
+    side,
+    _ =>_
+  )
   
   useViewerInput(props.core.inputs, camera)
 
@@ -129,7 +146,23 @@ export function Viewer (props: {
     })
   }, [])
 
+  const sidePanel = () => (
+    <>
+      <SettingsPanel
+        visible={side.getContent() === 'settings'}
+        content={GetUltraSettingsContent(props.core)}
+        settings={settings}
+      />
+    </>
+  )
+
   return <>
+  <SidePanelMemo
+    container={props.container}
+    viewer={props.core}
+    side={side}
+    content={sidePanel}
+  />
   <RestOfScreen side={side} content={() => {
     return <>
     {whenTrue(true, <LogoMemo/>)}
@@ -139,7 +172,7 @@ export function Viewer (props: {
       show={true}
     />
     <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBoxRef}/>
-    <IsolationPanel ref={isolationPanelHandle} state={isolationRef} />
+    <IsolationPanel ref={isolationPanelHandle} state={isolationRef} transparency={false}/>
   </>
   }}/>
   

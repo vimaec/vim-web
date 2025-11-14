@@ -2,8 +2,9 @@ import React, { useEffect } from 'react'
 import { SettingsBox } from './settingsItem'
 import * as Core from '../../core-viewers'
 import { SettingsState } from './settingsState'
+import { AnySettings } from './settings'
 
-export function renderSettingsInputBox(viewer: Core.Webgl.Viewer, settings: SettingsState, item: SettingsBox) {
+export function renderSettingsInputBox(settings: SettingsState<AnySettings>, item: SettingsBox<AnySettings>) {
   const ref = React.useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -23,14 +24,14 @@ export function renderSettingsInputBox(viewer: Core.Webgl.Viewer, settings: Sett
   }
 
   return (
-    <div className="vc-box-input vc-my-1">
+    <div className="vc-box-input vc-my-1 ">
       <label htmlFor="textbox" className="vc-w-3 vc-h-2">
         {item.label}:
       </label>
       <input
         ref={ref}
         type="text"
-        className="vim-settings-textbox vc-w-14 vc-ml-1 vc-p-1"
+        className="vim-settings-textbox vc-border vc-rounded-sm vc-border-gray vc-w-14 vc-ml-1 vc-p-1"
         onBlur={update}
       />
       <label htmlFor="textbox" className="vc-w-3 vc-h-2 vc-text-gray vc-ml-1">

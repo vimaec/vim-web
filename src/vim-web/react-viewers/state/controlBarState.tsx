@@ -2,7 +2,7 @@ import * as Core from "../../core-viewers";
 import { CameraRef } from './cameraState';
 import { CursorManager } from '../helpers/cursor';
 
-import { Settings, isTrue } from '../settings';
+import { Settings, UltraSettings, UserBoolean, isTrue } from '../settings';
 
 import { SideState } from './sideState';
 import * as Icons from '../icons';
@@ -20,12 +20,22 @@ import * as ControlBar from '../controlbar'
 import Style = ControlBar.Style;
 import Ids = ControlBar.Ids;
 
+export type ControlBarSectionBoxSettings = {
+  sectioningEnable: UserBoolean
+  sectioningFitToSelection: UserBoolean
+  sectioningReset: UserBoolean
+  sectioningShow: UserBoolean
+  sectioningAuto: UserBoolean
+  sectioningSettings: UserBoolean
+}
+
 /**
  * Returns a control bar section for the section box.
  */
 export function controlBarSectionBox(
   section: SectionBoxRef,
-  hasSelection : boolean
+  hasSelection : boolean,
+  settings: ControlBarSectionBoxSettings
 ): ControlBar.IControlBarSection {
 
   return {
@@ -35,6 +45,7 @@ export function controlBarSectionBox(
     buttons: [
       {
         id: Ids.buttonSectionBoxEnable,
+        enabled: () => isTrue(settings.sectioningEnable),
         tip: 'Enable Section Box',
         isOn: () => section.enable.get(),
         style: (on) => Style.buttonExpandStyle(on),
@@ -43,8 +54,9 @@ export function controlBarSectionBox(
       },
       {
         id: Ids.buttonSectionBoxToSelection,
+        
         tip: 'Fit Section',
-        enabled: () => section.enable.get(),
+        enabled: () => section.enable.get() && isTrue(settings.sectioningFitToSelection),
         isOn: () => hasSelection,
         style: (on) => Style.buttonDisableStyle(on),
         action: () => section.sectionSelection.call(), 
@@ -53,7 +65,7 @@ export function controlBarSectionBox(
       {
         id: Ids.buttonSectionBoxToScene,
         tip: 'Reset Section',
-        enabled: () => section.enable.get(),
+        enabled: () => section.enable.get() && isTrue(settings.sectioningReset),
         style: (on) => Style.buttonDefaultStyle(on),
         action: () => section.sectionScene.call(), 
         icon: Icons.sectionBoxReset,
@@ -61,7 +73,7 @@ export function controlBarSectionBox(
       {
         id: Ids.buttonSectionBoxVisible,
         tip: 'Show Section Box',
-        enabled: () => section.enable.get(),
+        enabled: () => section.enable.get() && isTrue(settings.sectioningShow),
         isOn: () => section.visible.get(),
         style: (on) => Style.buttonDefaultStyle(on),
         action: () => section.visible.set(!section.visible.get()),
@@ -70,7 +82,7 @@ export function controlBarSectionBox(
       {
         id: Ids.buttonSectionBoxAuto,
         tip: 'Auto Section',
-        enabled: () => section.enable.get(),
+        enabled: () => section.enable.get() && isTrue(settings.sectioningAuto),
         isOn: () => section.auto.get(),
         style: (on) => Style.buttonDefaultStyle(on),
         action: () => section.auto.set(!section.auto.get()),
@@ -79,7 +91,7 @@ export function controlBarSectionBox(
       {
         id: Ids.buttonSectionBoxSettings,
         tip: 'Section Settings',
-        enabled: () => section.enable.get(),
+        enabled: () => section.enable.get() && isTrue(settings.sectioningSettings),
         isOn: () => section.showOffsetPanel.get(),
         style: (on) => Style.buttonDefaultStyle(on),
         action: () => section.showOffsetPanel.set(!section.showOffsetPanel.get()),
@@ -89,13 +101,20 @@ export function controlBarSectionBox(
   };
 }
 
+export type ControlBarCursorSettings = {
+  cursorOrbit: UserBoolean
+  cursorLookAround: UserBoolean
+  cursorPan: UserBoolean
+  cursorZoom: UserBoolean
+}
+
 /**
  * Returns a control bar section for pointer/camera modes.
  */
 function controlBarPointer(
   viewer: Core.Webgl.Viewer,
   camera: CameraRef,
-  settings: Settings,
+  settings: ControlBarCursorSettings,
   section: SectionBoxRef
 ): ControlBar.IControlBarSection {
   const pointer = getPointerState(viewer);
@@ -107,7 +126,7 @@ function controlBarPointer(
     buttons: [
       {
         id: Ids.buttonCameraOrbit,
-        enabled: () => isTrue(settings.ui.orbit),
+        enabled: () => isTrue(settings.cursorOrbit),
         tip: 'Orbit',
         action: () => pointer.onButton(PointerMode.ORBIT),
         icon: Icons.orbit,
@@ -116,7 +135,7 @@ function controlBarPointer(
       },
       {
         id: Ids.buttonCameraLook,
-        enabled: () => isTrue(settings.ui.lookAround),
+        enabled: () => isTrue(settings.cursorLookAround),
         tip: 'Look Around',
         action: () => pointer.onButton(PointerMode.LOOK),
         icon: Icons.look,
@@ -125,7 +144,7 @@ function controlBarPointer(
       },
       {
         id: Ids.buttonCameraPan,
-        enabled: () => isTrue(settings.ui.pan),
+        enabled: () => isTrue(settings.cursorPan),
         tip: 'Pan',
         action: () => pointer.onButton(PointerMode.PAN),
         icon: Icons.pan,
@@ -134,7 +153,7 @@ function controlBarPointer(
       },
       {
         id: Ids.buttonCameraZoom,
-        enabled: () => isTrue(settings.ui.zoom),
+        enabled: () => isTrue(settings.cursorZoom),
         tip: 'Zoom',
         action: () => pointer.onButton(PointerMode.ZOOM),
         icon: Icons.zoom,
@@ -145,9 +164,13 @@ function controlBarPointer(
   };
 }
 
+export type ControlBarMeasureSettings = {
+  measuringMode: UserBoolean
+}
+
 export function controlBarMeasure(
-  settings: Settings,
-  measure: ReturnType<typeof getMeasureState>
+  measure: ReturnType<typeof getMeasureState>,
+  settings: ControlBarMeasureSettings
 ){
   return {
     id: Ids.sectionActions,
@@ -156,12 +179,33 @@ export function controlBarMeasure(
     buttons: [
       {
         id: Ids.buttonMeasure,
-        enabled: () => isTrue(settings.ui.measuringMode),
+        enabled: () => isTrue(settings.measuringMode),
         isOn: () => measure.active,
         tip: 'Measuring Mode',
         action: () => measure.toggle(),
         icon: Icons.measure,
         style: Style.buttonDefaultStyle,
+      },
+    ]
+  }
+}
+
+export function controlBarSettingsUltra(
+  side: SideState,
+  settings: UltraSettings): ControlBar.IControlBarSection {
+
+  return {
+    id: Ids.sectionSettings,
+    enable: () => isTrue(settings.ui.settings),
+    style: Style.sectionDefaultStyle,
+    buttons: [
+      {
+        id: Ids.buttonSettings,
+        enabled: () => isTrue(settings.ui.settings),
+        tip: 'Settings',
+        action: () => side.toggleContent('settings'),
+        icon: Icons.settings,
+        style: Style.buttonDefaultStyle
       },
     ]
   }
@@ -219,7 +263,13 @@ function controlBarSettings(
   }
 }
 
-export function controlBarCamera(camera: CameraRef): ControlBar.IControlBarSection {
+export type ControlBarCameraSettings ={
+  cameraAuto : UserBoolean
+  cameraFrameSelection: UserBoolean
+  cameraFrameScene: UserBoolean
+}
+
+export function controlBarCamera(camera: CameraRef, settings: ControlBarCameraSettings): ControlBar.IControlBarSection {
   return {
     id: Ids.sectionCamera,
     enable: () => true,
@@ -227,6 +277,7 @@ export function controlBarCamera(camera: CameraRef): ControlBar.IControlBarSecti
     buttons: [
       {
         id: Ids.buttonCameraAuto,
+        enabled: () => isTrue(settings.cameraAuto),
         tip: 'Auto Camera',
         isOn: () => camera.autoCamera.get(),
         action: () => camera.autoCamera.set(!camera.autoCamera.get()),
@@ -235,7 +286,7 @@ export function controlBarCamera(camera: CameraRef): ControlBar.IControlBarSecti
       },
       {
         id: Ids.buttonCameraFrameSelection,
-        // enabled: () => isTrue(settings.ui.zoomToFit), TODO: Implement ui toggles in Ultra
+        enabled: () => isTrue(settings.cameraFrameSelection),
         tip: 'Frame Selection',
         action: () => camera.frameSelection.call(),
         icon: Icons.frameSelection,
@@ -244,7 +295,7 @@ export function controlBarCamera(camera: CameraRef): ControlBar.IControlBarSecti
       },
       {
         id: Ids.buttonCameraFrameScene,
-        // enabled: () => isTrue(settings.ui.zoomToFit), TODO: Implement ui toggles in Ultra
+        enabled: () => isTrue(settings.cameraFrameScene),
         tip: 'Frame All',
         action: () => camera.frameScene.call(),
         icon: Icons.frameScene,
@@ -255,8 +306,17 @@ export function controlBarCamera(camera: CameraRef): ControlBar.IControlBarSecti
   }
 }
 
+export type ControlBarVisibilitySettings = {
+    visibilityEnable: UserBoolean
+    visibilityClearSelection: UserBoolean
+    visibilityShowAll: UserBoolean
+    visibilityToggle: UserBoolean
+    visibilityIsolate: UserBoolean
+    visibilityAutoIsolate: UserBoolean
+    visibilitySettings: UserBoolean
+}
 
-export function controlBarSelection(isolation: IsolationRef): ControlBar.IControlBarSection {
+export function controlBarVisibility(isolation: IsolationRef, settings: ControlBarVisibilitySettings): ControlBar.IControlBarSection {
   const adapter = isolation.adapter.current
   const someVisible = adapter.hasVisibleSelection() || !adapter.hasHiddenSelection()  
 
@@ -267,6 +327,7 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
     buttons: [
       {
         id: Ids.buttonClearSelection,
+        enabled: () => isTrue(settings.visibilityClearSelection),
         tip: 'Clear Selection',
         action: () => adapter.clearSelection(),
         icon: Icons.pointer,
@@ -276,6 +337,7 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
       {
         id: Ids.buttonShowAll,
         tip: 'Show All',
+        enabled: () => isTrue(settings.visibilityShowAll),
         action: () =>  adapter.showAll(),
         icon: Icons.showAll,
         isOn: () =>!isolation.autoIsolate.get() && isolation.visibility.get() !== 'all',
@@ -284,7 +346,7 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
 
       {
         id: Ids.buttonHideSelection,
-        enabled: () => someVisible,
+        enabled: () => someVisible && isTrue(settings.visibilityToggle),
         tip: 'Hide Selection',
         action: () => adapter.hideSelection(),
         icon: Icons.hideSelection,
@@ -293,7 +355,7 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
       },
       {
         id: Ids.buttonShowSelection,
-        enabled: () => !someVisible,
+        enabled: () => !someVisible && isTrue(settings.visibilityToggle),
         tip: 'Show Selection',
         action: () => adapter.showSelection(),
         icon: Icons.showSelection,
@@ -302,6 +364,7 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
       },
       {
         id: Ids.buttonIsolateSelection,
+        enabled: () => isTrue(settings.visibilityIsolate),
         tip: 'Isolate Selection',
         action: () => adapter.isolateSelection(),
         icon: Icons.isolateSelection,
@@ -310,6 +373,7 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
       },
       {
         id: Ids.buttonAutoIsolate,
+        enabled: () => isTrue(settings.visibilityAutoIsolate),
         tip: 'Auto Isolate',
         action: () => isolation.autoIsolate.set(!isolation.autoIsolate.get()),
         isOn: () =>  isolation.autoIsolate.get(),
@@ -317,6 +381,7 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
       },
       {
         id: Ids.buttonIsolationSettings,
+        enabled: () => isTrue(settings.visibilitySettings),
         tip: 'Isolation Settings',
         action: () => isolation.showPanel.set(!isolation.showPanel.get()),
         icon: Icons.slidersHoriz,
@@ -341,21 +406,15 @@ export function useControlBar(
   customization: ControlBar.ControlBarCustomization | undefined
 ) {
   const measure = getMeasureState(viewer, cursor);
-  const pointerSection = controlBarPointer(viewer, camera, settings, section);
-  const actionSection = controlBarMeasure(settings, measure);
-  const sectionBoxSection = controlBarSectionBox(section,viewer.selection.any());
-  const settingsSection = controlBarSettings(modal, side, settings);
-  const cameraSection = controlBarCamera(camera);
-  const selectionSection = controlBarSelection(isolationRef);
 
   // Apply user customization (note that pointerSection is added twice per original design)
   let controlBarSections = [
-    pointerSection,
-    actionSection,
-    cameraSection,
-    sectionBoxSection,
-    selectionSection,
-    settingsSection
+    controlBarPointer(viewer, camera, settings.ui, section),
+    controlBarCamera(camera, settings.ui),
+    controlBarVisibility(isolationRef, settings.ui),
+    controlBarMeasure(measure, settings.ui),
+    controlBarSectionBox(section, viewer.selection.any(), settings.ui),
+    controlBarSettings(modal, side, settings)
   ];
   controlBarSections = customization?.(controlBarSections) ?? controlBarSections;
   return controlBarSections;
@@ -366,13 +425,12 @@ export function useControlBar(
  * @param {Settings} settings - The viewer settings to check
  * @returns {boolean} True if any cursor buttons are enabled
  */
-function anyUiCursorButton (settings: Settings) {
+function anyUiCursorButton (settings: ControlBarCursorSettings) {
   return (
-    isTrue(settings.ui.orbit) ||
-    isTrue(settings.ui.lookAround) ||
-    isTrue(settings.ui.pan) ||
-    isTrue(settings.ui.zoom) ||
-    isTrue(settings.ui.zoomWindow)
+    isTrue(settings.cursorOrbit) ||
+    isTrue(settings.cursorLookAround) ||
+    isTrue(settings.cursorPan) ||
+    isTrue(settings.cursorZoom)
   )
 }
 

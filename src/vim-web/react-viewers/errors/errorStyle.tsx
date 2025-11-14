@@ -5,13 +5,8 @@ export const vcLink = `${vcColorLink} vc-underline`
 export const vcLabel = 'vc-text-[#3F444F]'
 export const vcRoboto = 'vc-font-[\'Roboto\',sans-serif]'
 
-export function footer (url: string) {
-  return (
-    <p className={`vc-text-xs vc-font-normal ${vcColorSecondary}`}>
-      More troubleshooting tips can be found{' '}
-      {link(url, 'here')}
-    </p>
-  )
+export function footer () {
+  return <></>
 }
 
 export function mainText (text: JSX.Element) {

@@ -19,14 +19,14 @@ import {
 } from '../panels/contextMenu'
 import { SidePanelMemo } from '../panels/sidePanel'
 import { useSideState } from '../state/sideState'
-import { SettingsPanel } from '../settings/settingsPanel'
+import { GetWebglSettingsContent, SettingsPanel } from '../settings/settingsPanel'
 import { MenuToastMemo } from '../panels/toast'
 import { Overlay } from '../panels/overlay'
 import { addPerformanceCounter } from '../panels/performance'
 import { applyWebglBindings } from './inputsBindings'
 import { CursorManager } from '../helpers/cursor'
-import { PartialSettings, isTrue } from '../settings'
-import { useSettings } from '../settings/settingsState'
+import { PartialSettings, Settings, getDefaultSettings, getDefaultUltraSettings, isTrue } from '../settings'
+import { applyWebglSettings, useSettings } from '../settings/settingsState'
 import { TreeActionRef } from '../bim/bimTree'
 import { Container, createContainer } from '../container'
 import { useViewerState } from './viewerState'
@@ -108,7 +108,7 @@ export function Viewer (props: {
   onMount: (viewer: ViewerRef) => void
   settings?: PartialSettings
 }) {
-  const settings = useSettings(props.viewer, props.settings ?? {})
+  const settings = useSettings(props.settings ?? {}, getDefaultSettings(), (s) => applyWebglSettings(s))
   const modal = useRef<ModalHandle>(null)
 
   const sectionBoxRef = useWebglSectionBox(props.viewer)
@@ -133,11 +133,7 @@ export function Viewer (props: {
   const treeRef = useRef<TreeActionRef>()
   const performanceRef = useRef<HTMLDivElement>(null)
   const isolationRef = useWebglIsolation(props.viewer)
-
   const controlBar = useControlBar(props.viewer, camera, modal.current, side, cursor, settings.value, sectionBoxRef, isolationRef, controlBarCustom)
-
-
-
 
   useEffect(() => {
     side.setHasBim(viewerState.vim.get()?.bim !== undefined)
@@ -180,7 +176,7 @@ export function Viewer (props: {
       settings: {
         update : settings.update,
         register : settings.register,
-        customize : (c: SettingsCustomizer) => settings.customizer.set(c)
+        customize : (c: SettingsCustomizer<Settings>) => settings.customizer.set(c)
       },
       get isolationPanel(){
         return isolationPanelHandle.current
@@ -223,7 +219,7 @@ export function Viewer (props: {
       />}
       <SettingsPanel
         visible={side.getContent() === 'settings'}
-        viewer={props.viewer}
+        content={GetWebglSettingsContent(props.viewer)}
         settings={settings}
       />
     </>
@@ -247,7 +243,7 @@ export function Viewer (props: {
           show={isTrue(settings.value.ui.controlBar)}
         />
         <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBoxRef}/>
-        <IsolationPanel ref={isolationPanelHandle} state={isolationRef}/>
+        <IsolationPanel ref={isolationPanelHandle} state={isolationRef} transparency={true}/>
         <AxesPanelMemo
           viewer={props.viewer}
           camera={camera}

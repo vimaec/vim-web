@@ -1,6 +1,7 @@
 import { SettingsToggle } from './settingsItem'
 import * as Core from '../../core-viewers'
 import { SettingsState } from './settingsState'
+import { AnySettings } from './settings'
 
 /**
  * Renders a toggle (checkbox) UI element for a given SettingsToggle item.
@@ -10,9 +11,8 @@ import { SettingsState } from './settingsState'
  * @returns JSX.Element | null
  */
 export function renderSettingsToggle(
-  viewer: Core.Webgl.Viewer,
-  settings: SettingsState,
-  item: SettingsToggle
+  settings: SettingsState<AnySettings>,
+  item: SettingsToggle<AnySettings>
 ): JSX.Element | null {
   const value = item.getter(settings.value)
   if (value === 'AlwaysTrue' || value === 'AlwaysFalse') return null

@@ -1,4 +1,5 @@
 import * as Core from "../../core-viewers";
+import { Element3D, Selectable } from "../../core-viewers/webgl";
 import { IsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
 
 export function useWebglIsolation(viewer: Core.Webgl.Viewer){
@@ -7,7 +8,33 @@ export function useWebglIsolation(viewer: Core.Webgl.Viewer){
 }
 
 function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapter {
-  
+  var transparency: boolean = true;
+  var ghost: boolean = false;
+  var rooms: boolean = false;
+
+  function updateMaterials(){
+    viewer.renderer.modelMaterial =
+        ghost ? [viewer.materials.simple, viewer.materials.ghost]
+      : transparency ? undefined 
+      : viewer.materials.simple
+  }
+
+  function updateVisibility(elements: 'all' | Selectable[], predicate: (object: Selectable) => boolean){
+    if(elements === 'all'){
+      for(let v of viewer.vims){
+        for(let o of v.getAllElements()){
+          if(o.type === 'Element3D'){
+            o.visible = o.isRoom ? rooms : predicate(o);
+          }
+        }
+      }
+    } else {
+      for(let o of elements){
+        o.visible = o.isRoom ? rooms : predicate(o);
+      }
+    }
+  }
+
   return {
     onVisibilityChange: viewer.renderer.onSceneUpdated,
     onSelectionChanged: viewer.selection.onSelectionChanged,
@@ -18,30 +45,30 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
 
     clearSelection: () => viewer.selection.clear(),
 
-    isolateSelection: () => updateAllVisibility(viewer, o => viewer.selection.has(o)),
+    isolateSelection: () => updateVisibility('all', o => viewer.selection.has(o)),
     hideSelection: () => {
-      viewer.selection.getAll().forEach(o => o.visible = false)
+      updateVisibility(viewer.selection.getAll(), o => false)
     },
     showSelection: () => {
-      viewer.selection.getAll().forEach(o => o.visible = true)
+      updateVisibility(viewer.selection.getAll(), o => true)
     },
 
     hideAll: () => {
-      updateAllVisibility(viewer, o => false)
+      updateVisibility('all', o => false)
     },
     showAll: () => {
-      updateAllVisibility(viewer, o => true)
+      updateVisibility('all', o => true)
     },
 
     isolate: (instances: number[]) => {
       const set = new Set(instances)
-      updateAllVisibility(viewer, o => o.instances.some(i => set.has(i)))
+      updateVisibility('all', o => o.instances.some(i => set.has(i)))
     },
     show: (instances: number[]) => {
       for(let i of instances){
         for(let v of viewer.vims){
           const o = v.getElement(i)
-            o.visible = true
+          o.visible = o.isRoom ? rooms : true
         }
       }
     },
@@ -50,36 +77,34 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
       for(let i of instances){
         for(let v of viewer.vims){
           const o = v.getElement(i)
-            o.visible = false;
+            o.visible = o.isRoom ? rooms : false
         }
       }
     },
-
     
-    showGhost: (show: boolean) => {
-      viewer.renderer.modelMaterial = show
-      ? [viewer.materials.simple, viewer.materials.ghost]
-      : undefined
+    enableTransparency: (enable: boolean) => {
+      if(transparency !== enable){
+        transparency = enable;
+        updateMaterials();
+      };
     },
+
+    showGhost: (show: boolean) => {
+      ghost = show;
+      updateMaterials();
+    },    
 
     getGhostOpacity: () => viewer.materials.ghostOpacity,
     setGhostOpacity: (opacity: number) => viewer.materials.ghostOpacity = opacity,
 
-    getShowRooms: () => true,
-    setShowRooms: (show: boolean) => {console.log("setShowRooms not implemented")},
-
-
-  };
-}
-
-function updateAllVisibility(viewer: Core.Webgl.Viewer, predicate: (object: Core.Webgl.Element3D) => boolean){
- for(let v of viewer.vims){
-    for(let o of v.getAllElements()){
-      if(o.type === 'Element3D'){
-        o.visible = predicate(o)
+    getShowRooms: () => rooms,
+    setShowRooms: (show: boolean) => {
+      if(rooms !== show){
+        rooms = show;
+        updateVisibility('all', o => o.visible);arguments
       }
-    }
-  }
+    },
+  };
 }
 
 function getVisibilityState(viewer: Core.Webgl.Viewer): VisibilityStatus {

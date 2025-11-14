@@ -6,7 +6,7 @@ export function serverStreamError (url: string): MessageBoxProps {
   return {
     title: 'Stream Error',
     body: body(url),
-    footer: style.footer(Urls.support),
+    footer: style.footer(),
     canClose: false
   }
 }

@@ -1,10 +1,10 @@
-import { Settings } from './settings'
+import { AnySettings, Settings } from './settings'
 import { UserBoolean } from './userBoolean'
 
 
-export type SettingsCustomizer = (items: SettingsItem[]) => SettingsItem[]
+export type SettingsCustomizer<T extends AnySettings> = (items: SettingsItem<T>[]) => SettingsItem<T>[]
 
-export type SettingsItem = SettingsSubtitle | SettingsToggle | SettingsBox | SettingsElement
+export type SettingsItem<T extends AnySettings> = SettingsSubtitle | SettingsToggle<T> | SettingsBox<T> | SettingsElement
 
 export type BaseSettingsItem = {
   type: string
@@ -16,20 +16,20 @@ export type SettingsSubtitle = BaseSettingsItem & {
   title: string
 }
 
-export type SettingsToggle = BaseSettingsItem & {
+export type SettingsToggle<T extends AnySettings> = BaseSettingsItem & {
   type: 'toggle'
   label: string
-  getter: (settings: Settings) => UserBoolean
-  setter: (settings: Settings, b: boolean) => void
+  getter: (settings: T) => UserBoolean
+  setter: (settings: T, b: boolean) => void
 }
 
-export type SettingsBox = BaseSettingsItem & {
+export type SettingsBox<T extends AnySettings> = BaseSettingsItem & {
   type: 'box'
   label: string
   info: string
   transform: (value: number) => number
-  getter: (settings: Settings) => number
-  setter: (settings: Settings, b: number) => void
+  getter: (settings: T) => number
+  setter: (settings: T, b: number) => void
 }
 
 export type SettingsElement = BaseSettingsItem & {

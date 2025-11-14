@@ -5,6 +5,7 @@
 
 import deepmerge from "deepmerge"
 import { UserBoolean } from "./userBoolean"
+import { ControlBarCameraSettings, ControlBarCursorSettings, ControlBarMeasureSettings, ControlBarSectionBoxSettings, ControlBarVisibilitySettings } from "../state"
 
 /**
  * Makes all fields optional recursively
@@ -30,43 +31,47 @@ export type Settings = {
     canDownload: boolean
     canReadLocalStorage: boolean
   }
-  ui: {
+  ui: ControlBarCameraSettings &
+      ControlBarCursorSettings &
+      ControlBarSectionBoxSettings &
+      ControlBarVisibilitySettings &
+      ControlBarMeasureSettings & {
+    
     // panels
     logo: UserBoolean
     bimTreePanel: UserBoolean
     bimInfoPanel: UserBoolean
     performance: UserBoolean
+    axesPanel: UserBoolean
+    controlBar: UserBoolean
 
     // axesPanel
-    axesPanel: UserBoolean
     orthographic: UserBoolean
     resetCamera: UserBoolean
 
-    // Control bar
-    controlBar: UserBoolean
-    // Control bar - cursors
-    orbit: UserBoolean
-    lookAround: UserBoolean
-    pan: UserBoolean
-    zoom: UserBoolean
-    zoomWindow: UserBoolean
-
-    autoCamera : UserBoolean
-    frameSelection: UserBoolean
-    frameScene: UserBoolean
-
-    // Control bar - tools
-    sectioningMode: UserBoolean
-    measuringMode: UserBoolean
-    toggleIsolation: UserBoolean
-
-    // Control bar - tools
+    // Control bar - settings
     projectInspector: UserBoolean
     settings: UserBoolean
     help: UserBoolean
     maximise: UserBoolean
   }
 }
+
+export type AnySettings = Settings | UltraSettings
+
+export type UltraSettings = {
+  ui: ControlBarCameraSettings &
+      ControlBarCursorSettings &
+      ControlBarSectionBoxSettings &
+      ControlBarVisibilitySettings &
+      ControlBarMeasureSettings & {
+      
+      settings: UserBoolean
+  }
+}
+
+export type PartialUltraSettings = RecursivePartial<UltraSettings>
+
 
 /**
  * Partial version of ComponentSettings where all properties are optional
@@ -100,21 +105,34 @@ export function getDefaultSettings(): Settings {
       // Control bar
       controlBar: true,
       // Control bar - cursors
-      orbit: true,
-      lookAround: true,
-      pan: true,
-      zoom: true,
-      zoomWindow: true,
+      cursorOrbit: true,
+      cursorLookAround: true,
+      cursorPan: true,
+      cursorZoom: true,
   
       // Control bar - camera
-      autoCamera: true,
-      frameScene: true,
-      frameSelection: true,
+      cameraAuto: true,
+      cameraFrameScene: true,
+      cameraFrameSelection: true,
   
       // Control bar - tools
-      sectioningMode: true,
+      sectioningEnable: true,
+      sectioningFitToSelection: true,
+      sectioningReset: true,
+      sectioningShow : true,
+      sectioningAuto : true,
+      sectioningSettings : true,
+
       measuringMode: true,
-      toggleIsolation: true,
+
+      // Control bar - Visibility
+      visibilityEnable: true,
+      visibilityClearSelection: true,
+      visibilityShowAll: true,
+      visibilityToggle: true,
+      visibilityIsolate: true,
+      visibilityAutoIsolate: true,
+      visibilitySettings: true,
   
       // Control bar - settings
       projectInspector: true,
@@ -125,8 +143,53 @@ export function getDefaultSettings(): Settings {
   }
 }
 
-export function createSettings(settings: PartialSettings): Settings {
+export function getDefaultUltraSettings(): UltraSettings {
+  return {
+
+    ui: {
+      // Control bar - cursors
+      cursorOrbit: true,
+      cursorLookAround: true,
+      cursorPan: true,
+      cursorZoom: true,
+  
+      // Control bar - camera
+      cameraAuto: true,
+      cameraFrameScene: true,
+      cameraFrameSelection: true,
+  
+      // Control bar - tools
+      sectioningEnable: true,
+      sectioningFitToSelection: true,
+      sectioningReset: true,
+      sectioningShow : true,
+      sectioningAuto : true,
+      sectioningSettings : true,
+
+      measuringMode: true,
+
+      // Control bar - Visibility
+      visibilityEnable: true,
+      visibilityClearSelection: true,
+      visibilityShowAll: true,
+      visibilityToggle: true,
+      visibilityIsolate: true,
+      visibilityAutoIsolate: true,
+      visibilitySettings: true,
+
+      settings: true
+    }
+  }
+}
+
+export function createSettings<T extends Settings | UltraSettings>(settings: RecursivePartial<T>, defaultSettings: T): T {
   return settings !== undefined
-    ? deepmerge(getDefaultSettings(), settings) as Settings
-    : getDefaultSettings()
+    ? deepmerge(defaultSettings, settings as Partial<T>) as T
+    : defaultSettings
+}
+
+export function createUltraSettings(settings: PartialUltraSettings): UltraSettings {
+  return settings !== undefined
+    ? deepmerge(getDefaultUltraSettings(), settings) as UltraSettings
+    : getDefaultUltraSettings()
 }

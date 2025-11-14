@@ -6,7 +6,7 @@ export function fileOpeningError (url: string): MessageBoxProps {
   return {
     title: 'File Opening Error',
     body: serverFileOpeningErrorBody(url),
-    footer: style.footer(Urls.support),
+    footer: style.footer(),
     canClose: false
   }
 }

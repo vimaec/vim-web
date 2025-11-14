@@ -12,7 +12,7 @@ export function serverFileDownloadingError (url : string, authToken?: string, se
   return {
     title: 'File Downloading Error',
     body: body(url, authToken, server),
-    footer: style.footer(Urls.support),
+    footer: style.footer(),
     canClose: false
   }
 }
