@@ -9,8 +9,13 @@ export type UltraSettings = {
       ControlBarCursorSettings &
       ControlBarSectionBoxSettings &
       ControlBarVisibilitySettings & {
+      // Panels
+      panelLogo: UserBoolean
+      panelControlBar: UserBoolean
       
-      settings: UserBoolean
+      // Control bar - misc
+      miscSettings: UserBoolean
+      miscHelp: UserBoolean
   }
 }
 
@@ -18,6 +23,10 @@ export function getDefaultUltraSettings(): UltraSettings {
   return {
 
     ui: {
+      // panels
+      panelLogo: true,
+      panelControlBar: true,
+
       // Control bar - cursors
       cursorOrbit: true,
       cursorLookAround: true,
@@ -38,7 +47,6 @@ export function getDefaultUltraSettings(): UltraSettings {
       sectioningSettings : true,
 
       // Control bar - Visibility
-      visibilityEnable: true,
       visibilityClearSelection: true,
       visibilityShowAll: true,
       visibilityToggle: true,
@@ -46,7 +54,9 @@ export function getDefaultUltraSettings(): UltraSettings {
       visibilityAutoIsolate: true,
       visibilitySettings: true,
 
-      settings: true
+      // Control bar - misc
+      miscSettings: true,
+      miscHelp: true,
     }
   }
 }

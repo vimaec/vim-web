@@ -22,22 +22,22 @@ export type WebglSettings = {
       ControlBarMeasureSettings & {
     
     // panels
-    logo: UserBoolean
-    bimTreePanel: UserBoolean
-    bimInfoPanel: UserBoolean
-    performance: UserBoolean
-    axesPanel: UserBoolean
-    controlBar: UserBoolean
+    panelLogo: UserBoolean
+    panelBimTree: UserBoolean
+    panelBimInfo: UserBoolean
+    panelPerformance: UserBoolean
+    panelAxes: UserBoolean
+    panelControlBar: UserBoolean
 
     // axesPanel
-    orthographic: UserBoolean
-    resetCamera: UserBoolean
+    axesOrthographic: UserBoolean
+    axesHome: UserBoolean
 
     // Control bar - settings
-    projectInspector: UserBoolean
-    settings: UserBoolean
-    help: UserBoolean
-    maximise: UserBoolean
+    miscProjectInspector: UserBoolean
+    miscSettings: UserBoolean
+    miscHelp: UserBoolean
+    miscMaximise: UserBoolean
   }
 }
 
@@ -56,18 +56,16 @@ export function getDefaultSettings(): WebglSettings {
       canReadLocalStorage: true
     },
     ui: {
-      logo: true,
-      performance: false,
-      bimTreePanel: true,
-      bimInfoPanel: true,
+      panelLogo: true,
+      panelPerformance: false,
+      panelBimTree: true,
+      panelBimInfo: true,
+      panelAxes: true,
+      panelControlBar: true,
   
-      // axesPanel
-      axesPanel: true,
-      orthographic: true,
-      resetCamera: true,
-  
-      // Control bar
-      controlBar: true,
+      axesOrthographic: true,
+      axesHome: true,
+      
       // Control bar - cursors
       cursorOrbit: true,
       cursorLookAround: true,
@@ -87,10 +85,9 @@ export function getDefaultSettings(): WebglSettings {
       sectioningAuto : true,
       sectioningSettings : true,
 
-      measuringMode: true,
+      measureEnable: true,
 
       // Control bar - Visibility
-      visibilityEnable: true,
       visibilityClearSelection: true,
       visibilityShowAll: true,
       visibilityToggle: true,
@@ -99,10 +96,10 @@ export function getDefaultSettings(): WebglSettings {
       visibilitySettings: true,
   
       // Control bar - settings
-      projectInspector: true,
-      settings: true,
-      help: true,
-      maximise: true
+      miscProjectInspector: true,
+      miscSettings: true,
+      miscHelp: true,
+      miscMaximise: true
     }
   }
 }

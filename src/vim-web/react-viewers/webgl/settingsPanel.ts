@@ -10,36 +10,36 @@ export function getControlBarVariousSettings(): SettingsItem<WebglSettings>[] {
   return [
     {
       type: 'subtitle',
-      key: SettingsPanelKeys.ControlBarSettingsSubtitle,
+      key: SettingsPanelKeys.ControlBarMiscSubtitle,
       title: 'Control Bar - Settings',
     },
     {
       type: 'toggle',
-      key: SettingsPanelKeys.ControlBarSettingsShowProjectInspectorButtonToggle,
+      key: SettingsPanelKeys.ControlBarMiscShowProjectInspectorButtonToggle,
       label: 'Project Inspector',
-      getter: (s) => s.ui.projectInspector,
-      setter: (s, v) => (s.ui.projectInspector = v),
+      getter: (s) => s.ui.miscProjectInspector,
+      setter: (s, v) => (s.ui.miscProjectInspector = v),
     },
     {
       type: 'toggle',
-      key: SettingsPanelKeys.ControlBarSettingsShowSettingsButtonToggle,
+      key: SettingsPanelKeys.ControlBarMiscShowSettingsButtonToggle,
       label: 'Settings',
-      getter: (s) => s.ui.settings,
-      setter: (s, v) => (s.ui.settings = v),
+      getter: (s) => s.ui.miscSettings,
+      setter: (s, v) => (s.ui.miscSettings = v),
     },
     {
       type: 'toggle',
-      key: SettingsPanelKeys.ControlBarSettingsShowHelpButtonToggle,
+      key: SettingsPanelKeys.ControlBarMiscShowHelpButtonToggle,
       label: 'Help',
-      getter: (s) => s.ui.help,
-      setter: (s, v) => (s.ui.help = v),
+      getter: (s) => s.ui.miscHelp,
+      setter: (s, v) => (s.ui.miscHelp = v),
     },
     {
       type: 'toggle',
-      key: SettingsPanelKeys.ControlBarSettingsShowMaximiseButtonToggle,
+      key: SettingsPanelKeys.ControlBarMiscShowMaximiseButtonToggle,
       label: 'Maximise',
-      getter: (s) => s.ui.maximise,
-      setter: (s, v) => (s.ui.maximise = v),
+      getter: (s) => s.ui.miscMaximise,
+      setter: (s, v) => (s.ui.miscMaximise = v),
     },
   ]
 }
@@ -57,43 +57,43 @@ export function getPanelsVisibilitySettings(): SettingsItem<WebglSettings>[] {
       type: 'toggle',
       key: SettingsPanelKeys.PanelsShowLogoToggle,
       label: 'Logo',
-      getter: (s) => s.ui.logo,
-      setter: (s, v) => (s.ui.logo = v),
+      getter: (s) => s.ui.panelLogo,
+      setter: (s, v) => (s.ui.panelLogo = v),
     },
     {
       type: 'toggle',
       key: SettingsPanelKeys.PanelsShowBimTreeToggle,
       label: 'Bim Tree',
-      getter: (s) => s.ui.bimTreePanel,
-      setter: (s, v) => (s.ui.bimTreePanel = v),
+      getter: (s) => s.ui.panelBimTree,
+      setter: (s, v) => (s.ui.panelBimTree = v),
     },
     {
       type: 'toggle',
       key: SettingsPanelKeys.PanelsShowBimInfoToggle,
       label: 'Bim Info',
-      getter: (s) => s.ui.bimInfoPanel,
-      setter: (s, v) => (s.ui.bimInfoPanel = v),
+      getter: (s) => s.ui.panelBimInfo,
+      setter: (s, v) => (s.ui.panelBimInfo = v),
     },
     {
       type: 'toggle',
       key: SettingsPanelKeys.PanelsShowAxesPanelToggle,
       label: 'Axes',
-      getter: (s) => s.ui.axesPanel,
-      setter: (s, v) => (s.ui.axesPanel = v),
+      getter: (s) => s.ui.panelAxes,
+      setter: (s, v) => (s.ui.panelAxes = v),
     },
     {
       type: 'toggle',
       key: SettingsPanelKeys.PanelsShowPerformancePanelToggle,
       label: 'Performance',
-      getter: (s) => s.ui.performance,
-      setter: (s, v) => (s.ui.performance = v),
+      getter: (s) => s.ui.panelPerformance,
+      setter: (s, v) => (s.ui.panelPerformance = v),
     },
     {
       type: 'toggle',
       key: SettingsPanelKeys.ControlBarShowControlBarToggle,
       label: 'Control Bar',
-      getter: (s) => s.ui.controlBar,
-      setter: (s, v) => (s.ui.controlBar = v),
+      getter: (s) => s.ui.panelControlBar,
+      setter: (s, v) => (s.ui.panelControlBar = v),
     },
   ]
 }
@@ -132,15 +132,15 @@ function getAxesPanelSettings(): SettingsItem<WebglSettings>[] {
       type: 'toggle',
       key: SettingsPanelKeys.AxesShowOrthographicButtonToggle,
       label: 'Orthographic Camera',
-      getter: (s) => s.ui.orthographic,
-      setter: (s, v) => (s.ui.orthographic = v),
+      getter: (s) => s.ui.axesOrthographic,
+      setter: (s, v) => (s.ui.axesOrthographic = v),
     },
     {
       type: 'toggle',
       key: SettingsPanelKeys.AxesShowResetCameraButtonToggle,
       label: 'Reset Camera',
-      getter: (s) => s.ui.resetCamera,
-      setter: (s, v) => (s.ui.resetCamera = v),
+      getter: (s) => s.ui.axesHome,
+      setter: (s, v) => (s.ui.axesHome = v),
     },
   ]
 }
@@ -156,8 +156,8 @@ export function getControlBarMeasureSettings(): SettingsItem<WebglSettings>[] {
       type: 'toggle',
       key: SettingsPanelKeys.ControlBarToolsShowMeasuringModeButtonToggle,
       label: 'Enable',
-      getter: (s) => s.ui.measuringMode,
-      setter: (s, v) => (s.ui.measuringMode = v),
+      getter: (s) => s.ui.measureEnable,
+      setter: (s, v) => (s.ui.measureEnable = v),
     },
   ]
 }
@@ -185,7 +185,7 @@ export function applyWebglSettings (settings: WebglSettings) {
   // Show/Hide performance gizmo
   const performance = document.getElementsByClassName('vim-performance-div')[0]
   if (performance) {
-    if (isTrue(settings.ui.performance)) {
+    if (isTrue(settings.ui.panelPerformance)) {
       performance.classList.remove('vc-hidden')
     } else {
       performance.classList.add('vc-hidden')

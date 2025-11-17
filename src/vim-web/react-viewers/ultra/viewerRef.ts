@@ -6,6 +6,8 @@ import { SectionBoxRef } from '../state/sectionBoxState';
 import { IsolationRef } from '../state/sharedIsolation';
 import { ControlBarRef } from '../controlbar';
 import { GenericPanelHandle } from '../generic/';
+import { SettingsRef } from '../webgl';
+import { UltraSettings } from './settings';
 
 export type ViewerRef = {
   /**
@@ -34,6 +36,8 @@ export type ViewerRef = {
   camera: CameraRef
 
   isolation: IsolationRef
+
+  settings: SettingsRef<UltraSettings>
   
   /**
    * API to interact with the isolation panel.

@@ -27,8 +27,10 @@ import { GenericPanelHandle } from '../generic/genericPanel'
 import { ControllablePromise } from '../../utils'
 import { SettingsPanel } from '../settings/settingsPanel'
 import { SidePanelMemo } from '../panels/sidePanel'
-import { getDefaultUltraSettings, PartialUltraSettings } from './settings'
+import { getDefaultUltraSettings, PartialUltraSettings, UltraSettings } from './settings'
 import { getUltraSettingsContent } from './settingsPanel'
+import { SettingsCustomizer } from '../settings/settingsItem'
+import { isTrue } from '../settings/userBoolean'
 
 
 /**
@@ -104,6 +106,7 @@ export function Viewer (props: {
     camera,
     settings.value,
     side,
+    modalHandle.current,
     _ =>_
   )
   
@@ -133,6 +136,11 @@ export function Viewer (props: {
       isolation: isolationRef,
       sectionBox: sectionBoxRef,
       camera,
+      settings: {
+        update : settings.update,
+        register : settings.register,
+        customize : (c: SettingsCustomizer<UltraSettings>) => settings.customizer.set(c)
+      },
       get isolationPanel(){
         return isolationPanelHandle.current
       },
@@ -166,11 +174,11 @@ export function Viewer (props: {
   />
   <RestOfScreen side={side} content={() => {
     return <>
-    {whenTrue(true, <LogoMemo/>)}
+    {whenTrue(settings.value.ui.panelLogo, <LogoMemo/>)}
     <Overlay canvas={props.core.viewport.canvas}/>
     <ControlBar
       content={controlBarCustom(controlBar)}
-      show={true}
+      show={isTrue(settings.value.ui.panelControlBar)}
     />
     <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBoxRef}/>
     <IsolationPanel ref={isolationPanelHandle} state={isolationRef} transparency={false}/>

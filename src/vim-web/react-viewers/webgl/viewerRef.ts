@@ -4,7 +4,7 @@
 
 import * as Core from '../../core-viewers'
 import { ContextMenuRef } from '../panels/contextMenu'
-import { Settings } from '../settings/anySettings'
+import { AnySettings } from '../settings/anySettings'
 import { CameraRef } from '../state/cameraState'
 import { Container } from '../container'
 import { BimInfoPanelRef } from '../bim/bimInfoData'
@@ -15,10 +15,11 @@ import { SectionBoxRef } from '../state/sectionBoxState'
 import { IsolationRef } from '../state/sharedIsolation'
 import { GenericPanelHandle } from '../generic'
 import { SettingsItem } from '../settings/settingsItem'
+import { WebglSettings } from './settings'
 /**
 * Settings API managing settings applied to the viewer.
 */
-export type SettingsRef = {
+export type SettingsRef<T extends AnySettings> = {
   // Double lambda is required to prevent react from using reducer pattern
   // https://stackoverflow.com/questions/59040989/usestate-with-a-lambda-invokes-the-lambda-when-set
 
@@ -26,19 +27,19 @@ export type SettingsRef = {
    * Allows updating settings by providing a callback function.
    * @param updater A function that updates the current settings.
    */
-  update : (updater: (settings: Settings) => void) => void
+  update : (updater: (settings: T) => void) => void
 
   /**
    * Registers a callback function to be notified when settings are updated.
    * @param callback A function to be called when settings are updated, receiving the updated settings.
    */
-  register : (callback: (settings: Settings) => void) => void
+  register : (callback: (settings: T) => void) => void
 
   /**
    * Customizes the settings panel by providing a customizer function.
    * @param customizer A function that modifies the settings items.
    */
-  customize : (customizer: (items: SettingsItem[]) => SettingsItem[]) => void
+  customize : (customizer: (items: SettingsItem<T>[]) => SettingsItem<T>[]) => void
 
 }
 
@@ -104,7 +105,7 @@ export type ViewerRef = {
   /**
    * Settings API managing settings applied to the viewer.
    */
-  settings: SettingsRef
+  settings: SettingsRef<WebglSettings>
 
   /**
    * Message API to interact with the loading box.

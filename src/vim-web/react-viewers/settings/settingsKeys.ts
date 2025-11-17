@@ -58,9 +58,9 @@ export class SettingsPanelKeys {
   static ControlBarVisibilitySettings = 'controlBar.visibility.settings'
 
   // --- Control Bar - Settings ---
-  static ControlBarSettingsSubtitle = 'controlBarSettings'
-  static ControlBarSettingsShowProjectInspectorButtonToggle = 'projectInspector'
-  static ControlBarSettingsShowSettingsButtonToggle = 'settingsButton'
-  static ControlBarSettingsShowHelpButtonToggle = 'help'
-  static ControlBarSettingsShowMaximiseButtonToggle = 'maximise'
+  static ControlBarMiscSubtitle = 'controlBarSettings'
+  static ControlBarMiscShowProjectInspectorButtonToggle = 'projectInspector'
+  static ControlBarMiscShowSettingsButtonToggle = 'settingsButton'
+  static ControlBarMiscShowHelpButtonToggle = 'help'
+  static ControlBarMiscShowMaximiseButtonToggle = 'maximise'
 }

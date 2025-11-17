@@ -123,8 +123,8 @@ export function Viewer (props: {
   useViewerInput(props.viewer.inputs, camera)
 
   const side = useSideState(
-    isTrue(settings.value.ui.bimTreePanel) ||
-    isTrue(settings.value.ui.bimInfoPanel),
+    isTrue(settings.value.ui.panelBimTree) ||
+    isTrue(settings.value.ui.panelBimInfo),
     Math.min(props.container.root.clientWidth * 0.25, 340)
   )
   const [contextMenu, setcontextMenu] = useState<ContextMenuCustomization>()
@@ -239,10 +239,10 @@ export function Viewer (props: {
       <RestOfScreen side={side} content={() => {
         return <>
         <Overlay canvas={props.viewer.viewport.canvas}></Overlay>
-        {whenTrue(settings.value.ui.logo, <LogoMemo/>)}
+        {whenTrue(settings.value.ui.panelLogo, <LogoMemo/>)}
         <ControlBar
           content={controlBar}
-          show={isTrue(settings.value.ui.controlBar)}
+          show={isTrue(settings.value.ui.panelControlBar)}
         />
         <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBoxRef}/>
         <IsolationPanel ref={isolationPanelHandle} state={isolationRef} transparency={true}/>

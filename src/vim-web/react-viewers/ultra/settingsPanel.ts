@@ -8,15 +8,22 @@ export function getControlBarUltraSettings(): SettingsItem<UltraSettings>[] {
   return [
     {
       type: 'subtitle',
-      key: SettingsPanelKeys.ControlBarSettingsSubtitle,
+      key: SettingsPanelKeys.ControlBarMiscSubtitle,
       title: 'Control Bar - Settings',
     },
     {
       type: 'toggle',
-      key: SettingsPanelKeys.ControlBarSettingsShowSettingsButtonToggle,
+      key: SettingsPanelKeys.ControlBarMiscShowSettingsButtonToggle,
       label: 'Settings',
-      getter: (s) => s.ui.settings,
-      setter: (s, v) => (s.ui.settings = v),
+      getter: (s) => s.ui.miscSettings,
+      setter: (s, v) => (s.ui.miscSettings = v),
+    },
+    {
+      type: 'toggle',
+      key: SettingsPanelKeys.ControlBarMiscShowHelpButtonToggle,
+      label: 'Help',
+      getter: (s) => s.ui.miscHelp,
+      setter: (s, v) => (s.ui.miscHelp = v),
     },
   ]
 }
