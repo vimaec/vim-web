@@ -14,9 +14,11 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
 
   function updateMaterials(){
     viewer.renderer.modelMaterial =
-        ghost ? [viewer.materials.simple, viewer.materials.ghost]
-      : transparency ? undefined 
-      : viewer.materials.simple
+      !ghost && transparency ? undefined 
+      : ghost && transparency ? [undefined, viewer.materials.ghost]
+      : !ghost && !transparency ? viewer.materials.simple
+      : ghost && !transparency ? [viewer.materials.simple, viewer.materials.ghost]
+      : (() => { throw new Error("Unreachable state in isolation materials") })();
   }
 
   function updateVisibility(elements: 'all' | Selectable[], predicate: (object: Selectable) => boolean){

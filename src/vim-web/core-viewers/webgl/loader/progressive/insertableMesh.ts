@@ -129,20 +129,49 @@ export class InsertableMesh {
     // }
   }
 
-  /**
-   * Overrides mesh material, set to undefine to restore initial material.
-   */
-  setMaterial (value: ModelMaterial) {
-    if (this._material === value) return
-    if (this.ignoreSceneMaterial) return
-    this.mesh.material = value ?? this._material
-
-    // Update material groups
-    this.mesh.geometry.clearGroups()
-    if(value instanceof Array) {
-      value.forEach((m, i) => {
-        this.mesh.geometry.addGroup(0, Infinity, i)
-      })
-    }
-  }
+ /**
+    * Sets the material for this mesh. 
+    * Set to undefined to reset to original materials.
+    */
+   setMaterial(value: ModelMaterial) {
+     if (this.ignoreSceneMaterial) return;
+ 
+     const base = this._material; // always defined
+     let mat: ModelMaterial;
+ 
+     if (Array.isArray(value)) {
+       mat = this._mergeMaterials(value, base);
+     } else {
+       mat = value ?? base;
+     }
+ 
+     // Apply it
+     this.mesh.material = mat;
+ 
+     // Update groups
+     this.mesh.geometry.clearGroups();
+     if (Array.isArray(mat)) {
+       mat.forEach((_m, i) => {
+         this.mesh.geometry.addGroup(0, Infinity, i);
+       });
+     }
+   }
+ 
+   private _mergeMaterials(
+     value: THREE.Material[],
+     base: ModelMaterial
+   ): THREE.Material[] {
+     const baseArr = Array.isArray(base) ? base : [base];
+     const result: THREE.Material[] = [];
+ 
+     for (const v of value) {
+       if (v === undefined) {
+         result.push(...baseArr);
+       } else {
+         result.push(v);
+       }
+     }
+ 
+     return result;
+   }
 }
