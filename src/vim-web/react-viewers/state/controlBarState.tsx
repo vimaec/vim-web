@@ -109,7 +109,7 @@ export type ControlBarCursorSettings = {
   cursorPan: UserBoolean
   cursorZoom: UserBoolean
 }
-
+  
 /**
  * Returns a control bar section for pointer/camera modes.
  */
