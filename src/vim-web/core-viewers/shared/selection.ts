@@ -151,6 +151,7 @@ export class Selection<T extends IVimElement>{
   add(objects: T[]): void;
   add(objectOrObjects: T | T[]): void {
     if(!this.enabled) return;
+    if(!objectOrObjects) return;
     const objects = this.toArray(objectOrObjects);
     let changed = false;
 
