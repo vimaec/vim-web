@@ -4,7 +4,7 @@ import * as Urls from '../../urls'
 
 export function serverFileLoadingError (url: string): MessageBoxProps {
   return {
-    title: 'File Loading Error',
+    title: 'VIM Ultra Loading Error',
     body: body(url),
     footer: style.footer(),
     canClose: false
@@ -15,16 +15,15 @@ function body (url : string) {
   return (
     <div className={style.vcRoboto}>
       {style.mainText(<>
-        Oops, it appears that we {style.bold('couldn’t load the VIM file')}.
-        This could be due to a couple of reasons,
-        including that the file could be corrupt or not recognizable.
+        We encountered an error loading the VIM file in VIM Ultra.
       </>)}
-      {style.subTitle('Error details:')}
+      {style.subTitle('Details')}
       {style.dotList([style.bullet('File path:', url)])}
-      {style.subTitle('Troubleshooting tips:')}
+      {style.subTitle('Tips')}
       {style.numList([
-        'Reload this Power BI report',
-        'Reprocess the VIM file and refresh the Power BI report dataset'
+        'Reload the page',
+        'Ensure the VIM URL points to a valid VIM file',
+        'Clear your VIM Ultra download cache'
       ])}
     </div>
   )

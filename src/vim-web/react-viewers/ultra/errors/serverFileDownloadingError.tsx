@@ -10,7 +10,7 @@ export function serverFileDownloadingError (url : string, authToken?: string, se
   }
 
   return {
-    title: 'File Downloading Error',
+    title: 'VIM Ultra Download Error',
     body: body(url, authToken, server),
     footer: style.footer(),
     canClose: false
@@ -21,20 +21,18 @@ function body (url : string, authToken?: string, server?: string): JSX.Element {
   return (
     <div className={style.vcRoboto}>
       {style.mainText(<>
-        Oops, it appears that there’s an {style.bold('error downloading the VIM file')}.
-        Please check the following conditions to get back up and running quickly.
+        We encountered an error downloading the VIM file in VIM Ultra.
       </>)}
-      {style.subTitle('Error details:')}
+      {style.subTitle('Details')}
       {style.dotList([
-        server ? style.bullet('VIM ULTRA Server:', server) : null,
-        style.bullet('File URL:', url),
-        authToken ? style.bullet('Auth Token:', authToken) : null
+        server ? style.bullet('VIM Ultra:', server) : null,
+        style.bullet('VIM URL:', url),
+        authToken ? style.bullet('Access Token:', authToken) : null
       ])}
-      {style.subTitle('Troubleshooting tips:')}
+      {style.subTitle('Tips')}
       {style.numList([
-        'Make sure the VIM exists at the url listed above.',
-        'Reprocess the VIM file and refresh the Power BI report dataset.',
-        server ? 'Check network access policies to allow the VIM Ultra Server access to the VIM File url.' : ''
+        'Ensure the VIM URL is valid',
+        'Check your network connection and access policies'
       ])}
     </div>
   )
