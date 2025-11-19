@@ -4,7 +4,7 @@ import * as Urls from '../../urls'
 
 export function serverCompatibilityError (url: string, localVersion: string, remoteVersion: string): MessageBoxProps {
   return {
-    title: 'Compatibility Error',
+    title: 'VIM Ultra Compatibility',
     body: body(url, localVersion, remoteVersion),
     footer: style.footer(Urls.support),
     canClose: false
@@ -15,20 +15,18 @@ function body (url: string, localVersion: string, remoteVersion: string): JSX.El
   return (
     <div className={style.vcRoboto}>
       {style.mainText(<>
-        Oops, it appears that you’re running a {' '}
-        {style.bold('version of VIM Ultra Server that isn’t compatible with this visual')}.
-        Please check the following conditions to get back up and running quickly.
+        The VIM Ultra version is incompatible with this visual.
       </>)}
-      {style.subTitle('Error details:')}
+      {style.subTitle('Details')}
       {style.dotList([
         style.bullet('Url:', url),
         style.bullet('Local Version:', localVersion),
         style.bullet('Remote Version:', remoteVersion)
       ])}
-      {style.subTitle('Troubleshooting tips:')}
+      {style.subTitle('Tips')}
       {style.numList([
-        'Update your PowerBI visual with the compatible version.',
-        'Or, run the compatible version of VIM Ultra.'
+        'Update this visual to a compatible version.',
+        'Start a compatible version of VIM Ultra.'
       ]) }
     </div>
   )

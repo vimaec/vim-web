@@ -5,7 +5,7 @@ import { isLocalUrl } from '../../../utils/url'
 
 export function serverConnectionError (url: string): MessageBoxProps {
   return {
-    title: 'Connection Error',
+    title: 'VIM Ultra Connection',
     body: body(url, isLocalUrl(url)),
     footer: style.footer(Urls.support),
     canClose: false
@@ -16,17 +16,12 @@ function body (url: string, local: boolean): JSX.Element {
   return (
     <div className={style.vcRoboto}>
       {style.mainText(<>
-        Oops, it appears that there’s an {style.bold('error connecting to the ULTRA server')}.
-        Please check the following conditions to get back up and running quickly.
+        We encountered an error connecting to VIM Ultra.
       </>)}
-      {style.subTitle('Troubleshooting tips:')}
-      {style.numList([<>
-        Ensure that VIM Ultra{' '}
-        {style.link(Urls.supportUltra, 'process is running')}{' '}
-        at {style.detailText(url)}
-      </>,
-      'Check your internet connection.',
-      'Check firewall permissions.'
+      {style.subTitle('Tips')}
+      {style.numList([
+        `Ensure that VIM Ultra is running at ${style.detailText(url)}`,
+        'Check your network connection and access policies'
       ])}
     </div>
   )
