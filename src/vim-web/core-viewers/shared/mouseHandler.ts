@@ -11,6 +11,7 @@ export class MouseHandler extends BaseInputHandler {
   private _capture: CaptureHandler;
   private _dragHandler: DragHandler;
   private _doubleClickHandler: DoubleClickHandler = new DoubleClickHandler();
+  private _clickHandler: ClickHandler = new ClickHandler();
 
   onButtonDown: (pos: THREE.Vector2, button: number) => void;
   onButtonUp: (pos: THREE.Vector2, button: number) => void;
@@ -47,27 +48,36 @@ export class MouseHandler extends BaseInputHandler {
     this._lastMouseDownPosition = pos;
     // Start drag
     this._dragHandler.onPointerDown(pos, event.button);
+    this._clickHandler.onPointerDown(pos);
     this._capture.onPointerDown(event);
     event.preventDefault();
   }
 
   private handlePointerUp(event: PointerEvent): void {
     if (event.pointerType !== 'mouse') return;
+    event.preventDefault();
+
     const pos = this.relativePosition(event);
 
     // Button up event
     this.onButtonUp?.(pos, event.button);
     this._capture.onPointerUp(event);
     this._dragHandler.onPointerUp();
+    this._clickHandler.onPointerUp();
+
 
     // Click type event
-    if(this._doubleClickHandler.checkForDoubleClick(event)){
+    if(this._doubleClickHandler.isDoubleClick(event)){
       this.handleDoubleClick(event);
-    }else{
+      return
+  }
+    if(this._clickHandler.isClick(event)){
       this.handleMouseClick(event);
-      this.handleContextMenu(event);
+      return
     }
-    event.preventDefault();
+
+    this.handleContextMenu(event);
+    
   }
 
   private async handleMouseClick(event: PointerEvent): Promise<void> {
@@ -102,8 +112,8 @@ export class MouseHandler extends BaseInputHandler {
     if (event.pointerType !== 'mouse') return;
     this._canvas.focus();
     const pos = this.relativePosition(event);
-
     this._dragHandler.onPointerMove(pos);
+    this._clickHandler.onPointerMove(pos);
     this.onMouseMove?.(pos);
   }
 
@@ -157,13 +167,36 @@ class CaptureHandler {
   }
 }
 
+class ClickHandler {
+  private _moved: boolean = false;
+  private _startPosition: THREE.Vector2 = new THREE.Vector2();
+  private _clickThreshold: number = 0.003 ; 
+
+  onPointerDown(pos: THREE.Vector2): void {
+    this._moved = false;
+    this._startPosition.copy(pos);
+  }
+  onPointerMove(pos: THREE.Vector2): void {
+    if (pos.distanceTo(this._startPosition) > this._clickThreshold) {
+      this._moved = true;
+    }
+  }
+
+  onPointerUp(): void { }
+
+  isClick(event: PointerEvent): boolean {
+    if (event.button !== 0) return false; // Only left button
+    return !this._moved;
+  }
+}
+
 class DoubleClickHandler {
   private _lastClickTime: number = 0;
   private _clickDelay: number = 300; // Max time between clicks for double-click
   private _lastClickPosition: THREE.Vector2 | null = null;
   private _positionThreshold: number = 5; // Max pixel distance between clicks
 
-  checkForDoubleClick(event: MouseEvent): boolean {
+  isDoubleClick(event: MouseEvent): boolean {
     const currentTime = Date.now();
     const currentPosition = new THREE.Vector2(event.clientX, event.clientY);
     const timeDiff = currentTime - this._lastClickTime;
