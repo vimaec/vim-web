@@ -2,7 +2,8 @@
  * @module viw-webgl-react
  */
 
-import { Settings, RecursivePartial, PartialSettings } from './settings'
+import { RecursivePartial } from '../../utils'
+import { AnySettings } from './anySettings'
 import { UserBoolean } from './userBoolean'
 
 /**
@@ -10,10 +11,10 @@ import { UserBoolean } from './userBoolean'
  * @param settings - Partial viewer settings to apply permissions from
  * @returns The stored settings with applied permissions, or empty object if retrieval fails
  */
-export function getLocalSettings (settings: PartialSettings = {}) {
+export function getLocalSettings (settings: Partial<AnySettings> = {}) {
   try {
     const json = localStorage.getItem('viewer.settings')
-    const previous = JSON.parse(json) as Settings
+    const previous = JSON.parse(json) as AnySettings
     applyPermission(previous, settings)
     return previous ?? {}
   } catch (e) {
@@ -26,7 +27,7 @@ export function getLocalSettings (settings: PartialSettings = {}) {
  * Saves viewer settings to localStorage after removing permissions
  * @param value - Component settings to save
  */
-export function saveSettingsToLocal (value: Settings) {
+export function saveSettingsToLocal (value: AnySettings) {
   try {
     const save = removePermission(value)
     localStorage.setItem('viewer.settings', JSON.stringify(save))
@@ -41,8 +42,8 @@ export function saveSettingsToLocal (value: Settings) {
  * @param current - The new partial settings containing permission rules
  */
 function applyPermission (
-  previous: Settings,
-  current: RecursivePartial<Settings>
+  previous: AnySettings,
+  current: RecursivePartial<AnySettings>
 ) {
   if (!current?.ui) return
   for (const k of Object.keys(current.ui)) {
@@ -62,7 +63,7 @@ function applyPermission (
  * @param settings - The viewer settings to process
  * @returns A new settings object with permissions converted to boolean values
  */
-function removePermission (settings: Settings) {
+function removePermission (settings: AnySettings) {
   const clone = structuredClone(settings)
   const ui = clone.ui as Record<string, UserBoolean>
   for (const k of Object.keys(clone.ui)) {

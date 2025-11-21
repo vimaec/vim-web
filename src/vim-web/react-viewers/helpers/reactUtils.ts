@@ -89,19 +89,27 @@ export function useRefresher() : StateRefresher{
  * The reference provides access to the state, along with event dispatching, validation, and confirmation logic.
  *
  * @param initialValue - The initial state value.
+ * @param isLazy - Whether to treat the initialValue as a lazy initializer function.
  * @returns An object implementing StateRef along with additional helper hooks.
  */
-export function useStateRef<T>(initialValue: T | (() => T)) {
-  const [value, setValue] = useState(initialValue);
-  
-  // https://react.dev/reference/react/useRef#avoiding-recreating-the-ref-contents
-  const ref = useRef<T>(undefined);
-  if(ref.current === undefined) {
-    if (typeof initialValue === "function") {
-      ref.current = (initialValue as () => T)();
-    } else {
-      ref.current = initialValue;
+
+export function useStateRef<T>(initialValue: T | (() => T), isLazy = false) {
+  const getInitialValue = (): T => {
+    if (isLazy && typeof initialValue === 'function') {
+      return (initialValue as () => T)();
     }
+    return initialValue as T;
+  };
+
+  // Box the state value to prevent React from ever calling it
+  type Box<T> = { current: T };
+  const [box, setBox] = useState<Box<T>>(() => ({
+    current: getInitialValue()
+  }));
+  
+  const ref = useRef<T>(undefined!);
+  if (ref.current === undefined) {
+    ref.current = getInitialValue();
   }
 
   const event = useRef(new SimpleEventDispatcher<T>());
@@ -119,7 +127,7 @@ export function useStateRef<T>(initialValue: T | (() => T)) {
     if (finalValue === ref.current) return;
 
     ref.current = finalValue;
-    setValue(finalValue);
+    setBox({ current: finalValue });
     event.current.dispatch(finalValue);
   };
 
@@ -164,7 +172,7 @@ export function useStateRef<T>(initialValue: T | (() => T)) {
      * @returns The memoized value.
      */
     useMemo<TOut>(on: (value: T) => TOut, deps?: any[]) {
-      return useMemo<TOut>(() => on(value), [...(deps || []), value]);
+      return useMemo<TOut>(() => on(box.current), [...(deps || []), box.current]);
     },
 
     /**

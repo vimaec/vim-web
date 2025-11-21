@@ -11,6 +11,7 @@ export interface IsolationRef {
   showPanel: StateRef<boolean>;
   showGhost: StateRef<boolean>;
   ghostOpacity: StateRef<number>;
+  transparency: StateRef<boolean>;
   showRooms: StateRef<boolean>;
   onAutoIsolate: FuncRef<void>;
   onVisibilityChange: FuncRef<void>;
@@ -42,18 +43,21 @@ export interface IsolationAdapter{
   getGhostOpacity(): number;
   setGhostOpacity(opacity: number): void;
 
+  enableTransparency(enable: boolean): void;
+
   getShowRooms(): boolean;
   setShowRooms(show: boolean): void;
 }
 
 export function useSharedIsolation(adapter : IsolationAdapter){
   const _adapter = useRef(adapter);
-  const visibility = useStateRef<VisibilityStatus>(() => adapter.computeVisibility());
+  const visibility = useStateRef<VisibilityStatus>(() => adapter.computeVisibility(), true);
   const autoIsolate = useStateRef<boolean>(false);
   const showPanel = useStateRef<boolean>(false);
   const showRooms = useStateRef<boolean>(false);
   const showGhost = useStateRef<boolean>(false);
-  const ghostOpacity = useStateRef<number>(() => adapter.getGhostOpacity());
+  const ghostOpacity = useStateRef<number>(() => adapter.getGhostOpacity(), true);
+  const transparency = useStateRef<boolean>(true);
   
   const onAutoIsolate = useFuncRef(() => {
     if(adapter.hasSelection()){
@@ -85,6 +89,8 @@ export function useSharedIsolation(adapter : IsolationAdapter){
   showGhost.useOnChange((v) => adapter.showGhost(v));
   showRooms.useOnChange((v) => adapter.setShowRooms(v));
 
+  transparency.useOnChange((v) => adapter.enableTransparency(v));
+
   ghostOpacity.useValidate((next, current) => {
     return next <= 0 ? current : next
   });
@@ -99,6 +105,7 @@ export function useSharedIsolation(adapter : IsolationAdapter){
     showRooms,
     ghostOpacity,
     onAutoIsolate,
-    onVisibilityChange
+    onVisibilityChange,
+    transparency,
   } as IsolationRef
 }

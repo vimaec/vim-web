@@ -7,7 +7,7 @@ export function serverConnectionError (url: string): MessageBoxProps {
   return {
     title: 'VIM Ultra Connection',
     body: body(url, isLocalUrl(url)),
-    footer: style.footer(Urls.support),
+    footer: style.footer(),
     canClose: false
   }
 }

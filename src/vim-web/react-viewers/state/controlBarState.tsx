@@ -2,8 +2,6 @@ import * as Core from "../../core-viewers";
 import { CameraRef } from './cameraState';
 import { CursorManager } from '../helpers/cursor';
 
-import { Settings, isTrue } from '../settings';
-
 import { SideState } from './sideState';
 import * as Icons from '../icons';
 
@@ -19,69 +17,85 @@ import { PointerMode } from '../../core-viewers/shared';
 import * as ControlBar from '../controlbar'
 import Style = ControlBar.Style;
 import Ids = ControlBar.Ids;
+import { isFalse, isTrue, UserBoolean } from "../settings/userBoolean";
+import { UltraSettings } from "../ultra/settings";
+import { WebglSettings } from "../webgl/settings";
+import { AnySettings } from "../settings";
+
+export type ControlBarSectionBoxSettings = {
+  sectioningEnable: UserBoolean
+  sectioningFitToSelection: UserBoolean
+  sectioningReset: UserBoolean
+  sectioningShow: UserBoolean
+  sectioningAuto: UserBoolean
+  sectioningSettings: UserBoolean
+}
 
 /**
  * Returns a control bar section for the section box.
  */
 export function controlBarSectionBox(
   section: SectionBoxRef,
-  hasSelection : boolean
+  hasSelection : boolean,
+  settings: ControlBarSectionBoxSettings
 ): ControlBar.IControlBarSection {
 
   return {
-    id: Ids.sectionSectionBox,
+    id: Ids.sectioningSpan,
     style: section.enable.get()? Style.sectionNoPadStyle : Style.sectionDefaultStyle,
     //enable: () => section.getEnable(),
     buttons: [
       {
-        id: Ids.buttonSectionBoxEnable,
+        id: Ids.sectioningEnable,
+        enabled: () => isTrue(settings.sectioningEnable),
         tip: 'Enable Section Box',
         isOn: () => section.enable.get(),
-        style: (on) => Style.buttonExpandStyle(on),
+        style: Style.buttonExpandStyle,
         action: () => section.enable.set(!section.enable.get()),
         icon: Icons.sectionBox,
       },
       {
-        id: Ids.buttonSectionBoxToSelection,
+        id: Ids.sectioningFitSelection,
+        
         tip: 'Fit Section',
-        enabled: () => section.enable.get(),
+        enabled: () => section.enable.get() && isTrue(settings.sectioningFitToSelection),
         isOn: () => hasSelection,
-        style: (on) => Style.buttonDisableStyle(on),
+        style: Style.buttonDisableStyle,
         action: () => section.sectionSelection.call(), 
         icon: Icons.sectionBoxShrink,
       },
       {
-        id: Ids.buttonSectionBoxToScene,
+        id: Ids.sectioningFitScene,
         tip: 'Reset Section',
-        enabled: () => section.enable.get(),
-        style: (on) => Style.buttonDefaultStyle(on),
+        enabled: () => section.enable.get() && isTrue(settings.sectioningReset),
+        style: Style.buttonDefaultStyle,
         action: () => section.sectionScene.call(), 
         icon: Icons.sectionBoxReset,
       },
       {
-        id: Ids.buttonSectionBoxVisible,
+        id: Ids.sectioningVisible,
         tip: 'Show Section Box',
-        enabled: () => section.enable.get(),
+        enabled: () => section.enable.get() && isTrue(settings.sectioningShow),
         isOn: () => section.visible.get(),
-        style: (on) => Style.buttonDefaultStyle(on),
+        style: Style.buttonDefaultStyle,
         action: () => section.visible.set(!section.visible.get()),
         icon: Icons.visible,
       },
       {
-        id: Ids.buttonSectionBoxAuto,
+        id: Ids.sectioningAuto,
         tip: 'Auto Section',
-        enabled: () => section.enable.get(),
+        enabled: () => section.enable.get() && isTrue(settings.sectioningAuto),
         isOn: () => section.auto.get(),
-        style: (on) => Style.buttonDefaultStyle(on),
+        style: Style.buttonDefaultStyle,
         action: () => section.auto.set(!section.auto.get()),
         icon: Icons.sectionBoxAuto,
       },
       {
-        id: Ids.buttonSectionBoxSettings,
+        id: Ids.sectioningSettings,
         tip: 'Section Settings',
-        enabled: () => section.enable.get(),
+        enabled: () => section.enable.get() && isTrue(settings.sectioningSettings),
         isOn: () => section.showOffsetPanel.get(),
-        style: (on) => Style.buttonDefaultStyle(on),
+        style: Style.buttonDefaultStyle,
         action: () => section.showOffsetPanel.set(!section.showOffsetPanel.get()),
         icon: Icons.slidersHoriz,
       },
@@ -89,25 +103,30 @@ export function controlBarSectionBox(
   };
 }
 
+export type ControlBarCursorSettings = {
+  cursorOrbit: UserBoolean
+  cursorLookAround: UserBoolean
+  cursorPan: UserBoolean
+  cursorZoom: UserBoolean
+}
+  
 /**
  * Returns a control bar section for pointer/camera modes.
  */
 function controlBarPointer(
   viewer: Core.Webgl.Viewer,
-  camera: CameraRef,
-  settings: Settings,
-  section: SectionBoxRef
+  settings: ControlBarCursorSettings,
 ): ControlBar.IControlBarSection {
   const pointer = getPointerState(viewer);
 
   return {
-    id: Ids.sectionInputs,
+    id: Ids.cursorSpan,
     enable: () => anyUiCursorButton(settings),
     style: Style.sectionDefaultStyle,
     buttons: [
       {
-        id: Ids.buttonCameraOrbit,
-        enabled: () => isTrue(settings.ui.orbit),
+        id: Ids.cursorOrbit,
+        enabled: () => isTrue(settings.cursorOrbit),
         tip: 'Orbit',
         action: () => pointer.onButton(PointerMode.ORBIT),
         icon: Icons.orbit,
@@ -115,8 +134,8 @@ function controlBarPointer(
         style: Style.buttonDefaultStyle,
       },
       {
-        id: Ids.buttonCameraLook,
-        enabled: () => isTrue(settings.ui.lookAround),
+        id: Ids.cursorLook,
+        enabled: () => isTrue(settings.cursorLookAround),
         tip: 'Look Around',
         action: () => pointer.onButton(PointerMode.LOOK),
         icon: Icons.look,
@@ -124,8 +143,8 @@ function controlBarPointer(
         style: Style.buttonDefaultStyle,
       },
       {
-        id: Ids.buttonCameraPan,
-        enabled: () => isTrue(settings.ui.pan),
+        id: Ids.cursorPan,
+        enabled: () => isTrue(settings.cursorPan),
         tip: 'Pan',
         action: () => pointer.onButton(PointerMode.PAN),
         icon: Icons.pan,
@@ -133,8 +152,8 @@ function controlBarPointer(
         style: Style.buttonDefaultStyle,
       },
       {
-        id: Ids.buttonCameraZoom,
-        enabled: () => isTrue(settings.ui.zoom),
+        id: Ids.cursorZoom,
+        enabled: () => isTrue(settings.cursorZoom),
         tip: 'Zoom',
         action: () => pointer.onButton(PointerMode.ZOOM),
         icon: Icons.zoom,
@@ -145,18 +164,22 @@ function controlBarPointer(
   };
 }
 
+export type ControlBarMeasureSettings = {
+  measureEnable: UserBoolean
+}
+
 export function controlBarMeasure(
-  settings: Settings,
-  measure: ReturnType<typeof getMeasureState>
+  measure: ReturnType<typeof getMeasureState>,
+  settings: ControlBarMeasureSettings
 ){
   return {
-    id: Ids.sectionActions,
+    id: Ids.measureSpan,
     enable: () => true,
     style: Style.sectionDefaultStyle,
     buttons: [
       {
-        id: Ids.buttonMeasure,
-        enabled: () => isTrue(settings.ui.measuringMode),
+        id: Ids.measureEnable,
+        enabled: () => isTrue(settings.measureEnable),
         isOn: () => measure.active,
         tip: 'Measuring Mode',
         action: () => measure.toggle(),
@@ -166,49 +189,79 @@ export function controlBarMeasure(
     ]
   }
 }
+// Shared misc button builders
+function createMiscSettingsButton(
+  side: SideState,
+  settings: AnySettings
+) {
+  return {
+    id: Ids.miscSettings,
+    enabled: () => isTrue(settings.ui.miscSettings),
+    tip: 'Settings',
+    action: () => side.toggleContent('settings'),
+    icon: Icons.settings,
+    style: Style.buttonDefaultStyle
+  };
+}
 
-function controlBarSettings(
+function createMiscHelpButton(
+  modal : ModalHandle,
+  settings: AnySettings,
+){
+  return {
+    id: Ids.miscHelp,
+    enabled: () => isTrue(settings.ui.miscHelp),
+    tip: 'Help',
+    action: () => modal.help(true),
+    icon: Icons.help,
+    style: Style.buttonDefaultStyle
+  };
+}
+
+// Ultra version
+export function controlBarMiscUltra(
+  modal : ModalHandle,
+  side: SideState,
+  settings: UltraSettings
+): ControlBar.IControlBarSection {
+  return {
+    id: Ids.miscSpan,
+    enable: () => anyUltraMiscButton(settings),
+    style: Style.sectionDefaultStyle,
+    buttons: [
+      createMiscSettingsButton(side, settings),
+      createMiscHelpButton(modal, settings)
+    ]
+  };
+}
+
+// WebGL version
+function controlBarMisc(
   modal: ModalHandle,
   side: SideState,
-  settings: Settings): ControlBar.IControlBarSection {
+  settings: WebglSettings
+): ControlBar.IControlBarSection {
   const fullScreen = getFullScreenState();
 
   return {
-    id: Ids.sectionSettings,
-    enable: () => anyUiSettingButton(settings),
+    id: Ids.miscSpan,
+    enable: () => anyWebglMiscButton(settings),
     style: Style.sectionDefaultStyle,
     buttons: [
       {
-        id: Ids.buttonProjectInspector,
-        enabled: () => isTrue(settings.ui.projectInspector) && (
-          isTrue(settings.ui.bimTreePanel) ||
-          isTrue(settings.ui.bimInfoPanel)
-        ),
+        id: Ids.miscInspector,
+        enabled: () => showBimButton(settings),
         tip: 'Project Inspector',
         action: () => side.toggleContent('bim'),
         icon: Icons.treeView,
         style: Style.buttonDefaultStyle
       },
+      createMiscSettingsButton(side, settings),
+      createMiscHelpButton(modal, settings),
       {
-        id: Ids.buttonSettings,
-        enabled: () => isTrue(settings.ui.settings),
-        tip: 'Settings',
-        action: () => side.toggleContent('settings'),
-        icon: Icons.settings,
-        style: Style.buttonDefaultStyle
-      },
-      {
-        id: Ids.buttonHelp,
-        enabled: () => isTrue(settings.ui.help),
-        tip: 'Help',
-        action: () => modal.help(true),
-        icon: Icons.help,
-        style: Style.buttonDefaultStyle
-      },
-      {
-        id: Ids.buttonMaximize,
+        id: Ids.miscMaximize,
         enabled: () =>
-          isTrue(settings.ui.maximise) &&
+          isTrue(settings.ui.miscMaximise) &&
           settings.capacity.canGoFullScreen,
         tip: fullScreen.get() ? 'Minimize' : 'Fullscreen',
         action: () => fullScreen.toggle(),
@@ -216,17 +269,24 @@ function controlBarSettings(
         style: Style.buttonDefaultStyle
       }
     ]
-  }
+  };
 }
 
-export function controlBarCamera(camera: CameraRef): ControlBar.IControlBarSection {
+export type ControlBarCameraSettings ={
+  cameraAuto : UserBoolean
+  cameraFrameSelection: UserBoolean
+  cameraFrameScene: UserBoolean
+}
+
+export function controlBarCamera(camera: CameraRef, settings: ControlBarCameraSettings): ControlBar.IControlBarSection {
   return {
-    id: Ids.sectionCamera,
+    id: Ids.cameraSpan,
     enable: () => true,
     style: Style.sectionDefaultStyle,
     buttons: [
       {
-        id: Ids.buttonCameraAuto,
+        id: Ids.cameraAuto,
+        enabled: () => isTrue(settings.cameraAuto),
         tip: 'Auto Camera',
         isOn: () => camera.autoCamera.get(),
         action: () => camera.autoCamera.set(!camera.autoCamera.get()),
@@ -234,8 +294,8 @@ export function controlBarCamera(camera: CameraRef): ControlBar.IControlBarSecti
         style: Style.buttonDefaultStyle,
       },
       {
-        id: Ids.buttonCameraFrameSelection,
-        // enabled: () => isTrue(settings.ui.zoomToFit), TODO: Implement ui toggles in Ultra
+        id: Ids.cameraFrameSelection,
+        enabled: () => isTrue(settings.cameraFrameSelection),
         tip: 'Frame Selection',
         action: () => camera.frameSelection.call(),
         icon: Icons.frameSelection,
@@ -243,8 +303,8 @@ export function controlBarCamera(camera: CameraRef): ControlBar.IControlBarSecti
         style: Style.buttonDefaultStyle,
       },
       {
-        id: Ids.buttonCameraFrameScene,
-        // enabled: () => isTrue(settings.ui.zoomToFit), TODO: Implement ui toggles in Ultra
+        id: Ids.cameraFrameScene,
+        enabled: () => isTrue(settings.cameraFrameScene),
         tip: 'Frame All',
         action: () => camera.frameScene.call(),
         icon: Icons.frameScene,
@@ -255,18 +315,27 @@ export function controlBarCamera(camera: CameraRef): ControlBar.IControlBarSecti
   }
 }
 
+export type ControlBarVisibilitySettings = {
+    visibilityClearSelection: UserBoolean
+    visibilityShowAll: UserBoolean
+    visibilityToggle: UserBoolean
+    visibilityIsolate: UserBoolean
+    visibilityAutoIsolate: UserBoolean
+    visibilitySettings: UserBoolean
+}
 
-export function controlBarSelection(isolation: IsolationRef): ControlBar.IControlBarSection {
+export function controlBarVisibility(isolation: IsolationRef, settings: ControlBarVisibilitySettings): ControlBar.IControlBarSection {
   const adapter = isolation.adapter.current
   const someVisible = adapter.hasVisibleSelection() || !adapter.hasHiddenSelection()  
 
   return {
-    id: Ids.sectionSelection,
+    id: Ids.visibilitySpan,
     enable: () => true,
-    style: `${Style.sectionDefaultStyle}`,
+    style: Style.sectionDefaultStyle,
     buttons: [
       {
-        id: Ids.buttonClearSelection,
+        id: Ids.visibilityClearSelection,
+        enabled: () => isTrue(settings.visibilityClearSelection),
         tip: 'Clear Selection',
         action: () => adapter.clearSelection(),
         icon: Icons.pointer,
@@ -274,8 +343,9 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
         style: Style.buttonDisableDefaultStyle,
       },
       {
-        id: Ids.buttonShowAll,
+        id: Ids.visibilityShowAll,
         tip: 'Show All',
+        enabled: () => isTrue(settings.visibilityShowAll),
         action: () =>  adapter.showAll(),
         icon: Icons.showAll,
         isOn: () =>!isolation.autoIsolate.get() && isolation.visibility.get() !== 'all',
@@ -283,8 +353,8 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
       },
 
       {
-        id: Ids.buttonHideSelection,
-        enabled: () => someVisible,
+        id: Ids.visibilityHideSelection,
+        enabled: () => someVisible && isTrue(settings.visibilityToggle),
         tip: 'Hide Selection',
         action: () => adapter.hideSelection(),
         icon: Icons.hideSelection,
@@ -292,8 +362,8 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
         style: Style.buttonDisableStyle,
       },
       {
-        id: Ids.buttonShowSelection,
-        enabled: () => !someVisible,
+        id: Ids.visibilityShowSelection,
+        enabled: () => !someVisible && isTrue(settings.visibilityToggle),
         tip: 'Show Selection',
         action: () => adapter.showSelection(),
         icon: Icons.showSelection,
@@ -301,7 +371,8 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
         style: Style.buttonDisableStyle,
       },
       {
-        id: Ids.buttonIsolateSelection,
+        id: Ids.visibilityIsolateSelection,
+        enabled: () => isTrue(settings.visibilityIsolate),
         tip: 'Isolate Selection',
         action: () => adapter.isolateSelection(),
         icon: Icons.isolateSelection,
@@ -309,14 +380,16 @@ export function controlBarSelection(isolation: IsolationRef): ControlBar.IContro
         style: Style.buttonDisableStyle,
       },
       {
-        id: Ids.buttonAutoIsolate,
+        id: Ids.visibilityAutoIsolate,
+        enabled: () => isTrue(settings.visibilityAutoIsolate),
         tip: 'Auto Isolate',
         action: () => isolation.autoIsolate.set(!isolation.autoIsolate.get()),
         isOn: () =>  isolation.autoIsolate.get(),
         icon: Icons.autoIsolate,
       },
       {
-        id: Ids.buttonIsolationSettings,
+        id: Ids.visibilitySettings,
+        enabled: () => isTrue(settings.visibilitySettings),
         tip: 'Isolation Settings',
         action: () => isolation.showPanel.set(!isolation.showPanel.get()),
         icon: Icons.slidersHoriz,
@@ -335,44 +408,46 @@ export function useControlBar(
   modal: ModalHandle,
   side: SideState,
   cursor: CursorManager,
-  settings: Settings,
+  settings: WebglSettings,
   section: SectionBoxRef,
   isolationRef: IsolationRef,
   customization: ControlBar.ControlBarCustomization | undefined
 ) {
   const measure = getMeasureState(viewer, cursor);
-  const pointerSection = controlBarPointer(viewer, camera, settings, section);
-  const actionSection = controlBarMeasure(settings, measure);
-  const sectionBoxSection = controlBarSectionBox(section,viewer.selection.any());
-  const settingsSection = controlBarSettings(modal, side, settings);
-  const cameraSection = controlBarCamera(camera);
-  const selectionSection = controlBarSelection(isolationRef);
 
   // Apply user customization (note that pointerSection is added twice per original design)
   let controlBarSections = [
-    pointerSection,
-    actionSection,
-    cameraSection,
-    sectionBoxSection,
-    selectionSection,
-    settingsSection
+    controlBarPointer(viewer, settings.ui),
+    controlBarCamera(camera, settings.ui),
+    controlBarVisibility(isolationRef, settings.ui),
+    controlBarMeasure(measure, settings.ui),
+    controlBarSectionBox(section, viewer.selection.any(), settings.ui),
+    controlBarMisc(modal, side, settings)
   ];
   controlBarSections = customization?.(controlBarSections) ?? controlBarSections;
   return controlBarSections;
 }
+
+
+function showBimButton(settings: WebglSettings){
+if(isFalse(settings.ui.miscProjectInspector)) return false
+  if(isTrue(settings.ui.panelBimTree) ) return true
+  if(isTrue(settings.ui.panelBimInfo) ) return true
+  return false
+}
+
 
 /**
  * Checks if any cursor-related UI buttons are enabled
  * @param {Settings} settings - The viewer settings to check
  * @returns {boolean} True if any cursor buttons are enabled
  */
-function anyUiCursorButton (settings: Settings) {
+function anyUiCursorButton (settings: ControlBarCursorSettings) {
   return (
-    isTrue(settings.ui.orbit) ||
-    isTrue(settings.ui.lookAround) ||
-    isTrue(settings.ui.pan) ||
-    isTrue(settings.ui.zoom) ||
-    isTrue(settings.ui.zoomWindow)
+    isTrue(settings.cursorOrbit) ||
+    isTrue(settings.cursorLookAround) ||
+    isTrue(settings.cursorPan) ||
+    isTrue(settings.cursorZoom)
   )
 }
 
@@ -381,11 +456,18 @@ function anyUiCursorButton (settings: Settings) {
  * @param {Settings} settings - The viewer settings to check
  * @returns {boolean} True if any settings buttons are enabled
  */
-export function anyUiSettingButton (settings: Settings) {
+export function anyWebglMiscButton (settings: WebglSettings) {
   return (
-    isTrue(settings.ui.projectInspector) ||
-    isTrue(settings.ui.settings) ||
-    isTrue(settings.ui.help) ||
-    isTrue(settings.ui.maximise)
+    isTrue(settings.ui.miscProjectInspector) ||
+    isTrue(settings.ui.miscSettings) ||
+    isTrue(settings.ui.miscHelp) ||
+    isTrue(settings.ui.miscMaximise)
+  )
+}
+
+export function anyUltraMiscButton (settings: UltraSettings) {
+  return (
+    isTrue(settings.ui.miscSettings) ||
+    isTrue(settings.ui.miscHelp)
   )
 }

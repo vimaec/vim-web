@@ -6,7 +6,7 @@ export function serverCompatibilityError (url: string, localVersion: string, rem
   return {
     title: 'VIM Ultra Compatibility',
     body: body(url, localVersion, remoteVersion),
-    footer: style.footer(Urls.support),
+    footer: style.footer(),
     canClose: false
   }
 }

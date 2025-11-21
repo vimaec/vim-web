@@ -2,14 +2,13 @@
  * @module viw-webgl-react
  */
 
-import React, { useEffect } from 'react'
-import * as Core from '../../core-viewers'
-import { Settings } from './settings'
-import { UserBoolean } from './userBoolean'
+import React from 'react'
 import { SettingsState } from './settingsState'
-import * as THREE from 'three'
-
-// TODO Use generic panels for all settings
+import { renderSettingsInputBox } from './settingsInputBox'
+import { renderSettingsToggle } from './settingsToggle'
+import { SettingsItem } from './settingsItem'
+import { renderSettingsSubtitle } from './settingsSubtitle'
+import { AnySettings } from './anySettings'
 
 /**
  * JSX Component to interact with settings.
@@ -18,189 +17,116 @@ import * as THREE from 'three'
  * @param visible will return null if this is false.
  * @returns
  */
-export function SettingsPanel (props: {
-  viewer: Core.Webgl.Viewer
-  settings: SettingsState
+export function SettingsPanel<T extends AnySettings>(props: {
+  content: SettingsItem<T>[]
+  settings: SettingsState<T>
   visible: boolean
 }) {
   if (!props.visible) return null
-  const toggleElement = (label: string, state: boolean, action: () => void) => {
+
+  function renderItem<T extends AnySettings>(
+    settings: SettingsState<T>,
+    item: SettingsItem<T>,
+  ): JSX.Element | null {
     return (
-      <label className="vc-m-1 vc-block vc-select-none vc-items-center vc-py-1 vc-text-gray-warm">
-        <input
-          type="checkbox"
-          checked={state}
-          onChange={action}
-          className="vim-settings-checkbox vc-checked:bg-primary-royal vc-mr-2 vc-rounded vc-border vc-border-gray-medium "
-        ></input>{' '}
-        {label}
-      </label>
+      <React.Fragment key={item.key}>
+        {(() => {
+          switch (item.type) {
+            case 'subtitle': return renderSettingsSubtitle(item)
+            case 'toggle':   return renderSettingsToggle(settings, item)
+            case 'box':      return renderSettingsInputBox(settings, item)
+            case 'element':  return item.element
+            default: return null
+          }
+        })()}
+      </React.Fragment>
     )
   }
 
-  const settingsToggle = (
-    label: string,
-    getter: (settings: Settings) => UserBoolean,
-    setter: (settings: Settings, b: boolean) => void
-  ) => {
-    const value = getter(props.settings.value)
-    if (value === 'AlwaysTrue' || value === 'AlwaysFalse') {
-      return null
-    }
-    return toggleElement(label, value, () => {
-      const value = getter(props.settings.value)
-      props.settings.update((s) => setter(s, !value))
-    })
-  }
+  const customizer = props.settings.customizer.get()
+  const content = customizer ? customizer(props.content) : props.content
 
-  const settingsBox = (label: string,
-    info: string,
-    transform : (value:number) => number,
-    getter: (settings: Settings) => number,
-    setter: (settings: Settings, b: number) => void) => {
-    const ref = React.useRef<HTMLInputElement>(null)
-
-    useEffect(() => {
-      ref.current.value = props.viewer.inputs.scrollSpeed.toFixed(2)
-    },[])
-
-    const value = getter(props.settings.value).toString()
-    const update = (event: React.FocusEvent<HTMLInputElement, Element>) => {
-      const str = event.target.value
-      const n = Number.parseFloat(str)
-      if (Number.isNaN(n)) {
-        event.target.value = getter(props.settings.value).toString()
-      } else {
-        const value = transform(n)
-        event.target.value = value.toString()
-        props.settings.update(s => setter(s, value))
-      }
-    }
-
-    return <div className="vc-box-input vc-my-1">
-      <label htmlFor="textbox" className='vc-w-3 vc-h-2'>{label}:</label>
-      <input ref={ref} type="text" className='vim-settings-textbox vc-w-14 vc-ml-1 vc-p-1' onBlur={e => update(e)}/>
-      <label htmlFor="textbox" className='vc-w-3 vc-h-2 vc-text-gray vc-ml-1'>{info}</label>
-    </div>
-  }
-
-  function settingsSubtitle (title: string) {
-    return (
-      <h3 className="vc-subtitle">{title}</h3>
-    )
-  }
+  const sections = buildSections(content)
 
   return (
-    <div
-      className='vc-absolute vc-inset-0'>
-        <h3 className="vc-title">Settings </h3>
-      <div className="vim-settings vc-absolute vc-top-6 vc-left-0 vc-bottom-0 vc-right-0 vc-overflow-y-auto">
-        {settingsSubtitle('Inputs')}
-        {settingsBox(
-          'Scroll Speed',
-          '[0.1,10]',
-          n => THREE.MathUtils.clamp(n, 0.1, 10),
-          s => props.viewer.inputs.scrollSpeed,
-          (s, v) => { props.viewer.inputs.scrollSpeed = v }
-        )}
-        {settingsSubtitle('Panels')}
-        {settingsToggle(
-          'Show Logo',
-          (settings) => settings.ui.logo,
-          (settings, value) => (settings.ui.logo = value)
-        )}
-        {settingsToggle(
-          'Show Bim Tree',
-          (settings) => settings.ui.bimTreePanel,
-          (settings, value) => (settings.ui.bimTreePanel = value)
-        )}
-        {settingsToggle(
-          'Show Bim Info',
-          (settings) => settings.ui.bimInfoPanel,
-          (settings, value) => (settings.ui.bimInfoPanel = value)
-        )}
-        {settingsToggle(
-          'Show Axes Panel',
-          (settings) => settings.ui.axesPanel,
-          (settings, value) => (settings.ui.axesPanel = value)
-        )}
-        {settingsToggle(
-          'Show Performance Panel',
-          (settings) => settings.ui.performance,
-          (settings, value) => (settings.ui.performance = value)
-        )}
+    <div className="vc-absolute vc-inset-0">
+      {/* CHANGED: add bottom margin so title sits a bit away from the list */}
+      <h3 className="vc-title vc-mb-2">Settings</h3>
 
-        {settingsSubtitle('Axes')}
-        {settingsToggle(
-          'Show Orthographic Button',
-          (settings) => settings.ui.orthographic,
-          (settings, value) => (settings.ui.orthographic = value)
-        )}
-        {settingsToggle(
-          'Show Reset Camera Button',
-          (settings) => settings.ui.resetCamera,
-          (settings, value) => (settings.ui.resetCamera = value)
-        )}
-        {settingsSubtitle('Control Bar')}
-        {settingsToggle(
-          'Show Control Bar',
-          (settings) => settings.ui.controlBar,
-          (settings, value) => (settings.ui.controlBar = value)
-        )}
-        {settingsSubtitle('Control Bar - Cursors')}
-        {settingsToggle(
-          'Show Orbit Button',
-          (settings) => settings.ui.orbit,
-          (settings, value) => (settings.ui.orbit = value)
-        )}
-        {settingsToggle(
-          'Show Look Around Button',
-          (settings) => settings.ui.lookAround,
-          (settings, value) => (settings.ui.lookAround = value)
-        )}
-        {settingsToggle(
-          'Show Pan Button',
-          (settings) => settings.ui.pan,
-          (settings, value) => (settings.ui.pan = value)
-        )}
-        {settingsToggle(
-          'Show Zoom Button',
-          (settings) => settings.ui.zoom,
-          (settings, value) => (settings.ui.zoom = value)
-        )}
-        {settingsToggle(
-          'Show Zoom Window Button',
-          (settings) => settings.ui.zoomWindow,
-          (settings, value) => (settings.ui.zoomWindow = value)
-        )}
-        {settingsSubtitle('Control Bar - Tools')}
-        {settingsToggle(
-          'Show Measuring Mode Button',
-          (settings) => settings.ui.measuringMode,
-          (settings, value) => (settings.ui.measuringMode = value)
-        )}
-        {settingsSubtitle('Control Bar - Settings')}
-        {settingsToggle(
-          'Show Project Inspector Button',
-          (settings) => settings.ui.projectInspector,
-          (settings, value) => (settings.ui.projectInspector = value)
-        )}
-        {settingsToggle(
-          'Show Settings Button',
-          (settings) => settings.ui.settings,
-          (settings, value) => (settings.ui.settings = value)
-        )}
-        {settingsToggle(
-          'Show Help Button',
-          (settings) => settings.ui.help,
-          (settings, value) => (settings.ui.help = value)
-        )}
-        {settingsToggle(
-          'Show Maximise Button',
-          (settings) => settings.ui.maximise,
-          (settings, value) => (settings.ui.maximise = value)
-        )}
+      {/* CHANGED: add padding + vertical spacing between sections */}
+      <div className="
+        vim-settings
+        vc-absolute vc-top-8 vc-left-0 vc-right-0 vc-bottom-0
+        vc-overflow-y-auto
+        vc-pr-2
+        vc-space-y-2
+        vc-box-border
+      ">
+        {sections.map(section => (
+          <details
+            key={section.key}
+            open
+            /* CHANGED: make each section look like a card */
+            className="
+              vim-settings-section
+              vc-bg-white
+              vc-rounded-md
+              vc-shadow-sm
+              vc-border
+              vc-border-slate-200
+              vc-p-2
+              vc-space-y-2
+            "
+          >
+            {/* CHANGED: slightly bolder title + clickable cursor */}
+            <summary className="vim-settings-section-title vc-font-medium vc-text-sm vc-cursor-pointer">
+              {section.title}
+            </summary>
+
+            {/* CHANGED: add spacing between items inside each card */}
+            <div className="vim-settings-section-content vc-mt-2 vc-space-y-2">
+              {section.items.map(item =>
+                renderItem<T>(props.settings, item),
+              )}
+            </div>
+          </details>
+        ))}
       </div>
     </div>
   )
+}
+
+type SettingsSection<T extends AnySettings> = {
+  key: string
+  title: string
+  items: SettingsItem<T>[]
+}
+
+function buildSections<T extends AnySettings>(items: SettingsItem<T>[]): SettingsSection<T>[] {
+  const sections: SettingsSection<T>[] = []
+  let current: SettingsSection<T> | null = null
+
+  for (const item of items) {
+    if (item.type === 'subtitle') {
+      current = {
+        key: item.key,
+        title: item.title,
+        items: [],
+      }
+      sections.push(current)
+    } else {
+      if (!current) {
+        // optional: items before the first subtitle
+        current = {
+          key: 'default',
+          title: '',
+          items: [],
+        }
+        sections.push(current)
+      }
+      current.items.push(item)
+    }
+  }
+
+  return sections
 }

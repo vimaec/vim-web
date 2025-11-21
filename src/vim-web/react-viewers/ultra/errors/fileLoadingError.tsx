@@ -6,7 +6,7 @@ export function serverFileLoadingError (url: string): MessageBoxProps {
   return {
     title: 'VIM Ultra Loading Error',
     body: body(url),
-    footer: style.footer(Urls.support),
+    footer: style.footer(),
     canClose: false
   }
 }

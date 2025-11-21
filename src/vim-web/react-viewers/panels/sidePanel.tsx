@@ -22,7 +22,7 @@ export const SidePanelMemo = React.memo(SidePanel)
 export function SidePanel (props: {
   container: Container
   side: SideState
-  viewer: Core.Webgl.Viewer
+  viewer: Core.Webgl.Viewer | Core.Ultra.Viewer
   content: () => JSX.Element
 }) {
   const resizeTimeOut = useRef<number>()
@@ -36,7 +36,7 @@ export function SidePanel (props: {
       props.container.gfx.style.left = '0px'
     }
 
-    props.viewer.viewport.ResizeToParent()
+    props.viewer.viewport.resizeToParent()
   }
 
   const getMaxSize = () => {
@@ -104,9 +104,10 @@ export function SidePanel (props: {
       style={{
         position: 'absolute'
       }}
-      className={`vim-side-panel vc-top-0 vc-left-0 vc-z-20 vc-bg-gray-lightest vc-text-gray-darker ${
-        props.side.getContent() !== 'none' ? '' : 'vc-hidden'
-      }`}
+      className={`vim-side-panel vc-top-0 vc-left-0 vc-z-20 
+            vc-bg-gray-lightest vc-text-gray-darker 
+            vc-border-r vc-border-gray-light 
+            ${props.side.getContent() !== 'none' ? '' : 'vc-hidden'}`}
     >
       <button
         className="vim-side-panel-nav vc-z-30 vc-absolute vc-right-1 vc-top-1 vc-w-4 vc-h-4 vc-text-gray-medium"

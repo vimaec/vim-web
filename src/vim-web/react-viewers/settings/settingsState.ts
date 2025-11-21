@@ -3,29 +3,35 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import * as Core from '../../core-viewers'
-import { Settings, PartialSettings, createSettings } from './settings'
 import { isTrue } from './userBoolean'
 import { saveSettingsToLocal } from './settingsStorage'
+import { StateRef, useStateRef } from '../helpers/reactUtils'
+import { SettingsCustomizer } from './settingsItem'
+import { AnySettings } from './anySettings'
+import { RecursivePartial } from '../../utils'
+import deepmerge from 'deepmerge'
 
-export type SettingsState = {
-  value: Settings
-  update: (updater: (s: Settings) => void) => void
-  register: (action: (s: Settings) => void) => void
+export type SettingsState<T extends AnySettings> = {
+  value: T
+  update: (updater: (s: T) => void) => void
+  register: (action: (s: T) => void) => void
+  customizer : StateRef<SettingsCustomizer<T>>
 }
 
 /**
  * Returns a new state closure for settings.
  */
-export function useSettings (
-  viewer: Core.Webgl.Viewer,
-  value: PartialSettings
-): SettingsState {
-  const merged = createSettings(value)
+export function useSettings<T extends AnySettings> (
+  value: RecursivePartial<T>,
+  defaultSettings: T,
+  applySettings: (settings: T) => void = () => {}
+): SettingsState<T> {
+  const merged = createSettings(value, defaultSettings)
   const [settings, setSettings] = useState(merged)
-  const onUpdate = useRef<(s: Settings) => void>()
+  const onUpdate = useRef<(s: T) => void>()
+  const customizer = useStateRef<SettingsCustomizer<T>>(settings => settings)
 
-  const update = function (updater: (s: Settings) => void) {
+  const update = function (updater: (s: T) => void) {
     const next = { ...settings } // Shallow copy
     updater(next)
     saveSettingsToLocal(next)
@@ -35,35 +41,30 @@ export function useSettings (
 
   // First Time
   useEffect(() => {
-    applySettings(viewer, settings)
+    applySettings(settings)
   }, [])
 
   // On Change
   useEffect(() => {
-    applySettings(viewer, settings)
+    applySettings(settings)
   }, [settings])
 
   return useMemo(
     () => ({
       value: settings,
       update,
-      register: (v) => (onUpdate.current = v)
+      register: (v) => (onUpdate.current = v),
+      customizer
     }),
     [settings]
   )
 }
 
-/**
- * Apply given vim viewer settings to the given viewer.
- */
-export function applySettings (viewer: Core.Webgl.Viewer, settings: Settings) {
-  // Show/Hide performance gizmo
-  const performance = document.getElementsByClassName('vim-performance-div')[0]
-  if (performance) {
-    if (isTrue(settings.ui.performance)) {
-      performance.classList.remove('vc-hidden')
-    } else {
-      performance.classList.add('vc-hidden')
-    }
-  }
+export function createSettings<T extends AnySettings>(settings: RecursivePartial<T>, defaultSettings: T): T {
+  return settings !== undefined
+    ? deepmerge(defaultSettings, settings as Partial<T>) as T
+    : defaultSettings
 }
+
+
+

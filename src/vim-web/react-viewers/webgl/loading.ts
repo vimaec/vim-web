@@ -7,7 +7,7 @@ import * as Core from '../../core-viewers'
 import { LoadRequest } from '../helpers/loadRequest'
 import { ModalHandle } from '../panels/modal'
 import { UltraSuggestion } from '../panels/loadingBox'
-import { Settings } from '../settings'
+import { WebglSettings } from './settings'
 
 type AddSettings = {
   /**
@@ -39,7 +39,7 @@ export class ComponentLoader {
   private _modal: React.RefObject<ModalHandle>
   private _addLink : boolean = false
 
-  constructor (viewer : Core.Webgl.Viewer, modal: React.RefObject<ModalHandle>, settings: Settings) {
+  constructor (viewer : Core.Webgl.Viewer, modal: React.RefObject<ModalHandle>, settings: WebglSettings) {
     this._viewer = viewer
     this._modal = modal
     // TODO: Enable this when we are ready to support it
