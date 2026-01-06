@@ -6,14 +6,15 @@ import React, { useEffect, useRef, useState } from 'react'
 import * as Core from '../../core-viewers'
 import * as Icons from '../icons'
 import { CameraRef } from '../state/cameraState'
-import { isTrue, Settings } from '../settings'
 import { SettingsState } from '../settings/settingsState'
 import { whenAllTrue, whenTrue } from '../helpers/utils'
+import { WebglSettings } from '../webgl/settings'
+import { isTrue } from '../settings/userBoolean'
 
-function anyUiAxesButton (settings: Settings) {
+function anyUiAxesButton (settings: WebglSettings) {
   return (
-    settings.ui.orthographic ||
-    settings.ui.resetCamera
+    settings.ui.axesOrthographic ||
+    settings.ui.axesHome
   )
 }
 
@@ -25,7 +26,7 @@ export const AxesPanelMemo = React.memo(AxesPanel)
 /**
  * JSX Component for axes gizmo.
  */
-function AxesPanel (props: { viewer: Core.Webgl.Viewer, camera: CameraRef, settings: SettingsState }) {
+function AxesPanel (props: { viewer: Core.Webgl.Viewer, camera: CameraRef, settings: SettingsState<WebglSettings> }) {
   const viewer = props.viewer
 
   const [ortho, setOrtho] = useState<boolean>(viewer.camera.orthographic)
@@ -97,7 +98,7 @@ function AxesPanel (props: { viewer: Core.Webgl.Viewer, camera: CameraRef, setti
     </button>
   )
 
-  const hidden = isTrue(props.settings.value.ui.axesPanel) ? '' : ' vc-hidden'
+  const hidden = isTrue(props.settings.value.ui.panelAxes) ? '' : ' vc-hidden'
   const empty = !anyUiAxesButton(props.settings.value)
 
   const createBar = () => {
@@ -106,9 +107,9 @@ function AxesPanel (props: { viewer: Core.Webgl.Viewer, camera: CameraRef, setti
       <div className='vim-axes-panel-bar vc-absolute vc-top-[75%] vc-bottom-0 vc-right-0 vc-left-0'>
         <div className="vim-axes-panel-buttons vc-absolute vc-inset-0 vc-pointer-events-auto vc-order-2 vc-flex vc-items-center vc-justify-evenly vc-bg-white">
           {whenAllTrue([
-            props.settings.value.ui.orthographic
+            props.settings.value.ui.axesOrthographic
           ], btnOrtho)}
-          {whenTrue(props.settings.value.ui.resetCamera, btnHome)}
+          {whenTrue(props.settings.value.ui.axesHome, btnHome)}
         </div>
       </div>
     )

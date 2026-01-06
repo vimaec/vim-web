@@ -43,6 +43,10 @@ export class Marker implements IVimElement {
     return this._submesh.index
   }
 
+  get isRoom(): boolean {
+    return false
+  }
+
   private _outlineAttribute: WebglAttribute<boolean>
   private _visibleAttribute: WebglAttribute<boolean>
   private _coloredAttribute: WebglAttribute<boolean>

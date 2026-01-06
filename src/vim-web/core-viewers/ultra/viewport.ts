@@ -8,8 +8,12 @@ import { RpcSafeClient } from "./rpcSafeClient";
 export interface IViewport {
   /** The HTML canvas element used for rendering */
   canvas: HTMLCanvasElement
+  
   /** Updates the aspect ratio of the viewport on the server */
   update(): void
+
+  /** Resizes the viewport to match its parent's dimensions */
+  resizeToParent(): void
 }
 
 /**
@@ -55,6 +59,13 @@ export class Viewport {
     if(this._rpc.connected){
       this._rpc.RPCSetCameraAspectRatio(this.canvas.offsetWidth, this.canvas.offsetHeight)
     }
+  }
+
+  /**
+   * Resizes the viewport to match its parent's dimensions
+   */
+  resizeToParent() {
+    this.update()
   }
 
   /**

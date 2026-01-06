@@ -6,7 +6,7 @@ export function fileOpeningError (url: string): MessageBoxProps {
   return {
     title: 'VIM Ultra File Error',
     body: serverFileOpeningErrorBody(url),
-    footer: style.footer(Urls.support),
+    footer: style.footer(),
     canClose: false
   }
 }

@@ -111,6 +111,9 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
         }
       }
     },
+    enableTransparency: (enable: boolean) => {
+      console.log("enableTransparency not implemented")
+    },
 
     getGhostOpacity: () => viewer.renderer.ghostOpacity,
     setGhostOpacity: (opacity: number) => {

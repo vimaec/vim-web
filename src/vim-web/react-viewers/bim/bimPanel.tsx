@@ -5,9 +5,7 @@
 import React, { useMemo, useState } from 'react'
 import * as Core from '../../core-viewers'
 
-import { AugmentedElement } from '../helpers/element'
 import { whenAllTrue, whenFalse, whenSomeTrue, whenTrue } from '../helpers/utils'
-import { Settings, isFalse } from '../settings'
 import { CameraRef } from '../state/cameraState'
 import { IsolationRef } from '../state/sharedIsolation'
 import { ViewerState } from '../webgl/viewerState'
@@ -16,6 +14,8 @@ import { BimInfoPanel } from './bimInfoPanel'
 import { BimSearch } from './bimSearch'
 import { BimTree, TreeActionRef } from './bimTree'
 import { toTreeData } from './bimTreeData'
+import { WebglSettings } from '../webgl/settings'
+import { isFalse } from '../settings/userBoolean'
 
 // Not sure why I need this,
 // when I inline this method in viewer.tsx it causes an error.
@@ -26,13 +26,13 @@ export function OptionalBimPanel (props: {
   viewerState: ViewerState
   isolation: IsolationRef
   visible: boolean
-  settings: Settings
+  settings: WebglSettings
   treeRef: React.MutableRefObject<TreeActionRef | undefined>
   bimInfoRef: BimInfoPanelRef
 }) {
   return whenSomeTrue([
-    props.settings.ui.bimTreePanel,
-    props.settings.ui.bimInfoPanel],
+    props.settings.ui.panelBimTree,
+    props.settings.ui.panelBimInfo],
   React.createElement(BimPanel, props))
 }
 
@@ -51,7 +51,7 @@ export function BimPanel (props: {
   viewerState: ViewerState
   isolation: IsolationRef
   visible: boolean
-  settings: Settings
+  settings: WebglSettings
   treeRef: React.MutableRefObject<TreeActionRef | undefined>
   bimInfoRef: BimInfoPanelRef
 }) {
@@ -63,11 +63,11 @@ export function BimPanel (props: {
 
   const selection = props.viewerState.selection.get()
   const last = selection[selection.length - 1] 
-  const fullTree = isFalse(props.settings.ui.bimInfoPanel)
-  const fullInfo = isFalse(props.settings.ui.bimTreePanel)
+  const fullTree = isFalse(props.settings.ui.panelBimInfo)
+  const fullInfo = isFalse(props.settings.ui.panelBimTree)
   return (
     <div className={`vim-bim-panel vc-inset-0 vc-absolute vc-h-full vc-w-full ${fullTree ? 'full-tree' : ''} ${props.visible ? '' : 'vc-hidden'}`}>
-      {whenTrue(props.settings.ui.bimTreePanel,
+      {whenTrue(props.settings.ui.panelBimTree,
         <div className={`vim-bim-upper vc-flex vc-flex-col vc-absolute vc-w-full ${fullTree ? 'vc-h-full' : 'vc-h-[49%]'} `}>
           {<h2
             className="vim-bim-upper-title vc-title vc-text-xs vc-font-bold vc-uppercase">
@@ -92,19 +92,19 @@ export function BimPanel (props: {
       {
         // Divider if needed.
         whenAllTrue([
-          props.settings.ui.bimTreePanel,
-          props.settings.ui.bimInfoPanel,
+          props.settings.ui.panelBimTree,
+          props.settings.ui.panelBimInfo,
           props.viewerState.elements.get()?.length > 0,
         ],
         divider())
       }
-      {whenTrue(props.settings.ui.bimInfoPanel,
+      {whenTrue(props.settings.ui.panelBimInfo,
         <div className={`vim-bim-lower-container vc-absolute ${fullInfo ? 'vc-top-0' : 'vc-top-[50%]'} vc-bottom-0 vc-bottom vc-left-0 vc-right-0`}>
           <BimInfoPanel
             object={last}
             vim={props.viewerState.vim.get()}
             elements={props.viewerState.elements.get()}
-            full={isFalse(props.settings.ui.bimTreePanel)}
+            full={isFalse(props.settings.ui.panelBimTree)}
             bimInfoRef={props.bimInfoRef}
           />
         </div>)}

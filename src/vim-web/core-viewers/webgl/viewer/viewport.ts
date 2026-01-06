@@ -150,7 +150,7 @@ export class Viewport {
   /**
    * Resizes the canvas and updates the camera to match new parent dimensions.
    */
-  ResizeToParent () {
+  resizeToParent () {
     this._onResize.dispatch()
   }
 

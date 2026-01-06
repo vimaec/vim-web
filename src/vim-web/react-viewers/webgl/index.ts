@@ -2,6 +2,7 @@
 // Full exports
 export * from './viewer';
 export * from './viewerRef';
+export * from './settings'
 
 // Type exports
 export type * from './loading';

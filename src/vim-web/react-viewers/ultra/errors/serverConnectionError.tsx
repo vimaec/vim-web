@@ -7,7 +7,7 @@ export function serverConnectionError (url: string): MessageBoxProps {
   return {
     title: 'VIM Ultra Connection',
     body: body(url, isLocalUrl(url)),
-    footer: style.footer(Urls.support),
+    footer: style.footer(),
     canClose: false
   }
 }
@@ -20,7 +20,7 @@ function body (url: string, local: boolean): JSX.Element {
       </>)}
       {style.subTitle('Tips')}
       {style.numList([
-        `Ensure that VIM Ultra is running at ${style.detailText(url)}`,
+        <>Ensure that VIM Ultra is running at {style.detailText(url)}</>,
         'Check your network connection and access policies'
       ])}
     </div>

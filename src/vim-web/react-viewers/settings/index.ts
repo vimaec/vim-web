@@ -1,6 +1,6 @@
 
 //Full exports
-export * from './settings';
+export * from './anySettings';
 export * from './settingsStorage';
 export * from './userBoolean';
 

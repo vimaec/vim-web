@@ -19,13 +19,11 @@ import {
 } from '../panels/contextMenu'
 import { SidePanelMemo } from '../panels/sidePanel'
 import { useSideState } from '../state/sideState'
-import { SettingsPanel } from '../settings/settingsPanel'
 import { MenuToastMemo } from '../panels/toast'
 import { Overlay } from '../panels/overlay'
 import { addPerformanceCounter } from '../panels/performance'
 import { applyWebglBindings } from './inputsBindings'
 import { CursorManager } from '../helpers/cursor'
-import { PartialSettings, isTrue } from '../settings'
 import { useSettings } from '../settings/settingsState'
 import { TreeActionRef } from '../bim/bimTree'
 import { Container, createContainer } from '../container'
@@ -44,6 +42,11 @@ import { IsolationPanel } from '../panels/isolationPanel'
 import { useWebglIsolation } from './isolation'
 import { GenericPanelHandle } from '../generic'
 import { ControllablePromise } from '../../utils'
+import { SettingsCustomizer } from '../settings/settingsItem'
+import { getDefaultSettings, PartialWebglSettings, WebglSettings } from './settings'
+import { isTrue } from '../settings/userBoolean'
+import { SettingsPanel } from '../settings/settingsPanel'
+import { applyWebglSettings, getWebglSettingsContent } from './settingsPanel'
 
 /**
  * Creates a UI container along with a VIM.Viewer and its associated React viewer.
@@ -54,7 +57,7 @@ import { ControllablePromise } from '../../utils'
  */
 export function createViewer (
   container?: Container | HTMLElement,
-  settings: PartialSettings = {},
+  settings: PartialWebglSettings = {},
   coreSettings: Core.Webgl.PartialViewerSettings = {}
 ) : Promise<ViewerRef> {
   const controllablePromise = new ControllablePromise<ViewerRef>()
@@ -105,9 +108,9 @@ export function Viewer (props: {
   container: Container
   viewer: Core.Webgl.Viewer
   onMount: (viewer: ViewerRef) => void
-  settings?: PartialSettings
+  settings?: PartialWebglSettings
 }) {
-  const settings = useSettings(props.viewer, props.settings ?? {})
+  const settings = useSettings(props.settings ?? {}, getDefaultSettings(), (s) => applyWebglSettings(s))
   const modal = useRef<ModalHandle>(null)
 
   const sectionBoxRef = useWebglSectionBox(props.viewer)
@@ -120,8 +123,8 @@ export function Viewer (props: {
   useViewerInput(props.viewer.inputs, camera)
 
   const side = useSideState(
-    isTrue(settings.value.ui.bimTreePanel) ||
-    isTrue(settings.value.ui.bimInfoPanel),
+    isTrue(settings.value.ui.panelBimTree) ||
+    isTrue(settings.value.ui.panelBimInfo),
     Math.min(props.container.root.clientWidth * 0.25, 340)
   )
   const [contextMenu, setcontextMenu] = useState<ContextMenuCustomization>()
@@ -132,11 +135,7 @@ export function Viewer (props: {
   const treeRef = useRef<TreeActionRef>()
   const performanceRef = useRef<HTMLDivElement>(null)
   const isolationRef = useWebglIsolation(props.viewer)
-
   const controlBar = useControlBar(props.viewer, camera, modal.current, side, cursor, settings.value, sectionBoxRef, isolationRef, controlBarCustom)
-
-
-
 
   useEffect(() => {
     side.setHasBim(viewerState.vim.get()?.bim !== undefined)
@@ -176,7 +175,11 @@ export function Viewer (props: {
       loader: loader.current,
       isolation: isolationRef,
       camera,
-      settings,
+      settings: {
+        update : settings.update,
+        register : settings.register,
+        customize : (c: SettingsCustomizer<WebglSettings>) => settings.customizer.set(c)
+      },
       get isolationPanel(){
         return isolationPanelHandle.current
       },
@@ -218,7 +221,7 @@ export function Viewer (props: {
       />}
       <SettingsPanel
         visible={side.getContent() === 'settings'}
-        viewer={props.viewer}
+        content={getWebglSettingsContent(props.viewer)}
         settings={settings}
       />
     </>
@@ -236,13 +239,13 @@ export function Viewer (props: {
       <RestOfScreen side={side} content={() => {
         return <>
         <Overlay canvas={props.viewer.viewport.canvas}></Overlay>
-        {whenTrue(settings.value.ui.logo, <LogoMemo/>)}
+        {whenTrue(settings.value.ui.panelLogo, <LogoMemo/>)}
         <ControlBar
           content={controlBar}
-          show={isTrue(settings.value.ui.controlBar)}
+          show={isTrue(settings.value.ui.panelControlBar)}
         />
         <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBoxRef}/>
-        <IsolationPanel ref={isolationPanelHandle} state={isolationRef}/>
+        <IsolationPanel ref={isolationPanelHandle} state={isolationRef} transparency={true}/>
         <AxesPanelMemo
           viewer={props.viewer}
           camera={camera}
