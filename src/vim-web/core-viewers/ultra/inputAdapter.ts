@@ -40,7 +40,7 @@ export function ultraInputAdapter(viewer: Viewer) {
 function createAdapter(viewer: Viewer): IInputAdapter {
   return {
     init: () => {
-      viewer.rpc.RPCSetCameraSpeed(10);
+      // No initialization needed
     },
     orbitCamera: (value: THREE.Vector2) => {
       // handled server side
