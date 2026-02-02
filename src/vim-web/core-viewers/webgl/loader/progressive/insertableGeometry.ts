@@ -6,6 +6,7 @@ import * as THREE from 'three'
 import { G3d, G3dMesh, G3dMaterial } from 'vim-format'
 import { Scene } from '../scene'
 import { G3dMeshOffsets } from './g3dOffsets'
+import { ElementMapping } from '../elementMapping'
 
 // TODO Merge both submeshes class.
 export class GeometrySubmesh {
@@ -33,6 +34,8 @@ export class InsertableGeometry {
   private _indexAttribute: THREE.Uint32BufferAttribute
   private _vertexAttribute: THREE.BufferAttribute
   private _colorAttribute: THREE.BufferAttribute
+  private _elementIndexAttribute: THREE.Float32BufferAttribute
+  private _mapping: ElementMapping | undefined
 
   private _updateStartMesh = 0
   private _updateEndMesh = 0
@@ -41,10 +44,12 @@ export class InsertableGeometry {
   constructor (
     offsets: G3dMeshOffsets,
     materials: G3dMaterial,
-    transparent: boolean
+    transparent: boolean,
+    mapping?: ElementMapping
   ) {
     this.offsets = offsets
     this.materials = materials
+    this._mapping = mapping
 
     this._indexAttribute = new THREE.Uint32BufferAttribute(
       offsets.counts.indices,
@@ -62,6 +67,12 @@ export class InsertableGeometry {
       colorSize
     )
 
+    // Element index attribute for GPU picking (one per vertex)
+    this._elementIndexAttribute = new THREE.Float32BufferAttribute(
+      offsets.counts.vertices,
+      1
+    )
+
     // this._indexAttribute.count = 0
     // this._vertexAttribute.count = 0
     // this._colorAttribute.count = 0
@@ -70,6 +81,7 @@ export class InsertableGeometry {
     this.geometry.setIndex(this._indexAttribute)
     this.geometry.setAttribute('position', this._vertexAttribute)
     this.geometry.setAttribute('color', this._colorAttribute)
+    this.geometry.setAttribute('elementIndex', this._elementIndexAttribute)
 
     this.boundingBox = offsets.subset.getBoundingBox()
     if (this.boundingBox) {
@@ -223,6 +235,9 @@ export class InsertableGeometry {
       const g3dInstance = this.offsets.getMeshInstance(mesh, instance)
       matrix.fromArray(g3d.getInstanceMatrix(g3dInstance))
 
+      // Get element index for this instance (for GPU picking)
+      const elementIndex = this._mapping?.getElementFromInstance(g3dInstance) ?? -1
+
       const submesh = new GeometrySubmesh()
       submesh.instance = g3d.instanceNodes[g3dInstance]
       submesh.start = indexOffset + indexOut
@@ -249,6 +264,7 @@ export class InsertableGeometry {
         vector.fromArray(g3d.positions, vertex * G3d.POSITION_SIZE)
         vector.applyMatrix4(matrix)
         this.setVertex(vertexOffset + vertexOut, vector)
+        this.setElementIndex(vertexOffset + vertexOut, elementIndex)
         submesh.expandBox(vector)
         vertexOut++
       }
@@ -276,6 +292,10 @@ export class InsertableGeometry {
     if (this._colorAttribute.itemSize === 4) {
       this._colorAttribute.setW(index, alpha)
     }
+  }
+
+  private setElementIndex (index: number, elementIndex: number) {
+    this._elementIndexAttribute.setX(index, elementIndex)
   }
 
   private expandBox (box: THREE.Box3) {
@@ -321,6 +341,10 @@ export class InsertableGeometry {
     this._colorAttribute.addUpdateRange(vertexStart * cSize, (vertexEnd - vertexStart) * cSize)
     // this._colorAttribute.count = vertexEnd
     this._colorAttribute.needsUpdate = true
+
+    // update element indices (itemSize is 1)
+    this._elementIndexAttribute.addUpdateRange(vertexStart, vertexEnd - vertexStart)
+    this._elementIndexAttribute.needsUpdate = true
 
     if (this._computeBoundingBox) {
       this.geometry.computeBoundingBox()

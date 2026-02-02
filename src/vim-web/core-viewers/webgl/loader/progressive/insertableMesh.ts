@@ -9,6 +9,7 @@ import { InsertableSubmesh } from './insertableSubmesh'
 import { G3dMeshOffsets } from './g3dOffsets'
 import { Vim } from '../vim'
 import { ModelMaterial, Materials } from '../materials/materials'
+import { ElementMapping } from '../elementMapping'
 
 export class InsertableMesh {
   offsets: G3dMeshOffsets
@@ -49,12 +50,13 @@ export class InsertableMesh {
   constructor (
     offsets: G3dMeshOffsets,
     materials: G3dMaterial,
-    transparent: boolean
+    transparent: boolean,
+    mapping?: ElementMapping
   ) {
     this.offsets = offsets
     this.transparent = transparent
 
-    this.geometry = new InsertableGeometry(offsets, materials, transparent)
+    this.geometry = new InsertableGeometry(offsets, materials, transparent, mapping)
 
     this._material = transparent
       ? Materials.getInstance().transparent.material

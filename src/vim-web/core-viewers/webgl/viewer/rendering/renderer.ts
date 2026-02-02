@@ -298,6 +298,35 @@ export class Renderer implements IRenderer {
   }
 
   /**
+   * Tests element picking at the given mouse position using GPU-based picking.
+   * @param mousePos Optional normalized mouse position (0-1). Defaults to center.
+   * @returns The element index at the mouse position, or undefined if no geometry hit.
+   */
+  testElementPick(mousePos?: THREE.Vector2): number | undefined {
+    const size = this._viewport.getParentSize()
+
+    if (size.x === 0 || size.y === 0) {
+      return undefined
+    }
+
+    // Lazily create depth renderer
+    if (!this._depthRenderer) {
+      this._depthRenderer = new DepthRenderer(
+        this.renderer,
+        this._camera,
+        this._scene,
+        size.x,
+        size.y
+      )
+    }
+
+    // Ensure size is current
+    this._depthRenderer.setSize(size.x, size.y)
+
+    return this._depthRenderer.testElementPick(mousePos)
+  }
+
+  /**
    * Adds an object to be rendered.
    * @param target The object or scene to add for rendering.
    */

@@ -87,11 +87,11 @@ function addDepthPickerTest(viewer: VIM.React.Webgl.ViewerRef, container: HTMLDi
 
   // Show instructions
   const instructions = document.createElement('div')
-  instructions.textContent = 'Press T to test depth pick, C to clear spheres, X to save depth image'
+  instructions.textContent = 'T=depth pick, C=clear, X=depth image, E=element pick'
   instructions.style.cssText = 'position:absolute;top:10px;left:10px;z-index:1000;padding:8px 16px;background:rgba(0,0,0,0.7);color:white;font-family:monospace;'
   container.appendChild(instructions)
 
-  // Keyboard handler for T and C (keydown for responsiveness)
+  // Keyboard handler for T, C, and E (keydown for responsiveness)
   window.addEventListener('keydown', (e) => {
     if (e.key === 't' || e.key === 'T') {
       // Call the new GPU raycast API
@@ -126,13 +126,36 @@ function addDepthPickerTest(viewer: VIM.React.Webgl.ViewerRef, container: HTMLDi
       viewer.core.renderer.needsUpdate = true
       console.log('Spheres cleared')
     }
+
+    if (e.key === 'c' || e.key === 'C') {
+      // Test element picking using GPU-based picking
+      const elementIndex = viewer.core.renderer.testElementPick(mousePos)
+
+      if (elementIndex !== undefined && elementIndex >= 0) {
+        // Get the first loaded vim
+        const vim = viewer.core.vims.at(0)
+        if (vim) {
+          const element = vim.getElementFromIndex(elementIndex)
+          console.log('Element pick - index:', elementIndex, 'element:', element)
+
+          // Select the element to verify
+          if (element) {
+            viewer.core.selection.select(element)
+          }
+        } else {
+          console.log('Element pick - index:', elementIndex, '(no vim loaded)')
+        }
+      } else {
+        console.log('Element pick - no element at position')
+      }
+    }
   })
 
   // X key on keyup to only fire once (not on repeat)
   window.addEventListener('keyup', (e) => {
     if (e.key === 'x' || e.key === 'X') {
-      // Test depth render - downloads depth buffer as PNG
-      viewer.core.renderer.testDepthRender()
+      // Test depth render - downloads depth buffer as PNG, places sphere at mouse position
+      viewer.core.renderer.testDepthRender(mousePos)
     }
   })
 }

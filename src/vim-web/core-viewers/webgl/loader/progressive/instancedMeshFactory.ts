@@ -7,12 +7,15 @@ import { G3d, G3dMesh, G3dMaterial, MeshSection, G3dScene } from 'vim-format'
 import { InstancedMesh } from './instancedMesh'
 import { Materials } from '../materials/materials'
 import * as Geometry from '../geometry'
+import { ElementMapping } from '../elementMapping'
 
 export class InstancedMeshFactory {
   materials: G3dMaterial
+  private _mapping: ElementMapping | undefined
 
-  constructor (materials: G3dMaterial) {
+  constructor (materials: G3dMaterial, mapping?: ElementMapping) {
     this.materials = materials
+    this._mapping = mapping
   }
 
   createTransparent (mesh: G3dMesh, instances: number[]) {
@@ -86,6 +89,7 @@ export class InstancedMeshFactory {
     )
 
     this.setMatricesFromVimx(threeMesh, g3d, instances)
+    this.setElementIndices(threeMesh, instances ?? g3d.meshInstances[mesh])
     const result = new InstancedMesh(g3d, threeMesh, instances)
     return result
   }
@@ -162,5 +166,22 @@ export class InstancedMeshFactory {
       matrix.fromArray(array)
       three.setMatrixAt(i, matrix)
     }
+  }
+
+  /**
+   * Adds per-instance element index attribute for GPU picking.
+   */
+  private setElementIndices (
+    three: THREE.InstancedMesh,
+    instances: number[]
+  ) {
+    const elementIndices = new Float32Array(instances.length)
+    for (let i = 0; i < instances.length; i++) {
+      elementIndices[i] = this._mapping?.getElementFromInstance(instances[i]) ?? -1
+    }
+    three.geometry.setAttribute(
+      'elementIndex',
+      new THREE.InstancedBufferAttribute(elementIndices, 1)
+    )
   }
 }

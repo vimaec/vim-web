@@ -140,13 +140,14 @@ async function loadFromVim (
   const g3d = await G3d.createFromBfast(geometry)
   const materials = new G3dMaterial(g3d.materialColors)
 
-  // Create scene
-  const scene = new Scene(settings.matrix)
-  const factory = new VimMeshFactory(g3d, materials, scene)
-
-  // Create legacy mapping
+  // Create mapping FIRST (needed by factory for element index attributes)
   const doc = await VimDocument.createFromBfast(bfast)
   const mapping = await ElementMapping.fromG3d(g3d, doc)
+
+  // Create scene and factory WITH mapping
+  const scene = new Scene(settings.matrix)
+  const factory = new VimMeshFactory(g3d, materials, scene, mapping)
+
   const header = await requestHeader(bfast)
 
   // Return legacy vim

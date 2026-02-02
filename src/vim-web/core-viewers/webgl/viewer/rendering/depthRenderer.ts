@@ -91,6 +91,65 @@ class DepthMaterial extends THREE.ShaderMaterial {
 }
 
 /**
+ * Shader material that outputs element index encoded into RGB.
+ * Uses the elementIndex attribute added to meshes during construction.
+ */
+class ElementIndexMaterial extends THREE.ShaderMaterial {
+  constructor() {
+    super({
+      side: THREE.DoubleSide,
+      clipping: true,
+      vertexShader: /* glsl */ `
+        #include <common>
+        #include <logdepthbuf_pars_vertex>
+        #include <clipping_planes_pars_vertex>
+
+        // Visibility attribute (used by VIM meshes)
+        attribute float ignore;
+        // Element index attribute for GPU picking
+        attribute float elementIndex;
+
+        varying float vElementIndex;
+
+        void main() {
+          #include <begin_vertex>
+          #include <project_vertex>
+          #include <clipping_planes_vertex>
+          #include <logdepthbuf_vertex>
+
+          // If ignore is set, hide the object
+          if (ignore > 0.0) {
+            gl_Position = vec4(1e20, 1e20, 1e20, 1.0);
+            return;
+          }
+
+          vElementIndex = elementIndex;
+        }
+      `,
+      fragmentShader: /* glsl */ `
+        #include <common>
+        #include <logdepthbuf_pars_fragment>
+        #include <clipping_planes_pars_fragment>
+
+        varying float vElementIndex;
+
+        void main() {
+          #include <clipping_planes_fragment>
+          #include <logdepthbuf_fragment>
+
+          // Encode element index into RGB (24-bit, up to 16 million elements)
+          float idx = vElementIndex;
+          float r = mod(idx, 256.0) / 255.0;
+          float g = mod(floor(idx / 256.0), 256.0) / 255.0;
+          float b = mod(floor(idx / 65536.0), 256.0) / 255.0;
+          gl_FragColor = vec4(r, g, b, 1.0);
+        }
+      `
+    })
+  }
+}
+
+/**
  * Renders the scene to a texture and exports it as a PNG image.
  */
 export class DepthRenderer {
@@ -99,6 +158,7 @@ export class DepthRenderer {
   private _scene: RenderScene
   private _renderTarget: THREE.WebGLRenderTarget
   private _depthMaterial: DepthMaterial
+  private _elementIndexMaterial: ElementIndexMaterial
   private _debugSphere: THREE.Mesh | undefined
 
   // Store near/far for decoding
@@ -120,6 +180,7 @@ export class DepthRenderer {
       type: THREE.UnsignedByteType
     })
     this._depthMaterial = new DepthMaterial()
+    this._elementIndexMaterial = new ElementIndexMaterial()
   }
 
   /**
@@ -352,11 +413,85 @@ export class DepthRenderer {
   }
 
   /**
+   * Tests element picking at the given mouse position.
+   * Renders the scene with element index material and reads back the pixel.
+   * @param mousePos Optional normalized mouse position (0-1). Defaults to center.
+   * @returns The element index at the mouse position, or undefined if no geometry hit.
+   */
+  testElementPick(mousePos?: THREE.Vector2): number | undefined {
+    const camera = this._camera.three
+    camera.updateMatrixWorld(true)
+
+    // Store/restore state
+    const currentTarget = this._renderer.getRenderTarget()
+    const currentOverrideMaterial = this._scene.threeScene.overrideMaterial
+    const currentBackground = this._scene.threeScene.background
+
+    // Apply element index material
+    this._scene.threeScene.overrideMaterial = this._elementIndexMaterial
+    this._scene.threeScene.background = null
+
+    // Disable layer 1 (NoRaycast) to hide skybox and gizmos
+    camera.layers.disable(1)
+
+    // Render
+    this._renderer.setRenderTarget(this._renderTarget)
+    this._renderer.setClearColor(0xffffff, 1) // White = no element (16777215)
+    this._renderer.clear()
+    this._renderer.render(this._scene.threeScene, camera)
+    this._renderer.setRenderTarget(currentTarget)
+
+    // Read pixel at mouse position
+    const width = this._renderTarget.width
+    const height = this._renderTarget.height
+    const normX = mousePos?.x ?? 0.5
+    const normY = mousePos?.y ?? 0.5
+    const pixelX = Math.floor(normX * width)
+    const pixelY = Math.floor((1 - normY) * height) // WebGL Y is flipped
+
+    const pixelBuffer = new Uint8Array(4)
+    this._renderer.readRenderTargetPixels(
+      this._renderTarget,
+      pixelX,
+      pixelY,
+      1,
+      1,
+      pixelBuffer
+    )
+
+    // Restore state
+    camera.layers.enable(1)
+    this._scene.threeScene.overrideMaterial = currentOverrideMaterial
+    this._scene.threeScene.background = currentBackground
+
+    // Decode element index from RGB
+    const r = pixelBuffer[0]
+    const g = pixelBuffer[1]
+    const b = pixelBuffer[2]
+    const elementIndex = r + g * 256 + b * 65536
+
+    // Check for background (white = 0xFFFFFF = 16777215)
+    if (elementIndex >= 16777215) {
+      return undefined
+    }
+
+    // Check for unmapped elements (-1 encoded as very large number due to mod)
+    // -1 in float becomes a large number, but encoded it wraps around
+    // We use -1 for unmapped, so check if elementIndex looks invalid
+    if (elementIndex < 0) {
+      return undefined
+    }
+
+    return elementIndex
+  }
+
+  /**
    * Disposes of all resources.
    */
   dispose(): void {
     this._renderTarget.dispose()
     this._depthMaterial.dispose()
+    this._elementIndexMaterial.dispose()
     if (this._debugSphere) {
       this._scene.threeScene.remove(this._debugSphere)
       this._debugSphere.geometry.dispose()

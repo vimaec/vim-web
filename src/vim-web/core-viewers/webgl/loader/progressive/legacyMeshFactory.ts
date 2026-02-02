@@ -7,6 +7,7 @@ import { Scene } from '../scene'
 import { G3dMaterial, G3d, MeshSection } from 'vim-format'
 import { InstancedMeshFactory } from './instancedMeshFactory'
 import { G3dSubset } from './g3dSubset'
+import { ElementMapping } from '../elementMapping'
 
 /**
  * Mesh factory to load a standard vim using the progressive pipeline.
@@ -16,12 +17,14 @@ export class VimMeshFactory {
   private _materials: G3dMaterial
   private _instancedFactory: InstancedMeshFactory
   private _scene: Scene
+  private _mapping: ElementMapping
 
-  constructor (g3d: G3d, materials: G3dMaterial, scene: Scene) {
+  constructor (g3d: G3d, materials: G3dMaterial, scene: Scene, mapping: ElementMapping) {
     this.g3d = g3d
     this._materials = materials
     this._scene = scene
-    this._instancedFactory = new InstancedMeshFactory(materials)
+    this._mapping = mapping
+    this._instancedFactory = new InstancedMeshFactory(materials, mapping)
   }
 
   /**
@@ -52,7 +55,7 @@ export class VimMeshFactory {
     transparent: boolean
   ) {
     const offsets = subset.getOffsets(section)
-    const opaque = new InsertableMesh(offsets, this._materials, transparent)
+    const opaque = new InsertableMesh(offsets, this._materials, transparent, this._mapping)
 
     const count = subset.getMeshCount()
     for (let m = 0; m < count; m++) {
