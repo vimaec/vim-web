@@ -265,9 +265,9 @@ export class Renderer implements IRenderer {
 
   /**
    * Renders the scene depth to a PNG image and triggers download.
-   * This is a one-off test/debug feature.
+   * @param mousePos Optional normalized mouse position (0-1) for debug sphere placement.
    */
-  testDepthRender(): void {
+  testDepthRender(mousePos?: THREE.Vector2): void {
     // Get size from the viewport (more reliable than renderer.getSize during init)
     const size = this._viewport.getParentSize()
 
@@ -291,7 +291,7 @@ export class Renderer implements IRenderer {
     this._depthRenderer.setSize(size.x, size.y)
 
     // Render and save
-    this._depthRenderer.renderAndSave()
+    this._depthRenderer.renderAndSave(mousePos)
 
     // Trigger re-render to show debug sphere
     this.needsUpdate = true

@@ -7,13 +7,8 @@ import { Camera } from '../camera/camera'
 import { RenderScene } from './renderScene'
 
 /**
- * Shader material that outputs linear depth encoded into RGB channels.
- * Depth is the distance along camera direction, normalized to 0-1 based on near/far.
- * Encoded with 24-bit precision into RGB for accurate readback.
- *
- * To decode in JS:
- *   const depth01 = r/255 + g/65025 + b/16581375
- *   const depth = near + depth01 * (far - near)
+ * Shader material that outputs depth as grayscale.
+ * Based on the simple material pattern with proper Three.js includes.
  */
 class DepthMaterial extends THREE.ShaderMaterial {
   constructor() {
@@ -24,32 +19,64 @@ class DepthMaterial extends THREE.ShaderMaterial {
         uNear: { value: 0 },
         uFar: { value: 1000 }
       },
-      vertexShader: `
-        varying float vDepth;
-        uniform vec3 uCameraPos;
-        uniform vec3 uCameraDir;
+      side: THREE.DoubleSide,
+      clipping: true,
+      vertexShader: /* glsl */ `
+        #include <common>
+        #include <logdepthbuf_pars_vertex>
+        #include <clipping_planes_pars_vertex>
+
+        // Visibility attribute (used by VIM meshes)
+        attribute float ignore;
+
+        // Pass world position to fragment shader
+        varying vec3 vWorldPos;
 
         void main() {
-          vec4 worldPos = modelMatrix * vec4(position, 1.0);
+          #include <begin_vertex>
+          #include <project_vertex>
+          #include <clipping_planes_vertex>
+          #include <logdepthbuf_vertex>
 
-          // Depth = distance along camera direction
-          vec3 toVertex = worldPos.xyz - uCameraPos;
-          vDepth = dot(toVertex, uCameraDir);
+          // If ignore is set, hide the object
+          if (ignore > 0.0) {
+            gl_Position = vec4(1e20, 1e20, 1e20, 1.0);
+            return;
+          }
 
-          gl_Position = projectionMatrix * viewMatrix * worldPos;
+          // Compute world position for depth calculation
+          #ifdef USE_INSTANCING
+            vWorldPos = (modelMatrix * instanceMatrix * vec4(position, 1.0)).xyz;
+          #else
+            vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+          #endif
         }
       `,
-      fragmentShader: `
-        varying float vDepth;
+      fragmentShader: /* glsl */ `
+        #include <common>
+        #include <logdepthbuf_pars_fragment>
+        #include <clipping_planes_pars_fragment>
+
+        varying vec3 vWorldPos;
+        uniform vec3 uCameraPos;
+        uniform vec3 uCameraDir;
         uniform float uNear;
         uniform float uFar;
 
         void main() {
-          float depth01 = clamp((vDepth - uNear) / (uFar - uNear), 0.0, 1.0);
+          #include <clipping_planes_fragment>
+          #include <logdepthbuf_fragment>
+
+          // Depth = distance along camera direction
+          vec3 toVertex = vWorldPos - uCameraPos;
+          float depth = dot(toVertex, uCameraDir);
+
+          // Normalize to 0-1
+          float depth01 = clamp((depth - uNear) / (uFar - uNear), 0.0, 1.0);
+
           gl_FragColor = vec4(vec3(depth01), 1.0);
         }
-      `,
-      side: THREE.DoubleSide
+      `
     })
   }
 
@@ -148,8 +175,9 @@ export class DepthRenderer {
 
   /**
    * Renders the scene and saves it as a PNG file.
+   * @param mousePos Optional normalized mouse position (0-1). Defaults to center.
    */
-  renderAndSave(): void {
+  renderAndSave(mousePos?: THREE.Vector2): void {
     const camera = this._camera.three
     camera.updateMatrixWorld(true)
 
@@ -179,8 +207,8 @@ export class DepthRenderer {
     this._renderer.render(this._scene.threeScene, camera)
     this._renderer.setRenderTarget(currentTarget)
 
-    // Read center pixel and create debug sphere
-    this.createDebugSphereAtCenter(camera)
+    // Read pixel at mouse position and create debug sphere
+    this.createDebugSphereAtPixel(camera, mousePos)
 
     // Restore original state
     camera.layers.enable(1)
@@ -191,50 +219,66 @@ export class DepthRenderer {
   }
 
   /**
-   * Reads the center pixel depth and creates a debug sphere at that world position.
+   * Reads pixel depth at position and creates a debug sphere at that world position.
+   * @param mousePos Normalized position (0-1). Defaults to center if not provided.
    */
-  private createDebugSphereAtCenter(camera: THREE.Camera): void {
+  private createDebugSphereAtPixel(camera: THREE.Camera, mousePos?: THREE.Vector2): void {
     const width = this._renderTarget.width
     const height = this._renderTarget.height
 
-    // Read center pixel
-    const centerX = Math.floor(width / 2)
-    const centerY = Math.floor(height / 2)
+    // Default to center if no mouse position
+    const normX = mousePos?.x ?? 0.5
+    const normY = mousePos?.y ?? 0.5
+
+    // Convert to pixel coordinates (note: WebGL Y is flipped)
+    const pixelX = Math.floor(normX * width)
+    const pixelY = Math.floor((1 - normY) * height)
+
     const pixelBuffer = new Uint8Array(4)
 
     this._renderer.readRenderTargetPixels(
       this._renderTarget,
-      centerX,
-      centerY,
+      pixelX,
+      pixelY,
       1,
       1,
       pixelBuffer
     )
 
     const r = pixelBuffer[0]
-    const g = pixelBuffer[1]
-    const b = pixelBuffer[2]
 
-    // Decode grayscale depth (all channels should be the same)
+    // Decode grayscale depth
     const depth01 = r / 255
     const depth = this._near + depth01 * (this._far - this._near)
 
-    console.log('Center pixel RGB:', r, g, b)
+    console.log('Pixel position:', pixelX, pixelY)
     console.log('Decoded depth01:', depth01)
     console.log('Decoded depth:', depth)
 
     // Skip if no geometry hit (depth01 is 1.0 = far/background)
     if (depth01 >= 0.999) {
-      console.log('No geometry at center pixel')
+      console.log('No geometry at pixel')
       return
     }
 
-    // For center pixel, ray direction = camera direction
+    // Compute ray direction for this pixel using NDC coordinates
+    const ndcX = normX * 2 - 1
+    const ndcY = (1 - normY) * 2 - 1 // Flip Y for NDC
+
+    // Unproject to get ray direction
+    const rayEnd = new THREE.Vector3(ndcX, ndcY, 1).unproject(camera)
+    const rayDir = rayEnd.sub(camera.position).normalize()
+
+    // Get camera forward direction
     const cameraDir = new THREE.Vector3()
     camera.getWorldDirection(cameraDir)
 
-    // Compute world position: cameraPos + cameraDir * depth
-    const worldPos = camera.position.clone().add(cameraDir.multiplyScalar(depth))
+    // depth = dot(worldPos - cameraPos, cameraDir)
+    // worldPos = cameraPos + rayDir * t
+    // depth = dot(rayDir * t, cameraDir) = t * dot(rayDir, cameraDir)
+    // t = depth / dot(rayDir, cameraDir)
+    const t = depth / rayDir.dot(cameraDir)
+    const worldPos = camera.position.clone().add(rayDir.clone().multiplyScalar(t))
 
     console.log('Computed world position:', worldPos.toArray())
 
