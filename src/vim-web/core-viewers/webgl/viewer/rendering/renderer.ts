@@ -292,6 +292,9 @@ export class Renderer implements IRenderer {
 
     // Render and save
     this._depthRenderer.renderAndSave()
+
+    // Trigger re-render to show debug sphere
+    this.needsUpdate = true
   }
 
   /**
