@@ -130,6 +130,12 @@ export class Viewer {
       this.renderer
     )
 
+    // Update raycaster size on viewport resize
+    this.viewport.onResize.sub(() => {
+      const size = this.viewport.getParentSize()
+      ;(this.raycaster as Raycaster).setSize(size.x, size.y)
+    })
+
     this.inputs.init()
 
     // Start Loop
@@ -216,6 +222,7 @@ export class Viewer {
     this.selection.clear()
     this.viewport.dispose()
     this.renderer.dispose()
+    ;(this.raycaster as Raycaster).dispose()
     this.inputs.unregisterAll()
     this._vims.forEach((v) => v?.dispose())
     this.materials.dispose()

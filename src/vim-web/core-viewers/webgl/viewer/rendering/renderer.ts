@@ -14,6 +14,7 @@ import { RenderingSection } from './renderingSection'
 import { RenderingComposer } from './renderingComposer'
 import { ViewerSettings } from '../settings/viewerSettings'
 import { SignalDispatcher } from 'ste-signals'
+import { DepthRenderer } from './depthRenderer'
 
 /**
  * Manages how vim objects are added and removed from the THREE.Scene to be rendered
@@ -55,6 +56,7 @@ export class Renderer implements IRenderer {
   // 3GB
   private maxMemory = 3 * Math.pow(10, 9)
   private _outlineCount = 0
+  private _depthRenderer: DepthRenderer | undefined
 
 
   /**
@@ -132,6 +134,7 @@ export class Renderer implements IRenderer {
     this.renderer.forceContextLoss()
     this.renderer.dispose()
     this._composer.dispose()
+    this._depthRenderer?.dispose()
   }
 
   /**
@@ -258,6 +261,37 @@ export class Renderer implements IRenderer {
     }
 
     this._scene.clearUpdateFlags()
+  }
+
+  /**
+   * Renders the scene depth to a PNG image and triggers download.
+   * This is a one-off test/debug feature.
+   */
+  testDepthRender(): void {
+    // Get size from the viewport (more reliable than renderer.getSize during init)
+    const size = this._viewport.getParentSize()
+
+    if (size.x === 0 || size.y === 0) {
+      console.error('Cannot render depth: viewport has zero size')
+      return
+    }
+
+    // Lazily create depth renderer
+    if (!this._depthRenderer) {
+      this._depthRenderer = new DepthRenderer(
+        this.renderer,
+        this._camera,
+        this._scene,
+        size.x,
+        size.y
+      )
+    }
+
+    // Ensure size is current
+    this._depthRenderer.setSize(size.x, size.y)
+
+    // Render and save
+    this._depthRenderer.renderAndSave()
   }
 
   /**

@@ -10,6 +10,7 @@ import { Camera } from './camera/camera'
 import { Renderer } from './rendering/renderer'
 import { Marker } from './gizmos/markers/gizmoMarker'
 import { GizmoMarkers } from './gizmos/markers/gizmoMarkers'
+import { DepthPicker } from './rendering/depthPicker'
 import type {
   IRaycaster as IRaycasterBase,
   IRaycastResult as IRaycastResultBase,
@@ -58,6 +59,7 @@ export class Raycaster implements IRaycaster {
   private _camera: Camera
   private _scene: RenderScene
   private _renderer: Renderer
+  private _depthPicker: DepthPicker
 
   private _raycaster = new THREE.Raycaster()
 
@@ -65,6 +67,43 @@ export class Raycaster implements IRaycaster {
     this._camera = camera
     this._scene = scene
     this._renderer = renderer
+
+    // Initialize depth picker for GPU-based world position queries
+    const size = renderer.renderer.getSize(new THREE.Vector2())
+    this._depthPicker = new DepthPicker(
+      renderer.renderer,
+      camera,
+      scene,
+      renderer.section,
+      size.x || 1,
+      size.y || 1
+    )
+  }
+
+  /**
+   * Updates the depth picker render target size.
+   * Called when the viewport is resized.
+   */
+  setSize(width: number, height: number): void {
+    this._depthPicker.setSize(width, height)
+  }
+
+  /**
+   * GPU-based raycast that returns only the world position of the first hit.
+   * Optimized for camera operations where object identification is not needed.
+   * @param position Screen position in 0-1 range (0,0 is top-left)
+   * @returns World position of the first hit, or undefined if no geometry at position
+   */
+  raycastWorldPosition(position: THREE.Vector2): THREE.Vector3 | undefined {
+    if (!Validation.isRelativeVector2(position)) return undefined
+    return this._depthPicker.pick(position)
+  }
+
+  /**
+   * Disposes of resources used by the raycaster.
+   */
+  dispose(): void {
+    this._depthPicker.dispose()
   }
 
   /**

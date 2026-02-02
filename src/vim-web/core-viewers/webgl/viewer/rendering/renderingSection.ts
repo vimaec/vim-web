@@ -71,4 +71,11 @@ export class RenderingSection {
   get active () {
     return this._active
   }
+
+  /**
+   * Returns the clipping planes used for section box culling.
+   */
+  get clippingPlanes (): THREE.Plane[] {
+    return this.planes
+  }
 }
