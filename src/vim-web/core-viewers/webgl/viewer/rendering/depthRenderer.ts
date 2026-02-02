@@ -14,6 +14,7 @@ export class DepthRenderer {
   private _camera: Camera
   private _scene: RenderScene
   private _renderTarget: THREE.WebGLRenderTarget
+  private _redMaterial: THREE.MeshBasicMaterial
 
   constructor(
     renderer: THREE.WebGLRenderer,
@@ -29,6 +30,7 @@ export class DepthRenderer {
       format: THREE.RGBAFormat,
       type: THREE.UnsignedByteType
     })
+    this._redMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 })
   }
 
   /**
@@ -42,11 +44,28 @@ export class DepthRenderer {
    * Renders the scene and saves it as a PNG file.
    */
   renderAndSave(): void {
+    const camera = this._camera.three
     const currentTarget = this._renderer.getRenderTarget()
+    const currentOverrideMaterial = this._scene.threeScene.overrideMaterial
+    const currentBackground = this._scene.threeScene.background
+
+    // Apply red material to entire scene
+    this._scene.threeScene.overrideMaterial = this._redMaterial
+    this._scene.threeScene.background = null
+
+    // Disable layer 1 (NoRaycast) to hide skybox and gizmos
+    camera.layers.disable(1)
 
     this._renderer.setRenderTarget(this._renderTarget)
-    this._renderer.render(this._scene.threeScene, this._camera.three)
+    this._renderer.setClearColor(0x000000, 1) // Black background
+    this._renderer.clear()
+    this._renderer.render(this._scene.threeScene, camera)
     this._renderer.setRenderTarget(currentTarget)
+
+    // Restore original state
+    camera.layers.enable(1)
+    this._scene.threeScene.overrideMaterial = currentOverrideMaterial
+    this._scene.threeScene.background = currentBackground
 
     this.saveToFile()
   }
@@ -107,5 +126,6 @@ export class DepthRenderer {
    */
   dispose(): void {
     this._renderTarget.dispose()
+    this._redMaterial.dispose()
   }
 }
