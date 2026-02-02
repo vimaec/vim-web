@@ -7,6 +7,47 @@ import { Camera } from '../camera/camera'
 import { RenderScene } from './renderScene'
 
 /**
+ * Shader material that outputs world position as RGB.
+ * Position is normalized to 0-1 based on scene bounding box.
+ */
+class WorldPositionMaterial extends THREE.ShaderMaterial {
+  constructor() {
+    super({
+      uniforms: {
+        uBoundsMin: { value: new THREE.Vector3() },
+        uBoundsMax: { value: new THREE.Vector3() }
+      },
+      vertexShader: `
+        varying vec3 vWorldPos;
+
+        void main() {
+          vec4 worldPos = modelMatrix * vec4(position, 1.0);
+          vWorldPos = worldPos.xyz;
+          gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+      `,
+      fragmentShader: `
+        varying vec3 vWorldPos;
+        uniform vec3 uBoundsMin;
+        uniform vec3 uBoundsMax;
+
+        void main() {
+          // Normalize world position to 0-1 based on bounding box
+          vec3 normalized = (vWorldPos - uBoundsMin) / (uBoundsMax - uBoundsMin);
+          gl_FragColor = vec4(normalized, 1.0);
+        }
+      `,
+      side: THREE.DoubleSide
+    })
+  }
+
+  updateBounds(min: THREE.Vector3, max: THREE.Vector3): void {
+    this.uniforms.uBoundsMin.value.copy(min)
+    this.uniforms.uBoundsMax.value.copy(max)
+  }
+}
+
+/**
  * Renders the scene to a texture and exports it as a PNG image.
  */
 export class DepthRenderer {
@@ -14,7 +55,7 @@ export class DepthRenderer {
   private _camera: Camera
   private _scene: RenderScene
   private _renderTarget: THREE.WebGLRenderTarget
-  private _redMaterial: THREE.MeshBasicMaterial
+  private _worldPosMaterial: WorldPositionMaterial
 
   constructor(
     renderer: THREE.WebGLRenderer,
@@ -30,7 +71,7 @@ export class DepthRenderer {
       format: THREE.RGBAFormat,
       type: THREE.UnsignedByteType
     })
-    this._redMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 })
+    this._worldPosMaterial = new WorldPositionMaterial()
   }
 
   /**
@@ -49,8 +90,14 @@ export class DepthRenderer {
     const currentOverrideMaterial = this._scene.threeScene.overrideMaterial
     const currentBackground = this._scene.threeScene.background
 
-    // Apply red material to entire scene
-    this._scene.threeScene.overrideMaterial = this._redMaterial
+    // Update bounds from scene bounding box
+    const box = this._scene.getBoundingBox()
+    if (box) {
+      this._worldPosMaterial.updateBounds(box.min, box.max)
+    }
+
+    // Apply world position material to entire scene
+    this._scene.threeScene.overrideMaterial = this._worldPosMaterial
     this._scene.threeScene.background = null
 
     // Disable layer 1 (NoRaycast) to hide skybox and gizmos
@@ -126,6 +173,6 @@ export class DepthRenderer {
    */
   dispose(): void {
     this._renderTarget.dispose()
-    this._redMaterial.dispose()
+    this._worldPosMaterial.dispose()
   }
 }
