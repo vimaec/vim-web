@@ -290,42 +290,6 @@ export class Renderer implements IRenderer {
   }
 
   /**
-   * Performs GPU-based picking at the given mouse position.
-   * Returns a result object with elementIndex, worldPosition, and getElement() method.
-   *
-   * @param mousePos Normalized mouse position (0-1). Defaults to center.
-   * @returns Pick result with element index, world position, and getElement(), or undefined if no hit
-   */
-  gpuPick(mousePos?: THREE.Vector2): GpuPickResult | undefined {
-    const picker = this.getGpuPicker()
-    if (!picker) return undefined
-
-    const pos = mousePos ?? new THREE.Vector2(0.5, 0.5)
-    return picker.pick(pos)
-  }
-
-  /**
-   * Tests GPU picking at the given mouse position and places a red debug sphere
-   * at the hit world position for visual verification.
-   * @param mousePos Optional normalized mouse position (0-1). Defaults to center.
-   * @returns The pick result, or undefined if no hit
-   */
-  testGpuPick(mousePos?: THREE.Vector2): GpuPickResult | undefined {
-    const picker = this.getGpuPicker()
-    if (!picker) {
-      console.error('Cannot test GPU pick: viewport has zero size')
-      return undefined
-    }
-
-    const result = picker.testPick(mousePos)
-
-    // Trigger re-render to show debug sphere
-    this.needsUpdate = true
-
-    return result
-  }
-
-  /**
    * Adds an object to be rendered.
    * @param target The object or scene to add for rendering.
    */

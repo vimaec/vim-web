@@ -1,18 +1,20 @@
 /**
  * @module vim-loader/materials
- * Material for GPU picking that outputs both element index and depth in a single pass.
+ * Material for GPU picking that outputs element index, depth, and surface normal in a single pass.
  */
 
 import * as THREE from 'three'
 
 /**
- * Creates a material for GPU picking that outputs element index and depth.
+ * Creates a material for GPU picking that outputs packed IDs, depth, and surface normal.
  *
  * Output format (Float32 RGBA):
- * - R = element index (float, supports up to 16M elements)
- * - G = depth (distance along camera direction)
- * - B = vim index (identifies which vim the element belongs to)
- * - A = hit flag (1.0)
+ * - R = packed(vimIndex * 16777216 + elementIndex) - supports 256 vims × 16M elements
+ * - G = depth (distance along camera direction, 0 = miss)
+ * - B = normal.x (surface normal X component)
+ * - A = normal.y (surface normal Y component)
+ *
+ * Normal.z is reconstructed as: sqrt(1 - x² - y²), always positive since normal faces camera.
  *
  * @returns A custom shader material for GPU picking.
  */
@@ -38,6 +40,7 @@ export function createPickingMaterial() {
 
       varying float vElementIndex;
       varying float vVimIndex;
+      varying float vIgnore;
       varying vec3 vWorldPos;
 
       void main() {
@@ -45,6 +48,8 @@ export function createPickingMaterial() {
         #include <project_vertex>
         #include <clipping_planes_vertex>
         #include <logdepthbuf_vertex>
+
+        vIgnore = ignore;
 
         // If ignore is set, hide the object by moving it far out of view
         if (ignore > 0.0) {
@@ -55,7 +60,7 @@ export function createPickingMaterial() {
         vElementIndex = elementIndex;
         vVimIndex = vimIndex;
 
-        // Compute world position for depth calculation
+        // Compute world position for depth calculation and normal computation
         #ifdef USE_INSTANCING
           vWorldPos = (modelMatrix * instanceMatrix * vec4(position, 1.0)).xyz;
         #else
@@ -73,18 +78,39 @@ export function createPickingMaterial() {
 
       varying float vElementIndex;
       varying float vVimIndex;
+      varying float vIgnore;
       varying vec3 vWorldPos;
+
+      // Constant for packing vimIndex + elementIndex
+      const float VIM_MULTIPLIER = 16777216.0;  // 2^24
 
       void main() {
         #include <clipping_planes_fragment>
         #include <logdepthbuf_fragment>
 
+        if (vIgnore > 0.0) {
+          discard;
+        }
+
+        // Compute flat normal from screen-space derivatives (same as simpleMaterial)
+        vec3 normal = normalize(cross(dFdx(vWorldPos), dFdy(vWorldPos)));
+
+        // Ensure normal faces camera (flip if needed)
+        vec3 viewDir = normalize(uCameraPos - vWorldPos);
+        if (dot(normal, viewDir) < 0.0) {
+          normal = -normal;
+        }
+
         // Depth = distance along camera direction
         vec3 toVertex = vWorldPos - uCameraPos;
         float depth = dot(toVertex, uCameraDir);
 
-        // Output: R = element index, G = depth, B = vim index, A = 1
-        gl_FragColor = vec4(vElementIndex, depth, vVimIndex, 1.0);
+        // Pack vimIndex + elementIndex into single float
+        // Supports up to 256 vims (8 bits) and 16M elements per vim (24 bits)
+        float packedId = vVimIndex * VIM_MULTIPLIER + vElementIndex;
+
+        // Output: R = packed(vim+element), G = depth, B = normal.x, A = normal.y
+        gl_FragColor = vec4(packedId, depth, normal.x, normal.y);
       }
     `
   })

@@ -16,7 +16,7 @@ import { Marker } from '../gizmos/markers/gizmoMarker'
 export type GpuRaycastableObject = Element3D | Marker
 
 /**
- * Result of a GPU pick operation containing element index and world position.
+ * Result of a GPU pick operation containing element index, world position, and surface normal.
  * Implements IRaycastResult for compatibility with the raycaster interface.
  */
 export class GpuPickResult implements IRaycastResult<GpuRaycastableObject> {
@@ -26,13 +26,22 @@ export class GpuPickResult implements IRaycastResult<GpuRaycastableObject> {
   readonly vimIndex: number
   /** The world position of the hit */
   readonly worldPosition: THREE.Vector3
+  /** The world normal at the hit point */
+  readonly worldNormal: THREE.Vector3
   /** Reference to the vim containing the element */
   private _vim: Vim | undefined
 
-  constructor(elementIndex: number, vimIndex: number, worldPosition: THREE.Vector3, vim: Vim | undefined) {
+  constructor(
+    elementIndex: number,
+    vimIndex: number,
+    worldPosition: THREE.Vector3,
+    worldNormal: THREE.Vector3,
+    vim: Vim | undefined
+  ) {
     this.elementIndex = elementIndex
     this.vimIndex = vimIndex
     this.worldPosition = worldPosition
+    this.worldNormal = worldNormal
     this._vim = vim
   }
 
@@ -45,14 +54,6 @@ export class GpuPickResult implements IRaycastResult<GpuRaycastableObject> {
   }
 
   /**
-   * The world normal at the hit point.
-   * GPU picking doesn't provide normals, so this returns undefined.
-   */
-  get worldNormal(): THREE.Vector3 | undefined {
-    return undefined
-  }
-
-  /**
    * Gets the Element3D object for the picked element.
    * @returns The Element3D object, or undefined if not found
    */
@@ -61,15 +62,20 @@ export class GpuPickResult implements IRaycastResult<GpuRaycastableObject> {
   }
 }
 
+/** Constant for packing/unpacking vimIndex + elementIndex */
+const VIM_MULTIPLIER = 16777216 // 2^24
+
 /**
- * Unified GPU picker that outputs element index, depth, and vim index in a single render pass.
+ * Unified GPU picker that outputs element index, depth, vim index, and surface normal in a single render pass.
  * Implements IRaycaster for compatibility with the viewer's raycaster interface.
  *
  * Uses a Float32 render target with:
- * - R = element index (supports up to 16M elements)
- * - G = depth (distance along camera direction)
- * - B = vim index (identifies which vim the element belongs to)
- * - A = hit flag (1.0)
+ * - R = packed(vimIndex * 16777216 + elementIndex) - supports 256 vims × 16M elements
+ * - G = depth (distance along camera direction, 0 = miss)
+ * - B = normal.x (surface normal X component)
+ * - A = normal.y (surface normal Y component)
+ *
+ * Normal.z is reconstructed as: sqrt(1 - x² - y²), always positive since normal faces camera.
  */
 export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
   private _renderer: THREE.WebGLRenderer
@@ -82,7 +88,9 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
   private _readBuffer: Float32Array
 
   // Debug visualization
+  debug = true
   private _debugSphere: THREE.Mesh | undefined
+  private _debugLine: THREE.Line | undefined
 
   constructor(
     renderer: THREE.WebGLRenderer,
@@ -180,25 +188,29 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
       this._readBuffer
     )
 
-    // R = element index, G = depth, B = vim index, A = alpha (0 = miss)
-    const elementIndexFloat = this._readBuffer[0]
+    // R = packed(vim+element), G = depth, B = normal.x, A = normal.y
+    const packedId = this._readBuffer[0]
     const depth = this._readBuffer[1]
-    const vimIndexFloat = this._readBuffer[2]
-    const alpha = this._readBuffer[3]
+    const normalX = this._readBuffer[2]
+    const normalY = this._readBuffer[3]
 
-    // Check if hit (alpha = 0 means background/no hit)
-    if (alpha === 0) {
+    // Check if hit (depth <= 0 means background/no hit)
+    if (depth <= 0) {
       return undefined
     }
 
-    // Round element index and vim index to integers
-    const elementIndex = Math.round(elementIndexFloat)
-    const vimIndex = Math.round(vimIndexFloat)
+    // Unpack vimIndex and elementIndex from packed float
+    const vimIndex = Math.floor(packedId / VIM_MULTIPLIER)
+    const elementIndex = Math.round(packedId - vimIndex * VIM_MULTIPLIER)
 
-    // Check for invalid element index (-1 or very large values)
-    if (elementIndex < 0 || elementIndex >= 16777215) {
+    // Check for invalid element index
+    if (elementIndex < 0 || elementIndex >= VIM_MULTIPLIER) {
       return undefined
     }
+
+    // Reconstruct normal.z from x and y (normal is unit length, facing camera so z > 0)
+    const normalZ = Math.sqrt(Math.max(0, 1 - normalX * normalX - normalY * normalY))
+    const worldNormal = new THREE.Vector3(normalX, normalY, normalZ).normalize()
 
     // Reconstruct world position from depth
     const worldPosition = this.reconstructWorldPosition(screenPos, depth, camera)
@@ -206,7 +218,42 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
     // Get the vim directly using the vim index
     const vim = this._scene.vims[vimIndex]
 
-    return new GpuPickResult(elementIndex, vimIndex, worldPosition, vim)
+    const result = new GpuPickResult(elementIndex, vimIndex, worldPosition, worldNormal, vim)
+
+    if (this.debug) {
+      this.showDebugVisuals(result)
+    }
+
+    return result
+  }
+
+  /**
+   * Shows debug visuals (sphere at hit point, line showing normal direction).
+   */
+  private showDebugVisuals(result: GpuPickResult): void {
+    // Remove old debug visuals if they exist
+    this.clearDebugVisuals()
+
+    // Create new debug sphere at hit position
+    const sphereGeometry = new THREE.SphereGeometry(0.5, 16, 16)
+    const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 })
+    this._debugSphere = new THREE.Mesh(sphereGeometry, sphereMaterial)
+    this._debugSphere.position.copy(result.worldPosition)
+    this._debugSphere.layers.set(1) // NoRaycast layer
+    this._scene.threeScene.add(this._debugSphere)
+
+    // Create line segment showing normal direction
+    const lineLength = 2.0
+    const lineStart = result.worldPosition.clone()
+    const lineEnd = result.worldPosition.clone().add(result.worldNormal.clone().multiplyScalar(lineLength))
+    const lineGeometry = new THREE.BufferGeometry().setFromPoints([lineStart, lineEnd])
+    const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 2 })
+    this._debugLine = new THREE.Line(lineGeometry, lineMaterial)
+    this._debugLine.layers.set(1) // NoRaycast layer
+    this._scene.threeScene.add(this._debugLine)
+
+    // Request re-render
+    this._renderer.domElement.dispatchEvent(new Event('needsUpdate'))
   }
 
   /**
@@ -240,60 +287,20 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
   }
 
   /**
-   * Tests GPU picking at the given screen position and places a red debug sphere
-   * at the hit world position for visual verification.
-   *
-   * @param screenPos Screen position in 0-1 range (0,0 is top-left). Defaults to center.
-   * @returns The pick result, or undefined if no hit
+   * Removes debug visuals (sphere and normal line) from the scene.
    */
-  testPick(screenPos?: THREE.Vector2): GpuPickResult | undefined {
-    const pos = screenPos ?? new THREE.Vector2(0.5, 0.5)
-    const result = this.pick(pos)
-
-    console.log('GPU Pick test at:', pos.x.toFixed(3), pos.y.toFixed(3))
-
-    if (!result) {
-      console.log('GPU Pick - miss (no geometry)')
-      return undefined
-    }
-
-    const element = result.getElement()
-    console.log('GPU Pick - elementIndex:', result.elementIndex)
-    console.log('GPU Pick - vimIndex:', result.vimIndex)
-    console.log('GPU Pick - element:', element)
-    console.log('GPU Pick - worldPosition:', result.worldPosition.toArray().map(v => v.toFixed(2)))
-
-    // Remove old debug sphere if exists
-    if (this._debugSphere) {
-      this._scene.threeScene.remove(this._debugSphere)
-      this._debugSphere.geometry.dispose()
-      ;(this._debugSphere.material as THREE.Material).dispose()
-    }
-
-    // Create new debug sphere at hit position
-    const geometry = new THREE.SphereGeometry(0.5, 16, 16)
-    const material = new THREE.MeshBasicMaterial({ color: 0xff0000 })
-    this._debugSphere = new THREE.Mesh(geometry, material)
-    this._debugSphere.position.copy(result.worldPosition)
-    this._debugSphere.layers.set(1) // NoRaycast layer
-
-    this._scene.threeScene.add(this._debugSphere)
-
-    // Request re-render
-    this._renderer.domElement.dispatchEvent(new Event('needsUpdate'))
-
-    return result
-  }
-
-  /**
-   * Removes the debug sphere from the scene.
-   */
-  clearDebugSphere(): void {
+  clearDebugVisuals(): void {
     if (this._debugSphere) {
       this._scene.threeScene.remove(this._debugSphere)
       this._debugSphere.geometry.dispose()
       ;(this._debugSphere.material as THREE.Material).dispose()
       this._debugSphere = undefined
+    }
+    if (this._debugLine) {
+      this._scene.threeScene.remove(this._debugLine)
+      this._debugLine.geometry.dispose()
+      ;(this._debugLine.material as THREE.Material).dispose()
+      this._debugLine = undefined
     }
   }
 
@@ -355,7 +362,7 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
    * Disposes of all resources.
    */
   dispose(): void {
-    this.clearDebugSphere()
+    this.clearDebugVisuals()
     this._renderTarget.dispose()
     this._pickingMaterial.dispose()
   }
