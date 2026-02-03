@@ -1,5 +1,5 @@
 // Full export
-export * from './vimSettings';
+export type { VimSettings, VimPartialSettings } from './vimSettings';
 export * from './vimCollection';
 export {requestVim as request, type RequestSource, type VimRequest} from './progressive/vimRequest';
 export * as Materials from './materials';
@@ -13,7 +13,6 @@ export type * from './elementMapping';
 export type * from './mesh';
 export type * from './scene';
 export type * from './vim';
-export type * from './progressive/vimx';
 
 export type * from './progressive/g3dOffsets';
 export type * from './progressive/g3dSubset';

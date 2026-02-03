@@ -59,7 +59,7 @@ export class ComponentLoader {
   }
 
   /**
-     * Event emitter for completion notifications.
+    * Event emitter for completion notifications.
    */
   onDone () {
     this._modal.current?.loading(undefined)
@@ -73,68 +73,30 @@ export class ComponentLoader {
   }
 
   /**
-   * Asynchronously opens a vim at source, applying the provided settings.
-   * @param source The source to open, either as a string or ArrayBuffer.
-   * @param settings Partial settings to apply to the opened source.
-   * @param onProgress Optional callback function to track progress during opening.
-   * Receives progress logs as input.
-   */
-  async open (
-    source: Core.Webgl.RequestSource,
-    settings: OpenSettings,
-    onProgress?: (p: Core.Webgl.IProgressLogs) => void
-  ) {
-    const request = this.request(source, settings)
-
-    for await (const progress of request.getProgress()) {
-      onProgress?.(progress)
-      this.onProgress(progress)
-    }
-
-    const result = await request.getResult()
-    if (result.isError()) {
-      console.log('Error loading vim', result.error)
-      this.onError({
-        url: source.url ?? '',
-        error: result.error
-      })
-      return
-    }
-    const vim = result.result
-
-    this.onDone()
-    return vim
-  }
-
-  /**
-   * Creates a new load request for the provided source and settings.
+   * Loads a vim and adds it to the viewer.
+   * Returns a request to track progress and get the result.
    * @param source The url to the vim file or a buffer of the file.
    * @param settings Settings to apply to vim file.
-   * @returns A new load request instance to track progress and get result.
+   * @returns A LoadRequest to track progress and get result. The vim is auto-added on success.
    * @throws Error if the viewer has reached maximum capacity (256 vims)
    */
-  request (source: Core.Webgl.RequestSource,
-    settings?: Core.Webgl.VimPartialSettings) {
-    // Allocate a stable vim ID via the viewer
-    const vimIndex = settings?.vimIndex ?? this._viewer.allocateVimId()
+  load (source: Core.Webgl.RequestSource, settings: OpenSettings = {}) {
+    const vimIndex = this._viewer.allocateVimId()
     if (vimIndex === undefined) {
       throw new Error('Cannot load vim: maximum of 256 vims already loaded')
     }
-    const fullSettings = { ...settings, vimIndex }
-    return new LoadRequest({
-      onProgress: (p) => this.onProgress(p),
-      onError: (e) => this.onError(e),
-      onDone: () => this.onDone()
-    }, source, fullSettings)
-  }
 
-  /*
-    * Adds a vim to the viewer and initializes it.
-    * @param vim Vim to add to the viewer.
-    * @param settings Optional settings to apply to the vim.
-    */
-  add (vim: Core.Webgl.Vim, settings: AddSettings = {}) {
-    this.initVim(vim, settings)
+    return new LoadRequest(
+      {
+        onProgress: (p) => this.onProgress(p),
+        onError: (e) => this.onError(e),
+        onDone: () => this.onDone()
+      },
+      source,
+      settings,
+      vimIndex,
+      (vim) => this.initVim(vim, settings)
+    )
   }
 
   /**

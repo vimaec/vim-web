@@ -71,13 +71,13 @@ export class VimCollection implements IVimCollection<Vim> {
   }
 
   /**
-   * Adds a vim to the collection using its settings.vimIndex as the ID.
+   * Adds a vim to the collection using its vimIndex as the ID.
    * The vim's vimIndex should have been allocated via allocateId().
    * @param vim The vim to add
    * @throws Error if the vim's vimIndex slot is already occupied
    */
   add(vim: Vim): void {
-    const id = vim.settings.vimIndex
+    const id = vim.vimIndex
     if (id < 0 || id >= MAX_VIMS) {
       throw new Error(`Invalid vimIndex ${id}. Must be 0-${MAX_VIMS - 1}.`)
     }
@@ -95,7 +95,7 @@ export class VimCollection implements IVimCollection<Vim> {
    * @throws Error if the vim is not in the collection
    */
   remove(vim: Vim): void {
-    const id = vim.settings.vimIndex
+    const id = vim.vimIndex
     if (this._vimsById[id] !== vim) {
       throw new Error('Vim not found in collection.')
     }
@@ -121,7 +121,7 @@ export class VimCollection implements IVimCollection<Vim> {
    * @returns True if the vim is in the collection
    */
   has(vim: Vim): boolean {
-    const id = vim.settings.vimIndex
+    const id = vim.vimIndex
     return this._vimsById[id] === vim
   }
 

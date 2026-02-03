@@ -15,6 +15,7 @@ export class LoadRequest {
   readonly source
   private _callbacks : RequestCallbacks
   private _request: Core.Webgl.VimRequest
+  private _onLoaded?: (vim: Core.Webgl.Vim) => void
 
   private _progress: Core.Webgl.IProgressLogs = { loaded: 0, total: 0, all: new Map() }
   private _progressPromise = new ControllablePromise<void>()
@@ -22,14 +23,21 @@ export class LoadRequest {
   private _isDone: boolean = false
   private _completionPromise = new ControllablePromise<void>()
 
-  constructor (callbacks: RequestCallbacks, source: Core.Webgl.RequestSource, settings?: Core.Webgl.VimPartialSettings) {
+  constructor (
+    callbacks: RequestCallbacks,
+    source: Core.Webgl.RequestSource,
+    settings: Core.Webgl.VimPartialSettings,
+    vimIndex: number,
+    onLoaded?: (vim: Core.Webgl.Vim) => void
+  ) {
     this.source = source
     this._callbacks = callbacks
-    this.startRequest(source, settings)
+    this._onLoaded = onLoaded
+    this.startRequest(source, settings, vimIndex)
   }
 
-  private async startRequest (source: Core.Webgl.RequestSource, settings?: Core.Webgl.VimPartialSettings) {
-    this._request = await Core.Webgl.request(source, settings)
+  private async startRequest (source: Core.Webgl.RequestSource, settings: Core.Webgl.VimPartialSettings, vimIndex: number) {
+    this._request = Core.Webgl.request(source, settings, vimIndex)
     for await (const progress of this._request.getProgress()) {
       this.onProgress(progress)
     }
@@ -37,6 +45,7 @@ export class LoadRequest {
     if (result.isError()) {
       this.onError(result.error)
     } else {
+      this._onLoaded?.(result.result)
       this.onSuccess()
     }
   }
@@ -77,6 +86,18 @@ export class LoadRequest {
   async getResult () {
     await this._completionPromise
     return this._request.getResult()
+  }
+
+  /**
+   * Convenience method to get the vim directly.
+   * Throws if loading failed.
+   */
+  async getVim (): Promise<Core.Webgl.Vim> {
+    const result = await this.getResult()
+    if (result.isError()) {
+      throw new Error(result.error)
+    }
+    return result.result
   }
 
   abort () {

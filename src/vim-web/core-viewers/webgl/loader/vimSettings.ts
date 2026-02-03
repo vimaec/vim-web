@@ -6,7 +6,8 @@ import deepmerge from 'deepmerge'
 import { Transparency } from './geometry'
 import * as THREE from 'three'
 
-export type FileType = 'vim' | 'vimx' | undefined
+// Internal only - not exported
+type FileType = 'vim' | 'vimx' | undefined
 
 /**
  * Represents settings for configuring the behavior and rendering of a vim object.
@@ -43,9 +44,13 @@ export type VimSettings = {
    * Set to true to enable verbose HTTP logging.
    */
   verboseHttp: boolean
+}
 
-  // VIMX
-
+/**
+ * Internal settings type that includes vimx-specific fields.
+ * Used internally for loading vimx files.
+ */
+export type VimSettingsFull = VimSettings & {
   /**
    * Specifies the file type (vim or vimx) if it cannot or should not be inferred from the file extension.
    */
@@ -60,20 +65,13 @@ export type VimSettings = {
    * The time in milliseconds between each scene refresh during progressive loading.
    */
   progressiveInterval: number
-
-  /**
-   * The index of this vim in the scene's vim array. Used for GPU picking to directly
-   * identify which vim an element belongs to. If not specified, defaults to 0.
-   * When loading multiple vims, set this to the current count of vims in the scene.
-   */
-  vimIndex: number
 }
 
 /**
  * Default configuration settings for a vim object.
  */
-export function getDefaultVimSettings(): VimSettings {
-return {
+export function getDefaultVimSettings(): VimSettingsFull {
+  return {
     position: new THREE.Vector3(),
     rotation: new THREE.Vector3(),
     scale: 1,
@@ -81,13 +79,10 @@ return {
     transparency: 'all',
     verboseHttp: false,
 
-    // progressive
+    // progressive (internal)
     fileType: undefined,
     progressive: false,
-    progressiveInterval: 1000,
-
-    // GPU picking
-    vimIndex: 0
+    progressiveInterval: 1000
   }
 }
 
@@ -99,12 +94,12 @@ export type VimPartialSettings = Partial<VimSettings>
 /**
  * Wraps Vim options, converting values to related THREE.js types and providing default values.
  * @param {VimPartialSettings} [options] - Optional partial settings for the Vim object.
- * @returns {VimSettings} The complete settings for the Vim object, including defaults.
+ * @returns {VimSettingsFull} The complete settings for the Vim object, including defaults.
  */
-export function createVimSettings (options?: VimPartialSettings) {
-  const merge = options
+export function createVimSettings (options?: VimPartialSettings): VimSettingsFull {
+  const merge = (options
     ? deepmerge(getDefaultVimSettings(), options, undefined)
-    : getDefaultVimSettings()
+    : getDefaultVimSettings()) as VimSettingsFull
 
   merge.transparency = Transparency.isValid(merge.transparency)
     ? merge.transparency

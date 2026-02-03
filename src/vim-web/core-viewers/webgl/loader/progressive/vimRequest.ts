@@ -23,10 +23,11 @@ export type RequestSource = {
  * Initiates a request to load a VIM object from a given source.
  * @param options a url where to find the vim file or a buffer of a vim file.
  * @param settings the settings to configure how the vim will be loaded.
+ * @param vimIndex the stable ID (0-255) for GPU picking, allocated by the viewer.
  * @returns a request object that can be used to track progress and get the result.
  */
-export function requestVim (options: RequestSource, settings? : VimPartialSettings) {
-  return new VimRequest(options, settings)
+export function requestVim (options: RequestSource, settings: VimPartialSettings, vimIndex: number) {
+  return new VimRequest(options, settings, vimIndex)
 }
 
 /**
@@ -35,6 +36,7 @@ export function requestVim (options: RequestSource, settings? : VimPartialSettin
 export class VimRequest {
   private _source: VimSource
   private _settings : VimPartialSettings
+  private _vimIndex: number
   private _bfast : BFast
 
   // Result states
@@ -47,9 +49,10 @@ export class VimRequest {
   private _progressPromise = new ControllablePromise<IProgressLogs>()
   private _completionPromise = new ControllablePromise<void>()
 
-  constructor (source: VimSource, settings: VimPartialSettings) {
+  constructor (source: VimSource, settings: VimPartialSettings, vimIndex: number) {
     this._source = source
     this._settings = settings
+    this._vimIndex = vimIndex
 
     this.startRequest()
   }
@@ -61,7 +64,7 @@ export class VimRequest {
     try {
       this._bfast = new BFast(this._source)
 
-      const vim: Vim = await open(this._bfast, this._settings, (progress: IProgressLogs) => {
+      const vim: Vim = await open(this._bfast, this._settings, this._vimIndex, (progress: IProgressLogs) => {
         this._progress = progress
         this._progressPromise.resolve(progress)
         this._progressPromise = new ControllablePromise<IProgressLogs>()

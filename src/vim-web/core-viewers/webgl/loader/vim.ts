@@ -29,7 +29,13 @@ export class Vim implements IVim<Element3D> {
    * The type of the viewer, indicating it is a WebGL viewer.
    * Useful for distinguishing between different viewer types in a multi-viewer application.
    */
-  readonly type = 'webgl';  
+  readonly type = 'webgl';
+
+  /**
+   * The stable ID of this vim in the scene's vim collection (0-255).
+   * Used for GPU picking to identify which vim an element belongs to.
+   */
+  readonly vimIndex: number
 
   /**
    * Indicates whether the vim was opened from a vim or vimx file.
@@ -108,11 +114,11 @@ export class Vim implements IVim<Element3D> {
  * @param {G3d | undefined} g3d - The G3d object, if available.
  * @param {Scene} scene - The scene containing the vim's geometry.
  * @param {VimSettings} settings - The settings used to open this vim.
+ * @param {number} vimIndex - The stable ID of this vim (0-255) for GPU picking.
  * @param {ElementMapping | ElementNoMapping | ElementMapping2} map - The element mapping.
  * @param {SubsetBuilder} builder - The subset builder for constructing subsets of the Vim object.
  * @param {string} source - The source of the Vim object.
  * @param {VimFormat} format - The format of the Vim object.
- * @param {boolean} isLegacy - Indicates whether the Vim object uses a legacy loading pipeline.
  */
   constructor (
     header: VimHeader | undefined,
@@ -120,6 +126,7 @@ export class Vim implements IVim<Element3D> {
     g3d: G3d | undefined,
     scene: Scene,
     settings: VimSettings,
+    vimIndex: number,
     map: ElementMapping | ElementNoMapping | ElementMapping2,
     builder: SubsetBuilder,
     source: string,
@@ -130,6 +137,7 @@ export class Vim implements IVim<Element3D> {
     scene.vim = this
     this.scene = scene
     this.settings = settings
+    this.vimIndex = vimIndex
 
     this.map = map ?? new ElementNoMapping()
     this._builder = builder

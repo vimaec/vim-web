@@ -2,7 +2,7 @@
 import {
   createVimSettings,
   VimPartialSettings,
-  VimSettings
+  VimSettingsFull
 } from '../vimSettings'
 
 import { Vim } from '../vim'
@@ -29,12 +29,14 @@ import { DefaultLog } from 'vim-format/dist/logging'
  * Asynchronously opens a vim object from a given source with the provided settings.
  * @param {string | BFast} source - The source of the vim object, either a string or a BFast.
  * @param {VimPartialSettings} settings - The settings to configure the behavior of the vim object.
+ * @param {number} vimIndex - The stable ID (0-255) for GPU picking, allocated by the viewer.
  * @param {(p: IProgressLogs) => void} [onProgress] - Optional callback function to track progress logs.
- * @returns {Promise<void>} A Promise that resolves when the vim object is successfully opened.
+ * @returns {Promise<Vim>} A Promise that resolves when the vim object is successfully opened.
  */
 export async function open (
   source: VimSource | BFast,
   settings: VimPartialSettings,
+  vimIndex: number,
   onProgress?: (p: IProgressLogs) => void
 ) {
   const bfast = source instanceof BFast ? source : new BFast(source)
@@ -42,11 +44,11 @@ export async function open (
   const type = await determineFileType(bfast, fullSettings)
 
   if (type === 'vim') {
-    return loadFromVim(bfast, fullSettings, onProgress)
+    return loadFromVim(bfast, fullSettings, vimIndex, onProgress)
   }
 
   if (type === 'vimx') {
-    return loadFromVimX(bfast, fullSettings, onProgress)
+    return loadFromVimX(bfast, fullSettings, vimIndex, onProgress)
   }
 
   throw new Error('Cannot determine the appropriate loading strategy.')
@@ -54,7 +56,7 @@ export async function open (
 
 async function determineFileType (
   bfast: BFast,
-  settings: VimSettings
+  settings: VimSettingsFull
 ) {
   if (settings?.fileType === 'vim') return 'vim'
   if (settings?.fileType === 'vimx') return 'vimx'
@@ -79,7 +81,8 @@ async function requestFileType (bfast: BFast) {
  */
 async function loadFromVimX (
   bfast: BFast,
-  settings: VimSettings,
+  settings: VimSettingsFull,
+  vimIndex: number,
   onProgress: (p: IProgressLogs) => void
 ) {
   // Fetch geometry data
@@ -97,7 +100,7 @@ async function loadFromVimX (
   // wait for bim data.
   // const bim = bimPromise ? await bimPromise : undefined
 
-  const builder = new VimxSubsetBuilder(vimx, scene, settings.vimIndex)
+  const builder = new VimxSubsetBuilder(vimx, scene, vimIndex)
 
   const vim = new Vim(
     vimx.header,
@@ -105,6 +108,7 @@ async function loadFromVimX (
     undefined,
     scene,
     settings,
+    vimIndex,
     mapping,
     builder,
     bfast.url,
@@ -123,7 +127,8 @@ async function loadFromVimX (
  */
 async function loadFromVim (
   bfast: BFast,
-  settings: VimSettings,
+  settings: VimSettingsFull,
+  vimIndex: number,
   onProgress?: (p: IProgressLogs) => void
 ) {
   const fullSettings = createVimSettings(settings)
@@ -146,7 +151,7 @@ async function loadFromVim (
 
   // Create scene and factory WITH mapping
   const scene = new Scene(settings.matrix)
-  const factory = new VimMeshFactory(g3d, materials, scene, mapping, fullSettings.vimIndex)
+  const factory = new VimMeshFactory(g3d, materials, scene, mapping, vimIndex)
 
   const header = await requestHeader(bfast)
 
@@ -158,6 +163,7 @@ async function loadFromVim (
     g3d,
     scene,
     fullSettings,
+    vimIndex,
     mapping,
     builder,
     bfast.url,

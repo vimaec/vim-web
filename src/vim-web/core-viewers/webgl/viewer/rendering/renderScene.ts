@@ -169,7 +169,7 @@ export class RenderScene {
 
   private addScene (scene: Scene) {
     // Store scene at its vim's stable ID for GPU picking
-    const vimIndex = scene.vim?.settings.vimIndex ?? 0
+    const vimIndex = scene.vim?.vimIndex ?? 0
     this._vimScenesById[vimIndex] = scene
 
     scene.meshes.forEach((m) => {
@@ -190,7 +190,7 @@ export class RenderScene {
 
   private removeScene (scene: Scene) {
     // Clear the slot at this scene's vim ID
-    const vimIndex = scene.vim?.settings.vimIndex ?? 0
+    const vimIndex = scene.vim?.vimIndex ?? 0
     this._vimScenesById[vimIndex] = undefined
 
     // Remove all meshes from three scene

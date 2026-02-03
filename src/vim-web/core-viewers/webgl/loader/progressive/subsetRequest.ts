@@ -4,7 +4,8 @@
 
 import { InsertableMesh } from './insertableMesh'
 import { InstancedMeshFactory } from './instancedMeshFactory'
-import { Vimx, Scene } from '../..'
+import { Scene } from '../scene'
+import { Vimx } from './vimx'
 
 import { G3dMesh } from 'vim-format'
 import { G3dSubset } from './g3dSubset'
