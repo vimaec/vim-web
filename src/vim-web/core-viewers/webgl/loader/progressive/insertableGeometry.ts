@@ -35,7 +35,9 @@ export class InsertableGeometry {
   private _vertexAttribute: THREE.BufferAttribute
   private _colorAttribute: THREE.BufferAttribute
   private _elementIndexAttribute: THREE.Float32BufferAttribute
+  private _vimIndexAttribute: THREE.Float32BufferAttribute
   private _mapping: ElementMapping | undefined
+  private _vimIndex: number
 
   private _updateStartMesh = 0
   private _updateEndMesh = 0
@@ -45,11 +47,13 @@ export class InsertableGeometry {
     offsets: G3dMeshOffsets,
     materials: G3dMaterial,
     transparent: boolean,
-    mapping?: ElementMapping
+    mapping?: ElementMapping,
+    vimIndex: number = 0
   ) {
     this.offsets = offsets
     this.materials = materials
     this._mapping = mapping
+    this._vimIndex = vimIndex
 
     this._indexAttribute = new THREE.Uint32BufferAttribute(
       offsets.counts.indices,
@@ -73,6 +77,12 @@ export class InsertableGeometry {
       1
     )
 
+    // Vim index attribute for GPU picking (one per vertex)
+    this._vimIndexAttribute = new THREE.Float32BufferAttribute(
+      offsets.counts.vertices,
+      1
+    )
+
     // this._indexAttribute.count = 0
     // this._vertexAttribute.count = 0
     // this._colorAttribute.count = 0
@@ -82,6 +92,7 @@ export class InsertableGeometry {
     this.geometry.setAttribute('position', this._vertexAttribute)
     this.geometry.setAttribute('color', this._colorAttribute)
     this.geometry.setAttribute('elementIndex', this._elementIndexAttribute)
+    this.geometry.setAttribute('vimIndex', this._vimIndexAttribute)
 
     this.boundingBox = offsets.subset.getBoundingBox()
     if (this.boundingBox) {
@@ -265,6 +276,7 @@ export class InsertableGeometry {
         vector.applyMatrix4(matrix)
         this.setVertex(vertexOffset + vertexOut, vector)
         this.setElementIndex(vertexOffset + vertexOut, elementIndex)
+        this.setVimIndex(vertexOffset + vertexOut, this._vimIndex)
         submesh.expandBox(vector)
         vertexOut++
       }
@@ -296,6 +308,10 @@ export class InsertableGeometry {
 
   private setElementIndex (index: number, elementIndex: number) {
     this._elementIndexAttribute.setX(index, elementIndex)
+  }
+
+  private setVimIndex (index: number, vimIndex: number) {
+    this._vimIndexAttribute.setX(index, vimIndex)
   }
 
   private expandBox (box: THREE.Box3) {
@@ -345,6 +361,10 @@ export class InsertableGeometry {
     // update element indices (itemSize is 1)
     this._elementIndexAttribute.addUpdateRange(vertexStart, vertexEnd - vertexStart)
     this._elementIndexAttribute.needsUpdate = true
+
+    // update vim indices (itemSize is 1)
+    this._vimIndexAttribute.addUpdateRange(vertexStart, vertexEnd - vertexStart)
+    this._vimIndexAttribute.needsUpdate = true
 
     if (this._computeBoundingBox) {
       this.geometry.computeBoundingBox()

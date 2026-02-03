@@ -72,6 +72,7 @@ export class VimSubsetBuilder implements SubsetBuilder {
 export class VimxSubsetBuilder {
   private _localVimx: Vimx
   private _scene: Scene
+  private _vimIndex: number
   private _set = new Set<SubsetRequest>()
 
   private _onUpdate = new SignalDispatcher()
@@ -83,9 +84,10 @@ export class VimxSubsetBuilder {
     return this._set.size > 0
   }
 
-  constructor (localVimx: Vimx, scene: Scene) {
+  constructor (localVimx: Vimx, scene: Scene, vimIndex: number = 0) {
     this._localVimx = localVimx
     this._scene = scene
+    this._vimIndex = vimIndex
   }
 
   getFullSet () {
@@ -93,7 +95,7 @@ export class VimxSubsetBuilder {
   }
 
   async loadSubset (subset: G3dSubset, settings?: LoadPartialSettings) {
-    const request = new SubsetRequest(this._scene, this._localVimx, subset)
+    const request = new SubsetRequest(this._scene, this._localVimx, subset, this._vimIndex)
     this._set.add(request)
     this._onUpdate.dispatch()
     await request.start(settings)

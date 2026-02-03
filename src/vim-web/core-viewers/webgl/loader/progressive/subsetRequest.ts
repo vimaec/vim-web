@@ -51,7 +51,7 @@ export class SubsetRequest {
     return this._subset.getBoundingBox()
   }
 
-  constructor (scene: Scene, localVimx: Vimx, subset: G3dSubset) {
+  constructor (scene: Scene, localVimx: Vimx, subset: G3dSubset, vimIndex: number = 0) {
     this._subset = subset
     this._scene = scene
 
@@ -62,7 +62,9 @@ export class SubsetRequest {
     this._opaqueMesh = new InsertableMesh(
       opaqueOffsets,
       localVimx.materials,
-      false
+      false,
+      undefined,
+      vimIndex
     )
     this._opaqueMesh.mesh.name = 'Opaque_Merged_Mesh'
 
@@ -70,14 +72,16 @@ export class SubsetRequest {
     this._transparentMesh = new InsertableMesh(
       transparentOffsets,
       localVimx.materials,
-      true
+      true,
+      undefined,
+      vimIndex
     )
     this._transparentMesh.mesh.name = 'Transparent_Merged_Mesh'
 
     this._scene.addMesh(this._transparentMesh)
     this._scene.addMesh(this._opaqueMesh)
 
-    this._meshFactory = new InstancedMeshFactory(localVimx.materials)
+    this._meshFactory = new InstancedMeshFactory(localVimx.materials, undefined, vimIndex)
 
     this._synchronizer = new LoadingSynchronizer(
       this._uniques,

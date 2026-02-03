@@ -12,10 +12,12 @@ import { ElementMapping } from '../elementMapping'
 export class InstancedMeshFactory {
   materials: G3dMaterial
   private _mapping: ElementMapping | undefined
+  private _vimIndex: number
 
-  constructor (materials: G3dMaterial, mapping?: ElementMapping) {
+  constructor (materials: G3dMaterial, mapping?: ElementMapping, vimIndex: number = 0) {
     this.materials = materials
     this._mapping = mapping
+    this._vimIndex = vimIndex
   }
 
   createTransparent (mesh: G3dMesh, instances: number[]) {
@@ -90,6 +92,7 @@ export class InstancedMeshFactory {
 
     this.setMatricesFromVimx(threeMesh, g3d, instances)
     this.setElementIndices(threeMesh, instances ?? g3d.meshInstances[mesh])
+    this.setVimIndices(threeMesh, instances ?? g3d.meshInstances[mesh])
     const result = new InstancedMesh(g3d, threeMesh, instances)
     return result
   }
@@ -182,6 +185,23 @@ export class InstancedMeshFactory {
     three.geometry.setAttribute(
       'elementIndex',
       new THREE.InstancedBufferAttribute(elementIndices, 1)
+    )
+  }
+
+  /**
+   * Adds per-instance vim index attribute for GPU picking.
+   */
+  private setVimIndices (
+    three: THREE.InstancedMesh,
+    instances: number[]
+  ) {
+    const vimIndices = new Float32Array(instances.length)
+    for (let i = 0; i < instances.length; i++) {
+      vimIndices[i] = this._vimIndex
+    }
+    three.geometry.setAttribute(
+      'vimIndex',
+      new THREE.InstancedBufferAttribute(vimIndices, 1)
     )
   }
 }

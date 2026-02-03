@@ -97,7 +97,7 @@ async function loadFromVimX (
   // wait for bim data.
   // const bim = bimPromise ? await bimPromise : undefined
 
-  const builder = new VimxSubsetBuilder(vimx, scene)
+  const builder = new VimxSubsetBuilder(vimx, scene, settings.vimIndex)
 
   const vim = new Vim(
     vimx.header,
@@ -146,7 +146,7 @@ async function loadFromVim (
 
   // Create scene and factory WITH mapping
   const scene = new Scene(settings.matrix)
-  const factory = new VimMeshFactory(g3d, materials, scene, mapping)
+  const factory = new VimMeshFactory(g3d, materials, scene, mapping, fullSettings.vimIndex)
 
   const header = await requestHeader(bfast)
 

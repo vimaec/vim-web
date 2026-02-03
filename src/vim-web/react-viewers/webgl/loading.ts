@@ -114,11 +114,14 @@ export class ComponentLoader {
    */
   request (source: Core.Webgl.RequestSource,
     settings?: Core.Webgl.VimPartialSettings) {
+    // Auto-assign vim index based on current vim count for GPU picking
+    const vimIndex = settings?.vimIndex ?? this._viewer.vims.length
+    const fullSettings = { ...settings, vimIndex }
     return new LoadRequest({
       onProgress: (p) => this.onProgress(p),
       onError: (e) => this.onError(e),
       onDone: () => this.onDone()
-    }, source, settings)
+    }, source, fullSettings)
   }
 
   /*

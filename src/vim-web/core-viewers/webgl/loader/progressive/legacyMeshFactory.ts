@@ -18,13 +18,15 @@ export class VimMeshFactory {
   private _instancedFactory: InstancedMeshFactory
   private _scene: Scene
   private _mapping: ElementMapping
+  private _vimIndex: number
 
-  constructor (g3d: G3d, materials: G3dMaterial, scene: Scene, mapping: ElementMapping) {
+  constructor (g3d: G3d, materials: G3dMaterial, scene: Scene, mapping: ElementMapping, vimIndex: number = 0) {
     this.g3d = g3d
     this._materials = materials
     this._scene = scene
     this._mapping = mapping
-    this._instancedFactory = new InstancedMeshFactory(materials, mapping)
+    this._vimIndex = vimIndex
+    this._instancedFactory = new InstancedMeshFactory(materials, mapping, vimIndex)
   }
 
   /**
@@ -55,7 +57,7 @@ export class VimMeshFactory {
     transparent: boolean
   ) {
     const offsets = subset.getOffsets(section)
-    const opaque = new InsertableMesh(offsets, this._materials, transparent, this._mapping)
+    const opaque = new InsertableMesh(offsets, this._materials, transparent, this._mapping, this._vimIndex)
 
     const count = subset.getMeshCount()
     for (let m = 0; m < count; m++) {

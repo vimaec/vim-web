@@ -60,6 +60,13 @@ export type VimSettings = {
    * The time in milliseconds between each scene refresh during progressive loading.
    */
   progressiveInterval: number
+
+  /**
+   * The index of this vim in the scene's vim array. Used for GPU picking to directly
+   * identify which vim an element belongs to. If not specified, defaults to 0.
+   * When loading multiple vims, set this to the current count of vims in the scene.
+   */
+  vimIndex: number
 }
 
 /**
@@ -77,7 +84,10 @@ return {
     // progressive
     fileType: undefined,
     progressive: false,
-    progressiveInterval: 1000
+    progressiveInterval: 1000,
+
+    // GPU picking
+    vimIndex: 0
   }
 }
 

@@ -11,7 +11,8 @@ import * as THREE from 'three'
  * Output format (Float32 RGBA):
  * - R = element index (float, supports up to 16M elements)
  * - G = depth (distance along camera direction)
- * - B, A = unused (set to 0.0 and 1.0)
+ * - B = vim index (identifies which vim the element belongs to)
+ * - A = hit flag (1.0)
  *
  * @returns A custom shader material for GPU picking.
  */
@@ -32,8 +33,11 @@ export function createPickingMaterial() {
       attribute float ignore;
       // Element index attribute for GPU picking
       attribute float elementIndex;
+      // Vim index attribute for GPU picking
+      attribute float vimIndex;
 
       varying float vElementIndex;
+      varying float vVimIndex;
       varying vec3 vWorldPos;
 
       void main() {
@@ -49,6 +53,7 @@ export function createPickingMaterial() {
         }
 
         vElementIndex = elementIndex;
+        vVimIndex = vimIndex;
 
         // Compute world position for depth calculation
         #ifdef USE_INSTANCING
@@ -67,6 +72,7 @@ export function createPickingMaterial() {
       uniform vec3 uCameraDir;
 
       varying float vElementIndex;
+      varying float vVimIndex;
       varying vec3 vWorldPos;
 
       void main() {
@@ -77,8 +83,8 @@ export function createPickingMaterial() {
         vec3 toVertex = vWorldPos - uCameraPos;
         float depth = dot(toVertex, uCameraDir);
 
-        // Output: R = element index, G = depth, B = 0, A = 1
-        gl_FragColor = vec4(vElementIndex, depth, 0.0, 1.0);
+        // Output: R = element index, G = depth, B = vim index, A = 1
+        gl_FragColor = vec4(vElementIndex, depth, vVimIndex, 1.0);
       }
     `
   })

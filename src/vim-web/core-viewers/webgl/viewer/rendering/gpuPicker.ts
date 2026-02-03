@@ -22,15 +22,18 @@ export type GpuRaycastableObject = Element3D | Marker
 export class GpuPickResult implements IRaycastResult<GpuRaycastableObject> {
   /** The element index in the vim */
   readonly elementIndex: number
+  /** The vim index identifying which vim the element belongs to */
+  readonly vimIndex: number
   /** The world position of the hit */
   readonly worldPosition: THREE.Vector3
-  /** Reference to vims for element lookup */
-  private _vims: Vim[]
+  /** Reference to the vim containing the element */
+  private _vim: Vim | undefined
 
-  constructor(elementIndex: number, worldPosition: THREE.Vector3, vims: Vim[]) {
+  constructor(elementIndex: number, vimIndex: number, worldPosition: THREE.Vector3, vim: Vim | undefined) {
     this.elementIndex = elementIndex
+    this.vimIndex = vimIndex
     this.worldPosition = worldPosition
-    this._vims = vims
+    this._vim = vim
   }
 
   /**
@@ -51,25 +54,22 @@ export class GpuPickResult implements IRaycastResult<GpuRaycastableObject> {
 
   /**
    * Gets the Element3D object for the picked element.
-   * Searches through all loaded vims to find the element.
    * @returns The Element3D object, or undefined if not found
    */
   getElement(): Element3D | undefined {
-    for (const vim of this._vims) {
-      const element = vim.getElementFromIndex(this.elementIndex)
-      if (element) return element
-    }
-    return undefined
+    return this._vim?.getElementFromIndex(this.elementIndex)
   }
 }
 
 /**
- * Unified GPU picker that outputs both element index and depth in a single render pass.
+ * Unified GPU picker that outputs element index, depth, and vim index in a single render pass.
  * Implements IRaycaster for compatibility with the viewer's raycaster interface.
  *
  * Uses a Float32 render target with:
  * - R = element index (supports up to 16M elements)
  * - G = depth (distance along camera direction)
+ * - B = vim index (identifies which vim the element belongs to)
+ * - A = hit flag (1.0)
  */
 export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
   private _renderer: THREE.WebGLRenderer
@@ -180,9 +180,10 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
       this._readBuffer
     )
 
-    // R = element index, G = depth, A = alpha (0 = miss)
+    // R = element index, G = depth, B = vim index, A = alpha (0 = miss)
     const elementIndexFloat = this._readBuffer[0]
     const depth = this._readBuffer[1]
+    const vimIndexFloat = this._readBuffer[2]
     const alpha = this._readBuffer[3]
 
     // Check if hit (alpha = 0 means background/no hit)
@@ -190,8 +191,9 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
       return undefined
     }
 
-    // Round element index to integer
+    // Round element index and vim index to integers
     const elementIndex = Math.round(elementIndexFloat)
+    const vimIndex = Math.round(vimIndexFloat)
 
     // Check for invalid element index (-1 or very large values)
     if (elementIndex < 0 || elementIndex >= 16777215) {
@@ -201,7 +203,10 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
     // Reconstruct world position from depth
     const worldPosition = this.reconstructWorldPosition(screenPos, depth, camera)
 
-    return new GpuPickResult(elementIndex, worldPosition, this._scene.vims)
+    // Get the vim directly using the vim index
+    const vim = this._scene.vims[vimIndex]
+
+    return new GpuPickResult(elementIndex, vimIndex, worldPosition, vim)
   }
 
   /**
@@ -254,6 +259,7 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
 
     const element = result.getElement()
     console.log('GPU Pick - elementIndex:', result.elementIndex)
+    console.log('GPU Pick - vimIndex:', result.vimIndex)
     console.log('GPU Pick - element:', element)
     console.log('GPU Pick - worldPosition:', result.worldPosition.toArray().map(v => v.toFixed(2)))
 

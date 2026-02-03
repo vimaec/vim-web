@@ -51,12 +51,13 @@ export class InsertableMesh {
     offsets: G3dMeshOffsets,
     materials: G3dMaterial,
     transparent: boolean,
-    mapping?: ElementMapping
+    mapping?: ElementMapping,
+    vimIndex: number = 0
   ) {
     this.offsets = offsets
     this.transparent = transparent
 
-    this.geometry = new InsertableGeometry(offsets, materials, transparent, mapping)
+    this.geometry = new InsertableGeometry(offsets, materials, transparent, mapping, vimIndex)
 
     this._material = transparent
       ? Materials.getInstance().transparent.material
