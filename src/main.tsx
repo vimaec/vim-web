@@ -29,13 +29,20 @@ function App() {
   const viewerRef = useRef<ViewerRef>()
   useEffect(() => {
     if(window.location.pathname.includes('ultra')){
-      createUltra(viewerRef, div.current!) 
+      createUltra(viewerRef, div.current!)
     }
     else{
       createWebgl(viewerRef, div.current!)
     }
 
+    // Handle page destroy (tab close, navigation away)
+    const handleBeforeUnload = () => {
+      viewerRef.current?.dispose()
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
     return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
       viewerRef.current?.dispose()
     }
   }, [])
@@ -47,18 +54,13 @@ function App() {
 
 async function createWebgl (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDivElement) {
   const viewer = await VIM.React.Webgl.createViewer(div, {ui: {
-    panelBimInfo: false,
-    panelPerformance: false,
-    panelAxes: false,
-    panelBimTree: false,
-    panelControlBar: false,
-    panelLogo: true,
   }})
 
   viewerRef.current = viewer
   globalThis.viewer = viewer // for testing in browser console
 
   const url = getPathFromUrl() ?? 'https://storage.cdn.vimaec.com/samples/residence.v1.2.75.vim'
+  //const url = getPathFromUrl() ?? 'https://vimdevelopment01storage.blob.core.windows.net/samples/Navis-Kajima.vim'
   const request = viewer.loader.request(
     { url },
   )
@@ -68,96 +70,6 @@ async function createWebgl (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDiv
     viewer.camera.frameScene.call()
   }
 
-  // Add keyboard shortcut for depth picking test
-  addDepthPickerTest(viewer, div)
-}
-
-function addDepthPickerTest(viewer: VIM.React.Webgl.ViewerRef, container: HTMLDivElement) {
-  // Track mouse position
-  let mousePos = new VIM.THREE.Vector2(0.5, 0.5)
-
-  container.addEventListener('mousemove', (e) => {
-    const rect = container.getBoundingClientRect()
-    mousePos.x = (e.clientX - rect.left) / rect.width
-    mousePos.y = (e.clientY - rect.top) / rect.height
-  })
-
-  // Store created spheres for cleanup
-  const spheres: VIM.THREE.Mesh[] = []
-
-  // Show instructions
-  const instructions = document.createElement('div')
-  instructions.textContent = 'T=depth pick, C=clear, X=depth image, E=element pick'
-  instructions.style.cssText = 'position:absolute;top:10px;left:10px;z-index:1000;padding:8px 16px;background:rgba(0,0,0,0.7);color:white;font-family:monospace;'
-  container.appendChild(instructions)
-
-  // Keyboard handler for T, C, and E (keydown for responsiveness)
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 't' || e.key === 'T') {
-      // Call the new GPU raycast API
-      const worldPos = viewer.core.raycaster.raycastWorldPosition?.(mousePos)
-
-      if (worldPos) {
-        console.log('Depth pick hit:', worldPos)
-
-        // Create a small sphere at the hit position
-        const geometry = new VIM.THREE.SphereGeometry(0.1, 16, 16)
-        const material = new VIM.THREE.MeshBasicMaterial({ color: 0xff0000 })
-        const sphere = new VIM.THREE.Mesh(geometry, material)
-        sphere.position.copy(worldPos)
-
-        viewer.core.renderer.add(sphere)
-        spheres.push(sphere)
-
-        // Request render update
-        viewer.core.renderer.needsUpdate = true
-      } else {
-        console.log('Depth pick miss - no geometry at position')
-      }
-    }
-
-    if (e.key === 'c' || e.key === 'C') {
-      spheres.forEach(s => {
-        viewer.core.renderer.remove(s)
-        s.geometry.dispose()
-        ;(s.material as VIM.THREE.MeshBasicMaterial).dispose()
-      })
-      spheres.length = 0
-      viewer.core.renderer.needsUpdate = true
-      console.log('Spheres cleared')
-    }
-
-    if (e.key === 'c' || e.key === 'C') {
-      // Test element picking using GPU-based picking
-      const elementIndex = viewer.core.renderer.testElementPick(mousePos)
-
-      if (elementIndex !== undefined && elementIndex >= 0) {
-        // Get the first loaded vim
-        const vim = viewer.core.vims.at(0)
-        if (vim) {
-          const element = vim.getElementFromIndex(elementIndex)
-          console.log('Element pick - index:', elementIndex, 'element:', element)
-
-          // Select the element to verify
-          if (element) {
-            viewer.core.selection.select(element)
-          }
-        } else {
-          console.log('Element pick - index:', elementIndex, '(no vim loaded)')
-        }
-      } else {
-        console.log('Element pick - no element at position')
-      }
-    }
-  })
-
-  // X key on keyup to only fire once (not on repeat)
-  window.addEventListener('keyup', (e) => {
-    if (e.key === 'x' || e.key === 'X') {
-      // Test depth render - downloads depth buffer as PNG, places sphere at mouse position
-      viewer.core.renderer.testDepthRender(mousePos)
-    }
-  })
 }
 
 async function createUltra (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDivElement) {
