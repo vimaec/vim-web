@@ -15,12 +15,6 @@ type AddSettings = {
    * Default: true
    */
   autoFrame?: boolean
-
-  /**
-   * Controls whether to initially load the vim content or not.
-   * Default: false
-   */
-  loadEmpty?: boolean
 }
 
 export type OpenSettings = Core.Webgl.VimPartialSettings & AddSettings
@@ -73,14 +67,31 @@ export class ComponentLoader {
   }
 
   /**
-   * Loads a vim and adds it to the viewer.
-   * Returns a request to track progress and get the result.
+   * Opens a vim file without loading geometry.
+   * Use this for querying BIM data or selective loading.
+   * Call vim.loadAll() or vim.loadSubset() to load geometry later.
+   * @param source The url to the vim file or a buffer of the file.
+   * @param settings Settings to apply to vim file.
+   * @returns A LoadRequest to track progress and get result. The vim is auto-added on success.
+   * @throws Error if the viewer has reached maximum capacity (256 vims)
+   */
+  open (source: Core.Webgl.RequestSource, settings: OpenSettings = {}) {
+    return this.loadInternal(source, settings, false)
+  }
+
+  /**
+   * Loads a vim file with all geometry.
+   * Use this for immediate viewing.
    * @param source The url to the vim file or a buffer of the file.
    * @param settings Settings to apply to vim file.
    * @returns A LoadRequest to track progress and get result. The vim is auto-added on success.
    * @throws Error if the viewer has reached maximum capacity (256 vims)
    */
   load (source: Core.Webgl.RequestSource, settings: OpenSettings = {}) {
+    return this.loadInternal(source, settings, true)
+  }
+
+  private loadInternal (source: Core.Webgl.RequestSource, settings: OpenSettings, loadGeometry: boolean) {
     const vimIndex = this._viewer.allocateVimId()
     if (vimIndex === undefined) {
       throw new Error('Cannot load vim: maximum of 256 vims already loaded')
@@ -95,7 +106,7 @@ export class ComponentLoader {
       source,
       settings,
       vimIndex,
-      (vim) => this.initVim(vim, settings)
+      (vim) => this.initVim(vim, settings, loadGeometry)
     )
   }
 
@@ -108,7 +119,7 @@ export class ComponentLoader {
     vim.dispose()
   }
 
-  private initVim (vim : Core.Webgl.Vim, settings: AddSettings) {
+  private initVim (vim: Core.Webgl.Vim, settings: AddSettings, loadGeometry: boolean) {
     this._viewer.add(vim)
     vim.onLoadingUpdate.subscribe(() => {
       this._viewer.gizmos.loading.visible = vim.isLoading
@@ -117,7 +128,7 @@ export class ComponentLoader {
         this._viewer.camera.save()
       }
     })
-    if (settings.loadEmpty !== true) {
+    if (loadGeometry) {
       void vim.loadAll()
     }
   }
