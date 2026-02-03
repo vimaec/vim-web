@@ -7,6 +7,7 @@ import { G3d, G3dMesh, G3dMaterial } from 'vim-format'
 import { Scene } from '../scene'
 import { G3dMeshOffsets } from './g3dOffsets'
 import { ElementMapping } from '../elementMapping'
+import { packPickingId } from '../../viewer/rendering/gpuPicker'
 
 // TODO Merge both submeshes class.
 export class GeometrySubmesh {
@@ -34,8 +35,7 @@ export class InsertableGeometry {
   private _indexAttribute: THREE.Uint32BufferAttribute
   private _vertexAttribute: THREE.BufferAttribute
   private _colorAttribute: THREE.BufferAttribute
-  private _elementIndexAttribute: THREE.Float32BufferAttribute
-  private _vimIndexAttribute: THREE.Float32BufferAttribute
+  private _packedIdAttribute: THREE.Uint32BufferAttribute
   private _mapping: ElementMapping | undefined
   private _vimIndex: number
 
@@ -71,28 +71,17 @@ export class InsertableGeometry {
       colorSize
     )
 
-    // Element index attribute for GPU picking (one per vertex)
-    this._elementIndexAttribute = new THREE.Float32BufferAttribute(
+    // Packed ID attribute for GPU picking: (vimIndex << 24) | elementIndex
+    this._packedIdAttribute = new THREE.Uint32BufferAttribute(
       offsets.counts.vertices,
       1
     )
-
-    // Vim index attribute for GPU picking (one per vertex)
-    this._vimIndexAttribute = new THREE.Float32BufferAttribute(
-      offsets.counts.vertices,
-      1
-    )
-
-    // this._indexAttribute.count = 0
-    // this._vertexAttribute.count = 0
-    // this._colorAttribute.count = 0
 
     this.geometry = new THREE.BufferGeometry()
     this.geometry.setIndex(this._indexAttribute)
     this.geometry.setAttribute('position', this._vertexAttribute)
     this.geometry.setAttribute('color', this._colorAttribute)
-    this.geometry.setAttribute('elementIndex', this._elementIndexAttribute)
-    this.geometry.setAttribute('vimIndex', this._vimIndexAttribute)
+    this.geometry.setAttribute('packedId', this._packedIdAttribute)
 
     this.boundingBox = offsets.subset.getBoundingBox()
     if (this.boundingBox) {
@@ -275,8 +264,7 @@ export class InsertableGeometry {
         vector.fromArray(g3d.positions, vertex * G3d.POSITION_SIZE)
         vector.applyMatrix4(matrix)
         this.setVertex(vertexOffset + vertexOut, vector)
-        this.setElementIndex(vertexOffset + vertexOut, elementIndex)
-        this.setVimIndex(vertexOffset + vertexOut, this._vimIndex)
+        this.setPackedId(vertexOffset + vertexOut, elementIndex)
         submesh.expandBox(vector)
         vertexOut++
       }
@@ -306,12 +294,8 @@ export class InsertableGeometry {
     }
   }
 
-  private setElementIndex (index: number, elementIndex: number) {
-    this._elementIndexAttribute.setX(index, elementIndex)
-  }
-
-  private setVimIndex (index: number, vimIndex: number) {
-    this._vimIndexAttribute.setX(index, vimIndex)
+  private setPackedId (index: number, elementIndex: number) {
+    this._packedIdAttribute.setX(index, packPickingId(this._vimIndex, elementIndex))
   }
 
   private expandBox (box: THREE.Box3) {
@@ -358,13 +342,9 @@ export class InsertableGeometry {
     // this._colorAttribute.count = vertexEnd
     this._colorAttribute.needsUpdate = true
 
-    // update element indices (itemSize is 1)
-    this._elementIndexAttribute.addUpdateRange(vertexStart, vertexEnd - vertexStart)
-    this._elementIndexAttribute.needsUpdate = true
-
-    // update vim indices (itemSize is 1)
-    this._vimIndexAttribute.addUpdateRange(vertexStart, vertexEnd - vertexStart)
-    this._vimIndexAttribute.needsUpdate = true
+    // update packed IDs (itemSize is 1)
+    this._packedIdAttribute.addUpdateRange(vertexStart, vertexEnd - vertexStart)
+    this._packedIdAttribute.needsUpdate = true
 
     if (this._computeBoundingBox) {
       this.geometry.computeBoundingBox()

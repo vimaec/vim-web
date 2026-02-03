@@ -16,6 +16,24 @@ import { Marker } from '../gizmos/markers/gizmoMarker'
 export type GpuRaycastableObject = Element3D | Marker
 
 /**
+ * Packs vimIndex (8 bits) and elementIndex (24 bits) into a single uint32.
+ * Used for GPU picking attribute.
+ */
+export function packPickingId(vimIndex: number, elementIndex: number): number {
+  return ((vimIndex & 0xFF) << 24) | (elementIndex & 0xFFFFFF)
+}
+
+/**
+ * Unpacks vimIndex and elementIndex from a packed uint32.
+ */
+export function unpackPickingId(packedId: number): { vimIndex: number; elementIndex: number } {
+  return {
+    vimIndex: packedId >>> 24,
+    elementIndex: packedId & 0xFFFFFF
+  }
+}
+
+/**
  * Result of a GPU pick operation containing element index, world position, and surface normal.
  * Implements IRaycastResult for compatibility with the raycaster interface.
  */
@@ -195,13 +213,10 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
       return undefined
     }
 
-    // Reinterpret float bits as uint32 to unpack vimIndex and elementIndex
+    // Reinterpret float bits as uint32 and unpack vimIndex/elementIndex
     const dataView = new DataView(this._readBuffer.buffer)
     const packedId = dataView.getUint32(0, true) // little-endian
-
-    // Unpack: upper 8 bits = vimIndex, lower 24 bits = elementIndex
-    const vimIndex = packedId >>> 24
-    const elementIndex = packedId & 0xFFFFFF
+    const { vimIndex, elementIndex } = unpackPickingId(packedId)
 
     // Reconstruct normal.z from x and y (normal is unit length, facing camera so z > 0)
     const normalZ = Math.sqrt(Math.max(0, 1 - normalX * normalX - normalY * normalY))

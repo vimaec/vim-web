@@ -8,6 +8,7 @@ import { InstancedMesh } from './instancedMesh'
 import { Materials } from '../materials/materials'
 import * as Geometry from '../geometry'
 import { ElementMapping } from '../elementMapping'
+import { packPickingId } from '../../viewer/rendering/gpuPicker'
 
 export class InstancedMeshFactory {
   materials: G3dMaterial
@@ -91,8 +92,7 @@ export class InstancedMeshFactory {
     )
 
     this.setMatricesFromVimx(threeMesh, g3d, instances)
-    this.setElementIndices(threeMesh, instances ?? g3d.meshInstances[mesh])
-    this.setVimIndices(threeMesh, instances ?? g3d.meshInstances[mesh])
+    this.setPackedIds(threeMesh, instances ?? g3d.meshInstances[mesh])
     const result = new InstancedMesh(g3d, threeMesh, instances)
     return result
   }
@@ -172,36 +172,20 @@ export class InstancedMeshFactory {
   }
 
   /**
-   * Adds per-instance element index attribute for GPU picking.
+   * Adds per-instance packed ID attribute for GPU picking.
    */
-  private setElementIndices (
+  private setPackedIds (
     three: THREE.InstancedMesh,
     instances: number[]
   ) {
-    const elementIndices = new Float32Array(instances.length)
+    const packedIds = new Uint32Array(instances.length)
     for (let i = 0; i < instances.length; i++) {
-      elementIndices[i] = this._mapping?.getElementFromInstance(instances[i]) ?? -1
+      const elementIndex = this._mapping?.getElementFromInstance(instances[i]) ?? -1
+      packedIds[i] = packPickingId(this._vimIndex, elementIndex)
     }
     three.geometry.setAttribute(
-      'elementIndex',
-      new THREE.InstancedBufferAttribute(elementIndices, 1)
-    )
-  }
-
-  /**
-   * Adds per-instance vim index attribute for GPU picking.
-   */
-  private setVimIndices (
-    three: THREE.InstancedMesh,
-    instances: number[]
-  ) {
-    const vimIndices = new Float32Array(instances.length)
-    for (let i = 0; i < instances.length; i++) {
-      vimIndices[i] = this._vimIndex
-    }
-    three.geometry.setAttribute(
-      'vimIndex',
-      new THREE.InstancedBufferAttribute(vimIndices, 1)
+      'packedId',
+      new THREE.InstancedBufferAttribute(packedIds, 1)
     )
   }
 }

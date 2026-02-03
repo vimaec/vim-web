@@ -8,8 +8,10 @@ import * as THREE from 'three'
 /**
  * Creates a material for GPU picking that outputs packed IDs, depth, and surface normal.
  *
+ * Expects a `packedId` uint attribute pre-packed during mesh building as: (vimIndex << 24) | elementIndex
+ *
  * Output format (Float32 RGBA):
- * - R = packed uint as float bits (vimIndex << 24 | elementIndex) - supports 256 vims × 16M elements
+ * - R = packed uint as float bits - supports 256 vims × 16M elements
  * - G = depth (distance along camera direction, 0 = miss)
  * - B = normal.x (surface normal X component)
  * - A = normal.y (surface normal Y component)
@@ -34,10 +36,8 @@ export function createPickingMaterial() {
 
       // Visibility attribute (used by VIM meshes)
       in float ignore;
-      // Element index attribute for GPU picking
-      in float elementIndex;
-      // Vim index attribute for GPU picking
-      in float vimIndex;
+      // Pre-packed ID: (vimIndex << 24) | elementIndex
+      in uint packedId;
 
       flat out uint vPackedId;
       out float vIgnore;
@@ -57,8 +57,7 @@ export function createPickingMaterial() {
           return;
         }
 
-        // Pack vimIndex (8 bits) and elementIndex (24 bits) into uint
-        vPackedId = (uint(vimIndex) << 24u) | uint(elementIndex);
+        vPackedId = packedId;
 
         // Compute world position for depth calculation and normal computation
         #ifdef USE_INSTANCING
