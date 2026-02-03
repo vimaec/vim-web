@@ -322,16 +322,6 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
   }
 
   /**
-   * GPU-based raycast that returns only the world position of the first hit.
-   * Optimized for camera operations where object identification is not needed.
-   * @param position - Screen position in 0-1 range (0,0 is top-left)
-   * @returns World position of the first hit, or undefined if no geometry at position
-   */
-  raycastWorldPosition(position: THREE.Vector2): THREE.Vector3 | undefined {
-    return this.pick(position)?.worldPosition
-  }
-
-  /**
    * Converts a world position to screen coordinates (0-1 range).
    * @param worldPos - The world position to convert
    * @returns Screen position in 0-1 range, or undefined if behind camera
