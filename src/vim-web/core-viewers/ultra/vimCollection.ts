@@ -1,15 +1,16 @@
-import { ISignal, SignalDispatcher } from "ste-signals";
-import { Vim } from "./vim";
+import { ISignal, SignalDispatcher } from 'ste-signals'
+import {
+  IReadonlyVimCollection as ISharedReadonlyVimCollection,
+  IVimCollection
+} from '../shared/vimCollection'
+import { Vim } from './vim'
 
-export interface IReadonlyVimCollection {
-  getFromHandle(handle: number): Vim | undefined;
-  getAll(): ReadonlyArray<Vim>;
+export interface IReadonlyVimCollection extends ISharedReadonlyVimCollection<Vim> {
+  /** Get vim at a specific index */
   getAt(index: number): Vim | undefined
-  count: number;
-  onChanged: ISignal;
 }
 
-export class VimCollection implements IReadonlyVimCollection {
+export class VimCollection implements IVimCollection<Vim>, IReadonlyVimCollection {
   private _vims: Vim[];
   private _onChanged = new SignalDispatcher();
   get onChanged() {
@@ -49,12 +50,21 @@ export class VimCollection implements IReadonlyVimCollection {
   }
 
   /**
-   * Gets a Vim instance by its handle.
-   * @param handle - The handle of the Vim instance.
+   * Gets a Vim instance by its stable ID.
+   * @param id - The ID of the Vim instance.
    * @returns The Vim instance or undefined if not found.
    */
-  public getFromHandle(handle: number): Vim | undefined {
-    return this._vims.find(v => v.handle === handle);
+  public getFromId(id: number): Vim | undefined {
+    return this._vims.find(v => v.handle === id)
+  }
+
+  /**
+   * Checks if a vim is in the collection.
+   * @param vim - The Vim instance to check.
+   * @returns True if the vim is in the collection.
+   */
+  public has(vim: Vim): boolean {
+    return this._vims.includes(vim)
   }
 
   /**
@@ -78,6 +88,10 @@ export class VimCollection implements IReadonlyVimCollection {
    * Clears all Vim instances from the collection.
    */
   public clear(): void {
-    this._vims = [];
+    const hadVims = this._vims.length > 0
+    this._vims = []
+    if (hadVims) {
+      this._onChanged.dispatch()
+    }
   }
 }

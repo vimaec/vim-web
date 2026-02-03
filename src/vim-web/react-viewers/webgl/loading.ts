@@ -111,11 +111,15 @@ export class ComponentLoader {
    * @param source The url to the vim file or a buffer of the file.
    * @param settings Settings to apply to vim file.
    * @returns A new load request instance to track progress and get result.
+   * @throws Error if the viewer has reached maximum capacity (256 vims)
    */
   request (source: Core.Webgl.RequestSource,
     settings?: Core.Webgl.VimPartialSettings) {
-    // Auto-assign vim index based on current vim count for GPU picking
-    const vimIndex = settings?.vimIndex ?? this._viewer.vims.length
+    // Allocate a stable vim ID via the viewer
+    const vimIndex = settings?.vimIndex ?? this._viewer.allocateVimId()
+    if (vimIndex === undefined) {
+      throw new Error('Cannot load vim: maximum of 256 vims already loaded')
+    }
     const fullSettings = { ...settings, vimIndex }
     return new LoadRequest({
       onProgress: (p) => this.onProgress(p),

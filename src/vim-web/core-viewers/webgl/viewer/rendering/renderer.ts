@@ -14,7 +14,6 @@ import { RenderingSection } from './renderingSection'
 import { RenderingComposer } from './renderingComposer'
 import { ViewerSettings } from '../settings/viewerSettings'
 import { SignalDispatcher } from 'ste-signals'
-import { GpuPicker, GpuPickResult } from './gpuPicker'
 
 /**
  * Manages how vim objects are added and removed from the THREE.Scene to be rendered
@@ -56,8 +55,6 @@ export class Renderer implements IRenderer {
   // 3GB
   private maxMemory = 3 * Math.pow(10, 9)
   private _outlineCount = 0
-  private _gpuPicker: GpuPicker | undefined
-
 
   /**
    * Indicates whether the scene should be re-rendered on change only.
@@ -134,7 +131,6 @@ export class Renderer implements IRenderer {
     this.renderer.forceContextLoss()
     this.renderer.dispose()
     this._composer.dispose()
-    this._gpuPicker?.dispose()
   }
 
   /**
@@ -261,32 +257,6 @@ export class Renderer implements IRenderer {
     }
 
     this._scene.clearUpdateFlags()
-  }
-
-  /**
-   * Gets the GPU picker instance, lazily creating it if needed.
-   */
-  private getGpuPicker(): GpuPicker | undefined {
-    const size = this._viewport.getParentSize()
-
-    if (size.x === 0 || size.y === 0) {
-      return undefined
-    }
-
-    if (!this._gpuPicker) {
-      this._gpuPicker = new GpuPicker(
-        this.renderer,
-        this._camera,
-        this._scene,
-        this.section,
-        size.x,
-        size.y
-      )
-    }
-
-    // Ensure size is current
-    this._gpuPicker.setSize(size.x, size.y)
-    return this._gpuPicker
   }
 
   /**

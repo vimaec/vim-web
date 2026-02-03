@@ -68,7 +68,7 @@ export class Raycaster implements IUltraRaycaster {
     const test = await this._rpc.RPCPerformHitTest(position);
     if (!test) return undefined;
 
-    const vim = this._vims.getFromHandle(test.vimIndex);
+    const vim = this._vims.getFromId(test.vimIndex);
     if (!vim) return undefined;
 
     const object = vim.getElement(test.vimElementIndex);

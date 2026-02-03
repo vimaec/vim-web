@@ -9,6 +9,7 @@ import { RenderingSection } from './renderingSection'
 import { PickingMaterial } from '../../loader/materials/pickingMaterial'
 import { Element3D } from '../../loader/element3d'
 import { Vim } from '../../loader/vim'
+import { VimCollection } from '../../loader/vimCollection'
 import type { IRaycaster, IRaycastResult } from '../../../shared'
 import { Marker } from '../gizmos/markers/gizmoMarker'
 
@@ -96,6 +97,7 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
   private _renderer: THREE.WebGLRenderer
   private _camera: Camera
   private _scene: RenderScene
+  private _vims: VimCollection
   private _section: RenderingSection
 
   private _renderTarget: THREE.WebGLRenderTarget
@@ -111,6 +113,7 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
     renderer: THREE.WebGLRenderer,
     camera: Camera,
     scene: RenderScene,
+    vims: VimCollection,
     section: RenderingSection,
     width: number,
     height: number
@@ -118,6 +121,7 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
     this._renderer = renderer
     this._camera = camera
     this._scene = scene
+    this._vims = vims
     this._section = section
 
     // Create render target with Float32 for precise element index and depth
@@ -225,8 +229,8 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
     // Reconstruct world position from depth
     const worldPosition = this.reconstructWorldPosition(screenPos, depth, camera)
 
-    // Get the vim directly using the vim index
-    const vim = this._scene.vims[vimIndex]
+    // Get the vim by its stable ID
+    const vim = this._vims.getFromId(vimIndex)
 
     const result = new GpuPickResult(elementIndex, vimIndex, worldPosition, worldNormal, vim)
 

@@ -20,6 +20,7 @@ import { ISignal, SignalDispatcher } from 'ste-signals'
 import type {InputHandler} from '../../shared'
 import { Materials } from '../loader/materials/materials'
 import { Vim } from '../loader/vim'
+import { VimCollection } from '../loader/vimCollection'
 import { createInputHandler } from './inputAdapter'
 import { Renderer } from './rendering/renderer'
 
@@ -96,7 +97,7 @@ export class Viewer {
   private _clock = new THREE.Clock()
 
   // State
-  private _vims = new Set<Vim>()
+  private _vimCollection = new VimCollection()
   private _onVimLoaded = new SignalDispatcher()
   private _updateId: number
 
@@ -132,6 +133,7 @@ export class Viewer {
       this.renderer.renderer,
       this._camera,
       scene,
+      this._vimCollection,
       this.renderer.section,
       size.x || 1,
       size.y || 1
@@ -169,14 +171,30 @@ export class Viewer {
    * @returns {Vim[]} An array of all Vim objects currently loaded in the viewer.
    */
   get vims () {
-    return [...this._vims]
+    return this._vimCollection.getAll()
   }
 
   /**
    * The number of Vim objects currently loaded in the viewer.
    */
   get vimCount () {
-    return this._vims.size
+    return this._vimCollection.count
+  }
+
+  /**
+   * Allocates a stable ID for a new vim to be loaded.
+   * The ID persists for the vim's lifetime and is used for GPU picking.
+   * @returns The allocated ID (0-255), or undefined if all 256 slots are in use
+   */
+  allocateVimId (): number | undefined {
+    return this._vimCollection.allocateId()
+  }
+
+  /**
+   * Whether the viewer has reached maximum capacity (256 vims).
+   */
+  get isVimsFull (): boolean {
+    return this._vimCollection.isFull
   }
 
   /**
@@ -185,7 +203,7 @@ export class Viewer {
    * @throws {Error} If the Vim object is already added or if loading the Vim would exceed maximum geometry memory.
    */
   add (vim: Vim) {
-    if (this._vims.has(vim)) {
+    if (this._vimCollection.has(vim)) {
       throw new Error('Vim cannot be added again, unless removed first.')
     }
 
@@ -194,7 +212,7 @@ export class Viewer {
       throw new Error('Could not load vim. Max geometry memory reached.')
     }
 
-    this._vims.add(vim)
+    this._vimCollection.add(vim)
     this._onVimLoaded.dispatch()
   }
 
@@ -204,10 +222,10 @@ export class Viewer {
    * @throws {Error} If attempting to remove a Vim object that is not present in the viewer.
    */
   remove (vim: Vim) {
-    if (!this._vims.has(vim)) {
+    if (!this._vimCollection.has(vim)) {
       throw new Error('Cannot remove missing vim from viewer.')
     }
-    this._vims.delete(vim)
+    this._vimCollection.remove(vim)
     this.renderer.remove(vim.scene)
     this.selection.removeFromVim(vim)
     this._onVimLoaded.dispatch()
@@ -217,7 +235,11 @@ export class Viewer {
    * Removes all Vim objects from the viewer, clearing the scene.
    */
   clear () {
-    this.vims.forEach((v) => this.remove(v))
+    // Get a copy of all vims before clearing
+    const vims = this._vimCollection.getAll()
+    for (const vim of vims) {
+      this.remove(vim)
+    }
   }
 
   /**
@@ -231,7 +253,10 @@ export class Viewer {
     this.renderer.dispose()
     ;(this.raycaster as GpuPicker).dispose()
     this.inputs.unregisterAll()
-    this._vims.forEach((v) => v?.dispose())
+    for (const vim of this._vimCollection.getAll()) {
+      vim?.dispose()
+    }
+    this._vimCollection.clear()
     this.materials.dispose()
     this.gizmos.dispose()
   }

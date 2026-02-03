@@ -1,5 +1,6 @@
 // Full export
 export * from './vimSettings';
+export * from './vimCollection';
 export {requestVim as request, type RequestSource, type VimRequest} from './progressive/vimRequest';
 export * as Materials from './materials';
 
