@@ -10,7 +10,7 @@ import { Camera } from './camera/camera'
 import { Renderer } from './rendering/renderer'
 import { Marker } from './gizmos/markers/gizmoMarker'
 import { GizmoMarkers } from './gizmos/markers/gizmoMarkers'
-import { DepthPicker } from './rendering/depthPicker'
+import { GpuPicker } from './rendering/gpuPicker'
 import type {
   IRaycaster as IRaycasterBase,
   IRaycastResult as IRaycastResultBase,
@@ -59,7 +59,7 @@ export class Raycaster implements IRaycaster {
   private _camera: Camera
   private _scene: RenderScene
   private _renderer: Renderer
-  private _depthPicker: DepthPicker
+  private _gpuPicker: GpuPicker
 
   private _raycaster = new THREE.Raycaster()
 
@@ -68,9 +68,9 @@ export class Raycaster implements IRaycaster {
     this._scene = scene
     this._renderer = renderer
 
-    // Initialize depth picker for GPU-based world position queries
+    // Initialize GPU picker for world position queries
     const size = renderer.renderer.getSize(new THREE.Vector2())
-    this._depthPicker = new DepthPicker(
+    this._gpuPicker = new GpuPicker(
       renderer.renderer,
       camera,
       scene,
@@ -81,11 +81,11 @@ export class Raycaster implements IRaycaster {
   }
 
   /**
-   * Updates the depth picker render target size.
+   * Updates the GPU picker render target size.
    * Called when the viewport is resized.
    */
   setSize(width: number, height: number): void {
-    this._depthPicker.setSize(width, height)
+    this._gpuPicker.setSize(width, height)
   }
 
   /**
@@ -96,14 +96,14 @@ export class Raycaster implements IRaycaster {
    */
   raycastWorldPosition(position: THREE.Vector2): THREE.Vector3 | undefined {
     if (!Validation.isRelativeVector2(position)) return undefined
-    return this._depthPicker.pick(position)
+    return this._gpuPicker.pick(position)?.worldPosition
   }
 
   /**
    * Disposes of resources used by the raycaster.
    */
   dispose(): void {
-    this._depthPicker.dispose()
+    this._gpuPicker.dispose()
   }
 
   /**

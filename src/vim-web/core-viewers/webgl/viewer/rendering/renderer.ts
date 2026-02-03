@@ -14,7 +14,7 @@ import { RenderingSection } from './renderingSection'
 import { RenderingComposer } from './renderingComposer'
 import { ViewerSettings } from '../settings/viewerSettings'
 import { SignalDispatcher } from 'ste-signals'
-import { DepthRenderer } from './depthRenderer'
+import { GpuPicker, GpuPickResult } from './gpuPicker'
 
 /**
  * Manages how vim objects are added and removed from the THREE.Scene to be rendered
@@ -56,7 +56,7 @@ export class Renderer implements IRenderer {
   // 3GB
   private maxMemory = 3 * Math.pow(10, 9)
   private _outlineCount = 0
-  private _depthRenderer: DepthRenderer | undefined
+  private _gpuPicker: GpuPicker | undefined
 
 
   /**
@@ -134,7 +134,7 @@ export class Renderer implements IRenderer {
     this.renderer.forceContextLoss()
     this.renderer.dispose()
     this._composer.dispose()
-    this._depthRenderer?.dispose()
+    this._gpuPicker?.dispose()
   }
 
   /**
@@ -264,66 +264,65 @@ export class Renderer implements IRenderer {
   }
 
   /**
-   * Renders the scene depth to a PNG image and triggers download.
-   * @param mousePos Optional normalized mouse position (0-1) for debug sphere placement.
+   * Gets the GPU picker instance, lazily creating it if needed.
    */
-  testDepthRender(mousePos?: THREE.Vector2): void {
-    // Get size from the viewport (more reliable than renderer.getSize during init)
-    const size = this._viewport.getParentSize()
-
-    if (size.x === 0 || size.y === 0) {
-      console.error('Cannot render depth: viewport has zero size')
-      return
-    }
-
-    // Lazily create depth renderer
-    if (!this._depthRenderer) {
-      this._depthRenderer = new DepthRenderer(
-        this.renderer,
-        this._camera,
-        this._scene,
-        size.x,
-        size.y
-      )
-    }
-
-    // Ensure size is current
-    this._depthRenderer.setSize(size.x, size.y)
-
-    // Render and save
-    this._depthRenderer.renderAndSave(mousePos)
-
-    // Trigger re-render to show debug sphere
-    this.needsUpdate = true
-  }
-
-  /**
-   * Tests element picking at the given mouse position using GPU-based picking.
-   * @param mousePos Optional normalized mouse position (0-1). Defaults to center.
-   * @returns The element index at the mouse position, or undefined if no geometry hit.
-   */
-  testElementPick(mousePos?: THREE.Vector2): number | undefined {
+  private getGpuPicker(): GpuPicker | undefined {
     const size = this._viewport.getParentSize()
 
     if (size.x === 0 || size.y === 0) {
       return undefined
     }
 
-    // Lazily create depth renderer
-    if (!this._depthRenderer) {
-      this._depthRenderer = new DepthRenderer(
+    if (!this._gpuPicker) {
+      this._gpuPicker = new GpuPicker(
         this.renderer,
         this._camera,
         this._scene,
+        this.section,
         size.x,
         size.y
       )
     }
 
     // Ensure size is current
-    this._depthRenderer.setSize(size.x, size.y)
+    this._gpuPicker.setSize(size.x, size.y)
+    return this._gpuPicker
+  }
 
-    return this._depthRenderer.testElementPick(mousePos)
+  /**
+   * Performs GPU-based picking at the given mouse position.
+   * Returns a result object with elementIndex, worldPosition, and getElement() method.
+   *
+   * @param mousePos Normalized mouse position (0-1). Defaults to center.
+   * @returns Pick result with element index, world position, and getElement(), or undefined if no hit
+   */
+  gpuPick(mousePos?: THREE.Vector2): GpuPickResult | undefined {
+    const picker = this.getGpuPicker()
+    if (!picker) return undefined
+
+    const pos = mousePos ?? new THREE.Vector2(0.5, 0.5)
+    return picker.pick(pos)
+  }
+
+  /**
+   * Tests GPU picking at the given mouse position and places a red debug sphere
+   * at the hit world position for visual verification.
+   * @param mousePos Optional normalized mouse position (0-1). Defaults to center.
+   * @returns The pick result, or undefined if no hit
+   */
+  testGpuPick(mousePos?: THREE.Vector2): GpuPickResult | undefined {
+    const picker = this.getGpuPicker()
+    if (!picker) {
+      console.error('Cannot test GPU pick: viewport has zero size')
+      return undefined
+    }
+
+    const result = picker.testPick(mousePos)
+
+    // Trigger re-render to show debug sphere
+    this.needsUpdate = true
+
+    return result
   }
 
   /**

@@ -3,6 +3,7 @@ export * from './maskMaterial';
 export * from './materials';
 export * from './mergeMaterial';
 export * from './outlineMaterial';
+export * from './pickingMaterial';
 export * from './simpleMaterial';
 export * from './skyboxMaterial';
 export * from './standardMaterial';
