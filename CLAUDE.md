@@ -461,6 +461,7 @@ viewer.core.selection.onSelectionChanged.subscribe(async () => {
 - Prettier: no semicolons, trailing commas, single quotes
 - Index files control module exports
 - No test framework configured
+- Do not keep deprecated code or backwards-compatibility shims unless explicitly requested
 
 ## Commands
 
@@ -495,10 +496,26 @@ Main Scene (MSAA) → Selection Mask → Outline Pass → FXAA → Merge → Scr
 GPU-based object picking using a custom shader that renders element metadata to a Float32 render target.
 
 **Render Target Format (RGBA Float32):**
-- R = element index (supports up to 16M elements)
-- G = depth (distance along camera direction)
-- B = vim index (identifies which vim the element belongs to)
-- A = hit flag (1.0 = hit, 0.0 = miss)
+- R = packed uint as float bits via `uintBitsToFloat(vimIndex << 24 | elementIndex)` - supports 256 vims × 16M elements
+- G = depth (distance along camera direction, 0 = miss)
+- B = normal.x (surface normal X component)
+- A = normal.y (surface normal Y component)
+
+Normal.z is reconstructed as: `sqrt(1 - x² - y²)`, always positive since normal faces camera.
+
+**ID Packing/Unpacking:**
+```glsl
+// Shader (GLSL 3.0): pack as uint, reinterpret bits as float
+uint packedId = (uint(vimIndex) << 24u) | uint(elementIndex);
+float packedIdFloat = uintBitsToFloat(packedId);
+```
+```typescript
+// JavaScript: reinterpret float bits back to uint
+const dataView = new DataView(readBuffer.buffer)
+const packedId = dataView.getUint32(0, true) // little-endian
+const vimIndex = packedId >>> 24
+const elementIndex = packedId & 0xFFFFFF
+```
 
 **Key Files:**
 | File | Purpose |

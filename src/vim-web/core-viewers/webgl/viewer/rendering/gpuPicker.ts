@@ -62,9 +62,6 @@ export class GpuPickResult implements IRaycastResult<GpuRaycastableObject> {
   }
 }
 
-/** Constant for packing/unpacking vimIndex + elementIndex */
-const VIM_MULTIPLIER = 16777216 // 2^24
-
 /**
  * Unified GPU picker that outputs element index, depth, vim index, and surface normal in a single render pass.
  * Implements IRaycaster for compatibility with the viewer's raycaster interface.
@@ -188,8 +185,7 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
       this._readBuffer
     )
 
-    // R = packed(vim+element), G = depth, B = normal.x, A = normal.y
-    const packedId = this._readBuffer[0]
+    // R = packed(vim+element) as uint bits, G = depth, B = normal.x, A = normal.y
     const depth = this._readBuffer[1]
     const normalX = this._readBuffer[2]
     const normalY = this._readBuffer[3]
@@ -199,14 +195,13 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
       return undefined
     }
 
-    // Unpack vimIndex and elementIndex from packed float
-    const vimIndex = Math.floor(packedId / VIM_MULTIPLIER)
-    const elementIndex = Math.round(packedId - vimIndex * VIM_MULTIPLIER)
+    // Reinterpret float bits as uint32 to unpack vimIndex and elementIndex
+    const dataView = new DataView(this._readBuffer.buffer)
+    const packedId = dataView.getUint32(0, true) // little-endian
 
-    // Check for invalid element index
-    if (elementIndex < 0 || elementIndex >= VIM_MULTIPLIER) {
-      return undefined
-    }
+    // Unpack: upper 8 bits = vimIndex, lower 24 bits = elementIndex
+    const vimIndex = packedId >>> 24
+    const elementIndex = packedId & 0xFFFFFF
 
     // Reconstruct normal.z from x and y (normal is unit length, facing camera so z > 0)
     const normalZ = Math.sqrt(Math.max(0, 1 - normalX * normalX - normalY * normalY))

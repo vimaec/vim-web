@@ -9,7 +9,7 @@ import * as THREE from 'three'
  * Creates a material for GPU picking that outputs packed IDs, depth, and surface normal.
  *
  * Output format (Float32 RGBA):
- * - R = packed(vimIndex * 16777216 + elementIndex) - supports 256 vims × 16M elements
+ * - R = packed uint as float bits (vimIndex << 24 | elementIndex) - supports 256 vims × 16M elements
  * - G = depth (distance along camera direction, 0 = miss)
  * - B = normal.x (surface normal X component)
  * - A = normal.y (surface normal Y component)
@@ -26,22 +26,22 @@ export function createPickingMaterial() {
     },
     side: THREE.DoubleSide,
     clipping: true,
+    glslVersion: THREE.GLSL3,
     vertexShader: /* glsl */ `
       #include <common>
       #include <logdepthbuf_pars_vertex>
       #include <clipping_planes_pars_vertex>
 
       // Visibility attribute (used by VIM meshes)
-      attribute float ignore;
+      in float ignore;
       // Element index attribute for GPU picking
-      attribute float elementIndex;
+      in float elementIndex;
       // Vim index attribute for GPU picking
-      attribute float vimIndex;
+      in float vimIndex;
 
-      varying float vElementIndex;
-      varying float vVimIndex;
-      varying float vIgnore;
-      varying vec3 vWorldPos;
+      flat out uint vPackedId;
+      out float vIgnore;
+      out vec3 vWorldPos;
 
       void main() {
         #include <begin_vertex>
@@ -57,8 +57,8 @@ export function createPickingMaterial() {
           return;
         }
 
-        vElementIndex = elementIndex;
-        vVimIndex = vimIndex;
+        // Pack vimIndex (8 bits) and elementIndex (24 bits) into uint
+        vPackedId = (uint(vimIndex) << 24u) | uint(elementIndex);
 
         // Compute world position for depth calculation and normal computation
         #ifdef USE_INSTANCING
@@ -76,13 +76,11 @@ export function createPickingMaterial() {
       uniform vec3 uCameraPos;
       uniform vec3 uCameraDir;
 
-      varying float vElementIndex;
-      varying float vVimIndex;
-      varying float vIgnore;
-      varying vec3 vWorldPos;
+      flat in uint vPackedId;
+      in float vIgnore;
+      in vec3 vWorldPos;
 
-      // Constant for packing vimIndex + elementIndex
-      const float VIM_MULTIPLIER = 16777216.0;  // 2^24
+      out vec4 fragColor;
 
       void main() {
         #include <clipping_planes_fragment>
@@ -105,12 +103,11 @@ export function createPickingMaterial() {
         vec3 toVertex = vWorldPos - uCameraPos;
         float depth = dot(toVertex, uCameraDir);
 
-        // Pack vimIndex + elementIndex into single float
-        // Supports up to 256 vims (8 bits) and 16M elements per vim (24 bits)
-        float packedId = vVimIndex * VIM_MULTIPLIER + vElementIndex;
+        // Reinterpret packed uint bits as float (exact integer preservation)
+        float packedIdFloat = uintBitsToFloat(vPackedId);
 
         // Output: R = packed(vim+element), G = depth, B = normal.x, A = normal.y
-        gl_FragColor = vec4(packedId, depth, normal.x, normal.y);
+        fragColor = vec4(packedIdFloat, depth, normal.x, normal.y);
       }
     `
   })
