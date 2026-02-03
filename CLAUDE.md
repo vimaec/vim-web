@@ -503,19 +503,11 @@ GPU-based object picking using a custom shader that renders element metadata to 
 
 Normal.z is reconstructed as: `sqrt(1 - x² - y²)`, always positive since normal faces camera.
 
-**ID Packing/Unpacking:**
-```glsl
-// Shader (GLSL 3.0): pack as uint, reinterpret bits as float
-uint packedId = (uint(vimIndex) << 24u) | uint(elementIndex);
-float packedIdFloat = uintBitsToFloat(packedId);
-```
-```typescript
-// JavaScript: reinterpret float bits back to uint
-const dataView = new DataView(readBuffer.buffer)
-const packedId = dataView.getUint32(0, true) // little-endian
-const vimIndex = packedId >>> 24
-const elementIndex = packedId & 0xFFFFFF
-```
+**ID Packing:**
+- IDs are pre-packed during mesh building using `packPickingId(vimIndex, elementIndex)`
+- Format: `(vimIndex << 24) | elementIndex` as uint32
+- Shader reads `packedId` attribute directly, outputs via `uintBitsToFloat(packedId)`
+- Utility functions in `gpuPicker.ts`: `packPickingId()` and `unpackPickingId()`
 
 **Key Files:**
 | File | Purpose |
