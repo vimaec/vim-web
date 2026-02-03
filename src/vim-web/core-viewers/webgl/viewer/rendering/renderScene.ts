@@ -31,6 +31,10 @@ export class RenderScene {
     return this._vimScenes.flatMap((s) => s.meshes)
   }
 
+  get vims() {
+    return this._vimScenes.map((s) => s.vim).filter((v) => v !== undefined)
+  }
+
   constructor () {
     this.threeScene = new THREE.Scene()
   }

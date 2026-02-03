@@ -8,7 +8,8 @@ import * as THREE from 'three'
 import { Camera } from './camera/camera'
 import { Environment } from './environment/environment'
 import { Gizmos } from './gizmos/gizmos'
-import { IRaycaster, Raycaster } from './raycaster'
+import { IRaycaster } from './raycaster'
+import { GpuPicker } from './rendering/gpuPicker'
 import { RenderScene } from './rendering/renderScene'
 import { createSelection, ISelection } from './selection'
 import { createViewerSettings, PartialViewerSettings, ViewerSettings } from './settings/viewerSettings'
@@ -124,16 +125,22 @@ export class Viewer {
 
     // Input and Selection
     this.selection = createSelection()
-    this.raycaster = new Raycaster(
+
+    // GPU-based raycaster for element picking and world position queries
+    const size = this.renderer.renderer.getSize(new THREE.Vector2())
+    this.raycaster = new GpuPicker(
+      this.renderer.renderer,
       this._camera,
       scene,
-      this.renderer
+      this.renderer.section,
+      size.x || 1,
+      size.y || 1
     )
 
     // Update raycaster size on viewport resize
     this.viewport.onResize.sub(() => {
       const size = this.viewport.getParentSize()
-      ;(this.raycaster as Raycaster).setSize(size.x, size.y)
+      ;(this.raycaster as GpuPicker).setSize(size.x, size.y)
     })
 
     this.inputs.init()
@@ -222,7 +229,7 @@ export class Viewer {
     this.selection.clear()
     this.viewport.dispose()
     this.renderer.dispose()
-    ;(this.raycaster as Raycaster).dispose()
+    ;(this.raycaster as GpuPicker).dispose()
     this.inputs.unregisterAll()
     this._vims.forEach((v) => v?.dispose())
     this.materials.dispose()

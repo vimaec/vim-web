@@ -9,12 +9,17 @@ import { RenderingSection } from './renderingSection'
 import { PickingMaterial } from '../../loader/materials/pickingMaterial'
 import { Element3D } from '../../loader/element3d'
 import { Vim } from '../../loader/vim'
+import type { IRaycaster, IRaycastResult } from '../../../shared'
+import { Marker } from '../gizmos/markers/gizmoMarker'
+
+/** Raycastable objects for the GpuPicker */
+export type GpuRaycastableObject = Element3D | Marker
 
 /**
  * Result of a GPU pick operation containing element index and world position.
- * Similar to RaycastResult but for GPU-based picking.
+ * Implements IRaycastResult for compatibility with the raycaster interface.
  */
-export class GpuPickResult {
+export class GpuPickResult implements IRaycastResult<GpuRaycastableObject> {
   /** The element index in the vim */
   readonly elementIndex: number
   /** The world position of the hit */
@@ -26,6 +31,22 @@ export class GpuPickResult {
     this.elementIndex = elementIndex
     this.worldPosition = worldPosition
     this._vims = vims
+  }
+
+  /**
+   * The object property for IRaycastResult interface.
+   * Returns the Element3D for the picked element.
+   */
+  get object(): Element3D | undefined {
+    return this.getElement()
+  }
+
+  /**
+   * The world normal at the hit point.
+   * GPU picking doesn't provide normals, so this returns undefined.
+   */
+  get worldNormal(): THREE.Vector3 | undefined {
+    return undefined
   }
 
   /**
@@ -44,13 +65,13 @@ export class GpuPickResult {
 
 /**
  * Unified GPU picker that outputs both element index and depth in a single render pass.
- * Replaces the separate DepthRenderer and DepthPicker classes.
+ * Implements IRaycaster for compatibility with the viewer's raycaster interface.
  *
  * Uses a Float32 render target with:
  * - R = element index (supports up to 16M elements)
  * - G = depth (distance along camera direction)
  */
-export class GpuPicker {
+export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
   private _renderer: THREE.WebGLRenderer
   private _camera: Camera
   private _scene: RenderScene
@@ -268,6 +289,60 @@ export class GpuPicker {
       ;(this._debugSphere.material as THREE.Material).dispose()
       this._debugSphere = undefined
     }
+  }
+
+  /**
+   * Raycasts from camera to the screen position to find the first object hit.
+   * Implements IRaycaster interface.
+   * @param position - Screen position in 0-1 range (0,0 is top-left)
+   * @returns A promise that resolves to the raycast result, or undefined if no hit
+   */
+  raycastFromScreen(position: THREE.Vector2): Promise<GpuPickResult | undefined> {
+    return Promise.resolve(this.pick(position))
+  }
+
+  /**
+   * Raycasts from camera towards a world position to find the first object hit.
+   * Implements IRaycaster interface.
+   * @param position - The world position to raycast towards
+   * @returns A promise that resolves to the raycast result, or undefined if no hit
+   */
+  raycastFromWorld(position: THREE.Vector3): Promise<GpuPickResult | undefined> {
+    const screenPos = this.worldToScreen(position)
+    if (!screenPos) return Promise.resolve(undefined)
+    return Promise.resolve(this.pick(screenPos))
+  }
+
+  /**
+   * GPU-based raycast that returns only the world position of the first hit.
+   * Optimized for camera operations where object identification is not needed.
+   * @param position - Screen position in 0-1 range (0,0 is top-left)
+   * @returns World position of the first hit, or undefined if no geometry at position
+   */
+  raycastWorldPosition(position: THREE.Vector2): THREE.Vector3 | undefined {
+    return this.pick(position)?.worldPosition
+  }
+
+  /**
+   * Converts a world position to screen coordinates (0-1 range).
+   * @param worldPos - The world position to convert
+   * @returns Screen position in 0-1 range, or undefined if behind camera
+   */
+  private worldToScreen(worldPos: THREE.Vector3): THREE.Vector2 | undefined {
+    const camera = this._camera.three
+    camera.updateMatrixWorld(true)
+
+    // Project world position to NDC
+    const ndc = worldPos.clone().project(camera)
+
+    // Check if behind camera
+    if (ndc.z > 1) return undefined
+
+    // Convert NDC (-1 to 1) to screen coordinates (0 to 1)
+    const screenX = (ndc.x + 1) / 2
+    const screenY = (1 - ndc.y) / 2
+
+    return new THREE.Vector2(screenX, screenY)
   }
 
   /**
