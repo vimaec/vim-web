@@ -1,7 +1,7 @@
 // Full export
 export type { VimSettings, VimPartialSettings } from './vimSettings';
 export * from './vimCollection';
-export {requestVim as request, type RequestSource, type VimRequest} from './progressive/vimRequest';
+export type {RequestSource, LoadRequest} from './progressive/loadRequest';
 export * as Materials from './materials';
 
 // Types

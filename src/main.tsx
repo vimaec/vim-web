@@ -60,8 +60,15 @@ async function createWebgl (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDiv
   globalThis.viewer = viewer // for testing in browser console
 
   const url = getPathFromUrl() ?? 'https://storage.cdn.vimaec.com/samples/residence.v1.2.75.vim'
-  //const url = getPathFromUrl() ?? 'https://vimdevelopment01storage.blob.core.windows.net/samples/Navis-Kajima.vim'
-  const vim = await viewer.load({ url }).getVim()
+  const request = viewer.load({ url })
+  
+  const result = await request.getResult()
+  if (result.isError) {
+    console.error('Load failed:', result.error)
+    return
+  }
+
+  
   viewer.camera.frameScene.call()
 }
 
@@ -72,15 +79,21 @@ async function createUltra (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDiv
   globalThis.viewer = viewer // for testing in browser console
 
   const url = getPathFromUrl() ?? 'https://storage.cdn.vimaec.com/samples/residence.v1.2.75.vim'
-  const request = viewer.load(
-    { url }, 
-  )
+  const request = viewer.load({ url })
+
+  // Track progress
+  void (async () => {
+    for await (const progress of request.getProgress()) {
+      console.log('Loading progress:', progress)
+    }
+  })()
+
   const result = await request.getResult()
-  if (result.isSuccess) {
-    viewer.camera.frameScene.call()
-    var object = result.vim.getElementFromIndex(0);
-    object.state 
+  if (result.isError) {
+    console.error('Load failed:', result.type, result.error)
+    return
   }
+  viewer.camera.frameScene.call()
 }
 
 

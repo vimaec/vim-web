@@ -4,8 +4,7 @@ import { Scene } from '../scene'
 import { ElementMapping } from '../elementMapping'
 import { VimSubsetBuilder } from './subsetBuilder'
 import { VimMeshFactory } from './legacyMeshFactory'
-import { LoadResult, LoadError, LoadSuccess } from '../../../shared/loadResult'
-import { AsyncQueue } from '../../../../utils/asyncQueue'
+import { LoadRequest as BaseLoadRequest, LoadError, LoadSuccess } from '../../../shared/loadResult'
 import { VimSource } from '../..'
 import {
   BFast,
@@ -25,53 +24,26 @@ export type RequestSource = {
 }
 
 /**
- * Initiates a request to load a VIM object from a given source.
- * @param options a url where to find the vim file or a buffer of a vim file.
- * @param settings the settings to configure how the vim will be loaded.
- * @param vimIndex the stable ID (0-255) for GPU picking, allocated by the viewer.
- * @returns a request object that can be used to track progress and get the result.
+ * A request to load a VIM file. Extends the base LoadRequest to add BFast abort handling.
+ * Loading starts immediately upon construction.
  */
-export function requestVim (options: RequestSource, settings: VimPartialSettings, vimIndex: number) {
-  return new VimRequest(options, settings, vimIndex)
-}
-
-/**
- * A class that represents a request to load a VIM object from a given source.
- */
-export class VimRequest {
-  private _source: VimSource
-  private _settings: VimPartialSettings
-  private _vimIndex: number
+export class LoadRequest extends BaseLoadRequest<Vim, IProgressLogs> {
   private _bfast: BFast
 
-  private _progressQueue = new AsyncQueue<IProgressLogs>()
-  private _result: Promise<LoadResult<Vim>>
-  private _isCompleted = false
-
   constructor (source: VimSource, settings: VimPartialSettings, vimIndex: number) {
-    this._source = source
-    this._settings = settings
-    this._vimIndex = vimIndex
-    this._result = this.startRequest()
+    super()
+    this._bfast = new BFast(source)
+    this.startRequest(settings, vimIndex)
   }
 
-  get isCompleted () {
-    return this._isCompleted
-  }
-
-  private async startRequest (): Promise<LoadResult<Vim>> {
+  private async startRequest (settings: VimPartialSettings, vimIndex: number) {
     try {
-      this._bfast = new BFast(this._source)
-      const vim = await this.loadFromVim(this._bfast, this._settings, this._vimIndex)
-      this._progressQueue.close()
-      this._isCompleted = true
-      return new LoadSuccess(vim)
+      const vim = await this.loadFromVim(this._bfast, settings, vimIndex)
+      this.complete(new LoadSuccess(vim))
     } catch (err: any) {
-      this._progressQueue.close()
-      this._isCompleted = true
       const message = err.message ?? JSON.stringify(err)
       console.error('Error loading VIM:', err)
-      return new LoadError(message)
+      this.complete(new LoadError(message))
     }
   }
 
@@ -83,7 +55,7 @@ export class VimRequest {
     const fullSettings = createVimSettings(settings)
 
     if (bfast.source instanceof RemoteBuffer) {
-      bfast.source.onProgress = (p) => this._progressQueue.push(p)
+      bfast.source.onProgress = (p) => this.pushProgress(p)
       if (fullSettings.verboseHttp) {
         bfast.source.logs = new DefaultLog()
       }
@@ -126,16 +98,8 @@ export class VimRequest {
     return vim
   }
 
-  async getResult (): Promise<LoadResult<Vim>> {
-    return this._result
-  }
-
-  getProgress (): AsyncGenerator<IProgressLogs, void, void> {
-    return this._progressQueue[Symbol.asyncIterator]()
-  }
-
   abort (): void {
     this._bfast.abort()
-    this._progressQueue.close()
+    super.abort()
   }
 }

@@ -3,13 +3,13 @@
  */
 
 import * as Core from '../../core-viewers'
+import { ILoadRequest } from '../../core-viewers/shared/loadResult'
 import { ContextMenuRef } from '../panels/contextMenu'
 import { AnySettings } from '../settings/anySettings'
 import { CameraRef } from '../state/cameraState'
 import { Container } from '../container'
 import { BimInfoPanelRef } from '../bim/bimInfoData'
 import { ControlBarRef } from '../controlbar'
-import { LoadRequest } from '../helpers/loadRequest'
 import { OpenSettings } from './loading'
 import { ModalHandle } from '../panels/modal'
 import { SectionBoxRef } from '../state/sectionBoxState'
@@ -86,7 +86,7 @@ export type ViewerRef = {
    * @param settings Optional settings
    * @returns LoadRequest to track progress and get result
    */
-  load: (source: Core.Webgl.RequestSource, settings?: OpenSettings) => LoadRequest
+  load: (source: Core.Webgl.RequestSource, settings?: OpenSettings) => ILoadRequest<Core.Webgl.Vim, Core.Webgl.IProgressLogs>
 
   /**
    * Opens a vim file without loading geometry.
@@ -95,7 +95,7 @@ export type ViewerRef = {
    * @param settings Optional settings
    * @returns LoadRequest to track progress and get result
    */
-  open: (source: Core.Webgl.RequestSource, settings?: OpenSettings) => LoadRequest
+  open: (source: Core.Webgl.RequestSource, settings?: OpenSettings) => ILoadRequest<Core.Webgl.Vim, Core.Webgl.IProgressLogs>
 
   /**
    * Removes a vim from the viewer and disposes it.

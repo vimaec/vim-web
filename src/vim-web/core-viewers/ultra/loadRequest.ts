@@ -1,18 +1,12 @@
 import { Vim } from './vim'
-import * as Utils from '../../utils'
 import {
-  LoadSuccess as SharedLoadSuccess,
-  LoadError as SharedLoadError,
-  LoadResult
+  LoadRequest as BaseLoadRequest,
+  ILoadRequest as BaseILoadRequest,
+  LoadSuccess,
+  LoadError as SharedLoadError
 } from '../shared/loadResult'
 
 export type VimRequestErrorType = 'loadingError' | 'downloadingError' | 'serverDisconnected' | 'unknown' | 'cancelled'
-
-export class LoadSuccess extends SharedLoadSuccess<Vim> {
-  constructor (vim: Vim) {
-    super(vim)
-  }
-}
 
 export class LoadError extends SharedLoadError {
   readonly type: VimRequestErrorType
@@ -22,65 +16,20 @@ export class LoadError extends SharedLoadError {
   }
 }
 
-export type LoadRequestResult = LoadSuccess | LoadError
+export type ILoadRequest = BaseILoadRequest<Vim, number, LoadError>
 
-export interface ILoadRequest {
-  get isCompleted(): boolean;
-  getProgress(): AsyncGenerator<number>;
-  getResult(): Promise<LoadRequestResult>;
-  abort(): void;
-}
-
-export class LoadRequest implements ILoadRequest {
-  private _progress : number = 0
-  private _progressPromise = new Utils.ControllablePromise<void>()
-
-  private _completionPromise = new Utils.ControllablePromise<void>()
-  private _result : LoadError | LoadSuccess | undefined
-
-  get isCompleted () {
-    return this._result !== undefined
-  }
-
-  async * getProgress () {
-    //Always yield 0 initially
-    yield 0
-
-    if (this._result !== undefined) {
-      yield this._progress
-      return
-    }
-
-    while (this._result === undefined) {
-      await this._progressPromise.promise
-      yield this._progress
-    }
-  }
-
-  async getResult () : Promise<LoadRequestResult> {
-    await this._completionPromise.promise
-    return this._result
-  }
-
+export class LoadRequest extends BaseLoadRequest<Vim, number, LoadError> {
   onProgress (progress: number) {
-    this._progress = progress
-    this._progressPromise.resolve()
-    this._progressPromise = new Utils.ControllablePromise<void>()
+    this.pushProgress(progress)
   }
 
   success (vim: Vim) {
-    this._result = new LoadSuccess(vim)
-    this._progress = 1
-    this._progressPromise.resolve()
-    this._completionPromise.resolve()
+    this.complete(new LoadSuccess(vim))
     return this
   }
 
   error (error: VimRequestErrorType, details?: string) {
-    this._result = new LoadError(error, details)
-    this._progress = 1
-    this._progressPromise.resolve()
-    this._completionPromise.resolve()
+    this.complete(new LoadError(error, details))
     return this
   }
 

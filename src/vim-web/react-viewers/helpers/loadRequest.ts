@@ -1,4 +1,6 @@
 import * as Core from '../../core-viewers'
+import { LoadRequest as CoreLoadRequest } from '../../core-viewers/webgl/loader/progressive/loadRequest'
+import { ILoadRequest } from '../../core-viewers/shared/loadResult'
 import { LoadingError } from '../webgl/loading'
 
 type RequestCallbacks = {
@@ -9,10 +11,11 @@ type RequestCallbacks = {
 
 /**
  * Class to handle loading a request.
+ * Implements ILoadRequest for compatibility with Ultra viewer's load request interface.
  */
-export class LoadRequest {
-  readonly source: Core.Webgl.RequestSource
-  private _request: Core.Webgl.VimRequest
+export class LoadRequest implements ILoadRequest<Core.Webgl.Vim, Core.Webgl.IProgressLogs> {
+  private _source: Core.Webgl.RequestSource
+  private _request: Core.Webgl.LoadRequest
   private _callbacks: RequestCallbacks
   private _onLoaded?: (vim: Core.Webgl.Vim) => void
 
@@ -23,10 +26,10 @@ export class LoadRequest {
     vimIndex: number,
     onLoaded?: (vim: Core.Webgl.Vim) => void
   ) {
-    this.source = source
+    this._source = source
     this._callbacks = callbacks
     this._onLoaded = onLoaded
-    this._request = Core.Webgl.request(source, settings, vimIndex)
+    this._request = new CoreLoadRequest(source, settings, vimIndex)
     this.trackRequest()
   }
 
@@ -38,14 +41,18 @@ export class LoadRequest {
 
       const result = await this._request.getResult()
       if (result.isSuccess === false) {
-        this._callbacks.onError({ url: this.source.url, error: result.error })
+        this._callbacks.onError({ url: this._source.url, error: result.error })
       } else {
         this._onLoaded?.(result.vim)
         this._callbacks.onDone()
       }
     } catch (err) {
-      this._callbacks.onError({ url: this.source.url, error: String(err) })
+      this._callbacks.onError({ url: this._source.url, error: String(err) })
     }
+  }
+
+  get isCompleted () {
+    return this._request.isCompleted
   }
 
   getProgress () {
