@@ -4,7 +4,7 @@ import { Scene } from '../scene'
 import { ElementMapping } from '../elementMapping'
 import { VimSubsetBuilder } from './subsetBuilder'
 import { VimMeshFactory } from './legacyMeshFactory'
-import { Result, ErrorResult, SuccessResult } from '../../../../utils/result'
+import { LoadResult, LoadError, LoadSuccess } from '../../../shared/loadResult'
 import { AsyncQueue } from '../../../../utils/asyncQueue'
 import { VimSource } from '../..'
 import {
@@ -45,7 +45,8 @@ export class VimRequest {
   private _bfast: BFast
 
   private _progressQueue = new AsyncQueue<IProgressLogs>()
-  private _result: Promise<Result<Vim>>
+  private _result: Promise<LoadResult<Vim>>
+  private _isCompleted = false
 
   constructor (source: VimSource, settings: VimPartialSettings, vimIndex: number) {
     this._source = source
@@ -54,17 +55,23 @@ export class VimRequest {
     this._result = this.startRequest()
   }
 
-  private async startRequest (): Promise<Result<Vim>> {
+  get isCompleted () {
+    return this._isCompleted
+  }
+
+  private async startRequest (): Promise<LoadResult<Vim>> {
     try {
       this._bfast = new BFast(this._source)
       const vim = await this.loadFromVim(this._bfast, this._settings, this._vimIndex)
       this._progressQueue.close()
-      return new SuccessResult(vim)
+      this._isCompleted = true
+      return new LoadSuccess(vim)
     } catch (err: any) {
       this._progressQueue.close()
+      this._isCompleted = true
       const message = err.message ?? JSON.stringify(err)
       console.error('Error loading VIM:', err)
-      return new ErrorResult(message)
+      return new LoadError(message)
     }
   }
 
@@ -119,7 +126,7 @@ export class VimRequest {
     return vim
   }
 
-  async getResult (): Promise<Result<Vim>> {
+  async getResult (): Promise<LoadResult<Vim>> {
     return this._result
   }
 

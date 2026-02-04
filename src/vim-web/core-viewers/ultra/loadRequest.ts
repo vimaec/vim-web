@@ -1,36 +1,35 @@
 import { Vim } from './vim'
 import * as Utils from '../../utils'
+import {
+  LoadSuccess as SharedLoadSuccess,
+  LoadError as SharedLoadError,
+  LoadResult
+} from '../shared/loadResult'
+
+export type VimRequestErrorType = 'loadingError' | 'downloadingError' | 'serverDisconnected' | 'unknown' | 'cancelled'
+
+export class LoadSuccess extends SharedLoadSuccess<Vim> {
+  constructor (vim: Vim) {
+    super(vim)
+  }
+}
+
+export class LoadError extends SharedLoadError {
+  readonly type: VimRequestErrorType
+  constructor (error: VimRequestErrorType, details?: string) {
+    super(error, details)
+    this.type = error
+  }
+}
 
 export type LoadRequestResult = LoadSuccess | LoadError
-
-export class LoadSuccess {
-  readonly isError = false
-  readonly isSuccess = true
-  readonly vim: Vim
-  constructor (vim: Vim) {
-    this.vim = vim
-  }
-}
-
-export class LoadError {
-  readonly isError = true
-  readonly isSuccess = false
-  readonly type: VimRequestErrorType
-  readonly details: string | undefined
-  constructor (public error: VimRequestErrorType, details?: string) {
-    this.type = error
-    this.details = details
-  }
-}
 
 export interface ILoadRequest {
   get isCompleted(): boolean;
   getProgress(): AsyncGenerator<number>;
-  getResult(): Promise<LoadError | LoadSuccess>;
+  getResult(): Promise<LoadRequestResult>;
   abort(): void;
 }
-
-export type VimRequestErrorType = 'loadingError' | 'downloadingError' | 'serverDisconnected' | 'unknown' | 'cancelled'
 
 export class LoadRequest implements ILoadRequest {
   private _progress : number = 0
@@ -58,7 +57,7 @@ export class LoadRequest implements ILoadRequest {
     }
   }
 
-  async getResult () : Promise<LoadError | LoadSuccess> {
+  async getResult () : Promise<LoadRequestResult> {
     await this._completionPromise.promise
     return this._result
   }

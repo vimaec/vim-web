@@ -207,7 +207,7 @@ function patchLoad(viewer: Core.Ultra.Viewer, modal: RefObject<ModalHandle>) {
     void request.getResult().then(
       result => {
         if (result.isError) {
-          modal.current?.message(getRequestErrorMessage(viewer.serverUrl, source, result.error))
+          modal.current?.message(getRequestErrorMessage(viewer.serverUrl, source, result.type))
           return
         }
         if (result.isSuccess) {

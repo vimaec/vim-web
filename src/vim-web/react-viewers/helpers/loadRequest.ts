@@ -37,10 +37,10 @@ export class LoadRequest {
       }
 
       const result = await this._request.getResult()
-      if (result.isError()) {
+      if (result.isSuccess === false) {
         this._callbacks.onError({ url: this.source.url, error: result.error })
       } else {
-        this._onLoaded?.(result.result)
+        this._onLoaded?.(result.vim)
         this._callbacks.onDone()
       }
     } catch (err) {
@@ -54,18 +54,6 @@ export class LoadRequest {
 
   getResult () {
     return this._request.getResult()
-  }
-
-  /**
-   * Convenience method to get the vim directly.
-   * Throws if loading failed.
-   */
-  async getVim (): Promise<Core.Webgl.Vim> {
-    const result = await this.getResult()
-    if (result.isError()) {
-      throw new Error(result.error)
-    }
-    return result.result
   }
 
   abort () {

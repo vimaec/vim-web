@@ -1,5 +1,6 @@
 // Full export
 export * from './inputHandler'
+export * from './loadResult'
 
 // Partial export
 export {PointerMode} from './inputHandler'
