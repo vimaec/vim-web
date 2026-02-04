@@ -9,7 +9,7 @@ React-based 3D viewers for VIM files with BIM (Building Information Modeling) su
 | Task | WebGL | Ultra |
 |------|-------|-------|
 | **Create viewer** | `VIM.React.Webgl.createViewer(div, settings)` | `VIM.React.Ultra.createViewer(div, settings)` |
-| **Load model** | `viewer.loader.open({ url }, {})` then `viewer.loader.add(vim)` | `viewer.load({ url })` |
+| **Load model** | `await viewer.load({ url }).getVim()` | `viewer.load({ url })` |
 | **Get element** | `vim.getElementFromIndex(index)` | `vim.getElementFromIndex(index)` |
 | **Select** | `viewer.core.selection.select(element)` | `viewer.core.selection.select(element)` |
 | **Frame camera** | `viewer.core.camera.lerp(1).frame(element)` | `viewer.camera.frame.call(element)` |
@@ -362,8 +362,7 @@ const viewer = await VIM.React.Webgl.createViewer(containerDiv, {
   isolation: { enabled: 'auto', useGhostMaterial: true }
 })
 
-const vim = await viewer.loader.open({ url: 'model.vim' }, {})
-viewer.loader.add(vim)
+const vim = await viewer.load({ url: 'model.vim' }).getVim()
 viewer.camera.frameScene.call()
 
 // Cleanup
@@ -375,14 +374,8 @@ viewer.dispose()
 ```typescript
 const file = inputElement.files[0]
 const buffer = await file.arrayBuffer()
-viewer.modal.loading({ progress: -1, message: 'Loading...' })
-try {
-  const vim = await viewer.loader.open({ buffer }, {})
-  viewer.loader.add(vim)
-} finally {
-  viewer.modal.loading(undefined)
-  viewer.camera.frameScene.call()
-}
+const vim = await viewer.load({ buffer }).getVim()
+viewer.camera.frameScene.call()
 ```
 
 ### Isolate Element
