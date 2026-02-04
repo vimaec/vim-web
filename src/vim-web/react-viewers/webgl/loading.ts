@@ -110,15 +110,6 @@ export class ComponentLoader {
     )
   }
 
-  /**
-   * Removes the vim from the viewer and disposes it.
-   * @param vim Vim to remove from the viewer.
-   */
-  remove (vim: Core.Webgl.Vim) {
-    this._viewer.remove(vim)
-    vim.dispose()
-  }
-
   private initVim (vim: Core.Webgl.Vim, settings: AddSettings, loadGeometry: boolean) {
     this._viewer.add(vim)
     vim.onLoadingUpdate.subscribe(() => {

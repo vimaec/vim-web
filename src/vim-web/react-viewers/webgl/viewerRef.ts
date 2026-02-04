@@ -9,13 +9,16 @@ import { CameraRef } from '../state/cameraState'
 import { Container } from '../container'
 import { BimInfoPanelRef } from '../bim/bimInfoData'
 import { ControlBarRef } from '../controlbar'
-import { ComponentLoader } from './loading'
+import { LoadRequest } from '../helpers/loadRequest'
+import { OpenSettings } from './loading'
 import { ModalHandle } from '../panels/modal'
 import { SectionBoxRef } from '../state/sectionBoxState'
 import { IsolationRef } from '../state/sharedIsolation'
 import { GenericPanelHandle } from '../generic'
 import { SettingsItem } from '../settings/settingsItem'
 import { WebglSettings } from './settings'
+
+export type { OpenSettings } from './loading'
 /**
 * Settings API managing settings applied to the viewer.
 */
@@ -78,9 +81,27 @@ export type ViewerRef = {
   core: Core.Webgl.Viewer
 
   /**
-   * Vim WebGL loader to download VIMs.
+   * Loads a vim file with all geometry for immediate viewing.
+   * @param source The url or buffer of the vim file
+   * @param settings Optional settings
+   * @returns LoadRequest to track progress and get result
    */
-  loader: ComponentLoader
+  load: (source: Core.Webgl.RequestSource, settings?: OpenSettings) => LoadRequest
+
+  /**
+   * Opens a vim file without loading geometry.
+   * Use for BIM queries or selective loading via vim.loadAll()/loadSubset().
+   * @param source The url or buffer of the vim file
+   * @param settings Optional settings
+   * @returns LoadRequest to track progress and get result
+   */
+  open: (source: Core.Webgl.RequestSource, settings?: OpenSettings) => LoadRequest
+
+  /**
+   * Removes a vim from the viewer and disposes it.
+   * @param vim The vim to remove
+   */
+  remove: (vim: Core.Webgl.Vim) => void
 
   /**
    * Isolation API managing isolation state in the viewer.

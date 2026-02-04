@@ -61,7 +61,7 @@ async function createWebgl (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDiv
 
   const url = getPathFromUrl() ?? 'https://storage.cdn.vimaec.com/samples/residence.v1.2.75.vim'
   //const url = getPathFromUrl() ?? 'https://vimdevelopment01storage.blob.core.windows.net/samples/Navis-Kajima.vim'
-  const vim = await viewer.loader.load({ url }).getVim()
+  const vim = await viewer.load({ url }).getVim()
   viewer.camera.frameScene.call()
 }
 
