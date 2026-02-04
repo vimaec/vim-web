@@ -5,7 +5,7 @@
 import React, { ReactNode } from 'react'
 import { Urls } from '..';
 
-export type ProgressMode = '%' | 'bytes'
+export type ProgressMode = 'percent' | 'bytes'
 
 /**
  * Interface for message information displayed in the LoadingBox.
@@ -57,15 +57,16 @@ function content (info: LoadingBoxProps) {
 }
 
 /**
- * Formats bytes to megabytes with two decimal places.
- * @param bytes - The number of bytes to format.
- * @returns The formatted megabytes as a string.
+ * Formats progress for display.
+ * @param progress - The progress value (bytes for 'bytes' mode, 0-100 for 'percent' mode).
+ * @param mode - The display mode.
+ * @returns The formatted progress as a string.
  */
 function formatProgress (progress: number, mode? : ProgressMode): string {
   if (progress <= 0) return ''
-  mode = mode ?? '%'
-  if (mode === '%') {
-    return `${(progress * 100).toFixed(0)}%`
+  mode = mode ?? 'percent'
+  if (mode === 'percent') {
+    return `${progress.toFixed(0)}%`
   } else {
     const BYTES_IN_MB = 1_000_000
     return `${(progress / BYTES_IN_MB).toFixed(2)} MB`

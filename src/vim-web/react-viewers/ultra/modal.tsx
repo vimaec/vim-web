@@ -23,6 +23,6 @@ export function updateModal (modal: RefObject<ModalHandle>, state: Core.Ultra.Cl
 export async function updateProgress (request: Core.Ultra.ILoadRequest, modal: ModalHandle) {
   for await (const progress of request.getProgress()) {
     if (request.isCompleted) break
-    modal?.loading({ message: 'Loading File in VIM Ultra mode', progress })
+    modal?.loading({ message: 'Loading File in VIM Ultra mode', progress: progress.current, mode: progress.type })
   }
 }

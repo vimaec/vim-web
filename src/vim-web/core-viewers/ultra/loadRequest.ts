@@ -2,6 +2,7 @@ import { Vim } from './vim'
 import {
   LoadRequest as BaseLoadRequest,
   ILoadRequest as BaseILoadRequest,
+  IProgress,
   LoadSuccess,
   LoadError as SharedLoadError
 } from '../shared/loadResult'
@@ -16,10 +17,10 @@ export class LoadError extends SharedLoadError {
   }
 }
 
-export type ILoadRequest = BaseILoadRequest<Vim, number, LoadError>
+export type ILoadRequest = BaseILoadRequest<Vim, LoadError>
 
-export class LoadRequest extends BaseLoadRequest<Vim, number, LoadError> {
-  onProgress (progress: number) {
+export class LoadRequest extends BaseLoadRequest<Vim, LoadError> {
+  onProgress (progress: IProgress) {
     this.pushProgress(progress)
   }
 

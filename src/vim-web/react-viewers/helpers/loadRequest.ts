@@ -1,10 +1,11 @@
 import * as Core from '../../core-viewers'
-import { LoadRequest as CoreLoadRequest } from '../../core-viewers/webgl/loader/progressive/loadRequest'
-import { ILoadRequest } from '../../core-viewers/shared/loadResult'
+import { LoadRequest as CoreLoadRequest, ILoadRequest as CoreILoadRequest } from '../../core-viewers/webgl/loader/progressive/loadRequest'
+import { IProgress } from '../../core-viewers/shared/loadResult'
+import { AsyncQueue } from '../../utils/asyncQueue'
 import { LoadingError } from '../webgl/loading'
 
 type RequestCallbacks = {
-  onProgress: (p: Core.Webgl.IProgressLogs) => void
+  onProgress: (p: IProgress) => void
   onError: (e: LoadingError) => void
   onDone: () => void
 }
@@ -13,11 +14,12 @@ type RequestCallbacks = {
  * Class to handle loading a request.
  * Implements ILoadRequest for compatibility with Ultra viewer's load request interface.
  */
-export class LoadRequest implements ILoadRequest<Core.Webgl.Vim, Core.Webgl.IProgressLogs> {
+export class LoadRequest implements CoreILoadRequest {
   private _source: Core.Webgl.RequestSource
   private _request: Core.Webgl.LoadRequest
   private _callbacks: RequestCallbacks
   private _onLoaded?: (vim: Core.Webgl.Vim) => void
+  private _progressQueue = new AsyncQueue<IProgress>()
 
   constructor (
     callbacks: RequestCallbacks,
@@ -37,6 +39,7 @@ export class LoadRequest implements ILoadRequest<Core.Webgl.Vim, Core.Webgl.IPro
     try {
       for await (const progress of this._request.getProgress()) {
         this._callbacks.onProgress(progress)
+        this._progressQueue.push(progress)
       }
 
       const result = await this._request.getResult()
@@ -49,14 +52,15 @@ export class LoadRequest implements ILoadRequest<Core.Webgl.Vim, Core.Webgl.IPro
     } catch (err) {
       this._callbacks.onError({ url: this._source.url, error: String(err) })
     }
+    this._progressQueue.close()
   }
 
   get isCompleted () {
     return this._request.isCompleted
   }
 
-  getProgress () {
-    return this._request.getProgress()
+  async * getProgress (): AsyncGenerator<IProgress> {
+    yield * this._progressQueue
   }
 
   getResult () {

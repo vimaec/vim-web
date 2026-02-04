@@ -1,3 +1,6 @@
+import { AsyncQueue } from '../../utils/asyncQueue'
+import { ControllablePromise } from '../../utils/promise'
+
 export interface ILoadSuccess<T> {
   readonly isSuccess: true
   readonly isError: false
@@ -9,6 +12,14 @@ export interface ILoadError {
   readonly isError: true
   readonly error: string
   readonly details?: string
+}
+
+export type ProgressType = 'bytes' | 'percent'
+
+export interface IProgress {
+  type: ProgressType
+  current: number
+  total?: number
 }
 
 export type LoadResult<TValue, TError extends ILoadError = ILoadError> = ILoadSuccess<TValue> | TError
@@ -28,15 +39,12 @@ export class LoadError implements ILoadError {
   ) {}
 }
 
-import { AsyncQueue } from '../../utils/asyncQueue'
-import { ControllablePromise } from '../../utils/promise'
-
 /**
  * Interface for load requests that can be used as a type constraint.
  */
-export interface ILoadRequest<TVim, TProgress, TError extends ILoadError = ILoadError> {
+export interface ILoadRequest<TVim, TError extends ILoadError = ILoadError> {
   readonly isCompleted: boolean
-  getProgress(): AsyncGenerator<TProgress>
+  getProgress(): AsyncGenerator<IProgress>
   getResult(): Promise<LoadResult<TVim, TError>>
   abort(): void
 }
@@ -45,15 +53,15 @@ export interface ILoadRequest<TVim, TProgress, TError extends ILoadError = ILoad
  * Base class for loading requests that provides progress tracking via AsyncQueue.
  * Both WebGL and Ultra extend this class with their specific loading logic.
  */
-export class LoadRequest<TVim, TProgress, TError extends ILoadError = ILoadError>
-  implements ILoadRequest<TVim, TProgress, TError> {
-  private _progressQueue = new AsyncQueue<TProgress>()
+export class LoadRequest<TVim, TError extends ILoadError = ILoadError>
+  implements ILoadRequest<TVim, TError> {
+  private _progressQueue = new AsyncQueue<IProgress>()
   private _result: LoadResult<TVim, TError> | undefined
   private _resultPromise = new ControllablePromise<LoadResult<TVim, TError>>()
 
   get isCompleted () { return this._result !== undefined }
 
-  async * getProgress (): AsyncGenerator<TProgress> {
+  async * getProgress (): AsyncGenerator<IProgress> {
     yield * this._progressQueue
   }
 
@@ -61,7 +69,7 @@ export class LoadRequest<TVim, TProgress, TError extends ILoadError = ILoadError
     return this._resultPromise.promise
   }
 
-  pushProgress (progress: TProgress) {
+  pushProgress (progress: IProgress) {
     this._progressQueue.push(progress)
   }
 

@@ -4,13 +4,12 @@ import { Scene } from '../scene'
 import { ElementMapping } from '../elementMapping'
 import { VimSubsetBuilder } from './subsetBuilder'
 import { VimMeshFactory } from './legacyMeshFactory'
-import { LoadRequest as BaseLoadRequest, LoadError, LoadSuccess } from '../../../shared/loadResult'
+import { LoadRequest as BaseLoadRequest, ILoadRequest as BaseILoadRequest, LoadError, LoadSuccess } from '../../../shared/loadResult'
 import { VimSource } from '../..'
 import {
   BFast,
   RemoteBuffer,
   requestHeader,
-  IProgressLogs,
   VimDocument,
   G3d,
   G3dMaterial
@@ -23,11 +22,13 @@ export type RequestSource = {
   headers?: Record<string, string>,
 }
 
+export type ILoadRequest = BaseILoadRequest<Vim>
+
 /**
  * A request to load a VIM file. Extends the base LoadRequest to add BFast abort handling.
  * Loading starts immediately upon construction.
  */
-export class LoadRequest extends BaseLoadRequest<Vim, IProgressLogs> {
+export class LoadRequest extends BaseLoadRequest<Vim> {
   private _bfast: BFast
 
   constructor (source: VimSource, settings: VimPartialSettings, vimIndex: number) {
@@ -55,7 +56,7 @@ export class LoadRequest extends BaseLoadRequest<Vim, IProgressLogs> {
     const fullSettings = createVimSettings(settings)
 
     if (bfast.source instanceof RemoteBuffer) {
-      bfast.source.onProgress = (p) => this.pushProgress(p)
+      bfast.source.onProgress = (p) => this.pushProgress({ type: 'bytes', current: p.loaded, total: p.total })
       if (fullSettings.verboseHttp) {
         bfast.source.logs = new DefaultLog()
       }

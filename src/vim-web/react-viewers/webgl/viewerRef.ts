@@ -3,7 +3,6 @@
  */
 
 import * as Core from '../../core-viewers'
-import { ILoadRequest } from '../../core-viewers/shared/loadResult'
 import { ContextMenuRef } from '../panels/contextMenu'
 import { AnySettings } from '../settings/anySettings'
 import { CameraRef } from '../state/cameraState'
@@ -86,7 +85,7 @@ export type ViewerRef = {
    * @param settings Optional settings
    * @returns LoadRequest to track progress and get result
    */
-  load: (source: Core.Webgl.RequestSource, settings?: OpenSettings) => ILoadRequest<Core.Webgl.Vim, Core.Webgl.IProgressLogs>
+  load: (source: Core.Webgl.RequestSource, settings?: OpenSettings) => Core.Webgl.ILoadRequest
 
   /**
    * Opens a vim file without loading geometry.
@@ -95,7 +94,7 @@ export type ViewerRef = {
    * @param settings Optional settings
    * @returns LoadRequest to track progress and get result
    */
-  open: (source: Core.Webgl.RequestSource, settings?: OpenSettings) => ILoadRequest<Core.Webgl.Vim, Core.Webgl.IProgressLogs>
+  open: (source: Core.Webgl.RequestSource, settings?: OpenSettings) => Core.Webgl.ILoadRequest
 
   /**
    * Removes a vim from the viewer and disposes it.

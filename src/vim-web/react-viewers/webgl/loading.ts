@@ -8,6 +8,7 @@ import { LoadRequest } from '../helpers/loadRequest'
 import { ModalHandle } from '../panels/modal'
 import { UltraSuggestion } from '../panels/loadingBox'
 import { WebglSettings } from './settings'
+import { IProgress } from '../../core-viewers/shared/loadResult'
 
 type AddSettings = {
   /**
@@ -43,11 +44,11 @@ export class ComponentLoader {
   /**
    * Event emitter for progress updates.
    */
-  onProgress (p: Core.Webgl.IProgressLogs) {
+  onProgress (p: IProgress) {
     this._modal.current?.loading({
       message: 'Loading in WebGL Mode',
-      progress: p.loaded,
-      mode: 'bytes',
+      progress: p.current,
+      mode: p.type,
       more: this._addLink ? UltraSuggestion() : undefined
     })
   }

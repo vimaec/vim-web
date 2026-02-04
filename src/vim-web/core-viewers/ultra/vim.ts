@@ -134,7 +134,7 @@ export class Vim implements IVim<Element3D> {
       try {
         const state = await this._rpc.RPCGetVimLoadingState(handle);
         this._logger.log('state :', state);
-        result.onProgress(state.progress);
+        result.onProgress({ type: 'percent', current: state.progress, total: 100 });
         switch (state.status) {
           case VimLoadingStatus.Loading:
           case VimLoadingStatus.Downloading:
