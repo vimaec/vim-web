@@ -1,4 +1,5 @@
 export * from './array'
+export * from './asyncQueue'
 export * from './debounce'
 export * from './interfaces'
 export * from './math3d'

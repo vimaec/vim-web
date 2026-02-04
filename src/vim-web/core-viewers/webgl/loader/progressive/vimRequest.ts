@@ -1,17 +1,10 @@
-// loader
-import {
-  VimPartialSettings
-} from '../vimSettings'
-
+import { VimPartialSettings } from '../vimSettings'
 import { Vim } from '../vim'
 import { Result, ErrorResult, SuccessResult } from '../../../../utils/result'
+import { AsyncQueue } from '../../../../utils/asyncQueue'
 import { open } from './open'
-
 import { VimSource } from '../..'
-import {
-  BFast, IProgressLogs
-} from 'vim-format'
-import { ControllablePromise } from '../../../../utils/promise'
+import { BFast, IProgressLogs } from 'vim-format'
 
 export type RequestSource = {
   url?: string,
@@ -35,73 +28,46 @@ export function requestVim (options: RequestSource, settings: VimPartialSettings
  */
 export class VimRequest {
   private _source: VimSource
-  private _settings : VimPartialSettings
+  private _settings: VimPartialSettings
   private _vimIndex: number
-  private _bfast : BFast
+  private _bfast: BFast
 
-  // Result states
-  private _isDone: boolean = false
-  private _vimResult?: Vim
-  private _error?: string
-
-  // Promises to await progress updates and completion
-  private _progress : IProgressLogs = { loaded: 0, total: 0, all: new Map() }
-  private _progressPromise = new ControllablePromise<IProgressLogs>()
-  private _completionPromise = new ControllablePromise<void>()
+  private _progressQueue = new AsyncQueue<IProgressLogs>()
+  private _result: Promise<Result<Vim>>
 
   constructor (source: VimSource, settings: VimPartialSettings, vimIndex: number) {
     this._source = source
     this._settings = settings
     this._vimIndex = vimIndex
-
-    this.startRequest()
+    this._result = this.startRequest()
   }
 
-  /**
-   * Initiates the asynchronous request and handles progress updates.
-   */
-  private async startRequest () {
+  private async startRequest (): Promise<Result<Vim>> {
     try {
       this._bfast = new BFast(this._source)
-
-      const vim: Vim = await open(this._bfast, this._settings, this._vimIndex, (progress: IProgressLogs) => {
-        this._progress = progress
-        this._progressPromise.resolve(progress)
-        this._progressPromise = new ControllablePromise<IProgressLogs>()
+      const vim = await open(this._bfast, this._settings, this._vimIndex, (progress) => {
+        this._progressQueue.push(progress)
       })
-      this._vimResult = vim
+      this._progressQueue.close()
+      return new SuccessResult(vim)
     } catch (err: any) {
-      this._error = err.message ?? JSON.stringify(err)
+      this._progressQueue.close()
+      const message = err.message ?? JSON.stringify(err)
       console.error('Error loading VIM:', err)
-    } finally {
-      this.end()
+      return new ErrorResult(message)
     }
-  }
-
-  private end () {
-    this._isDone = true
-    this._progressPromise.resolve(this._progress)
-    this._completionPromise.resolve()
   }
 
   async getResult (): Promise<Result<Vim>> {
-    await this._completionPromise.promise
-    return this._error ? new ErrorResult(this._error) : new SuccessResult(this._vimResult)
+    return this._result
   }
 
-  /**
-   * Async generator that yields progress updates.
-   * @returns An AsyncGenerator yielding IProgressLogs.
-   */
-  async * getProgress (): AsyncGenerator<IProgressLogs, void, void> {
-    while (!this._isDone) {
-      yield await this._progressPromise.promise
-    }
+  getProgress (): AsyncGenerator<IProgressLogs, void, void> {
+    return this._progressQueue[Symbol.asyncIterator]()
   }
 
-  abort () {
+  abort (): void {
     this._bfast.abort()
-    this._error = 'Request aborted'
-    this.end()
+    this._progressQueue.close()
   }
 }

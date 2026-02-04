@@ -61,15 +61,8 @@ async function createWebgl (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDiv
 
   const url = getPathFromUrl() ?? 'https://storage.cdn.vimaec.com/samples/residence.v1.2.75.vim'
   //const url = getPathFromUrl() ?? 'https://vimdevelopment01storage.blob.core.windows.net/samples/Navis-Kajima.vim'
-  const request = viewer.loader.request(
-    { url },
-  )
-  const result = await request.getResult()
-  if (result.isSuccess()) {
-    viewer.loader.add(result.result)
-    viewer.camera.frameScene.call()
-  }
-
+  const vim = await viewer.loader.load({ url }).getVim()
+  viewer.camera.frameScene.call()
 }
 
 async function createUltra (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDivElement) {

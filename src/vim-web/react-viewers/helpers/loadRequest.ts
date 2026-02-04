@@ -1,6 +1,5 @@
 import * as Core from '../../core-viewers'
 import { LoadingError } from '../webgl/loading'
-import { ControllablePromise } from '../../utils'
 
 type RequestCallbacks = {
   onProgress: (p: Core.Webgl.IProgressLogs) => void
@@ -12,16 +11,10 @@ type RequestCallbacks = {
  * Class to handle loading a request.
  */
 export class LoadRequest {
-  readonly source
-  private _callbacks : RequestCallbacks
+  readonly source: Core.Webgl.RequestSource
   private _request: Core.Webgl.VimRequest
+  private _callbacks: RequestCallbacks
   private _onLoaded?: (vim: Core.Webgl.Vim) => void
-
-  private _progress: Core.Webgl.IProgressLogs = { loaded: 0, total: 0, all: new Map() }
-  private _progressPromise = new ControllablePromise<void>()
-
-  private _isDone: boolean = false
-  private _completionPromise = new ControllablePromise<void>()
 
   constructor (
     callbacks: RequestCallbacks,
@@ -33,58 +26,33 @@ export class LoadRequest {
     this.source = source
     this._callbacks = callbacks
     this._onLoaded = onLoaded
-    this.startRequest(source, settings, vimIndex)
-  }
-
-  private async startRequest (source: Core.Webgl.RequestSource, settings: Core.Webgl.VimPartialSettings, vimIndex: number) {
     this._request = Core.Webgl.request(source, settings, vimIndex)
-    for await (const progress of this._request.getProgress()) {
-      this.onProgress(progress)
-    }
-    const result = await this._request.getResult()
-    if (result.isError()) {
-      this.onError(result.error)
-    } else {
-      this._onLoaded?.(result.result)
-      this.onSuccess()
-    }
+    this.trackRequest()
   }
 
-  private onProgress (progress: Core.Webgl.IProgressLogs) {
-    this._callbacks.onProgress(progress)
-    this._progress = progress
-    this._progressPromise.resolve()
-    this._progressPromise = new ControllablePromise<void>()
-  }
+  private async trackRequest () {
+    try {
+      for await (const progress of this._request.getProgress()) {
+        this._callbacks.onProgress(progress)
+      }
 
-  private onSuccess () {
-    this._callbacks.onDone()
-    this.end()
-  }
-
-  private onError (error: string) {
-    this._callbacks.onError({
-      url: this.source.url,
-      error
-    })
-    this.end()
-  }
-
-  private end () {
-    this._isDone = true
-    this._progressPromise.resolve()
-    this._completionPromise.resolve()
-  }
-
-  async * getProgress () : AsyncGenerator<Core.Webgl.IProgressLogs, void, void> {
-    while (!this._isDone) {
-      await this._progressPromise.promise
-      yield this._progress
+      const result = await this._request.getResult()
+      if (result.isError()) {
+        this._callbacks.onError({ url: this.source.url, error: result.error })
+      } else {
+        this._onLoaded?.(result.result)
+        this._callbacks.onDone()
+      }
+    } catch (err) {
+      this._callbacks.onError({ url: this.source.url, error: String(err) })
     }
   }
 
-  async getResult () {
-    await this._completionPromise
+  getProgress () {
+    return this._request.getProgress()
+  }
+
+  getResult () {
     return this._request.getResult()
   }
 
@@ -102,6 +70,5 @@ export class LoadRequest {
 
   abort () {
     this._request.abort()
-    this.onError('Request aborted')
   }
 }
