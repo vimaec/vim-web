@@ -89,6 +89,7 @@ export class InsertableMesh {
 
   update () {
     this.geometry.update()
+    this.vim?.scene.updateBox(this.geometry.boundingBox)
   }
 
   clearUpdate () {

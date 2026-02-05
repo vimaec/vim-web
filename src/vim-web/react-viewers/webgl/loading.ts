@@ -111,7 +111,7 @@ export class ComponentLoader {
     )
   }
 
-  private initVim (vim: Core.Webgl.Vim, settings: AddSettings, loadGeometry: boolean) {
+  private async initVim (vim: Core.Webgl.Vim, settings: AddSettings, loadGeometry: boolean) {
     this._viewer.add(vim)
     vim.onLoadingUpdate.subscribe(() => {
       this._viewer.gizmos.loading.visible = vim.isLoading
@@ -121,7 +121,7 @@ export class ComponentLoader {
       }
     })
     if (loadGeometry) {
-      void vim.loadAll()
+      await vim.loadAll()
     }
   }
 }

@@ -349,6 +349,7 @@ export class InsertableGeometry {
     if (this._computeBoundingBox) {
       this.geometry.computeBoundingBox()
       this.geometry.computeBoundingSphere()
+      this.boundingBox = this.geometry.boundingBox
     }
   }
 }
