@@ -73,6 +73,25 @@ export abstract class CameraMovement {
   abstract zoom(amount: number): void
 
   /**
+   * Zooms toward a specific point, making it the new orbit target.
+   * Preserves the camera's forward direction while moving closer/farther from the point.
+   * If point is undefined, falls back to regular zoom.
+   * @param {THREE.Vector3 | undefined} point - The world position to zoom toward, or undefined for regular zoom
+   * @param {number} amount - The zoom factor (< 1 zooms in, > 1 zooms out)
+   */
+  zoomTo(point: THREE.Vector3 | undefined, amount: number): void {
+    if (!point) {
+      this.zoom(amount)
+      return
+    }
+    const forward = this._camera.forward.clone().normalize()
+    const newTarget = point.clone()
+    const newOrbitDistance = this._camera.orbitDistance * amount
+    const newPos = newTarget.clone().sub(forward.multiplyScalar(newOrbitDistance))
+    this.set(newPos, newTarget)
+  }
+
+  /**
    * Sets the distance between the camera and its target to the specified value.
    * @param {number} dist - The new distance between the camera and its target.
    */

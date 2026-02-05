@@ -94,7 +94,8 @@ function createAdapter(viewer: Viewer): IInputAdapter {
         viewer.camera.frameAll(1);
       }
     },
-    zoom: (value: number) => {
+    zoom: (value: number, pos?: THREE.Vector2) => {
+      // Position is ignored - server handles zoom-to-cursor
       viewer.rpc.RPCMouseScrollEvent(value >= 1 ? 1 : -1);
     },
     moveCamera: (value: THREE.Vector3) => {

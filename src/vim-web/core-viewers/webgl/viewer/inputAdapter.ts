@@ -70,8 +70,11 @@ function createAdapter(viewer: Viewer ) : IInputAdapter {
       const result = await viewer.raycaster.raycastFromScreen(pos)
       viewer.camera.lerp(0.75).frame(result.object ?? 'all')
     },
-    zoom: (value: number) => {
-      viewer.camera.lerp(0.75).zoom(value)
+    zoom: async (value: number, pos?: THREE.Vector2) => {
+      if (pos) {
+        const result = await viewer.raycaster.raycastFromScreen(pos)
+        viewer.camera.lerp(0.75).zoomTo(result?.worldPosition, value)
+      }
     },
     moveCamera: (value : THREE.Vector3) => {
       viewer.camera.localVelocity = value
