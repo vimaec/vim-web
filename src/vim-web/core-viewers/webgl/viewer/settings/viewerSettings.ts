@@ -128,26 +128,32 @@ export type ViewerSettings = {
       enable: boolean
 
       /**
-      * Size of camera gizmo.
-      * Default: 0.01
+      * Size of camera gizmo as fraction of screen (0-1).
+      * Default: 0.1
       */
       size: number
 
       /**
-      * Color of camera gizmo.
-      * Default: THREE.Color(255, 255, 255)
+      * Color of vertical rings (great circles).
+      * Default: THREE.Color(0x0590cc) - VIM blue
       */
       color: THREE.Color
 
       /**
-      * Opacity of the camera gizmo.
+      * Color of horizontal rings (latitude circles).
+      * Default: THREE.Color(0x58b5dd) - Primary_300
+      */
+      colorHorizontal: THREE.Color
+
+      /**
+      * Opacity of the camera gizmo when in front of objects.
       * Default: 0.5
       */
       opacity: number
 
       /**
       * Opacity of the camera gizmo when behind objects.
-      * Default: 0.125
+      * Default: 0.1
       */
       opacityAlways: number
     }
