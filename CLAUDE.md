@@ -38,6 +38,7 @@ React-based 3D viewers for VIM files with BIM (Building Information Modeling) su
 | InsertableGeometry | `src/vim-web/core-viewers/webgl/loader/progressive/insertableGeometry.ts` |
 | InstancedMeshFactory | `src/vim-web/core-viewers/webgl/loader/progressive/instancedMeshFactory.ts` |
 | VimMeshFactory | `src/vim-web/core-viewers/webgl/loader/progressive/legacyMeshFactory.ts` |
+| VimSettings | `src/vim-web/core-viewers/webgl/loader/vimSettings.ts` |
 
 ### Import Pattern
 
@@ -183,6 +184,7 @@ camera.snap().frame(box)                // Instant frame box
 camera.lerp(1).orbit(new THREE.Vector2(45, 0))  // Orbit by degrees
 camera.lerp(1).orbitTowards(new THREE.Vector3(0, 0, -1))  // Top-down
 camera.lerp(1).zoom(1.5)                // Zoom out
+camera.lerp(1).zoomTo(point, 0.8)       // Zoom toward point (becomes new orbit target)
 camera.snap().set(position, target)     // Set position/target
 
 // State
@@ -249,7 +251,7 @@ state.useMemo((v) => compute(v))
 | Left Drag | Orbit (or mode-specific) |
 | Right Drag | Look |
 | Middle Drag | Pan |
-| Wheel | Zoom |
+| Wheel | Zoom to cursor (if over geometry) or zoom toward current target |
 | Click | Select |
 | Shift+Click | Add to selection |
 | Double-Click | Frame |
@@ -437,6 +439,24 @@ viewer.core.selection.onSelectionChanged.subscribe(async () => {
 })
 ```
 
+### Load Multiple VIMs in a Grid
+
+```typescript
+const gridSize = 3
+const spacing = 50
+
+for (let row = 0; row < gridSize; row++) {
+  for (let col = 0; col < gridSize; col++) {
+    const position = new VIM.THREE.Vector3(
+      col * spacing - (gridSize - 1) * spacing / 2,
+      row * spacing - (gridSize - 1) * spacing / 2,
+      0
+    )
+    viewer.load({ url }, { position })
+  }
+}
+```
+
 ---
 
 ## Naming Conventions
@@ -569,6 +589,27 @@ RpcSafeClient (validation, batching) → RpcClient (marshaling) → SocketClient
 - Binary protocol, little-endian
 - Fire-and-forget for input, request-response for queries
 - Key files: `rpcSafeClient.ts`, `rpcClient.ts`, `socketClient.ts`
+
+### VimSettings (Load Options)
+
+Settings passed to `viewer.load()` to configure vim transformation and rendering:
+
+```typescript
+type VimSettings = {
+  position: THREE.Vector3    // Positional offset
+  rotation: THREE.Vector3    // XYZ rotation in degrees
+  scale: number              // Uniform scale factor
+  matrix: THREE.Matrix4      // Override transform (replaces position/rotation/scale)
+  transparency: 'all' | 'opaque' | 'transparent'  // What to render
+  verboseHttp: boolean       // Enable HTTP logging
+}
+
+// Example: Load with offset
+viewer.load({ url }, { position: new THREE.Vector3(100, 0, 0) })
+
+// Example: Load rotated and scaled
+viewer.load({ url }, { rotation: new THREE.Vector3(0, 0, 45), scale: 2 })
+```
 
 ### VIM Data Model
 
