@@ -124,7 +124,7 @@ export class MouseHandler extends BaseInputHandler {
   }
 
   private onMouseScroll(event: WheelEvent): void {
-    const pos = this.relativePosition(event as PointerEvent);
+    const pos = this.relativePosition(event);
     this.onWheel?.(Math.sign(event.deltaY), event.ctrlKey, pos);
     event.preventDefault();
   }
