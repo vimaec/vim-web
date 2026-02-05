@@ -59,16 +59,16 @@ function createAdapter(viewer: Viewer ) : IInputAdapter {
       const result = await viewer.raycaster.raycastFromScreen(pos)
       if(add){
         
-        viewer.selection.add(result.object)
+        viewer.selection.add(result?.object)
       }
       else{
-        viewer.selection.select(result.object)
+        viewer.selection.select(result?.object)
       }
     },
     frameAtPointer: async (pos: THREE.Vector2) => {
       //TODO: This logic should happen in shared code
       const result = await viewer.raycaster.raycastFromScreen(pos)
-      viewer.camera.lerp(0.75).frame(result.object ?? 'all')
+      viewer.camera.lerp(0.75).frame(result?.object ?? 'all')
     },
     zoom: async (value: number, pos?: THREE.Vector2) => {
       if (pos) {
