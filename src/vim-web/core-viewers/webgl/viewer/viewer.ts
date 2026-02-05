@@ -129,7 +129,7 @@ export class Viewer {
 
     // GPU-based raycaster for element picking and world position queries
     const size = this.renderer.renderer.getSize(new THREE.Vector2())
-    this.raycaster = new GpuPicker(
+    const gpuPicker = new GpuPicker(
       this.renderer.renderer,
       this._camera,
       scene,
@@ -138,6 +138,8 @@ export class Viewer {
       size.x || 1,
       size.y || 1
     )
+    gpuPicker.setMarkers(this.gizmos.markers)
+    this.raycaster = gpuPicker
 
     // Update raycaster size on viewport resize
     this.viewport.onResize.sub(() => {

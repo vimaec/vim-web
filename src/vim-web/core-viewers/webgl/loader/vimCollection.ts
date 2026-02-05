@@ -8,9 +8,10 @@ import { Vim } from './vim'
 
 /**
  * Maximum number of vims that can be loaded simultaneously.
- * Limited by the 8-bit vimIndex in GPU picking (256 values: 0-255).
+ * Limited by the 8-bit vimIndex in GPU picking.
+ * Index 255 is reserved for marker gizmos, so vims use 0-254.
  */
-export const MAX_VIMS = 256
+export const MAX_VIMS = 255
 
 /**
  * Manages a collection of Vim objects with stable IDs for GPU picking.

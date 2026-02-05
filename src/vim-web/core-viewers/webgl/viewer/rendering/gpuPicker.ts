@@ -12,9 +12,14 @@ import { Vim } from '../../loader/vim'
 import { VimCollection } from '../../loader/vimCollection'
 import type { IRaycaster, IRaycastResult } from '../../../shared'
 import { Marker } from '../gizmos/markers/gizmoMarker'
+import type { GizmoMarkers } from '../gizmos/markers/gizmoMarkers'
+import type { Selectable } from '../selection'
 
-/** Raycastable objects for the GpuPicker */
-export type GpuRaycastableObject = Element3D | Marker
+/**
+ * Reserved vimIndex for marker gizmos in GPU picking.
+ * Markers use this index to distinguish them from vim elements.
+ */
+export const MARKER_VIM_INDEX = 255
 
 /**
  * Packs vimIndex (8 bits) and elementIndex (24 bits) into a single uint32.
@@ -38,10 +43,10 @@ export function unpackPickingId(packedId: number): { vimIndex: number; elementIn
  * Result of a GPU pick operation containing element index, world position, and surface normal.
  * Implements IRaycastResult for compatibility with the raycaster interface.
  */
-export class GpuPickResult implements IRaycastResult<GpuRaycastableObject> {
-  /** The element index in the vim */
+export class GpuPickResult implements IRaycastResult<Selectable> {
+  /** The element index in the vim (or marker index if vimIndex === MARKER_VIM_INDEX) */
   readonly elementIndex: number
-  /** The vim index identifying which vim the element belongs to */
+  /** The vim index identifying which vim the element belongs to (255 = marker) */
   readonly vimIndex: number
   /** The world position of the hit */
   readonly worldPosition: THREE.Vector3
@@ -49,35 +54,47 @@ export class GpuPickResult implements IRaycastResult<GpuRaycastableObject> {
   readonly worldNormal: THREE.Vector3
   /** Reference to the vim containing the element */
   private _vim: Vim | undefined
+  /** Reference to the marker if this is a marker hit */
+  private _marker: Marker | undefined
 
   constructor(
     elementIndex: number,
     vimIndex: number,
     worldPosition: THREE.Vector3,
     worldNormal: THREE.Vector3,
-    vim: Vim | undefined
+    vim: Vim | undefined,
+    marker?: Marker
   ) {
     this.elementIndex = elementIndex
     this.vimIndex = vimIndex
     this.worldPosition = worldPosition
     this.worldNormal = worldNormal
     this._vim = vim
+    this._marker = marker
   }
 
   /**
    * The object property for IRaycastResult interface.
-   * Returns the Element3D for the picked element.
+   * Returns the Element3D or Marker for the picked object.
    */
-  get object(): Element3D | undefined {
-    return this.getElement()
+  get object(): Selectable | undefined {
+    return this._marker ?? this.getElement()
   }
 
   /**
    * Gets the Element3D object for the picked element.
-   * @returns The Element3D object, or undefined if not found
+   * @returns The Element3D object, or undefined if not found or if this is a marker hit
    */
   getElement(): Element3D | undefined {
     return this._vim?.getElementFromIndex(this.elementIndex)
+  }
+
+  /**
+   * Gets the Marker object if this is a marker hit.
+   * @returns The Marker object, or undefined if this is an element hit
+   */
+  getMarker(): Marker | undefined {
+    return this._marker
   }
 }
 
@@ -93,11 +110,12 @@ export class GpuPickResult implements IRaycastResult<GpuRaycastableObject> {
  *
  * Normal.z is reconstructed as: sqrt(1 - x² - y²), always positive since normal faces camera.
  */
-export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
+export class GpuPicker implements IRaycaster<Selectable> {
   private _renderer: THREE.WebGLRenderer
   private _camera: Camera
   private _scene: RenderScene
   private _vims: VimCollection
+  private _markers: GizmoMarkers | undefined
   private _section: RenderingSection
 
   private _renderTarget: THREE.WebGLRenderTarget
@@ -137,6 +155,14 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
 
     // Buffer for reading single pixel (RGBA float = 4 floats)
     this._readBuffer = new Float32Array(4)
+  }
+
+  /**
+   * Sets the GizmoMarkers reference for marker picking.
+   * Must be called after gizmos are initialized.
+   */
+  setMarkers(markers: GizmoMarkers): void {
+    this._markers = markers
   }
 
   /**
@@ -228,6 +254,16 @@ export class GpuPicker implements IRaycaster<GpuRaycastableObject> {
 
     // Reconstruct world position from depth
     const worldPosition = this.reconstructWorldPosition(screenPos, depth, camera)
+
+    // Check if this is a marker hit
+    if (vimIndex === MARKER_VIM_INDEX) {
+      const marker = this._markers?.getMarkerFromIndex(elementIndex)
+      const result = new GpuPickResult(elementIndex, vimIndex, worldPosition, worldNormal, undefined, marker)
+      if (this.debug) {
+        this.showDebugVisuals(result)
+      }
+      return result
+    }
 
     // Get the vim by its stable ID
     const vim = this._vims.getFromId(vimIndex)
