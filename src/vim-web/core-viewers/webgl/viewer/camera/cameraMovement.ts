@@ -73,6 +73,14 @@ export abstract class CameraMovement {
   abstract zoom(amount: number): void
 
   /**
+   * Zooms the camera toward a specific world point while preserving camera orientation.
+   * The orbit target is updated to the world point for future orbit operations.
+   * @param {number} amount - The zoom factor (e.g., 0.5 to move closer, 2 to move farther).
+   * @param {THREE.Vector3} worldPoint - The world position to zoom toward.
+   */
+  abstract zoomTowards(amount: number, worldPoint: THREE.Vector3): void
+
+  /**
    * Sets the distance between the camera and its target to the specified value.
    * @param {number} dist - The new distance between the camera and its target.
    */

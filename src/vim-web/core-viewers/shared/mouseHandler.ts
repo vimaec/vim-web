@@ -19,7 +19,7 @@ export class MouseHandler extends BaseInputHandler {
   onDrag: DragCallback; // Callback for drag movement
   onClick: (position: THREE.Vector2, ctrl: boolean) => void;
   onDoubleClick: (position: THREE.Vector2) => void;
-  onWheel: (value: number, ctrl: boolean) => void;
+  onWheel: (value: number, ctrl: boolean, clientX: number, clientY: number) => void;
   onContextMenu: (position: THREE.Vector2) => void;
 
   constructor(canvas: HTMLCanvasElement) {
@@ -124,7 +124,7 @@ export class MouseHandler extends BaseInputHandler {
   }
 
   private onMouseScroll(event: WheelEvent): void {
-    this.onWheel?.(Math.sign(event.deltaY), event.ctrlKey);
+    this.onWheel?.(Math.sign(event.deltaY), event.ctrlKey, event.clientX, event.clientY);
     event.preventDefault();
   }
 

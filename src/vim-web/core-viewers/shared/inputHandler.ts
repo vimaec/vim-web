@@ -114,13 +114,16 @@ export class InputHandler extends BaseInputHandler {
 
     this.mouse.onClick = (pos: THREE.Vector2, modif: boolean) => adapter.selectAtPointer(pos, modif)
     this.mouse.onDoubleClick = adapter.frameAtPointer
-    this.mouse.onWheel = (value: number, ctrl: boolean) => {
+    this.mouse.onWheel = (value: number, ctrl: boolean, clientX: number, clientY: number) => {
       if(ctrl){
         console.log('ctrl', value)
         this.moveSpeed -= Math.sign(value)
       }
       else{
-        adapter.zoom(this.getZoomValue(value))
+        const rect = this._canvas.getBoundingClientRect()
+        const screenX = (clientX - rect.left) / rect.width
+        const screenY = (clientY - rect.top) / rect.height
+        adapter.zoom(this.getZoomValue(value), new THREE.Vector2(screenX, screenY))
       }
     }
 
