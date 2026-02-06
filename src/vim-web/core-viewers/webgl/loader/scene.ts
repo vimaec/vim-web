@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { Mesh, Submesh } from './mesh'
+import { Submesh } from './mesh'
 import { Vim } from './vim'
 import { estimateBytesUsed } from 'three/examples/jsm/utils/BufferGeometryUtils'
 import { InsertableMesh } from './progressive/insertableMesh'
@@ -37,7 +37,7 @@ export class Scene {
 
   // State
   insertables: InsertableMesh[] = []
-  meshes: (Mesh | InsertableMesh | InstancedMesh)[] = []
+  meshes: (InsertableMesh | InstancedMesh)[] = []
 
   private _boundingBox: THREE.Box3
 
@@ -161,7 +161,7 @@ export class Scene {
    * userData.instances = number[] (indices of the g3d instances that went into creating the mesh)
    * userData.boxes = THREE.Box3[] (bounding box of each instance)
    */
-  addMesh (mesh: Mesh | InsertableMesh | InstancedMesh) {
+  addMesh (mesh: InsertableMesh | InstancedMesh) {
     this.renderer?.add(mesh.mesh)
     mesh.vim = this.vim
 

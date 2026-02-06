@@ -8,7 +8,7 @@ import { InsertableGeometry } from './insertableGeometry'
 import { InsertableSubmesh } from './insertableSubmesh'
 import { G3dMeshOffsets } from './g3dOffsets'
 import { Vim } from '../vim'
-import { ModelMaterial, Materials } from '../materials/materials'
+import { ModelMaterial, Materials, applyMaterial } from '../materials/materials'
 import { ElementMapping } from '../elementMapping'
 
 export class InsertableMesh {
@@ -122,49 +122,7 @@ export class InsertableMesh {
     // }
   }
 
- /**
-    * Sets the material for this mesh. 
-    * Set to undefined to reset to original materials.
-    */
-   setMaterial(value: ModelMaterial) {
-     if (this.ignoreSceneMaterial) return;
- 
-     const base = this._material; // always defined
-     let mat: ModelMaterial;
- 
-     if (Array.isArray(value)) {
-       mat = this._mergeMaterials(value, base);
-     } else {
-       mat = value ?? base;
-     }
- 
-     // Apply it
-     this.mesh.material = mat;
- 
-     // Update groups
-     this.mesh.geometry.clearGroups();
-     if (Array.isArray(mat)) {
-       mat.forEach((_m, i) => {
-         this.mesh.geometry.addGroup(0, Infinity, i);
-       });
-     }
-   }
- 
-   private _mergeMaterials(
-     value: THREE.Material[],
-     base: ModelMaterial
-   ): THREE.Material[] {
-     const baseArr = Array.isArray(base) ? base : [base];
-     const result: THREE.Material[] = [];
- 
-     for (const v of value) {
-       if (v === undefined) {
-         result.push(...baseArr);
-       } else {
-         result.push(v);
-       }
-     }
- 
-     return result;
-   }
+  setMaterial(value: ModelMaterial) {
+    applyMaterial(this.mesh, value, this._material, this.ignoreSceneMaterial)
+  }
 }

@@ -6,34 +6,15 @@ import { VimMeshFactory } from './vimMeshFactory'
 import { G3dSubset } from './g3dSubset'
 import { ISignal, SignalDispatcher } from 'ste-signals'
 
-export interface SubsetBuilder {
-  /** Dispatched whenever a subset begins or finishes loading. */
-  onUpdate: ISignal
-
-  /** Returns true when some subset is being loaded. */
-  isLoading: boolean
-
-  /** Returns all instances as a subset */
-  getFullSet(): G3dSubset
-
-  /** Loads given subset */
-  loadSubset(subset: G3dSubset)
-
-  /** Stops and clears all loading processes */
-  clear()
-
-  dispose()
-}
-
 /**
  * Loads and builds subsets from a Vim file.
  */
-export class VimSubsetBuilder implements SubsetBuilder {
+export class VimSubsetBuilder {
   factory: VimMeshFactory
 
   private _onUpdate = new SignalDispatcher()
 
-  get onUpdate () {
+  get onUpdate (): ISignal {
     return this._onUpdate.asEvent()
   }
 

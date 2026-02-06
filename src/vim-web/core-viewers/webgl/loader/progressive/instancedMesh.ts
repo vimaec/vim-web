@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { Vim } from '../vim'
 import { InstancedSubmesh } from './instancedSubmesh'
 import { G3d } from 'vim-format'
-import { ModelMaterial } from '../materials/materials'
+import { ModelMaterial, applyMaterial } from '../materials/materials'
 
 export class InstancedMesh {
   g3dMesh: G3d
@@ -64,51 +64,9 @@ export class InstancedMesh {
     return submeshes
   }
 
-  /**
-     * Sets the material for this mesh. 
-     * Set to undefined to reset to original materials.
-     */
-    setMaterial(value: ModelMaterial) {
-      if (this.ignoreSceneMaterial) return;
-
-      const base = this._material; // always defined
-      let mat: ModelMaterial;
-
-      if (Array.isArray(value)) {
-        mat = this._mergeMaterials(value, base);
-      } else {
-        mat = value ?? base;
-      }
-
-      // Apply it
-      this.mesh.material = mat;
-
-      // Update groups
-      this.mesh.geometry.clearGroups();
-      if (Array.isArray(mat)) {
-        mat.forEach((_m, i) => {
-          this.mesh.geometry.addGroup(0, Infinity, i);
-        });
-      }
-    }
-
-    private _mergeMaterials(
-      value: THREE.Material[],
-      base: ModelMaterial
-    ): THREE.Material[] {
-      const baseArr = Array.isArray(base) ? base : [base];
-      const result: THREE.Material[] = [];
-
-      for (const v of value) {
-        if (v === undefined) {
-          result.push(...baseArr);
-        } else {
-          result.push(v);
-        }
-      }
-
-      return result;
-    }
+  setMaterial(value: ModelMaterial) {
+    applyMaterial(this.mesh, value, this._material, this.ignoreSceneMaterial)
+  }
 
   private computeBoundingBoxes () {
     this.mesh.geometry.computeBoundingBox()

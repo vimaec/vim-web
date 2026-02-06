@@ -13,7 +13,7 @@ import {
 } from './elementMapping'
 import { ISignal, SignalDispatcher } from 'ste-signals'
 import { G3dSubset } from './progressive/g3dSubset'
-import { SubsetBuilder } from './progressive/subsetBuilder'
+import { VimSubsetBuilder } from './progressive/subsetBuilder'
 import { IVim } from '../../shared/vim'
 
 /**
@@ -68,7 +68,7 @@ export class Vim implements IVim<Element3D> {
    */
   readonly map: ElementMapping | ElementNoMapping
 
-  private readonly _builder: SubsetBuilder
+  private readonly _builder: VimSubsetBuilder
   private readonly _loadedInstances = new Set<number>()
   private readonly _elementToObject = new Map<number, Element3D>()
 
@@ -107,7 +107,7 @@ export class Vim implements IVim<Element3D> {
  * @param {VimSettings} settings - The settings used to open this vim.
  * @param {number} vimIndex - The stable ID of this vim (0-255) for GPU picking.
  * @param {ElementMapping | ElementNoMapping} map - The element mapping.
- * @param {SubsetBuilder} builder - The subset builder for constructing subsets of the Vim object.
+ * @param {VimSubsetBuilder} builder - The subset builder for constructing subsets of the Vim object.
  * @param {string} source - The source of the Vim object.
  */
   constructor (
@@ -118,7 +118,7 @@ export class Vim implements IVim<Element3D> {
     settings: VimSettings,
     vimIndex: number,
     map: ElementMapping | ElementNoMapping,
-    builder: SubsetBuilder,
+    builder: VimSubsetBuilder,
     source: string) {
     this.header = header
     this.bim = document

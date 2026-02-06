@@ -5,7 +5,6 @@
 import * as THREE from 'three'
 import { MergedSubmesh } from './mesh'
 import { Vim } from './vim'
-import { InsertableSubmesh } from './progressive/insertableSubmesh'
 import { WebglAttributeTarget } from './webglAttribute'
 
 export class WebglColorAttribute {
@@ -69,17 +68,15 @@ export class WebglColorAttribute {
     const indices = sub.three.geometry.index
 
     // Save colors to be able to reset.
-    if (sub instanceof InsertableSubmesh) {
-      let c = 0
-      const previous = new Float32Array((end - start) * 3)
-      for (let i = start; i < end; i++) {
-        const v = indices.getX(i)
-        previous[c++] = colors.getX(v)
-        previous[c++] = colors.getY(v)
-        previous[c++] = colors.getZ(v)
-      }
-      sub.saveColors(previous)
+    let c = 0
+    const previous = new Float32Array((end - start) * 3)
+    for (let i = start; i < end; i++) {
+      const v = indices.getX(i)
+      previous[c++] = colors.getX(v)
+      previous[c++] = colors.getY(v)
+      previous[c++] = colors.getZ(v)
     }
+    sub.saveColors(previous)
 
     for (let i = start; i < end; i++) {
       const v = indices.getX(i)
@@ -87,47 +84,11 @@ export class WebglColorAttribute {
       colors.setXYZ(v, color.r, color.g, color.b)
     }
     colors.needsUpdate = true
-    colors.clearUpdateRanges()  
-  }
-
-  /**
-   * Repopulates the color buffer of the merged mesh from original g3d data.
-   * @param index index of the merged mesh instance
-   */
-  private resetMergedColor (sub: MergedSubmesh) {
-    if (!this.vim) return
-    if (sub instanceof InsertableSubmesh) {
-      this.resetMergedInsertableColor(sub)
-      return
-    }
-
-    const colors = sub.three.geometry.getAttribute(
-      'color'
-    ) as THREE.BufferAttribute
-
-    const indices = sub.three.geometry.index
-    let mergedIndex = sub.meshStart
-
-    const g3d = this.vim.g3d
-    const g3dMesh = g3d.instanceMeshes[sub.instance]
-    const subStart = g3d.getMeshSubmeshStart(g3dMesh)
-    const subEnd = g3d.getMeshSubmeshEnd(g3dMesh)
-
-    for (let sub = subStart; sub < subEnd; sub++) {
-      const start = g3d.getSubmeshIndexStart(sub)
-      const end = g3d.getSubmeshIndexEnd(sub)
-      const color = g3d.getSubmeshColor(sub)
-      for (let i = start; i < end; i++) {
-        const v = indices.getX(mergedIndex)
-        colors.setXYZ(v, color[0], color[1], color[2])
-        mergedIndex++
-      }
-    }
-    colors.needsUpdate = true
     colors.clearUpdateRanges()
   }
 
-  private resetMergedInsertableColor (sub: InsertableSubmesh) {
+  private resetMergedColor (sub: MergedSubmesh) {
+    if (!this.vim) return
     const previous = sub.popColors()
     if (previous === undefined) return
 

@@ -16,6 +16,47 @@ import { SkyboxMaterial } from './skyboxMaterial'
 export type ModelMaterial = THREE.Material | THREE.Material[] | undefined
 
 /**
+ * Applies a material override to a THREE.Mesh.
+ * If value is an array, undefined entries are replaced with the base material.
+ * If value is undefined, resets to the base material.
+ */
+export function applyMaterial(
+  mesh: THREE.Mesh,
+  value: ModelMaterial,
+  baseMaterial: ModelMaterial,
+  ignoreSceneMaterial: boolean
+) {
+  if (ignoreSceneMaterial) return
+
+  const base = baseMaterial
+  let mat: ModelMaterial
+
+  if (Array.isArray(value)) {
+    const baseArr = Array.isArray(base) ? base : [base]
+    const result: THREE.Material[] = []
+    for (const v of value) {
+      if (v === undefined) {
+        result.push(...baseArr)
+      } else {
+        result.push(v)
+      }
+    }
+    mat = result
+  } else {
+    mat = value ?? base
+  }
+
+  mesh.material = mat
+
+  mesh.geometry.clearGroups()
+  if (Array.isArray(mat)) {
+    mat.forEach((_m, i) => {
+      mesh.geometry.addGroup(0, Infinity, i)
+    })
+  }
+}
+
+/**
  * Defines the materials to be used by the vim loader and allows for material injection.
  */
 export class Materials {
