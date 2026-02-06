@@ -22,10 +22,8 @@ export type * from './progressive/insertableSubmesh';
 export type * from './progressive/instancedMesh';
 export type * from './progressive/instancedMeshFactory';
 export type * from './progressive/instancedSubmesh';
-export type * from './progressive/legacyMeshFactory';
-export type * from './progressive/loadingSynchronizer';
+export type * from './progressive/vimMeshFactory';
 export type * from './progressive/subsetBuilder';
-export type * from './progressive/subsetRequest';
 
 // Not exported 
 // export * from './progressive/open';

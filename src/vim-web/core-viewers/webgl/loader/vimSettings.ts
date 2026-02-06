@@ -6,9 +6,6 @@ import deepmerge from 'deepmerge'
 import { Transparency } from './geometry'
 import * as THREE from 'three'
 
-// Internal only - not exported
-type FileType = 'vim' | 'vimx' | undefined
-
 /**
  * Represents settings for configuring the behavior and rendering of a vim object.
  */
@@ -47,42 +44,16 @@ export type VimSettings = {
 }
 
 /**
- * Internal settings type that includes vimx-specific fields.
- * Used internally for loading vimx files.
- */
-export type VimSettingsFull = VimSettings & {
-  /**
-   * Specifies the file type (vim or vimx) if it cannot or should not be inferred from the file extension.
-   */
-  fileType: FileType
-
-  /**
-   * Set to true to stream geometry to the scene. Only supported with vimx files.
-   */
-  progressive: boolean
-
-  /**
-   * The time in milliseconds between each scene refresh during progressive loading.
-   */
-  progressiveInterval: number
-}
-
-/**
  * Default configuration settings for a vim object.
  */
-export function getDefaultVimSettings(): VimSettingsFull {
+export function getDefaultVimSettings(): VimSettings {
   return {
     position: new THREE.Vector3(),
     rotation: new THREE.Vector3(),
     scale: 1,
     matrix: undefined,
     transparency: 'all',
-    verboseHttp: false,
-
-    // progressive (internal)
-    fileType: undefined,
-    progressive: false,
-    progressiveInterval: 1000
+    verboseHttp: false
   }
 }
 
@@ -94,12 +65,12 @@ export type VimPartialSettings = Partial<VimSettings>
 /**
  * Wraps Vim options, converting values to related THREE.js types and providing default values.
  * @param {VimPartialSettings} [options] - Optional partial settings for the Vim object.
- * @returns {VimSettingsFull} The complete settings for the Vim object, including defaults.
+ * @returns {VimSettings} The complete settings for the Vim object, including defaults.
  */
-export function createVimSettings (options?: VimPartialSettings): VimSettingsFull {
+export function createVimSettings (options?: VimPartialSettings): VimSettings {
   const merge = (options
     ? deepmerge(getDefaultVimSettings(), options, undefined)
-    : getDefaultVimSettings()) as VimSettingsFull
+    : getDefaultVimSettings()) as VimSettings
 
   merge.transparency = Transparency.isValid(merge.transparency)
     ? merge.transparency

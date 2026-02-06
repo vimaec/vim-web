@@ -2,16 +2,15 @@
  * @module vim-loader
  */
 
-import { G3d, MeshSection, G3dScene, FilterMode } from 'vim-format'
+import { G3d, MeshSection, FilterMode } from 'vim-format'
 import { G3dMeshOffsets, G3dMeshCounts } from './g3dOffsets'
-import * as THREE from 'three'
 
 /**
  * Represents a subset of a complete scene definition.
  * Allows for further filtering or to get offsets needed to build the scene.
  */
 export class G3dSubset {
-  private _source: G3dScene | G3d
+  private _source: G3d
   // source-based indices of included instanced
   private _instances: number[]
 
@@ -25,7 +24,7 @@ export class G3dSubset {
    * @param instances source-based instance indices of included instances.
    */
   constructor (
-    source: G3dScene | G3d,
+    source: G3d,
     // source-based indices of included instanced
     instances?: number[]
   ) {
@@ -152,8 +151,7 @@ export class G3dSubset {
   getMeshVertexCount (mesh: number, section: MeshSection) {
     const instances = this.getMeshInstanceCount(mesh)
     const vertices = this._source.getMeshVertexCount(
-      this.getSourceMesh(mesh),
-      section
+      this.getSourceMesh(mesh)
     )
     return vertices * instances
   }
@@ -188,34 +186,6 @@ export class G3dSubset {
    */
   filterUniqueMeshes () {
     return this.filterByCount((count) => count === 1)
-  }
-
-  /**
-   * Returns a new subset that contains only the N largest meshes sorted by largest
-   */
-  filterLargests (count: number) {
-    if (this._source instanceof G3d) {
-      throw new Error('Feature requires a vimx file')
-    }
-
-    // reuse vector3 to avoid wateful allocations
-    const min = new THREE.Vector3()
-    const max = new THREE.Vector3()
-
-    // Compute all sizes
-    const values = new Array<[number, number]>(this._instances.length)
-    for (let i = 0; i < this._instances.length; i++) {
-      const instance = this._instances[i]
-      min.fromArray(this._source.getInstanceMin(instance))
-      max.fromArray(this._source.getInstanceMax(instance))
-      const size = min.distanceToSquared(max)
-      values.push([i, size])
-    }
-
-    // Take top 100 instances
-    values.sort((v1, v2) => v2[1] - v1[1])
-    const instances = values.slice(0, count).map((v) => v[0])
-    return new G3dSubset(this._source, instances)
   }
 
   /**
@@ -336,36 +306,4 @@ export class G3dSubset {
     return result
   }
 
-  /**
-   * Return the bounding box of the current subset or undefined if subset is empty.
-   */
-  getBoundingBox () {
-    if (this._instances.length === 0) return
-    if (this._source instanceof G3dScene) {
-      // To avoid including (0,0,0)
-      const box = new THREE.Box3()
-      const first = this._instances[0]
-      box.min.fromArray(this._source.getInstanceMin(first))
-      box.max.fromArray(this._source.getInstanceMax(first))
-
-      for (let i = 1; i < this._instances.length; i++) {
-        const instance = this._instances[i]
-        minBox(box, this._source.getInstanceMin(instance))
-        maxBox(box, this._source.getInstanceMax(instance))
-      }
-      return box
-    }
-  }
-}
-
-function minBox (box: THREE.Box3, other: Float32Array) {
-  box.min.x = Math.min(box.min.x, other[0])
-  box.min.y = Math.min(box.min.y, other[1])
-  box.min.z = Math.min(box.min.z, other[2])
-}
-
-function maxBox (box: THREE.Box3, other: Float32Array) {
-  box.max.x = Math.max(box.max.x, other[0])
-  box.max.y = Math.max(box.max.y, other[1])
-  box.max.z = Math.max(box.max.z, other[2])
 }

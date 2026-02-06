@@ -3,7 +3,7 @@ import { Vim } from '../vim'
 import { Scene } from '../scene'
 import { ElementMapping } from '../elementMapping'
 import { VimSubsetBuilder } from './subsetBuilder'
-import { VimMeshFactory } from './legacyMeshFactory'
+import { VimMeshFactory } from './vimMeshFactory'
 import { LoadRequest as BaseLoadRequest, ILoadRequest as BaseILoadRequest, LoadError, LoadSuccess } from '../../../shared/loadResult'
 import { VimSource } from '../..'
 import {
@@ -88,8 +88,7 @@ export class LoadRequest extends BaseLoadRequest<Vim> {
       vimIndex,
       mapping,
       builder,
-      bfast.url,
-      'vim'
+      bfast.url
     )
 
     if (bfast.source instanceof RemoteBuffer) {

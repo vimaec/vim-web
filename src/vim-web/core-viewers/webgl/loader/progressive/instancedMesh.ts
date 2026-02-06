@@ -5,11 +5,11 @@
 import * as THREE from 'three'
 import { Vim } from '../vim'
 import { InstancedSubmesh } from './instancedSubmesh'
-import { G3d, G3dMesh } from 'vim-format'
+import { G3d } from 'vim-format'
 import { ModelMaterial } from '../materials/materials'
 
 export class InstancedMesh {
-  g3dMesh: G3dMesh | G3d
+  g3dMesh: G3d
   vim: Vim
   mesh: THREE.InstancedMesh
 
@@ -26,23 +26,17 @@ export class InstancedMesh {
   readonly size: number = 0
 
   constructor (
-    g3d: G3dMesh | G3d,
+    g3d: G3d,
     mesh: THREE.InstancedMesh,
     instances: Array<number>
   ) {
     this.g3dMesh = g3d
     this.mesh = mesh
     this.mesh.userData.vim = this
-    this.bimInstances =
-      g3d instanceof G3dMesh
-        ? instances.map((i) => g3d.scene.instanceNodes[i])
-        : instances
+    this.bimInstances = instances
     this.meshInstances = instances
 
-    this.boxes =
-      g3d instanceof G3dMesh
-        ? this.importBoundingBoxes()
-        : this.computeBoundingBoxes()
+    this.boxes = this.computeBoundingBoxes()
     this.size = this.boxes[0]?.getSize(new THREE.Vector3()).length() ?? 0
     this.boundingBox = this.computeBoundingBox(this.boxes)
     this._material = this.mesh.material
@@ -126,19 +120,6 @@ export class InstancedMesh {
       boxes[i] = this.mesh.geometry.boundingBox.clone().applyMatrix4(matrix)
     }
 
-    return boxes
-  }
-
-  private importBoundingBoxes () {
-    if (this.g3dMesh instanceof G3d) throw new Error('Wrong type')
-    const boxes = new Array<THREE.Box3>(this.meshInstances.length)
-    for (let i = 0; i < this.meshInstances.length; i++) {
-      const box = new THREE.Box3()
-      const instance = this.meshInstances[i]
-      box.min.fromArray(this.g3dMesh.scene.getInstanceMin(instance))
-      box.max.fromArray(this.g3dMesh.scene.getInstanceMax(instance))
-      boxes[i] = box
-    }
     return boxes
   }
 

@@ -2,13 +2,9 @@
  * @module vim-loader
  */
 
-import { VimMeshFactory } from './legacyMeshFactory'
-import { LoadPartialSettings, LoadSettings, SubsetRequest } from './subsetRequest'
+import { VimMeshFactory } from './vimMeshFactory'
 import { G3dSubset } from './g3dSubset'
-import { ISignal, ISignalHandler, SignalDispatcher } from 'ste-signals'
-import { ISubscribable, SubscriptionChangeEventHandler } from 'ste-core'
-import { Vimx } from './vimx'
-import { Scene } from '../scene'
+import { ISignal, SignalDispatcher } from 'ste-signals'
 
 export interface SubsetBuilder {
   /** Dispatched whenever a subset begins or finishes loading. */
@@ -20,8 +16,8 @@ export interface SubsetBuilder {
   /** Returns all instances as a subset */
   getFullSet(): G3dSubset
 
-  /** Loads given subset with given options */
-  loadSubset(subset: G3dSubset, settings?: LoadPartialSettings)
+  /** Loads given subset */
+  loadSubset(subset: G3dSubset)
 
   /** Stops and clears all loading processes */
   clear()
@@ -53,8 +49,7 @@ export class VimSubsetBuilder implements SubsetBuilder {
     return new G3dSubset(this.factory.g3d)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  loadSubset (subset: G3dSubset, settings?: LoadPartialSettings) {
+  loadSubset (subset: G3dSubset) {
     this.factory.add(subset)
     this._onUpdate.dispatch()
   }
@@ -64,102 +59,4 @@ export class VimSubsetBuilder implements SubsetBuilder {
   }
 
   dispose () {}
-}
-
-/**
- * Loads and builds subsets from a VimX file.
- */
-export class VimxSubsetBuilder {
-  private _localVimx: Vimx
-  private _scene: Scene
-  private _vimIndex: number
-  private _set = new Set<SubsetRequest>()
-
-  private _onUpdate = new SignalDispatcher()
-  get onUpdate () {
-    return this._onUpdate.asEvent()
-  }
-
-  get isLoading () {
-    return this._set.size > 0
-  }
-
-  constructor (localVimx: Vimx, scene: Scene, vimIndex: number = 0) {
-    this._localVimx = localVimx
-    this._scene = scene
-    this._vimIndex = vimIndex
-  }
-
-  getFullSet () {
-    return new G3dSubset(this._localVimx.scene)
-  }
-
-  async loadSubset (subset: G3dSubset, settings?: LoadPartialSettings) {
-    const request = new SubsetRequest(this._scene, this._localVimx, subset, this._vimIndex)
-    this._set.add(request)
-    this._onUpdate.dispatch()
-    await request.start(settings)
-    this._set.delete(request)
-    this._onUpdate.dispatch()
-  }
-
-  clear () {
-    this._localVimx.abort()
-    this._set.forEach((s) => s.dispose())
-    this._set.clear()
-    this._onUpdate.dispatch()
-  }
-
-  dispose () {
-    this.clear()
-  }
-}
-
-export class DummySubsetBuilder implements SubsetBuilder {
-  get onUpdate () {
-    return new AlwaysTrueSignal()
-  }
-
-  get isLoading () {
-    return false
-  }
-
-  getFullSet (): G3dSubset {
-    throw new Error('Method not implemented.')
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  loadSubset (subset: G3dSubset, settings?: Partial<LoadSettings>) {}
-  clear () { }
-  dispose () { }
-}
-
-class AlwaysTrueSignal implements ISignal {
-  count: number
-  subscribe (fn: ISignalHandler): () => void {
-    fn(null)
-    return () => {}
-  }
-
-  sub (fn: ISignalHandler): () => void {
-    fn(null)
-    return () => {}
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  unsubscribe (fn: ISignalHandler): void {}
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  unsub (fn: ISignalHandler): void {}
-  one (fn: ISignalHandler): () => void {
-    fn(null)
-    return () => {}
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  has (fn: ISignalHandler): boolean {
-    return false
-  }
-
-  clear (): void {}
-  onSubscriptionChange: ISubscribable<SubscriptionChangeEventHandler>
 }

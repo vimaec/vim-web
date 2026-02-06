@@ -9,16 +9,12 @@ import { VimSettings } from './vimSettings'
 import { Element3D } from './element3d'
 import {
   ElementMapping,
-  ElementMapping2,
   ElementNoMapping
 } from './elementMapping'
 import { ISignal, SignalDispatcher } from 'ste-signals'
 import { G3dSubset } from './progressive/g3dSubset'
 import { SubsetBuilder } from './progressive/subsetBuilder'
-import { LoadPartialSettings } from './progressive/subsetRequest'
 import { IVim } from '../../shared/vim'
-
-type VimFormat = 'vim' | 'vimx'
 
 /**
  * Represents a container for the built three.js meshes and the vim data from which they were constructed.
@@ -36,11 +32,6 @@ export class Vim implements IVim<Element3D> {
    * Used for GPU picking to identify which vim an element belongs to.
    */
   readonly vimIndex: number
-
-  /**
-   * Indicates whether the vim was opened from a vim or vimx file.
-   */
-  readonly format: VimFormat
 
   /**
    * Indicates the url this vim came from if applicable.
@@ -75,7 +66,7 @@ export class Vim implements IVim<Element3D> {
   /**
    * The mapping from Bim to Geometry for this vim.
    */
-  readonly map: ElementMapping | ElementNoMapping | ElementMapping2
+  readonly map: ElementMapping | ElementNoMapping
 
   private readonly _builder: SubsetBuilder
   private readonly _loadedInstances = new Set<number>()
@@ -115,10 +106,9 @@ export class Vim implements IVim<Element3D> {
  * @param {Scene} scene - The scene containing the vim's geometry.
  * @param {VimSettings} settings - The settings used to open this vim.
  * @param {number} vimIndex - The stable ID of this vim (0-255) for GPU picking.
- * @param {ElementMapping | ElementNoMapping | ElementMapping2} map - The element mapping.
+ * @param {ElementMapping | ElementNoMapping} map - The element mapping.
  * @param {SubsetBuilder} builder - The subset builder for constructing subsets of the Vim object.
  * @param {string} source - The source of the Vim object.
- * @param {VimFormat} format - The format of the Vim object.
  */
   constructor (
     header: VimHeader | undefined,
@@ -127,10 +117,9 @@ export class Vim implements IVim<Element3D> {
     scene: Scene,
     settings: VimSettings,
     vimIndex: number,
-    map: ElementMapping | ElementNoMapping | ElementMapping2,
+    map: ElementMapping | ElementNoMapping,
     builder: SubsetBuilder,
-    source: string,
-    format: VimFormat) {
+    source: string) {
     this.header = header
     this.bim = document
     this.g3d = g3d
@@ -142,7 +131,6 @@ export class Vim implements IVim<Element3D> {
     this.map = map ?? new ElementNoMapping()
     this._builder = builder
     this.source = source
-    this.format = format
   }
 
   getBoundingBox(): Promise<THREE.Box3> {
@@ -243,50 +231,42 @@ export class Vim implements IVim<Element3D> {
   }
 
   /**
-   * Asynchronously loads all geometry according to the provided settings.
-   * @param {LoadPartialSettings} [settings] - Optional settings for the loading process.
+   * Asynchronously loads all geometry.
    */
-  async loadAll (settings?: LoadPartialSettings) {
-    return this.loadSubset(this.getFullSet(), settings)
+  async loadAll () {
+    return this.loadSubset(this.getFullSet())
   }
 
   /**
-   * Asynchronously loads geometry for the specified subset according to the provided settings.
+   * Asynchronously loads geometry for the specified subset.
    * @param {G3dSubset} subset - The subset to load resources for.
-   * @param {LoadPartialSettings} [settings] - Optional settings for the loading process.
    */
-  async loadSubset (subset: G3dSubset, settings?: LoadPartialSettings) {
+  async loadSubset (subset: G3dSubset) {
     subset = subset.except('instance', this._loadedInstances)
     const count = subset.getInstanceCount()
     for (let i = 0; i < count; i++) {
       this._loadedInstances.add(subset.getVimInstance(i))
     }
 
-    // Add box to rendering.
-    const box = subset.getBoundingBox()
-    this.scene.updateBox(box)
-
     if (subset.getInstanceCount() === 0) {
       console.log('Empty subset. Ignoring')
       return
     }
     // Launch loading
-    await this._builder.loadSubset(subset, settings)
+    await this._builder.loadSubset(subset)
   }
 
   /**
    * Asynchronously loads geometry based on a specified filter mode and criteria.
    * @param {FilterMode} filterMode - The mode of filtering to apply.
    * @param {number[]} filter - The filter criteria.
-   * @param {LoadPartialSettings} [settings] - Optional settings for the loading process.
    */
   async loadFilter (
     filterMode: FilterMode,
-    filter: number[],
-    settings?: LoadPartialSettings
+    filter: number[]
   ) {
     const subset = this.getFullSet().filter(filterMode, filter)
-    await this.loadSubset(subset, settings)
+    await this.loadSubset(subset)
   }
 
   /**

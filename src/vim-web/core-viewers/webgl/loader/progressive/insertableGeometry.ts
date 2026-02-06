@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { G3d, G3dMesh, G3dMaterial } from 'vim-format'
+import { G3d, G3dMaterial } from 'vim-format'
 import { Scene } from '../scene'
 import { G3dMeshOffsets } from './g3dOffsets'
 import { ElementMapping } from '../elementMapping'
@@ -83,123 +83,11 @@ export class InsertableGeometry {
     this.geometry.setAttribute('color', this._colorAttribute)
     this.geometry.setAttribute('packedId', this._packedIdAttribute)
 
-    this.boundingBox = offsets.subset.getBoundingBox()
-    if (this.boundingBox) {
-      this.geometry.boundingBox = this.boundingBox
-      this.geometry.boundingSphere = new THREE.Sphere()
-      this.boundingBox.getBoundingSphere(this.geometry.boundingSphere)
-    } else {
-      this._computeBoundingBox = true
-    }
+    this._computeBoundingBox = true
   }
 
   get progress () {
     return this._indexAttribute.count / this._indexAttribute.array.length
-  }
-
-  // TODO: remove the need for mesh argument.
-  insert (mesh: G3dMesh, at: number) {
-    const added: number[] = []
-    const section = this.offsets.section
-    const indexStart = mesh.getIndexStart(section)
-    const indexEnd = mesh.getIndexEnd(section)
-
-    // Skip empty mesh
-    if (indexStart === indexEnd) {
-      this._meshToUpdate.add(at)
-      return added
-    }
-
-    // Reusable matrix and vector3 to avoid allocations
-    const matrix = new THREE.Matrix4()
-    const vector = new THREE.Vector3()
-
-    const vertexStart = mesh.getVertexStart(section)
-    const vertexEnd = mesh.getVertexEnd(section)
-    const vertexCount = vertexEnd - vertexStart
-    const sectionOffset = mesh.getVertexStart(section)
-
-    const subStart = mesh.getSubmeshStart(section)
-    const subEnd = mesh.getSubmeshEnd(section)
-
-    const indexOffset = this.offsets.getIndexOffset(at)
-    const vertexOffset = this.offsets.getVertexOffset(at)
-
-    let indexOut = 0
-    let vertexOut = 0
-    let colorOut = 0
-
-    const instanceCount = this.offsets.getMeshInstanceCount(at)
-    for (let instanceIndex = 0; instanceIndex < instanceCount; instanceIndex++) {
-      const instance = this.offsets.getMeshInstance(at, instanceIndex)
-      const arr1 = mesh.scene.getInstanceMatrix(instance)
-      // console.assert(this.float32ArraysAreEqual(arr1, arr2))
-
-      // matrix.fromArray(this.offsets.subset.getTransform(instance))
-      matrix.fromArray(arr1)
-      const submesh = new GeometrySubmesh()
-      submesh.instance = mesh.scene.instanceNodes[instance]
-
-      // Append indices
-      submesh.start = indexOffset + indexOut
-      const vertexMergeOffset = vertexCount * instanceIndex
-      for (let index = indexStart; index < indexEnd; index++) {
-        this.setIndex(
-          indexOffset + indexOut,
-          vertexOffset +
-            vertexMergeOffset +
-            mesh.chunk.indices[index] -
-            sectionOffset
-        )
-        indexOut++
-      }
-      submesh.end = indexOffset + indexOut
-
-      // Append vertices
-      for (let vertex = vertexStart; vertex < vertexEnd; vertex++) {
-        vector.fromArray(mesh.chunk.positions, vertex * G3d.POSITION_SIZE)
-        vector.applyMatrix4(matrix)
-        this.setVertex(vertexOffset + vertexOut, vector)
-        // submesh.expandBox(vector)
-        vertexOut++
-      }
-
-      // Append Colors
-      for (let sub = subStart; sub < subEnd; sub++) {
-        const color = this.materials.getMaterialColor(
-          mesh.chunk.submeshMaterial[sub]
-        )
-        const vertexCount = mesh.getSubmeshVertexCount(sub)
-        for (let v = 0; v < vertexCount; v++) {
-          this.setColor(vertexOffset + colorOut, color, 0.25)
-          colorOut++
-        }
-      }
-
-      submesh.boundingBox.min.fromArray(mesh.scene.getInstanceMin(instance))
-      submesh.boundingBox.max.fromArray(mesh.scene.getInstanceMax(instance))
-      this.submeshes.push(submesh)
-      added.push(this.submeshes.length - 1)
-    }
-    this._meshToUpdate.add(at)
-    return added
-  }
-
-  float32ArraysAreEqual (array1: Float32Array, array2: Float32Array): boolean {
-    // Check if arrays have the same length
-    if (array1.length !== array2.length) {
-      return false
-    }
-
-    // Check if each element is equal
-    for (let i = 0; i < array1.length; i++) {
-      if (array1[i] !== array2[i]) {
-        return false
-      }
-    }
-
-    // Arrays are equal
-    return true
   }
 
   insertFromG3d (g3d: G3d, mesh: number) {
