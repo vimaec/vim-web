@@ -2,7 +2,6 @@ import { createVimSettings, VimPartialSettings } from '../vimSettings'
 import { Vim } from '../vim'
 import { Scene } from '../scene'
 import { ElementMapping } from '../elementMapping'
-import { VimSubsetBuilder } from './subsetBuilder'
 import { VimMeshFactory } from './vimMeshFactory'
 import { LoadRequest as BaseLoadRequest, ILoadRequest as BaseILoadRequest, LoadError, LoadSuccess } from '../../../shared/loadResult'
 import { VimSource } from '../..'
@@ -77,8 +76,6 @@ export class LoadRequest extends BaseLoadRequest<Vim> {
 
     const header = await requestHeader(bfast)
 
-    // Create vim
-    const builder = new VimSubsetBuilder(factory)
     const vim = new Vim(
       header,
       doc,
@@ -87,7 +84,7 @@ export class LoadRequest extends BaseLoadRequest<Vim> {
       fullSettings,
       vimIndex,
       mapping,
-      builder,
+      factory,
       bfast.url
     )
 

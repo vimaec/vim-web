@@ -114,8 +114,8 @@ export class ComponentLoader {
   private async initVim (vim: Core.Webgl.Vim, settings: AddSettings, loadGeometry: boolean) {
     this._viewer.add(vim)
     vim.onLoadingUpdate.subscribe(() => {
-      this._viewer.gizmos.loading.visible = vim.isLoading
-      if (settings.autoFrame !== false && !vim.isLoading) {
+      this._viewer.gizmos.loading.visible = false
+      if (settings.autoFrame !== false) {
         this._viewer.camera.snap().frame(vim)
         this._viewer.camera.save()
       }

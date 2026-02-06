@@ -87,21 +87,6 @@ function createVertexColors (
 }
 
 /**
- * Returns a THREE.Matrix4 from the g3d for given instance
- * @param instance g3d instance index
- * @param target matrix where the data will be copied, a new matrix will be created if none provided.
- */
-export function getInstanceMatrix (
-  g3d: G3d,
-  instance: number,
-  target: THREE.Matrix4 = new THREE.Matrix4()
-): THREE.Matrix4 {
-  const matrixAsArray = g3d.getInstanceMatrix(instance)
-  target.fromArray(matrixAsArray)
-  return target
-}
-
-/**
  * Creates a BufferGeometry from given geometry data arrays
  * @param vertices vertex data with 3 number per vertex (XYZ)
  * @param indices index data with 3 indices per face

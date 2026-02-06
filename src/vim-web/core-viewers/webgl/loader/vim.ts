@@ -13,7 +13,7 @@ import {
 } from './elementMapping'
 import { ISignal, SignalDispatcher } from 'ste-signals'
 import { G3dSubset } from './progressive/g3dSubset'
-import { VimSubsetBuilder } from './progressive/subsetBuilder'
+import { VimMeshFactory } from './progressive/vimMeshFactory'
 import { IVim } from '../../shared/vim'
 
 /**
@@ -68,24 +68,17 @@ export class Vim implements IVim<Element3D> {
    */
   readonly map: ElementMapping | ElementNoMapping
 
-  private readonly _builder: VimSubsetBuilder
+  private readonly _factory: VimMeshFactory
   private readonly _loadedInstances = new Set<number>()
   private readonly _elementToObject = new Map<number, Element3D>()
+  private _onUpdate = new SignalDispatcher()
 
   /**
    * Getter for accessing the event dispatched whenever a subset begins or finishes loading.
    * @returns {ISignal} The event dispatcher for loading updates.
    */
-  get onLoadingUpdate () {
-    return this._builder.onUpdate
-  }
-
-  /**
-   * Indicates whether there are subsets currently being loaded.
-   * @returns {boolean} True if subsets are being loaded; otherwise, false.
-   */
-  get isLoading () {
-    return this._builder.isLoading
+  get onLoadingUpdate (): ISignal {
+    return this._onUpdate.asEvent()
   }
 
   /**
@@ -98,18 +91,6 @@ export class Vim implements IVim<Element3D> {
 
   private _onDispose = new SignalDispatcher()
 
-  /**
- * Constructs a new instance of a Vim object with the provided parameters.
- * @param {VimHeader | undefined} header - The Vim header, if available.
- * @param {VimDocument} document - The Vim document.
- * @param {G3d | undefined} g3d - The G3d object, if available.
- * @param {Scene} scene - The scene containing the vim's geometry.
- * @param {VimSettings} settings - The settings used to open this vim.
- * @param {number} vimIndex - The stable ID of this vim (0-255) for GPU picking.
- * @param {ElementMapping | ElementNoMapping} map - The element mapping.
- * @param {VimSubsetBuilder} builder - The subset builder for constructing subsets of the Vim object.
- * @param {string} source - The source of the Vim object.
- */
   constructor (
     header: VimHeader | undefined,
     document: VimDocument,
@@ -118,7 +99,7 @@ export class Vim implements IVim<Element3D> {
     settings: VimSettings,
     vimIndex: number,
     map: ElementMapping | ElementNoMapping,
-    builder: VimSubsetBuilder,
+    factory: VimMeshFactory,
     source: string) {
     this.header = header
     this.bim = document
@@ -129,7 +110,7 @@ export class Vim implements IVim<Element3D> {
     this.vimIndex = vimIndex
 
     this.map = map ?? new ElementNoMapping()
-    this._builder = builder
+    this._factory = factory
     this.source = source
   }
 
@@ -227,7 +208,7 @@ export class Vim implements IVim<Element3D> {
    * @returns {G3dSubset} A subset containing all instances.
    */
   getFullSet (): G3dSubset {
-    return this._builder.getFullSet()
+    return new G3dSubset(this._factory.g3d)
   }
 
   /**
@@ -252,8 +233,8 @@ export class Vim implements IVim<Element3D> {
       console.log('Empty subset. Ignoring')
       return
     }
-    // Launch loading
-    await this._builder.loadSubset(subset)
+    this._factory.add(subset)
+    this._onUpdate.dispatch()
   }
 
   /**
@@ -276,15 +257,13 @@ export class Vim implements IVim<Element3D> {
     this._elementToObject.clear()
     this._loadedInstances.clear()
     this.scene.clear()
-    // Clearing this one last because it dispatches the signal
-    this._builder.clear()
+    this._onUpdate.dispatch()
   }
 
   /**
    * Cleans up and releases resources associated with the vim.
    */
   dispose () {
-    this._builder.dispose()
     this._onDispose.dispatch()
     this._onDispose.clear()
     this.scene.dispose()

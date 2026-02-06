@@ -73,27 +73,4 @@ export class G3dMeshOffsets {
       : this.counts.vertices
   }
 
-  /**
-   * Returns instance counts of given mesh.
-   * @param mesh subset-based mesh index
-   */
-  getMeshInstanceCount (mesh: number) {
-    return this.subset.getMeshInstanceCount(mesh)
-  }
-
-  /**
-   * Returns source-based instance for given mesh and index.
-   * @mesh subset-based mesh index
-   * @index mesh-based instance index
-   */
-  getMeshInstance (mesh: number, index: number) {
-    return this.subset.getMeshInstance(mesh, index)
-  }
-
-  /**
-   * Returns the source-based mesh index at given index
-   */
-  getSourceMesh (index: number) {
-    return this.subset.getSourceMesh(index)
-  }
 }

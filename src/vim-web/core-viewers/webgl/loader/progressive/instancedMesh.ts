@@ -5,36 +5,28 @@
 import * as THREE from 'three'
 import { Vim } from '../vim'
 import { InstancedSubmesh } from './instancedSubmesh'
-import { G3d } from 'vim-format'
 import { ModelMaterial, applyMaterial } from '../materials/materials'
 
 export class InstancedMesh {
-  g3dMesh: G3d
   vim: Vim
   mesh: THREE.InstancedMesh
-
-  // instances
-  bimInstances: ArrayLike<number>
-  meshInstances: ArrayLike<number>
+  instances: ArrayLike<number>
   boundingBox: THREE.Box3
   boxes: THREE.Box3[]
 
   // State
   ignoreSceneMaterial: boolean
-  
+
   private _material: ModelMaterial
   readonly size: number = 0
 
   constructor (
-    g3d: G3d,
     mesh: THREE.InstancedMesh,
     instances: Array<number>
   ) {
-    this.g3dMesh = g3d
     this.mesh = mesh
     this.mesh.userData.vim = this
-    this.bimInstances = instances
-    this.meshInstances = instances
+    this.instances = instances
 
     this.boxes = this.computeBoundingBoxes()
     this.size = this.boxes[0]?.getSize(new THREE.Vector3()).length() ?? 0
@@ -57,8 +49,8 @@ export class InstancedMesh {
    * Returns all submeshes for given index.
    */
   getSubmeshes () {
-    const submeshes = new Array<InstancedSubmesh>(this.bimInstances.length)
-    for (let i = 0; i < this.bimInstances.length; i++) {
+    const submeshes = new Array<InstancedSubmesh>(this.instances.length)
+    for (let i = 0; i < this.instances.length; i++) {
       submeshes[i] = new InstancedSubmesh(this, i)
     }
     return submeshes

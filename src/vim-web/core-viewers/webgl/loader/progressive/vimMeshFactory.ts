@@ -26,7 +26,7 @@ export class VimMeshFactory {
     this._scene = scene
     this._mapping = mapping
     this._vimIndex = vimIndex
-    this._instancedFactory = new InstancedMeshFactory(materials, mapping, vimIndex)
+    this._instancedFactory = new InstancedMeshFactory(mapping, vimIndex)
   }
 
   /**

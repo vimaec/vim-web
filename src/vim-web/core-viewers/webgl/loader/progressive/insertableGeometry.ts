@@ -9,7 +9,6 @@ import { G3dMeshOffsets } from './g3dOffsets'
 import { ElementMapping } from '../elementMapping'
 import { packPickingId } from '../../viewer/rendering/gpuPicker'
 
-// TODO Merge both submeshes class.
 export class GeometrySubmesh {
   instance: number
   start: number
@@ -92,7 +91,7 @@ export class InsertableGeometry {
 
   insertFromG3d (g3d: G3d, mesh: number) {
     const added: number[] = []
-    const meshG3dIndex = this.offsets.getSourceMesh(mesh)
+    const meshG3dIndex = this.offsets.subset.getSourceMesh(mesh)
     const subStart = g3d.getMeshSubmeshStart(meshG3dIndex, this.offsets.section)
     const subEnd = g3d.getMeshSubmeshEnd(meshG3dIndex, this.offsets.section)
 
@@ -118,9 +117,9 @@ export class InsertableGeometry {
     let indexOut = 0
     let vertexOut = 0
     // Iterate over all included instances for this mesh.
-    const instanceCount = this.offsets.getMeshInstanceCount(mesh)
+    const instanceCount = this.offsets.subset.getMeshInstanceCount(mesh)
     for (let instance = 0; instance < instanceCount; instance++) {
-      const g3dInstance = this.offsets.getMeshInstance(mesh, instance)
+      const g3dInstance = this.offsets.subset.getMeshInstance(mesh, instance)
       matrix.fromArray(g3d.getInstanceMatrix(g3dInstance))
 
       // Get element index for this instance (for GPU picking)

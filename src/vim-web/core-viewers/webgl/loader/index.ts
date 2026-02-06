@@ -23,7 +23,6 @@ export type * from './progressive/instancedMesh';
 export type * from './progressive/instancedMeshFactory';
 export type * from './progressive/instancedSubmesh';
 export type * from './progressive/vimMeshFactory';
-export type * from './progressive/subsetBuilder';
 
 // Not exported 
 // export * from './progressive/open';

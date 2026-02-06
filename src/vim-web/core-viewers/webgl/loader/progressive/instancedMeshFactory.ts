@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { G3d, G3dMaterial, MeshSection } from 'vim-format'
+import { G3d, MeshSection } from 'vim-format'
 import { InstancedMesh } from './instancedMesh'
 import { Materials } from '../materials/materials'
 import * as Geometry from '../geometry'
@@ -11,12 +11,10 @@ import { ElementMapping } from '../elementMapping'
 import { packPickingId } from '../../viewer/rendering/gpuPicker'
 
 export class InstancedMeshFactory {
-  materials: G3dMaterial
   private _mapping: ElementMapping | undefined
   private _vimIndex: number
 
-  constructor (materials: G3dMaterial, mapping?: ElementMapping, vimIndex: number = 0) {
-    this.materials = materials
+  constructor (mapping?: ElementMapping, vimIndex: number = 0) {
     this._mapping = mapping
     this._vimIndex = vimIndex
   }
@@ -54,7 +52,7 @@ export class InstancedMeshFactory {
 
     this.setMatrices(threeMesh, g3d, instances)
     this.setPackedIds(threeMesh, instances ?? g3d.meshInstances[mesh])
-    const result = new InstancedMesh(g3d, threeMesh, instances)
+    const result = new InstancedMesh(threeMesh, instances)
     return result
   }
 

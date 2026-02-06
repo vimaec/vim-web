@@ -87,7 +87,7 @@ export class G3dSubset {
     
     return chunks
   }
-  /**
+
   /**
    * Returns total instance count in subset.
    */
@@ -101,17 +101,6 @@ export class G3dSubset {
   getVimInstance (subsetIndex: number) {
     const vimIndex = this._instances[subsetIndex]
     return this._source.instanceNodes[vimIndex]
-  }
-
-  /**
-   * Returns the vim-based instances (nodes) for current subset.
-   */
-  getVimInstances () {
-    const results = new Array<number>(this._instances.length)
-    for (let i = 0; i < results.length; i++) {
-      results[i] = this.getVimInstance(i)
-    }
-    return results
   }
 
   /**
@@ -181,20 +170,6 @@ export class G3dSubset {
     return this._meshInstances[mesh][index]
   }
 
-  /**
-   * Returns a new subset that only contains unique meshes.
-   */
-  filterUniqueMeshes () {
-    return this.filterByCount((count) => count === 1)
-  }
-
-  /**
-   * Returns a new subset that only contains non-unique meshes.
-   */
-  filterNonUniqueMeshes () {
-    return this.filterByCount((count) => count > 1)
-  }
-
   filterByCount (predicate: (i: number) => boolean) {
     const set = new Set<number>()
     this._meshInstances.forEach((instances, i) => {
@@ -230,14 +205,6 @@ export class G3dSubset {
     result.meshes = count
 
     return result
-  }
-
-  /**
-   * Returns a new subset where the order of meshes is inverted.
-   */
-  reverse () {
-    const reverse = [...this._instances].reverse()
-    return new G3dSubset(this._source, reverse)
   }
 
   /**
