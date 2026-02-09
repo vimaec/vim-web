@@ -113,7 +113,7 @@ export class CameraLerp extends CameraMovement {
     }
   }
 
-  zoomTowards(amount: number, worldPoint: THREE.Vector3): void {
+  zoomTowards(amount: number, worldPoint: THREE.Vector3, screenPoint?: THREE.Vector2): void {
     const startPos = this._camera.position.clone()
 
     // Direction from world point to camera
@@ -126,6 +126,11 @@ export class CameraLerp extends CameraMovement {
 
     // Set orbit target immediately (not animated)
     this._camera.target.copy(worldPoint)
+
+    // Update screen target so orbit pivot stays at cursor position
+    if (screenPoint) {
+      this._camera.screenTarget.copy(screenPoint)
+    }
 
     this.onProgress = (progress) => {
       // Only lerp position, orientation stays unchanged
@@ -182,6 +187,7 @@ export class CameraLerp extends CameraMovement {
       const lookTarget = this._camera.position.clone().add(currentForward)
       this._camera.camPerspective.camera.up.set(0, 0, 1)
       this._camera.camPerspective.camera.lookAt(lookTarget)
+      this._movement.applyScreenTargetOffset()
     }
   }
 

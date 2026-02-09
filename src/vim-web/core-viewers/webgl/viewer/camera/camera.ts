@@ -34,6 +34,7 @@ export class Camera implements ICamera {
   // orbit
   private _orthographic: boolean = false
   private _target = new THREE.Vector3()
+  private _screenTarget = new THREE.Vector2(0.5, 0.5)
 
   // updates
   private _lastPosition = new THREE.Vector3()
@@ -269,6 +270,18 @@ export class Camera implements ICamera {
    */
   get target () {
     return this._target
+  }
+
+  /**
+   * The screen position where the orbit target appears.
+   * (0,0) is top-left, (1,1) is bottom-right, (0.5, 0.5) is center.
+   */
+  get screenTarget () {
+    return this._screenTarget
+  }
+
+  set screenTarget (value: THREE.Vector2) {
+    this._screenTarget.copy(value)
   }
 
   private applySettings (settings: ViewerSettings) {

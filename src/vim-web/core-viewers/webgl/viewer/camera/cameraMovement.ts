@@ -78,7 +78,7 @@ export abstract class CameraMovement {
    * @param {number} amount - The zoom factor (e.g., 0.5 to move closer, 2 to move farther).
    * @param {THREE.Vector3} worldPoint - The world position to zoom toward.
    */
-  abstract zoomTowards(amount: number, worldPoint: THREE.Vector3): void
+  abstract zoomTowards(amount: number, worldPoint: THREE.Vector3, screenPoint?: THREE.Vector2): void
 
   /**
    * Sets the distance between the camera and its target to the specified value.
@@ -196,6 +196,7 @@ export abstract class CameraMovement {
 
     const pos = direction.multiplyScalar(-safeDist).add(sphere.center)
 
+    this._camera.screenTarget.set(0.5, 0.5)
     this.set(pos, sphere.center)
   }
 

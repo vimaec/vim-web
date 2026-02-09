@@ -49,48 +49,40 @@ export class CameraMovementSnap extends CameraMovement {
   orbit (angle: THREE.Vector2): void {
     const locked = angle.clone().multiply(this._camera.allowedRotation)
 
-    const worldUp = new THREE.Vector3(0, 0, 1)
-    const forward = this._camera.forward.clone()
-
-    // Get horizontal right axis (perpendicular to world up and view direction)
-    let right = new THREE.Vector3().crossVectors(worldUp, forward)
-    if (right.lengthSq() < 0.001) {
-      // Looking straight up/down - use camera's right projected to horizontal
-      right.set(1, 0, 0).applyQuaternion(this._camera.quaternion)
-      right.z = 0
-    }
-    right.normalize()
-
-    // Azimuth: rotate around world Z (no roll)
-    const azimuthQuat = new THREE.Quaternion().setFromAxisAngle(
-      worldUp,
-      (locked.y * Math.PI) / 180
-    )
-
-    // Elevation: rotate around horizontal right axis (no roll)
-    const elevationQuat = new THREE.Quaternion().setFromAxisAngle(
-      right,
-      (-locked.x * Math.PI) / 180
-    )
-
-    // Combined rotation (apply azimuth first, then elevation)
-    const orbitQuat = new THREE.Quaternion().multiplyQuaternions(elevationQuat, azimuthQuat)
-
-    // Rotate position offset around target
+    // Convert current position to spherical coordinates
     const offset = this._camera.position.clone().sub(this._camera.target)
-    offset.applyQuaternion(orbitQuat)
-    const newPos = this._camera.target.clone().add(offset)
+    const radius = offset.length()
 
-    // Rotate forward direction by same amount
-    const newForward = forward.applyQuaternion(orbitQuat)
+    // Current spherical angles
+    let theta = Math.atan2(offset.y, offset.x) // azimuth around Z
+    let phi = Math.acos(THREE.MathUtils.clamp(offset.z / radius, -1, 1)) // angle from up (0 to PI)
 
-    // Set position (with clamping and locking)
-    this.set(newPos, this._camera.target, false)
+    // Apply rotation deltas
+    theta += (locked.y * Math.PI) / 180
+    phi += (locked.x * Math.PI) / 180
 
-    // Orient camera along new forward with Z up (removes any accumulated roll)
-    const lookTarget = this._camera.position.clone().add(newForward)
+    // Clamp phi to prevent gimbal lock
+    const minAngle = THREE.MathUtils.degToRad(0.5)
+    const maxAngle = THREE.MathUtils.degToRad(179.5)
+    phi = THREE.MathUtils.clamp(phi, minAngle, maxAngle)
+
+    // Convert spherical back to Cartesian
+    const sinPhi = Math.sin(phi)
+    const newOffset = new THREE.Vector3(
+      radius * sinPhi * Math.cos(theta),
+      radius * sinPhi * Math.sin(theta),
+      radius * Math.cos(phi)
+    )
+    const newPos = this._camera.target.clone().add(newOffset)
+
+    // Apply position with axis locking
+    const lockedPos = this.lockVector(newPos, this._camera.position)
+    this._camera.position.copy(lockedPos)
+
+    // Orient camera to look at target
     this._camera.camPerspective.camera.up.set(0, 0, 1)
-    this._camera.camPerspective.camera.lookAt(lookTarget)
+    this._camera.camPerspective.camera.lookAt(this._camera.target)
+    this.applyScreenTargetOffset()
   }
 
   override move3 (vector: THREE.Vector3): void {
@@ -121,17 +113,39 @@ export class CameraMovementSnap extends CameraMovement {
       const maxAngle = THREE.MathUtils.degToRad(179.5);
 
       if (angle < minAngle) {
-        // direction is too close to straight up
-        // rotate 'direction' so angle becomes exactly minAngle
-        const axis = new THREE.Vector3().crossVectors(up, direction).normalize();
-        const delta = minAngle - angle; // positive => rotate away from up
-        direction.applyQuaternion(new THREE.Quaternion().setFromAxisAngle(axis, delta));
+        // direction is too close to straight up - clamp to minAngle
+        // Preserve horizontal direction (XY) while adjusting Z
+        const horizontalLength = Math.sqrt(direction.x * direction.x + direction.y * direction.y);
+
+        if (horizontalLength > 0.001) {
+          // We have a valid horizontal direction - preserve it
+          const newHorizontalLength = dist * Math.sin(minAngle);
+          const scale = newHorizontalLength / horizontalLength;
+          direction.x *= scale;
+          direction.y *= scale;
+          direction.z = dist * Math.cos(minAngle);
+        } else {
+          // No horizontal direction (looking straight up) - pick arbitrary direction
+          direction.set(1, 0, 0).multiplyScalar(dist * Math.sin(minAngle));
+          direction.z = dist * Math.cos(minAngle);
+        }
       } else if (angle > maxAngle) {
-        // direction is too close to straight down
-        // rotate 'direction' so angle becomes exactly maxAngle
-        const axis = new THREE.Vector3().crossVectors(up, direction).normalize();
-        const delta = maxAngle - angle; // negative => rotate back toward up
-        direction.applyQuaternion(new THREE.Quaternion().setFromAxisAngle(axis, delta));
+        // direction is too close to straight down - clamp to maxAngle
+        // Preserve horizontal direction (XY) while adjusting Z
+        const horizontalLength = Math.sqrt(direction.x * direction.x + direction.y * direction.y);
+
+        if (horizontalLength > 0.001) {
+          // We have a valid horizontal direction - preserve it
+          const newHorizontalLength = dist * Math.sin(maxAngle);
+          const scale = newHorizontalLength / horizontalLength;
+          direction.x *= scale;
+          direction.y *= scale;
+          direction.z = dist * Math.cos(maxAngle);
+        } else {
+          // No horizontal direction (looking straight down) - pick arbitrary direction
+          direction.set(1, 0, 0).multiplyScalar(dist * Math.sin(maxAngle));
+          direction.z = dist * Math.cos(maxAngle);
+        }
       }
 
       // 'direction' now has the same length but is clamped in angle
@@ -150,10 +164,11 @@ export class CameraMovementSnap extends CameraMovement {
     if (lookAt) {
       this._camera.camPerspective.camera.up.set(0, 0, 1);
       this._camera.camPerspective.camera.lookAt(target);
+      this.applyScreenTargetOffset();
     }
   }
 
-  zoomTowards(amount: number, worldPoint: THREE.Vector3): void {
+  zoomTowards(amount: number, worldPoint: THREE.Vector3, screenPoint?: THREE.Vector2): void {
     // Direction from world point to camera
     const direction = this._camera.position.clone().sub(worldPoint).normalize()
 
@@ -164,10 +179,46 @@ export class CameraMovementSnap extends CameraMovement {
     // New camera position
     const newPos = worldPoint.clone().add(direction.multiplyScalar(newDist))
 
+    // Update screen target so orbit pivot stays at cursor position
+    if (screenPoint) {
+      this._camera.screenTarget.copy(screenPoint)
+    }
+
     // Set position and update orbit target without changing orientation
     this.set(newPos, worldPoint, false)
   }
   
+
+  /**
+   * Rotates the camera so the target appears at screenTarget instead of screen center.
+   * Must be called after lookAt(target).
+   */
+  applyScreenTargetOffset () {
+    const st = this._camera.screenTarget
+    if (st.x === 0.5 && st.y === 0.5) return
+
+    const cam = this._camera.camPerspective.camera
+    const vFov = cam.fov * Math.PI / 180
+    const tanHalfV = Math.tan(vFov / 2)
+    const tanHalfH = tanHalfV * cam.aspect
+
+    // NDC position where target should appear
+    const nx = 2 * st.x - 1
+    const ny = 1 - 2 * st.y
+
+    // Camera-space direction that projects to (nx, ny)
+    const targetDir = new THREE.Vector3(
+      nx * tanHalfH,
+      ny * tanHalfV,
+      -1
+    ).normalize()
+
+    // Rotation from targetDir to forward (0,0,-1)
+    // This makes the target appear at (nx, ny) on screen
+    const forward = new THREE.Vector3(0, 0, -1)
+    const R = new THREE.Quaternion().setFromUnitVectors(targetDir, forward)
+    this._camera.quaternion.multiply(R)
+  }
 
   private lockVector (position: THREE.Vector3, fallback: THREE.Vector3) {
     const x = this._camera.allowedMovement.x === 0 ? fallback.x : position.x
