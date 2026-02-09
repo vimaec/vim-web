@@ -222,17 +222,18 @@ export class RenderingComposer {
    * First renders the main scene, then processes outlines if enabled
    */
   render () {
+    var delta = this._clock.getDelta()
     // Render main scene to scene target
     this._renderPass.render(
       this._renderer,
       undefined,
       this._sceneTarget,
-      this._clock.getDelta(),
+      delta,
       false
     )
 
     // Process outline pipeline and final composition
-    this._composer.render(this._clock.getDelta())
+    this._composer.render(delta)
   }
 
   /**
