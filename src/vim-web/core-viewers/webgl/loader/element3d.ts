@@ -79,7 +79,7 @@ export class Element3D implements IVimElement {
     if (this._outlineAttribute.apply(value)) {
       this.renderer.notifySceneUpdate()
       if (value) this.renderer.addOutline()
-      else this.renderer.removeOutline
+      else this.renderer.removeOutline()
     }
   }
 
