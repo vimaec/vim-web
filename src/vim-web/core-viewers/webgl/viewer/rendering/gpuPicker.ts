@@ -123,7 +123,7 @@ export class GpuPicker implements IRaycaster<Selectable> {
   private _readBuffer: Float32Array
 
   // Debug visualization
-  debug = true
+  debug = false
   private _debugSphere: THREE.Mesh | undefined
   private _debugLine: THREE.Line | undefined
 
