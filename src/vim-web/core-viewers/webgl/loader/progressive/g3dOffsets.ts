@@ -2,6 +2,13 @@
  * @module vim-loader
  */
 
+/**
+ * Cumulative offset arrays enabling O(1) lookup of where each mesh starts
+ * in the unified index and vertex buffers. Computed once from a G3dSubset
+ * and used by InsertableGeometry to pre-allocate buffers and place each
+ * mesh's data at the correct position.
+ */
+
 import { MeshSection } from 'vim-format'
 import { G3dSubset } from './g3dSubset'
 

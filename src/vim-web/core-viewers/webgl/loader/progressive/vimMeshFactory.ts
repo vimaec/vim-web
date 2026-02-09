@@ -2,42 +2,47 @@
  * @module vim-loader
  */
 
-import { InsertableMesh } from './insertableMesh'
+/**
+ * Orchestrator that routes G3dSubset instances to the appropriate mesh factory:
+ * - Meshes with <=5 instances → InsertableMeshFactory (merged, geometry duplicated per instance)
+ * - Meshes with >5 instances → InstancedMeshFactory (GPU instanced, geometry shared)
+ *
+ * Merged meshes are further chunked at 4M indices to keep buffer sizes manageable.
+ */
+
 import { Scene } from '../scene'
-import { G3dMaterial, G3d, MeshSection } from 'vim-format'
+import { G3dMaterial, G3d } from 'vim-format'
+import { InsertableMeshFactory } from './insertableMeshFactory'
 import { InstancedMeshFactory } from './instancedMeshFactory'
 import { G3dSubset } from './g3dSubset'
 import { ElementMapping } from '../elementMapping'
 
-/**
- * Mesh factory to load a standard vim using the progressive pipeline.
- */
 export class VimMeshFactory {
   readonly g3d: G3d
-  private _materials: G3dMaterial
+  private _insertableFactory: InsertableMeshFactory
   private _instancedFactory: InstancedMeshFactory
   private _scene: Scene
-  private _mapping: ElementMapping
-  private _vimIndex: number
 
   constructor (g3d: G3d, materials: G3dMaterial, scene: Scene, mapping: ElementMapping, vimIndex: number = 0) {
     this.g3d = g3d
-    this._materials = materials
     this._scene = scene
-    this._mapping = mapping
-    this._vimIndex = vimIndex
+    this._insertableFactory = new InsertableMeshFactory(materials, mapping, vimIndex)
     this._instancedFactory = new InstancedMeshFactory(mapping, vimIndex)
   }
 
   /**
-   * Adds all instances from subset to the scene
+   * Adds all instances from subset to the scene.
+   * Decision logic:
+   * - <=5 instances per mesh → merged (geometry duplicated, chunked at 4M indices)
+   * - >5 instances per mesh → GPU instanced (geometry shared, one mesh per unique geometry)
    */
   public add (subset: G3dSubset) {
     const uniques = subset.filterByCount((count) => count <= 5)
     const nonUniques = subset.filterByCount((count) => count > 5)
 
-    // Create and add meshes to scene
+    // Instanced meshes first (one Three.js InstancedMesh per unique geometry)
     this.addInstancedMeshes(this._scene, nonUniques)
+    // Merged meshes chunked at 4M indices to keep buffer sizes manageable
     const chunks = uniques.chunks(4_000_000)
     for(const chunk of chunks) {
       this.addMergedMesh(this._scene, chunk)
@@ -45,27 +50,8 @@ export class VimMeshFactory {
   }
 
   private addMergedMesh (scene: Scene, subset: G3dSubset) {
-    const opaque = this.createMergedMesh(subset, 'opaque', false)
-    const transparents = this.createMergedMesh(subset, 'transparent', true)
-    scene.addMesh(opaque)
-    scene.addMesh(transparents)
-  }
-
-  private createMergedMesh (
-    subset: G3dSubset,
-    section: MeshSection,
-    transparent: boolean
-  ) {
-    const offsets = subset.getOffsets(section)
-    const opaque = new InsertableMesh(offsets, this._materials, transparent, this._mapping, this._vimIndex)
-
-    const count = subset.getMeshCount()
-    for (let m = 0; m < count; m++) {
-      opaque.insertFromVim(this.g3d, m)
-    }
-
-    opaque.update()
-    return opaque
+    scene.addMesh(this._insertableFactory.createOpaqueFromVim(this.g3d, subset))
+    scene.addMesh(this._insertableFactory.createTransparentFromVim(this.g3d, subset))
   }
 
   private addInstancedMeshes (scene: Scene, subset: G3dSubset) {

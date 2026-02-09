@@ -1,3 +1,10 @@
+/**
+ * Core VIM parsing entry point. Loads a VIM file (BFast container) and produces
+ * a Vim object with G3d geometry, BIM document, element mapping, and mesh factory.
+ * The Vim is created WITHOUT geometry — call vim.loadAll() or vim.loadSubset()
+ * separately to build Three.js meshes.
+ */
+
 import { createVimSettings, VimPartialSettings } from '../vimSettings'
 import { Vim } from '../vim'
 import { Scene } from '../scene'
@@ -47,6 +54,14 @@ export class LoadRequest extends BaseLoadRequest<Vim> {
     }
   }
 
+  /**
+   * Parses a VIM file into a Vim object. Steps:
+   * 1. Parse G3d geometry from the BFast 'geometry' buffer
+   * 2. Parse BIM document (VimDocument) from the BFast
+   * 3. Build ElementMapping (instance → element index) needed for GPU picking
+   * 4. Create Scene and VimMeshFactory (no geometry built yet)
+   * 5. Return Vim — caller must invoke loadAll()/loadSubset() to build meshes
+   */
   private async loadFromVim (
     bfast: BFast,
     settings: VimPartialSettings,
@@ -61,21 +76,22 @@ export class LoadRequest extends BaseLoadRequest<Vim> {
       }
     }
 
-    // Fetch g3d data
+    // Step 1: Parse G3d geometry
     const geometry = await bfast.getBfast('geometry')
     const g3d = await G3d.createFromBfast(geometry)
     const materials = new G3dMaterial(g3d.materialColors)
 
-    // Create mapping (needed by factory for element index attributes)
+    // Step 2-3: Parse BIM document and build instance → element mapping
     const doc = await VimDocument.createFromBfast(bfast)
     const mapping = await ElementMapping.fromG3d(g3d, doc)
 
-    // Create scene and factory WITH mapping
+    // Step 4: Create scene and factory (factory needs mapping for GPU picking IDs)
     const scene = new Scene(fullSettings.matrix)
     const factory = new VimMeshFactory(g3d, materials, scene, mapping, vimIndex)
 
     const header = await requestHeader(bfast)
 
+    // Step 5: Create Vim — geometry will be built later via loadAll()/loadSubset()
     const vim = new Vim(
       header,
       doc,

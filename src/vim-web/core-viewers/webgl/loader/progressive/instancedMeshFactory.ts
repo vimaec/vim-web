@@ -2,6 +2,13 @@
  * @module vim-loader
  */
 
+/**
+ * Creates GPU-instanced meshes where geometry is shared across all instances.
+ * Used for meshes with >5 instances. Each unique mesh geometry is stored once,
+ * and Three.js InstancedMesh renders it at multiple transforms via per-instance
+ * matrix attributes. Per-instance packed IDs are added for GPU picking.
+ */
+
 import * as THREE from 'three'
 import { G3d, MeshSection } from 'vim-format'
 import { InstancedMesh } from './instancedMesh'
@@ -27,6 +34,10 @@ export class InstancedMeshFactory {
     return this.createFromVim(g3d, mesh, instances, 'transparent', true)
   }
 
+  /**
+   * Creates a single GPU-instanced mesh: builds shared geometry once,
+   * then sets per-instance transforms and packed picking IDs.
+   */
   createFromVim (
     g3d: G3d,
     mesh: number,
@@ -71,6 +82,9 @@ export class InstancedMeshFactory {
 
   /**
    * Adds per-instance packed ID attribute for GPU picking.
+   * Each instance gets a uint32 = (vimIndex << 24) | elementIndex,
+   * stored as an InstancedBufferAttribute so the picking shader can
+   * read it per-instance without duplicating geometry.
    */
   private setPackedIds (
     three: THREE.InstancedMesh,

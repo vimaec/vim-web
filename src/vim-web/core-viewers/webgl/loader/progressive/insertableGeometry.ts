@@ -2,6 +2,22 @@
  * @module vim-loader
  */
 
+/**
+ * Manages the Three.js BufferGeometry for merged (InsertableMesh) meshes.
+ *
+ * Buffer layout (all pre-allocated via G3dMeshOffsets):
+ * - index: Uint32 — triangle indices
+ * - position: Float32x3 — world-space vertices (transforms baked in)
+ * - color: Float32x3 (opaque) or Float32x4 (transparent) — per-vertex color
+ * - packedId: Uint32 — per-vertex (vimIndex << 24 | elementIndex) for GPU picking
+ *
+ * Geometry is inserted incrementally via insertFromG3d(), which iterates over
+ * all instances for a given mesh, bakes the instance matrix into vertex positions,
+ * and tracks submesh boundaries for Element3D mapping.
+ *
+ * The update() method uploads only the dirty buffer ranges to the GPU.
+ */
+
 import * as THREE from 'three'
 import { G3d, G3dMaterial } from 'vim-format'
 import { Scene } from '../scene'
@@ -89,6 +105,12 @@ export class InsertableGeometry {
     return this._indexAttribute.count / this._indexAttribute.array.length
   }
 
+  /**
+   * Inserts geometry for a single mesh definition, duplicated for each instance.
+   * For each instance: bakes the instance matrix into vertex positions, copies indices
+   * with offset adjustment, sets per-vertex colors and packed picking IDs,
+   * and creates a GeometrySubmesh tracking the index range and bounding box.
+   */
   insertFromG3d (g3d: G3d, mesh: number) {
     const added: number[] = []
     const meshG3dIndex = this.offsets.subset.getSourceMesh(mesh)
@@ -195,6 +217,11 @@ export class InsertableGeometry {
     this._updateStartMesh = this._updateEndMesh
   }
 
+  /**
+   * Uploads dirty buffer ranges to the GPU. Uses range-based updates
+   * (addUpdateRange) to minimize GPU transfer — only the contiguous range
+   * of newly inserted meshes is uploaded for each attribute.
+   */
   update () {
     // Update up to the mesh for which all preceding meshes are ready
     while (this._meshToUpdate.has(this._updateEndMesh)) {

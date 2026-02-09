@@ -219,10 +219,15 @@ export class Vim implements IVim<Element3D> {
   }
 
   /**
-   * Asynchronously loads geometry for the specified subset.
+   * Core progressive loading method. Steps:
+   * 1. Exclude already-loaded instances via subset.except() to avoid duplicates
+   * 2. Record new instances in _loadedInstances set
+   * 3. Delegate to VimMeshFactory.add() which splits into merged/instanced
+   * 4. Dispatch onUpdate signal (consumed by UI for loading progress)
    * @param {G3dSubset} subset - The subset to load resources for.
    */
   async loadSubset (subset: G3dSubset) {
+    // Exclude instances that have already been loaded
     subset = subset.except('instance', this._loadedInstances)
     const count = subset.getInstanceCount()
     for (let i = 0; i < count; i++) {
@@ -233,6 +238,7 @@ export class Vim implements IVim<Element3D> {
       console.log('Empty subset. Ignoring')
       return
     }
+    // Build meshes and add to scene
     this._factory.add(subset)
     this._onUpdate.dispatch()
   }

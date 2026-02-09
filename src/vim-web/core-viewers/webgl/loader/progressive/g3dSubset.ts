@@ -60,6 +60,11 @@ export class G3dSubset {
     }
   }
 
+  /**
+   * Splits this subset into smaller subsets by index count threshold.
+   * Note: the threshold is based on total INDEX count (not vertex count),
+   * matching the 4M index chunking limit used by VimMeshFactory.
+   */
   chunks(count: number): G3dSubset[] {
     const chunks: G3dSubset[] = []
     let currentSize = 0
@@ -170,6 +175,11 @@ export class G3dSubset {
     return this._meshInstances[mesh][index]
   }
 
+  /**
+   * Filters meshes by their instance count. Used to separate:
+   * - merged meshes (<=5 instances) via filterByCount(c => c <= 5)
+   * - instanced meshes (>5 instances) via filterByCount(c => c > 5)
+   */
   filterByCount (predicate: (i: number) => boolean) {
     const set = new Set<number>()
     this._meshInstances.forEach((instances, i) => {
@@ -208,9 +218,11 @@ export class G3dSubset {
   }
 
   /**
-   * Returns a new subset with instances not included in given filter.
+   * Returns a new subset with instances NOT matching the filter.
+   * Used in progressive loading to skip already-loaded instances:
+   * `subset.except('instance', loadedInstances)`
    * @param mode Defines which field the filter will be applied to.
-   * @param filter Array of all values to match for.
+   * @param filter Array or Set of values to exclude.
    */
   except (mode: FilterMode, filter: number[] | Set<number>): G3dSubset {
     return this._filter(mode, filter, false)

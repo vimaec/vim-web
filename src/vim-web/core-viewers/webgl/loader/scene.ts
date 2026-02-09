@@ -144,6 +144,11 @@ export class Scene {
     this.meshes.forEach((m) => (m.vim = value))
   }
 
+  /**
+   * Registers a submesh in the instance → submesh map.
+   * If a Vim is attached, also wires the submesh to its Element3D
+   * so that visibility/color/outline changes propagate to the right geometry.
+   */
   addSubmesh (submesh: Submesh) {
     const meshes = this._instanceToMeshes.get(submesh.instance) ?? []
     meshes.push(submesh)
@@ -156,10 +161,12 @@ export class Scene {
   }
 
   /**
-   * Add an instanced mesh to the Scene and recomputes fields as needed.
-   * @param mesh Is expected to have:
-   * userData.instances = number[] (indices of the g3d instances that went into creating the mesh)
-   * userData.boxes = THREE.Box3[] (bounding box of each instance)
+   * Adds a mesh to the scene. Wiring sequence:
+   * 1. Add Three.js mesh to renderer
+   * 2. Apply scene transform matrix (position/rotation/scale from VimSettings)
+   * 3. Expand scene bounding box
+   * 4. Register all submeshes (maps instance → submesh, wires to Element3D)
+   * 5. Apply current material override if any
    */
   addMesh (mesh: InsertableMesh | InstancedMesh) {
     this.renderer?.add(mesh.mesh)
