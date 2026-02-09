@@ -37,8 +37,23 @@ React-based 3D viewers for VIM files with BIM (Building Information Modeling) su
 | Picking Material | `src/vim-web/core-viewers/webgl/loader/materials/pickingMaterial.ts` |
 | InsertableGeometry | `src/vim-web/core-viewers/webgl/loader/progressive/insertableGeometry.ts` |
 | InstancedMeshFactory | `src/vim-web/core-viewers/webgl/loader/progressive/instancedMeshFactory.ts` |
-| VimMeshFactory | `src/vim-web/core-viewers/webgl/loader/progressive/legacyMeshFactory.ts` |
+| VimMeshFactory | `src/vim-web/core-viewers/webgl/loader/progressive/vimMeshFactory.ts` |
 | VimSettings | `src/vim-web/core-viewers/webgl/loader/vimSettings.ts` |
+| Mesh types (Submesh) | `src/vim-web/core-viewers/webgl/loader/mesh.ts` |
+| Scene | `src/vim-web/core-viewers/webgl/loader/scene.ts` |
+| Raycaster (CPU) | `src/vim-web/core-viewers/webgl/viewer/raycaster.ts` |
+| SubsetBuilder | `src/vim-web/core-viewers/webgl/loader/progressive/subsetBuilder.ts` |
+| InsertableMesh | `src/vim-web/core-viewers/webgl/loader/progressive/insertableMesh.ts` |
+| InstancedMesh | `src/vim-web/core-viewers/webgl/loader/progressive/instancedMesh.ts` |
+| InsertableMeshFactory | `src/vim-web/core-viewers/webgl/loader/progressive/insertableMeshFactory.ts` |
+| ComponentLoader | `src/vim-web/react-viewers/webgl/loading.ts` |
+| Core LoadRequest | `src/vim-web/core-viewers/webgl/loader/progressive/loadRequest.ts` |
+| G3dSubset | `src/vim-web/core-viewers/webgl/loader/progressive/g3dSubset.ts` |
+| G3dMeshOffsets | `src/vim-web/core-viewers/webgl/loader/progressive/g3dOffsets.ts` |
+| ElementMapping | `src/vim-web/core-viewers/webgl/loader/elementMapping.ts` |
+| Vim | `src/vim-web/core-viewers/webgl/loader/vim.ts` |
+| RenderingComposer | `src/vim-web/core-viewers/webgl/viewer/rendering/renderingComposer.ts` |
+| Renderer | `src/vim-web/core-viewers/webgl/viewer/rendering/renderer.ts` |
 
 ### Import Pattern
 
@@ -76,6 +91,10 @@ VIM.THREE                  // Three.js re-export
 src/vim-web/
 ├── core-viewers/           # Framework-agnostic (no React)
 │   ├── webgl/              # Local Three.js rendering
+│   │   ├── loader/         # Mesh building, scene, VIM data model
+│   │   │   ├── progressive/  # Geometry loading & mesh construction
+│   │   │   └── materials/    # Shader materials, applyMaterial() helper
+│   │   └── viewer/         # Camera, raycaster, rendering, gizmos
 │   ├── ultra/              # RPC client for streaming server
 │   └── shared/             # Common interfaces (IVim, Selection, Input)
 └── react-viewers/          # React UI layer
@@ -489,20 +508,65 @@ npm run documentation # TypeDoc
 
 ## Architecture Details
 
+### Loading Pipeline (WebGL)
+
+Full call chain from `viewer.load()` to rendered scene:
+
+```
+viewer.load(url)
+  → ComponentLoader.load() — allocates vimIndex (0-255)
+    → Core LoadRequest — parses BFast → G3d + VimDocument + ElementMapping
+      → Creates Vim (no geometry yet)
+    → initVim() — viewer.add(vim), vim.loadAll()
+      → Vim.loadSubset(fullSet)
+        → VimMeshFactory.add(subset) — splits merged vs instanced
+          → Scene.addMesh() → addSubmesh() → Element3D._addMesh()
+```
+
+**Key steps:**
+1. `ComponentLoader` allocates a `vimIndex` (0-255) and creates a `LoadRequest`
+2. `LoadRequest.loadFromVim()` parses the BFast container: fetches G3d geometry, creates `G3dMaterial`, parses `VimDocument` (BIM data), builds `ElementMapping` (instance-to-element map), creates `Scene` and `VimMeshFactory`
+3. `Vim` is constructed with the factory but **no geometry yet** — geometry is loaded separately via `loadAll()`/`loadSubset()`
+4. `Vim.loadAll()` creates a `G3dSubset` of all instances and delegates to `loadSubset()`
+5. `VimMeshFactory.add()` splits the subset: ≤5 instances → `InsertableMeshFactory` (merged, chunked), >5 → `InstancedMeshFactory` (GPU instanced)
+6. `Scene.addMesh()` adds the Three.js mesh to the renderer, applies the scene transform matrix, iterates submeshes, and wires each to its `Element3D` via `addSubmesh()`
+
+**`load()` vs `open()`:** Both parse the VIM file, but only `load()` (via `ComponentLoader`) triggers `vim.loadAll()` to build geometry. Direct `LoadRequest` usage creates a Vim with no meshes until `loadSubset()` is called.
+
+### Progressive Loading
+
+- `G3dSubset`: A filtered view of G3d instances, grouped by mesh. Supports further filtering by instance count (`filterByCount`), exclusion (`except`), and chunking (`chunks`)
+- `Vim.loadSubset()`: The core progressive loading method — tracks `_loadedInstances` Set, calls `subset.except('instance', loaded)` to skip already-loaded instances, then delegates to `VimMeshFactory.add()` and dispatches `onUpdate`
+- `Vim.loadFilter()`: Convenience method that creates a filtered subset and calls `loadSubset()`
+- `G3dSubset.chunks(count)`: Splits a subset into smaller subsets by **index count** threshold (not vertex count)
+
 ### Rendering Pipeline (WebGL)
 
+Multi-pass compositor:
 ```
-Main Scene (MSAA) → Selection Mask → Outline Pass → FXAA → Merge → Screen
+Scene (MSAA) → Selection Mask (mask material) → Outline Pass (depth edge detection) → FXAA → Merge → Screen
 ```
 
-- On-demand rendering: `renderer.needsUpdate = true`
+- On-demand rendering: `renderer.needsUpdate` flag is set by camera movements, selection changes, or visibility changes, and cleared after each frame
 - Key files: `rendering/renderer.ts`, `renderingComposer.ts`
 
 ### Mesh Building (WebGL)
 
-- **≤5 instances**: Merged into `InsertableMesh` (chunks at 4M vertices)
-- **>5 instances**: GPU instanced via `InstancedMesh`
-- Key file: `loader/progressive/legacyMeshFactory.ts`
+- **≤5 instances**: Merged into `InsertableMesh` via `InsertableMeshFactory` (chunks at 4M **indices**)
+- **>5 instances**: GPU instanced via `InstancedMesh` via `InstancedMeshFactory`
+- Key file: `loader/progressive/vimMeshFactory.ts`
+
+**Mesh Type Hierarchy:**
+- `Scene.meshes: (InsertableMesh | InstancedMesh)[]` — no abstract `Mesh` wrapper
+- `Submesh = InsertableSubmesh | InstancedSubmesh` — polymorphic submesh used by Element3D
+- `MergedSubmesh = InsertableSubmesh` — type alias (no `StandardSubmesh`)
+- `SimpleInstanceSubmesh` — used only by gizmo markers
+- Both `InsertableMesh` and `InstancedMesh` delegate material application to the shared `applyMaterial()` helper in `materials/materials.ts`
+
+**Subset Loading:**
+- `VimSubsetBuilder` (in `progressive/subsetBuilder.ts`) — concrete class, no interface
+- Owns a `VimMeshFactory`, dispatches `onUpdate` signal consumed by `Vim.onLoadingUpdate`
+- `Vim` depends directly on `VimSubsetBuilder`
 
 ### GPU Picking (WebGL)
 
@@ -563,7 +627,6 @@ To add a new attribute to the GPU picker output:
 
 4. **Propagate through factory chain:**
    - `VimSettings` → `open.ts` → `VimMeshFactory` → `InsertableMesh`/`InstancedMeshFactory`
-   - For vimx: `VimSettings` → `open.ts` → `VimxSubsetBuilder` → `SubsetRequest`
 
 5. **Update `gpuPicker.ts`** - Read new channel:
    ```typescript
@@ -573,12 +636,17 @@ To add a new attribute to the GPU picker output:
 **Vim Index Flow:**
 ```
 VimSettings.vimIndex (set by loader based on viewer.vims.length)
-  → open.ts (loadFromVim / loadFromVimX)
-    → VimMeshFactory / VimxSubsetBuilder
-      → InsertableMesh / InstancedMeshFactory / SubsetRequest
+  → loadRequest.ts (loadFromVim)
+    → VimMeshFactory
+      → InsertableMesh / InstancedMeshFactory
         → InsertableGeometry (per-vertex) / InstancedBufferAttribute (per-instance)
           → pickingMaterial shader → gpuPicker.pick()
 ```
+
+**CPU Raycaster** (`viewer/raycaster.ts`):
+- Fallback raycaster using Three.js intersection tests
+- Reads `hit.object.userData.vim` as `InsertableMesh | InstancedMesh`
+- Discriminates via `mesh.merged` to call `getSubmeshFromFace()` or `getSubMesh()`
 
 ### Ultra RPC Stack
 
