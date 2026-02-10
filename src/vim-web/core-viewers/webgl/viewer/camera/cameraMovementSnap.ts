@@ -50,7 +50,9 @@ export class CameraMovementSnap extends CameraMovement {
     const locked = angle.clone().multiply(this._camera.allowedRotation)
 
     // Convert current position to spherical coordinates
-    const offset = this._camera.position.clone().sub(this._camera.target)
+    const scaledForward = this._camera.forward.multiplyScalar(this._camera.orbitDistance)
+    const offCenter = this._camera.position.clone().add(scaledForward)
+    const offset = this._camera.position.clone().sub(offCenter)
     const radius = offset.length()
 
     // Current spherical angles
@@ -79,7 +81,6 @@ export class CameraMovementSnap extends CameraMovement {
     const lockedPos = this.lockVector(newPos, this._camera.position)
     this._camera.position.copy(lockedPos)
 
-    // Orient camera to look at target
     this._camera.camPerspective.camera.up.set(0, 0, 1)
     this._camera.camPerspective.camera.lookAt(this._camera.target)
     this.applyScreenTargetOffset()
@@ -190,7 +191,8 @@ export class CameraMovementSnap extends CameraMovement {
   
 
   /**
-   * Rotates the camera so the target appears at screenTarget instead of screen center.
+   * Slides the camera position on the orbit sphere so the target appears
+   * at screenTarget instead of screen center. Orientation is unchanged.
    * Must be called after lookAt(target).
    */
   applyScreenTargetOffset () {
@@ -202,22 +204,27 @@ export class CameraMovementSnap extends CameraMovement {
     const tanHalfV = Math.tan(vFov / 2)
     const tanHalfH = tanHalfV * cam.aspect
 
-    // NDC position where target should appear
-    const nx = 2 * st.x - 1
-    const ny = 1 - 2 * st.y
+    // Screen offset in tangent space
+    const sx = (2 * st.x - 1) * tanHalfH
+    const sy = (1 - 2 * st.y) * tanHalfV
 
-    // Camera-space direction that projects to (nx, ny)
-    const targetDir = new THREE.Vector3(
-      nx * tanHalfH,
-      ny * tanHalfV,
-      -1
-    ).normalize()
+    // Camera's local axes from the lookAt orientation
+    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(cam.quaternion)
+    const up = new THREE.Vector3(0, 1, 0).applyQuaternion(cam.quaternion)
 
-    // Rotation from targetDir to forward (0,0,-1)
-    // This makes the target appear at (nx, ny) on screen
-    const forward = new THREE.Vector3(0, 0, -1)
-    const R = new THREE.Quaternion().setFromUnitVectors(targetDir, forward)
-    this._camera.quaternion.multiply(R)
+    // Offset from target to camera (on the orbit sphere)
+    const offset = this._camera.position.clone().sub(this._camera.target)
+
+    // Pitch: rotate offset around right axis (up-forward plane)
+    const pitchQuat = new THREE.Quaternion().setFromAxisAngle(right, Math.atan(sy))
+    offset.applyQuaternion(pitchQuat)
+
+    // Yaw: rotate offset around up axis (forward-left plane)
+    const yawQuat = new THREE.Quaternion().setFromAxisAngle(up, -Math.atan(sx))
+    offset.applyQuaternion(yawQuat)
+
+    // Update position only — orientation stays as-is
+    this._camera.position.copy(this._camera.target).add(offset)
   }
 
   private lockVector (position: THREE.Vector3, fallback: THREE.Vector3) {

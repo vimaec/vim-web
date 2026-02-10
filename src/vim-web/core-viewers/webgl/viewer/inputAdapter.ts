@@ -74,7 +74,7 @@ function createAdapter(viewer: Viewer ) : IInputAdapter {
       if (screenPos) {
         const result = await viewer.raycaster.raycastFromScreen(screenPos)
         if (result?.worldPosition) {
-          viewer.camera.lerp(0.75).zoomTowards(value, result.worldPosition, screenPos)
+          viewer.camera.lerp(0.25).zoomTowards(value, result.worldPosition, screenPos)
           return
         }
       }
