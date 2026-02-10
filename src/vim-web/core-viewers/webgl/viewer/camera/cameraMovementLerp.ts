@@ -139,54 +139,42 @@ export class CameraLerp extends CameraMovement {
   }
 
   orbit (angle: THREE.Vector2): void {
-    const startPos = this._camera.position.clone()
-    const startForward = this._camera.forward.clone()
     const locked = angle.clone().multiply(this._camera.allowedRotation)
+    const radius = this._camera.orbitDistance
 
-    const worldUp = new THREE.Vector3(0, 0, 1)
+    // Compute offset from target using forward direction (same as snap orbit)
+    const startOffset = this._camera.forward.clone().negate().multiplyScalar(radius)
 
-    // Get horizontal right axis
-    let right = new THREE.Vector3().crossVectors(worldUp, startForward)
-    if (right.lengthSq() < 0.001) {
-      right.set(1, 0, 0).applyQuaternion(this._camera.quaternion)
-      right.z = 0
-    }
-    right.normalize()
+    // Current spherical angles
+    const theta0 = Math.atan2(startOffset.y, startOffset.x)
+    const phi0 = Math.acos(THREE.MathUtils.clamp(startOffset.z / radius, -1, 1))
 
-    // Azimuth: rotate around world Z
-    const azimuthQuat = new THREE.Quaternion().setFromAxisAngle(
-      worldUp,
-      (locked.y * Math.PI) / 180
+    // Apply rotation deltas
+    const theta1 = theta0 + (locked.y * Math.PI) / 180
+    let phi1 = phi0 + (locked.x * Math.PI) / 180
+
+    // Clamp phi to prevent gimbal lock
+    const minAngle = THREE.MathUtils.degToRad(0.5)
+    const maxAngle = THREE.MathUtils.degToRad(179.5)
+    phi1 = THREE.MathUtils.clamp(phi1, minAngle, maxAngle)
+
+    // End offset in Cartesian
+    const sinPhi = Math.sin(phi1)
+    const endOffset = new THREE.Vector3(
+      radius * sinPhi * Math.cos(theta1),
+      radius * sinPhi * Math.sin(theta1),
+      radius * Math.cos(phi1)
     )
-
-    // Elevation: rotate around horizontal right axis
-    const elevationQuat = new THREE.Quaternion().setFromAxisAngle(
-      right,
-      (-locked.x * Math.PI) / 180
-    )
-
-    // Combined rotation
-    const orbitQuat = new THREE.Quaternion().multiplyQuaternions(elevationQuat, azimuthQuat)
-
-    // Calculate end position
-    const offset = startPos.clone().sub(this._camera.target)
-    offset.applyQuaternion(orbitQuat)
-    const endPos = this._camera.target.clone().add(offset)
-
-    // Calculate end forward direction
-    const endForward = startForward.clone().applyQuaternion(orbitQuat)
 
     this.onProgress = (progress) => {
-      // Lerp position
-      this._camera.position.copy(startPos).lerp(endPos, progress)
+      // Interpolate offset direction on sphere
+      const currentOffset = startOffset.clone().lerp(endOffset, progress)
+      currentOffset.normalize().multiplyScalar(radius)
 
-      // Slerp forward direction
-      const currentForward = startForward.clone().lerp(endForward, progress).normalize()
+      this._camera.position.copy(this._camera.target).add(currentOffset)
 
-      // Orient camera along current forward with Z up (no roll)
-      const lookTarget = this._camera.position.clone().add(currentForward)
       this._camera.camPerspective.camera.up.set(0, 0, 1)
-      this._camera.camPerspective.camera.lookAt(lookTarget)
+      this._camera.camPerspective.camera.lookAt(this._camera.target)
       this._movement.applyScreenTargetOffset()
     }
   }
