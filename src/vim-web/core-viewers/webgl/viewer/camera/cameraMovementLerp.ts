@@ -8,6 +8,7 @@ import { Element3D } from '../../loader/element3d'
 import { CameraMovementSnap } from './cameraMovementSnap'
 import { CameraMovement } from './cameraMovement'
 import { CameraSaveState } from './cameraInterface'
+import { SphereCoord } from './sphereCoord'
 
 
 
@@ -62,13 +63,10 @@ export class CameraLerp extends CameraMovement {
     v.applyQuaternion(this._camera.quaternion)
     const startPos = this._camera.position.clone()
     const endPos = this._camera.position.clone().add(v)
-    const startTarget = this._camera.target.clone()
-    const endTarget = this._camera.target.clone().add(v)
 
     this.onProgress = (progress) => {
       const pos = startPos.clone().lerp(endPos, progress)
-      const target = startTarget.clone().lerp(endTarget, progress)
-      this._movement.set(pos, target, false)
+      this._movement.set(pos, undefined, false)
     }
   }
 
@@ -142,32 +140,11 @@ export class CameraLerp extends CameraMovement {
     const locked = angle.clone().multiply(this._camera.allowedRotation)
     const radius = this._camera.orbitDistance
 
-    // Compute offset from target using forward direction (same as snap orbit)
-    const startOffset = this._camera.forward.clone().negate().multiplyScalar(radius)
-
-    // Current spherical angles
-    const theta0 = Math.atan2(startOffset.y, startOffset.x)
-    const phi0 = Math.acos(THREE.MathUtils.clamp(startOffset.z / radius, -1, 1))
-
-    // Apply rotation deltas
-    const theta1 = theta0 + (locked.y * Math.PI) / 180
-    let phi1 = phi0 + (locked.x * Math.PI) / 180
-
-    // Clamp phi to prevent gimbal lock
-    const minAngle = THREE.MathUtils.degToRad(0.5)
-    const maxAngle = THREE.MathUtils.degToRad(179.5)
-    phi1 = THREE.MathUtils.clamp(phi1, minAngle, maxAngle)
-
-    // End offset in Cartesian
-    const sinPhi = Math.sin(phi1)
-    const endOffset = new THREE.Vector3(
-      radius * sinPhi * Math.cos(theta1),
-      radius * sinPhi * Math.sin(theta1),
-      radius * Math.cos(phi1)
-    )
+    const start = SphereCoord.fromForward(this._camera.forward, radius)
+    const startOffset = start.toVector3()
+    const endOffset = start.rotate(locked.y, locked.x).toVector3()
 
     this.onProgress = (progress) => {
-      // Interpolate offset direction on sphere
       const currentOffset = startOffset.clone().lerp(endOffset, progress)
       currentOffset.normalize().multiplyScalar(radius)
 
