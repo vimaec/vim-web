@@ -21,7 +21,7 @@ function createAdapter(viewer: Viewer ) : IInputAdapter {
       viewer.camera.snap().rotate(value)
     },
     panCamera: (value: THREE.Vector2) => {
-      const size = viewer.camera.frustrumSizeAt(viewer.camera.target)
+      const size = viewer.camera.frustumSizeAt(viewer.camera.target)
       size.multiply(value)
       viewer.camera.snap().move2D(size, 'XZ')
     },

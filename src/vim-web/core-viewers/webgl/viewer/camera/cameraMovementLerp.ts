@@ -13,13 +13,13 @@ import { SphereCoord } from './sphereCoord'
 
 
 export class CameraLerp extends CameraMovement {
-  _movement: CameraMovementSnap
-  _clock = new THREE.Clock()
+  private _movement: CameraMovementSnap
+  private _clock = new THREE.Clock()
 
   // position
-  onProgress: ((progress: number) => void) | undefined
+  private onProgress: ((progress: number) => void) | undefined
 
-  _duration = 1
+  private _duration = 1
 
   constructor (camera: Camera, movement: CameraMovementSnap, savedState: CameraSaveState, getBoundingBox:() => THREE.Box3) {
     super(camera, savedState, getBoundingBox)
@@ -41,7 +41,7 @@ export class CameraLerp extends CameraMovement {
     this.onProgress = undefined
   }
 
-  easeOutCubic (x: number): number {
+  private easeOutCubic (x: number): number {
     return 1 - Math.pow(1 - x, 3)
   }
 
@@ -156,15 +156,20 @@ export class CameraLerp extends CameraMovement {
 
   async lookAt (target: Element3D | THREE.Vector3) {
     const pos = target instanceof Element3D ? (await target.getCenter()) : target
+    if (!pos) return
     this._camera.screenTarget.set(0.5, 0.5)
-    const next = pos.clone().sub(this._camera.position)
+
     const start = this._camera.quaternion.clone()
-    const rot = new THREE.Quaternion().setFromUnitVectors(
-      new THREE.Vector3(0, 0, -1),
-      next.normalize()
-    )
+
+    // Compute end orientation using Three.js lookAt (respects Z-up)
+    const savedQuat = this._camera.quaternion.clone()
+    this._camera.camPerspective.camera.up.set(0, 0, 1)
+    this._camera.camPerspective.camera.lookAt(pos)
+    const end = this._camera.quaternion.clone()
+    this._camera.quaternion.copy(savedQuat)
+
     this.onProgress = (progress) => {
-      const r = start.clone().slerp(rot, progress)
+      const r = start.clone().slerp(end, progress)
       this.applyRotation(r)
     }
   }

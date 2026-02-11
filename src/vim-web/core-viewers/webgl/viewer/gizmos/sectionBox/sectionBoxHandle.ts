@@ -60,7 +60,7 @@ export class SectionBoxHandle extends THREE.Mesh {
 
   update(){
     if(!this._camera) return;
-    const size = this._camera.frustrumSizeAt(this.position);
+    const size = this._camera.frustumSizeAt(this.position);
     this.scale.set(size.x * 0.003, size.x * 0.003, size.x * 0.003);
   }
 

@@ -84,7 +84,7 @@ export class Skybox {
     camera.onMoved.subscribe(() => {
       this.mesh.position.copy(camera.position).add(camera.forward)
       this.mesh.quaternion.copy(camera.quaternion)
-      const size = camera.frustrumSizeAt(this.mesh.position)
+      const size = camera.frustumSizeAt(this.mesh.position)
       this.mesh.scale.set(size.x, size.y, 1)
     })
   }

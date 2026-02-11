@@ -178,9 +178,9 @@ export class GizmoOrbit {
   private updateScale () {
     if (!this._gizmos) return
 
-    const frustrum = this._camera.frustrumSizeAt(this._gizmos.position)
+    const frustum = this._camera.frustumSizeAt(this._gizmos.position)
     // Size is fraction of screen (0-1), use smaller dimension
-    const screenSize = Math.min(frustrum.x, frustrum.y)
+    const screenSize = Math.min(frustum.x, frustum.y)
     const h = screenSize * this._size
     this._gizmos.scale.set(h, h, h)
   }

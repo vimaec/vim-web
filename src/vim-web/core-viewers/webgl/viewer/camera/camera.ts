@@ -19,8 +19,8 @@ import { PerspectiveCamera } from './cameraPerspective'
  * Manages viewer camera movement and position
  */
 export class Camera implements ICamera {
-  camPerspective: PerspectiveCamera
-  camOrthographic: OrthographicCamera
+  readonly camPerspective: PerspectiveCamera
+  readonly camOrthographic: OrthographicCamera
 
   private _viewport: Viewport
   private _scene: RenderScene // make private again
@@ -195,8 +195,8 @@ export class Camera implements ICamera {
    * @param {THREE.Vector3} point - The point in the scene to calculate the frustum size at.
    * @returns {number} The frustum size at the specified point.
    */
-  frustrumSizeAt (point: THREE.Vector3) {
-    return this.orthographic ? this.camOrthographic.frustrumSizeAt(point) : this.camPerspective.frustrumSizeAt(point)
+  frustumSizeAt (point: THREE.Vector3) {
+    return this.orthographic ? this.camOrthographic.frustumSizeAt(point) : this.camPerspective.frustumSizeAt(point)
   }
 
   /**
@@ -284,12 +284,6 @@ export class Camera implements ICamera {
     this._screenTarget.copy(value)
   }
 
-  private applySettings (settings: ViewerSettings) {
-    // Camera
-
-
-  }
-
   /**
    * The distance from the camera to the target.
    */
@@ -342,7 +336,7 @@ export class Camera implements ICamera {
 
   private updateOrthographic () {
     const aspect = this._viewport.getAspectRatio()
-    const size = this.camPerspective.frustrumSizeAt(this.target)
+    const size = this.camPerspective.frustumSizeAt(this.target)
 
     this.camOrthographic.updateProjection(size, aspect)
     this.camOrthographic.camera.position.copy(this.position)
@@ -385,8 +379,8 @@ export class Camera implements ICamera {
   private getVelocityMultiplier () {
     const rotated = !this._lastQuaternion.equals(this.quaternion)
     const mod = rotated ? 1 : 1.66
-    const frustrum = this.frustrumSizeAt(this.target).length()
-    return mod * frustrum
+    const frustum = this.frustumSizeAt(this.target).length()
+    return mod * frustum
   }
 
   private checkForMovement () {

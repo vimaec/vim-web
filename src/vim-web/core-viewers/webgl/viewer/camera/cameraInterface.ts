@@ -59,7 +59,7 @@ export interface ICamera {
    * @param {THREE.Vector3} point - The point in the scene to calculate the frustum size at.
    * @returns {number} The frustum size at the specified point.
    */
-  frustrumSizeAt(point: THREE.Vector3): THREE.Vector2;
+  frustumSizeAt(point: THREE.Vector3): THREE.Vector2;
 
   /**
    * The current THREE Camera
