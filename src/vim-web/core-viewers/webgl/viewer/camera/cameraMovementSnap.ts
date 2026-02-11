@@ -34,16 +34,13 @@ export class CameraMovementSnap extends CameraMovement {
 
   applyRotation (quaternion: THREE.Quaternion) {
     this._camera.quaternion.copy(quaternion)
-    const target = this._camera.forward
-      .multiplyScalar(this._camera.orbitDistance)
-      .add(this._camera.position)
-
-    this.set(this._camera.position, target)
+    this.updateScreenTarget()
   }
 
   async target (target: Element3D | THREE.Vector3) {
     const pos = target instanceof Element3D ? (await target.getCenter()) : target
     if (!pos) return
+    this._camera.screenTarget.set(0.5, 0.5)
     this.set(this._camera.position, pos)
   }
 
@@ -174,12 +171,17 @@ export class CameraMovementSnap extends CameraMovement {
   }
 
   predictRotate(angle: THREE.Vector2) {
-    // Create quaternions for rotation around X and Z axes
-    const xQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), (angle.x * Math.PI) / 180)
-    const zQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), (angle.y * Math.PI) / 180)
-    const rotation = this._camera.quaternion.clone();
-    rotation.multiply(xQuat).multiply(zQuat);
-    return rotation;
+    const euler = new THREE.Euler(0, 0, 0, 'ZXY')
+    euler.setFromQuaternion(this._camera.quaternion)
+
+    euler.x += (angle.x * Math.PI) / 180
+    euler.z += (angle.y * Math.PI) / 180
+    euler.y = 0
+
+    const max = Math.PI * 0.48
+    euler.x = Math.max(-max, Math.min(max, euler.x))
+
+    return new THREE.Quaternion().setFromEuler(euler)
   }
   
 }

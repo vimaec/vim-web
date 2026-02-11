@@ -143,6 +143,7 @@ export abstract class CameraMovement {
    * Resets the camera to its last saved position and orientation.
    */
   reset () {
+    this._camera.screenTarget.set(0.5, 0.5)
     this.set(this._savedState.position, this._savedState.target)
   }
 
