@@ -16,15 +16,15 @@ export function Overlay (props: { canvas: HTMLCanvasElement }) {
     const relay = (
       evnt: string,
       construct: (s: string, e: Event) => Event,
-      preventDefault: boolean = true
+      preventDefault: boolean = true,
+      options?: AddEventListenerOptions
     ) => {
-      
       overlay.current?.addEventListener(evnt, (e) => {
         props.canvas.dispatchEvent(construct(evnt, e))
         if (preventDefault) {
           e.preventDefault()
         }
-      })
+      }, options)
     }
     relay('mousedown', (s, e) => new MouseEvent(s, e))
     relay('mousemove', (s, e) => new MouseEvent(s, e))
@@ -39,16 +39,18 @@ export function Overlay (props: { canvas: HTMLCanvasElement }) {
     relay('pointerup', (s, e) => new PointerEvent(s, e), false)
     relay('pointerenter', (s, e) => new PointerEvent(s, e))
     relay('pointerleave', (s, e) => new PointerEvent(s, e))
-    relay('touchstart', (s, e) => new TouchEvent(s, e), false)
+
+    const active = { passive: false }
+    relay('touchstart', (s, e) => new TouchEvent(s, e), false, active)
     relay('touchend', (s, e) => new TouchEvent(s, e), false)
-    relay('touchmove', (s, e) => new TouchEvent(s, e), false)
+    relay('touchmove', (s, e) => new TouchEvent(s, e), false, active)
   }, [])
 
   return (
     <div
       ref={overlay}
       onContextMenu={(e) => e.preventDefault()}
-      className={'vim-overlay vc-top-0 vc-left-0 vc-z-10 vc-h-full'}
+      className={'vim-overlay vc-top-0 vc-left-0 vc-z-10 vc-h-full vc-touch-none'}
     ></div>
   )
 }

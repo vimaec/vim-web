@@ -34,9 +34,11 @@ export class TouchHandler extends BaseInputHandler {
   private _touchStart: THREE.Vector2 | undefined
 
   protected override addListeners (): void {
-    this.reg(this._canvas, 'touchstart', this.onTouchStart)
+    this._canvas.style.touchAction = 'none'
+    const active = { passive: false }
+    this.reg(this._canvas, 'touchstart', this.onTouchStart, active)
     this.reg(this._canvas, 'touchend', this.onTouchEnd)
-    this.reg(this._canvas, 'touchmove', this.onTouchMove)
+    this.reg(this._canvas, 'touchmove', this.onTouchMove, active)
   }
 
   override reset = () => {
@@ -50,13 +52,13 @@ export class TouchHandler extends BaseInputHandler {
     this._lastTapMs = time
 
     if(double)
-      this._onTap?.(position)
-    else
       this.onDoubleTap?.(position)
+    else
+      this.onTap?.(position)
   }
 
-  private onTouchStart = (event: any) => {
-    event.preventDefault() // prevent scrolling
+  private onTouchStart = (event: TouchEvent) => {
+    if (event.cancelable) event.preventDefault()
     if (!event || !event.touches || !event.touches.length) {
       return
     }
@@ -104,9 +106,9 @@ export class TouchHandler extends BaseInputHandler {
   }
     */
 
-  private onTouchMove = (event: any) => {
-    event.preventDefault()
-    if (!event || !event.touches || !event.touches.length) return
+  private onTouchMove = (event: TouchEvent) => {
+    if (event.cancelable) event.preventDefault()
+    if (!event.touches.length) return
     if (!this._touch) return
 
     if (event.touches.length === 1) {
@@ -154,7 +156,7 @@ export class TouchHandler extends BaseInputHandler {
     }
   }
 
-  private onTouchEnd = (event: any) => {
+  private onTouchEnd = (event: TouchEvent) => {
     if (this.isSingleTouch() && this._touchStart && this._touch) {
       const touchDurationMs = Date.now() - this._touchStartTime
       const length = this._touch.distanceTo(this._touchStart)
@@ -177,7 +179,7 @@ export class TouchHandler extends BaseInputHandler {
     )
   }
 
-  private touchToVector (touch: any) {
+  private touchToVector (touch: Touch) {
     return new THREE.Vector2(touch.pageX, touch.pageY)
   }
 

@@ -18,11 +18,12 @@ export class BaseInputHandler {
   protected reg<T extends Event>(
     element: Document | HTMLElement | Window,
     eventType: string,
-    callback: (event: T) => void
+    callback: (event: T) => void,
+    options?: AddEventListenerOptions
   ): void {
     const f = (e: Event): void => { callback(e as T); };
-    element.addEventListener(eventType, f);
-    this._disconnect.push(() => { element.removeEventListener(eventType, f); });
+    element.addEventListener(eventType, f, options);
+    this._disconnect.push(() => { element.removeEventListener(eventType, f, options); });
   }
 
   /**

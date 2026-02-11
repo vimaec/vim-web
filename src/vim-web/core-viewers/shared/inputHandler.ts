@@ -130,7 +130,12 @@ export class InputHandler extends BaseInputHandler {
     // Touch controls
     this.touch.onTap = (pos: THREE.Vector2) => adapter.selectAtPointer(pos, false)
     this.touch.onDoubleTap = adapter.frameAtPointer
-    this.touch.onDrag = (delta: THREE.Vector2) => adapter.orbitCamera(delta)
+    this.touch.onDrag = (delta: THREE.Vector2) => {
+      if(this.pointerActive === PointerMode.ORBIT) adapter.orbitCamera(toRotation(delta, this.orbitSpeed))
+      if(this.pointerActive === PointerMode.LOOK) adapter.rotateCamera(toRotation(delta, this.rotateSpeed))
+      if(this.pointerActive === PointerMode.PAN) adapter.panCamera(delta)
+      if(this.pointerActive === PointerMode.ZOOM) adapter.dollyCamera(delta)
+    }
     this.touch.onPinchOrSpread = adapter.zoom
     this.touch.onDoubleDrag = (value : THREE.Vector2) => adapter.panCamera(value)
   }
