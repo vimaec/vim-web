@@ -4,7 +4,6 @@
 
 import * as THREE from 'three'
 import { Camera } from './camera'
-import { Element3D } from '../../loader/element3d'
 import { CameraMovementSnap } from './cameraMovementSnap'
 import { CameraMovement } from './cameraMovement'
 import { CameraSaveState } from './cameraInterface'
@@ -73,30 +72,15 @@ export class CameraLerp extends CameraMovement {
   }
 
   rotate (angle: THREE.Vector2): void {
-    const euler = new THREE.Euler(0, 0, 0, 'ZXY')
-    euler.setFromQuaternion(this._camera.quaternion)
-
-    euler.x += (angle.y * Math.PI) / 180
-    euler.z += (angle.x * Math.PI) / 180
-    euler.y = 0
-
-    // Clamp pitch to prevent performing a loop.
-    const max = Math.PI * 0.48
-    euler.x = Math.max(-max, Math.min(max, euler.x))
-
+    const locked = angle.clone().multiply(this._camera.allowedRotation)
     const start = this._camera.quaternion.clone()
-    const end = new THREE.Quaternion().setFromEuler(euler)
+    const end = this.computeRotation(locked)
     const rot = new THREE.Quaternion()
     this.onProgress = (progress) => {
       rot.copy(start)
       rot.slerp(end, progress)
       this.applyRotation(rot)
     }
-  }
-
-  zoom (amount: number): void {
-    const dist = this._camera.orbitDistance / amount
-    this.setDistance(dist)
   }
 
   protected setDistance (dist: number): void {
@@ -156,17 +140,13 @@ export class CameraLerp extends CameraMovement {
     }
   }
 
-  async lookAt (target: Element3D | THREE.Vector3) {
-    const pos = target instanceof Element3D ? (await target.getCenter()) : target
-    if (!pos) return
-    this._camera.screenTarget.set(0.5, 0.5)
-
+  protected lookAtPoint (point: THREE.Vector3) {
     const start = this._camera.quaternion.clone()
 
     // Compute end orientation using Three.js lookAt (respects Z-up)
     const savedQuat = this._camera.quaternion.clone()
     this._camera.camPerspective.camera.up.set(0, 0, 1)
-    this._camera.camPerspective.camera.lookAt(pos)
+    this._camera.camPerspective.camera.lookAt(point)
     const end = this._camera.quaternion.clone()
     this._camera.quaternion.copy(savedQuat)
 

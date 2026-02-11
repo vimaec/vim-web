@@ -57,7 +57,7 @@ export interface ICamera {
   /**
    * Calculates the frustum size at a given point in the scene.
    * @param {THREE.Vector3} point - The point in the scene to calculate the frustum size at.
-   * @returns {number} The frustum size at the specified point.
+   * @returns {THREE.Vector2} The frustum size (width, height) at the specified point.
    */
   frustumSizeAt(point: THREE.Vector3): THREE.Vector2;
 
@@ -67,7 +67,7 @@ export interface ICamera {
   get three(): THREE.Camera;
 
   /**
-   * The quaternion representing the orientation of the object.
+   * The quaternion representing the camera's orientation.
    */
   get quaternion(): THREE.Quaternion;
 

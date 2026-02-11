@@ -3,7 +3,6 @@
  */
 
 import { CameraMovement } from './cameraMovement'
-import { Element3D } from '../../loader/element3d'
 import { SphereCoord } from './sphereCoord'
 import * as THREE from 'three'
 
@@ -12,15 +11,6 @@ export class CameraMovementSnap extends CameraMovement {
   private static readonly _ZERO = new THREE.Vector3()
   private _snTmp1 = new THREE.Vector3()
   private _snTmp2 = new THREE.Vector3()
-
-  /**
-   * Moves the camera closer or farther away from orbit target.
-   * @param amount movement size.
-   */
-  zoom (amount: number): void {
-    const dist = this._camera.orbitDistance / amount
-    this.setDistance(dist)
-  }
 
   protected setDistance (dist: number): void {
     this._snTmp1.copy(this._camera.target).sub(this._camera.forward.multiplyScalar(dist))
@@ -33,11 +23,8 @@ export class CameraMovementSnap extends CameraMovement {
     this.applyRotation(rotation)
   }
 
-  async lookAt (target: Element3D | THREE.Vector3) {
-    const pos = target instanceof Element3D ? (await target.getCenter()) : target
-    if (!pos) return
-    this._camera.screenTarget.set(0.5, 0.5)
-    this.set(this._camera.position, pos)
+  protected lookAtPoint (point: THREE.Vector3) {
+    this.set(this._camera.position, point)
   }
 
   orbit (angle: THREE.Vector2): void {
@@ -116,18 +103,4 @@ export class CameraMovementSnap extends CameraMovement {
     )
   }
 
-  private computeRotation(angle: THREE.Vector2) {
-    const euler = new THREE.Euler(0, 0, 0, 'ZXY')
-    euler.setFromQuaternion(this._camera.quaternion)
-
-    euler.x += (angle.y * Math.PI) / 180
-    euler.z += (angle.x * Math.PI) / 180
-    euler.y = 0
-
-    const max = Math.PI * 0.48
-    euler.x = Math.max(-max, Math.min(max, euler.x))
-
-    return new THREE.Quaternion().setFromEuler(euler)
-  }
-  
 }

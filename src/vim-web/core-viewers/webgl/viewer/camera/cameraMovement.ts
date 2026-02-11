@@ -13,6 +13,8 @@ import { CameraSaveState } from './cameraInterface'
 
 
 export abstract class CameraMovement {
+  protected static readonly MAX_PITCH = Math.PI * 0.48
+
   protected _camera: Camera
   private _savedState: CameraSaveState
   private _getBoundingBox: () => THREE.Box3
@@ -94,7 +96,9 @@ export abstract class CameraMovement {
    * Changes the distance between the camera and its target by a specified factor.
    * @param {number} amount - The zoom factor (e.g., 2 to zoom in / halve the distance, 0.5 to zoom out / double the distance).
    */
-  abstract zoom(amount: number): void
+  zoom (amount: number): void {
+    this.setDistance(this._camera.orbitDistance / amount)
+  }
 
   /**
    * Zooms the camera toward a specific world point while preserving camera orientation.
@@ -158,7 +162,14 @@ export abstract class CameraMovement {
    * Orients the camera to look at the given point. The orbit target is updated.
    * @param target - The target element or world position to look at.
    */
-  abstract lookAt(target: Element3D | THREE.Vector3): void
+  async lookAt (target: Element3D | THREE.Vector3) {
+    const pos = target instanceof Element3D ? (await target.getCenter()) : target
+    if (!pos) return
+    this._camera.screenTarget.set(0.5, 0.5)
+    this.lookAtPoint(pos)
+  }
+
+  protected abstract lookAtPoint(point: THREE.Vector3): void
 
   /**
    * Resets the camera to its last saved position and orientation.
@@ -224,6 +235,23 @@ export abstract class CameraMovement {
   protected applyRotation (quaternion: THREE.Quaternion) {
     this._camera.quaternion.copy(quaternion)
     this.updateScreenTarget()
+  }
+
+  /**
+   * Computes a clamped rotation quaternion from the current orientation plus the given angles.
+   * @param angle - x: yaw (around Z), y: pitch (up/down), in degrees.
+   */
+  protected computeRotation (angle: THREE.Vector2): THREE.Quaternion {
+    const euler = new THREE.Euler(0, 0, 0, 'ZXY')
+    euler.setFromQuaternion(this._camera.quaternion)
+
+    euler.x += (angle.y * Math.PI) / 180
+    euler.z += (angle.x * Math.PI) / 180
+    euler.y = 0
+
+    euler.x = Math.max(-CameraMovement.MAX_PITCH, Math.min(CameraMovement.MAX_PITCH, euler.x))
+
+    return new THREE.Quaternion().setFromEuler(euler)
   }
 
   /**
