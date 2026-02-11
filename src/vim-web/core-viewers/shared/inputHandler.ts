@@ -136,7 +136,7 @@ export class InputHandler extends BaseInputHandler {
   }
 
   getZoomValue (value: number) {
-    return Math.pow(this.scrollSpeed, value)
+    return Math.pow(this.scrollSpeed, -value)
   }
 
   init(){

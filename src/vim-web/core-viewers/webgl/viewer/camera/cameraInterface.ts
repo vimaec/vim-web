@@ -104,12 +104,6 @@ export interface ICamera {
   get target(): THREE.Vector3;
 
   /**
-   * The screen position where the orbit target appears.
-   * (0,0) is top-left, (1,1) is bottom-right, (0.5, 0.5) is center.
-   */
-  screenTarget: THREE.Vector2;
-
-  /**
    * The distance from the camera to the target.
    */
   get orbitDistance(): number;

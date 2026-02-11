@@ -23,11 +23,11 @@ function createAdapter(viewer: Viewer ) : IInputAdapter {
     panCamera: (value: THREE.Vector2) => {
       const size = viewer.camera.frustrumSizeAt(viewer.camera.target)
       size.multiply(value)
-      viewer.camera.snap().move2(size, 'XZ')
+      viewer.camera.snap().move2D(size, 'XZ')
     },
     dollyCamera: (value: THREE.Vector2) => {
       const dist = viewer.camera.orbitDistance * value.y
-      viewer.camera.snap().move1(dist, 'Y')
+      viewer.camera.snap().move1D(dist, 'Y')
     },
 
     toggleOrthographic: () => {

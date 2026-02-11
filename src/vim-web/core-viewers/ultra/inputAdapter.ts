@@ -96,7 +96,7 @@ function createAdapter(viewer: Viewer): IInputAdapter {
     },
     zoom: (value: number, screenPos?: THREE.Vector2) => {
       // Ultra handles zoom server-side, screenPos not used
-      viewer.rpc.RPCMouseScrollEvent(value >= 1 ? 1 : -1);
+      viewer.rpc.RPCMouseScrollEvent(value >= 1 ? -1 : 1);
     },
     moveCamera: (value: THREE.Vector3) => {
       // handled server side

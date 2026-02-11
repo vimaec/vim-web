@@ -27,14 +27,14 @@ export abstract class CameraMovement {
    * Moves the camera by the specified 3D vector.
    * @param {THREE.Vector3} vector - The 3D vector representing the direction and distance of movement.
    */
-  abstract move3(vector: THREE.Vector3): void
+  abstract move3D(vector: THREE.Vector3): void
 
   /**
    * Moves the camera in a specified 2D direction within a plane defined by the given axes.
    * @param {THREE.Vector2} vector - The 2D vector representing the direction of movement.
    * @param {'XY' | 'XZ'} axes - The axes defining the plane of movement ('XY' or 'XZ').
    */
-  move2 (vector: THREE.Vector2, axes: 'XY' | 'XZ'): void {
+  move2D (vector: THREE.Vector2, axes: 'XY' | 'XZ'): void {
     const direction =
       axes === 'XY'
         ? new THREE.Vector3(-vector.x, 0, vector.y)
@@ -42,7 +42,7 @@ export abstract class CameraMovement {
           ? new THREE.Vector3(-vector.x, vector.y, 0)
           : undefined
 
-    if (direction) this.move3(direction)
+    if (direction) this.move3D(direction)
   }
 
   /**
@@ -50,14 +50,14 @@ export abstract class CameraMovement {
    * @param {number} amount - The amount to move the camera.
    * @param {'X' | 'Y' | 'Z'} axis - The axis along which to move the camera ('X', 'Y', or 'Z').
    */
-  move1 (amount: number, axis: 'X' | 'Y' | 'Z'): void {
+  move1D (amount: number, axis: 'X' | 'Y' | 'Z'): void {
     const direction = new THREE.Vector3(
       axis === 'X' ? -amount : 0,
       axis === 'Z' ? amount : 0,
       axis === 'Y' ? amount : 0,
     )
 
-    this.move3(direction)
+    this.move3D(direction)
   }
 
   /**
@@ -68,14 +68,14 @@ export abstract class CameraMovement {
 
   /**
    * Changes the distance between the camera and its target by a specified factor.
-   * @param {number} amount - The factor by which to change the distance (e.g., 0.5 for halving the distance, 2 for doubling the distance).
+   * @param {number} amount - The zoom factor (e.g., 2 to zoom in / halve the distance, 0.5 to zoom out / double the distance).
    */
   abstract zoom(amount: number): void
 
   /**
    * Zooms the camera toward a specific world point while preserving camera orientation.
    * The orbit target is updated to the world point for future orbit operations.
-   * @param {number} amount - The zoom factor (e.g., 0.5 to move closer, 2 to move farther).
+   * @param {number} amount - The zoom factor (e.g., 2 to zoom in / move closer, 0.5 to zoom out / move farther).
    * @param {THREE.Vector3} worldPoint - The world position to zoom toward.
    */
   abstract zoomTowards(amount: number, worldPoint: THREE.Vector3, screenPoint?: THREE.Vector2): void
@@ -137,7 +137,7 @@ export abstract class CameraMovement {
    * Rotates the camera without moving so that it looks at the specified target.
    * @param {Element3D | THREE.Vector3} target - The target object or position to look at.
    */
-  abstract target(target: Element3D | THREE.Vector3): void
+  abstract lookAt(target: Element3D | THREE.Vector3): void
 
   /**
    * Resets the camera to its last saved position and orientation.
@@ -199,6 +199,59 @@ export abstract class CameraMovement {
 
     this._camera.screenTarget.set(0.5, 0.5)
     this.set(pos, sphere.center)
+  }
+
+  protected applyRotation (quaternion: THREE.Quaternion) {
+    this._camera.quaternion.copy(quaternion)
+    this.updateScreenTarget()
+  }
+
+  /**
+   * Slides the camera position on the orbit sphere so the target appears
+   * at screenTarget instead of screen center. Orientation is unchanged.
+   * Must be called after lookAt(target).
+   */
+  protected applyScreenTargetOffset () {
+    const st = this._camera.screenTarget
+    if (st.x === 0.5 && st.y === 0.5) return
+
+    const cam = this._camera.camPerspective.camera
+    const vFov = cam.fov * Math.PI / 180
+    const tanHalfV = Math.tan(vFov / 2)
+    const tanHalfH = tanHalfV * cam.aspect
+
+    // Screen offset in tangent space
+    const sx = (2 * st.x - 1) * tanHalfH
+    const sy = (1 - 2 * st.y) * tanHalfV
+
+    // Exact offset: in camera local space the direction from target to
+    // camera that places the target at (sx, sy) on screen is (-sx, -sy, 1).
+    const dist = this._camera.position.distanceTo(this._camera.target)
+    const offset = new THREE.Vector3(-sx, -sy, 1).normalize().multiplyScalar(dist)
+    offset.applyQuaternion(cam.quaternion)
+
+    this._camera.position.copy(this._camera.target).add(offset)
+  }
+
+  /**
+   * Projects the orbit target onto the screen and stores the result
+   * in screenTarget. Called when camera moves without re-orienting
+   * so the next orbit reflects the target's actual screen position.
+   */
+  protected updateScreenTarget () {
+    const cam = this._camera.camPerspective.camera
+    cam.updateMatrixWorld(true)
+    const projected = this._camera.target.clone().project(cam)
+
+    if (projected.z > 1) {
+      this._camera.screenTarget.set(0.5, 0.5)
+      return
+    }
+
+    this._camera.screenTarget.set(
+      THREE.MathUtils.clamp((projected.x + 1) / 2, 0, 1),
+      THREE.MathUtils.clamp((1 - projected.y) / 2, 0, 1)
+    )
   }
 
   private getNormalizedDirection (forward?: THREE.Vector3) {

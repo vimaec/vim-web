@@ -14,7 +14,7 @@ export class CameraMovementSnap extends CameraMovement {
    * @param amount movement size.
    */
   zoom (amount: number): void {
-    const dist = this._camera.orbitDistance * amount
+    const dist = this._camera.orbitDistance / amount
     this.setDistance(dist)
   }
 
@@ -28,16 +28,11 @@ export class CameraMovementSnap extends CameraMovement {
 
   rotate (angle: THREE.Vector2): void {
     const locked = angle.clone().multiply(this._camera.allowedRotation)
-    const rotation = this.predictRotate(locked)
+    const rotation = this.computeRotation(locked)
     this.applyRotation(rotation)
   }
 
-  applyRotation (quaternion: THREE.Quaternion) {
-    this._camera.quaternion.copy(quaternion)
-    this.updateScreenTarget()
-  }
-
-  async target (target: Element3D | THREE.Vector3) {
+  async lookAt (target: Element3D | THREE.Vector3) {
     const pos = target instanceof Element3D ? (await target.getCenter()) : target
     if (!pos) return
     this._camera.screenTarget.set(0.5, 0.5)
@@ -59,7 +54,7 @@ export class CameraMovementSnap extends CameraMovement {
     this.applyScreenTargetOffset()
   }
 
-  override move3 (vector: THREE.Vector3): void {
+  override move3D (vector: THREE.Vector3): void {
     const v = vector.clone()
     v.applyQuaternion(this._camera.quaternion)
     const locked = this.lockVector(v, new THREE.Vector3())
@@ -74,13 +69,14 @@ export class CameraMovementSnap extends CameraMovement {
     const dist = direction.length();
 
     // Clamp elevation to avoid gimbal lock at poles
+    let finalPos = position;
     if (dist > 1e-6) {
       const clamped = SphereCoord.fromVector(direction)
       direction.copy(clamped.toVector3())
-      position.copy(target).add(direction)
+      finalPos = target.clone().add(direction)
     }
 
-    const lockedPos = this.lockVector(position, this._camera.position);
+    const lockedPos = this.lockVector(finalPos, this._camera.position);
     this._camera.position.copy(lockedPos);
     this._camera.target.copy(target);
 
@@ -93,34 +89,13 @@ export class CameraMovementSnap extends CameraMovement {
     }
   }
 
-  /**
-   * Projects the orbit target onto the screen and stores the result
-   * in screenTarget. Called when camera moves without re-orienting
-   * so the next orbit reflects the target's actual screen position.
-   */
-  private updateScreenTarget () {
-    const cam = this._camera.camPerspective.camera
-    cam.updateMatrixWorld(true)
-    const projected = this._camera.target.clone().project(cam)
-
-    if (projected.z > 1) {
-      this._camera.screenTarget.set(0.5, 0.5)
-      return
-    }
-
-    this._camera.screenTarget.set(
-      THREE.MathUtils.clamp((projected.x + 1) / 2, 0, 1),
-      THREE.MathUtils.clamp((1 - projected.y) / 2, 0, 1)
-    )
-  }
-
   zoomTowards(amount: number, worldPoint: THREE.Vector3, screenPoint?: THREE.Vector2): void {
     // Direction from world point to camera
     const direction = this._camera.position.clone().sub(worldPoint).normalize()
 
     // Calculate new distance
     const currentDist = this._camera.position.distanceTo(worldPoint)
-    const newDist = currentDist * amount
+    const newDist = currentDist / amount
 
     // New camera position
     const newPos = worldPoint.clone().add(direction.multiplyScalar(newDist))
@@ -135,33 +110,6 @@ export class CameraMovementSnap extends CameraMovement {
   }
   
 
-  /**
-   * Slides the camera position on the orbit sphere so the target appears
-   * at screenTarget instead of screen center. Orientation is unchanged.
-   * Must be called after lookAt(target).
-   */
-  applyScreenTargetOffset () {
-    const st = this._camera.screenTarget
-    if (st.x === 0.5 && st.y === 0.5) return
-
-    const cam = this._camera.camPerspective.camera
-    const vFov = cam.fov * Math.PI / 180
-    const tanHalfV = Math.tan(vFov / 2)
-    const tanHalfH = tanHalfV * cam.aspect
-
-    // Screen offset in tangent space
-    const sx = (2 * st.x - 1) * tanHalfH
-    const sy = (1 - 2 * st.y) * tanHalfV
-
-    // Exact offset: in camera local space the direction from target to
-    // camera that places the target at (sx, sy) on screen is (-sx, -sy, 1).
-    const dist = this._camera.position.distanceTo(this._camera.target)
-    const offset = new THREE.Vector3(-sx, -sy, 1).normalize().multiplyScalar(dist)
-    offset.applyQuaternion(cam.quaternion)
-
-    this._camera.position.copy(this._camera.target).add(offset)
-  }
-
   private lockVector (position: THREE.Vector3, fallback: THREE.Vector3) {
     const x = this._camera.allowedMovement.x === 0 ? fallback.x : position.x
     const y = this._camera.allowedMovement.y === 0 ? fallback.y : position.y
@@ -170,7 +118,7 @@ export class CameraMovementSnap extends CameraMovement {
     return new THREE.Vector3(x, y, z)
   }
 
-  predictRotate(angle: THREE.Vector2) {
+  private computeRotation(angle: THREE.Vector2) {
     const euler = new THREE.Euler(0, 0, 0, 'ZXY')
     euler.setFromQuaternion(this._camera.quaternion)
 

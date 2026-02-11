@@ -58,7 +58,7 @@ export class CameraLerp extends CameraMovement {
     this.onProgress?.(t)
   }
 
-  override move3 (vector: THREE.Vector3): void {
+  override move3D (vector: THREE.Vector3): void {
     const v = vector.clone()
     v.applyQuaternion(this._camera.quaternion)
     const startPos = this._camera.position.clone()
@@ -71,16 +71,14 @@ export class CameraLerp extends CameraMovement {
   }
 
   rotate (angle: THREE.Vector2): void {
-    const euler = new THREE.Euler(0, 0, 0, 'YXZ')
+    const euler = new THREE.Euler(0, 0, 0, 'ZXY')
     euler.setFromQuaternion(this._camera.quaternion)
 
-    // When moving the mouse one full sreen
-    // Orbit will rotate 180 degree around the scene
-    euler.x += angle.x
-    euler.y += angle.y
-    euler.z = 0
+    euler.x += (angle.x * Math.PI) / 180
+    euler.z += (angle.y * Math.PI) / 180
+    euler.y = 0
 
-    // Clamp X rotation to prevent performing a loop.
+    // Clamp pitch to prevent performing a loop.
     const max = Math.PI * 0.48
     euler.x = Math.max(-max, Math.min(max, euler.x))
 
@@ -90,12 +88,12 @@ export class CameraLerp extends CameraMovement {
     this.onProgress = (progress) => {
       rot.copy(start)
       rot.slerp(end, progress)
-      this._movement.applyRotation(rot)
+      this.applyRotation(rot)
     }
   }
 
   zoom (amount: number): void {
-    const dist = this._camera.orbitDistance * amount
+    const dist = this._camera.orbitDistance / amount
     this.setDistance(dist)
   }
 
@@ -106,8 +104,8 @@ export class CameraLerp extends CameraMovement {
       .lerp(start, dist / this._camera.orbitDistance)
 
     this.onProgress = (progress) => {
-      this._camera.position.copy(start)
-      this._camera.position.lerp(end, progress)
+      const pos = start.clone().lerp(end, progress)
+      this._movement.set(pos, undefined, false)
     }
   }
 
@@ -119,7 +117,7 @@ export class CameraLerp extends CameraMovement {
 
     // Calculate end position
     const currentDist = startPos.distanceTo(worldPoint)
-    const newDist = currentDist * amount
+    const newDist = currentDist / amount
     const endPos = worldPoint.clone().add(direction.multiplyScalar(newDist))
 
     // Set orbit target immediately (not animated)
@@ -152,12 +150,13 @@ export class CameraLerp extends CameraMovement {
 
       this._camera.camPerspective.camera.up.set(0, 0, 1)
       this._camera.camPerspective.camera.lookAt(this._camera.target)
-      this._movement.applyScreenTargetOffset()
+      this.applyScreenTargetOffset()
     }
   }
 
-  async target (target: Element3D | THREE.Vector3) {
+  async lookAt (target: Element3D | THREE.Vector3) {
     const pos = target instanceof Element3D ? (await target.getCenter()) : target
+    this._camera.screenTarget.set(0.5, 0.5)
     const next = pos.clone().sub(this._camera.position)
     const start = this._camera.quaternion.clone()
     const rot = new THREE.Quaternion().setFromUnitVectors(
@@ -166,7 +165,7 @@ export class CameraLerp extends CameraMovement {
     )
     this.onProgress = (progress) => {
       const r = start.clone().slerp(rot, progress)
-      this._movement.applyRotation(r)
+      this.applyRotation(r)
     }
   }
 

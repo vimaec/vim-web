@@ -378,7 +378,7 @@ export class Camera implements ICamera {
     // Apply velocity to move the camera
     this._tmp1.copy(this._velocity)
       .multiplyScalar(deltaTime * this.getVelocityMultiplier())
-    this.snap().move3(this._tmp1)
+    this.snap().move3D(this._tmp1)
     return true
   }
 
