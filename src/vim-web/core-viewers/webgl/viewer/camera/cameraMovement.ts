@@ -113,9 +113,21 @@ export abstract class CameraMovement {
 
   /**
    * Orbits the camera around its target while maintaining the distance.
+   * If the target has drifted off-screen, it is reset to 10 units
+   * in front of the camera so the orbit feels natural.
    * @param angle - x: azimuth change, y: elevation change, in degrees.
    */
-  abstract orbit(angle: THREE.Vector2): void
+  orbit (angle: THREE.Vector2): void {
+    const st = this._camera.screenTarget
+    if (st.x < 0 || st.x > 1 || st.y < 0 || st.y > 1) {
+      this._camera.target.copy(this._camera.position)
+        .add(this._camera.forward.multiplyScalar(10))
+      this._camera.screenTarget.set(0.5, 0.5)
+    }
+    this.applyOrbit(angle)
+  }
+
+  protected abstract applyOrbit(angle: THREE.Vector2): void
 
   /**
    * Orbits the camera around its target to align with the given direction.
@@ -170,6 +182,17 @@ export abstract class CameraMovement {
   }
 
   protected abstract lookAtPoint(point: THREE.Vector3): void
+
+  /**
+   * Moves the orbit target without moving the camera or changing orientation.
+   * @param target - The new orbit target (element or world position).
+   */
+  async setTarget (target: Element3D | THREE.Vector3) {
+    const pos = target instanceof Element3D ? (await target.getCenter()) : target
+    if (!pos) return
+    this._camera.target.copy(pos)
+    this.updateScreenTarget()
+  }
 
   /**
    * Resets the camera to its last saved position and orientation.
@@ -296,9 +319,12 @@ export abstract class CameraMovement {
       return
     }
 
+    // No clamping: values outside [0,1] signal that the target has
+    // drifted off-screen (e.g. after WASD movement). orbit() uses
+    // this to detect and reset a stale target.
     this._camera.screenTarget.set(
-      THREE.MathUtils.clamp((this._mvProjected.x + 1) / 2, 0, 1),
-      THREE.MathUtils.clamp((1 - this._mvProjected.y) / 2, 0, 1)
+      (this._mvProjected.x + 1) / 2,
+      (1 - this._mvProjected.y) / 2
     )
   }
 

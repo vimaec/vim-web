@@ -121,7 +121,7 @@ export class CameraLerp extends CameraMovement {
     }
   }
 
-  orbit (angle: THREE.Vector2): void {
+  protected applyOrbit (angle: THREE.Vector2): void {
     const locked = angle.clone().multiply(this._camera.allowedRotation)
     const radius = this._camera.orbitDistance
 

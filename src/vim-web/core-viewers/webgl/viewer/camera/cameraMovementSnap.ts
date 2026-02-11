@@ -27,7 +27,7 @@ export class CameraMovementSnap extends CameraMovement {
     this.set(this._camera.position, point)
   }
 
-  orbit (angle: THREE.Vector2): void {
+  protected applyOrbit (angle: THREE.Vector2): void {
     const locked = angle.clone().multiply(this._camera.allowedRotation)
 
     const start = SphereCoord.fromForward(this._camera.forward, this._camera.orbitDistance)
