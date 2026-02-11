@@ -136,7 +136,8 @@ export class InputHandler extends BaseInputHandler {
       if(this.pointerActive === PointerMode.PAN) adapter.panCamera(delta)
       if(this.pointerActive === PointerMode.ZOOM) adapter.dollyCamera(delta)
     }
-    this.touch.onPinchOrSpread = adapter.zoom
+    this.touch.onPinchStart = (center: THREE.Vector2) => adapter.pinchStart(center)
+    this.touch.onPinchOrSpread = (totalRatio: number) => adapter.pinchZoom(totalRatio)
     this.touch.onDoubleDrag = (value : THREE.Vector2) => adapter.panCamera(value)
   }
 

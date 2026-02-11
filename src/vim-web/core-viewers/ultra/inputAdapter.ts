@@ -101,6 +101,10 @@ function createAdapter(viewer: Viewer): IInputAdapter {
     moveCamera: (value: THREE.Vector3) => {
       // handled server side
     },
+    pinchStart: () => {},
+    pinchZoom: (totalRatio: number) => {
+      viewer.rpc.RPCMouseScrollEvent(totalRatio >= 1 ? -1 : 1);
+    },
     keyDown: (code: string) => {
       return sendKey(viewer, code, true);
     },

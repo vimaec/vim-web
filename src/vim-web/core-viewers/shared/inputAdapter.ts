@@ -24,4 +24,7 @@ export interface IInputAdapter{
   selectAtPointer: (pos: THREE.Vector2, add: boolean) => void
   frameAtPointer: (pos: THREE.Vector2) => void
   zoom: (value: number, screenPos?: THREE.Vector2) => void
+
+  pinchStart: (screenPos: THREE.Vector2) => void
+  pinchZoom: (totalRatio: number) => void
 }

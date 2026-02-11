@@ -19,7 +19,8 @@ export class TouchHandler extends BaseInputHandler {
   onDoubleTap: (position: THREE.Vector2) => void 
   onDrag: (delta: THREE.Vector2) => void
   onDoubleDrag: (delta: THREE.Vector2) => void
-  onPinchOrSpread: (delta: number) => void
+  onPinchStart: (screenCenter: THREE.Vector2) => void
+  onPinchOrSpread: (totalRatio: number) => void
 
   constructor (canvas: HTMLCanvasElement) {
     super(canvas)
@@ -32,6 +33,7 @@ export class TouchHandler extends BaseInputHandler {
   private _touchStartTime: number | undefined = undefined // In ms since epoch
   private _lastTapMs: number | undefined
   private _touchStart: THREE.Vector2 | undefined
+  private _startDist: number | undefined
 
   protected override addListeners (): void {
     this._canvas.style.touchAction = 'none'
@@ -42,7 +44,7 @@ export class TouchHandler extends BaseInputHandler {
   }
 
   override reset = () => {
-    this._touch = this._touch1 = this._touch2 = this._touchStartTime = undefined
+    this._touch = this._touch1 = this._touch2 = this._touchStartTime = this._startDist = undefined
   }
 
   private _onTap = (position: THREE.Vector2) => {
@@ -71,6 +73,15 @@ export class TouchHandler extends BaseInputHandler {
       this._touch1 = this.touchToVector(event.touches[0])
       this._touch2 = this.touchToVector(event.touches[1])
       this._touch = this.average(this._touch1, this._touch2)
+      this._startDist = this._touch1.distanceTo(this._touch2)
+
+      const size = this.getCanvasSize()
+      const rect = this._canvas.getBoundingClientRect()
+      const screenCenter = new THREE.Vector2(
+        (this._touch.x - window.scrollX - rect.left) / rect.width,
+        (this._touch.y - window.scrollY - rect.top) / rect.height
+      )
+      this.onPinchStart?.(screenCenter)
     }
     this._touchStart = this._touch
   }
@@ -138,20 +149,19 @@ export class TouchHandler extends BaseInputHandler {
           new THREE.Vector2(-1 / size.x, -1 / size.y)
         )
 
-      const zoom = p1.distanceTo(p2)
-      const prevZoom = this._touch1.distanceTo(this._touch2)
+      const dist = p1.distanceTo(p2)
+      const prevDist = this._touch1.distanceTo(this._touch2)
       const min = Math.min(size.x, size.y)
-      // -1 to invert movement
-      const zoomDelta = (zoom - prevZoom) / -min
+      const zoomDelta = Math.abs(dist - prevDist) / min
 
       this._touch = p
       this._touch1 = p1
       this._touch2 = p2
 
-      if (moveDelta.length() > Math.abs(zoomDelta)) {
+      if (moveDelta.length() > zoomDelta) {
         this.onDoubleDrag(moveDelta)
-      } else {
-        this.onPinchOrSpread(zoomDelta)
+      } else if (this._startDist) {
+        this.onPinchOrSpread(dist / this._startDist)
       }
     }
   }

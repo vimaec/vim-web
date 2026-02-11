@@ -13,6 +13,9 @@ export function createInputHandler(viewer: Viewer) {
 }
 
 function createAdapter(viewer: Viewer ) : IInputAdapter {
+  let _pinchWorldPoint: THREE.Vector3 | undefined
+  let _pinchStartDist = 0
+
   return {
     init: () => {},
     orbitCamera: (value: THREE.Vector2) => {
@@ -85,6 +88,27 @@ function createAdapter(viewer: Viewer ) : IInputAdapter {
     },
     moveCamera: (value : THREE.Vector3) => {
       viewer.camera.localVelocity = value
+    },
+
+    pinchStart: async (screenPos: THREE.Vector2) => {
+      const result = await viewer.raycaster.raycastFromScreen(screenPos)
+      if (result?.worldPosition) {
+        _pinchWorldPoint = result.worldPosition.clone()
+        _pinchStartDist = viewer.camera.position.distanceTo(result.worldPosition)
+      } else {
+        _pinchWorldPoint = undefined
+      }
+    },
+    pinchZoom: (totalRatio: number) => {
+      if (_pinchWorldPoint) {
+        const currentDist = viewer.camera.position.distanceTo(_pinchWorldPoint)
+        const desiredDist = _pinchStartDist / totalRatio
+        if (currentDist > 1e-6) {
+          viewer.camera.snap().zoomTowards(currentDist / desiredDist, _pinchWorldPoint)
+        }
+      } else {
+        viewer.camera.snap().zoom(totalRatio)
+      }
     },
 
     keyDown: (keyCode: string) => {return false},
