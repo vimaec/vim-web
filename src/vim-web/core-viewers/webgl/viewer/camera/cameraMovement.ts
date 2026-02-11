@@ -98,11 +98,7 @@ export abstract class CameraMovement {
    */
   abstract zoomTowards(amount: number, worldPoint: THREE.Vector3, screenPoint?: THREE.Vector2): void
 
-  /**
-   * Sets the distance between the camera and its target to the specified value.
-   * @param {number} dist - The new distance between the camera and its target.
-   */
-  abstract setDistance(dist: number): void
+  protected abstract setDistance(dist: number): void
 
   /**
    * Orbits the camera around its target by the given angle while maintaining the distance.

@@ -95,7 +95,7 @@ export class CameraLerp extends CameraMovement {
     this.setDistance(dist)
   }
 
-  setDistance (dist: number): void {
+  protected setDistance (dist: number): void {
     const start = this._camera.position.clone()
     const end = this._camera.target
       .clone()

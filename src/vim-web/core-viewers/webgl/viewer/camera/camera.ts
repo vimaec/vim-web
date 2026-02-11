@@ -159,7 +159,9 @@ export class Camera implements ICamera {
     // Values
     this._onValueChanged.dispatch()
 
-    this.snap(true).setDistance(-1000)
+    // Place camera far from target before orienting it
+    const initPos = this._target.clone().add(this.forward.multiplyScalar(1000))
+    this.snap(true).set(initPos, this._target)
     this.snap(true).orbitTowards(this._defaultForward)
     this.updateProjection()
   }

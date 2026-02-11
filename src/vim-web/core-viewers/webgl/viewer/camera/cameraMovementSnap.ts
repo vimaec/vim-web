@@ -18,7 +18,7 @@ export class CameraMovementSnap extends CameraMovement {
     this.setDistance(dist)
   }
 
-  setDistance (dist: number): void {
+  protected setDistance (dist: number): void {
     const pos = this._camera.target
       .clone()
       .sub(this._camera.forward.multiplyScalar(dist))
