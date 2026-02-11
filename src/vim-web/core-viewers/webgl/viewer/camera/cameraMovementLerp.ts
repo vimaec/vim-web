@@ -165,10 +165,25 @@ export class CameraLerp extends CameraMovement {
     const endTarget = target ?? this._camera.target
     const startPos = this._camera.position.clone()
     const startTarget = this._camera.target.clone()
+    const startQuat = this._camera.quaternion.clone()
+
+    // Compute the final camera state (includes elevation clamping, lookAt, screen offset)
+    this._movement.set(position, endTarget)
+    const endPos = this._camera.position.clone()
+    const endQuat = this._camera.quaternion.clone()
+
+    // Restore start state
+    this._camera.position.copy(startPos)
+    this._camera.target.copy(startTarget)
+    this._camera.quaternion.copy(startQuat)
+
     this.onProgress = (progress) => {
-      this._lrTmp.copy(startPos).lerp(position, progress)
+      this._lrTmp.copy(startPos).lerp(endPos, progress)
       this._lrTmp2.copy(startTarget).lerp(endTarget, progress)
-      this._movement.set(this._lrTmp, this._lrTmp2)
+      this._lrQuat.copy(startQuat).slerp(endQuat, progress)
+      this._camera.position.copy(this._lrTmp)
+      this._camera.target.copy(this._lrTmp2)
+      this._camera.quaternion.copy(this._lrQuat)
     }
   }
 }
