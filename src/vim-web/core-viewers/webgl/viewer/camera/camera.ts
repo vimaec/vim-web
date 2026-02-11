@@ -372,7 +372,9 @@ export class Camera implements ICamera {
     // Apply velocity to move the camera
     this._tmp1.copy(this._velocity)
       .multiplyScalar(deltaTime * this.getVelocityMultiplier())
-    this.snap().move3D(this._tmp1)
+    // Convert Three.js camera-local (x,y,z) → Z-up local (x, -z, y)
+    this._tmp2.set(this._tmp1.x, -this._tmp1.z, this._tmp1.y)
+    this.snap().move('XYZ', this._tmp2, 'local')
     return true
   }
 

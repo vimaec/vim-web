@@ -54,10 +54,8 @@ export class CameraMovementSnap extends CameraMovement {
     this.applyScreenTargetOffset()
   }
 
-  override move3D (vector: THREE.Vector3): void {
-    const v = vector.clone()
-    v.applyQuaternion(this._camera.quaternion)
-    const locked = this.lockVector(v, new THREE.Vector3())
+  protected applyMove (worldVector: THREE.Vector3): void {
+    const locked = this.lockVector(worldVector, new THREE.Vector3())
     const pos = this._camera.position.clone().add(locked)
     this.set(pos, undefined, false)
   }

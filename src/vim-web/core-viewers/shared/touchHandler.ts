@@ -94,7 +94,7 @@ export class TouchHandler extends BaseInputHandler {
   /*
   private onDoubleDrag = (delta: THREE.Vector2) => {
     const move = delta.clone().multiplyScalar(this.MOVE_SPEED)
-    this.camera.snap().move2D(move, 'XY')
+    this.camera.snap().move('XY', move, 'local')
   }
     */
 
@@ -103,7 +103,7 @@ export class TouchHandler extends BaseInputHandler {
     if (this._viewer.inputs.pointerActive === 'orbit') {
       this.camera.snap().zoom(1 + delta * this.ZOOM_SPEED)
     } else {
-      this.camera.snap().move1D(delta * this.ZOOM_SPEED, 'Z')
+      this.camera.snap().move('Z', delta * this.ZOOM_SPEED, 'local')
     }
   }
     */

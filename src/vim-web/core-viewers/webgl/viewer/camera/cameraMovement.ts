@@ -24,40 +24,58 @@ export abstract class CameraMovement {
   }
 
   /**
-   * Moves the camera by the specified 3D vector.
-   * @param {THREE.Vector3} vector - The 3D vector representing the direction and distance of movement.
+   * Moves the camera along a single axis.
+   * @param axis The Z-up axis to move along ('X' = right, 'Y' = forward, 'Z' = up).
+   * @param amount The distance to move.
+   * @param space 'local' to move relative to camera orientation, 'world' for absolute axes.
    */
-  abstract move3D(vector: THREE.Vector3): void
-
+  move(axis: 'X' | 'Y' | 'Z', amount: number, space: 'local' | 'world'): void
   /**
-   * Moves the camera in a specified 2D direction within a plane defined by the given axes.
-   * @param {THREE.Vector2} vector - The 2D vector representing the direction of movement.
-   * @param {'XY' | 'XZ'} axes - The axes defining the plane of movement ('XY' or 'XZ').
+   * Moves the camera along two axes.
+   * @param axes The Z-up plane to move in (e.g. 'XY' = ground, 'XZ' = vertical).
+   * @param vector The 2D displacement, components mapped to the specified axes.
+   * @param space 'local' to move relative to camera orientation, 'world' for absolute axes.
    */
-  move2D (vector: THREE.Vector2, axes: 'XY' | 'XZ'): void {
-    const direction =
-      axes === 'XY'
-        ? new THREE.Vector3(-vector.x, 0, vector.y)
-        : axes === 'XZ'
-          ? new THREE.Vector3(-vector.x, vector.y, 0)
-          : undefined
+  move(axes: 'XY' | 'XZ' | 'YZ', vector: THREE.Vector2, space: 'local' | 'world'): void
+  /**
+   * Moves the camera along all three axes.
+   * @param axes Must be 'XYZ'.
+   * @param vector The 3D displacement in Z-up convention (X = right, Y = forward, Z = up).
+   * @param space 'local' to move relative to camera orientation, 'world' for absolute axes.
+   */
+  move(axes: 'XYZ', vector: THREE.Vector3, space: 'local' | 'world'): void
+  move (
+    axes: 'X' | 'Y' | 'Z' | 'XY' | 'XZ' | 'YZ' | 'XYZ',
+    value: number | THREE.Vector2 | THREE.Vector3,
+    space: 'local' | 'world'
+  ): void {
+    // Build Z-up direction vector from axes and value
+    const direction = new THREE.Vector3()
+    if (value instanceof THREE.Vector3) {
+      direction.copy(value)
+    } else if (value instanceof THREE.Vector2) {
+      this.setComponent(direction, axes[0], value.x)
+      this.setComponent(direction, axes[1], value.y)
+    } else {
+      this.setComponent(direction, axes, value)
+    }
 
-    if (direction) this.move3D(direction)
+    if (space === 'local') {
+      // Remap Z-up (x,y,z) → Three.js camera-local (x, z, -y), then to world
+      const local = new THREE.Vector3(direction.x, direction.z, -direction.y)
+      local.applyQuaternion(this._camera.quaternion)
+      this.applyMove(local)
+    } else {
+      this.applyMove(direction)
+    }
   }
 
-  /**
-   * Moves the camera along a specified axis by a given amount.
-   * @param {number} amount - The amount to move the camera.
-   * @param {'X' | 'Y' | 'Z'} axis - The axis along which to move the camera ('X', 'Y', or 'Z').
-   */
-  move1D (amount: number, axis: 'X' | 'Y' | 'Z'): void {
-    const direction = new THREE.Vector3(
-      axis === 'X' ? -amount : 0,
-      axis === 'Z' ? amount : 0,
-      axis === 'Y' ? amount : 0,
-    )
+  protected abstract applyMove(worldVector: THREE.Vector3): void
 
-    this.move3D(direction)
+  private setComponent (v: THREE.Vector3, axis: string, value: number) {
+    if (axis === 'X') v.x = value
+    else if (axis === 'Y') v.y = value
+    else v.z = value
   }
 
   /**

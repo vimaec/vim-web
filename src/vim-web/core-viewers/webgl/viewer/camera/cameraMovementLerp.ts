@@ -58,11 +58,9 @@ export class CameraLerp extends CameraMovement {
     this.onProgress?.(t)
   }
 
-  override move3D (vector: THREE.Vector3): void {
-    const v = vector.clone()
-    v.applyQuaternion(this._camera.quaternion)
+  protected applyMove (worldVector: THREE.Vector3): void {
     const startPos = this._camera.position.clone()
-    const endPos = this._camera.position.clone().add(v)
+    const endPos = this._camera.position.clone().add(worldVector)
 
     this.onProgress = (progress) => {
       const pos = startPos.clone().lerp(endPos, progress)
