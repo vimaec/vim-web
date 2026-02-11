@@ -1,6 +1,7 @@
 import {type IInputAdapter} from "../../shared/inputAdapter"
 import {InputHandler, PointerMode} from "../../shared/inputHandler"
 import { Viewer } from "./viewer"
+import { Element3D } from '../loader/element3d'
 import * as THREE from 'three'
 
 export function createInputHandler(viewer: Viewer) {
@@ -58,11 +59,13 @@ function createAdapter(viewer: Viewer ) : IInputAdapter {
       //TODO: This logic should happen in shared code
       const result = await viewer.raycaster.raycastFromScreen(pos)
       if(add){
-        
         viewer.selection.add(result?.object)
       }
       else{
         viewer.selection.select(result?.object)
+      }
+      if (result?.object instanceof Element3D) {
+        await viewer.camera.snap().setTarget(result.object)
       }
     },
     frameAtPointer: async (pos: THREE.Vector2) => {
