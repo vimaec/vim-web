@@ -302,6 +302,15 @@ export abstract class CameraMovement {
     )
   }
 
+  protected lockVector (position: THREE.Vector3, fallback: THREE.Vector3, out: THREE.Vector3): THREE.Vector3 {
+    const allowed = this._camera.allowedMovement
+    return out.set(
+      allowed.x === 0 ? fallback.x : position.x,
+      allowed.y === 0 ? fallback.y : position.y,
+      allowed.z === 0 ? fallback.z : position.z
+    )
+  }
+
   private getNormalizedDirection (forward?: THREE.Vector3) {
     if (!forward) {
       return this._camera.forward

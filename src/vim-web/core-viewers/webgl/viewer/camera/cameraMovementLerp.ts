@@ -115,8 +115,9 @@ export class CameraLerp extends CameraMovement {
     }
 
     this.onProgress = (progress) => {
-      // Only lerp position, orientation stays unchanged
-      this._camera.position.copy(startPos).lerp(endPos, progress)
+      this._lrTmp.copy(startPos).lerp(endPos, progress)
+      this.lockVector(this._lrTmp, this._camera.position, this._lrTmp2)
+      this._camera.position.copy(this._lrTmp2)
     }
   }
 
@@ -131,8 +132,10 @@ export class CameraLerp extends CameraMovement {
     this.onProgress = (progress) => {
       this._lrTmp.copy(startOffset).lerp(endOffset, progress)
       this._lrTmp.normalize().multiplyScalar(radius)
+      this._lrTmp.add(this._camera.target)
 
-      this._camera.position.copy(this._camera.target).add(this._lrTmp)
+      this.lockVector(this._lrTmp, this._camera.position, this._lrTmp2)
+      this._camera.position.copy(this._lrTmp2)
 
       this._camera.camPerspective.camera.up.set(0, 0, 1)
       this._camera.camPerspective.camera.lookAt(this._camera.target)

@@ -92,15 +92,4 @@ export class CameraMovementSnap extends CameraMovement {
       this._camera.screenTarget.copy(screenPoint)
     }
   }
-  
-
-  private lockVector (position: THREE.Vector3, fallback: THREE.Vector3, out: THREE.Vector3): THREE.Vector3 {
-    const allowed = this._camera.allowedMovement
-    return out.set(
-      allowed.x === 0 ? fallback.x : position.x,
-      allowed.y === 0 ? fallback.y : position.y,
-      allowed.z === 0 ? fallback.z : position.z
-    )
-  }
-
 }
