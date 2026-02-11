@@ -85,8 +85,8 @@ export abstract class CameraMovement {
   }
 
   /**
-   * Rotates the camera by the specified angles.
-   * @param {THREE.Vector2} angle - The 2D vector representing the rotation angles around the X and Y axes.
+   * Rotates the camera in place by the given angles.
+   * @param angle - x: pitch (up/down), y: yaw (around Z), in degrees.
    */
   abstract rotate(angle: THREE.Vector2): void
 
@@ -99,18 +99,19 @@ export abstract class CameraMovement {
   /**
    * Zooms the camera toward a specific world point while preserving camera orientation.
    * The orbit target is updated to the world point for future orbit operations.
-   * @param {number} amount - The zoom factor (e.g., 2 to zoom in / move closer, 0.5 to zoom out / move farther).
-   * @param {THREE.Vector3} worldPoint - The world position to zoom toward.
+   * @param amount - The zoom factor (e.g., 2 to zoom in / move closer, 0.5 to zoom out / move farther).
+   * @param worldPoint - The world position to zoom toward.
+   * @param [screenPoint] - Screen position of the world point, used to keep the target pinned under the cursor.
    */
   abstract zoomTowards(amount: number, worldPoint: THREE.Vector3, screenPoint?: THREE.Vector2): void
 
   protected abstract setDistance(dist: number): void
 
   /**
-   * Orbits the camera around its target by the given angle while maintaining the distance.
-   * @param {THREE.Vector2} vector - The 2D vector representing the orbit angles around the X and Y axes.
+   * Orbits the camera around its target while maintaining the distance.
+   * @param angle - x: elevation change, y: azimuth change, in degrees.
    */
-  abstract orbit(vector: THREE.Vector2): void
+  abstract orbit(angle: THREE.Vector2): void
 
   /**
    * Orbits the camera around its target to align with the given direction.
@@ -154,8 +155,8 @@ export abstract class CameraMovement {
 
 
   /**
-   * Rotates the camera without moving so that it looks at the specified target.
-   * @param {Element3D | THREE.Vector3} target - The target object or position to look at.
+   * Orients the camera to look at the given point. The orbit target is updated.
+   * @param target - The target element or world position to look at.
    */
   abstract lookAt(target: Element3D | THREE.Vector3): void
 
@@ -168,19 +169,20 @@ export abstract class CameraMovement {
   }
 
   /**
-   * Moves both the camera and its target to the given positions.
-   * @param {THREE.Vector3} position - The new position of the camera.
-   * @param {THREE.Vector3 | undefined} [target] - The new position of the target (optional).
+   * Sets the camera position and target, orienting the camera to look at the target.
+   * Elevation is clamped to avoid gimbal lock at poles.
+   * @param position - The new camera position.
+   * @param [target] - The new orbit target. Defaults to the current target.
    */
   abstract set(position: THREE.Vector3, target?: THREE.Vector3)
 
   /**
    * Sets the camera's orientation and position to focus on the specified target.
-   * @param {IObject | Vim | THREE.Sphere | THREE.Box3 | 'all' | undefined} target - The target object, or 'all' to frame all objects.
-   * @param {THREE.Vector3} [forward] - Optional forward direction after framing.
+   * @param target - The target to frame, or 'all' to frame everything.
+   * @param [forward] - Optional forward direction after framing.
    */
   async frame (
-    target: Selectable | Vim | THREE.Sphere | THREE.Box3 | 'all' | undefined,
+    target: Selectable | Vim | THREE.Sphere | THREE.Box3 | 'all',
     forward?: THREE.Vector3
   ) {
     if ((target instanceof Marker) || (target instanceof Element3D)) {

@@ -26,7 +26,7 @@ export class Camera implements ICamera {
   private static readonly _ALL_ROTATION = new THREE.Vector2(1, 1)
 
   private _viewport: Viewport
-  private _scene: RenderScene // make private again
+  private _scene: RenderScene
   private _lerp: CameraLerp
   private _movement: CameraMovementSnap
 
@@ -44,7 +44,7 @@ export class Camera implements ICamera {
   private _lastQuaternion = new THREE.Quaternion()
   private _lastTarget = new THREE.Vector3()
 
-  // Reuseable vectors for calculations
+  // Reusable vectors for calculations
   private _tmp1 = new THREE.Vector3()
   private _tmp2 = new THREE.Vector3()
 
@@ -86,8 +86,8 @@ export class Camera implements ICamera {
   private _force: boolean = false
 
   /**
-   * Represents allowed movement along each axis using a Vector3 object.
-   * Each component of the Vector3 should be either 0 or 1 to enable/disable movement along the corresponding axis.
+   * Allowed movement axes in Z-up space (X = right, Y = forward, Z = up).
+   * Each component should be 0 (locked) or 1 (free).
    */
   private _allowedMovement = new THREE.Vector3(1, 1, 1)
   get allowedMovement () {
@@ -102,8 +102,8 @@ export class Camera implements ICamera {
   }
 
   /**
-   * Represents allowed rotation using a Vector2 object.
-   * Each component of the Vector2 should be either 0 or 1 to enable/disable rotation around the corresponding axis.
+   * Allowed rotation axes. x = pitch (up/down), y = yaw (around Z).
+   * Each component should be 0 (locked) or 1 (free).
    */
   get allowedRotation () {
     return this._force ? Camera._ALL_ROTATION : this._allowedRotation
@@ -182,7 +182,7 @@ export class Camera implements ICamera {
 
   /**
    * Interface for smoothly moving the camera over time.
-   * @param {number} [duration=1] - The duration of the camera movement animation.
+   * @param {number} [duration=1] - The duration of the camera movement in seconds.
    * @param {boolean} [force=false] - Set to true to ignore locked axis and rotation.
    * @returns {CameraMovement} The camera movement api.
    */
@@ -198,7 +198,7 @@ export class Camera implements ICamera {
   /**
    * Calculates the frustum size at a given point in the scene.
    * @param {THREE.Vector3} point - The point in the scene to calculate the frustum size at.
-   * @returns {number} The frustum size at the specified point.
+   * @returns {THREE.Vector2} The frustum size (width, height) at the specified point.
    */
   frustumSizeAt (point: THREE.Vector3) {
     return this.orthographic ? this.camOrthographic.frustumSizeAt(point) : this.camPerspective.frustumSizeAt(point)
@@ -214,7 +214,7 @@ export class Camera implements ICamera {
   }
 
   /**
-   * The quaternion representing the orientation of the object.
+   * The quaternion representing the camera's orientation.
    */
   get quaternion () {
     return this.camPerspective.camera.quaternion
@@ -243,7 +243,7 @@ export class Camera implements ICamera {
   }
 
   /**
-   * The current or target velocity of the camera.
+   * The current velocity in camera-local Z-up space (X = right, Y = forward, Z = up).
    */
   get localVelocity () {
     const result = this._velocity.clone()
@@ -253,7 +253,7 @@ export class Camera implements ICamera {
   }
 
   /**
-   * The current or target velocity of the camera.
+   * Sets the desired velocity in camera-local Z-up space (X = right, Y = forward, Z = up).
    */
   set localVelocity (vector: THREE.Vector3) {
     this._lerp.cancel()
@@ -271,7 +271,7 @@ export class Camera implements ICamera {
   }
 
   /**
-   * The target at which the camera is looking at and around which it rotates.
+   * The point the camera looks at and orbits around.
    */
   get target () {
     return this._target
