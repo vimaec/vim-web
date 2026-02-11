@@ -150,17 +150,13 @@ export class TouchHandler extends BaseInputHandler {
         )
 
       const dist = p1.distanceTo(p2)
-      const prevDist = this._touch1.distanceTo(this._touch2)
-      const min = Math.min(size.x, size.y)
-      const zoomDelta = Math.abs(dist - prevDist) / min
 
       this._touch = p
       this._touch1 = p1
       this._touch2 = p2
 
-      if (moveDelta.length() > zoomDelta) {
-        this.onDoubleDrag(moveDelta)
-      } else if (this._startDist) {
+      this.onDoubleDrag(moveDelta)
+      if (this._startDist) {
         this.onPinchOrSpread(dist / this._startDist)
       }
     }
