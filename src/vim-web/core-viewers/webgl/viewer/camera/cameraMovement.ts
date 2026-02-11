@@ -123,6 +123,7 @@ export abstract class CameraMovement {
       this._camera.target.copy(this._camera.position)
         .add(this._camera.forward.multiplyScalar(10))
       this._camera.screenTarget.set(0.5, 0.5)
+      this._camera.floatingTarget = true
     }
     this.applyOrbit(angle)
   }
@@ -178,6 +179,7 @@ export abstract class CameraMovement {
     const pos = target instanceof Element3D ? (await target.getCenter()) : target
     if (!pos) return
     this._camera.screenTarget.set(0.5, 0.5)
+    this._camera.floatingTarget = false
     this.lookAtPoint(pos)
   }
 
@@ -191,6 +193,7 @@ export abstract class CameraMovement {
     const pos = target instanceof Element3D ? (await target.getCenter()) : target
     if (!pos) return
     this._camera.target.copy(pos)
+    this._camera.floatingTarget = false
     this.updateScreenTarget()
   }
 
@@ -199,6 +202,7 @@ export abstract class CameraMovement {
    */
   reset () {
     this._camera.screenTarget.set(0.5, 0.5)
+    this._camera.floatingTarget = false
     this.set(this._savedState.position, this._savedState.target)
   }
 
@@ -252,6 +256,7 @@ export abstract class CameraMovement {
     const pos = direction.multiplyScalar(-safeDist).add(sphere.center)
 
     this._camera.screenTarget.set(0.5, 0.5)
+    this._camera.floatingTarget = false
     this.set(pos, sphere.center)
   }
 

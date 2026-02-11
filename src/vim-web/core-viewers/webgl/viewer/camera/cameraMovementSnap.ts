@@ -44,6 +44,9 @@ export class CameraMovementSnap extends CameraMovement {
 
   protected applyMove (worldVector: THREE.Vector3): void {
     this.lockVector(worldVector, CameraMovementSnap._ZERO, this._snTmp1)
+    if (this._camera.floatingTarget) {
+      this._camera.target.add(this._snTmp1)
+    }
     this._snTmp2.copy(this._camera.position).add(this._snTmp1)
     this.reposition(this._snTmp2)
   }
@@ -65,6 +68,7 @@ export class CameraMovementSnap extends CameraMovement {
     this.lockVector(finalPos, this._camera.position, this._snTmp1)
     this._camera.position.copy(this._snTmp1)
     this._camera.target.copy(target)
+    this._camera.floatingTarget = false
 
     this._camera.camPerspective.camera.up.set(0, 0, 1)
     this._camera.camPerspective.camera.lookAt(target)
@@ -74,7 +78,10 @@ export class CameraMovementSnap extends CameraMovement {
   reposition (position: THREE.Vector3, target?: THREE.Vector3) {
     this.lockVector(position, this._camera.position, this._snTmp1)
     this._camera.position.copy(this._snTmp1)
-    if (target) this._camera.target.copy(target)
+    if (target) {
+      this._camera.target.copy(target)
+      this._camera.floatingTarget = false
+    }
     this.updateScreenTarget()
   }
 

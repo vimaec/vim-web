@@ -38,6 +38,7 @@ export class Camera implements ICamera {
   private _orthographic: boolean = false
   private _target = new THREE.Vector3()
   private _screenTarget = new THREE.Vector2(0.5, 0.5)
+  private _floatingTarget = false
 
   // updates
   private _lastPosition = new THREE.Vector3()
@@ -287,6 +288,21 @@ export class Camera implements ICamera {
 
   set screenTarget (value: THREE.Vector2) {
     this._screenTarget.copy(value)
+  }
+
+  /**
+   * When true the orbit target is not anchored to a scene point and
+   * will translate with the camera during WASD / pan movement.
+   * Set automatically when the orbit target is reset because it drifted
+   * off-screen. Cleared when the target is explicitly set (select,
+   * lookAt, frame, zoomTowards, etc.).
+   */
+  get floatingTarget () {
+    return this._floatingTarget
+  }
+
+  set floatingTarget (value: boolean) {
+    this._floatingTarget = value
   }
 
   /**

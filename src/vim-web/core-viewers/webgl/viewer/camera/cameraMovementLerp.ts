@@ -108,6 +108,7 @@ export class CameraLerp extends CameraMovement {
 
     // Set orbit target immediately (not animated)
     this._camera.target.copy(worldPoint)
+    this._camera.floatingTarget = false
 
     // Update screen target so orbit pivot stays at cursor position
     if (screenPoint) {
@@ -160,6 +161,7 @@ export class CameraLerp extends CameraMovement {
   }
 
   set (position: THREE.Vector3, target?: THREE.Vector3) {
+    this._camera.floatingTarget = false
     const endTarget = target ?? this._camera.target
     const startPos = this._camera.position.clone()
     const startTarget = this._camera.target.clone()
