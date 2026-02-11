@@ -64,7 +64,7 @@ export class CameraLerp extends CameraMovement {
 
     this.onProgress = (progress) => {
       const pos = startPos.clone().lerp(endPos, progress)
-      this._movement.set(pos, undefined, false)
+      this._movement.reposition(pos)
     }
   }
 
@@ -103,7 +103,7 @@ export class CameraLerp extends CameraMovement {
 
     this.onProgress = (progress) => {
       const pos = start.clone().lerp(end, progress)
-      this._movement.set(pos, undefined, false)
+      this._movement.reposition(pos)
     }
   }
 

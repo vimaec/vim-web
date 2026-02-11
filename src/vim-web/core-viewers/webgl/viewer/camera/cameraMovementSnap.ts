@@ -23,7 +23,7 @@ export class CameraMovementSnap extends CameraMovement {
       .clone()
       .sub(this._camera.forward.multiplyScalar(dist))
 
-    this.set(pos, this._camera.target, false)
+    this.reposition(pos)
   }
 
   rotate (angle: THREE.Vector2): void {
@@ -57,34 +57,37 @@ export class CameraMovementSnap extends CameraMovement {
   protected applyMove (worldVector: THREE.Vector3): void {
     const locked = this.lockVector(worldVector, new THREE.Vector3())
     const pos = this._camera.position.clone().add(locked)
-    this.set(pos, undefined, false)
+    this.reposition(pos)
   }
 
-  set(position: THREE.Vector3, target?: THREE.Vector3, lookAt: boolean = true) {
-    target = target ?? this._camera.target;
+  set (position: THREE.Vector3, target?: THREE.Vector3) {
+    target = target ?? this._camera.target
 
-    const direction = new THREE.Vector3().subVectors(position, target);
-    const dist = direction.length();
+    const direction = new THREE.Vector3().subVectors(position, target)
+    const dist = direction.length()
 
     // Clamp elevation to avoid gimbal lock at poles
-    let finalPos = position;
+    let finalPos = position
     if (dist > 1e-6) {
       const clamped = SphereCoord.fromVector(direction)
       direction.copy(clamped.toVector3())
       finalPos = target.clone().add(direction)
     }
 
-    const lockedPos = this.lockVector(finalPos, this._camera.position);
-    this._camera.position.copy(lockedPos);
-    this._camera.target.copy(target);
+    const lockedPos = this.lockVector(finalPos, this._camera.position)
+    this._camera.position.copy(lockedPos)
+    this._camera.target.copy(target)
 
-    if (lookAt) {
-      this._camera.camPerspective.camera.up.set(0, 0, 1);
-      this._camera.camPerspective.camera.lookAt(target);
-      this.applyScreenTargetOffset();
-    } else {
-      this.updateScreenTarget();
-    }
+    this._camera.camPerspective.camera.up.set(0, 0, 1)
+    this._camera.camPerspective.camera.lookAt(target)
+    this.applyScreenTargetOffset()
+  }
+
+  reposition (position: THREE.Vector3, target?: THREE.Vector3) {
+    const lockedPos = this.lockVector(position, this._camera.position)
+    this._camera.position.copy(lockedPos)
+    if (target) this._camera.target.copy(target)
+    this.updateScreenTarget()
   }
 
   zoomTowards(amount: number, worldPoint: THREE.Vector3, screenPoint?: THREE.Vector2): void {
@@ -98,8 +101,8 @@ export class CameraMovementSnap extends CameraMovement {
     // New camera position
     const newPos = worldPoint.clone().add(direction.multiplyScalar(newDist))
 
-    // Set position and update orbit target without changing orientation
-    this.set(newPos, worldPoint, false)
+    // Reposition camera and update orbit target without changing orientation
+    this.reposition(newPos, worldPoint)
 
     // Override projected screen target with exact cursor position
     if (screenPoint) {
