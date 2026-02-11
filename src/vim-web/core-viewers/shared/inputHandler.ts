@@ -40,10 +40,10 @@ export class InputHandler extends BaseInputHandler {
   keyboard: KeyboardHandler
 
 
-  scrollSpeed: number = 1.6
-  private _moveSpeed: number
+  scrollSpeed: number
   rotateSpeed: number
   orbitSpeed: number
+  private _moveSpeed: number
 
   private _pointerActive: PointerMode = PointerMode.ORBIT
   private _pointerFallback: PointerMode = PointerMode.LOOK
@@ -58,7 +58,7 @@ export class InputHandler extends BaseInputHandler {
     this._adapter = adapter
 
     this._pointerActive = (settings.orbit === undefined || settings.orbit) ? PointerMode.ORBIT : PointerMode.LOOK
-    this.scrollSpeed = settings.scrollSpeed ?? 1.6
+    this.scrollSpeed = settings.scrollSpeed ?? 1.75
     this._moveSpeed = settings.moveSpeed ?? 1
     this.rotateSpeed = settings.rotateSpeed ?? 1
     this.orbitSpeed = settings.orbitSpeed ?? 1

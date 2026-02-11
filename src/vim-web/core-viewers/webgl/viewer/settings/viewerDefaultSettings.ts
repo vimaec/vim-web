@@ -26,7 +26,7 @@ export function getDefaultViewerSettings(): ViewerSettings {
         rotateSpeed: 1,
         orbitSpeed: 1,
         moveSpeed: 1,
-        scrollSpeed: 1.5
+        scrollSpeed: 1.75
       },
   
       gizmo: {
