@@ -39,6 +39,7 @@ export class Camera implements ICamera {
   private _target = new THREE.Vector3()
   private _screenTarget = new THREE.Vector2(0.5, 0.5)
   private _floatingTarget = false
+  private _cachedFrustumLength = 0
 
   // updates
   private _lastPosition = new THREE.Vector3()
@@ -302,6 +303,9 @@ export class Camera implements ICamera {
   }
 
   set floatingTarget (value: boolean) {
+    if (value && !this._floatingTarget) {
+      this._cachedFrustumLength = this.frustumSizeAt(this._target).length()
+    }
     this._floatingTarget = value
   }
 
@@ -402,7 +406,9 @@ export class Camera implements ICamera {
   private getVelocityMultiplier () {
     const rotated = !this._lastQuaternion.equals(this.quaternion)
     const mod = rotated ? 1 : 1.66
-    const frustum = this.frustumSizeAt(this.target).length()
+    const frustum = this._floatingTarget && this._cachedFrustumLength > 0
+      ? this._cachedFrustumLength
+      : this.frustumSizeAt(this.target).length()
     return mod * frustum
   }
 
