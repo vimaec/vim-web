@@ -21,6 +21,10 @@ export class CameraLerp extends CameraMovement {
 
   private _duration = 1
 
+  private _lrTmp = new THREE.Vector3()
+  private _lrTmp2 = new THREE.Vector3()
+  private _lrQuat = new THREE.Quaternion()
+
   constructor (camera: Camera, movement: CameraMovementSnap, savedState: CameraSaveState, getBoundingBox:() => THREE.Box3) {
     super(camera, savedState, getBoundingBox)
     this._movement = movement
@@ -63,8 +67,8 @@ export class CameraLerp extends CameraMovement {
     const endPos = this._camera.position.clone().add(worldVector)
 
     this.onProgress = (progress) => {
-      const pos = startPos.clone().lerp(endPos, progress)
-      this._movement.reposition(pos)
+      this._lrTmp.copy(startPos).lerp(endPos, progress)
+      this._movement.reposition(this._lrTmp)
     }
   }
 
@@ -102,8 +106,8 @@ export class CameraLerp extends CameraMovement {
       .lerp(start, dist / this._camera.orbitDistance)
 
     this.onProgress = (progress) => {
-      const pos = start.clone().lerp(end, progress)
-      this._movement.reposition(pos)
+      this._lrTmp.copy(start).lerp(end, progress)
+      this._movement.reposition(this._lrTmp)
     }
   }
 
@@ -141,10 +145,10 @@ export class CameraLerp extends CameraMovement {
     const endOffset = start.rotate(locked.y, locked.x).toVector3()
 
     this.onProgress = (progress) => {
-      const currentOffset = startOffset.clone().lerp(endOffset, progress)
-      currentOffset.normalize().multiplyScalar(radius)
+      this._lrTmp.copy(startOffset).lerp(endOffset, progress)
+      this._lrTmp.normalize().multiplyScalar(radius)
 
-      this._camera.position.copy(this._camera.target).add(currentOffset)
+      this._camera.position.copy(this._camera.target).add(this._lrTmp)
 
       this._camera.camPerspective.camera.up.set(0, 0, 1)
       this._camera.camPerspective.camera.lookAt(this._camera.target)
@@ -167,8 +171,8 @@ export class CameraLerp extends CameraMovement {
     this._camera.quaternion.copy(savedQuat)
 
     this.onProgress = (progress) => {
-      const r = start.clone().slerp(end, progress)
-      this.applyRotation(r)
+      this._lrQuat.copy(start).slerp(end, progress)
+      this.applyRotation(this._lrQuat)
     }
   }
 
@@ -177,10 +181,9 @@ export class CameraLerp extends CameraMovement {
     const startPos = this._camera.position.clone()
     const startTarget = this._camera.target.clone()
     this.onProgress = (progress) => {
-      this._movement.set(
-        startPos.clone().lerp(position, progress),
-        startTarget.clone().lerp(endTarget, progress)
-      )
+      this._lrTmp.copy(startPos).lerp(position, progress)
+      this._lrTmp2.copy(startTarget).lerp(endTarget, progress)
+      this._movement.set(this._lrTmp, this._lrTmp2)
     }
   }
 }

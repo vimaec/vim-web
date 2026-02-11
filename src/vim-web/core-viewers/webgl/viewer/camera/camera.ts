@@ -22,6 +22,9 @@ export class Camera implements ICamera {
   readonly camPerspective: PerspectiveCamera
   readonly camOrthographic: OrthographicCamera
 
+  private static readonly _ALL_MOVEMENT = new THREE.Vector3(1, 1, 1)
+  private static readonly _ALL_ROTATION = new THREE.Vector2(1, 1)
+
   private _viewport: Viewport
   private _scene: RenderScene // make private again
   private _lerp: CameraLerp
@@ -88,7 +91,7 @@ export class Camera implements ICamera {
    */
   private _allowedMovement = new THREE.Vector3(1, 1, 1)
   get allowedMovement () {
-    return this._force ? new THREE.Vector3(1, 1, 1) : this._allowedMovement
+    return this._force ? Camera._ALL_MOVEMENT : this._allowedMovement
   }
 
   set allowedMovement (axes: THREE.Vector3) {
@@ -103,7 +106,7 @@ export class Camera implements ICamera {
    * Each component of the Vector2 should be either 0 or 1 to enable/disable rotation around the corresponding axis.
    */
   get allowedRotation () {
-    return this._force ? new THREE.Vector2(1, 1) : this._allowedRotation
+    return this._force ? Camera._ALL_ROTATION : this._allowedRotation
   }
 
   set allowedRotation (axes: THREE.Vector2) {

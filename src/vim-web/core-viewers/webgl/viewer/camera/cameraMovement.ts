@@ -17,6 +17,12 @@ export abstract class CameraMovement {
   private _savedState: CameraSaveState
   private _getBoundingBox: () => THREE.Box3
 
+  // Reusable tmp vectors to avoid per-frame allocations
+  private _mvDir = new THREE.Vector3()
+  private _mvLocal = new THREE.Vector3()
+  private _mvProjected = new THREE.Vector3()
+  private _mvOffset = new THREE.Vector3()
+
   constructor (camera: Camera, savedState: CameraSaveState, getBoundingBox: () => THREE.Box3) {
     this._camera = camera
     this._savedState = savedState
@@ -50,23 +56,23 @@ export abstract class CameraMovement {
     space: 'local' | 'world'
   ): void {
     // Build Z-up direction vector from axes and value
-    const direction = new THREE.Vector3()
+    this._mvDir.set(0, 0, 0)
     if (value instanceof THREE.Vector3) {
-      direction.copy(value)
+      this._mvDir.copy(value)
     } else if (value instanceof THREE.Vector2) {
-      this.setComponent(direction, axes[0], value.x)
-      this.setComponent(direction, axes[1], value.y)
+      this.setComponent(this._mvDir, axes[0], value.x)
+      this.setComponent(this._mvDir, axes[1], value.y)
     } else {
-      this.setComponent(direction, axes, value)
+      this.setComponent(this._mvDir, axes, value)
     }
 
     if (space === 'local') {
       // Remap Z-up (x,y,z) → Three.js camera-local (x, z, -y), then to world
-      const local = new THREE.Vector3(direction.x, direction.z, -direction.y)
-      local.applyQuaternion(this._camera.quaternion)
-      this.applyMove(local)
+      this._mvLocal.set(this._mvDir.x, this._mvDir.z, -this._mvDir.y)
+      this._mvLocal.applyQuaternion(this._camera.quaternion)
+      this.applyMove(this._mvLocal)
     } else {
-      this.applyMove(direction)
+      this.applyMove(this._mvDir)
     }
   }
 
@@ -239,10 +245,10 @@ export abstract class CameraMovement {
     // Exact offset: in camera local space the direction from target to
     // camera that places the target at (sx, sy) on screen is (-sx, -sy, 1).
     const dist = this._camera.position.distanceTo(this._camera.target)
-    const offset = new THREE.Vector3(-sx, -sy, 1).normalize().multiplyScalar(dist)
-    offset.applyQuaternion(cam.quaternion)
+    this._mvOffset.set(-sx, -sy, 1).normalize().multiplyScalar(dist)
+    this._mvOffset.applyQuaternion(cam.quaternion)
 
-    this._camera.position.copy(this._camera.target).add(offset)
+    this._camera.position.copy(this._camera.target).add(this._mvOffset)
   }
 
   /**
@@ -253,16 +259,16 @@ export abstract class CameraMovement {
   protected updateScreenTarget () {
     const cam = this._camera.camPerspective.camera
     cam.updateMatrixWorld(true)
-    const projected = this._camera.target.clone().project(cam)
+    this._mvProjected.copy(this._camera.target).project(cam)
 
-    if (projected.z > 1) {
+    if (this._mvProjected.z > 1) {
       this._camera.screenTarget.set(0.5, 0.5)
       return
     }
 
     this._camera.screenTarget.set(
-      THREE.MathUtils.clamp((projected.x + 1) / 2, 0, 1),
-      THREE.MathUtils.clamp((1 - projected.y) / 2, 0, 1)
+      THREE.MathUtils.clamp((this._mvProjected.x + 1) / 2, 0, 1),
+      THREE.MathUtils.clamp((1 - this._mvProjected.y) / 2, 0, 1)
     )
   }
 
