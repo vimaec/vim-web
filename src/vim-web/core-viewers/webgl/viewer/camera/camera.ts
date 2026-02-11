@@ -102,7 +102,7 @@ export class Camera implements ICamera {
   }
 
   /**
-   * Allowed rotation axes. x = pitch (up/down), y = yaw (around Z).
+   * Allowed rotation axes. x = yaw (around Z), y = pitch (up/down).
    * Each component should be 0 (locked) or 1 (free).
    */
   get allowedRotation () {

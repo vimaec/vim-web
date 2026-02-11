@@ -260,9 +260,5 @@ export class InputHandler extends BaseInputHandler {
 }
 
 function toRotation (delta: THREE.Vector2, speed: number) {
-  const rot = delta.clone()
-  rot.x = -delta.y
-  rot.y = -delta.x
-  rot.multiplyScalar(180 * speed)
-  return rot
+  return delta.clone().negate().multiplyScalar(180 * speed)
 }

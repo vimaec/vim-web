@@ -86,7 +86,7 @@ export abstract class CameraMovement {
 
   /**
    * Rotates the camera in place by the given angles.
-   * @param angle - x: pitch (up/down), y: yaw (around Z), in degrees.
+   * @param angle - x: yaw (around Z), y: pitch (up/down), in degrees.
    */
   abstract rotate(angle: THREE.Vector2): void
 
@@ -109,7 +109,7 @@ export abstract class CameraMovement {
 
   /**
    * Orbits the camera around its target while maintaining the distance.
-   * @param angle - x: elevation change, y: azimuth change, in degrees.
+   * @param angle - x: azimuth change, y: elevation change, in degrees.
    */
   abstract orbit(angle: THREE.Vector2): void
 
@@ -146,7 +146,7 @@ export abstract class CameraMovement {
     const declination = angleForward - angleDirection;
 
     // Convert to degrees.
-    const angle = new THREE.Vector2(-declination, azimuth);
+    const angle = new THREE.Vector2(azimuth, -declination);
     angle.multiplyScalar(180 / Math.PI);
 
     // Apply rotation.

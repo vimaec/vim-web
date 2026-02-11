@@ -74,11 +74,7 @@ export class TouchHandler extends BaseInputHandler {
   }
 
   private toRotation (delta: THREE.Vector2, speed: number) {
-    const rotation = new THREE.Vector2()
-    rotation.x = delta.y
-    rotation.y = delta.x
-    rotation.multiplyScalar(-180 * speed)
-    return rotation
+    return delta.clone().multiplyScalar(-180 * speed)
   }
 
   /*

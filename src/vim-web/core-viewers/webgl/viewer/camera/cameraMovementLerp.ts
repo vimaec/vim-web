@@ -76,8 +76,8 @@ export class CameraLerp extends CameraMovement {
     const euler = new THREE.Euler(0, 0, 0, 'ZXY')
     euler.setFromQuaternion(this._camera.quaternion)
 
-    euler.x += (angle.x * Math.PI) / 180
-    euler.z += (angle.y * Math.PI) / 180
+    euler.x += (angle.y * Math.PI) / 180
+    euler.z += (angle.x * Math.PI) / 180
     euler.y = 0
 
     // Clamp pitch to prevent performing a loop.
@@ -142,7 +142,7 @@ export class CameraLerp extends CameraMovement {
 
     const start = SphereCoord.fromForward(this._camera.forward, radius)
     const startOffset = start.toVector3()
-    const endOffset = start.rotate(locked.y, locked.x).toVector3()
+    const endOffset = start.rotate(locked.x, locked.y).toVector3()
 
     this.onProgress = (progress) => {
       this._lrTmp.copy(startOffset).lerp(endOffset, progress)

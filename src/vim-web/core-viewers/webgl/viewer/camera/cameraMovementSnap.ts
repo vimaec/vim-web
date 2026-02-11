@@ -44,7 +44,7 @@ export class CameraMovementSnap extends CameraMovement {
     const locked = angle.clone().multiply(this._camera.allowedRotation)
 
     const start = SphereCoord.fromForward(this._camera.forward, this._camera.orbitDistance)
-    const end = start.rotate(locked.y, locked.x)
+    const end = start.rotate(locked.x, locked.y)
     this._snTmp1.copy(this._camera.target).add(end.toVector3())
 
     this.lockVector(this._snTmp1, this._camera.position, this._snTmp2)
@@ -120,8 +120,8 @@ export class CameraMovementSnap extends CameraMovement {
     const euler = new THREE.Euler(0, 0, 0, 'ZXY')
     euler.setFromQuaternion(this._camera.quaternion)
 
-    euler.x += (angle.x * Math.PI) / 180
-    euler.z += (angle.y * Math.PI) / 180
+    euler.x += (angle.y * Math.PI) / 180
+    euler.z += (angle.x * Math.PI) / 180
     euler.y = 0
 
     const max = Math.PI * 0.48
