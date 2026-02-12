@@ -1,4 +1,5 @@
 import { BaseInputHandler } from "./baseInputHandler";
+import { CLICK_MOVEMENT_THRESHOLD, DOUBLE_CLICK_DISTANCE_THRESHOLD, DOUBLE_CLICK_TIME_THRESHOLD } from "./inputConstants";
 
 import * as THREE from 'three';
 import * as Utils from "../../utils";
@@ -29,9 +30,10 @@ export class MouseHandler extends BaseInputHandler {
   }
 
   protected addListeners(): void {
-    
+
     this.reg<PointerEvent>(this._canvas, 'pointerdown', e => { this.handlePointerDown(e); });
     this.reg<PointerEvent>(this._canvas, 'pointerup', e => { this.handlePointerUp(e); });
+    this.reg<PointerEvent>(this._canvas, 'pointercancel', e => { this.handlePointerCancel(e); });
     this.reg<PointerEvent>(this._canvas, 'pointermove', e => { this.handlePointerMove(e); });
     this.reg<WheelEvent>(this._canvas, 'wheel', e => { this.onMouseScroll(e); });
   }
@@ -77,7 +79,16 @@ export class MouseHandler extends BaseInputHandler {
     }
 
     this.handleContextMenu(event);
-    
+
+  }
+
+  private handlePointerCancel(event: PointerEvent): void {
+    if (event.pointerType !== 'mouse') return;
+    // Pointer was cancelled (e.g., user switched windows/tabs)
+    // Clean up all state
+    this._capture.onPointerCancel(event);
+    this._dragHandler.onPointerUp();
+    this._clickHandler.onPointerUp();
   }
 
   private async handleMouseClick(event: PointerEvent): Promise<void> {
@@ -97,14 +108,15 @@ export class MouseHandler extends BaseInputHandler {
     private async handleContextMenu(event: PointerEvent): Promise<void> {
     if (event.pointerType !== 'mouse') return;
     if(event.button !== 2) return;
-    
+
     const pos = this.relativePosition(event);
 
     if (!Utils.almostEqual(this._lastMouseDownPosition, pos, 0.01)) {
       return;
     }
 
-    this.onContextMenu?.(new THREE.Vector2(event.clientX, event.clientY));
+    // Use canvas-relative coordinates for consistency with other events
+    this.onContextMenu?.(pos);
   }
   
 
@@ -159,6 +171,10 @@ class CaptureHandler {
     this.release()
   }
 
+  onPointerCancel(event: PointerEvent) {
+    this.release()
+  }
+
   private release(){
     if (this._id >= 0 ) {
       this._canvas.releasePointerCapture(this._id);
@@ -170,14 +186,13 @@ class CaptureHandler {
 class ClickHandler {
   private _moved: boolean = false;
   private _startPosition: THREE.Vector2 = new THREE.Vector2();
-  private _clickThreshold: number = 0.003 ; 
 
   onPointerDown(pos: THREE.Vector2): void {
     this._moved = false;
     this._startPosition.copy(pos);
   }
   onPointerMove(pos: THREE.Vector2): void {
-    if (pos.distanceTo(this._startPosition) > this._clickThreshold) {
+    if (pos.distanceTo(this._startPosition) > CLICK_MOVEMENT_THRESHOLD) {
       this._moved = true;
     }
   }
@@ -192,9 +207,7 @@ class ClickHandler {
 
 class DoubleClickHandler {
   private _lastClickTime: number = 0;
-  private _clickDelay: number = 300; // Max time between clicks for double-click
   private _lastClickPosition: THREE.Vector2 | null = null;
-  private _positionThreshold: number = 5; // Max pixel distance between clicks
 
   isDoubleClick(event: MouseEvent): boolean {
     const currentTime = Date.now();
@@ -203,9 +216,9 @@ class DoubleClickHandler {
 
     const isClose =
       this._lastClickPosition !== null &&
-      this._lastClickPosition.distanceTo(currentPosition) < this._positionThreshold;
+      this._lastClickPosition.distanceTo(currentPosition) < DOUBLE_CLICK_DISTANCE_THRESHOLD;
 
-    const isWithinTime = timeDiff < this._clickDelay;
+    const isWithinTime = timeDiff < DOUBLE_CLICK_TIME_THRESHOLD;
 
     this._lastClickTime = currentTime;
     this._lastClickPosition = currentPosition;

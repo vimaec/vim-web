@@ -4,14 +4,12 @@
 
 import * as THREE from 'three'
 import { BaseInputHandler } from './baseInputHandler';
+import { TAP_DURATION_MS, TAP_MOVEMENT_THRESHOLD, DOUBLE_CLICK_TIME_THRESHOLD } from './inputConstants';
 
 /**
  * Manages user touch inputs.
  */
 export class TouchHandler extends BaseInputHandler {
-  private readonly TAP_DURATION_MS: number = 500
-  private readonly DOUBLE_TAP_DELAY_MS = 500
-  private readonly TAP_MAX_MOVE_PIXEL = 5
   private readonly ZOOM_SPEED = 1
   private readonly MOVE_SPEED = 100
 
@@ -50,7 +48,7 @@ export class TouchHandler extends BaseInputHandler {
   private _onTap = (position: THREE.Vector2) => {
     const time = Date.now()
     const double =
-      this._lastTapMs && time - this._lastTapMs < this.DOUBLE_TAP_DELAY_MS
+      this._lastTapMs && time - this._lastTapMs < DOUBLE_CLICK_TIME_THRESHOLD
     this._lastTapMs = time
 
     const rect = this._canvas.getBoundingClientRect()
@@ -180,8 +178,8 @@ export class TouchHandler extends BaseInputHandler {
       const touchDurationMs = Date.now() - this._touchStartTime
       const length = this._touch.distanceTo(this._touchStart)
       if (
-        touchDurationMs < this.TAP_DURATION_MS &&
-        length < this.TAP_MAX_MOVE_PIXEL
+        touchDurationMs < TAP_DURATION_MS &&
+        length < TAP_MOVEMENT_THRESHOLD
       ) {
         this._onTap(this._touch)
       }

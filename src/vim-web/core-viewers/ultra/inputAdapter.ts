@@ -103,7 +103,23 @@ function createAdapter(viewer: Viewer): IInputAdapter {
     },
     pinchStart: () => {},
     pinchZoom: (totalRatio: number) => {
-      viewer.rpc.RPCMouseScrollEvent(totalRatio >= 1 ? -1 : 1);
+      // Convert ratio to scroll steps with better granularity
+      // log2(ratio) gives us: 2x zoom = +1, 0.5x zoom = -1
+      const logRatio = Math.log2(totalRatio);
+      // Quantize to ±1/2/3 steps based on magnitude
+      let steps: number;
+      if (Math.abs(logRatio) < 0.3) {
+        steps = 0; // Too small, ignore
+      } else if (Math.abs(logRatio) < 0.7) {
+        steps = Math.sign(logRatio) * 1;
+      } else if (Math.abs(logRatio) < 1.2) {
+        steps = Math.sign(logRatio) * 2;
+      } else {
+        steps = Math.sign(logRatio) * 3;
+      }
+      if (steps !== 0) {
+        viewer.rpc.RPCMouseScrollEvent(-steps); // Negative because scroll up = zoom in
+      }
     },
     keyDown: (code: string) => {
       return sendKey(viewer, code, true);

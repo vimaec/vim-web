@@ -6,6 +6,7 @@ import { KeyboardHandler } from './keyboardHandler'
 import { MouseHandler } from './mouseHandler'
 import { TouchHandler } from './touchHandler'
 import { IInputAdapter } from './inputAdapter'
+import { MIN_MOVE_SPEED, MAX_MOVE_SPEED } from './inputConstants'
 
 export enum PointerMode {
   ORBIT = 'orbit',
@@ -87,7 +88,15 @@ export class InputHandler extends BaseInputHandler {
     } 
 
     // Mouse controls
-    this.mouse.onContextMenu = (pos: THREE.Vector2) => this._onContextMenu.dispatch(pos);
+    this.mouse.onContextMenu = (pos: THREE.Vector2) => {
+      // Convert canvas-relative coords (0-1) back to client coords (pixels) for menu positioning
+      const rect = canvas.getBoundingClientRect()
+      const clientPos = new THREE.Vector2(
+        pos.x * rect.width + rect.left,
+        pos.y * rect.height + rect.top
+      )
+      this._onContextMenu.dispatch(clientPos)
+    };
     this.mouse.onButtonDown = adapter.mouseDown
     this.mouse.onMouseMove = adapter.mouseMove
     this.mouse.onButtonUp = (pos: THREE.Vector2, button: number) => {
@@ -155,7 +164,7 @@ export class InputHandler extends BaseInputHandler {
   }
 
   set moveSpeed (value: number) {
-    this._moveSpeed = value
+    this._moveSpeed = Math.max(MIN_MOVE_SPEED, Math.min(MAX_MOVE_SPEED, value))
     this._onSettingsChanged.dispatch()
   }
 
