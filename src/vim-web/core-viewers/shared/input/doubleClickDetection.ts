@@ -40,7 +40,8 @@ export class DoubleClickDetector {
    * @returns True if this was a double-click/tap
    *
    * Note: This method has side effects - it updates internal state
-   * to track the last click position and time.
+   * to track the last click position and time. If a double-click is
+   * detected, state is reset to prevent triple-click false positives.
    */
   check(position: THREE.Vector2): boolean {
     const currentTime = Date.now()
@@ -51,16 +52,22 @@ export class DoubleClickDetector {
       this._lastPosition.distanceTo(position) < this._distanceThreshold
 
     const isWithinTime = timeDiff < this._timeThreshold
+    const isDouble = isClose && isWithinTime
 
-    // Update state for next check
-    this._lastTime = currentTime
-    if (this._lastPosition === null) {
-      this._lastPosition = position.clone()
+    if (isDouble) {
+      // Reset state to prevent triple-click detection
+      this.reset()
     } else {
-      this._lastPosition.copy(position)
+      // Update state for next check
+      this._lastTime = currentTime
+      if (this._lastPosition === null) {
+        this._lastPosition = position.clone()
+      } else {
+        this._lastPosition.copy(position)
+      }
     }
 
-    return isClose && isWithinTime
+    return isDouble
   }
 
   /**

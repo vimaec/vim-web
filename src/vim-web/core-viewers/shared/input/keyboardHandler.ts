@@ -80,6 +80,14 @@ export class KeyboardHandler extends BaseInputHandler {
     // Reset state when focus is lost or on window resize.
     this.reg(this._canvas, 'focusout', () => this.reset());
     this.reg(window, 'resize', () => this.reset());
+
+    // Reset on window blur (e.g., Alt+Tab) to prevent stuck modifiers
+    this.reg(window, 'blur', () => this.reset());
+
+    // Reset on visibility change (e.g., tab switch)
+    this.reg(document, 'visibilitychange', () => {
+      if (document.hidden) this.reset();
+    });
   }
   
   private registerMovementHandlers(): void {

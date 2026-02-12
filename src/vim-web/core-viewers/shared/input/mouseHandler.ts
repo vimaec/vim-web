@@ -141,7 +141,9 @@ export class MouseHandler extends BaseInputHandler {
       return
     }
 
-    this.handleContextMenu(event);
+    if (event.button === 2) {
+      this.handleContextMenu(event);
+    }
 
   }
 
