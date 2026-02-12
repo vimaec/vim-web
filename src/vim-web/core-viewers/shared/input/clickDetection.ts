@@ -28,9 +28,12 @@ export class ClickDetector {
   private _threshold: number
 
   /**
-   * @param threshold - Maximum movement distance to still be considered a click
+   * @param threshold - Maximum movement distance to still be considered a click (must be > 0)
    */
   constructor(threshold: number) {
+    if (threshold <= 0 || !isFinite(threshold)) {
+      throw new Error('ClickDetector threshold must be a positive number')
+    }
     this._threshold = threshold
   }
 

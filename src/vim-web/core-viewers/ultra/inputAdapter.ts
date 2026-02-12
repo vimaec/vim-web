@@ -123,13 +123,13 @@ function createAdapter(viewer: Viewer): IInputAdapter {
     keyUp: (code: string) => {
       return sendKey(viewer, code, false);
     },
-    mouseDown: (pos: THREE.Vector2, button: number) => {
+    pointerDown: (pos: THREE.Vector2, button: number) => {
       viewer.rpc.RPCMouseButtonEvent(pos, button, true);
     },
-    mouseUp: (pos: THREE.Vector2, button: number) => {
+    pointerUp: (pos: THREE.Vector2, button: number) => {
       viewer.rpc.RPCMouseButtonEvent(pos, button, false);
     },
-    mouseMove: (pos: THREE.Vector2) => {
+    pointerMove: (pos: THREE.Vector2) => {
       viewer.rpc.RPCMouseMoveEvent(pos);
     },
   };

@@ -108,9 +108,9 @@ function createAdapter(viewer: Viewer ) : IInputAdapter {
 
     keyDown: (keyCode: string) => {return false},
     keyUp: (keyCode: string) => {return false},
-    mouseDown: () => {},
-    mouseMove: () => {},
-    mouseUp: () => {},
+    pointerDown: () => {},
+    pointerMove: () => {},
+    pointerUp: () => {},
 
   }
 }

@@ -11,11 +11,22 @@ import { clientToCanvas } from './coordinates';
 
 /** Handles touch gestures with zero-allocation vector reuse. */
 export class TouchHandler extends BaseInputHandler {
+  /** Called on single tap (touch down + up within 500ms, <5px movement) */
   onTap: (position: THREE.Vector2) => void
+
+  /** Called on double-tap (two taps within 300ms) */
   onDoubleTap: (position: THREE.Vector2) => void
+
+  /** Called during single-finger drag */
   onDrag: (delta: THREE.Vector2) => void
+
+  /** Called during two-finger pan (average position moves) */
   onDoubleDrag: (delta: THREE.Vector2) => void
+
+  /** Called when two-finger pinch starts at screen center */
   onPinchStart: (screenCenter: THREE.Vector2) => void
+
+  /** Called during pinch/spread (totalRatio: 2.0 = 2x zoom, 0.5 = 0.5x zoom) */
   onPinchOrSpread: (totalRatio: number) => void
 
   // Temp vectors (reused, never store references!)
@@ -58,6 +69,9 @@ export class TouchHandler extends BaseInputHandler {
     this._touchStartTime = this._startDist = undefined
   }
 
+  /**
+   * Cleanup method - unregisters all event listeners and resets state.
+   */
   dispose(): void {
     this.unregister()
   }
@@ -186,12 +200,4 @@ export class TouchHandler extends BaseInputHandler {
     this._tempVec2.copy(p1).lerp(p2, 0.5)
     return this._tempVec2
   }
-
-    /**
-     * Returns the pixel size of the canvas.
-     * @returns {THREE.Vector2} The pixel size of the canvas.
-     */
-    getCanvasSize () {
-      return new THREE.Vector2(this._canvas.clientWidth, this._canvas.clientHeight)
-    }
 }

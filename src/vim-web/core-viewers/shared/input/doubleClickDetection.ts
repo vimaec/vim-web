@@ -26,10 +26,16 @@ export class DoubleClickDetector {
   private _distanceThreshold: number
 
   /**
-   * @param timeThreshold - Max time between clicks (ms)
-   * @param distanceThreshold - Max distance between clicks (pixels or canvas units)
+   * @param timeThreshold - Max time between clicks in milliseconds (must be > 0)
+   * @param distanceThreshold - Max distance between clicks in pixels or canvas units (must be > 0)
    */
   constructor(timeThreshold: number, distanceThreshold: number) {
+    if (timeThreshold <= 0 || !isFinite(timeThreshold)) {
+      throw new Error('DoubleClickDetector timeThreshold must be a positive number')
+    }
+    if (distanceThreshold <= 0 || !isFinite(distanceThreshold)) {
+      throw new Error('DoubleClickDetector distanceThreshold must be a positive number')
+    }
     this._timeThreshold = timeThreshold
     this._distanceThreshold = distanceThreshold
   }

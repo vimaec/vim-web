@@ -27,7 +27,15 @@ export class KeyboardHandler extends BaseInputHandler {
    * Callback invoked whenever the calculated movement vector is updated.
    */
   public onMove: (value: THREE.Vector3) => void;
+
+  /**
+   * Called on key up event - return true if handled to prevent default.
+   */
   public onKeyUp: (code: string) => boolean;
+
+  /**
+   * Called on key down event - return true if handled to prevent default.
+   */
   public onKeyDown: (code: string) => boolean;
 
 

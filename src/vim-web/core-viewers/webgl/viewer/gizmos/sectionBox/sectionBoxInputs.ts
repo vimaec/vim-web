@@ -106,28 +106,28 @@ export class BoxInputs {
 
     const mouse = this._viewer.inputs.mouse;
 
-    const up = mouse.onButtonUp
-    const down = mouse.onButtonDown
-    const move = mouse.onMouseMove
+    const up = mouse.onPointerUp
+    const down = mouse.onPointerDown
+    const move = mouse.onPointerMove
     const drag = mouse.onDrag
 
     this._restoreOriginalInputs = () => {
-      mouse.onButtonUp = up
-      mouse.onButtonDown = down
-      mouse.onMouseMove = move
+      mouse.onPointerUp = up
+      mouse.onPointerDown = down
+      mouse.onPointerMove = move
       mouse.onDrag = drag
     }
 
-    mouse.onButtonUp = (pos, btn) => {
+    mouse.onPointerUp = (pos, btn) => {
       up(pos, btn)
       this.onMouseUp(pos)
     }
-    mouse.onButtonDown = (pos, btn) => {
+    mouse.onPointerDown = (pos, btn) => {
       down(pos, btn)
       this.onMouseDown(pos)
     }
 
-    mouse.onMouseMove = (pos) => {
+    mouse.onPointerMove = (pos) => {
       move(pos)
       this.onMouseMove(pos)
     }

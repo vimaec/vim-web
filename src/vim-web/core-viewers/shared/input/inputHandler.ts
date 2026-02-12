@@ -15,6 +15,9 @@ import { IInputAdapter } from './inputAdapter'
 import { MIN_MOVE_SPEED, MAX_MOVE_SPEED } from './inputConstants'
 import { canvasToClient } from './coordinates'
 
+/** Base multiplier for exponential move speed scaling (1.25^moveSpeed) */
+const MOVE_SPEED_BASE = 1.25
+
 /** Pointer interaction modes. See INPUT.md for details. */
 export enum PointerMode {
   ORBIT = 'orbit',
@@ -35,7 +38,7 @@ interface InputSettings{
 /**
  * Input handler coordinator.
  *
- * Manages three-tier pointer modes (active/override/fallback).
+ * Manages two-tier pointer modes (active/override).
  * See INPUT.md for mode system and customization.
  */
 export class InputHandler extends BaseInputHandler {
@@ -94,7 +97,7 @@ export class InputHandler extends BaseInputHandler {
     });
 
     this.keyboard.onMove = (value: THREE.Vector3 ) =>{
-      const mul = Math.pow(1.25, this._moveSpeed)
+      const mul = Math.pow(MOVE_SPEED_BASE, this._moveSpeed)
       adapter.moveCamera(value.multiplyScalar(mul))
     } 
 
@@ -104,11 +107,11 @@ export class InputHandler extends BaseInputHandler {
       canvasToClient(pos.x, pos.y, canvas, _tempClientPos)
       this._onContextMenu.dispatch(_tempClientPos)
     };
-    this.mouse.onButtonDown = adapter.mouseDown
-    this.mouse.onMouseMove = adapter.mouseMove
-    this.mouse.onButtonUp = (pos: THREE.Vector2, button: number) => {
+    this.mouse.onPointerDown = adapter.pointerDown
+    this.mouse.onPointerMove = adapter.pointerMove
+    this.mouse.onPointerUp = (pos: THREE.Vector2, button: number) => {
       this.pointerOverride = undefined
-      adapter.mouseUp(pos, button)
+      adapter.pointerUp(pos, button)
     }
     this.mouse.onDrag = (delta: THREE.Vector2, button: number) =>{
       if(button === 0){
@@ -132,7 +135,6 @@ export class InputHandler extends BaseInputHandler {
     this.mouse.onDoubleClick = adapter.frameAtPointer
     this.mouse.onWheel = (value: number, ctrl: boolean, clientX: number, clientY: number) => {
       if(ctrl){
-        console.log('ctrl', value)
         this.moveSpeed -= Math.sign(value)
       }
       else{

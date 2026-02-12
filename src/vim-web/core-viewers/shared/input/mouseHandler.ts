@@ -34,20 +34,20 @@ export class MouseHandler extends BaseInputHandler {
    * @param pos Canvas-relative position [0-1]
    * @param button 0=left, 1=middle, 2=right
    */
-  onButtonDown: (pos: THREE.Vector2, button: number) => void;
+  onPointerDown: (pos: THREE.Vector2, button: number) => void;
 
   /**
    * Called on every pointer up event.
    * @param pos Canvas-relative position [0-1]
    * @param button 0=left, 1=middle, 2=right
    */
-  onButtonUp: (pos: THREE.Vector2, button: number) => void;
+  onPointerUp: (pos: THREE.Vector2, button: number) => void;
 
   /**
    * Called on every pointer move (regardless of button state).
    * @param pos Canvas-relative position [0-1]
    */
-  onMouseMove: (event: THREE.Vector2) => void;
+  onPointerMove: (event: THREE.Vector2) => void;
 
   /**
    * Called during pointer drag (pointer down + move).
@@ -102,6 +102,9 @@ export class MouseHandler extends BaseInputHandler {
     this.reg<WheelEvent>(this._canvas, 'wheel', e => { this.onMouseScroll(e); });
   }
 
+  /**
+   * Cleanup method - unregisters all event listeners.
+   */
   dispose(): void {
     this.unregister();
   }
@@ -110,7 +113,7 @@ export class MouseHandler extends BaseInputHandler {
     if (event.pointerType !== 'mouse') return; // We don't handle touch yet
 
     const pos = this.relativePosition(event);
-    this.onButtonDown?.(pos, event.button);
+    this.onPointerDown?.(pos, event.button);
     // Start drag
     this._dragHandler.onPointerDown(pos, event.button);
     this._clickHandler.onPointerDown(pos);
@@ -125,7 +128,7 @@ export class MouseHandler extends BaseInputHandler {
     const pos = this.relativePosition(event);
 
     // Button up event
-    this.onButtonUp?.(pos, event.button);
+    this.onPointerUp?.(pos, event.button);
     this._capture.onPointerUp();
     this._dragHandler.onPointerUp();
     this._clickHandler.onPointerUp();
@@ -185,7 +188,7 @@ export class MouseHandler extends BaseInputHandler {
     const pos = this.relativePosition(event);
     this._dragHandler.onPointerMove(pos);
     this._clickHandler.onPointerMove(pos);
-    this.onMouseMove?.(pos);
+    this.onPointerMove?.(pos);
   }
 
   private async handleDoubleClick(event: MouseEvent): Promise<void> {

@@ -52,6 +52,27 @@ The VIM Web input system uses a layered adapter pattern to decouple device handl
 
 ---
 
+## Recent Changes
+
+**Breaking Changes (v0.6.0):**
+- Standardized naming to `onPointer*` prefix:
+  - `onButtonDown` → `onPointerDown`
+  - `onButtonUp` → `onPointerUp`
+  - `onMouseMove` → `onPointerMove`
+  - `mouseDown` → `pointerDown` (IInputAdapter)
+  - `mouseUp` → `pointerUp` (IInputAdapter)
+  - `mouseMove` → `pointerMove` (IInputAdapter)
+
+**Improvements:**
+- Added `touchcancel` event handling to prevent stuck gestures
+- Added constructor validation for threshold parameters (throws on invalid values)
+- Fixed double-click race condition with triple-click prevention
+- Improved keyboard handling for Alt+Tab scenarios (window blur + visibility change listeners)
+- Optimized memory usage with vector reuse in InputHandler
+- Added comprehensive JSDoc to IInputAdapter interface
+
+---
+
 ## Device Handlers
 
 ### MouseHandler
@@ -119,7 +140,7 @@ viewer.core.inputs.keyboard.registerKeyUp(['Equal', 'NumpadAdd'], 'replace', () 
 
 ## Pointer Mode System
 
-Three-tier mode management for flexible interaction:
+Two-tier mode management for flexible interaction:
 
 ### 1. pointerActive (Primary Mode)
 
@@ -144,18 +165,7 @@ Temporarily overrides the active mode during interaction:
 - Cleared on: Mouse up
 - Used for: Icon display, temporary mode switches
 
-```typescript
-// Automatically set by mouse handler on middle/right click
-// Returns to pointerActive when mouse is released
-```
-
-### 3. pointerFallback (Last Active Mode)
-
-Stores the last ORBIT or LOOK mode:
-- Used when: Returning from temporary modes
-- Maintains: User's base interaction preference
-
-**Priority**: `override > active > fallback`
+**Priority**: `override > active`
 
 ```typescript
 // Listen for mode changes
@@ -319,9 +329,9 @@ interface IInputAdapter {
   // Raw events (for custom handling)
   keyDown: (keyCode: string) => boolean
   keyUp: (keyCode: string) => boolean
-  mouseDown: (pos: THREE.Vector2, button: number) => void
-  mouseMove: (pos: THREE.Vector2) => void
-  mouseUp: (pos: THREE.Vector2, button: number) => void
+  pointerDown: (pos: THREE.Vector2, button: number) => void
+  pointerMove: (pos: THREE.Vector2) => void
+  pointerUp: (pos: THREE.Vector2, button: number) => void
 }
 ```
 
@@ -572,13 +582,13 @@ inputs.mouse.onDrag = (delta, button) => {
   }
 }
 
-// Add button down/up handlers
-inputs.mouse.onButtonDown = (pos, button) => {
-  console.log('Button down:', button, 'at', pos)
+// Add pointer down/up handlers
+inputs.mouse.onPointerDown = (pos, button) => {
+  console.log('Pointer down:', button, 'at', pos)
 }
 
-inputs.mouse.onButtonUp = (pos, button) => {
-  console.log('Button up:', button, 'at', pos)
+inputs.mouse.onPointerUp = (pos, button) => {
+  console.log('Pointer up:', button, 'at', pos)
 }
 ```
 
@@ -620,7 +630,6 @@ const inputs = viewer.core.inputs
 // Check current mode
 console.log('Active mode:', inputs.pointerActive)
 console.log('Override:', inputs.pointerOverride)
-console.log('Fallback:', inputs.pointerFallback)
 
 // Check speeds
 console.log('Move speed:', inputs.moveSpeed)
