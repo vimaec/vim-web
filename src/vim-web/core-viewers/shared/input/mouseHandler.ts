@@ -6,11 +6,13 @@
 
 import { BaseInputHandler } from "./baseInputHandler";
 import { CLICK_MOVEMENT_THRESHOLD, DOUBLE_CLICK_DISTANCE_THRESHOLD, DOUBLE_CLICK_TIME_THRESHOLD } from "./inputConstants";
+import { pointerToCanvas } from "./coordinates";
+import { ClickDetector } from "./clickDetection";
+import { DoubleClickDetector } from "./doubleClickDetection";
+import { DragTracker, type DragCallback } from "./dragTracking";
+import { PointerCapture } from "./pointerCapture";
 
 import * as THREE from 'three';
-import * as Utils from "../../utils";
-
-type DragCallback = (delta: THREE.Vector2, button: number) => void;
 
 /**
  * Handles mouse/pointer input with support for click, drag, and double-click detection.
@@ -19,11 +21,10 @@ type DragCallback = (delta: THREE.Vector2, button: number) => void;
  * Filters to mouse-only via pointerType check.
  */
 export class MouseHandler extends BaseInputHandler {
-  private _lastMouseDownPosition = new THREE.Vector2(0, 0);
-  private _capture: CaptureHandler;
-  private _dragHandler: DragHandler;
-  private _doubleClickHandler: DoubleClickHandler = new DoubleClickHandler();
-  private _clickHandler: ClickHandler = new ClickHandler();
+  private _capture: PointerCapture;
+  private _dragHandler: DragTracker;
+  private _doubleClickHandler: DoubleClickDetector;
+  private _clickHandler: ClickDetector;
 
   // Reusable vectors to avoid per-frame allocations
   private _tempPosition = new THREE.Vector2();
@@ -86,8 +87,10 @@ export class MouseHandler extends BaseInputHandler {
 
   constructor(canvas: HTMLCanvasElement) {
     super(canvas);
-    this._capture = new CaptureHandler(canvas);
-    this._dragHandler = new DragHandler((delta: THREE.Vector2, button:number) => this.onDrag(delta, button));
+    this._capture = new PointerCapture(canvas);
+    this._dragHandler = new DragTracker((delta: THREE.Vector2, button:number) => this.onDrag(delta, button));
+    this._doubleClickHandler = new DoubleClickDetector(DOUBLE_CLICK_TIME_THRESHOLD, DOUBLE_CLICK_DISTANCE_THRESHOLD);
+    this._clickHandler = new ClickDetector(CLICK_MOVEMENT_THRESHOLD);
   }
 
   protected addListeners(): void {
@@ -108,7 +111,6 @@ export class MouseHandler extends BaseInputHandler {
 
     const pos = this.relativePosition(event);
     this.onButtonDown?.(pos, event.button);
-    this._lastMouseDownPosition = pos;
     // Start drag
     this._dragHandler.onPointerDown(pos, event.button);
     this._clickHandler.onPointerDown(pos);
@@ -124,17 +126,17 @@ export class MouseHandler extends BaseInputHandler {
 
     // Button up event
     this.onButtonUp?.(pos, event.button);
-    this._capture.onPointerUp(event);
+    this._capture.onPointerUp();
     this._dragHandler.onPointerUp();
     this._clickHandler.onPointerUp();
 
 
     // Click type event
-    if(this._doubleClickHandler.isDoubleClick(event)){
+    if(this._doubleClickHandler.check(pos)){
       this.handleDoubleClick(event);
       return
   }
-    if(this._clickHandler.isClick(event)){
+    if(this._clickHandler.isClick(event.button, 0)){
       this.handleMouseClick(event);
       return
     }
@@ -147,7 +149,7 @@ export class MouseHandler extends BaseInputHandler {
     if (event.pointerType !== 'mouse') return;
     // Pointer was cancelled (e.g., user switched windows/tabs)
     // Clean up all state
-    this._capture.onPointerCancel(event);
+    this._capture.onPointerCancel();
     this._dragHandler.onPointerUp();
     this._clickHandler.onPointerUp();
   }
@@ -155,13 +157,8 @@ export class MouseHandler extends BaseInputHandler {
   private async handleMouseClick(event: PointerEvent): Promise<void> {
     if (event.pointerType !== 'mouse') return;
     if(event.button !== 0) return;
-    
+
     const pos = this.relativePosition(event);
-
-    if (!Utils.almostEqual(this._lastMouseDownPosition, pos, 0.01)) {
-      return;
-    }
-
     const modif = event.getModifierState('Shift') || event.getModifierState('Control');
     this.onClick?.(pos, modif);
   }
@@ -201,128 +198,6 @@ export class MouseHandler extends BaseInputHandler {
   }
 
   private relativePosition(event: PointerEvent | MouseEvent): THREE.Vector2 {
-    const rect = this._canvas.getBoundingClientRect();
-    this._tempPosition.set(
-      event.offsetX / rect.width,
-      event.offsetY / rect.height
-    );
-    return this._tempPosition;
+    return pointerToCanvas(event, this._canvas, this._tempPosition);
   }
-}
-
-/**
- * Small helper class to manage pointer capture on the canvas.
- */
-class CaptureHandler {
-  private _canvas: HTMLCanvasElement;
-  private _id: number;
-
-  constructor(canvas: HTMLCanvasElement) {
-    this._canvas = canvas;
-    this._id = -1;
-  }
-
-  onPointerDown(event: PointerEvent): void {
-    this.release()
-    this._canvas.setPointerCapture(event.pointerId);
-    this._id = event.pointerId;
-  }
-
-  onPointerUp(event: PointerEvent) {
-    this.release()
-  }
-
-  onPointerCancel(event: PointerEvent) {
-    this.release()
-  }
-
-  private release(){
-    if (this._id >= 0 ) {
-      this._canvas.releasePointerCapture(this._id);
-      this._id = -1;
-    }
-  }
-}
-
-class ClickHandler {
-  private _moved: boolean = false;
-  private _startPosition: THREE.Vector2 = new THREE.Vector2();
-
-  onPointerDown(pos: THREE.Vector2): void {
-    this._moved = false;
-    this._startPosition.copy(pos);
-  }
-  onPointerMove(pos: THREE.Vector2): void {
-    if (pos.distanceTo(this._startPosition) > CLICK_MOVEMENT_THRESHOLD) {
-      this._moved = true;
-    }
-  }
-
-  onPointerUp(): void { }
-
-  isClick(event: PointerEvent): boolean {
-    if (event.button !== 0) return false; // Only left button
-    return !this._moved;
-  }
-
-  wasMoved(): boolean {
-    return this._moved;
-  }
-}
-
-class DoubleClickHandler {
-  private _lastClickTime: number = 0;
-  private _lastClickPosition: THREE.Vector2 | null = null;
-
-  isDoubleClick(event: MouseEvent): boolean {
-    const currentTime = Date.now();
-    const currentPosition = new THREE.Vector2(event.clientX, event.clientY);
-    const timeDiff = currentTime - this._lastClickTime;
-
-    const isClose =
-      this._lastClickPosition !== null &&
-      this._lastClickPosition.distanceTo(currentPosition) < DOUBLE_CLICK_DISTANCE_THRESHOLD;
-
-    const isWithinTime = timeDiff < DOUBLE_CLICK_TIME_THRESHOLD;
-
-    this._lastClickTime = currentTime;
-    this._lastClickPosition = currentPosition;
-
-    return isClose && isWithinTime;
-  }
-}
-
-/** Tracks drag operations with zero-allocation delta calculation. */
-class DragHandler {
-  private _lastDragPosition = new THREE.Vector2(); // Storage (use .copy())
-  private _hasDrag = false;
-  private _button: number;
-  private _onDrag: DragCallback;
-  private _delta = new THREE.Vector2(); // Temp (reused)
-
-  constructor( onDrag: DragCallback) {
-    this._onDrag = onDrag;
-  }
-
-  onPointerDown(pos: THREE.Vector2, button: number): void {
-    this._lastDragPosition.copy(pos); // MUST copy, not assign reference
-    this._hasDrag = true;
-    this._button = button;
-  }
-
-  onPointerMove(pos: THREE.Vector2): void {
-    if (this._hasDrag) {
-      this._delta.set(
-        pos.x - this._lastDragPosition.x,
-        pos.y - this._lastDragPosition.y
-      );
-      this._lastDragPosition.copy(pos); // MUST copy
-      this._onDrag(this._delta, this._button);
-    }
-  }
-
-  onPointerUp(): void {
-    this._hasDrag = false;
-  }
-
 }

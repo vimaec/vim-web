@@ -7,6 +7,7 @@
 import * as THREE from 'three'
 import { BaseInputHandler } from './baseInputHandler';
 import { TAP_DURATION_MS, TAP_MOVEMENT_THRESHOLD, DOUBLE_CLICK_TIME_THRESHOLD } from './inputConstants';
+import { clientToCanvas } from './coordinates';
 
 /** Handles touch gestures with zero-allocation vector reuse. */
 export class TouchHandler extends BaseInputHandler {
@@ -60,11 +61,7 @@ export class TouchHandler extends BaseInputHandler {
       this._lastTapMs && time - this._lastTapMs < DOUBLE_CLICK_TIME_THRESHOLD
     this._lastTapMs = time
 
-    const rect = this._canvas.getBoundingClientRect()
-    this._tempScreenPos.set(
-      (position.x - rect.left) / rect.width,
-      (position.y - rect.top) / rect.height
-    )
+    clientToCanvas(position.x, position.y, this._canvas, this._tempScreenPos)
 
     if(double)
       this.onDoubleTap?.(this._tempScreenPos)
@@ -90,47 +87,12 @@ export class TouchHandler extends BaseInputHandler {
       this._hasTouch = this._hasTouch1 = this._hasTouch2 = true
       this._startDist = this._touch1.distanceTo(this._touch2)
 
-      const rect = this._canvas.getBoundingClientRect()
-      this._tempScreenPos.set(
-        (this._touch.x - rect.left) / rect.width,
-        (this._touch.y - rect.top) / rect.height
-      )
+      clientToCanvas(this._touch.x, this._touch.y, this._canvas, this._tempScreenPos)
       this.onPinchStart?.(this._tempScreenPos)
     }
     this._touchStart.copy(this._touch)
     this._hasTouchStart = true
   }
-
-  private toRotation (delta: THREE.Vector2, speed: number) {
-    return delta.clone().multiplyScalar(-180 * speed)
-  }
-
-  /*
-  private onDrag = (delta: THREE.Vector2) => {
-    if (this._viewer.inputs.pointerActive === 'orbit') {
-      this.camera.snap().orbit(this.toRotation(delta, this.orbitSpeed))
-    } else {
-      this.camera.snap().rotate(this.toRotation(delta, this.rotateSpeed))
-    }
-  }
-    */
-
-  /*
-  private onDoubleDrag = (delta: THREE.Vector2) => {
-    const move = delta.clone().multiplyScalar(this.MOVE_SPEED)
-    this.camera.snap().move('XY', move, 'local')
-  }
-    */
-
-  /*
-  private onPinchOrSpread = (delta: number) => {
-    if (this._viewer.inputs.pointerActive === 'orbit') {
-      this.camera.snap().zoom(1 + delta * this.ZOOM_SPEED)
-    } else {
-      this.camera.snap().move('Z', delta * this.ZOOM_SPEED, 'local')
-    }
-  }
-    */
 
   private onTouchMove = (event: TouchEvent) => {
     if (event.cancelable) event.preventDefault()

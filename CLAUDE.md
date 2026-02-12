@@ -284,7 +284,6 @@ state.useMemo((v) => compute(v))
 | F | Frame selection |
 | Escape | Clear selection |
 | P | Toggle orthographic |
-| Space | Toggle Orbit/Look |
 | Home | Reset camera |
 | +/- | Adjust move speed |
 

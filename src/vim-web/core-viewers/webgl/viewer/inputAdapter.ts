@@ -1,5 +1,5 @@
-import {type IInputAdapter} from "../../shared/inputAdapter"
-import {InputHandler} from "../../shared/inputHandler"
+import {type IInputAdapter} from "../../shared/input/inputAdapter"
+import {InputHandler} from "../../shared/input/inputHandler"
 import { Viewer } from "./viewer"
 import { Element3D } from '../loader/element3d'
 import * as THREE from 'three'

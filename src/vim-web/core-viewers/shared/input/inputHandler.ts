@@ -13,6 +13,7 @@ import { MouseHandler } from './mouseHandler'
 import { TouchHandler } from './touchHandler'
 import { IInputAdapter } from './inputAdapter'
 import { MIN_MOVE_SPEED, MAX_MOVE_SPEED } from './inputConstants'
+import { canvasToClient } from './coordinates'
 
 /** Pointer interaction modes. See INPUT.md for details. */
 export enum PointerMode {
@@ -100,11 +101,8 @@ export class InputHandler extends BaseInputHandler {
     // Mouse controls
     this.mouse.onContextMenu = (pos: THREE.Vector2) => {
       // Convert canvas-relative coords (0-1) back to client coords (pixels) for menu positioning
-      const rect = canvas.getBoundingClientRect()
-      const clientPos = new THREE.Vector2(
-        pos.x * rect.width + rect.left,
-        pos.y * rect.height + rect.top
-      )
+      const clientPos = new THREE.Vector2()
+      canvasToClient(pos.x, pos.y, canvas, clientPos)
       this._onContextMenu.dispatch(clientPos)
     };
     this.mouse.onButtonDown = adapter.mouseDown

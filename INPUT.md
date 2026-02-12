@@ -130,7 +130,7 @@ The user's preferred interaction style:
 - **ZOOM**: Move camera along view direction (dolly)
 - **RECT**: Custom mode for rectangle selection tools
 
-Set by: User preference, Space key toggle
+Set by: User preference or application default
 Used for: Left-click dragging
 
 ```typescript
