@@ -43,7 +43,8 @@ export class Scene {
 
   private _averageBoundingBox: THREE.Box3 | undefined
 
-  private _instanceToMeshes: Map<number, Submesh[]> = new Map()
+  // Array-based lookup for O(1) access (instance indices are dense 0..N)
+  private _instanceToMeshes: Array<Submesh[] | undefined> = []
   private _material: ModelMaterial
 
   constructor (matrix: THREE.Matrix4) {
@@ -107,7 +108,7 @@ export class Scene {
    * For instanced mesh, index refers to instance index.
    */
   getMeshFromInstance (instance: number) {
-    return this._instanceToMeshes.get(instance)
+    return this._instanceToMeshes[instance]
   }
 
   getMeshesFromInstances (instances: number[] | undefined) {
@@ -118,7 +119,7 @@ export class Scene {
       const instance = instances[i]
       if (instance < 0) continue
       const submeshes = this.getMeshFromInstance(instance)
-      submeshes?.forEach((s) => meshes.push(s))
+      submeshes?.forEach((s: Submesh) => meshes.push(s))
     }
     if (meshes.length === 0) return
     return meshes
@@ -150,9 +151,12 @@ export class Scene {
    * so that visibility/color/outline changes propagate to the right geometry.
    */
   addSubmesh (submesh: Submesh) {
-    const meshes = this._instanceToMeshes.get(submesh.instance) ?? []
+    let meshes = this._instanceToMeshes[submesh.instance]
+    if (!meshes) {
+      meshes = []
+      this._instanceToMeshes[submesh.instance] = meshes
+    }
     meshes.push(submesh)
-    this._instanceToMeshes.set(submesh.instance, meshes)
     this.setDirty()
     if (this.vim) {
       const obj = this.vim.getElement(submesh.instance)
@@ -190,11 +194,19 @@ export class Scene {
   merge (other: Scene) {
     if (!other) return this
     other.meshes.forEach((mesh) => this.meshes.push(mesh))
-    other._instanceToMeshes.forEach((meshes, instance) => {
-      const set = this._instanceToMeshes.get(instance) ?? []
-      meshes.forEach((m) => set.push(m))
-      this._instanceToMeshes.set(instance, set)
-    })
+
+    // Merge instance→mesh mappings
+    for (let instance = 0; instance < other._instanceToMeshes.length; instance++) {
+      const otherMeshes = other._instanceToMeshes[instance]
+      if (!otherMeshes) continue
+
+      let thisMeshes = this._instanceToMeshes[instance]
+      if (!thisMeshes) {
+        thisMeshes = []
+        this._instanceToMeshes[instance] = thisMeshes
+      }
+      otherMeshes.forEach((m) => thisMeshes!.push(m))
+    }
 
     if (other._boundingBox) {
       this._boundingBox =
@@ -234,7 +246,7 @@ export class Scene {
       m.mesh.geometry.dispose()
     }
     this.meshes.length = 0
-    this._instanceToMeshes.clear()
+    this._instanceToMeshes.length = 0
 
     this.renderer?.add(this)
     this._boundingBox = undefined

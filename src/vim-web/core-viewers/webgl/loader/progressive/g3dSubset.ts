@@ -197,6 +197,45 @@ export class G3dSubset {
   }
 
   /**
+   * Splits subset into two based on instance count threshold.
+   * More efficient than calling filterByCount twice - does single pass.
+   * @param threshold Instance count threshold
+   * @returns [low (<=threshold), high (>threshold)]
+   */
+  splitByCount (threshold: number): [G3dSubset, G3dSubset] {
+    const lowMeshes = new Set<number>()
+    const highMeshes = new Set<number>()
+
+    // Single pass through mesh instances
+    this._meshInstances.forEach((instances, i) => {
+      const mesh = this._meshes[i]
+      if (instances.length <= threshold) {
+        lowMeshes.add(mesh)
+      } else {
+        highMeshes.add(mesh)
+      }
+    })
+
+    // Single pass through instances to split them
+    const lowInstances: number[] = []
+    const highInstances: number[] = []
+
+    for (const instance of this._instances) {
+      const mesh = this._source.instanceMeshes[instance]
+      if (lowMeshes.has(mesh)) {
+        lowInstances.push(instance)
+      } else if (highMeshes.has(mesh)) {
+        highInstances.push(instance)
+      }
+    }
+
+    return [
+      new G3dSubset(this._source, lowInstances),
+      new G3dSubset(this._source, highInstances)
+    ]
+  }
+
+  /**
    * Returns offsets needed to build geometry.
    */
   getOffsets (section: MeshSection) {

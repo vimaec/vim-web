@@ -38,13 +38,13 @@ export class VimMeshFactory {
    * - >5 instances per mesh → GPU instanced (geometry shared, one mesh per unique geometry)
    */
   public add (subset: G3dSubset) {
-    const uniques = subset.filterByCount((count) => count <= 5)
-    const nonUniques = subset.filterByCount((count) => count > 5)
+    // Split in single pass instead of two filterByCount calls
+    const [merged, instanced] = subset.splitByCount(5)
 
     // Instanced meshes first (one Three.js InstancedMesh per unique geometry)
-    this.addInstancedMeshes(this._scene, nonUniques)
+    this.addInstancedMeshes(this._scene, instanced)
     // Merged meshes chunked at 4M indices to keep buffer sizes manageable
-    const chunks = uniques.chunks(4_000_000)
+    const chunks = merged.chunks(4_000_000)
     for(const chunk of chunks) {
       this.addMergedMesh(this._scene, chunk)
     }
