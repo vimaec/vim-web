@@ -217,6 +217,8 @@ export class Camera implements ICamera {
 
   /**
    * The quaternion representing the camera's orientation.
+   * @returns Live reference to internal state. Mutations affect the camera.
+   * Call `.clone()` if you need an independent copy.
    */
   get quaternion () {
     return this.camPerspective.camera.quaternion
@@ -224,6 +226,8 @@ export class Camera implements ICamera {
 
   /**
    * The position of the camera.
+   * @returns Live reference to internal state. Mutations affect the camera.
+   * Call `.clone()` if you need an independent copy.
    */
   get position () {
     return this.camPerspective.camera.position
@@ -231,6 +235,8 @@ export class Camera implements ICamera {
 
   /**
    * The matrix representing the transformation of the camera.
+   * @returns Live reference to internal state. Mutations affect the camera.
+   * Call `.clone()` if you need an independent copy.
    */
   get matrix () {
     this.camPerspective.camera.updateMatrix()
@@ -239,6 +245,7 @@ export class Camera implements ICamera {
 
   /**
    * The forward direction of the camera.
+   * @returns A new Vector3 instance (read-only). Mutations do not affect the camera.
    */
   get forward () {
     return this.camPerspective.camera.getWorldDirection(new THREE.Vector3())
@@ -246,6 +253,7 @@ export class Camera implements ICamera {
 
   /**
    * The current velocity in camera-local Z-up space (X = right, Y = forward, Z = up).
+   * @returns A new Vector3 instance (read-only). Mutations do not affect the camera.
    */
   get localVelocity () {
     const result = this._velocity.clone()
@@ -274,6 +282,8 @@ export class Camera implements ICamera {
 
   /**
    * The point the camera looks at and orbits around.
+   * @returns Live reference to internal state. Mutations affect the camera.
+   * Call `.clone()` if you need an independent copy.
    */
   get target () {
     return this._target
