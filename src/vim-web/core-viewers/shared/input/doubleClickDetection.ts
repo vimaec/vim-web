@@ -20,7 +20,8 @@ import * as THREE from 'three'
  */
 export class DoubleClickDetector {
   private _lastTime: number = 0
-  private _lastPosition: THREE.Vector2 | null = null
+  private _lastPosition: THREE.Vector2 = new THREE.Vector2()
+  private _hasLastPosition: boolean = false
   private _timeThreshold: number
   private _distanceThreshold: number
 
@@ -48,7 +49,7 @@ export class DoubleClickDetector {
     const timeDiff = currentTime - this._lastTime
 
     const isClose =
-      this._lastPosition !== null &&
+      this._hasLastPosition &&
       this._lastPosition.distanceTo(position) < this._distanceThreshold
 
     const isWithinTime = timeDiff < this._timeThreshold
@@ -60,11 +61,8 @@ export class DoubleClickDetector {
     } else {
       // Update state for next check
       this._lastTime = currentTime
-      if (this._lastPosition === null) {
-        this._lastPosition = position.clone()
-      } else {
-        this._lastPosition.copy(position)
-      }
+      this._lastPosition.copy(position)
+      this._hasLastPosition = true
     }
 
     return isDouble
@@ -75,6 +73,6 @@ export class DoubleClickDetector {
    */
   reset(): void {
     this._lastTime = 0
-    this._lastPosition = null
+    this._hasLastPosition = false
   }
 }

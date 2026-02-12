@@ -101,9 +101,8 @@ export class InputHandler extends BaseInputHandler {
     // Mouse controls
     this.mouse.onContextMenu = (pos: THREE.Vector2) => {
       // Convert canvas-relative coords (0-1) back to client coords (pixels) for menu positioning
-      const clientPos = new THREE.Vector2()
-      canvasToClient(pos.x, pos.y, canvas, clientPos)
-      this._onContextMenu.dispatch(clientPos)
+      canvasToClient(pos.x, pos.y, canvas, _tempClientPos)
+      this._onContextMenu.dispatch(_tempClientPos)
     };
     this.mouse.onButtonDown = adapter.mouseDown
     this.mouse.onMouseMove = adapter.mouseMove
@@ -140,7 +139,8 @@ export class InputHandler extends BaseInputHandler {
         const rect = this._canvas.getBoundingClientRect()
         const screenX = (clientX - rect.left) / rect.width
         const screenY = (clientY - rect.top) / rect.height
-        adapter.zoom(this.getZoomValue(value), new THREE.Vector2(screenX, screenY))
+        _tempScreenPos.set(screenX, screenY)
+        adapter.zoom(this.getZoomValue(value), _tempScreenPos)
       }
     }
 
@@ -275,8 +275,10 @@ export class InputHandler extends BaseInputHandler {
   }
 }
 
-// Reusable vector to avoid per-frame allocations
+// Reusable vectors to avoid per-frame allocations
 const _tempRotation = new THREE.Vector2()
+const _tempScreenPos = new THREE.Vector2()
+const _tempClientPos = new THREE.Vector2()
 
 function toRotation (delta: THREE.Vector2, speed: number) {
   return _tempRotation.copy(delta).negate().multiplyScalar(180 * speed)

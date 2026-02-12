@@ -10,6 +10,12 @@ import * as THREE from 'three'
 /**
  * Detects whether a pointer interaction is a click or drag based on movement.
  *
+ * State Management:
+ * - onPointerDown() resets state and captures start position
+ * - onPointerMove() sets moved flag if movement exceeds threshold
+ * - onPointerUp() does NOT reset state - state persists until next onPointerDown
+ * - This allows checking wasMoved() or isClick() after pointer release
+ *
  * Usage:
  * - Call onPointerDown when pointer is pressed
  * - Call onPointerMove during pointer movement
