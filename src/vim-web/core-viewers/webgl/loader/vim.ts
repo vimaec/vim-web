@@ -12,9 +12,11 @@ import {
   ElementNoMapping
 } from './elementMapping'
 import { ISignal, SignalDispatcher } from 'ste-signals'
+import { SimpleEventDispatcher } from 'ste-simple-events'
 import { G3dSubset } from './progressive/g3dSubset'
 import { VimMeshFactory } from './progressive/vimMeshFactory'
 import { IVim } from '../../shared/vim'
+import { IProgress } from '../../shared/loadResult'
 
 /**
  * Represents a container for the built three.js meshes and the vim data from which they were constructed.
@@ -71,13 +73,13 @@ export class Vim implements IVim<Element3D> {
   private readonly _factory: VimMeshFactory
   private readonly _loadedInstances = new Set<number>()
   private readonly _elementToObject = new Map<number, Element3D>()
-  private _onUpdate = new SignalDispatcher()
+  private _onUpdate = new SimpleEventDispatcher<IProgress>()
 
   /**
    * Getter for accessing the event dispatched whenever a subset begins or finishes loading.
-   * @returns {ISignal} The event dispatcher for loading updates.
+   * Consumers can subscribe to track loading progress.
    */
-  get onLoadingUpdate (): ISignal {
+  get onLoadingUpdate () {
     return this._onUpdate.asEvent()
   }
 
@@ -240,7 +242,11 @@ export class Vim implements IVim<Element3D> {
     }
     // Build meshes and add to scene
     this._factory.add(subset)
-    this._onUpdate.dispatch()
+    this._onUpdate.dispatch({
+      type: 'percent',
+      current: this._loadedInstances.size,
+      total: this.getFullSet().getInstanceCount()
+    })
   }
 
   /**
@@ -263,7 +269,11 @@ export class Vim implements IVim<Element3D> {
     this._elementToObject.clear()
     this._loadedInstances.clear()
     this.scene.clear()
-    this._onUpdate.dispatch()
+    this._onUpdate.dispatch({
+      type: 'percent',
+      current: 0,
+      total: this.getFullSet().getInstanceCount()
+    })
   }
 
   /**
