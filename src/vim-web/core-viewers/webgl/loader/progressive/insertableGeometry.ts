@@ -24,6 +24,7 @@ import { Scene } from '../scene'
 import { G3dMeshOffsets } from './g3dOffsets'
 import { ElementMapping } from '../elementMapping'
 import { packPickingId } from '../../viewer/rendering/gpuPicker'
+import { MappedG3d } from './mappedG3d'
 
 export class GeometrySubmesh {
   instance: number
@@ -111,7 +112,7 @@ export class InsertableGeometry {
    * with offset adjustment, sets per-vertex colors and packed picking IDs,
    * and creates a GeometrySubmesh tracking the index range and bounding box.
    */
-  insertFromG3d (g3d: G3d, mesh: number) {
+  insertFromG3d (g3d: MappedG3d, mesh: number) {
     const added: number[] = []
     const meshG3dIndex = this.offsets.subset.getSourceMesh(mesh)
     const subStart = g3d.getMeshSubmeshStart(meshG3dIndex, this.offsets.section)
@@ -261,9 +262,13 @@ export class InsertableGeometry {
     this._packedIdAttribute.needsUpdate = true
 
     if (this._computeBoundingBox) {
-      this.geometry.computeBoundingBox()
-      this.geometry.computeBoundingSphere()
-      this.boundingBox = this.geometry.boundingBox
+      // Use incrementally computed bounding box (already maintained via expandBox)
+      // instead of recomputing from all vertices - avoids iterating 4M vertices on each update
+      this.geometry.boundingBox = this.boundingBox?.clone() ?? null
+      // Compute bounding sphere from box (cheaper than iterating all vertices)
+      this.geometry.boundingSphere = this.boundingBox
+        ? this.boundingBox.getBoundingSphere(new THREE.Sphere())
+        : new THREE.Sphere()
     }
   }
 }

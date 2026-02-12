@@ -10,12 +10,13 @@
  */
 
 import * as THREE from 'three'
-import { G3d, MeshSection } from 'vim-format'
+import { MeshSection } from 'vim-format'
 import { InstancedMesh } from './instancedMesh'
 import { Materials } from '../materials/materials'
 import * as Geometry from '../geometry'
 import { ElementMapping } from '../elementMapping'
 import { packPickingId } from '../../viewer/rendering/gpuPicker'
+import { MappedG3d } from './mappedG3d'
 
 export class InstancedMeshFactory {
   private _mapping: ElementMapping | undefined
@@ -26,7 +27,7 @@ export class InstancedMeshFactory {
     this._vimIndex = vimIndex
   }
 
-  createOpaqueFromVim (g3d: G3d, mesh: number, instances: number[]) {
+  createOpaqueFromVim (g3d: MappedG3d, mesh: number, instances: number[]) {
     // Skip if no opaque geometry
     if (g3d.getMeshIndexEnd(mesh, 'opaque') <= g3d.getMeshIndexStart(mesh, 'opaque')) {
       return undefined
@@ -34,7 +35,7 @@ export class InstancedMeshFactory {
     return this.createFromVim(g3d, mesh, instances, 'opaque', false)
   }
 
-  createTransparentFromVim (g3d: G3d, mesh: number, instances: number[]) {
+  createTransparentFromVim (g3d: MappedG3d, mesh: number, instances: number[]) {
     // Skip if no transparent geometry
     if (g3d.getMeshIndexEnd(mesh, 'transparent') <= g3d.getMeshIndexStart(mesh, 'transparent')) {
       return undefined
@@ -47,7 +48,7 @@ export class InstancedMeshFactory {
    * then sets per-instance transforms and packed picking IDs.
    */
   createFromVim (
-    g3d: G3d,
+    g3d: MappedG3d,
     mesh: number,
     instances: number[] | undefined,
     section: MeshSection,
@@ -77,7 +78,7 @@ export class InstancedMeshFactory {
 
   private setMatrices (
     three: THREE.InstancedMesh,
-    source: G3d,
+    source: MappedG3d,
     instances: number[]
   ) {
     const matrix = new THREE.Matrix4()

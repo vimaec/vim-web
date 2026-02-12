@@ -12,7 +12,7 @@ export class InstancedMesh {
   mesh: THREE.InstancedMesh
   instances: ArrayLike<number>
   boundingBox: THREE.Box3
-  boxes: THREE.Box3[]
+  private _boxes?: THREE.Box3[]
 
   // State
   ignoreSceneMaterial: boolean
@@ -28,14 +28,28 @@ export class InstancedMesh {
     this.mesh.userData.vim = this
     this.instances = instances
 
-    this.boxes = this.computeBoundingBoxes()
-    this.size = this.boxes[0]?.getSize(new THREE.Vector3()).length() ?? 0
-    this.boundingBox = this.computeBoundingBox(this.boxes)
+    // Compute size from geometry bounding box (untransformed, represents typical instance size)
+    this.mesh.geometry.computeBoundingBox()
+    this.size = this.mesh.geometry.boundingBox?.getSize(new THREE.Vector3()).length() ?? 0
+
+    // Compute overall bounding box without allocating per-instance boxes
+    this.boundingBox = this.computeBoundingBox()
     this._material = this.mesh.material
   }
 
   get merged () {
     return false
+  }
+
+  /**
+   * Returns all per-instance bounding boxes.
+   * Computed lazily on first access - only allocates if actually needed.
+   */
+  get boxes(): THREE.Box3[] {
+    if (!this._boxes) {
+      this._boxes = this.computeBoundingBoxes()
+    }
+    return this._boxes
   }
 
   /**
@@ -73,11 +87,26 @@ export class InstancedMesh {
     return boxes
   }
 
-  computeBoundingBox (boxes: THREE.Box3[]) {
-    const box = boxes[0].clone()
-    for (let i = 1; i < boxes.length; i++) {
-      box.union(boxes[i])
+  /**
+   * Computes overall bounding box without allocating per-instance boxes.
+   * This is more efficient than computing all boxes upfront when only the
+   * overall bounds are needed.
+   */
+  private computeBoundingBox (): THREE.Box3 {
+    // Geometry bounding box already computed in constructor
+    const matrix = new THREE.Matrix4()
+    let result: THREE.Box3 | undefined
+
+    for (let i = 0; i < this.mesh.count; i++) {
+      this.mesh.getMatrixAt(i, matrix)
+      const box = this.mesh.geometry.boundingBox.clone().applyMatrix4(matrix)
+      if (result) {
+        result.union(box)
+      } else {
+        result = box
+      }
     }
-    return box
+
+    return result ?? new THREE.Box3()
   }
 }

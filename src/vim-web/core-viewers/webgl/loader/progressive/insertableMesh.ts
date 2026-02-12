@@ -3,13 +3,14 @@
  */
 
 import * as THREE from 'three'
-import { G3d, G3dMaterial } from 'vim-format'
+import { G3dMaterial } from 'vim-format'
 import { InsertableGeometry } from './insertableGeometry'
 import { InsertableSubmesh } from './insertableSubmesh'
 import { G3dMeshOffsets } from './g3dOffsets'
 import { Vim } from '../vim'
 import { ModelMaterial, Materials, applyMaterial } from '../materials/materials'
 import { ElementMapping } from '../elementMapping'
+import { MappedG3d } from './mappedG3d'
 
 export class InsertableMesh {
   offsets: G3dMeshOffsets
@@ -72,7 +73,7 @@ export class InsertableMesh {
     return this.geometry.progress
   }
 
-  insertFromVim (g3d: G3d, mesh: number) {
+  insertFromVim (g3d: MappedG3d, mesh: number) {
     this.geometry.insertFromG3d(g3d, mesh)
   }
 

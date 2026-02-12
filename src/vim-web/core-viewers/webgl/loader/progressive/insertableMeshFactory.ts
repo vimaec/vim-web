@@ -14,10 +14,11 @@
  * 4. Finalize with update() to upload buffer ranges to GPU
  */
 
-import { G3d, G3dMaterial, MeshSection } from 'vim-format'
+import { G3dMaterial, MeshSection } from 'vim-format'
 import { InsertableMesh } from './insertableMesh'
 import { G3dSubset } from './g3dSubset'
 import { ElementMapping } from '../elementMapping'
+import { MappedG3d } from './mappedG3d'
 
 export class InsertableMeshFactory {
   private _materials: G3dMaterial
@@ -30,7 +31,7 @@ export class InsertableMeshFactory {
     this._vimIndex = vimIndex
   }
 
-  createOpaqueFromVim (g3d: G3d, subset: G3dSubset) {
+  createOpaqueFromVim (g3d: MappedG3d, subset: G3dSubset) {
     // Skip if no opaque geometry
     if (!subset.getOffsets('opaque').any()) {
       return undefined
@@ -38,7 +39,7 @@ export class InsertableMeshFactory {
     return this.createFromVim(g3d, subset, 'opaque', false)
   }
 
-  createTransparentFromVim (g3d: G3d, subset: G3dSubset) {
+  createTransparentFromVim (g3d: MappedG3d, subset: G3dSubset) {
     // Skip if no transparent geometry
     if (!subset.getOffsets('transparent').any()) {
       return undefined
@@ -53,7 +54,7 @@ export class InsertableMeshFactory {
    * 3. Finalize: upload dirty buffer ranges to GPU
    */
   private createFromVim (
-    g3d: G3d,
+    g3d: MappedG3d,
     subset: G3dSubset,
     section: MeshSection,
     transparent: boolean

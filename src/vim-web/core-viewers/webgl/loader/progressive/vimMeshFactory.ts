@@ -11,19 +11,20 @@
  */
 
 import { Scene } from '../scene'
-import { G3dMaterial, G3d } from 'vim-format'
+import { G3dMaterial } from 'vim-format'
 import { InsertableMeshFactory } from './insertableMeshFactory'
 import { InstancedMeshFactory } from './instancedMeshFactory'
 import { G3dSubset } from './g3dSubset'
 import { ElementMapping } from '../elementMapping'
+import { MappedG3d } from './mappedG3d'
 
 export class VimMeshFactory {
-  readonly g3d: G3d
+  readonly g3d: MappedG3d
   private _insertableFactory: InsertableMeshFactory
   private _instancedFactory: InstancedMeshFactory
   private _scene: Scene
 
-  constructor (g3d: G3d, materials: G3dMaterial, scene: Scene, mapping: ElementMapping, vimIndex: number = 0) {
+  constructor (g3d: MappedG3d, materials: G3dMaterial, scene: Scene, mapping: ElementMapping, vimIndex: number = 0) {
     this.g3d = g3d
     this._scene = scene
     this._insertableFactory = new InsertableMeshFactory(materials, mapping, vimIndex)

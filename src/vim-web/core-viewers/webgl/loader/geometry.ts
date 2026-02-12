@@ -3,7 +3,8 @@
  */
 
 import * as THREE from 'three'
-import { G3d, MeshSection } from 'vim-format'
+import { MeshSection } from 'vim-format'
+import { MappedG3d } from './progressive/mappedG3d'
 
 export namespace Transparency {
   /**
@@ -35,7 +36,7 @@ export namespace Transparency {
  * @param transparent specify to use RGB or RGBA for colors
  */
 export function createGeometryFromMesh (
-  g3d: G3d,
+  g3d: MappedG3d,
   mesh: number,
   section: MeshSection,
   transparent: boolean
@@ -60,7 +61,7 @@ export function createGeometryFromMesh (
  * Expands submesh colors into vertex colors as RGB or RGBA
  */
 function createVertexColors (
-  g3d: G3d,
+  g3d: MappedG3d,
   mesh: number,
   useAlpha: boolean
 ): Float32Array {

@@ -21,6 +21,7 @@ import {
   G3dMaterial
 } from 'vim-format'
 import { DefaultLog } from 'vim-format/dist/logging'
+import { createMappedG3d } from './mappedG3d'
 
 export type RequestSource = {
   url?: string,
@@ -57,10 +58,11 @@ export class LoadRequest extends BaseLoadRequest<Vim> {
   /**
    * Parses a VIM file into a Vim object. Steps:
    * 1. Parse G3d geometry from the BFast 'geometry' buffer
-   * 2. Parse BIM document (VimDocument) from the BFast
-   * 3. Build ElementMapping (instance → element index) needed for GPU picking
-   * 4. Create Scene and VimMeshFactory (no geometry built yet)
-   * 5. Return Vim — caller must invoke loadAll()/loadSubset() to build meshes
+   * 2. Augment G3d with pre-computed mesh→instances map (MappedG3d)
+   * 3. Parse BIM document (VimDocument) from the BFast
+   * 4. Build ElementMapping (instance → element index) needed for GPU picking
+   * 5. Create Scene and VimMeshFactory (no geometry built yet)
+   * 6. Return Vim — caller must invoke loadAll()/loadSubset() to build meshes
    */
   private async loadFromVim (
     bfast: BFast,
@@ -79,23 +81,26 @@ export class LoadRequest extends BaseLoadRequest<Vim> {
     // Step 1: Parse G3d geometry
     const geometry = await bfast.getBfast('geometry')
     const g3d = await G3d.createFromBfast(geometry)
-    const materials = new G3dMaterial(g3d.materialColors)
 
-    // Step 2-3: Parse BIM document and build instance → element mapping
+    // Step 2: Augment with pre-computed mesh→instances map (shared by all G3dSubsets)
+    const mappedG3d = createMappedG3d(g3d)
+    const materials = new G3dMaterial(mappedG3d.materialColors)
+
+    // Step 3-4: Parse BIM document and build instance → element mapping
     const doc = await VimDocument.createFromBfast(bfast)
-    const mapping = await ElementMapping.fromG3d(g3d, doc)
+    const mapping = await ElementMapping.fromG3d(mappedG3d, doc)
 
-    // Step 4: Create scene and factory (factory needs mapping for GPU picking IDs)
+    // Step 5: Create scene and factory (factory needs mapping for GPU picking IDs)
     const scene = new Scene(fullSettings.matrix)
-    const factory = new VimMeshFactory(g3d, materials, scene, mapping, vimIndex)
+    const factory = new VimMeshFactory(mappedG3d, materials, scene, mapping, vimIndex)
 
     const header = await requestHeader(bfast)
 
-    // Step 5: Create Vim — geometry will be built later via loadAll()/loadSubset()
+    // Step 6: Create Vim — geometry will be built later via loadAll()/loadSubset()
     const vim = new Vim(
       header,
       doc,
-      g3d,
+      mappedG3d,
       scene,
       fullSettings,
       vimIndex,

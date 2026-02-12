@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { VimDocument, G3d, VimHeader, FilterMode } from 'vim-format'
+import { VimDocument, VimHeader, FilterMode } from 'vim-format'
 import { Scene } from './scene'
 import { VimSettings } from './vimSettings'
 import { Element3D } from './element3d'
@@ -17,6 +17,7 @@ import { G3dSubset } from './progressive/g3dSubset'
 import { VimMeshFactory } from './progressive/vimMeshFactory'
 import { IVim } from '../../shared/vim'
 import { IProgress } from '../../shared/loadResult'
+import { MappedG3d } from './progressive/mappedG3d'
 
 /**
  * Represents a container for the built three.js meshes and the vim data from which they were constructed.
@@ -51,9 +52,9 @@ export class Vim implements IVim<Element3D> {
   readonly bim: VimDocument | undefined
 
   /**
-   * The raw g3d geometry scene definition.
+   * The raw g3d geometry scene definition with pre-computed mesh map.
    */
-  readonly g3d: G3d | undefined
+  readonly g3d: MappedG3d | undefined
 
   /**
    * The settings used when this vim was opened.
@@ -96,7 +97,7 @@ export class Vim implements IVim<Element3D> {
   constructor (
     header: VimHeader | undefined,
     document: VimDocument,
-    g3d: G3d | undefined,
+    g3d: MappedG3d | undefined,
     scene: Scene,
     settings: VimSettings,
     vimIndex: number,

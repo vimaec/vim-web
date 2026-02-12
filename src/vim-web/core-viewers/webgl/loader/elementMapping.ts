@@ -2,7 +2,8 @@
  * @module vim-loader
  */
 
-import { G3d, VimDocument } from 'vim-format'
+import { VimDocument } from 'vim-format'
+import { MappedG3d } from './progressive/mappedG3d'
 
 export class ElementNoMapping {
   getElementsFromElementId (id: number) {
@@ -55,7 +56,7 @@ export class ElementMapping {
     this._instanceMeshes = instanceMeshes
   }
 
-  static async fromG3d (g3d: G3d, bim: VimDocument) {
+  static async fromG3d (g3d: MappedG3d, bim: VimDocument) {
     const instanceToElement = await bim.node.getAllElementIndex()
     const elementIds = await bim.element.getAllId()
 
