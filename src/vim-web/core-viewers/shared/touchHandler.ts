@@ -53,10 +53,16 @@ export class TouchHandler extends BaseInputHandler {
       this._lastTapMs && time - this._lastTapMs < this.DOUBLE_TAP_DELAY_MS
     this._lastTapMs = time
 
+    const rect = this._canvas.getBoundingClientRect()
+    const screenPos = new THREE.Vector2(
+      (position.x - rect.left) / rect.width,
+      (position.y - rect.top) / rect.height
+    )
+
     if(double)
-      this.onDoubleTap?.(position)
+      this.onDoubleTap?.(screenPos)
     else
-      this.onTap?.(position)
+      this.onTap?.(screenPos)
   }
 
   private onTouchStart = (event: TouchEvent) => {
@@ -75,11 +81,10 @@ export class TouchHandler extends BaseInputHandler {
       this._touch = this.average(this._touch1, this._touch2)
       this._startDist = this._touch1.distanceTo(this._touch2)
 
-      const size = this.getCanvasSize()
       const rect = this._canvas.getBoundingClientRect()
       const screenCenter = new THREE.Vector2(
-        (this._touch.x - window.scrollX - rect.left) / rect.width,
-        (this._touch.y - window.scrollY - rect.top) / rect.height
+        (this._touch.x - rect.left) / rect.width,
+        (this._touch.y - rect.top) / rect.height
       )
       this.onPinchStart?.(screenCenter)
     }
@@ -163,6 +168,14 @@ export class TouchHandler extends BaseInputHandler {
   }
 
   private onTouchEnd = (event: TouchEvent) => {
+    // 2→1 finger: transition to single-finger drag
+    if (event.touches.length === 1) {
+      this._touch = this.touchToVector(event.touches[0])
+      this._touch1 = this._touch2 = this._startDist = undefined
+      return
+    }
+
+    // All fingers lifted: check for tap, then reset
     if (this.isSingleTouch() && this._touchStart && this._touch) {
       const touchDurationMs = Date.now() - this._touchStartTime
       const length = this._touch.distanceTo(this._touchStart)
@@ -186,7 +199,7 @@ export class TouchHandler extends BaseInputHandler {
   }
 
   private touchToVector (touch: Touch) {
-    return new THREE.Vector2(touch.pageX, touch.pageY)
+    return new THREE.Vector2(touch.clientX, touch.clientY)
   }
 
   private average (p1: THREE.Vector2, p2: THREE.Vector2): THREE.Vector2 {
