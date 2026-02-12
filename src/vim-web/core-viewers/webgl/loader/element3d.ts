@@ -106,13 +106,13 @@ export class Element3D implements IVimElement {
   set visible (value: boolean) {
     if (this._visibleAttribute.apply(value)) {
       this.renderer.notifySceneUpdate()
-    }
 
-    // Show all involved meshes
-    if(value){
-      this._meshes?.forEach((m) => {
-        m.mesh.mesh.visible = true
-      })
+      // Show all involved meshes
+      if(value){
+        this._meshes?.forEach((m) => {
+          m.mesh.mesh.visible = true
+        })
+      }
     }
   }
 
