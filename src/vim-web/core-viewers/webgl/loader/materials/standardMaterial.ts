@@ -55,9 +55,28 @@ export class StandardMaterial {
   _sectionStrokeFallof: number = 0.75
   _sectionStrokeColor: THREE.Color = new THREE.Color(0xf6f6f6)
 
+  // NEW: Submesh color palette for indexed color lookup
+  _submeshColors: Float32Array | undefined
+  _useSubmeshColors: boolean = false
+
   constructor (material: THREE.Material) {
     this.material = material
     this.patchShader(material)
+  }
+
+  /**
+   * Sets the submesh color palette for indexed color lookup.
+   * Each color is RGB (3 floats). Pass undefined to disable.
+   */
+  setSubmeshColors(colors: Float32Array | undefined) {
+    this._submeshColors = colors
+    this._useSubmeshColors = colors !== undefined && colors.length > 0
+    if (this.uniforms) {
+      // Always provide 1024-element array to match shader uniform declaration
+      // WebGL requires array size to match uniform declaration, even when disabled
+      this.uniforms.submeshColors.value = colors ?? new Float32Array(1024)
+      this.uniforms.useSubmeshColors.value = this._useSubmeshColors ? 1.0 : 0.0
+    }
   }
 
   get color () {
@@ -154,6 +173,9 @@ export class StandardMaterial {
       this.uniforms.sectionStrokeWidth = { value: this._sectionStrokeWitdh }
       this.uniforms.sectionStrokeFalloff = { value: this._sectionStrokeFallof }
       this.uniforms.sectionStrokeColor = { value: this._sectionStrokeColor }
+      // NEW: Submesh color palette for indexed lookup (must be 1024 elements to match shader uniform)
+      this.uniforms.submeshColors = { value: this._submeshColors ?? new Float32Array(1024) }
+      this.uniforms.useSubmeshColors = { value: this._useSubmeshColors ? 1.0 : 0.0 }
 
       shader.vertexShader = shader.vertexShader
         // VERTEX DECLARATIONS
@@ -161,7 +183,7 @@ export class StandardMaterial {
           '#include <color_pars_vertex>',
           `
         #include <color_pars_vertex>
-        
+
         // COLORING
 
         // attribute for color override
@@ -175,6 +197,11 @@ export class StandardMaterial {
         #ifndef USE_INSTANCING_COLOR
         attribute vec3 instanceColor;
         #endif
+
+        // NEW: Submesh index for color palette lookup
+        attribute float submeshIndex;
+        uniform float submeshColors[1024]; // 341 colors × RGB (1024 floats, WebGL minimum)
+        uniform float useSubmeshColors;    // 1.0 = use palette, 0.0 = use vertex color
 
         // Passed to fragment to ignore phong model
         varying float vColored;
@@ -203,10 +230,16 @@ export class StandardMaterial {
           vColor = color;
           vColored = colored;
 
+          // NEW: Override with submesh color palette if enabled
+          if (useSubmeshColors > 0.5) {
+            int idx = int(submeshIndex) * 3;
+            vColor.xyz = vec3(submeshColors[idx], submeshColors[idx + 1], submeshColors[idx + 2]);
+          }
+
           // colored == 1 -> instance color
           // colored == 0 -> vertex color
           #ifdef USE_INSTANCING
-            vColor.xyz = colored * instanceColor.xyz + (1.0f - colored) * color.xyz;
+            vColor.xyz = colored * instanceColor.xyz + (1.0f - colored) * vColor.xyz;
           #endif
 
           // VISIBILITY

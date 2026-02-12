@@ -7,7 +7,7 @@
  * - Meshes with <=5 instances → InsertableMeshFactory (merged, geometry duplicated per instance)
  * - Meshes with >5 instances → InstancedMeshFactory (GPU instanced, geometry shared)
  *
- * Merged meshes are further chunked at 4M indices to keep buffer sizes manageable.
+ * Merged meshes are chunked at 16M indices (GPU picking allows larger chunks without raycast penalty).
  */
 
 import { Scene } from '../scene'
@@ -43,8 +43,8 @@ export class VimMeshFactory {
 
     // Instanced meshes first (one Three.js InstancedMesh per unique geometry)
     this.addInstancedMeshes(this._scene, instanced)
-    // Merged meshes chunked at 4M indices to keep buffer sizes manageable
-    const chunks = merged.chunks(4_000_000)
+    // Merged meshes chunked at 16M indices (GPU picking removes raycast traversal constraint)
+    const chunks = merged.chunks(16_000_000)
     for(const chunk of chunks) {
       this.addMergedMesh(this._scene, chunk)
     }

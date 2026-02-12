@@ -86,6 +86,43 @@ export class LoadRequest extends BaseLoadRequest<Vim> {
     const mappedG3d = createMappedG3d(g3d)
     const materials = new G3dMaterial(mappedG3d.materialColors)
 
+    // NEW: Build unique color palette for shader lookup
+    const submeshColorCount = mappedG3d.submeshMaterial.length
+    const maxColors = 341 // Must match shader uniform array size (1024 floats / 3)
+
+    // Build palette of unique colors only
+    const uniqueColorsMap = new Map<string, number>() // color key → colorIndex
+    const colorPaletteArray: number[] = []
+    const submeshToColorIndex = new Uint16Array(submeshColorCount)
+
+    for (let i = 0; i < submeshColorCount; i++) {
+      const color = mappedG3d.getSubmeshColor(i)
+      const key = `${color[0].toFixed(6)},${color[1].toFixed(6)},${color[2].toFixed(6)}`
+
+      let colorIndex = uniqueColorsMap.get(key)
+      if (colorIndex === undefined) {
+        colorIndex = colorPaletteArray.length / 3
+        uniqueColorsMap.set(key, colorIndex)
+        colorPaletteArray.push(color[0], color[1], color[2])
+      }
+
+      submeshToColorIndex[i] = colorIndex
+    }
+
+    const uniqueColorCount = uniqueColorsMap.size
+    let submeshColorPalette: Float32Array | undefined
+
+    if (uniqueColorCount <= maxColors) {
+      submeshColorPalette = new Float32Array(colorPaletteArray)
+      const paletteSizeKB = (submeshColorPalette.length * 4 / 1024).toFixed(1)
+      console.log(`[Color Optimization] Enabled: ${submeshColorCount} submeshes → ${uniqueColorCount} unique colors, palette size: ${paletteSizeKB} KB`)
+
+      // Store the mapping in mappedG3d for geometry builders to use
+      ;(mappedG3d as any).submeshToColorIndex = submeshToColorIndex
+    } else {
+      console.warn(`[Color Optimization] Disabled: Model has ${uniqueColorCount} unique colors (max ${maxColors}). Using vertex colors.`)
+    }
+
     // Step 3-4: Parse BIM document and build instance → element mapping
     const doc = await VimDocument.createFromBfast(bfast)
     const mapping = await ElementMapping.fromG3d(mappedG3d, doc)
@@ -93,6 +130,13 @@ export class LoadRequest extends BaseLoadRequest<Vim> {
     // Step 5: Create scene and factory (factory needs mapping for GPU picking IDs)
     const scene = new Scene(fullSettings.matrix)
     const factory = new VimMeshFactory(mappedG3d, materials, scene, mapping, vimIndex)
+
+    // NEW: Set or clear submesh color palette on materials
+    // Always call this to ensure proper state (enabled or disabled)
+    const { Materials } = await import('../materials/materials')
+    const sharedMaterials = Materials.getInstance()
+    sharedMaterials.opaque.setSubmeshColors(submeshColorPalette) // undefined if disabled
+    sharedMaterials.transparent.setSubmeshColors(submeshColorPalette)
 
     const header = await requestHeader(bfast)
 
