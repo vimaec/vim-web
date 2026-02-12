@@ -1,3 +1,9 @@
+/**
+ * Mouse and pointer input handler.
+ *
+ * See INPUT.md for architecture, coordinate systems, and performance patterns.
+ */
+
 import { BaseInputHandler } from "./baseInputHandler";
 import { CLICK_MOVEMENT_THRESHOLD, DOUBLE_CLICK_DISTANCE_THRESHOLD, DOUBLE_CLICK_TIME_THRESHOLD } from "./inputConstants";
 
@@ -6,7 +12,12 @@ import * as Utils from "../../utils";
 
 type DragCallback = (delta: THREE.Vector2, button: number) => void;
 
-// Existing MouseHandler class
+/**
+ * Handles mouse/pointer input with support for click, drag, and double-click detection.
+ *
+ * Uses Pointer Events API for unified mouse/pen/touch handling.
+ * Filters to mouse-only via pointerType check.
+ */
 export class MouseHandler extends BaseInputHandler {
   private _lastMouseDownPosition = new THREE.Vector2(0, 0);
   private _capture: CaptureHandler;
@@ -17,13 +28,60 @@ export class MouseHandler extends BaseInputHandler {
   // Reusable vectors to avoid per-frame allocations
   private _tempPosition = new THREE.Vector2();
 
+  /**
+   * Called on every pointer down event.
+   * @param pos Canvas-relative position [0-1]
+   * @param button 0=left, 1=middle, 2=right
+   */
   onButtonDown: (pos: THREE.Vector2, button: number) => void;
+
+  /**
+   * Called on every pointer up event.
+   * @param pos Canvas-relative position [0-1]
+   * @param button 0=left, 1=middle, 2=right
+   */
   onButtonUp: (pos: THREE.Vector2, button: number) => void;
+
+  /**
+   * Called on every pointer move (regardless of button state).
+   * @param pos Canvas-relative position [0-1]
+   */
   onMouseMove: (event: THREE.Vector2) => void;
-  onDrag: DragCallback; // Callback for drag movement
+
+  /**
+   * Called during pointer drag (pointer down + move).
+   * @param delta Canvas-relative movement since last frame
+   * @param button Button being dragged (0=left, 1=middle, 2=right)
+   * @note Delta is a reference to reusable vector - do not store!
+   */
+  onDrag: DragCallback;
+
+  /**
+   * Called on single click (pointer down + up without drag).
+   * @param position Canvas-relative click position [0-1]
+   * @param ctrl True if Shift or Ctrl was held
+   */
   onClick: (position: THREE.Vector2, ctrl: boolean) => void;
+
+  /**
+   * Called on double-click within 300ms.
+   * @param position Canvas-relative click position [0-1]
+   */
   onDoubleClick: (position: THREE.Vector2) => void;
+
+  /**
+   * Called on mouse wheel scroll.
+   * @param value Scroll direction: +1 (down) or -1 (up)
+   * @param ctrl True if Ctrl key was held
+   * @param clientX Client X coordinate in pixels
+   * @param clientY Client Y coordinate in pixels
+   */
   onWheel: (value: number, ctrl: boolean, clientX: number, clientY: number) => void;
+
+  /**
+   * Called on right-click without drag.
+   * @param position Canvas-relative position [0-1]
+   */
   onContextMenu: (position: THREE.Vector2) => void;
 
   constructor(canvas: HTMLCanvasElement) {
@@ -231,50 +289,35 @@ class DoubleClickHandler {
   }
 }
 
+/** Tracks drag operations with zero-allocation delta calculation. */
 class DragHandler {
-  private _lastDragPosition = new THREE.Vector2();
+  private _lastDragPosition = new THREE.Vector2(); // Storage (use .copy())
   private _hasDrag = false;
   private _button: number;
-
   private _onDrag: DragCallback;
-
-  // Reusable vector to avoid per-frame allocations
-  private _delta = new THREE.Vector2();
+  private _delta = new THREE.Vector2(); // Temp (reused)
 
   constructor( onDrag: DragCallback) {
     this._onDrag = onDrag;
   }
 
-  /**
-   * Initializes the drag operation by setting the starting position.
-   * @param pos The initial pointer position.
-   */
   onPointerDown(pos: THREE.Vector2, button: number): void {
-    this._lastDragPosition.copy(pos);
+    this._lastDragPosition.copy(pos); // MUST copy, not assign reference
     this._hasDrag = true;
     this._button = button;
   }
 
-  /**
-   * Updates the drag operation, calculates and returns the delta movement.
-   * @param pos The current pointer position.
-   * @returns The delta movement vector, or null if no previous position exists.
-   */
   onPointerMove(pos: THREE.Vector2): void {
-
     if (this._hasDrag) {
       this._delta.set(
         pos.x - this._lastDragPosition.x,
         pos.y - this._lastDragPosition.y
       );
-      this._lastDragPosition.copy(pos);
+      this._lastDragPosition.copy(pos); // MUST copy
       this._onDrag(this._delta, this._button);
     }
   }
 
-  /**
-   * Ends the drag operation and resets the last drag position.
-   */
   onPointerUp(): void {
     this._hasDrag = false;
   }

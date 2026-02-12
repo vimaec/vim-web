@@ -5,7 +5,14 @@
 import * as THREE from 'three';
 import { BaseInputHandler } from './baseInputHandler';
 
-type CallbackMode = 'replace' | 'append' | 'prepend';
+/**
+ * Mode for registering key handlers.
+ *
+ * - replace: Replace existing handler
+ * - append: Run after existing handler
+ * - prepend: Run before existing handler
+ */
+export type CallbackMode = 'replace' | 'append' | 'prepend';
 
 /**
  * KeyboardHandler

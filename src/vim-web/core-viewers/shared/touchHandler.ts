@@ -1,14 +1,14 @@
 /**
- * @module viw-webgl-viewer/inputs
+ * Touch input handler with support for tap, pinch, and pan gestures.
+ *
+ * See INPUT.md for gesture recognition, state management, and performance patterns.
  */
 
 import * as THREE from 'three'
 import { BaseInputHandler } from './baseInputHandler';
 import { TAP_DURATION_MS, TAP_MOVEMENT_THRESHOLD, DOUBLE_CLICK_TIME_THRESHOLD } from './inputConstants';
 
-/**
- * Manages user touch inputs.
- */
+/** Handles touch gestures with zero-allocation vector reuse. */
 export class TouchHandler extends BaseInputHandler {
   private readonly ZOOM_SPEED = 1
   private readonly MOVE_SPEED = 100
@@ -20,7 +20,7 @@ export class TouchHandler extends BaseInputHandler {
   onPinchStart: (screenCenter: THREE.Vector2) => void
   onPinchOrSpread: (totalRatio: number) => void
 
-  // Reusable vectors to avoid per-frame allocations
+  // Temp vectors (reused, never store references!)
   private _tempVec = new THREE.Vector2()
   private _tempVec2 = new THREE.Vector2()
   private _tempDelta = new THREE.Vector2()
@@ -31,14 +31,14 @@ export class TouchHandler extends BaseInputHandler {
     super(canvas)
   }
 
-  // State - these store actual values, not references
+  // Storage vectors (actual values, use .copy() when storing from temp)
   private _touch = new THREE.Vector2()
   private _touch1 = new THREE.Vector2()
   private _touch2 = new THREE.Vector2()
   private _hasTouch = false
   private _hasTouch1 = false
   private _hasTouch2 = false
-  private _touchStartTime: number | undefined = undefined // In ms since epoch
+  private _touchStartTime: number | undefined = undefined
   private _lastTapMs: number | undefined
   private _touchStart = new THREE.Vector2()
   private _hasTouchStart = false

@@ -1,3 +1,9 @@
+/**
+ * Input coordinator that routes device events to viewer-specific adapters.
+ *
+ * See INPUT.md for architecture, pointer modes, and customization patterns.
+ */
+
 import { SignalDispatcher } from 'ste-signals'
 import { SimpleEventDispatcher } from 'ste-simple-events'
 import * as THREE from 'three'
@@ -8,6 +14,7 @@ import { TouchHandler } from './touchHandler'
 import { IInputAdapter } from './inputAdapter'
 import { MIN_MOVE_SPEED, MAX_MOVE_SPEED } from './inputConstants'
 
+/** Pointer interaction modes. See INPUT.md for details. */
 export enum PointerMode {
   ORBIT = 'orbit',
   LOOK = 'look',
@@ -15,7 +22,6 @@ export enum PointerMode {
   ZOOM = 'zoom',
   RECT = 'rect'
 }
-
 
 interface InputSettings{
   orbit: boolean
@@ -25,6 +31,12 @@ interface InputSettings{
   orbitSpeed: number
 }
 
+/**
+ * Input handler coordinator.
+ *
+ * Manages three-tier pointer modes (active/override/fallback).
+ * See INPUT.md for mode system and customization.
+ */
 export class InputHandler extends BaseInputHandler {
 
   /**

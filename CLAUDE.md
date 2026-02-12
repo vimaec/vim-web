@@ -263,29 +263,71 @@ state.useMemo((v) => compute(v))
 
 ---
 
-## Input Bindings
+## Input System
+
+> **📖 Full Documentation**: See [INPUT.md](./INPUT.md) for architecture, patterns, and advanced customization
+
+### Default Bindings
 
 | Input | Action |
 |-------|--------|
 | Left Drag | Orbit (or mode-specific) |
 | Right Drag | Look |
 | Middle Drag | Pan |
-| Wheel | Zoom to cursor (if over geometry) or zoom toward current target |
+| Wheel | Zoom to cursor |
 | Click | Select |
 | Shift+Click | Add to selection |
 | Double-Click | Frame |
-| WASD | Move camera |
+| WASD / Arrows | Move camera |
+| E / Q | Move up / down |
+| Shift | 3x speed boost |
 | F | Frame selection |
 | Escape | Clear selection |
 | P | Toggle orthographic |
+| Space | Toggle Orbit/Look |
 | Home | Reset camera |
+| +/- | Adjust move speed |
+
+### Quick API Reference
 
 ```typescript
-// Register custom key handler
-viewer.core.inputs.keyboard.registerKeyDown('KeyR', 'replace', () => {
-  // Custom action on R key
+const inputs = viewer.core.inputs
+
+// Pointer modes: ORBIT | LOOK | PAN | ZOOM | RECT
+inputs.pointerActive = VIM.Core.PointerMode.LOOK
+inputs.moveSpeed = 5  // Range: -10 to +10, exponential (1.25^speed)
+
+// Custom key handlers (mode: 'replace' | 'append' | 'prepend')
+inputs.keyboard.registerKeyDown('KeyR', 'replace', () => { /* ... */ })
+inputs.keyboard.registerKeyUp(['Equal', 'NumpadAdd'], 'replace', () => {
+  inputs.moveSpeed++
 })
+
+// Custom callbacks (all positions are canvas-relative [0-1])
+inputs.mouse.onClick = (pos, ctrl) => { /* ... */ }
+inputs.mouse.onDrag = (delta, button) => { /* ... */ }
+inputs.touch.onPinchOrSpread = (ratio) => { /* ... */ }
 ```
+
+### Common Patterns
+
+**Plan View (Top-Down, Pan-Only)**:
+```typescript
+viewer.camera.snap().orbitTowards(new VIM.THREE.Vector3(0, 0, -1))
+viewer.camera.allowedRotation = new VIM.THREE.Vector2(0, 0)
+viewer.camera.orthographic = true
+viewer.core.inputs.pointerActive = VIM.Core.PointerMode.PAN
+```
+
+**Custom Tool Mode**:
+```typescript
+const originalMode = viewer.core.inputs.pointerActive
+viewer.core.inputs.pointerActive = VIM.Core.PointerMode.RECT
+viewer.core.inputs.mouse.onClick = (pos) => { /* custom logic */ }
+// Restore: viewer.core.inputs.pointerActive = originalMode
+```
+
+See [INPUT.md](./INPUT.md) for more patterns, coordinate systems, performance optimization, and debugging techniques
 
 ---
 
