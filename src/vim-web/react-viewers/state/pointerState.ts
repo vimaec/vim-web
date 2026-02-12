@@ -12,9 +12,8 @@ export function getPointerState (viewer: Core.Webgl.Viewer) {
   }, [])
 
   const onModeBtn = (target: Core.PointerMode) => {
-    const next = mode === target ? viewer.inputs.pointerFallback : target
-    viewer.inputs.pointerActive = next
-    setMode(next)
+    viewer.inputs.pointerActive = target
+    setMode(target)
   }
 
   return {

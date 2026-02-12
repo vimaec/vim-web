@@ -59,7 +59,6 @@ export class InputHandler extends BaseInputHandler {
   private _moveSpeed: number
 
   private _pointerActive: PointerMode = PointerMode.ORBIT
-  private _pointerFallback: PointerMode = PointerMode.LOOK
   private _pointerOverride: PointerMode | undefined
   private _onPointerOverrideChanged = new SignalDispatcher()
   private _onPointerModeChanged = new SignalDispatcher()
@@ -87,7 +86,6 @@ export class InputHandler extends BaseInputHandler {
     this.keyboard.registerKeyUp('KeyP', 'replace', () => adapter.toggleOrthographic());
     this.keyboard.registerKeyUp(['Equal', 'NumpadAdd'], 'replace', () => this.moveSpeed++);
     this.keyboard.registerKeyUp(['Minus', 'NumpadSubtract'], 'replace', () => this.moveSpeed--);
-    this.keyboard.registerKeyUp('Space', 'replace', () => adapter.toggleCameraOrbitMode());
     this.keyboard.registerKeyUp('Home', 'replace', () => adapter.resetCamera());
     this.keyboard.registerKeyUp('Escape', 'replace', () => adapter.clearSelection());
     this.keyboard.registerKeyUp('KeyF', 'replace', () => {
@@ -185,13 +183,6 @@ export class InputHandler extends BaseInputHandler {
   }
 
   /**
-   * Returns the last main mode (orbit, look) that was active.
-   */
-  get pointerFallback () : PointerMode {
-    return this._pointerFallback
-  }
-
-  /**
    * Returns current pointer mode.
    */
   get pointerActive (): PointerMode {
@@ -201,7 +192,7 @@ export class InputHandler extends BaseInputHandler {
   /**
    * A temporary pointer mode used for temporary icons.
    */
-  get pointerOverride (): PointerMode {
+  get pointerOverride (): PointerMode | undefined {
     return this._pointerOverride
   }
 

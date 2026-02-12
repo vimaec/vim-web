@@ -4,10 +4,9 @@ export interface IInputAdapter{
   init: () => void
 
   toggleOrthographic: () => void
-  toggleCameraOrbitMode: () => void
   resetCamera: () => void
   clearSelection: () => void
-  frameCamera: () => void
+  frameCamera: () => void | Promise<void>
   moveCamera: (value: THREE.Vector3) => void
   orbitCamera: (value: THREE.Vector2) => void
   rotateCamera: (value: THREE.Vector2) => void
@@ -21,10 +20,10 @@ export interface IInputAdapter{
   mouseUp: (pos: THREE.Vector2, button: number) => void
   mouseMove: (pos: THREE.Vector2) => void
 
-  selectAtPointer: (pos: THREE.Vector2, add: boolean) => void
-  frameAtPointer: (pos: THREE.Vector2) => void
-  zoom: (value: number, screenPos?: THREE.Vector2) => void
+  selectAtPointer: (pos: THREE.Vector2, add: boolean) => void | Promise<void>
+  frameAtPointer: (pos: THREE.Vector2) => void | Promise<void>
+  zoom: (value: number, screenPos?: THREE.Vector2) => void | Promise<void>
 
-  pinchStart: (screenPos: THREE.Vector2) => void
+  pinchStart: (screenPos: THREE.Vector2) => void | Promise<void>
   pinchZoom: (totalRatio: number) => void
 }

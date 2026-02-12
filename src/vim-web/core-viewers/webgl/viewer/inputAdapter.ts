@@ -1,5 +1,5 @@
 import {type IInputAdapter} from "../../shared/inputAdapter"
-import {InputHandler, PointerMode} from "../../shared/inputHandler"
+import {InputHandler} from "../../shared/inputHandler"
 import { Viewer } from "./viewer"
 import { Element3D } from '../loader/element3d'
 import * as THREE from 'three'
@@ -36,11 +36,6 @@ function createAdapter(viewer: Viewer ) : IInputAdapter {
 
     toggleOrthographic: () => {
       viewer.camera.orthographic = !viewer.camera.orthographic
-    },
-    toggleCameraOrbitMode: () => {
-      viewer.inputs.pointerActive = viewer.inputs.pointerActive === PointerMode.ORBIT
-        ? PointerMode.LOOK
-        : PointerMode.ORBIT;
     },
 
     resetCamera: () => {

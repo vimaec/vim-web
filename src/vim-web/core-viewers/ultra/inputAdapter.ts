@@ -57,10 +57,6 @@ function createAdapter(viewer: Viewer): IInputAdapter {
     toggleOrthographic: () => {
       console.log('toggleOrthographic. Not supported yet');
     },
-    toggleCameraOrbitMode: () => {
-      // A bit hacky, but we send a space key event to toggle orbit mode
-      viewer.rpc.RPCKeyEvent(CODE_TO_KEYCODE['Space'], true);
-    },
     resetCamera: () => {
       viewer.camera.restoreSavedPosition();
     },

@@ -170,13 +170,12 @@ export class MouseHandler extends BaseInputHandler {
     if (event.pointerType !== 'mouse') return;
     if(event.button !== 2) return;
 
-    const pos = this.relativePosition(event);
-
-    if (!Utils.almostEqual(this._lastMouseDownPosition, pos, 0.01)) {
+    // Don't show context menu if there was a drag
+    if (this._clickHandler.wasMoved()) {
       return;
     }
 
-    // Use canvas-relative coordinates for consistency with other events
+    const pos = this.relativePosition(event);
     this.onContextMenu?.(pos);
   }
   
@@ -264,6 +263,10 @@ class ClickHandler {
   isClick(event: PointerEvent): boolean {
     if (event.button !== 0) return false; // Only left button
     return !this._moved;
+  }
+
+  wasMoved(): boolean {
+    return this._moved;
   }
 }
 

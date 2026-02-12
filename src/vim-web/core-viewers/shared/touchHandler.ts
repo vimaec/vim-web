@@ -10,9 +10,6 @@ import { TAP_DURATION_MS, TAP_MOVEMENT_THRESHOLD, DOUBLE_CLICK_TIME_THRESHOLD } 
 
 /** Handles touch gestures with zero-allocation vector reuse. */
 export class TouchHandler extends BaseInputHandler {
-  private readonly ZOOM_SPEED = 1
-  private readonly MOVE_SPEED = 100
-
   onTap: (position: THREE.Vector2) => void
   onDoubleTap: (position: THREE.Vector2) => void
   onDrag: (delta: THREE.Vector2) => void
@@ -147,7 +144,7 @@ export class TouchHandler extends BaseInputHandler {
         .multiply(this._tempSize.set(1 / this._tempSize.x, 1 / this._tempSize.y))
 
       this._touch.copy(pos)
-      this.onDrag(this._tempDelta)
+      this.onDrag?.(this._tempDelta)
       return
     }
 
@@ -166,9 +163,9 @@ export class TouchHandler extends BaseInputHandler {
       this._touch1.copy(p1)
       this._touch2.copy(p2)
 
-      this.onDoubleDrag(this._tempDelta)
+      this.onDoubleDrag?.(this._tempDelta)
       if (this._startDist) {
-        this.onPinchOrSpread(dist / this._startDist)
+        this.onPinchOrSpread?.(dist / this._startDist)
       }
     }
   }
