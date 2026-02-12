@@ -31,10 +31,18 @@ export class InsertableMeshFactory {
   }
 
   createOpaqueFromVim (g3d: G3d, subset: G3dSubset) {
+    // Skip if no opaque geometry
+    if (!subset.getOffsets('opaque').any()) {
+      return undefined
+    }
     return this.createFromVim(g3d, subset, 'opaque', false)
   }
 
   createTransparentFromVim (g3d: G3d, subset: G3dSubset) {
+    // Skip if no transparent geometry
+    if (!subset.getOffsets('transparent').any()) {
+      return undefined
+    }
     return this.createFromVim(g3d, subset, 'transparent', true)
   }
 

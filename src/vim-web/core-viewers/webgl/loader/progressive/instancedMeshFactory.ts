@@ -27,10 +27,18 @@ export class InstancedMeshFactory {
   }
 
   createOpaqueFromVim (g3d: G3d, mesh: number, instances: number[]) {
+    // Skip if no opaque geometry
+    if (g3d.getMeshIndexEnd(mesh, 'opaque') <= g3d.getMeshIndexStart(mesh, 'opaque')) {
+      return undefined
+    }
     return this.createFromVim(g3d, mesh, instances, 'opaque', false)
   }
 
   createTransparentFromVim (g3d: G3d, mesh: number, instances: number[]) {
+    // Skip if no transparent geometry
+    if (g3d.getMeshIndexEnd(mesh, 'transparent') <= g3d.getMeshIndexStart(mesh, 'transparent')) {
+      return undefined
+    }
     return this.createFromVim(g3d, mesh, instances, 'transparent', true)
   }
 

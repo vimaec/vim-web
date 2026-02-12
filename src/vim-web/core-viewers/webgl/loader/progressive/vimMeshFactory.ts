@@ -50,8 +50,11 @@ export class VimMeshFactory {
   }
 
   private addMergedMesh (scene: Scene, subset: G3dSubset) {
-    scene.addMesh(this._insertableFactory.createOpaqueFromVim(this.g3d, subset))
-    scene.addMesh(this._insertableFactory.createTransparentFromVim(this.g3d, subset))
+    const opaque = this._insertableFactory.createOpaqueFromVim(this.g3d, subset)
+    if (opaque) scene.addMesh(opaque)
+
+    const transparent = this._insertableFactory.createTransparentFromVim(this.g3d, subset)
+    if (transparent) scene.addMesh(transparent)
   }
 
   private addInstancedMeshes (scene: Scene, subset: G3dSubset) {
@@ -66,13 +69,14 @@ export class VimMeshFactory {
         mesh,
         instances
       )
+      if (opaque) scene.addMesh(opaque)
+
       const transparent = this._instancedFactory.createTransparentFromVim(
         this.g3d,
         mesh,
         instances
       )
-      scene.addMesh(opaque)
-      scene.addMesh(transparent)
+      if (transparent) scene.addMesh(transparent)
     }
   }
 }

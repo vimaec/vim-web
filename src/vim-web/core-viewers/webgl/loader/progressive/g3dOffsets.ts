@@ -80,4 +80,11 @@ export class G3dMeshOffsets {
       : this.counts.vertices
   }
 
+  /**
+   * Returns true if this offset has any geometry (indices > 0).
+   */
+  any () {
+    return this.counts.indices > 0
+  }
+
 }
