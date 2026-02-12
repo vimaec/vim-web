@@ -274,6 +274,9 @@ export class InputHandler extends BaseInputHandler {
   }
 }
 
+// Reusable vector to avoid per-frame allocations
+const _tempRotation = new THREE.Vector2()
+
 function toRotation (delta: THREE.Vector2, speed: number) {
-  return delta.clone().negate().multiplyScalar(180 * speed)
+  return _tempRotation.copy(delta).negate().multiplyScalar(180 * speed)
 }

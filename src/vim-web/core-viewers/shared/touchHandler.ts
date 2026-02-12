@@ -14,23 +14,34 @@ export class TouchHandler extends BaseInputHandler {
   private readonly MOVE_SPEED = 100
 
   onTap: (position: THREE.Vector2) => void
-  onDoubleTap: (position: THREE.Vector2) => void 
+  onDoubleTap: (position: THREE.Vector2) => void
   onDrag: (delta: THREE.Vector2) => void
   onDoubleDrag: (delta: THREE.Vector2) => void
   onPinchStart: (screenCenter: THREE.Vector2) => void
   onPinchOrSpread: (totalRatio: number) => void
 
+  // Reusable vectors to avoid per-frame allocations
+  private _tempVec = new THREE.Vector2()
+  private _tempVec2 = new THREE.Vector2()
+  private _tempDelta = new THREE.Vector2()
+  private _tempSize = new THREE.Vector2()
+  private _tempScreenPos = new THREE.Vector2()
+
   constructor (canvas: HTMLCanvasElement) {
     super(canvas)
   }
 
-  // State
-  private _touch: THREE.Vector2 | undefined = undefined // When one touch occurs this is the value, when two or more touches occur it is the average of the first two.
-  private _touch1: THREE.Vector2 | undefined = undefined // The first touch when multiple touches occur, otherwise left undefined
-  private _touch2: THREE.Vector2 | undefined = undefined // The second touch when multiple touches occur, otherwise left undefined
+  // State - these store actual values, not references
+  private _touch = new THREE.Vector2()
+  private _touch1 = new THREE.Vector2()
+  private _touch2 = new THREE.Vector2()
+  private _hasTouch = false
+  private _hasTouch1 = false
+  private _hasTouch2 = false
   private _touchStartTime: number | undefined = undefined // In ms since epoch
   private _lastTapMs: number | undefined
-  private _touchStart: THREE.Vector2 | undefined
+  private _touchStart = new THREE.Vector2()
+  private _hasTouchStart = false
   private _startDist: number | undefined
 
   protected override addListeners (): void {
@@ -42,7 +53,8 @@ export class TouchHandler extends BaseInputHandler {
   }
 
   override reset = () => {
-    this._touch = this._touch1 = this._touch2 = this._touchStartTime = this._startDist = undefined
+    this._hasTouch = this._hasTouch1 = this._hasTouch2 = this._hasTouchStart = false
+    this._touchStartTime = this._startDist = undefined
   }
 
   private _onTap = (position: THREE.Vector2) => {
@@ -52,15 +64,15 @@ export class TouchHandler extends BaseInputHandler {
     this._lastTapMs = time
 
     const rect = this._canvas.getBoundingClientRect()
-    const screenPos = new THREE.Vector2(
+    this._tempScreenPos.set(
       (position.x - rect.left) / rect.width,
       (position.y - rect.top) / rect.height
     )
 
     if(double)
-      this.onDoubleTap?.(screenPos)
+      this.onDoubleTap?.(this._tempScreenPos)
     else
-      this.onTap?.(screenPos)
+      this.onTap?.(this._tempScreenPos)
   }
 
   private onTouchStart = (event: TouchEvent) => {
@@ -71,22 +83,25 @@ export class TouchHandler extends BaseInputHandler {
     this._touchStartTime = Date.now()
 
     if (event.touches.length === 1) {
-      this._touch = this.touchToVector(event.touches[0])
-      this._touch1 = this._touch2 = undefined
+      this._touch.copy(this.touchToVector(event.touches[0]))
+      this._hasTouch = true
+      this._hasTouch1 = this._hasTouch2 = false
     } else if (event.touches.length === 2) {
-      this._touch1 = this.touchToVector(event.touches[0])
-      this._touch2 = this.touchToVector(event.touches[1])
-      this._touch = this.average(this._touch1, this._touch2)
+      this._touch1.copy(this.touchToVector(event.touches[0]))
+      this._touch2.copy(this.touchToVector(event.touches[1]))
+      this._touch.copy(this.average(this._touch1, this._touch2))
+      this._hasTouch = this._hasTouch1 = this._hasTouch2 = true
       this._startDist = this._touch1.distanceTo(this._touch2)
 
       const rect = this._canvas.getBoundingClientRect()
-      const screenCenter = new THREE.Vector2(
+      this._tempScreenPos.set(
         (this._touch.x - rect.left) / rect.width,
         (this._touch.y - rect.top) / rect.height
       )
-      this.onPinchStart?.(screenCenter)
+      this.onPinchStart?.(this._tempScreenPos)
     }
-    this._touchStart = this._touch
+    this._touchStart.copy(this._touch)
+    this._hasTouchStart = true
   }
 
   private toRotation (delta: THREE.Vector2, speed: number) {
@@ -123,42 +138,35 @@ export class TouchHandler extends BaseInputHandler {
   private onTouchMove = (event: TouchEvent) => {
     if (event.cancelable) event.preventDefault()
     if (!event.touches.length) return
-    if (!this._touch) return
+    if (!this._hasTouch) return
 
     if (event.touches.length === 1) {
       const pos = this.touchToVector(event.touches[0])
-      const size = this.getCanvasSize()
-      const delta = pos
-        .clone()
-        .sub(this._touch)
-        .multiply(new THREE.Vector2(1 / size.x, 1 / size.y))
+      this._tempSize.set(this._canvas.clientWidth, this._canvas.clientHeight)
+      this._tempDelta.copy(pos).sub(this._touch)
+        .multiply(this._tempSize.set(1 / this._tempSize.x, 1 / this._tempSize.y))
 
-      this._touch = pos
-      this.onDrag(delta)
+      this._touch.copy(pos)
+      this.onDrag(this._tempDelta)
       return
     }
 
-    if (!this._touch1 || !this._touch2) return
+    if (!this._hasTouch1 || !this._hasTouch2) return
     if (event.touches.length >= 2) {
       const p1 = this.touchToVector(event.touches[0])
       const p2 = this.touchToVector(event.touches[1])
       const p = this.average(p1, p2)
-      const size = this.getCanvasSize()
-      const moveDelta = this._touch
-        .clone()
-        .sub(p)
-        .multiply(
-          // -1 to invert movement
-          new THREE.Vector2(-1 / size.x, -1 / size.y)
-        )
+      this._tempSize.set(this._canvas.clientWidth, this._canvas.clientHeight)
+      this._tempDelta.copy(this._touch).sub(p)
+        .multiply(this._tempSize.set(-1 / this._tempSize.x, -1 / this._tempSize.y))
 
       const dist = p1.distanceTo(p2)
 
-      this._touch = p
-      this._touch1 = p1
-      this._touch2 = p2
+      this._touch.copy(p)
+      this._touch1.copy(p1)
+      this._touch2.copy(p2)
 
-      this.onDoubleDrag(moveDelta)
+      this.onDoubleDrag(this._tempDelta)
       if (this._startDist) {
         this.onPinchOrSpread(dist / this._startDist)
       }
@@ -168,13 +176,15 @@ export class TouchHandler extends BaseInputHandler {
   private onTouchEnd = (event: TouchEvent) => {
     // 2→1 finger: transition to single-finger drag
     if (event.touches.length === 1) {
-      this._touch = this.touchToVector(event.touches[0])
-      this._touch1 = this._touch2 = this._startDist = undefined
+      this._touch.copy(this.touchToVector(event.touches[0]))
+      this._hasTouch = true
+      this._hasTouch1 = this._hasTouch2 = false
+      this._startDist = undefined
       return
     }
 
     // All fingers lifted: check for tap, then reset
-    if (this.isSingleTouch() && this._touchStart && this._touch) {
+    if (this.isSingleTouch() && this._hasTouchStart) {
       const touchDurationMs = Date.now() - this._touchStartTime
       const length = this._touch.distanceTo(this._touchStart)
       if (
@@ -189,19 +199,21 @@ export class TouchHandler extends BaseInputHandler {
 
   private isSingleTouch (): boolean {
     return (
-      this._touch !== undefined &&
+      this._hasTouch &&
       this._touchStartTime !== undefined &&
-      this._touch1 === undefined &&
-      this._touch2 === undefined
+      !this._hasTouch1 &&
+      !this._hasTouch2
     )
   }
 
   private touchToVector (touch: Touch) {
-    return new THREE.Vector2(touch.clientX, touch.clientY)
+    this._tempVec.set(touch.clientX, touch.clientY)
+    return this._tempVec
   }
 
   private average (p1: THREE.Vector2, p2: THREE.Vector2): THREE.Vector2 {
-    return p1.clone().lerp(p2, 0.5)
+    this._tempVec2.copy(p1).lerp(p2, 0.5)
+    return this._tempVec2
   }
 
     /**

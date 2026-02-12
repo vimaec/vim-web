@@ -14,6 +14,9 @@ export class MouseHandler extends BaseInputHandler {
   private _doubleClickHandler: DoubleClickHandler = new DoubleClickHandler();
   private _clickHandler: ClickHandler = new ClickHandler();
 
+  // Reusable vectors to avoid per-frame allocations
+  private _tempPosition = new THREE.Vector2();
+
   onButtonDown: (pos: THREE.Vector2, button: number) => void;
   onButtonUp: (pos: THREE.Vector2, button: number) => void;
   onMouseMove: (event: THREE.Vector2) => void;
@@ -142,10 +145,11 @@ export class MouseHandler extends BaseInputHandler {
 
   private relativePosition(event: PointerEvent | MouseEvent): THREE.Vector2 {
     const rect = this._canvas.getBoundingClientRect();
-    return new THREE.Vector2(
+    this._tempPosition.set(
       event.offsetX / rect.width,
       event.offsetY / rect.height
     );
+    return this._tempPosition;
   }
 }
 
@@ -228,11 +232,14 @@ class DoubleClickHandler {
 }
 
 class DragHandler {
-  private _lastDragPosition:THREE.Vector2 | null = null;
+  private _lastDragPosition = new THREE.Vector2();
+  private _hasDrag = false;
   private _button: number;
 
   private _onDrag: DragCallback;
-  
+
+  // Reusable vector to avoid per-frame allocations
+  private _delta = new THREE.Vector2();
 
   constructor( onDrag: DragCallback) {
     this._onDrag = onDrag;
@@ -243,7 +250,8 @@ class DragHandler {
    * @param pos The initial pointer position.
    */
   onPointerDown(pos: THREE.Vector2, button: number): void {
-    this._lastDragPosition = pos;
+    this._lastDragPosition.copy(pos);
+    this._hasDrag = true;
     this._button = button;
   }
 
@@ -254,11 +262,13 @@ class DragHandler {
    */
   onPointerMove(pos: THREE.Vector2): void {
 
-    if (this._lastDragPosition) {
-      const x = pos.x - this._lastDragPosition.x
-      const y = pos.y - this._lastDragPosition.y
-      this._lastDragPosition = pos;
-      this._onDrag(new THREE.Vector2(x,y), this._button);
+    if (this._hasDrag) {
+      this._delta.set(
+        pos.x - this._lastDragPosition.x,
+        pos.y - this._lastDragPosition.y
+      );
+      this._lastDragPosition.copy(pos);
+      this._onDrag(this._delta, this._button);
     }
   }
 
@@ -266,7 +276,7 @@ class DragHandler {
    * Ends the drag operation and resets the last drag position.
    */
   onPointerUp(): void {
-    this._lastDragPosition = null;
+    this._hasDrag = false;
   }
 
 }
