@@ -17,7 +17,7 @@ export class InstancedMesh {
   // State
   ignoreSceneMaterial: boolean
 
-  private _material: ModelMaterial
+  private _material: THREE.Material | THREE.Material[]
   readonly size: number = 0
 
   constructor (
@@ -77,7 +77,7 @@ export class InstancedMesh {
   }
 
   setMaterial(value: ModelMaterial) {
-    applyMaterial(this.mesh, value, this._material, this.ignoreSceneMaterial)
+    applyMaterial(this.mesh, value, this.ignoreSceneMaterial)
   }
 
   private computeBoundingBoxes () {

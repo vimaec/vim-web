@@ -1,7 +1,7 @@
 /**
  * @module vim-loader/materials
  *
- * MaterialSet provides a cleaner API for managing material overrides.
+ * ModelMaterial provides a cleaner API for managing material overrides.
  * Instead of confusing arrays [visible, hidden], we explicitly name each material type.
  */
 
@@ -14,21 +14,21 @@ import * as THREE from 'three'
  * was ambiguous (opaque/transparent? visible/hidden?).
  *
  * Now we explicitly name each material:
- * - opaque: For solid geometry
- * - transparent: For see-through geometry
- * - hidden: For ghosted/hidden objects (optional)
+ * - opaque: For solid geometry (undefined = don't render opaque meshes)
+ * - transparent: For see-through geometry (undefined = don't render transparent meshes)
+ * - hidden: For ghosted/hidden objects (undefined = don't render ghost)
  */
-export class MaterialSet {
-  readonly opaque: THREE.Material
-  readonly transparent: THREE.Material
+export class ModelMaterial {
+  readonly opaque?: THREE.Material
+  readonly transparent?: THREE.Material
   readonly hidden?: THREE.Material
 
   // Cached arrays to avoid allocating thousands of [A, B] arrays
   private _cachedArray?: THREE.Material[]
 
   constructor(
-    opaque: THREE.Material,
-    transparent: THREE.Material,
+    opaque?: THREE.Material,
+    transparent?: THREE.Material,
     hidden?: THREE.Material
   ) {
     this.opaque = opaque
@@ -89,17 +89,17 @@ export class MaterialSet {
   }
 
   /**
-   * Create a MaterialSet from a single material (used for both opaque and transparent).
+   * Create a ModelMaterial from a single material (used for both opaque and transparent).
    */
-  static fromSingle(material: THREE.Material): MaterialSet {
-    return new MaterialSet(material, material)
+  static fromSingle(material: THREE.Material): ModelMaterial {
+    return new ModelMaterial(material, material)
   }
 
   /**
-   * Check if this MaterialSet is equivalent to another.
+   * Check if this ModelMaterial is equivalent to another.
    * Used to avoid unnecessary material updates.
    */
-  equals(other: MaterialSet | undefined): boolean {
+  equals(other: ModelMaterial | undefined): boolean {
     if (!other) return false
     return (
       this.opaque === other.opaque &&

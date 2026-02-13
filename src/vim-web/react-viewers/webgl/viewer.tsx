@@ -250,7 +250,7 @@ export function Viewer (props: {
           show={isTrue(settings.value.ui.panelControlBar)}
         />
         <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBoxRef}/>
-        <IsolationPanel ref={isolationPanelHandle} state={isolationRef} transparency={true}/>
+        <IsolationPanel ref={isolationPanelHandle} state={isolationRef} quality={true}/>
         <AxesPanelMemo
           viewer={props.viewer}
           camera={camera}

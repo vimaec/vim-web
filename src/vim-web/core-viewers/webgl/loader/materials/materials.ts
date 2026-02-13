@@ -9,51 +9,50 @@ import { createGhostMaterial as createGhostMaterial } from './ghostMaterial'
 import { OutlineMaterial } from './outlineMaterial'
 import { ViewerSettings } from '../../viewer/settings/viewerSettings'
 import { MergeMaterial } from './mergeMaterial'
-import { createSimpleMaterial } from './simpleMaterial'
+import { SimpleMaterial } from './simpleMaterial'
 import { SignalDispatcher } from 'ste-signals'
 import { SkyboxMaterial } from './skyboxMaterial'
+import { ModelMaterial } from './materialSet'
 
-export type ModelMaterial = THREE.Material | THREE.Material[] | undefined
+export type { ModelMaterial }
 
 /**
- * Applies a material override to a THREE.Mesh.
- * If value is an array, undefined entries are replaced with the base material.
- * If value is undefined, resets to the base material.
+ * Applies a ModelMaterial to a THREE.Mesh.
+ * Converts ModelMaterial to the appropriate THREE.Material or array based on mesh properties.
+ * This is the only place where ModelMaterial.get() is called to extract actual materials.
+ *
+ * @param mesh The mesh to apply material to
+ * @param value The ModelMaterial containing opaque/transparent/hidden materials
+ * @param ignoreSceneMaterial If true, skip material application (for scene-managed materials)
  */
 export function applyMaterial(
   mesh: THREE.Mesh,
   value: ModelMaterial,
-  baseMaterial: ModelMaterial,
   ignoreSceneMaterial: boolean
 ) {
   if (ignoreSceneMaterial) return
 
-  const base = baseMaterial
-  let mat: ModelMaterial
+  const isTransparent = mesh.userData.transparent === true
+  const mat = value.get(isTransparent)
 
-  if (Array.isArray(value)) {
-    const baseArr = Array.isArray(base) ? base : [base]
-    const result: THREE.Material[] = []
-    for (const v of value) {
-      if (v === undefined) {
-        result.push(...baseArr)
-      } else {
-        result.push(v)
-      }
-    }
-    mat = result
-  } else {
-    mat = value ?? base
+  if (!mat) {
+    mesh.visible = false
+    return
   }
 
-  mesh.material = mat
+  if (mesh.material === mat) return  // No-op if same material
 
+  mesh.material = mat
   mesh.geometry.clearGroups()
+
+  // Set up geometry groups for material arrays (ghost rendering)
   if (Array.isArray(mat)) {
-    mat.forEach((_m, i) => {
+    mat.forEach((_, i) => {
       mesh.geometry.addGroup(0, Infinity, i)
     })
   }
+
+  mesh.visible = true  // Only visible after material applied
 }
 
 /**
@@ -83,9 +82,9 @@ export class Materials {
    */
   readonly transparent: StandardMaterial
   /**
-   * Material used for maximum performance.
+   * Material used for maximum performance (fast mode).
    */
-  readonly simple: THREE.Material
+  readonly simple: SimpleMaterial
   /**
    * Material used when creating wireframe geometry of the model.
    */
@@ -127,7 +126,7 @@ export class Materials {
   constructor (
     opaque?: StandardMaterial,
     transparent?: StandardMaterial,
-    simple?: THREE.Material,
+    simple?: SimpleMaterial,
     wireframe?: THREE.LineBasicMaterial,
     ghost?: THREE.Material,
     mask?: THREE.ShaderMaterial,
@@ -137,7 +136,7 @@ export class Materials {
   ) {
     this.opaque = opaque ?? createOpaque()
     this.transparent = transparent ?? createTransparent()
-    this.simple = simple ?? createSimpleMaterial()
+    this.simple = simple ?? new SimpleMaterial()
     this.wireframe = wireframe ?? createWireframe()
     this.ghost = ghost ?? createGhostMaterial()
     this.mask = mask ?? createMaskMaterial()
@@ -479,13 +478,39 @@ export class Materials {
     // Set the same texture on all materials
     this.opaque.setSubmeshColorTexture(this._submeshColorTexture)
     this.transparent.setSubmeshColorTexture(this._submeshColorTexture)
-
-    // Set on simple material (ShaderMaterial with uniforms)
-    if (this.simple instanceof THREE.ShaderMaterial) {
-      this.simple.uniforms.submeshColorTexture.value = this._submeshColorTexture
-    }
+    this.simple.setSubmeshColorTexture(this._submeshColorTexture)
 
     this._onUpdate.dispatch()
+  }
+
+  /**
+   * Creates a ModelMaterial for standard/quality mode rendering.
+   * Uses StandardMaterial (MeshLambertMaterial) with proper lighting.
+   *
+   * @param hidden Optional material for ghosted/hidden objects. If undefined, ghost rendering is disabled.
+   * @returns ModelMaterial with opaque and transparent StandardMaterials
+   */
+  createStandardModelMaterial(hidden?: THREE.Material): ModelMaterial {
+    return new ModelMaterial(
+      this.opaque.material,
+      this.transparent.material,
+      hidden
+    )
+  }
+
+  /**
+   * Creates a ModelMaterial for simple/fast mode rendering.
+   * Uses SimpleMaterial with screen-space derivative normals for better performance.
+   *
+   * @param hidden Optional material for ghosted/hidden objects. If undefined, ghost rendering is disabled.
+   * @returns ModelMaterial with simple material for both opaque and transparent
+   */
+  createSimpleModelMaterial(hidden?: THREE.Material): ModelMaterial {
+    return new ModelMaterial(
+      this.simple.material,
+      this.simple.material,
+      hidden
+    )
   }
 
   /** dispose all materials. */

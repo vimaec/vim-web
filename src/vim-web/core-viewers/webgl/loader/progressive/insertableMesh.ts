@@ -44,7 +44,7 @@ export class InsertableMesh {
   /**
    * initial material.
    */
-  private _material: ModelMaterial
+  private _material: THREE.Material
 
   geometry: InsertableGeometry
 
@@ -129,7 +129,7 @@ export class InsertableMesh {
   }
 
   setMaterial(value: ModelMaterial) {
-    applyMaterial(this.mesh, value, this._material, this.ignoreSceneMaterial)
+    applyMaterial(this.mesh, value, this.ignoreSceneMaterial)
   }
 
 }

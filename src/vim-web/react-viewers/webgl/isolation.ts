@@ -8,17 +8,16 @@ export function useWebglIsolation(viewer: Core.Webgl.Viewer){
 }
 
 function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapter {
-  var transparency: boolean = true;
+  var quality: boolean = false; // Start in fast mode
   var ghost: boolean = false;
   var rooms: boolean = false;
 
   function updateMaterials(){
     viewer.renderer.modelMaterial =
-      !ghost && transparency ? undefined 
-      : ghost && transparency ? [undefined, viewer.materials.ghost]
-      : !ghost && !transparency ? viewer.materials.simple
-      : ghost && !transparency ? [viewer.materials.simple, viewer.materials.ghost]
-      : (() => { throw new Error("Unreachable state in isolation materials") })();
+      !ghost && quality ? viewer.materials.createStandardModelMaterial()
+      : ghost && quality ? viewer.materials.createStandardModelMaterial(viewer.materials.ghost)
+      : !ghost && !quality ? viewer.materials.createSimpleModelMaterial()
+      : viewer.materials.createSimpleModelMaterial(viewer.materials.ghost);
   }
 
   function updateVisibility(elements: 'all' | Selectable[], predicate: (object: Selectable) => boolean){
@@ -84,9 +83,9 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
       }
     },
     
-    enableTransparency: (enable: boolean) => {
-      if(transparency !== enable){
-        transparency = enable;
+    enableQuality: (enable: boolean) => {
+      if(quality !== enable){
+        quality = enable;
         updateMaterials();
       };
     },

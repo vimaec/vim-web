@@ -6,7 +6,48 @@
 import * as THREE from 'three'
 
 /**
- * Creates a material for isolation mode.
+ * Material wrapper for fast rendering mode (SimpleMaterial).
+ * Uses screen-space derivative normals instead of vertex normals for faster performance.
+ */
+export class SimpleMaterial {
+  material: THREE.ShaderMaterial
+
+  // Submesh color palette texture (shared, owned by Materials singleton)
+  _submeshColorTexture: THREE.DataTexture | undefined
+
+  constructor (material?: THREE.ShaderMaterial) {
+    this.material = material ?? createSimpleMaterialShader()
+  }
+
+  /**
+   * Sets the submesh color texture for indexed color lookup.
+   * The texture is shared between materials (created in Materials singleton).
+   */
+  setSubmeshColorTexture(texture: THREE.DataTexture | undefined) {
+    // Don't dispose - texture is owned by Materials singleton
+    this._submeshColorTexture = texture
+
+    if (this.material.uniforms) {
+      this.material.uniforms.submeshColorTexture.value = texture ?? null
+    }
+  }
+
+  get clippingPlanes () {
+    return this.material.clippingPlanes
+  }
+
+  set clippingPlanes (value: THREE.Plane[] | null) {
+    this.material.clippingPlanes = value
+  }
+
+  dispose () {
+    // Don't dispose texture - it's owned by Materials singleton
+    this.material.dispose()
+  }
+}
+
+/**
+ * Creates the shader material for isolation/fast mode.
  *
  * - **Non-visible items**: Completely excluded from rendering by pushing them out of view.
  * - **Visible items**: Rendered with flat shading and basic pseudo-lighting.
@@ -16,7 +57,7 @@ import * as THREE from 'three'
  *
  * @returns {THREE.ShaderMaterial} A custom shader material for isolation mode.
  */
-export function createSimpleMaterial () {
+function createSimpleMaterialShader () {
   return new THREE.ShaderMaterial({
     side: THREE.DoubleSide,
     // Uniforms for texture-based color palette
