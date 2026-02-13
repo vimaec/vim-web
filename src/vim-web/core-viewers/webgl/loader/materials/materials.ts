@@ -121,6 +121,9 @@ export class Materials {
   private _focusColor: THREE.Color = new THREE.Color(0xffffff)
   private _onUpdate = new SignalDispatcher()
 
+  // Shared color palette texture for both opaque and transparent materials
+  private _submeshColorTexture: THREE.DataTexture | undefined
+
   constructor (
     opaque?: StandardMaterial,
     transparent?: StandardMaterial,
@@ -427,8 +430,58 @@ export class Materials {
     this._onUpdate.dispatch()
   }
 
+  /**
+   * Sets the submesh color palette for both opaque and transparent materials.
+   * Creates a single shared DataTexture from the palette (128×128 RGBA, 16384 colors max).
+   * Pass undefined to disable palette optimization.
+   */
+  setColorPalette (palette: Float32Array | undefined) {
+    // Dispose old texture if exists
+    if (this._submeshColorTexture) {
+      this._submeshColorTexture.dispose()
+      this._submeshColorTexture = undefined
+    }
+
+    // Create shared texture from palette
+    if (palette && palette.length > 0) {
+      const textureSize = 128
+      const textureData = new Uint8Array(textureSize * textureSize * 4)
+
+      // Convert float colors (0-1) to uint8 (0-255) with alpha = 255
+      const colorCount = Math.min(palette.length / 3, textureSize * textureSize)
+      for (let i = 0; i < colorCount; i++) {
+        textureData[i * 4] = Math.round(palette[i * 3] * 255)
+        textureData[i * 4 + 1] = Math.round(palette[i * 3 + 1] * 255)
+        textureData[i * 4 + 2] = Math.round(palette[i * 3 + 2] * 255)
+        textureData[i * 4 + 3] = 255 // Alpha
+      }
+
+      this._submeshColorTexture = new THREE.DataTexture(
+        textureData,
+        textureSize,
+        textureSize,
+        THREE.RGBAFormat,
+        THREE.UnsignedByteType
+      )
+      this._submeshColorTexture.needsUpdate = true
+      this._submeshColorTexture.minFilter = THREE.NearestFilter
+      this._submeshColorTexture.magFilter = THREE.NearestFilter
+    }
+
+    // Set the same texture on both materials
+    this.opaque.setSubmeshColorTexture(this._submeshColorTexture)
+    this.transparent.setSubmeshColorTexture(this._submeshColorTexture)
+
+    this._onUpdate.dispatch()
+  }
+
   /** dispose all materials. */
   dispose () {
+    if (this._submeshColorTexture) {
+      this._submeshColorTexture.dispose()
+      this._submeshColorTexture = undefined
+    }
+
     this.opaque.dispose()
     this.transparent.dispose()
     this.wireframe.dispose()

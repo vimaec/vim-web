@@ -21,27 +21,18 @@ export namespace Transparency {
       value
     )
   }
-
-  /**
-   * Returns true if the transparency mode requires to use RGBA colors
-   */
-  export function requiresAlpha (mode: Mode) {
-    return mode === 'all' || mode === 'transparentOnly'
-  }
 }
 
 /**
  * Creates a BufferGeometry from a given mesh index in the g3d
  * @param mesh g3d mesh index
- * @param transparent specify to use RGB or RGBA for colors
  */
 export function createGeometryFromMesh (
   g3d: MappedG3d,
   mesh: number,
-  section: MeshSection,
-  transparent: boolean
+  section: MeshSection
 ): THREE.BufferGeometry {
-  const colors = createVertexColors(g3d, mesh, transparent)
+  // Colors now come from texture lookup, no need to compute vertex colors
   const submeshIndices = createSubmeshIndices(g3d, mesh, section)
   const positions = g3d.positions.subarray(
     g3d.getMeshVertexStart(mesh) * 3,
@@ -51,44 +42,14 @@ export function createGeometryFromMesh (
   const start = g3d.getMeshIndexStart(mesh, section)
   const end = g3d.getMeshIndexEnd(mesh, section)
   const indices = g3d.indices.subarray(start, end)
+
+  // No color attribute - all colors come from texture lookup
   return createGeometryFromArrays(
     positions,
     indices,
-    colors,
-    transparent ? 4 : 3,
     submeshIndices
   )
 }
-/**
- * Expands submesh colors into vertex colors as RGB or RGBA
- */
-function createVertexColors (
-  g3d: MappedG3d,
-  mesh: number,
-  useAlpha: boolean
-): Float32Array {
-  const colorSize = useAlpha ? 4 : 3
-  const result = new Float32Array(g3d.getMeshVertexCount(mesh) * colorSize)
-
-  const subStart = g3d.getMeshSubmeshStart(mesh)
-  const subEnd = g3d.getMeshSubmeshEnd(mesh)
-
-  for (let submesh = subStart; submesh < subEnd; submesh++) {
-    const color = g3d.getSubmeshColor(submesh)
-    const start = g3d.getSubmeshIndexStart(submesh)
-    const end = g3d.getSubmeshIndexEnd(submesh)
-
-    for (let i = start; i < end; i++) {
-      const v = g3d.indices[i] * colorSize
-      result[v] = color[0]
-      result[v + 1] = color[1]
-      result[v + 2] = color[2]
-      if (useAlpha) result[v + 3] = color[3]
-    }
-  }
-  return result
-}
-
 /**
  * Creates submesh indices for each vertex (for color palette lookup)
  * Uses color index mapping if available for memory optimization
@@ -103,14 +64,13 @@ function createSubmeshIndices (
 
   const subStart = g3d.getMeshSubmeshStart(mesh, section)
   const subEnd = g3d.getMeshSubmeshEnd(mesh, section)
-  const colorIndexMap = (g3d as any).submeshToColorIndex // Unique color palette mapping
 
   for (let submesh = subStart; submesh < subEnd; submesh++) {
     const start = g3d.getSubmeshIndexStart(submesh)
     const end = g3d.getSubmeshIndexEnd(submesh)
 
     // Use color index if available, otherwise submesh index
-    const index = colorIndexMap?.[submesh] ?? submesh
+    const index = g3d.submeshToColorIndex?.[submesh] ?? submesh
 
     for (let i = start; i < end; i++) {
       const vertexIndex = g3d.indices[i]
@@ -125,16 +85,12 @@ function createSubmeshIndices (
  * Creates a BufferGeometry from given geometry data arrays
  * @param vertices vertex data with 3 number per vertex (XYZ)
  * @param indices index data with 3 indices per face
- * @param vertexColors color data with 3 or 4 number per vertex. RBG or RGBA
- * @param colorSize specify whether to treat colors as RGB or RGBA
  * @param submeshIndices submesh index per vertex for color palette lookup
  * @returns a BufferGeometry
  */
 export function createGeometryFromArrays (
   vertices: Float32Array,
   indices: Uint32Array,
-  vertexColors: Float32Array | undefined = undefined,
-  colorSize: number = 3,
   submeshIndices: Uint16Array | undefined = undefined
 ): THREE.BufferGeometry {
   const geometry = new THREE.BufferGeometry()
@@ -144,14 +100,6 @@ export function createGeometryFromArrays (
 
   // Indices
   geometry.setIndex(new THREE.Uint32BufferAttribute(indices, 1))
-
-  // Colors with alpha if transparent
-  if (vertexColors) {
-    geometry.setAttribute(
-      'color',
-      new THREE.BufferAttribute(vertexColors, colorSize)
-    )
-  }
 
   // Submesh indices for color palette lookup
   if (submeshIndices) {

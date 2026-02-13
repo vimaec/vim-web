@@ -57,8 +57,7 @@ export class InstancedMeshFactory {
     const geometry = Geometry.createGeometryFromMesh(
       g3d,
       mesh,
-      section,
-      transparent
+      section
     )
     const material = transparent
       ? Materials.getInstance().transparent

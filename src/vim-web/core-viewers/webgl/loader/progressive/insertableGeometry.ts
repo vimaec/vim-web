@@ -8,8 +8,7 @@
  * Buffer layout (all pre-allocated via G3dMeshOffsets):
  * - index: Uint32 — triangle indices
  * - position: Float32x3 — world-space vertices (transforms baked in)
- * - color: Float32x3 (opaque) or Float32x4 (transparent) — per-vertex color (legacy, kept for compatibility)
- * - submeshIndex: Uint16 — per-vertex submesh index for color palette lookup (NEW)
+ * - submeshIndex: Uint16 — per-vertex color index for 128×128 texture palette lookup
  * - packedId: Uint32 — per-vertex (vimIndex << 24 | elementIndex) for GPU picking
  *
  * Geometry is inserted incrementally via insertFromG3d(), which iterates over
@@ -51,7 +50,6 @@ export class InsertableGeometry {
   private _computeBoundingBox = false
   private _indexAttribute: THREE.Uint32BufferAttribute
   private _vertexAttribute: THREE.BufferAttribute
-  private _colorAttribute: THREE.BufferAttribute
   private _submeshIndexAttribute: THREE.Uint16BufferAttribute // NEW: submesh index for color lookup
   private _packedIdAttribute: THREE.Uint32BufferAttribute
   private _mapping: ElementMapping | undefined
@@ -83,11 +81,7 @@ export class InsertableGeometry {
       G3d.POSITION_SIZE
     )
 
-    const colorSize = transparent ? 4 : 3
-    this._colorAttribute = new THREE.Float32BufferAttribute(
-      offsets.counts.vertices * colorSize,
-      colorSize
-    )
+    // No color attribute - all colors from texture lookup via submeshIndex
 
     // NEW: Submesh index for color palette lookup (uint16 supports 65k submeshes)
     this._submeshIndexAttribute = new THREE.Uint16BufferAttribute(
@@ -104,7 +98,6 @@ export class InsertableGeometry {
     this.geometry = new THREE.BufferGeometry()
     this.geometry.setIndex(this._indexAttribute)
     this.geometry.setAttribute('position', this._vertexAttribute)
-    this.geometry.setAttribute('color', this._colorAttribute)
     this.geometry.setAttribute('submeshIndex', this._submeshIndexAttribute) // NEW
     this.geometry.setAttribute('packedId', this._packedIdAttribute)
 
@@ -163,20 +156,16 @@ export class InsertableGeometry {
 
       const mergeOffset = instance * vertexCount
       for (let sub = subStart; sub < subEnd; sub++) {
-        const color = g3d.getSubmeshColor(sub)
-
         const indexStart = g3d.getSubmeshIndexStart(sub)
         const indexEnd = g3d.getSubmeshIndexEnd(sub)
 
         // Merge all indices for this instance
-        // Color referenced indices according to current submesh
         for (let index = indexStart; index < indexEnd; index++) {
           const v = vertexOffset + mergeOffset + g3d.indices[index]
           this.setIndex(indexOffset + indexOut, v)
-          this.setColor(v, color, 0.25) // Keep for now (backwards compatibility)
 
-          // NEW: Use color index if palette optimization is enabled, otherwise submesh index
-          const colorIndex = (g3d as any).submeshToColorIndex?.[sub] ?? sub
+          // Use color index if palette optimization is enabled, otherwise submesh index
+          const colorIndex = g3d.submeshToColorIndex?.[sub] ?? sub
           this.setSubmeshIndex(v, colorIndex)
           indexOut++
         }
@@ -208,13 +197,6 @@ export class InsertableGeometry {
 
   private setVertex (index: number, vector: THREE.Vector3) {
     this._vertexAttribute.setXYZ(index, vector.x, vector.y, vector.z)
-  }
-
-  private setColor (index: number, color: Float32Array, alpha: number) {
-    this._colorAttribute.setXYZ(index, color[0], color[1], color[2])
-    if (this._colorAttribute.itemSize === 4) {
-      this._colorAttribute.setW(index, alpha)
-    }
   }
 
   private setSubmeshIndex (index: number, submeshIndex: number) {
@@ -268,11 +250,8 @@ export class InsertableGeometry {
     // this._vertexAttribute.count = vertexEnd
     this._vertexAttribute.needsUpdate = true
 
-    // update colors
-    const cSize = this._colorAttribute.itemSize
-    this._colorAttribute.addUpdateRange(vertexStart * cSize, (vertexEnd - vertexStart) * cSize)
-    // this._colorAttribute.count = vertexEnd
-    this._colorAttribute.needsUpdate = true
+    // Colors are initialized to white once, no need to update
+    // Actual colors come from texture lookup via submeshIndex
 
     // update submesh indices (itemSize is 1)
     this._submeshIndexAttribute.addUpdateRange(vertexStart, vertexEnd - vertexStart)
