@@ -52,7 +52,7 @@ export class InsertableGeometry {
   private _vertexAttribute: THREE.BufferAttribute
   private _submeshIndexAttribute: THREE.Uint16BufferAttribute // Color palette index for texture-based color lookup
   private _packedIdAttribute: THREE.Uint32BufferAttribute
-  private _mapping: ElementMapping | undefined
+  private _mapping: ElementMapping
   private _vimIndex: number
 
   private _updateStartMesh = 0
@@ -63,7 +63,7 @@ export class InsertableGeometry {
     offsets: G3dMeshOffsets,
     materials: G3dMaterial,
     transparent: boolean,
-    mapping?: ElementMapping,
+    mapping: ElementMapping,
     vimIndex: number = 0
   ) {
     this.offsets = offsets
@@ -119,7 +119,6 @@ export class InsertableGeometry {
    * and creates a GeometrySubmesh tracking the index range and bounding box.
    */
   insertFromG3d (g3d: MappedG3d, mesh: number) {
-    const added: number[] = []
     const meshG3dIndex = this.offsets.subset.getSourceMesh(mesh)
     const subStart = g3d.getMeshSubmeshStart(meshG3dIndex, this.offsets.section)
     const subEnd = g3d.getMeshSubmeshEnd(meshG3dIndex, this.offsets.section)
@@ -127,7 +126,7 @@ export class InsertableGeometry {
     // Skip empty mesh
     if (subStart === subEnd) {
       this._meshToUpdate.add(mesh)
-      return added
+      return
     }
 
     // Offsets for this mesh and all its instances
@@ -161,7 +160,7 @@ export class InsertableGeometry {
       }
 
       // Get element index for this instance (for GPU picking)
-      const elementIndex = this._mapping?.getElementFromInstance(g3dInstance) ?? -1
+      const elementIndex = this._mapping.getElementFromInstance(g3dInstance) ?? -1
 
       const submesh = new GeometrySubmesh()
       submesh.instance = instanceNodes[g3dInstance]
@@ -238,11 +237,9 @@ export class InsertableGeometry {
       submesh.end = indexOffset + indexOut
       this.expandBox(submesh.boundingBox)
       this.submeshes.push(submesh)
-      added.push(this.submeshes.length - 1)
     }
 
     this._meshToUpdate.add(mesh)
-    return added
   }
 
   private expandBox (box: THREE.Box3) {

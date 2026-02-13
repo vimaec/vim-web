@@ -95,24 +95,19 @@ export class InstancedMesh {
 
   /**
    * Computes overall bounding box without allocating per-instance boxes.
-   * This is more efficient than computing all boxes upfront when only the
-   * overall bounds are needed.
    */
   private computeBoundingBox (): THREE.Box3 {
-    // Geometry bounding box already computed in constructor
+    const geoBBox = this.mesh.geometry.boundingBox
     const matrix = new THREE.Matrix4()
-    let result: THREE.Box3 | undefined
+    const tempBox = new THREE.Box3()
+    const result = new THREE.Box3().makeEmpty()
 
     for (let i = 0; i < this.mesh.count; i++) {
       this.mesh.getMatrixAt(i, matrix)
-      const box = this.mesh.geometry.boundingBox.clone().applyMatrix4(matrix)
-      if (result) {
-        result.union(box)
-      } else {
-        result = box
-      }
+      tempBox.copy(geoBBox).applyMatrix4(matrix)
+      result.union(tempBox)
     }
 
-    return result ?? new THREE.Box3()
+    return result
   }
 }

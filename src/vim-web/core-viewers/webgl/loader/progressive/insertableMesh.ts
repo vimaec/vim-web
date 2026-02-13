@@ -52,7 +52,7 @@ export class InsertableMesh {
     offsets: G3dMeshOffsets,
     materials: G3dMaterial,
     transparent: boolean,
-    mapping?: ElementMapping,
+    mapping: ElementMapping,
     vimIndex: number = 0
   ) {
     this.offsets = offsets

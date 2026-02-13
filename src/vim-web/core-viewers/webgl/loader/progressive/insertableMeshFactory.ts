@@ -23,10 +23,10 @@ import { MappedG3d } from './mappedG3d'
 
 export class InsertableMeshFactory {
   private _materials: G3dMaterial
-  private _mapping: ElementMapping | undefined
+  private _mapping: ElementMapping
   private _vimIndex: number
 
-  constructor (materials: G3dMaterial, mapping?: ElementMapping, vimIndex: number = 0) {
+  constructor (materials: G3dMaterial, mapping: ElementMapping, vimIndex: number = 0) {
     this._materials = materials
     this._mapping = mapping
     this._vimIndex = vimIndex

@@ -19,10 +19,10 @@ import { packPickingId } from '../../viewer/rendering/gpuPicker'
 import { MappedG3d } from './mappedG3d'
 
 export class InstancedMeshFactory {
-  private _mapping: ElementMapping | undefined
+  private _mapping: ElementMapping
   private _vimIndex: number
 
-  constructor (mapping?: ElementMapping, vimIndex: number = 0) {
+  constructor (mapping: ElementMapping, vimIndex: number = 0) {
     this._mapping = mapping
     this._vimIndex = vimIndex
   }
@@ -101,7 +101,7 @@ export class InstancedMeshFactory {
   ) {
     const packedIds = new Uint32Array(instances.length)
     for (let i = 0; i < instances.length; i++) {
-      const elementIndex = this._mapping?.getElementFromInstance(instances[i]) ?? -1
+      const elementIndex = this._mapping.getElementFromInstance(instances[i]) ?? -1
       packedIds[i] = packPickingId(this._vimIndex, elementIndex)
     }
     three.geometry.setAttribute(
