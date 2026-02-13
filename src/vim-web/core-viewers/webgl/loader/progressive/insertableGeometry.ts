@@ -137,9 +137,8 @@ export class InsertableGeometry {
       return added
     }
 
-    // Reusable matrix and vector3 to avoid allocations
+    // Reusable matrix to avoid allocations
     const matrix = new THREE.Matrix4()
-    const vector = new THREE.Vector3()
 
     // Offsets for this mesh and all its instances
     const indexOffset = this.offsets.getIndexOffset(mesh)
@@ -204,6 +203,26 @@ export class InsertableGeometry {
       // Matrix elements for inline transform
       const e = matrix.elements
 
+      // Initialize bounding box with first vertex (avoids isEmpty() check in loop)
+      if (vertexCount > 0) {
+        const firstIdx = vertexStart * G3d.POSITION_SIZE
+        const firstX = g3d.positions[firstIdx]
+        const firstY = g3d.positions[firstIdx + 1]
+        const firstZ = g3d.positions[firstIdx + 2]
+        const firstTx = e[0] * firstX + e[4] * firstY + e[8] * firstZ + e[12]
+        const firstTy = e[1] * firstX + e[5] * firstY + e[9] * firstZ + e[13]
+        const firstTz = e[2] * firstX + e[6] * firstY + e[10] * firstZ + e[14]
+
+        submesh.boundingBox.set(
+          new THREE.Vector3(firstTx, firstTy, firstTz),
+          new THREE.Vector3(firstTx, firstTy, firstTz)
+        )
+      }
+
+      // Direct access to bounding box for inline expansion (avoids method calls)
+      const boxMin = submesh.boundingBox.min
+      const boxMax = submesh.boundingBox.max
+
       // Transform and merge vertices
       for (let vertex = vertexStart; vertex < vertexEnd; vertex++) {
         const srcIdx = vertex * G3d.POSITION_SIZE
@@ -224,9 +243,14 @@ export class InsertableGeometry {
 
         packedIds[vertexOffset + vertexOut] = packedId
 
-        // Expand bounding box
-        vector.set(tx, ty, tz)
-        submesh.expandBox(vector)
+        // Inline bounding box expansion (no method calls, no isEmpty check)
+        boxMin.x = Math.min(boxMin.x, tx)
+        boxMin.y = Math.min(boxMin.y, ty)
+        boxMin.z = Math.min(boxMin.z, tz)
+        boxMax.x = Math.max(boxMax.x, tx)
+        boxMax.y = Math.max(boxMax.y, ty)
+        boxMax.z = Math.max(boxMax.z, tz)
+
         vertexOut++
       }
       const t4 = performance.now()
