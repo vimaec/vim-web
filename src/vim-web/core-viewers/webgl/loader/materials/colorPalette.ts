@@ -30,14 +30,15 @@ export function buildColorPalette(
   submeshColorCount: number
 ): ColorPaletteResult {
   // Build unique color palette for shader lookup
-  const uniqueColorsMap = new Map<string, number>() // color key → colorIndex
+  // Numeric keys avoid string allocation per submesh (Map<number> is faster than Map<string>)
+  const uniqueColorsMap = new Map<number, number>()
   const colorPaletteArray: number[] = []
   const submeshColor = new Uint16Array(submeshColorCount)
 
   // First pass: build initial palette
   for (let i = 0; i < submeshColorCount; i++) {
     const color = mappedG3d.getSubmeshColor(i)
-    const key = `${color[0].toFixed(6)},${color[1].toFixed(6)},${color[2].toFixed(6)}`
+    const key = packColorKey(color[0], color[1], color[2])
 
     let colorIndex = uniqueColorsMap.get(key)
     if (colorIndex === undefined) {
@@ -61,7 +62,7 @@ export function buildColorPalette(
 
     for (let i = 0; i < submeshColorCount; i++) {
       const color = mappedG3d.getSubmeshColor(i)
-      const key = `${color[0].toFixed(6)},${color[1].toFixed(6)},${color[2].toFixed(6)}`
+      const key = packColorKey(color[0], color[1], color[2])
 
       let colorIndex = uniqueColorsMap.get(key)
       if (colorIndex === undefined) {
@@ -92,6 +93,11 @@ export function buildColorPalette(
  * @param colors - Float32Array of RGB colors to quantize in-place
  * @param levels - Number of quantization levels per channel (e.g., 25 = 15,625 max colors)
  */
+/** Packs RGB floats [0,1] into a single number key (16 bits per channel, 48 bits total). */
+function packColorKey(r: number, g: number, b: number): number {
+  return (Math.round(r * 65535) * 65536 + Math.round(g * 65535)) * 65536 + Math.round(b * 65535)
+}
+
 function quantizeColors(colors: Float32Array, levels: number): void {
   const quantize = (value: number) => Math.round(value * levels) / levels
 
