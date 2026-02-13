@@ -14,7 +14,12 @@ import { buildColorPalette } from '../materials/colorPalette'
  * color lookup instead of per-vertex color attributes (saves 60-80% geometry memory).
  */
 export interface MappedG3d extends G3d {
-  _meshInstances: Map<number, number[]>
+  /** Source-based mesh indices (parallel with _meshInstanceArrays) */
+  _meshKeys: number[]
+  /** Instances per mesh (parallel with _meshKeys) */
+  _meshValues: number[][]
+  /** Pre-computed total instance count across all meshes */
+  _totalInstanceCount: number
 
   // Color palette optimization (palette undefined if too many unique colors, but submeshColor always present)
   colorPalette: Float32Array | undefined
@@ -33,7 +38,7 @@ export interface MappedG3d extends G3d {
 export function createMappedG3d(g3d: G3d): MappedG3d {
   const mapped = g3d as MappedG3d
 
-  // Build the mesh→instances map
+  // Build the mesh→instances map, then extract to parallel arrays
   const map = new Map<number, number[]>()
   for (let i = 0; i < g3d.instanceMeshes.length; i++) {
     const mesh = g3d.instanceMeshes[i]
@@ -44,7 +49,18 @@ export function createMappedG3d(g3d: G3d): MappedG3d {
       map.get(mesh)!.push(i)
     }
   }
-  mapped._meshInstances = map
+
+  const meshKeys: number[] = []
+  const meshValues: number[][] = []
+  let totalCount = 0
+  for (const [mesh, instances] of map) {
+    meshKeys.push(mesh)
+    meshValues.push(instances)
+    totalCount += instances.length
+  }
+  mapped._meshKeys = meshKeys
+  mapped._meshValues = meshValues
+  mapped._totalInstanceCount = totalCount
 
   // Build color palette optimization
   const submeshColorCount = mapped.submeshMaterial.length

@@ -33,7 +33,7 @@ export class G3dMeshOffsets {
   private readonly _vertexOffsets: Int32Array
 
   /**
-   * Computes geometry offsets for given subset and section
+   * Computes geometry offsets for given subset and section in a single pass.
    * @param subset subset for which to compute offsets
    * @param section 'opaque' | 'transparent' | 'all'
    */
@@ -41,23 +41,33 @@ export class G3dMeshOffsets {
     this.subset = subset
     this.section = section
 
-    this.counts = subset.getAttributeCounts(section)
-    this._indexOffsets = this.computeOffsets(subset, (m) =>
-      subset.getMeshIndexCount(m, section)
-    )
-    this._vertexOffsets = this.computeOffsets(subset, (m) =>
-      subset.getMeshVertexCount(m, section)
-    )
-  }
-
-  private computeOffsets (subset: G3dSubset, getter: (mesh: number) => number) {
     const meshCount = subset.getMeshCount()
-    const offsets = new Int32Array(meshCount)
+    const indexOffsets = new Int32Array(meshCount)
+    const vertexOffsets = new Int32Array(meshCount)
+    const counts = new G3dMeshCounts()
 
-    for (let i = 1; i < meshCount; i++) {
-      offsets[i] = offsets[i - 1] + getter(i - 1)
+    let indexOffset = 0
+    let vertexOffset = 0
+
+    for (let i = 0; i < meshCount; i++) {
+      indexOffsets[i] = indexOffset
+      vertexOffsets[i] = vertexOffset
+
+      const indices = subset.getMeshIndexCount(i, section)
+      const vertices = subset.getMeshVertexCount(i, section)
+
+      indexOffset += indices
+      vertexOffset += vertices
+      counts.instances += subset.getMeshInstanceCount(i)
     }
-    return offsets
+
+    counts.indices = indexOffset
+    counts.vertices = vertexOffset
+    counts.meshes = meshCount
+
+    this.counts = counts
+    this._indexOffsets = indexOffsets
+    this._vertexOffsets = vertexOffsets
   }
 
   /**

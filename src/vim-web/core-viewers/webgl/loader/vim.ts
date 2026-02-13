@@ -72,8 +72,8 @@ export class Vim implements IVim<Element3D> {
   readonly map: ElementMapping | ElementNoMapping
 
   private readonly _factory: VimMeshFactory
-  private readonly _loadedInstances = new Set<number>()
   private readonly _elementToObject = new Map<number, Element3D>()
+  private _loadedInstanceCount = 0
   private _onUpdate = new SimpleEventDispatcher<IProgress>()
 
   /**
@@ -222,26 +222,18 @@ export class Vim implements IVim<Element3D> {
   }
 
   /**
-   * Core progressive loading method. Steps:
-   * 1. Exclude already-loaded instances via subset.except() to avoid duplicates
-   * 2. Record new instances in _loadedInstances set
-   * 3. Delegate to VimMeshFactory.add() which splits into merged/instanced
-   * 4. Dispatch onUpdate signal (consumed by UI for loading progress)
+   * Loads geometry for the given subset.
+   * Caller is responsible for not loading the same subset twice.
    * @param {G3dSubset} subset - The subset to load resources for.
    */
   async loadSubset (subset: G3dSubset) {
-    subset = subset.except('instance', this._loadedInstances)
-    const count = subset.getInstanceCount()
-    for (let i = 0; i < count; i++) {
-      this._loadedInstances.add(subset.getVimInstance(i))
-    }
-
     if (subset.getInstanceCount() === 0) return
 
     this._factory.add(subset)
+    this._loadedInstanceCount += subset.getInstanceCount()
     this._onUpdate.dispatch({
       type: 'percent',
-      current: this._loadedInstances.size,
+      current: this._loadedInstanceCount,
       total: this.getFullSet().getInstanceCount()
     })
   }
@@ -264,7 +256,7 @@ export class Vim implements IVim<Element3D> {
    */
   clear () {
     this._elementToObject.clear()
-    this._loadedInstances.clear()
+    this._loadedInstanceCount = 0
     this.scene.clear()
     this._onUpdate.dispatch({
       type: 'percent',

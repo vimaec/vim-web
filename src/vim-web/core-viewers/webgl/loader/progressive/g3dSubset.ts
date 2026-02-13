@@ -3,7 +3,7 @@
  */
 
 import { MeshSection, FilterMode } from 'vim-format'
-import { G3dMeshOffsets, G3dMeshCounts } from './g3dOffsets'
+import { G3dMeshOffsets } from './g3dOffsets'
 import { MappedG3d } from './mappedG3d'
 
 /**
@@ -12,8 +12,11 @@ import { MappedG3d } from './mappedG3d'
  */
 export class G3dSubset {
   private _source: MappedG3d
-  // source-based indices of included instanced
-  private _instances: number[]
+
+  /** Lazy flat instance list — only materialized when filter/getVimInstance needs it */
+  private _flatInstances: number[] | null = null
+  /** Eagerly computed instance count (sum of mesh instance lengths) */
+  private _instanceCount: number
 
   /** Source-based mesh indices */
   private _meshes: Array<number>
@@ -21,41 +24,32 @@ export class G3dSubset {
   private _meshInstances: Array<Array<number>>
 
   /**
-   * @param source Underlying data source for the subset (must be a MappedG3d with pre-computed map)
-   * @param instances source-based instance indices of included instances.
+   * Creates a full set containing all instances from the source.
    */
-  constructor (
-    source: MappedG3d,
-    // source-based indices of included instanced
-    instances?: number[]
-  ) {
+  constructor (source: MappedG3d) {
     this._source = source
+    this._meshes = source._meshKeys
+    this._meshInstances = source._meshValues
+    this._instanceCount = source._totalInstanceCount
+  }
 
-    // Build full instance list if not provided
-    if (!instances) {
-      instances = []
-      for (let i = 0; i < source.instanceMeshes.length; i++) {
-        if (source.instanceMeshes[i] >= 0) {
-          instances.push(i)
-        }
-      }
-    }
-    this._instances = instances
-
-    // Build mesh data from pre-computed G3d map (shared by all subsets)
-    const g3dMap = this._source._meshInstances
-    const instanceSet = new Set(this._instances)
-
-    this._meshes = []
-    this._meshInstances = []
-
-    for (const [mesh, allInstances] of g3dMap) {
-      const filteredInstances = allInstances.filter((i: number) => instanceSet.has(i))
-      if (filteredInstances.length > 0) {
-        this._meshes.push(mesh)
-        this._meshInstances.push(filteredInstances)
-      }
-    }
+  /**
+   * Creates a G3dSubset directly from pre-computed mesh arrays,
+   * bypassing the constructor's Set+filter reconstruction.
+   */
+  private static _fromPrebuilt (
+    source: MappedG3d,
+    instanceCount: number,
+    meshes: number[],
+    meshInstances: number[][]
+  ): G3dSubset {
+    const subset = Object.create(G3dSubset.prototype) as G3dSubset
+    subset._source = source
+    subset._flatInstances = null
+    subset._instanceCount = instanceCount
+    subset._meshes = meshes
+    subset._meshInstances = meshInstances
+    return subset
   }
 
   /**
@@ -64,49 +58,53 @@ export class G3dSubset {
    * matching the 4M index chunking limit used by VimMeshFactory.
    */
   chunks(count: number): G3dSubset[] {
-    const chunks: G3dSubset[] = []
+    const result: G3dSubset[] = []
     let currentSize = 0
-    let currentInstances: number[] = []
-    for(let i = 0; i < this._meshes.length; i++) {
+    let currentInstanceCount = 0
+    let currentMeshes: number[] = []
+    let currentMeshInstances: number[][] = []
 
-      // Get mesh size and instances
+    for (let i = 0; i < this._meshes.length; i++) {
       const meshSize = this.getMeshIndexCount(i, 'all')
       const instances = this._meshInstances[i]
       currentSize += meshSize
 
-      // Avoid spread operator - it creates temporary arrays
-      for (const instance of instances) {
-        currentInstances.push(instance)
-      }
+      currentMeshes.push(this._meshes[i])
+      currentMeshInstances.push(instances)
+      currentInstanceCount += instances.length
 
-      // Push chunk if size is reached
-      if(currentSize > count) {
-        chunks.push(new G3dSubset(this._source, currentInstances))
-        currentInstances = []
+      if (currentSize > count) {
+        result.push(G3dSubset._fromPrebuilt(
+          this._source, currentInstanceCount, currentMeshes, currentMeshInstances
+        ))
+        currentMeshes = []
+        currentMeshInstances = []
+        currentInstanceCount = 0
         currentSize = 0
       }
     }
 
-    // Don't forget remaining instances
-    if (currentInstances.length > 0) {
-      chunks.push(new G3dSubset(this._source, currentInstances))
+    if (currentInstanceCount > 0) {
+      result.push(G3dSubset._fromPrebuilt(
+        this._source, currentInstanceCount, currentMeshes, currentMeshInstances
+      ))
     }
 
-    return chunks
+    return result
   }
 
   /**
    * Returns total instance count in subset.
    */
   getInstanceCount () {
-    return this._instances.length
+    return this._instanceCount
   }
 
   /**
    * Returns the vim-based instance (node) for given subset-based instance.
    */
   getVimInstance (subsetIndex: number) {
-    const vimIndex = this._instances[subsetIndex]
+    const vimIndex = this._getFlatInstances()[subsetIndex]
     return this._source.instanceNodes[vimIndex]
   }
 
@@ -183,55 +181,51 @@ export class G3dSubset {
    * - instanced meshes (>5 instances) via filterByCount(c => c > 5)
    */
   filterByCount (predicate: (i: number) => boolean) {
-    const set = new Set<number>()
-    this._meshInstances.forEach((instances, i) => {
-      if (predicate(instances.length)) {
-        set.add(this._meshes[i])
-      }
-    })
-    const instances = this._instances.filter((instance) =>
-      set.has(this._source.instanceMeshes[instance])
-    )
+    const meshes: number[] = []
+    const meshInstances: number[][] = []
+    let instanceCount = 0
 
-    return new G3dSubset(this._source, instances)
+    for (let i = 0; i < this._meshInstances.length; i++) {
+      if (predicate(this._meshInstances[i].length)) {
+        meshes.push(this._meshes[i])
+        meshInstances.push(this._meshInstances[i])
+        instanceCount += this._meshInstances[i].length
+      }
+    }
+
+    return G3dSubset._fromPrebuilt(this._source, instanceCount, meshes, meshInstances)
   }
 
   /**
    * Splits subset into two based on instance count threshold.
-   * More efficient than calling filterByCount twice - does single pass.
+   * Builds mesh arrays directly in a single pass — no Set construction or re-filtering.
    * @param threshold Instance count threshold
    * @returns [low (<=threshold), high (>threshold)]
    */
   splitByCount (threshold: number): [G3dSubset, G3dSubset] {
-    const lowMeshes = new Set<number>()
-    const highMeshes = new Set<number>()
+    const lowMeshes: number[] = []
+    const lowMeshInstances: number[][] = []
+    let lowCount = 0
+    const highMeshes: number[] = []
+    const highMeshInstances: number[][] = []
+    let highCount = 0
 
-    // Single pass through mesh instances
-    this._meshInstances.forEach((instances, i) => {
-      const mesh = this._meshes[i]
+    for (let i = 0; i < this._meshes.length; i++) {
+      const instances = this._meshInstances[i]
       if (instances.length <= threshold) {
-        lowMeshes.add(mesh)
+        lowMeshes.push(this._meshes[i])
+        lowMeshInstances.push(instances)
+        lowCount += instances.length
       } else {
-        highMeshes.add(mesh)
-      }
-    })
-
-    // Single pass through instances to split them
-    const lowInstances: number[] = []
-    const highInstances: number[] = []
-
-    for (const instance of this._instances) {
-      const mesh = this._source.instanceMeshes[instance]
-      if (lowMeshes.has(mesh)) {
-        lowInstances.push(instance)
-      } else if (highMeshes.has(mesh)) {
-        highInstances.push(instance)
+        highMeshes.push(this._meshes[i])
+        highMeshInstances.push(instances)
+        highCount += instances.length
       }
     }
 
     return [
-      new G3dSubset(this._source, lowInstances),
-      new G3dSubset(this._source, highInstances)
+      G3dSubset._fromPrebuilt(this._source, lowCount, lowMeshes, lowMeshInstances),
+      G3dSubset._fromPrebuilt(this._source, highCount, highMeshes, highMeshInstances)
     ]
   }
 
@@ -242,21 +236,6 @@ export class G3dSubset {
     return new G3dMeshOffsets(this, section)
   }
 
-  /**
-   * Returns the count of each mesh attribute.
-   */
-  getAttributeCounts (section: MeshSection = 'all') {
-    const result = new G3dMeshCounts()
-    const count = this._meshes.length
-    for (let i = 0; i < count; i++) {
-      result.instances += this._meshInstances[i].length
-      result.indices += this.getMeshIndexCount(i, section)
-      result.vertices += this.getMeshVertexCount(i, section)
-    }
-    result.meshes = count
-
-    return result
-  }
 
   /**
    * Returns a new subset with instances NOT matching the filter.
@@ -284,46 +263,58 @@ export class G3dSubset {
     has: boolean
   ): G3dSubset {
     if (filter === undefined || mode === undefined) {
-      return new G3dSubset(this._source, undefined)
+      return new G3dSubset(this._source)
     }
 
-    if (mode === 'instance') {
-      const instances = this.filterOnArray(
-        filter,
-        this._source.instanceNodes,
-        has
-      )
-      return new G3dSubset(this._source, instances)
-    }
-
-    if (mode === 'mesh') {
-      const instances = this.filterOnArray(
-        filter,
-        this._source.instanceMeshes,
-        has
-      )
-      return new G3dSubset(this._source, instances)
+    // Short-circuit: empty filter
+    const filterSize = filter instanceof Set ? filter.size : filter.length
+    if (filterSize === 0) {
+      return has
+        ? G3dSubset._fromPrebuilt(this._source, 0, [], [])
+        : this
     }
 
     if (mode === 'tag' || mode === 'group') {
       throw new Error('Filter Mode Not implemented')
     }
-  }
 
-  private filterOnArray (
-    filter: number[] | Set<number>,
-    array: Int32Array,
-    has: boolean = true
-  ) {
+    // Filter per-mesh directly — no flat instance list needed
     const set = filter instanceof Set ? filter : new Set(filter)
-    const result: number[] = []
-    for (const i of this._instances) {
-      const value = array[i]
-      if (set.has(value) === has && this._source.instanceMeshes[i] >= 0) {
-        result.push(i)
+    const array = mode === 'instance'
+      ? this._source.instanceNodes
+      : this._source.instanceMeshes
+
+    const meshes: number[] = []
+    const meshInstances: number[][] = []
+    let instanceCount = 0
+
+    for (let i = 0; i < this._meshes.length; i++) {
+      const filtered = this._meshInstances[i].filter(
+        inst => set.has(array[inst]) === has
+      )
+      if (filtered.length > 0) {
+        meshes.push(this._meshes[i])
+        meshInstances.push(filtered)
+        instanceCount += filtered.length
       }
     }
-    return result
+
+    if (instanceCount === this._instanceCount) return this
+    return G3dSubset._fromPrebuilt(this._source, instanceCount, meshes, meshInstances)
+  }
+
+  /** Lazily materializes the flat instance array from mesh-grouped data. */
+  private _getFlatInstances (): number[] {
+    if (!this._flatInstances) {
+      const result: number[] = []
+      for (const instances of this._meshInstances) {
+        for (const inst of instances) {
+          result.push(inst)
+        }
+      }
+      this._flatInstances = result
+    }
+    return this._flatInstances
   }
 
 }
