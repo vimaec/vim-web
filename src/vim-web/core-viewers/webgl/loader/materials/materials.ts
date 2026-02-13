@@ -83,7 +83,18 @@ export class Materials {
    */
   readonly transparent: StandardMaterial
   /**
-   * Material used for maximum performance.
+   * Fast opaque material for maximum performance.
+   * Use for isolation mode or performance-critical rendering.
+   */
+  readonly simpleOpaque: THREE.ShaderMaterial
+  /**
+   * Fast transparent material with alpha blending support.
+   * ⚠️ Note: May have rendering issues on Windows with ghost materials.
+   */
+  readonly simpleTransparent: THREE.ShaderMaterial
+  /**
+   * Legacy simple material (opaque). Use simpleOpaque for new code.
+   * @deprecated Use simpleOpaque instead
    */
   readonly simple: THREE.Material
   /**
@@ -137,7 +148,14 @@ export class Materials {
   ) {
     this.opaque = opaque ?? createOpaque()
     this.transparent = transparent ?? createTransparent()
-    this.simple = simple ?? createSimpleMaterial()
+
+    // Initialize new simple material variants
+    this.simpleOpaque = createSimpleOpaqueMaterial()
+    this.simpleTransparent = createSimpleTransparentMaterial(0.5)
+
+    // Legacy simple material (backward compatibility)
+    this.simple = simple ?? this.simpleOpaque
+
     this.wireframe = wireframe ?? createWireframe()
     this.ghost = ghost ?? createGhostMaterial()
     this.mask = mask ?? createMaskMaterial()
@@ -169,6 +187,32 @@ export class Materials {
     this.outlineBlur = settings.materials.outline.blur
     this.outlineColor = settings.materials.outline.color
     // outline.antialias is applied in the rendering composer
+  }
+
+  /**
+   * Sets the opacity for the simple transparent material.
+   *
+   * This allows dynamic control of transparency without recreating the material,
+   * which is much faster than creating a new material instance.
+   *
+   * Key concepts:
+   * - Changes the uniform value directly (no shader recompilation)
+   * - Automatically triggers render update via needsUpdate signal
+   * - Value is clamped to valid range [0, 1]
+   *
+   * @param opacity Opacity value where 0 = fully transparent, 1 = fully opaque
+   */
+  setSimpleTransparentOpacity (opacity: number) {
+    this.simpleTransparent.uniforms.opacity.value = THREE.MathUtils.clamp(opacity, 0, 1)
+    this._onUpdate.dispatch()
+  }
+
+  /**
+   * Gets the current opacity of the simple transparent material.
+   * @returns Current opacity value (0-1)
+   */
+  getSimpleTransparentOpacity (): number {
+    return this.simpleTransparent.uniforms.opacity.value
   }
 
   /**
@@ -289,6 +333,8 @@ export class Materials {
     // THREE Materials will break if assigned undefined
     this._clippingPlanes = value
     this.simple.clippingPlanes = value ?? null
+    this.simpleOpaque.clippingPlanes = value ?? null
+    this.simpleTransparent.clippingPlanes = value ?? null
     this.opaque.clippingPlanes = value ?? null
     this.transparent.clippingPlanes = value ?? null
     this.wireframe.clippingPlanes = value ?? null
@@ -468,9 +514,18 @@ export class Materials {
       this._submeshColorTexture.magFilter = THREE.NearestFilter
     }
 
-    // Set the same texture on both materials
+    // Set the same texture on all materials (standard and simple)
     this.opaque.setSubmeshColorTexture(this._submeshColorTexture)
     this.transparent.setSubmeshColorTexture(this._submeshColorTexture)
+
+    // Also set on simple materials for color palette support
+    this.simpleOpaque.uniforms.submeshColorTexture.value = this._submeshColorTexture
+    this.simpleOpaque.uniforms.useSubmeshColors.value = this._submeshColorTexture ? 1.0 : 0.0
+    this.simpleOpaque.uniformsNeedUpdate = true
+
+    this.simpleTransparent.uniforms.submeshColorTexture.value = this._submeshColorTexture
+    this.simpleTransparent.uniforms.useSubmeshColors.value = this._submeshColorTexture ? 1.0 : 0.0
+    this.simpleTransparent.uniformsNeedUpdate = true
 
     this._onUpdate.dispatch()
   }

@@ -65,6 +65,7 @@ export function getDefaultViewerSettings(): ViewerSettings {
       }
     ],
     materials: {
+      useFastMaterials: false,
       standard: {
         color: new THREE.Color(0xcccccc)
       },

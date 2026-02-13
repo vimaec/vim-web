@@ -197,6 +197,14 @@ export type ViewerSettings = {
 */
 materials: {
   /**
+   * Use fast simple materials instead of standard Lambert materials
+   * - Enables: Significantly faster rendering (no Lambert lighting calculations)
+   * - Trade-off: Simpler pseudo-lighting using screen-space derivatives
+   * - Useful for: Performance-critical scenarios, large models, lower-end hardware
+   * Default: false
+   */
+  useFastMaterials: boolean
+  /**
   * Default color of standard material
   */
   standard: {
