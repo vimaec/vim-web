@@ -101,6 +101,10 @@ export class InsertableGeometry {
     this.geometry.setAttribute('submeshIndex', this._submeshIndexAttribute) // NEW
     this.geometry.setAttribute('packedId', this._packedIdAttribute)
 
+    // Initialize with inverted bounds (min = +∞, max = -∞) so any point naturally expands it
+    this.boundingBox = new THREE.Box3()
+    this.boundingBox.makeEmpty()
+
     this._computeBoundingBox = true
   }
 
@@ -110,10 +114,11 @@ export class InsertableGeometry {
 
   // Cumulative timing (shared across all insertFromVim calls)
   private static _cumulativeTiming = {
-    setup: 0,
+    meshSetup: 0,        // Initial mesh offset/range lookups
+    instanceSetup: 0,    // Per-instance matrix + mapping lookup
     indexLoop: 0,
     vertexLoop: 0,
-    cleanup: 0,
+    instanceCleanup: 0,  // Per-instance expandBox + array push
     calls: 0
   }
 
@@ -150,24 +155,36 @@ export class InsertableGeometry {
     const vertexCount = vertexEnd - vertexStart
 
     const t1 = performance.now()
-    InsertableGeometry._cumulativeTiming.setup += t1 - t0
+    InsertableGeometry._cumulativeTiming.meshSetup += t1 - t0
+
+    // Cache array references for performance (avoid method call overhead)
+    const instanceTransforms = g3d.instanceTransforms
+    const instanceNodes = g3d.instanceNodes
 
     let indexOut = 0
     let vertexOut = 0
     // Iterate over all included instances for this mesh.
     const instanceCount = this.offsets.subset.getMeshInstanceCount(mesh)
     for (let instance = 0; instance < instanceCount; instance++) {
+      const tInstanceStart = performance.now()
+
       const g3dInstance = this.offsets.subset.getMeshInstance(mesh, instance)
-      matrix.fromArray(g3d.getInstanceMatrix(g3dInstance))
+
+      // Direct array access for matrix (avoid getInstanceMatrix() call)
+      const matrixOffset = g3dInstance * 16
+      for (let i = 0; i < 16; i++) {
+        matrix.elements[i] = instanceTransforms[matrixOffset + i]
+      }
 
       // Get element index for this instance (for GPU picking)
       const elementIndex = this._mapping?.getElementFromInstance(g3dInstance) ?? -1
 
       const submesh = new GeometrySubmesh()
-      submesh.instance = g3d.instanceNodes[g3dInstance]
+      submesh.instance = instanceNodes[g3dInstance]
       submesh.start = indexOffset + indexOut
 
       const t2 = performance.now()
+      InsertableGeometry._cumulativeTiming.instanceSetup += t2 - tInstanceStart
 
       // Direct array access for performance (avoid function call overhead)
       const indices = this._indexAttribute.array as Uint32Array
@@ -203,23 +220,9 @@ export class InsertableGeometry {
       // Matrix elements for inline transform
       const e = matrix.elements
 
-      // Initialize bounding box with first vertex (avoids isEmpty() check in loop)
-      if (vertexCount > 0) {
-        const firstIdx = vertexStart * G3d.POSITION_SIZE
-        const firstX = g3d.positions[firstIdx]
-        const firstY = g3d.positions[firstIdx + 1]
-        const firstZ = g3d.positions[firstIdx + 2]
-        const firstTx = e[0] * firstX + e[4] * firstY + e[8] * firstZ + e[12]
-        const firstTy = e[1] * firstX + e[5] * firstY + e[9] * firstZ + e[13]
-        const firstTz = e[2] * firstX + e[6] * firstY + e[10] * firstZ + e[14]
-
-        submesh.boundingBox.set(
-          new THREE.Vector3(firstTx, firstTy, firstTz),
-          new THREE.Vector3(firstTx, firstTy, firstTz)
-        )
-      }
-
-      // Direct access to bounding box for inline expansion (avoids method calls)
+      // Initialize submesh bounding box with inverted bounds (min = +∞, max = -∞)
+      // Any vertex will naturally expand it via Math.min/max - no special first-vertex handling needed
+      submesh.boundingBox.makeEmpty()
       const boxMin = submesh.boundingBox.min
       const boxMax = submesh.boundingBox.max
 
@@ -257,12 +260,14 @@ export class InsertableGeometry {
       InsertableGeometry._cumulativeTiming.vertexLoop += t4 - t3
 
       submesh.end = indexOffset + indexOut
+
       this.expandBox(submesh.boundingBox)
+
       this.submeshes.push(submesh)
       added.push(this.submeshes.length - 1)
 
       const t5 = performance.now()
-      InsertableGeometry._cumulativeTiming.cleanup += t5 - t4
+      InsertableGeometry._cumulativeTiming.instanceCleanup += t5 - t4
     }
 
     InsertableGeometry._cumulativeTiming.calls++
@@ -271,25 +276,28 @@ export class InsertableGeometry {
     return added
   }
 
-  private expandBox (box: THREE.Box3) {
-    if (!box) return
-    this.boundingBox = this.boundingBox?.union(box) ?? box.clone()
-  }
-
   static logAndResetTiming (label: string) {
     const t = InsertableGeometry._cumulativeTiming
     console.log(`[InsertableGeometry] ${label} breakdown (${t.calls} insertFromG3d calls):`)
-    console.log(`  Setup:       ${t.setup.toFixed(2)}ms`)
-    console.log(`  Index loop:  ${t.indexLoop.toFixed(2)}ms`)
-    console.log(`  Vertex loop: ${t.vertexLoop.toFixed(2)}ms`)
-    console.log(`  Cleanup:     ${t.cleanup.toFixed(2)}ms`)
-    console.log(`  Total:       ${(t.setup + t.indexLoop + t.vertexLoop + t.cleanup).toFixed(2)}ms`)
+    console.log(`  Mesh setup:       ${t.meshSetup.toFixed(2)}ms`)
+    console.log(`  Instance setup:   ${t.instanceSetup.toFixed(2)}ms`)
+    console.log(`  Index loop:       ${t.indexLoop.toFixed(2)}ms`)
+    console.log(`  Vertex loop:      ${t.vertexLoop.toFixed(2)}ms`)
+    console.log(`  Instance cleanup: ${t.instanceCleanup.toFixed(2)}ms`)
+    console.log(`  Total:            ${(t.meshSetup + t.instanceSetup + t.indexLoop + t.vertexLoop + t.instanceCleanup).toFixed(2)}ms`)
     // Reset for next batch
-    t.setup = 0
+    t.meshSetup = 0
+    t.instanceSetup = 0
     t.indexLoop = 0
     t.vertexLoop = 0
-    t.cleanup = 0
+    t.instanceCleanup = 0
     t.calls = 0
+  }
+
+  private expandBox (box: THREE.Box3) {
+    // Direct min/max expansion (no null checks needed - boundingBox initialized with inverted bounds)
+    this.boundingBox.min.min(box.min)
+    this.boundingBox.max.max(box.max)
   }
 
   flushUpdate () {
