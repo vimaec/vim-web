@@ -108,6 +108,15 @@ export class InsertableGeometry {
     return this._indexAttribute.count / this._indexAttribute.array.length
   }
 
+  // Cumulative timing (shared across all insertFromVim calls)
+  private static _cumulativeTiming = {
+    setup: 0,
+    indexLoop: 0,
+    vertexLoop: 0,
+    cleanup: 0,
+    calls: 0
+  }
+
   /**
    * Inserts geometry for a single mesh definition, duplicated for each instance.
    * For each instance: bakes the instance matrix into vertex positions, copies indices
@@ -115,6 +124,8 @@ export class InsertableGeometry {
    * and creates a GeometrySubmesh tracking the index range and bounding box.
    */
   insertFromG3d (g3d: MappedG3d, mesh: number) {
+    const t0 = performance.now()
+
     const added: number[] = []
     const meshG3dIndex = this.offsets.subset.getSourceMesh(mesh)
     const subStart = g3d.getMeshSubmeshStart(meshG3dIndex, this.offsets.section)
@@ -139,6 +150,9 @@ export class InsertableGeometry {
     const vertexEnd = g3d.getMeshVertexEnd(meshG3dIndex)
     const vertexCount = vertexEnd - vertexStart
 
+    const t1 = performance.now()
+    InsertableGeometry._cumulativeTiming.setup += t1 - t0
+
     let indexOut = 0
     let vertexOut = 0
     // Iterate over all included instances for this mesh.
@@ -154,62 +168,104 @@ export class InsertableGeometry {
       submesh.instance = g3d.instanceNodes[g3dInstance]
       submesh.start = indexOffset + indexOut
 
+      const t2 = performance.now()
+
+      // Direct array access for performance (avoid function call overhead)
+      const indices = this._indexAttribute.array as Uint32Array
+      const submeshIndices = this._submeshIndexAttribute.array as Uint16Array
+
       const mergeOffset = instance * vertexCount
       for (let sub = subStart; sub < subEnd; sub++) {
         const indexStart = g3d.getSubmeshIndexStart(sub)
         const indexEnd = g3d.getSubmeshIndexEnd(sub)
 
+        // Use color index if palette optimization is enabled, otherwise submesh index
+        // Hoist out of inner loop - computed once per submesh instead of per index
+        const colorIndex = g3d.submeshToColorIndex?.[sub] ?? sub
+
         // Merge all indices for this instance
         for (let index = indexStart; index < indexEnd; index++) {
           const v = vertexOffset + mergeOffset + g3d.indices[index]
-          this.setIndex(indexOffset + indexOut, v)
 
-          // Use color index if palette optimization is enabled, otherwise submesh index
-          const colorIndex = g3d.submeshToColorIndex?.[sub] ?? sub
-          this.setSubmeshIndex(v, colorIndex)
+          // Direct array writes (no function calls, no bounds checking)
+          indices[indexOffset + indexOut] = v
+          submeshIndices[v] = colorIndex
           indexOut++
         }
       }
+      const t3 = performance.now()
+      InsertableGeometry._cumulativeTiming.indexLoop += t3 - t2
+
+      // Direct array access for performance (avoid function call overhead)
+      const positions = this._vertexAttribute.array as Float32Array
+      const packedIds = this._packedIdAttribute.array as Uint32Array
+      const packedId = packPickingId(this._vimIndex, elementIndex)
+
+      // Matrix elements for inline transform
+      const e = matrix.elements
 
       // Transform and merge vertices
       for (let vertex = vertexStart; vertex < vertexEnd; vertex++) {
-        vector.fromArray(g3d.positions, vertex * G3d.POSITION_SIZE)
-        vector.applyMatrix4(matrix)
-        this.setVertex(vertexOffset + vertexOut, vector)
-        this.setPackedId(vertexOffset + vertexOut, elementIndex)
+        const srcIdx = vertex * G3d.POSITION_SIZE
+        const x = g3d.positions[srcIdx]
+        const y = g3d.positions[srcIdx + 1]
+        const z = g3d.positions[srcIdx + 2]
+
+        // Inline matrix transform (applyMatrix4 logic)
+        const tx = e[0] * x + e[4] * y + e[8] * z + e[12]
+        const ty = e[1] * x + e[5] * y + e[9] * z + e[13]
+        const tz = e[2] * x + e[6] * y + e[10] * z + e[14]
+
+        // Direct array writes
+        const dstIdx = (vertexOffset + vertexOut) * 3
+        positions[dstIdx] = tx
+        positions[dstIdx + 1] = ty
+        positions[dstIdx + 2] = tz
+
+        packedIds[vertexOffset + vertexOut] = packedId
+
+        // Expand bounding box
+        vector.set(tx, ty, tz)
         submesh.expandBox(vector)
         vertexOut++
       }
+      const t4 = performance.now()
+      InsertableGeometry._cumulativeTiming.vertexLoop += t4 - t3
 
       submesh.end = indexOffset + indexOut
       this.expandBox(submesh.boundingBox)
       this.submeshes.push(submesh)
       added.push(this.submeshes.length - 1)
+
+      const t5 = performance.now()
+      InsertableGeometry._cumulativeTiming.cleanup += t5 - t4
     }
+
+    InsertableGeometry._cumulativeTiming.calls++
 
     this._meshToUpdate.add(mesh)
     return added
   }
 
-  private setIndex (index: number, value: number) {
-    this._indexAttribute.setX(index, value)
-  }
-
-  private setVertex (index: number, vector: THREE.Vector3) {
-    this._vertexAttribute.setXYZ(index, vector.x, vector.y, vector.z)
-  }
-
-  private setSubmeshIndex (index: number, submeshIndex: number) {
-    this._submeshIndexAttribute.setX(index, submeshIndex)
-  }
-
-  private setPackedId (index: number, elementIndex: number) {
-    this._packedIdAttribute.setX(index, packPickingId(this._vimIndex, elementIndex))
-  }
-
   private expandBox (box: THREE.Box3) {
     if (!box) return
     this.boundingBox = this.boundingBox?.union(box) ?? box.clone()
+  }
+
+  static logAndResetTiming (label: string) {
+    const t = InsertableGeometry._cumulativeTiming
+    console.log(`[InsertableGeometry] ${label} breakdown (${t.calls} insertFromG3d calls):`)
+    console.log(`  Setup:       ${t.setup.toFixed(2)}ms`)
+    console.log(`  Index loop:  ${t.indexLoop.toFixed(2)}ms`)
+    console.log(`  Vertex loop: ${t.vertexLoop.toFixed(2)}ms`)
+    console.log(`  Cleanup:     ${t.cleanup.toFixed(2)}ms`)
+    console.log(`  Total:       ${(t.setup + t.indexLoop + t.vertexLoop + t.cleanup).toFixed(2)}ms`)
+    // Reset for next batch
+    t.setup = 0
+    t.indexLoop = 0
+    t.vertexLoop = 0
+    t.cleanup = 0
+    t.calls = 0
   }
 
   flushUpdate () {
