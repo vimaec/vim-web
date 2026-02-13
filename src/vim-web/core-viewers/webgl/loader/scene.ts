@@ -147,16 +147,14 @@ export class Scene {
 
   /**
    * Registers a submesh in the instance → submesh map.
-   * Element3D objects will be created lazily when accessed via getElement().
    */
-  addSubmesh (submesh: Submesh) {
+  private registerSubmesh (submesh: Submesh) {
     let meshes = this._instanceToMeshes[submesh.instance]
     if (!meshes) {
       meshes = []
       this._instanceToMeshes[submesh.instance] = meshes
     }
     meshes.push(submesh)
-    this.setDirty()
   }
 
   /**
@@ -164,7 +162,7 @@ export class Scene {
    * 1. Add Three.js mesh to renderer
    * 2. Apply scene transform matrix (position/rotation/scale from VimSettings)
    * 3. Expand scene bounding box
-   * 4. Register all submeshes (maps instance → submesh, wires to Element3D)
+   * 4. Register all submeshes (maps instance → submesh)
    * 5. Apply current material override if any
    */
   addMesh (mesh: InsertableMesh | InstancedMesh) {
@@ -175,7 +173,7 @@ export class Scene {
     mesh.mesh.matrix.copy(this._matrix)
     this.updateBox(mesh.boundingBox)
 
-    mesh.getSubmeshes().forEach((s) => this.addSubmesh(s))
+    mesh.forEachSubmesh((s) => this.registerSubmesh(s))
     mesh.setMaterial(this.material)
 
     this.meshes.push(mesh)

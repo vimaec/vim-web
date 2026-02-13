@@ -14,8 +14,9 @@
  * 4. Finalize with update() to upload buffer ranges to GPU
  */
 
-import { G3dMaterial, MeshSection } from 'vim-format'
+import { G3dMaterial } from 'vim-format'
 import { InsertableMesh } from './insertableMesh'
+import { G3dMeshOffsets } from './g3dOffsets'
 import { G3dSubset } from './g3dSubset'
 import { ElementMapping } from '../elementMapping'
 import { MappedG3d } from './mappedG3d'
@@ -32,19 +33,15 @@ export class InsertableMeshFactory {
   }
 
   createOpaqueFromVim (g3d: MappedG3d, subset: G3dSubset) {
-    // Skip if no opaque geometry
-    if (!subset.getOffsets('opaque').any()) {
-      return undefined
-    }
-    return this.createFromVim(g3d, subset, 'opaque', false)
+    const offsets = subset.getOffsets('opaque')
+    if (!offsets.any()) return undefined
+    return this.createFromVim(g3d, offsets, false)
   }
 
   createTransparentFromVim (g3d: MappedG3d, subset: G3dSubset) {
-    // Skip if no transparent geometry
-    if (!subset.getOffsets('transparent').any()) {
-      return undefined
-    }
-    return this.createFromVim(g3d, subset, 'transparent', true)
+    const offsets = subset.getOffsets('transparent')
+    if (!offsets.any()) return undefined
+    return this.createFromVim(g3d, offsets, true)
   }
 
   /**
@@ -55,14 +52,12 @@ export class InsertableMeshFactory {
    */
   private createFromVim (
     g3d: MappedG3d,
-    subset: G3dSubset,
-    section: MeshSection,
+    offsets: G3dMeshOffsets,
     transparent: boolean
   ) {
-    const offsets = subset.getOffsets(section)
     const mesh = new InsertableMesh(offsets, this._materials, transparent, this._mapping, this._vimIndex)
 
-    const count = subset.getMeshCount()
+    const count = offsets.subset.getMeshCount()
     for (let m = 0; m < count; m++) {
       mesh.insertFromVim(g3d, m)
     }

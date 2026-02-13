@@ -100,7 +100,6 @@ export class InsertableMesh {
   }
 
   /**
-   *
    * @returns Returns all submeshes
    */
   getSubmeshes () {
@@ -111,6 +110,12 @@ export class InsertableMesh {
       submeshes[i] = new InsertableSubmesh(this, i)
     }
     return submeshes
+  }
+
+  forEachSubmesh (callback: (submesh: InsertableSubmesh) => void) {
+    for (let i = 0; i < this.geometry.submeshes.length; i++) {
+      callback(new InsertableSubmesh(this, i))
+    }
   }
 
   /**

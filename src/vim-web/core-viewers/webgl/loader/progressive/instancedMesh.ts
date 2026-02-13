@@ -60,7 +60,7 @@ export class InstancedMesh {
   }
 
   /**
-   * Returns all submeshes for given index.
+   * Returns all submeshes.
    */
   getSubmeshes () {
     const submeshes = new Array<InstancedSubmesh>(this.instances.length)
@@ -68,6 +68,12 @@ export class InstancedMesh {
       submeshes[i] = new InstancedSubmesh(this, i)
     }
     return submeshes
+  }
+
+  forEachSubmesh (callback: (submesh: InstancedSubmesh) => void) {
+    for (let i = 0; i < this.instances.length; i++) {
+      callback(new InstancedSubmesh(this, i))
+    }
   }
 
   setMaterial(value: ModelMaterial) {

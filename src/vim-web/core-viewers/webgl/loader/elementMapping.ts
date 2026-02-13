@@ -36,7 +36,7 @@ export class ElementMapping {
   private _instanceMeshes: Int32Array
   private _elementToInstances: (number[] | undefined)[]
   private _elementIds: BigInt64Array
-  private _elementIdToElements: Map<bigint, number[]>
+  private _elementIdToElements: Map<bigint, number[]> | null = null
 
   constructor (
     instanceToElement: number[] | Int32Array,
@@ -53,7 +53,6 @@ export class ElementMapping {
     )
 
     this._elementIds = elementIds
-    this._elementIdToElements = ElementMapping.invertToMap(elementIds)
     this._instanceMeshes = instanceMeshes
   }
 
@@ -73,6 +72,9 @@ export class ElementMapping {
    * @param id element id
    */
   getElementsFromElementId (id: number | bigint) {
+    if (!this._elementIdToElements) {
+      this._elementIdToElements = ElementMapping.invertToMap(this._elementIds)
+    }
     return this._elementIdToElements.get(BigInt(id))
   }
 

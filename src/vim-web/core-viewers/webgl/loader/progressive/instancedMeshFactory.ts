@@ -78,11 +78,14 @@ export class InstancedMeshFactory {
     source: MappedG3d,
     instances: number[]
   ) {
-    const matrix = new THREE.Matrix4()
+    const dst = three.instanceMatrix.array as Float32Array
+    const src = source.instanceTransforms
     for (let i = 0; i < instances.length; i++) {
-      const array = source.getInstanceMatrix(instances[i])
-      matrix.fromArray(array)
-      three.setMatrixAt(i, matrix)
+      const srcOffset = instances[i] * 16
+      const dstOffset = i * 16
+      for (let j = 0; j < 16; j++) {
+        dst[dstOffset + j] = src[srcOffset + j]
+      }
     }
   }
 
