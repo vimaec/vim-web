@@ -16,9 +16,9 @@ import { buildColorPalette } from '../materials/colorPalette'
 export interface MappedG3d extends G3d {
   _meshInstances: Map<number, number[]>
 
-  // Color palette optimization (undefined if disabled due to too many unique colors)
+  // Color palette optimization (palette undefined if too many unique colors, but submeshColor always present)
   colorPalette: Float32Array | undefined
-  submeshToColorIndex: Uint16Array
+  submeshColor: Uint16Array
   uniqueColorCount: number
 }
 
@@ -48,10 +48,10 @@ export function createMappedG3d(g3d: G3d): MappedG3d {
 
   // Build color palette optimization
   const submeshColorCount = mapped.submeshMaterial.length
-  const { palette, submeshToColorIndex, uniqueColorCount } = buildColorPalette(mapped, submeshColorCount)
+  const { palette, submeshColor, uniqueColorCount } = buildColorPalette(mapped, submeshColorCount)
 
   mapped.colorPalette = palette
-  mapped.submeshToColorIndex = submeshToColorIndex
+  mapped.submeshColor = submeshColor
   mapped.uniqueColorCount = uniqueColorCount
 
   return mapped

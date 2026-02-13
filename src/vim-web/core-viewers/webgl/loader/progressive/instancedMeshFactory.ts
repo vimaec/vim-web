@@ -54,11 +54,8 @@ export class InstancedMeshFactory {
     section: MeshSection,
     transparent: boolean
   ) {
-    const geometry = Geometry.createGeometryFromMesh(
-      g3d,
-      mesh,
-      section
-    )
+    const geometry = Geometry.createGeometryFromMesh(g3d, mesh, section)
+
     const material = transparent
       ? Materials.getInstance().transparent
       : Materials.getInstance().opaque
@@ -69,10 +66,11 @@ export class InstancedMeshFactory {
       instances?.length ?? g3d.getMeshInstanceCount(mesh)
     )
 
-    this.setMatrices(threeMesh, g3d, instances)
-    this.setPackedIds(threeMesh, instances ?? g3d.meshInstances[mesh])
-    const result = new InstancedMesh(threeMesh, instances)
-    return result
+    const instanceArray = instances ?? g3d.meshInstances[mesh]
+    this.setMatrices(threeMesh, g3d, instanceArray)
+    this.setPackedIds(threeMesh, instanceArray)
+
+    return new InstancedMesh(threeMesh, instanceArray)
   }
 
   private setMatrices (

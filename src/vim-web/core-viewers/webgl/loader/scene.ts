@@ -147,8 +147,7 @@ export class Scene {
 
   /**
    * Registers a submesh in the instance → submesh map.
-   * If a Vim is attached, also wires the submesh to its Element3D
-   * so that visibility/color/outline changes propagate to the right geometry.
+   * Element3D objects will be created lazily when accessed via getElement().
    */
   addSubmesh (submesh: Submesh) {
     let meshes = this._instanceToMeshes[submesh.instance]
@@ -158,10 +157,6 @@ export class Scene {
     }
     meshes.push(submesh)
     this.setDirty()
-    if (this.vim) {
-      const obj = this.vim.getElement(submesh.instance)
-      obj._addMesh(submesh)
-    }
   }
 
   /**

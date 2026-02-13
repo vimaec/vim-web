@@ -32,8 +32,8 @@ export function createGeometryFromMesh (
   mesh: number,
   section: MeshSection
 ): THREE.BufferGeometry {
-  // Colors now come from texture lookup, no need to compute vertex colors
-  const submeshIndices = createSubmeshIndices(g3d, mesh, section)
+  // Colors come from texture lookup via color palette indices
+  const colorPaletteIndex = createColorPaletteIndices(g3d, mesh, section)
   const positions = g3d.positions.subarray(
     g3d.getMeshVertexStart(mesh) * 3,
     g3d.getMeshVertexEnd(mesh) * 3
@@ -43,18 +43,16 @@ export function createGeometryFromMesh (
   const end = g3d.getMeshIndexEnd(mesh, section)
   const indices = g3d.indices.subarray(start, end)
 
-  // No color attribute - all colors come from texture lookup
   return createGeometryFromArrays(
     positions,
     indices,
-    submeshIndices
+    colorPaletteIndex
   )
 }
 /**
- * Creates submesh indices for each vertex (for color palette lookup)
- * Uses color index mapping if available for memory optimization
+ * Creates color palette indices for each vertex (for texture-based color lookup)
  */
-function createSubmeshIndices (
+function createColorPaletteIndices (
   g3d: MappedG3d,
   mesh: number,
   section: MeshSection
@@ -69,8 +67,7 @@ function createSubmeshIndices (
     const start = g3d.getSubmeshIndexStart(submesh)
     const end = g3d.getSubmeshIndexEnd(submesh)
 
-    // Use color index if available, otherwise submesh index
-    const index = g3d.submeshToColorIndex?.[submesh] ?? submesh
+    const index = g3d.submeshColor[submesh]
 
     for (let i = start; i < end; i++) {
       const vertexIndex = g3d.indices[i]
@@ -85,13 +82,13 @@ function createSubmeshIndices (
  * Creates a BufferGeometry from given geometry data arrays
  * @param vertices vertex data with 3 number per vertex (XYZ)
  * @param indices index data with 3 indices per face
- * @param submeshIndices submesh index per vertex for color palette lookup
+ * @param colorPaletteIndex color palette index per vertex for texture-based color lookup
  * @returns a BufferGeometry
  */
 export function createGeometryFromArrays (
   vertices: Float32Array,
   indices: Uint32Array,
-  submeshIndices: Uint16Array | undefined = undefined
+  colorPaletteIndex: Uint16Array | undefined = undefined
 ): THREE.BufferGeometry {
   const geometry = new THREE.BufferGeometry()
 
@@ -101,11 +98,11 @@ export function createGeometryFromArrays (
   // Indices
   geometry.setIndex(new THREE.Uint32BufferAttribute(indices, 1))
 
-  // Submesh indices for color palette lookup
-  if (submeshIndices) {
+  // Color palette indices for texture-based color lookup
+  if (colorPaletteIndex) {
     geometry.setAttribute(
       'submeshIndex',
-      new THREE.Uint16BufferAttribute(submeshIndices, 1)
+      new THREE.Uint16BufferAttribute(colorPaletteIndex, 1)
     )
   }
 

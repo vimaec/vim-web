@@ -8,7 +8,7 @@
  * Buffer layout (all pre-allocated via G3dMeshOffsets):
  * - index: Uint32 — triangle indices
  * - position: Float32x3 — world-space vertices (transforms baked in)
- * - submeshIndex: Uint16 — per-vertex color index for 128×128 texture palette lookup
+ * - submeshIndex: Uint16 — per-vertex color palette index for texture-based color lookup
  * - packedId: Uint32 — per-vertex (vimIndex << 24 | elementIndex) for GPU picking
  *
  * Geometry is inserted incrementally via insertFromG3d(), which iterates over
@@ -50,7 +50,7 @@ export class InsertableGeometry {
   private _computeBoundingBox = false
   private _indexAttribute: THREE.Uint32BufferAttribute
   private _vertexAttribute: THREE.BufferAttribute
-  private _submeshIndexAttribute: THREE.Uint16BufferAttribute // NEW: submesh index for color lookup
+  private _submeshIndexAttribute: THREE.Uint16BufferAttribute // Color palette index for texture-based color lookup
   private _packedIdAttribute: THREE.Uint32BufferAttribute
   private _mapping: ElementMapping | undefined
   private _vimIndex: number
@@ -81,9 +81,9 @@ export class InsertableGeometry {
       G3d.POSITION_SIZE
     )
 
-    // No color attribute - all colors from texture lookup via submeshIndex
+    // No color attribute - all colors from texture lookup via color palette index
 
-    // NEW: Submesh index for color palette lookup (uint16 supports 65k submeshes)
+    // Color palette index for texture-based color lookup (uint16 supports 65k unique colors)
     this._submeshIndexAttribute = new THREE.Uint16BufferAttribute(
       offsets.counts.vertices,
       1
@@ -98,7 +98,7 @@ export class InsertableGeometry {
     this.geometry = new THREE.BufferGeometry()
     this.geometry.setIndex(this._indexAttribute)
     this.geometry.setAttribute('position', this._vertexAttribute)
-    this.geometry.setAttribute('submeshIndex', this._submeshIndexAttribute) // NEW
+    this.geometry.setAttribute('submeshIndex', this._submeshIndexAttribute)
     this.geometry.setAttribute('packedId', this._packedIdAttribute)
 
     // Initialize with inverted bounds (min = +∞, max = -∞) so any point naturally expands it
@@ -112,16 +112,6 @@ export class InsertableGeometry {
     return this._indexAttribute.count / this._indexAttribute.array.length
   }
 
-  // Cumulative timing (shared across all insertFromVim calls)
-  private static _cumulativeTiming = {
-    meshSetup: 0,        // Initial mesh offset/range lookups
-    instanceSetup: 0,    // Per-instance matrix + mapping lookup
-    indexLoop: 0,
-    vertexLoop: 0,
-    instanceCleanup: 0,  // Per-instance expandBox + array push
-    calls: 0
-  }
-
   /**
    * Inserts geometry for a single mesh definition, duplicated for each instance.
    * For each instance: bakes the instance matrix into vertex positions, copies indices
@@ -129,8 +119,6 @@ export class InsertableGeometry {
    * and creates a GeometrySubmesh tracking the index range and bounding box.
    */
   insertFromG3d (g3d: MappedG3d, mesh: number) {
-    const t0 = performance.now()
-
     const added: number[] = []
     const meshG3dIndex = this.offsets.subset.getSourceMesh(mesh)
     const subStart = g3d.getMeshSubmeshStart(meshG3dIndex, this.offsets.section)
@@ -142,9 +130,6 @@ export class InsertableGeometry {
       return added
     }
 
-    // Reusable matrix to avoid allocations
-    const matrix = new THREE.Matrix4()
-
     // Offsets for this mesh and all its instances
     const indexOffset = this.offsets.getIndexOffset(mesh)
     const vertexOffset = this.offsets.getVertexOffset(mesh)
@@ -154,26 +139,25 @@ export class InsertableGeometry {
     const vertexEnd = g3d.getMeshVertexEnd(meshG3dIndex)
     const vertexCount = vertexEnd - vertexStart
 
-    const t1 = performance.now()
-    InsertableGeometry._cumulativeTiming.meshSetup += t1 - t0
-
     // Cache array references for performance (avoid method call overhead)
     const instanceTransforms = g3d.instanceTransforms
     const instanceNodes = g3d.instanceNodes
 
     let indexOut = 0
     let vertexOut = 0
+    // Reusable 16-element array for matrix (better cache locality than direct array access)
+    const matrixElements = new Float32Array(16)
     // Iterate over all included instances for this mesh.
     const instanceCount = this.offsets.subset.getMeshInstanceCount(mesh)
     for (let instance = 0; instance < instanceCount; instance++) {
-      const tInstanceStart = performance.now()
-
       const g3dInstance = this.offsets.subset.getMeshInstance(mesh, instance)
 
-      // Direct array access for matrix (avoid getInstanceMatrix() call)
+      // Compute matrix offset for direct indexed access
       const matrixOffset = g3dInstance * 16
+
+      // Copy matrix elements to local array (better cache locality in hot vertex loop)
       for (let i = 0; i < 16; i++) {
-        matrix.elements[i] = instanceTransforms[matrixOffset + i]
+        matrixElements[i] = instanceTransforms[matrixOffset + i]
       }
 
       // Get element index for this instance (for GPU picking)
@@ -182,9 +166,6 @@ export class InsertableGeometry {
       const submesh = new GeometrySubmesh()
       submesh.instance = instanceNodes[g3dInstance]
       submesh.start = indexOffset + indexOut
-
-      const t2 = performance.now()
-      InsertableGeometry._cumulativeTiming.instanceSetup += t2 - tInstanceStart
 
       // Direct array access for performance (avoid function call overhead)
       const indices = this._indexAttribute.array as Uint32Array
@@ -195,9 +176,8 @@ export class InsertableGeometry {
         const indexStart = g3d.getSubmeshIndexStart(sub)
         const indexEnd = g3d.getSubmeshIndexEnd(sub)
 
-        // Use color index if palette optimization is enabled, otherwise submesh index
-        // Hoist out of inner loop - computed once per submesh instead of per index
-        const colorIndex = g3d.submeshToColorIndex?.[sub] ?? sub
+        // Hoist color index lookup out of inner loop - computed once per submesh instead of per index
+        const colorIndex = g3d.submeshColor[sub]
 
         // Merge all indices for this instance
         for (let index = indexStart; index < indexEnd; index++) {
@@ -209,16 +189,14 @@ export class InsertableGeometry {
           indexOut++
         }
       }
-      const t3 = performance.now()
-      InsertableGeometry._cumulativeTiming.indexLoop += t3 - t2
 
       // Direct array access for performance (avoid function call overhead)
       const positions = this._vertexAttribute.array as Float32Array
       const packedIds = this._packedIdAttribute.array as Uint32Array
       const packedId = packPickingId(this._vimIndex, elementIndex)
 
-      // Matrix elements for inline transform
-      const e = matrix.elements
+      // Short alias for matrix elements - local copy improves cache locality
+      const e = matrixElements
 
       // Initialize submesh bounding box with inverted bounds (min = +∞, max = -∞)
       // Any vertex will naturally expand it via Math.min/max - no special first-vertex handling needed
@@ -233,7 +211,7 @@ export class InsertableGeometry {
         const y = g3d.positions[srcIdx + 1]
         const z = g3d.positions[srcIdx + 2]
 
-        // Inline matrix transform (applyMatrix4 logic)
+        // Inline matrix transform using local matrix copy (better cache locality)
         const tx = e[0] * x + e[4] * y + e[8] * z + e[12]
         const ty = e[1] * x + e[5] * y + e[9] * z + e[13]
         const tz = e[2] * x + e[6] * y + e[10] * z + e[14]
@@ -256,42 +234,15 @@ export class InsertableGeometry {
 
         vertexOut++
       }
-      const t4 = performance.now()
-      InsertableGeometry._cumulativeTiming.vertexLoop += t4 - t3
 
       submesh.end = indexOffset + indexOut
-
       this.expandBox(submesh.boundingBox)
-
       this.submeshes.push(submesh)
       added.push(this.submeshes.length - 1)
-
-      const t5 = performance.now()
-      InsertableGeometry._cumulativeTiming.instanceCleanup += t5 - t4
     }
-
-    InsertableGeometry._cumulativeTiming.calls++
 
     this._meshToUpdate.add(mesh)
     return added
-  }
-
-  static logAndResetTiming (label: string) {
-    const t = InsertableGeometry._cumulativeTiming
-    console.log(`[InsertableGeometry] ${label} breakdown (${t.calls} insertFromG3d calls):`)
-    console.log(`  Mesh setup:       ${t.meshSetup.toFixed(2)}ms`)
-    console.log(`  Instance setup:   ${t.instanceSetup.toFixed(2)}ms`)
-    console.log(`  Index loop:       ${t.indexLoop.toFixed(2)}ms`)
-    console.log(`  Vertex loop:      ${t.vertexLoop.toFixed(2)}ms`)
-    console.log(`  Instance cleanup: ${t.instanceCleanup.toFixed(2)}ms`)
-    console.log(`  Total:            ${(t.meshSetup + t.instanceSetup + t.indexLoop + t.vertexLoop + t.instanceCleanup).toFixed(2)}ms`)
-    // Reset for next batch
-    t.meshSetup = 0
-    t.instanceSetup = 0
-    t.indexLoop = 0
-    t.vertexLoop = 0
-    t.instanceCleanup = 0
-    t.calls = 0
   }
 
   private expandBox (box: THREE.Box3) {
@@ -338,10 +289,9 @@ export class InsertableGeometry {
     // this._vertexAttribute.count = vertexEnd
     this._vertexAttribute.needsUpdate = true
 
-    // Colors are initialized to white once, no need to update
-    // Actual colors come from texture lookup via submeshIndex
+    // Colors come from texture lookup via color palette index
 
-    // update submesh indices (itemSize is 1)
+    // update color palette indices (itemSize is 1)
     this._submeshIndexAttribute.addUpdateRange(vertexStart, vertexEnd - vertexStart)
     this._submeshIndexAttribute.needsUpdate = true
 

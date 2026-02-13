@@ -38,14 +38,14 @@ export class VimMeshFactory {
    * - >5 instances per mesh → GPU instanced (geometry shared, one mesh per unique geometry)
    */
   public add (subset: G3dSubset) {
-    // Split in single pass instead of two filterByCount calls
     const [merged, instanced] = subset.splitByCount(5)
 
     // Instanced meshes first (one Three.js InstancedMesh per unique geometry)
     this.addInstancedMeshes(this._scene, instanced)
+
     // Merged meshes chunked at 16M indices (GPU picking removes raycast traversal constraint)
     const chunks = merged.chunks(16_000_000)
-    for(const chunk of chunks) {
+    for (const chunk of chunks) {
       this.addMergedMesh(this._scene, chunk)
     }
   }
@@ -62,21 +62,12 @@ export class VimMeshFactory {
     const count = subset.getMeshCount()
     for (let m = 0; m < count; m++) {
       const mesh = subset.getSourceMesh(m)
-      const instances =
-        subset.getMeshInstances(m) ?? this.g3d.meshInstances[mesh]
+      const instances = subset.getMeshInstances(m) ?? this.g3d.meshInstances[mesh]
 
-      const opaque = this._instancedFactory.createOpaqueFromVim(
-        this.g3d,
-        mesh,
-        instances
-      )
+      const opaque = this._instancedFactory.createOpaqueFromVim(this.g3d, mesh, instances)
       if (opaque) scene.addMesh(opaque)
 
-      const transparent = this._instancedFactory.createTransparentFromVim(
-        this.g3d,
-        mesh,
-        instances
-      )
+      const transparent = this._instancedFactory.createTransparentFromVim(this.g3d, mesh, instances)
       if (transparent) scene.addMesh(transparent)
     }
   }

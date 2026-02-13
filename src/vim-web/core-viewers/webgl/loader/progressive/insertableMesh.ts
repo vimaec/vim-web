@@ -126,4 +126,5 @@ export class InsertableMesh {
   setMaterial(value: ModelMaterial) {
     applyMaterial(this.mesh, value, this._material, this.ignoreSceneMaterial)
   }
+
 }

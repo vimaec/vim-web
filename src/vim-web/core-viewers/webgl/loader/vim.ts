@@ -218,7 +218,7 @@ export class Vim implements IVim<Element3D> {
    * Asynchronously loads all geometry.
    */
   async loadAll () {
-    return this.loadSubset(this.getFullSet())
+    await this.loadSubset(this.getFullSet())
   }
 
   /**
@@ -230,18 +230,14 @@ export class Vim implements IVim<Element3D> {
    * @param {G3dSubset} subset - The subset to load resources for.
    */
   async loadSubset (subset: G3dSubset) {
-    // Exclude instances that have already been loaded
     subset = subset.except('instance', this._loadedInstances)
     const count = subset.getInstanceCount()
     for (let i = 0; i < count; i++) {
       this._loadedInstances.add(subset.getVimInstance(i))
     }
 
-    if (subset.getInstanceCount() === 0) {
-      console.log('Empty subset. Ignoring')
-      return
-    }
-    // Build meshes and add to scene
+    if (subset.getInstanceCount() === 0) return
+
     this._factory.add(subset)
     this._onUpdate.dispatch({
       type: 'percent',

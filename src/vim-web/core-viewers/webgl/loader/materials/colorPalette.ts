@@ -13,7 +13,7 @@ const QUANTIZATION_LEVELS = 25 // 25³ = 15,625 max colors
 
 export type ColorPaletteResult = {
   palette: Float32Array | undefined
-  submeshToColorIndex: Uint16Array
+  submeshColor: Uint16Array
   uniqueColorCount: number
 }
 
@@ -23,7 +23,7 @@ export type ColorPaletteResult = {
  *
  * @param mappedG3d - The mapped G3d geometry with material colors
  * @param submeshColorCount - Total number of submeshes
- * @returns Color palette (undefined if disabled), submesh→colorIndex mapping, and unique color count
+ * @returns Color palette (undefined if too many colors), submesh→colorIndex mapping, and unique color count
  */
 export function buildColorPalette(
   mappedG3d: MappedG3d,
@@ -32,7 +32,7 @@ export function buildColorPalette(
   // Build unique color palette for shader lookup
   const uniqueColorsMap = new Map<string, number>() // color key → colorIndex
   const colorPaletteArray: number[] = []
-  const submeshToColorIndex = new Uint16Array(submeshColorCount)
+  const submeshColor = new Uint16Array(submeshColorCount)
 
   // First pass: build initial palette
   for (let i = 0; i < submeshColorCount; i++) {
@@ -46,15 +46,13 @@ export function buildColorPalette(
       colorPaletteArray.push(color[0], color[1], color[2])
     }
 
-    submeshToColorIndex[i] = colorIndex
+    submeshColor[i] = colorIndex
   }
 
   let uniqueColorCount = uniqueColorsMap.size
 
   // If too many unique colors, quantize them in-place
   if (uniqueColorCount > MAX_COLORS) {
-    console.log(`[Color Optimization] Quantizing: ${uniqueColorCount} unique colors → target ${MAX_COLORS}`)
-
     quantizeColors(mappedG3d.materialColors, QUANTIZATION_LEVELS)
 
     // Rebuild palette with quantized colors
@@ -72,23 +70,18 @@ export function buildColorPalette(
         colorPaletteArray.push(color[0], color[1], color[2])
       }
 
-      submeshToColorIndex[i] = colorIndex
+      submeshColor[i] = colorIndex
     }
 
     uniqueColorCount = uniqueColorsMap.size
-    console.log(`[Color Optimization] Quantization result: ${uniqueColorCount} unique colors`)
   }
 
   // Return palette if within limits, otherwise undefined (disable optimization)
   if (uniqueColorCount <= MAX_COLORS) {
     const palette = new Float32Array(colorPaletteArray)
-    const paletteSizeKB = (palette.length * 4 / 1024).toFixed(1)
-    console.log(`[Color Optimization] Enabled: ${submeshColorCount} submeshes → ${uniqueColorCount} unique colors, palette size: ${paletteSizeKB} KB`)
-
-    return { palette, submeshToColorIndex, uniqueColorCount }
+    return { palette, submeshColor, uniqueColorCount }
   } else {
-    console.warn(`[Color Optimization] Disabled: Model has ${uniqueColorCount} unique colors (max ${MAX_COLORS}). Using vertex colors.`)
-    return { palette: undefined, submeshToColorIndex, uniqueColorCount }
+    return { palette: undefined, submeshColor, uniqueColorCount }
   }
 }
 

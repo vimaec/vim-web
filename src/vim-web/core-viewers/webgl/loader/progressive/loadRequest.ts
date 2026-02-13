@@ -79,23 +79,16 @@ export class LoadRequest extends BaseLoadRequest<Vim> {
       }
     }
 
-    // Step 1: Parse G3d geometry
     const geometry = await bfast.getBfast('geometry')
     const g3d = await G3d.createFromBfast(geometry)
-
-    // Step 2: Augment with pre-computed mesh→instances map and color palette (shared by all G3dSubsets)
     const mappedG3d = createMappedG3d(g3d)
     const materials = new G3dMaterial(mappedG3d.materialColors)
 
-    // Step 3-4: Parse BIM document and build instance → element mapping
     const doc = await VimDocument.createFromBfast(bfast)
     const mapping = await ElementMapping.fromG3d(mappedG3d, doc)
 
-    // Step 5: Create scene and factory (factory needs mapping for GPU picking IDs)
     const scene = new Scene(fullSettings.matrix)
     const factory = new VimMeshFactory(mappedG3d, materials, scene, mapping, vimIndex)
-
-    // Step 5.5: Set submesh color palette (shared texture for both opaque and transparent)
     Materials.getInstance().setColorPalette(mappedG3d.colorPalette)
 
     const header = await requestHeader(bfast)
