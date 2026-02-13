@@ -19,10 +19,10 @@ import * as THREE from 'three'
 export function createSimpleMaterial () {
   return new THREE.ShaderMaterial({
     side: THREE.DoubleSide,
-    // No uniforms are needed for this shader.
-    uniforms: {},
-    // Enable vertex colors for both instanced and merged meshes.
-    vertexColors: true,
+    // Uniforms for texture-based color palette
+    uniforms: {
+      submeshColorTexture: { value: null },
+    },
     // Enable support for clipping planes.
     clipping: true,
     vertexShader: /* glsl */ `
@@ -43,10 +43,14 @@ export function createSimpleMaterial () {
       // Passes the color of the vertex or instance to the fragment shader.
       varying vec3 vColor;
 
-      // Determines whether to use instance color (1.0) or vertex color (0.0).
+      // Determines whether to use instance color (1.0) or submesh color (0.0).
       // For merged meshes, this is used as a vertex attribute.
       // For instanced meshes, this is used as an instance attribute.
       attribute float colored;
+
+      // Submesh index for color palette lookup
+      attribute float submeshIndex;
+      uniform sampler2D submeshColorTexture;
 
       // Fix for a known issue where setting mesh.instanceColor does not properly enable USE_INSTANCING_COLOR.
       // This ensures that instance colors are always used when required.
@@ -67,14 +71,18 @@ export function createSimpleMaterial () {
         }
 
         // COLORING
-        // Default to the vertex color.
-        vColor = color.xyz;
+        // Get color from texture palette
+        float texSize = 128.0;
+        float x = mod(submeshIndex, texSize);
+        float y = floor(submeshIndex / texSize);
+        vec2 uv = (vec2(x, y) + 0.5) / texSize;
+        vColor = texture2D(submeshColorTexture, uv).rgb;
 
-        // Blend instance and vertex colors based on the colored attribute.
+        // Blend instance and submesh colors based on the colored attribute.
         // colored == 1.0 -> use instance color.
-        // colored == 0.0 -> use vertex color.
+        // colored == 0.0 -> use submesh color from texture.
         #ifdef USE_INSTANCING
-          vColor.xyz = colored * instanceColor.xyz + (1.0 - colored) * color.xyz;
+          vColor.xyz = colored * instanceColor.xyz + (1.0 - colored) * vColor.xyz;
         #endif
 
         // LIGHTING

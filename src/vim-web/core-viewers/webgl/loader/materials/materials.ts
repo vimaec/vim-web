@@ -433,7 +433,7 @@ export class Materials {
   /**
    * Sets the submesh color palette for both opaque and transparent materials.
    * Creates a single shared DataTexture from the palette (128×128 RGBA, 16384 colors max).
-   * Pass undefined to disable palette optimization.
+   * If palette is undefined, creates a white fallback texture.
    */
   setColorPalette (palette: Float32Array | undefined) {
     // Dispose old texture if exists
@@ -442,11 +442,10 @@ export class Materials {
       this._submeshColorTexture = undefined
     }
 
-    // Create shared texture from palette
-    if (palette && palette.length > 0) {
-      const textureSize = 128
-      const textureData = new Uint8Array(textureSize * textureSize * 4)
+    const textureSize = 128
+    const textureData = new Uint8Array(textureSize * textureSize * 4)
 
+    if (palette && palette.length > 0) {
       // Convert float colors (0-1) to uint8 (0-255) with alpha = 255
       const colorCount = Math.min(palette.length / 3, textureSize * textureSize)
       for (let i = 0; i < colorCount; i++) {
@@ -455,22 +454,36 @@ export class Materials {
         textureData[i * 4 + 2] = Math.round(palette[i * 3 + 2] * 255)
         textureData[i * 4 + 3] = 255 // Alpha
       }
-
-      this._submeshColorTexture = new THREE.DataTexture(
-        textureData,
-        textureSize,
-        textureSize,
-        THREE.RGBAFormat,
-        THREE.UnsignedByteType
-      )
-      this._submeshColorTexture.needsUpdate = true
-      this._submeshColorTexture.minFilter = THREE.NearestFilter
-      this._submeshColorTexture.magFilter = THREE.NearestFilter
+    } else {
+      // Fallback: create white texture (all pixels white)
+      console.warn('[Color Optimization] Palette undefined, using white fallback texture')
+      for (let i = 0; i < textureSize * textureSize * 4; i += 4) {
+        textureData[i] = 255     // R
+        textureData[i + 1] = 255 // G
+        textureData[i + 2] = 255 // B
+        textureData[i + 3] = 255 // A
+      }
     }
 
-    // Set the same texture on both materials
+    this._submeshColorTexture = new THREE.DataTexture(
+      textureData,
+      textureSize,
+      textureSize,
+      THREE.RGBAFormat,
+      THREE.UnsignedByteType
+    )
+    this._submeshColorTexture.needsUpdate = true
+    this._submeshColorTexture.minFilter = THREE.NearestFilter
+    this._submeshColorTexture.magFilter = THREE.NearestFilter
+
+    // Set the same texture on all materials
     this.opaque.setSubmeshColorTexture(this._submeshColorTexture)
     this.transparent.setSubmeshColorTexture(this._submeshColorTexture)
+
+    // Set on simple material (ShaderMaterial with uniforms)
+    if (this.simple instanceof THREE.ShaderMaterial) {
+      this.simple.uniforms.submeshColorTexture.value = this._submeshColorTexture
+    }
 
     this._onUpdate.dispatch()
   }
