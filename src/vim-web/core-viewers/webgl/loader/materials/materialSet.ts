@@ -37,10 +37,34 @@ export class MaterialSet {
   }
 
   /**
+   * Get material for mesh rendering.
+   * Returns either a single material or an array [visible, hidden] for ghost rendering.
+   *
+   * @param transparent Whether the mesh renders transparent geometry
+   * @returns Material or array, or undefined if the variant doesn't exist (mesh should be hidden)
+   */
+  get(transparent: boolean): THREE.Material | THREE.Material[] | undefined {
+    const visibleMat = transparent ? this.transparent : this.opaque
+
+    if (!visibleMat) {
+      return undefined // Hide mesh
+    }
+
+    // Return array for ghost rendering
+    if (this.hidden) {
+      return [visibleMat, this.hidden]
+    }
+
+    // Single material
+    return visibleMat
+  }
+
+  /**
    * Get material for a specific mesh based on its properties.
    *
    * @param transparent Whether the mesh has transparent geometry
    * @param isHidden Whether the mesh should be rendered as hidden/ghosted
+   * @deprecated Use get() instead
    */
   getMaterial(transparent: boolean, isHidden: boolean = false): THREE.Material {
     if (isHidden && this.hidden) {

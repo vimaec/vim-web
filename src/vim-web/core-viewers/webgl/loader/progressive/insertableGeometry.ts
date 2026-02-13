@@ -304,6 +304,11 @@ export class InsertableGeometry {
       this.geometry.boundingSphere = this.boundingBox
         ? this.boundingBox.getBoundingSphere(new THREE.Sphere())
         : new THREE.Sphere()
+
+      // Compute vertex normals for StandardMaterial compatibility
+      // SimpleMaterial doesn't need these (uses screen-space derivatives), but StandardMaterial does
+      // Must compute after vertices are added, and persist through material switches
+      this.geometry.computeVertexNormals()
     }
   }
 }

@@ -106,5 +106,9 @@ export function createGeometryFromArrays (
     )
   }
 
+  // Compute vertex normals for StandardMaterial compatibility
+  // SimpleMaterial doesn't need these (uses screen-space derivatives), but StandardMaterial does
+  geometry.computeVertexNormals()
+
   return geometry
 }

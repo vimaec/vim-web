@@ -1,5 +1,6 @@
 export * from './ghostMaterial';
 export * from './maskMaterial';
+export * from './materialSet';
 export * from './materials';
 export * from './mergeMaterial';
 export * from './outlineMaterial';
