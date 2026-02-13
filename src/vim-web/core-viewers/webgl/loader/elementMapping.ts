@@ -32,27 +32,28 @@ export class ElementNoMapping {
 }
 
 export class ElementMapping {
-  private _instanceToElement: Map<number, number>
+  private _instanceToElement: number[] | Int32Array
   private _instanceMeshes: Int32Array
-  private _elementToInstances: Map<number, number[]>
+  private _elementToInstances: (number[] | undefined)[]
   private _elementIds: BigInt64Array
   private _elementIdToElements: Map<bigint, number[]>
 
   constructor (
-    instances: number[],
-    instanceToElement: number[],
+    instanceToElement: number[] | Int32Array,
     elementIds: BigInt64Array,
     instanceMeshes?: Int32Array
   ) {
-    this._instanceToElement = new Map<number, number>()
-    instances.forEach((i) =>
-      this._instanceToElement.set(i, instanceToElement[i])
+    // Direct reference - no copy needed (read-only)
+    this._instanceToElement = instanceToElement
+
+    // Build element→instances array (inverted mapping)
+    this._elementToInstances = ElementMapping.invertToArray(
+      instanceToElement,
+      elementIds.length
     )
-    this._elementToInstances = ElementMapping.invertMap(
-      this._instanceToElement
-    )
+
     this._elementIds = elementIds
-    this._elementIdToElements = ElementMapping.invertArray(elementIds)
+    this._elementIdToElements = ElementMapping.invertToMap(elementIds)
     this._instanceMeshes = instanceMeshes
   }
 
@@ -61,8 +62,7 @@ export class ElementMapping {
     const elementIds = await bim.element.getAllId()
 
     return new ElementMapping(
-      Array.from(g3d.instanceNodes),
-      instanceToElement,
+      instanceToElement, // No conversion - use directly to avoid memory duplication
       elementIds,
       g3d.instanceMeshes
     )
@@ -85,7 +85,8 @@ export class ElementMapping {
 
   hasMesh (element: number) {
     if (!this._instanceMeshes) return true
-    const instances = this._elementToInstances.get(element)
+    const instances = this._elementToInstances[element]
+    if (!instances) return false
     for (const i of instances) {
       if (this._instanceMeshes[i] >= 0) {
         return true
@@ -107,7 +108,7 @@ export class ElementMapping {
    */
   getInstancesFromElement (element: number): number[] | undefined {
     if (!this.hasElement(element)) return
-    return this._elementToInstances.get(element) ?? []
+    return this._elementToInstances[element] ?? []
   }
 
   /**
@@ -116,7 +117,7 @@ export class ElementMapping {
    * @returns element index or undefined if not found
    */
   getElementFromInstance (instance: number) {
-    return this._instanceToElement.get(instance)
+    return this._instanceToElement[instance]
   }
 
   /**
@@ -129,17 +130,20 @@ export class ElementMapping {
   }
 
   /**
-   * Returns a map where data[i] -> i
+   * Builds element→instances array by inverting the instance→element mapping
    */
-  private static invertArray (data: BigInt64Array) {
-    const result = new Map<bigint, number[]>()
-    for (let i = 0; i < data.length; i++) {
-      const value = data[i]
-      const list = result.get(value)
-      if (list) {
-        list.push(i)
-      } else {
-        result.set(value, [i])
+  private static invertToArray (
+    instanceToElement: number[] | Int32Array,
+    elementCount: number
+  ): (number[] | undefined)[] {
+    const result: (number[] | undefined)[] = new Array(elementCount)
+    for (let instance = 0; instance < instanceToElement.length; instance++) {
+      const element = instanceToElement[instance]
+      if (element >= 0) {
+        if (!result[element]) {
+          result[element] = []
+        }
+        result[element]!.push(instance)
       }
     }
     return result
@@ -148,14 +152,15 @@ export class ElementMapping {
   /**
    * Returns a map where data[i] -> i
    */
-  private static invertMap (data: Map<number, number>) {
-    const result = new Map<number, number[]>()
-    for (const [key, value] of data.entries()) {
+  private static invertToMap (data: BigInt64Array) {
+    const result = new Map<bigint, number[]>()
+    for (let i = 0; i < data.length; i++) {
+      const value = data[i]
       const list = result.get(value)
       if (list) {
-        list.push(key)
+        list.push(i)
       } else {
-        result.set(value, [key])
+        result.set(value, [i])
       }
     }
     return result
