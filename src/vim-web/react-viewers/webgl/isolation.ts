@@ -8,7 +8,7 @@ export function useWebglIsolation(viewer: Core.Webgl.Viewer){
 }
 
 function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapter {
-  var transparency: boolean = true;
+  var quality: boolean = false; // Start in fast mode
   var ghost: boolean = false;
   var rooms: boolean = false;
 
@@ -84,9 +84,9 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
       }
     },
     
-    enableTransparency: (enable: boolean) => {
-      if(transparency !== enable){
-        transparency = enable;
+    enableQuality: (enable: boolean) => {
+      if(quality !== enable){
+        quality = enable;
         updateMaterials();
       };
     },
