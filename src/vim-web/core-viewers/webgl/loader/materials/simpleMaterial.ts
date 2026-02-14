@@ -83,6 +83,7 @@ function createSimpleMaterialShader (transparent: boolean = false) {
     // Transparency settings
     transparent: transparent,
     opacity: transparent ? 0.25 : 1.0,
+    depthWrite: !transparent, // Disable depth write for transparent materials
     vertexShader: /* glsl */ `
       #include <common>
       #include <logdepthbuf_pars_vertex>
@@ -163,7 +164,8 @@ function createSimpleMaterialShader (transparent: boolean = false) {
         #include <logdepthbuf_fragment>
 
         // Set the fragment color to the interpolated vertex or instance color.
-        gl_FragColor = vec4(vColor, 1.0);
+        // Alpha is set by Three.js opacity uniform for transparent materials
+        gl_FragColor = vec4(vColor, ${transparent ? '0.25' : '1.0'});
 
         // LIGHTING
         // Compute a pseudo-normal using screen-space derivatives of the vertex position.

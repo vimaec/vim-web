@@ -294,6 +294,7 @@ export class Materials {
     // THREE Materials will break if assigned undefined
     this._clippingPlanes = value
     this.simple.clippingPlanes = value ?? null
+    this.simpleTransparent.clippingPlanes = value ?? null
     this.opaque.clippingPlanes = value ?? null
     this.transparent.clippingPlanes = value ?? null
     this.wireframe.clippingPlanes = value ?? null
