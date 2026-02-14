@@ -27,6 +27,8 @@ function App() {
 
   const div = useRef<HTMLDivElement>(null)
   const viewerRef = useRef<ViewerRef>()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   useEffect(() => {
     if(window.location.pathname.includes('ultra')){
       createUltra(viewerRef, div.current!)
@@ -47,8 +49,65 @@ function App() {
     }
   }, [])
 
+  const handleLoadLocalFile = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file || !viewerRef.current) return
+
+    console.log('Loading local file:', file.name)
+    const buffer = await file.arrayBuffer()
+    const request = viewerRef.current.load({ buffer })
+
+    const result = await request.getResult()
+    if (result.isError) {
+      console.error('Load failed:', result.error)
+      return
+    }
+
+    viewerRef.current.camera.frameScene.call()
+  }
+
   return (
-    <div ref={div} className='vc-inset-0 vc-absolute'/>
+    <>
+      {/* TEST SECTION - Local File Loading */}
+      <div style={{
+        position: 'absolute',
+        top: '10px',
+        left: '10px',
+        zIndex: 1000,
+        padding: '10px',
+        background: 'rgba(0, 0, 0, 0.7)',
+        borderRadius: '4px',
+        color: 'white'
+      }}>
+        <button
+          onClick={handleLoadLocalFile}
+          style={{
+            padding: '8px 16px',
+            background: '#4CAF50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}
+        >
+          Load Local VIM File
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".vim"
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+        />
+      </div>
+
+      <div ref={div} className='vc-inset-0 vc-absolute'/>
+    </>
   )
 }
 
