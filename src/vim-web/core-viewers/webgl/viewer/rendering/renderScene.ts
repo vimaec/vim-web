@@ -5,7 +5,7 @@
 import * as THREE from 'three'
 import { Scene } from '../../loader/scene'
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer'
-import { ModelMaterial } from '../../loader/materials/materials'
+import { ModelMaterial, Materials } from '../../loader/materials/materials'
 import { InstancedMesh } from '../../loader/progressive/instancedMesh'
 import { MAX_VIMS } from '../../loader/vimCollection'
 
@@ -37,6 +37,8 @@ export class RenderScene {
 
   constructor () {
     this.threeScene = new THREE.Scene()
+    // Initialize with simple material (fast mode) - will be overridden by isolation system
+    this._modelMaterial = Materials.getInstance().createSimpleModelMaterial()
   }
 
   get estimatedMemory () {
@@ -150,7 +152,7 @@ export class RenderScene {
   }
 
   private updateInstanceMeshVisibility(){
-    const hide = this._modelMaterial?.[1]?.userData.isGhost === true
+    const hide = this._modelMaterial?.hidden?.userData.isGhost === true
 
     for(const mesh of this.meshes){
       if(mesh instanceof InstancedMesh){
@@ -159,7 +161,7 @@ export class RenderScene {
           continue
         }
         // Check if any submesh is visible
-        const visible = mesh.getSubmeshes().some((m) => 
+        const visible = mesh.getSubmeshes().some((m) =>
           m.object.visible
         )
         mesh.mesh.visible = !(hide && !visible && mesh.size < this.smallGhostThreshold)

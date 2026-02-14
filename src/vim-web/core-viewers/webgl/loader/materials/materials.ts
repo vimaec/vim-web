@@ -9,7 +9,7 @@ import { createGhostMaterial as createGhostMaterial } from './ghostMaterial'
 import { OutlineMaterial } from './outlineMaterial'
 import { ViewerSettings } from '../../viewer/settings/viewerSettings'
 import { MergeMaterial } from './mergeMaterial'
-import { SimpleMaterial } from './simpleMaterial'
+import { SimpleMaterial, createSimpleOpaque, createSimpleTransparent } from './simpleMaterial'
 import { SignalDispatcher } from 'ste-signals'
 import { SkyboxMaterial } from './skyboxMaterial'
 import { ModelMaterial } from './materialSet'
@@ -82,9 +82,13 @@ export class Materials {
    */
   readonly transparent: StandardMaterial
   /**
-   * Material used for maximum performance (fast mode).
+   * Material used for maximum performance (fast mode, opaque).
    */
   readonly simple: SimpleMaterial
+  /**
+   * Material used for maximum performance (fast mode, transparent).
+   */
+  readonly simpleTransparent: SimpleMaterial
   /**
    * Material used when creating wireframe geometry of the model.
    */
@@ -127,6 +131,7 @@ export class Materials {
     opaque?: StandardMaterial,
     transparent?: StandardMaterial,
     simple?: SimpleMaterial,
+    simpleTransparent?: SimpleMaterial,
     wireframe?: THREE.LineBasicMaterial,
     ghost?: THREE.Material,
     mask?: THREE.ShaderMaterial,
@@ -136,7 +141,8 @@ export class Materials {
   ) {
     this.opaque = opaque ?? createOpaque()
     this.transparent = transparent ?? createTransparent()
-    this.simple = simple ?? new SimpleMaterial()
+    this.simple = simple ?? createSimpleOpaque()
+    this.simpleTransparent = simpleTransparent ?? createSimpleTransparent()
     this.wireframe = wireframe ?? createWireframe()
     this.ghost = ghost ?? createGhostMaterial()
     this.mask = mask ?? createMaskMaterial()
@@ -479,6 +485,7 @@ export class Materials {
     this.opaque.setSubmeshColorTexture(this._submeshColorTexture)
     this.transparent.setSubmeshColorTexture(this._submeshColorTexture)
     this.simple.setSubmeshColorTexture(this._submeshColorTexture)
+    this.simpleTransparent.setSubmeshColorTexture(this._submeshColorTexture)
 
     this._onUpdate.dispatch()
   }
@@ -503,12 +510,12 @@ export class Materials {
    * Uses SimpleMaterial with screen-space derivative normals for better performance.
    *
    * @param hidden Optional material for ghosted/hidden objects. If undefined, ghost rendering is disabled.
-   * @returns ModelMaterial with simple material for both opaque and transparent
+   * @returns ModelMaterial with simple materials (separate opaque and transparent)
    */
   createSimpleModelMaterial(hidden?: THREE.Material): ModelMaterial {
     return new ModelMaterial(
       this.simple.material,
-      this.simple.material,
+      this.simpleTransparent.material,
       hidden
     )
   }

@@ -70,7 +70,7 @@ export class InstancedMeshFactory {
     this.setMatrices(threeMesh, g3d, instanceArray)
     this.setPackedIds(threeMesh, instanceArray)
 
-    return new InstancedMesh(threeMesh, instanceArray)
+    return new InstancedMesh(threeMesh, instanceArray, transparent)
   }
 
   private setMatrices (

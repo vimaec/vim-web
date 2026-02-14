@@ -66,6 +66,7 @@ export class InsertableMesh {
 
     this.mesh = new THREE.Mesh(this.geometry.geometry, this._material)
     this.mesh.userData.vim = this
+    this.mesh.userData.transparent = transparent
     // this.mesh.frustumCulled = false
   }
 

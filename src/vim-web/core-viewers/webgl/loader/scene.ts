@@ -49,6 +49,7 @@ export class Scene {
 
   constructor (matrix: THREE.Matrix4) {
     this._matrix = matrix
+    // Material will be set when Scene is added to renderer via renderScene.add()
   }
 
   setDirty () {
@@ -223,7 +224,7 @@ export class Scene {
    * Sets and apply a material override to the scene, set to undefined to remove override.
    */
   set material (value: ModelMaterial) {
-    if (this._material === value) return
+    // Always update - don't check equality to ensure materials propagate
     this.setDirty()
     this._material = value
     this.meshes.forEach((m) => m.setMaterial(value))

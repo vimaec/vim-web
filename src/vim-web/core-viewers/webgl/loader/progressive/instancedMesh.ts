@@ -16,17 +16,21 @@ export class InstancedMesh {
 
   // State
   ignoreSceneMaterial: boolean
+  transparent: boolean
 
   private _material: THREE.Material | THREE.Material[]
   readonly size: number = 0
 
   constructor (
     mesh: THREE.InstancedMesh,
-    instances: Array<number>
+    instances: Array<number>,
+    transparent: boolean = false
   ) {
     this.mesh = mesh
     this.mesh.userData.vim = this
+    this.mesh.userData.transparent = transparent
     this.instances = instances
+    this.transparent = transparent
 
     // Compute size from geometry bounding box (untransformed, represents typical instance size)
     this.mesh.geometry.computeBoundingBox()

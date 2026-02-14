@@ -20,6 +20,8 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
       : viewer.materials.createSimpleModelMaterial(viewer.materials.ghost);
   }
 
+  // Don't call updateMaterials() immediately - let RenderScene default handle initial state
+
   function updateVisibility(elements: 'all' | Selectable[], predicate: (object: Selectable) => boolean){
     if(elements === 'all'){
       for(let v of viewer.vims){

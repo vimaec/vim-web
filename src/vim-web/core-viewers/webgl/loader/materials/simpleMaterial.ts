@@ -47,6 +47,20 @@ export class SimpleMaterial {
 }
 
 /**
+ * Creates an opaque SimpleMaterial for fast rendering mode.
+ */
+export function createSimpleOpaque(): SimpleMaterial {
+  return new SimpleMaterial(createSimpleMaterialShader(false))
+}
+
+/**
+ * Creates a transparent SimpleMaterial for fast rendering mode.
+ */
+export function createSimpleTransparent(): SimpleMaterial {
+  return new SimpleMaterial(createSimpleMaterialShader(true))
+}
+
+/**
  * Creates the shader material for isolation/fast mode.
  *
  * - **Non-visible items**: Completely excluded from rendering by pushing them out of view.
@@ -57,7 +71,7 @@ export class SimpleMaterial {
  *
  * @returns {THREE.ShaderMaterial} A custom shader material for isolation mode.
  */
-function createSimpleMaterialShader () {
+function createSimpleMaterialShader (transparent: boolean = false) {
   return new THREE.ShaderMaterial({
     side: THREE.DoubleSide,
     // Uniforms for texture-based color palette
@@ -66,6 +80,9 @@ function createSimpleMaterialShader () {
     },
     // Enable support for clipping planes.
     clipping: true,
+    // Transparency settings
+    transparent: transparent,
+    opacity: transparent ? 0.25 : 1.0,
     vertexShader: /* glsl */ `
       #include <common>
       #include <logdepthbuf_pars_vertex>

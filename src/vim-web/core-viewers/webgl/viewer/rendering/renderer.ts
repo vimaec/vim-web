@@ -146,20 +146,15 @@ export class Renderer implements IRenderer {
   }
 
   /**
-   * Sets the material used to render models. If set to undefined, the default model or mesh material is used.
+   * Sets the material used to render models.
    */
   get modelMaterial () {
     return this._scene.modelMaterial
   }
 
   set modelMaterial (material: ModelMaterial) {
-    this._scene.modelMaterial = material ?? this.defaultModelMaterial
+    this._scene.modelMaterial = material
   }
-
-  /**
-   * The material that will be used when setting model material to undefined.
-   */
-  defaultModelMaterial: ModelMaterial
 
   /**
    * Signal dispatched at the end of each frame if the scene was updated, such as visibility changes.
