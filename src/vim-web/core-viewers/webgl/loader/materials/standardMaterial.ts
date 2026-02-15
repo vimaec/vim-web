@@ -201,27 +201,27 @@ export class StandardMaterial {
         attribute vec3 instanceColor;
         #endif
 
-        // NEW: Submesh index for color palette lookup
+        // Submesh index for color palette lookup
         attribute float submeshIndex;
         uniform sampler2D submeshColorTexture; // 128×128 RGBA texture (16384 colors max)
         uniform float useSubmeshColors;        // 1.0 = use palette, 0.0 = use vertex color
 
         // Passed to fragment to ignore phong model
         varying float vColored;
-        
+
         // VISIBILITY
 
         // Instance or vertex attribute to hide objects
-        // Used as instance attribute for instanced mesh and as vertex attribute for merged meshes. 
-        attribute float ignore; 
+        // Used as instance attribute for instanced mesh and as vertex attribute for merged meshes.
+        attribute float ignore;
 
         // Passed to fragment to discard them
         varying float vIgnore;
 
         // FOCUS
         // Instance or vertex attribute to higlight objects
-        // Used as instance attribute for instanced mesh and as vertex attribute for merged meshes. 
-        attribute float focused; 
+        // Used as instance attribute for instanced mesh and as vertex attribute for merged meshes.
+        attribute float focused;
         varying float vHighlight;
         `
         )
@@ -232,14 +232,13 @@ export class StandardMaterial {
           // COLORING
           vColored = colored;
 
-          // NEW: Get color from texture palette
+          // NEW: Get color from texture palette using texelFetch (WebGL 2, faster)
           if (useSubmeshColors > 0.5) {
-            // Convert color index to texture UV (128×128 texture)
-            float texSize = 128.0;
-            float x = mod(submeshIndex, texSize);
-            float y = floor(submeshIndex / texSize);
-            vec2 uv = (vec2(x, y) + 0.5) / texSize; // +0.5 for pixel center sampling
-            vColor.xyz = texture2D(submeshColorTexture, uv).rgb;
+            // Convert color index to texture coordinates
+            int texSize = 128;
+            int x = int(submeshIndex) % texSize;
+            int y = int(submeshIndex) / texSize;
+            vColor.xyz = texelFetch(submeshColorTexture, ivec2(x, y), 0).rgb;
           } else {
             // Fallback to vertex color attribute if palette disabled
             vColor = color;
@@ -253,7 +252,7 @@ export class StandardMaterial {
 
           // VISIBILITY
           vIgnore = ignore;
-          
+
           // FOCUS
           vHighlight = focused;
         `

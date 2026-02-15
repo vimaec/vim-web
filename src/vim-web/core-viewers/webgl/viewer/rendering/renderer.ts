@@ -86,10 +86,23 @@ export class Renderer implements IRenderer {
     this._materials = materials
     this._camera = camera
 
+    // Force WebGL 2 context
+    const context = viewport.canvas.getContext('webgl2', {
+      alpha: true,
+      antialias: true,
+      stencil: false,
+      powerPreference: 'high-performance'
+    })
+
+    if (!context) {
+      throw new Error('WebGL 2 is not supported by this browser')
+    }
+
     this.renderer = new THREE.WebGLRenderer({
       canvas: viewport.canvas,
+      context: context,
       antialias: true,
-      precision: 'highp', 
+      precision: 'highp',
       alpha: true,
       stencil: false,
       powerPreference: 'high-performance',
