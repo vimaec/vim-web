@@ -5,26 +5,29 @@
 import * as THREE from 'three'
 
 /**
- * This material simply sample and returns the value at each texel position of the texture.
+ * This material simply samples and returns the value at each texel position of the texture.
+ * Optimized with GLSL3 for better performance.
  */
 export function createTransferMaterial () {
   return new THREE.ShaderMaterial({
+    glslVersion: THREE.GLSL3,
     uniforms: {
       source: { value: null }
     },
-    vertexShader: `
-      varying vec2 vUv;
+    vertexShader: /* glsl */ `
+      out vec2 vUv;
       void main() {
         vUv = uv;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
       `,
-    fragmentShader: `
+    fragmentShader: /* glsl */ `
       uniform sampler2D source;
-      varying vec2 vUv;
-      
+      in vec2 vUv;
+      out vec4 fragColor;
+
       void main() {
-        gl_FragColor = texture2D(source, vUv);
+        fragColor = texture(source, vUv);
       }
       `
   })

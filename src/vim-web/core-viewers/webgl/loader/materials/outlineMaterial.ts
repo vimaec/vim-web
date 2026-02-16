@@ -182,6 +182,8 @@ export class OutlineMaterial {
 export function createOutlineMaterial () {
   return new THREE.ShaderMaterial({
     lights: false,
+    glslVersion: THREE.GLSL3,
+    depthWrite: false,
     uniforms: {
       // Input buffers
       sceneBuffer: { value: null },
@@ -201,7 +203,7 @@ export function createOutlineMaterial () {
       strokeBlur: { value: 3 }
     },
     vertexShader: `
-      varying vec2 vUv;
+      out vec2 vUv;
       void main() {
         vUv = uv;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
@@ -209,6 +211,7 @@ export function createOutlineMaterial () {
       `,
     fragmentShader: `
       #include <packing>
+
       uniform sampler2D depthBuffer;
       uniform float cameraNear;
       uniform float cameraFar;
@@ -218,7 +221,8 @@ export function createOutlineMaterial () {
       uniform float strokeBias;
       uniform int strokeBlur;
 
-      varying vec2 vUv;
+      in vec2 vUv;
+      out vec4 fragColor;
 
       // Use texelFetch for faster indexed access (WebGL 2)
       float getPixelDepth(int x, int y) {
@@ -237,7 +241,7 @@ export function createOutlineMaterial () {
 
         // Early-out: skip blur for background pixels (no geometry)
         if (depth >= 0.99) {
-          gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+          fragColor = vec4(0.0, 0.0, 0.0, 0.0);
           return;
         }
 
@@ -258,7 +262,7 @@ export function createOutlineMaterial () {
 
         // Output outline intensity to R channel only (RedFormat texture)
         // Merge pass will use this to blend outline color with scene
-        gl_FragColor = vec4(outline, 0.0, 0.0, 0.0);
+        fragColor = vec4(outline, 0.0, 0.0, 0.0);
       }
       `
   })

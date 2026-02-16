@@ -231,24 +231,10 @@ export class RenderingComposer {
 
   /**
    * Sets the MSAA sample count for the scene render target.
-   * Disposes and recreates the render target if the value changes.
+   * Three.js handles the framebuffer recreation automatically.
    */
   set samples (value: number) {
-    if (this._sceneTarget.samples === value) return
-
-    // Store current size
-    const width = this._sceneTarget.width
-    const height = this._sceneTarget.height
-
-    // Dispose old render target
-    this._sceneTarget.dispose()
-
-    // Create new render target with updated sample count
-    // Preserve HalfFloatType for reduced bandwidth
-    this._sceneTarget = new THREE.WebGLRenderTarget(width, height, {
-      type: THREE.HalfFloatType,
-      samples: Math.min(value, this._renderer.capabilities.maxSamples),
-    })
+    this._sceneTarget.samples = Math.min(value, this._renderer.capabilities.maxSamples)
   }
 
   /**

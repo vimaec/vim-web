@@ -167,7 +167,9 @@ function createSimpleMaterialShader (transparent: boolean = false) {
         vec3 fdx = dFdx(vViewPosition);
         vec3 fdy = dFdy(vViewPosition);
         vec3 normal = normalize(cross(fdx, fdy));
-        float light = dot(normal, normalize(vec3(1.4142, 1.732, 2.236)));
+        // Pre-normalized light direction (sqrt(2), sqrt(3), sqrt(5)) / sqrt(10)
+        const vec3 LIGHT_DIR = vec3(0.447214, 0.547723, 0.707107);
+        float light = dot(normal, LIGHT_DIR);
         light = 0.5 + (light * 0.5); // Remap to [0.5, 1.0]
         vec3 finalColor = vColor * light;
 

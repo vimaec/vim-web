@@ -117,6 +117,7 @@ export function createPickingMaterial() {
  */
 export class PickingMaterial {
   readonly material: THREE.ShaderMaterial
+  private static _tempDir = new THREE.Vector3()
 
   constructor() {
     this.material = createPickingMaterial()
@@ -127,10 +128,9 @@ export class PickingMaterial {
    * Must be called before rendering.
    */
   updateCamera(camera: THREE.Camera): void {
-    const dir = new THREE.Vector3()
-    camera.getWorldDirection(dir)
+    camera.getWorldDirection(PickingMaterial._tempDir)
     this.material.uniforms.uCameraPos.value.copy(camera.position)
-    this.material.uniforms.uCameraDir.value.copy(dir)
+    this.material.uniforms.uCameraDir.value.copy(PickingMaterial._tempDir)
   }
 
   /**
