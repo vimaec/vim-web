@@ -51,8 +51,8 @@ export class StandardMaterial {
   _focusIntensity: number = 0.5
   _focusColor: THREE.Color = new THREE.Color(0xffffff)
 
-  _sectionStrokeWitdh: number = 0.01
-  _sectionStrokeFallof: number = 0.75
+  _sectionStrokeWidth: number = 0.01
+  _sectionStrokeFalloff: number = 0.75
   _sectionStrokeColor: THREE.Color = new THREE.Color(0xf6f6f6)
 
   // Submesh color palette texture (shared, owned by Materials singleton)
@@ -111,25 +111,25 @@ export class StandardMaterial {
     }
   }
 
-  get sectionStrokeWitdh () {
-    return this._sectionStrokeWitdh
+  get sectionStrokeWidth () {
+    return this._sectionStrokeWidth
   }
 
-  set sectionStrokeWitdh (value: number) {
-    this._sectionStrokeWitdh = value
+  set sectionStrokeWidth (value: number) {
+    this._sectionStrokeWidth = value
     if (this.uniforms) {
-      this.uniforms.sectionStrokeWitdh.value = value
+      this.uniforms.sectionStrokeWidth.value = value
     }
   }
 
-  get sectionStrokeFallof () {
-    return this._sectionStrokeFallof
+  get sectionStrokeFalloff () {
+    return this._sectionStrokeFalloff
   }
 
-  set sectionStrokeFallof (value: number) {
-    this._sectionStrokeFallof = value
+  set sectionStrokeFalloff (value: number) {
+    this._sectionStrokeFalloff = value
     if (this.uniforms) {
-      this.uniforms.sectionStrokeFallof.value = value
+      this.uniforms.sectionStrokeFalloff.value = value
     }
   }
 
@@ -168,8 +168,8 @@ export class StandardMaterial {
       this.uniforms = shader.uniforms
       this.uniforms.focusIntensity = { value: this._focusIntensity }
       this.uniforms.focusColor = { value: this._focusColor }
-      this.uniforms.sectionStrokeWidth = { value: this._sectionStrokeWitdh }
-      this.uniforms.sectionStrokeFalloff = { value: this._sectionStrokeFallof }
+      this.uniforms.sectionStrokeWidth = { value: this._sectionStrokeWidth }
+      this.uniforms.sectionStrokeFalloff = { value: this._sectionStrokeFalloff }
       this.uniforms.sectionStrokeColor = { value: this._sectionStrokeColor }
       // Submesh color palette texture (128×128 RGB = 16384 colors max)
       this.uniforms.submeshColorTexture = { value: this._submeshColorTexture ?? null }

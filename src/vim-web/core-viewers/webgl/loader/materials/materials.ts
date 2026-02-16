@@ -117,8 +117,8 @@ export class Materials {
   readonly merge: MergeMaterial
 
   private _clippingPlanes: THREE.Plane[] | undefined
-  private _sectionStrokeWitdh: number = 0.01
-  private _sectionStrokeFallof: number = 0.75
+  private _sectionStrokeWidth: number = 0.01
+  private _sectionStrokeFalloff: number = 0.75
   private _sectionStrokeColor: THREE.Color = new THREE.Color(0xf6f6f6)
   private _focusIntensity: number = 0.75
   private _focusColor: THREE.Color = new THREE.Color(0xffffff)
@@ -165,8 +165,8 @@ export class Materials {
     this.wireframeColor = settings.materials.highlight.color
     this.wireframeOpacity = settings.materials.highlight.opacity
 
-    this.sectionStrokeWitdh = settings.materials.section.strokeWidth
-    this.sectionStrokeFallof = settings.materials.section.strokeFalloff
+    this.sectionStrokeWidth = settings.materials.section.strokeWidth
+    this.sectionStrokeFalloff = settings.materials.section.strokeFalloff
     this.sectionStrokeColor = settings.materials.section.strokeColor
 
     this.outlineIntensity = settings.materials.outline.intensity
@@ -307,30 +307,30 @@ export class Materials {
   /**
    * The width of the stroke effect where the section box intersects the model.
    */
-  get sectionStrokeWitdh () {
-    return this._sectionStrokeWitdh
+  get sectionStrokeWidth () {
+    return this._sectionStrokeWidth
   }
 
-  set sectionStrokeWitdh (value: number) {
-    if (this._sectionStrokeWitdh === value) return
-    this._sectionStrokeWitdh = value
-    this.opaque.sectionStrokeWitdh = value
-    this.transparent.sectionStrokeWitdh = value
+  set sectionStrokeWidth (value: number) {
+    if (this._sectionStrokeWidth === value) return
+    this._sectionStrokeWidth = value
+    this.opaque.sectionStrokeWidth = value
+    this.transparent.sectionStrokeWidth = value
     this._onUpdate.dispatch()
   }
 
   /**
    * Gradient of the stroke effect where the section box intersects the model.
    */
-  get sectionStrokeFallof () {
-    return this._sectionStrokeFallof
+  get sectionStrokeFalloff () {
+    return this._sectionStrokeFalloff
   }
 
-  set sectionStrokeFallof (value: number) {
-    if (this._sectionStrokeFallof === value) return
-    this._sectionStrokeFallof = value
-    this.opaque.sectionStrokeFallof = value
-    this.transparent.sectionStrokeFallof = value
+  set sectionStrokeFalloff (value: number) {
+    if (this._sectionStrokeFalloff === value) return
+    this._sectionStrokeFalloff = value
+    this.opaque.sectionStrokeFalloff = value
+    this.transparent.sectionStrokeFalloff = value
     this._onUpdate.dispatch()
   }
 
