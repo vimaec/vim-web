@@ -23,8 +23,9 @@ export class ModelMaterial {
   readonly transparent?: THREE.Material
   readonly hidden?: THREE.Material
 
-  // Cached arrays to avoid allocating thousands of [A, B] arrays
-  private _cachedArray?: THREE.Material[]
+  // Cached [visible, hidden] arrays to avoid allocating per get() call
+  private _cachedOpaqueArray?: THREE.Material[]
+  private _cachedTransparentArray?: THREE.Material[]
 
   constructor(
     opaque?: THREE.Material,
@@ -50,28 +51,18 @@ export class ModelMaterial {
       return undefined // Hide mesh
     }
 
-    // Return array for ghost rendering
+    // Return cached [visible, hidden] array for ghost rendering
     if (this.hidden) {
-      return this.getArray()
+      if (transparent) {
+        this._cachedTransparentArray ??= [visibleMat, this.hidden]
+        return this._cachedTransparentArray
+      }
+      this._cachedOpaqueArray ??= [visibleMat, this.hidden]
+      return this._cachedOpaqueArray
     }
 
     // Single material
     return visibleMat
-  }
-
-  /**
-   * Get cached array of [opaque, transparent] for Three.js multi-material support.
-   *
-   * This is used when setting mesh.material to an array, where geometry groups
-   * with materialIndex=0 use opaque, materialIndex=1 use transparent.
-   *
-   * The array is cached to avoid allocating thousands of identical arrays.
-   */
-  getArray(): THREE.Material[] {
-    if (!this._cachedArray) {
-      this._cachedArray = [this.opaque, this.transparent]
-    }
-    return this._cachedArray
   }
 
   /**
