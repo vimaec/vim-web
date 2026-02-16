@@ -59,7 +59,8 @@ export class Renderer implements IRenderer {
 
   /**
    * Indicates whether the scene needs to be re-rendered.
-   * Can only be set to true. Cleared on each render.
+   * Setting to `true` requests a re-render. Setting to `false` is ignored (OR semantics).
+   * Cleared automatically after each render frame.
    */
   get needsUpdate () {
     return this._needsUpdate
