@@ -264,27 +264,22 @@ materials: {
   * Selection outline options
   */
   outline: {
-
     /**
-    * Selection outline intensity.
-    * Default: 3
-    */
-    intensity: number;
-    /**
-    * Selection outline falloff.
-    * Default: 3
-    */
-    falloff: number;
-    /**
-    * Selection outline blur.
+    * Selection outline intensity (brightness multiplier).
     * Default: 2
     */
-    blur: number;
+    intensity: number;
     /**
     * Selection outline color.
     * Default: rgb(0, 255, 255)
     */
     color: THREE.Color;
+    /**
+    * Scale factor for outline render target resolution (0-1).
+    * Lower = faster, higher = sharper outlines.
+    * Default: 0.75
+    */
+    scale: number;
   }
 }
 

@@ -158,8 +158,6 @@ export class Materials {
     this.sectionStrokeColor = settings.materials.section.strokeColor
 
     this.outlineIntensity = settings.materials.outline.intensity
-    this.outlineFalloff = settings.materials.outline.falloff
-    this.outlineBlur = settings.materials.outline.blur
     this.outlineColor = settings.materials.outline.color
   }
 
@@ -345,32 +343,6 @@ export class Materials {
   set outlineColor (value: THREE.Color) {
     if (this.merge.color === value) return
     this.merge.color = value
-    this._onUpdate.dispatch()
-  }
-
-  /**
-   * Size of the blur convolution on the selection outline effect. Minimum 2.
-   */
-  get outlineBlur () {
-    return this.outline.blur
-  }
-
-  set outlineBlur (value: number) {
-    if (this.outline.blur === value) return
-    this.outline.blur = Math.max(value, 2)
-    this._onUpdate.dispatch()
-  }
-
-  /**
-   * Gradient of the the selection outline effect.
-   */
-  get outlineFalloff () {
-    return this.outline.falloff
-  }
-
-  set outlineFalloff (value: number) {
-    if (this.outline.falloff === value) return
-    this.outline.falloff = value
     this._onUpdate.dispatch()
   }
 

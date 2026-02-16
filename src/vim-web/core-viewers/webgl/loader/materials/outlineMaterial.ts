@@ -81,30 +81,6 @@ export class OutlineMaterial {
   }
 
   /**
-   * Blur of the outline. This is used to smooth the outline.
-   */
-  get blur () {
-    return this.three.uniforms.blur.value
-  }
-
-  set blur (value: number) {
-    this.three.uniforms.blur.value = value
-    this.three.uniformsNeedUpdate = true
-  }
-
-  /**
-   * Falloff of the outline. Controls the gradient/sharpness of the edge.
-   */
-  get falloff () {
-    return this.three.uniforms.falloff.value
-  }
-
-  set falloff (value: number) {
-    this.three.uniforms.falloff.value = value
-    this.three.uniformsNeedUpdate = true
-  }
-
-  /**
    * Intensity of the outline. Controls the strength of the edge detection.
    */
   get intensity () {
@@ -182,9 +158,7 @@ export function createOutlineMaterial () {
 
       // Options
       outlineColor: { value: new THREE.Color(0xffffff) },
-      intensity: { value: 2 },
-      falloff: { value: 2 },
-      blur: { value: 3 }
+      intensity: { value: 2 }
     },
     vertexShader: `
       out vec2 vUv;
@@ -202,8 +176,6 @@ export function createOutlineMaterial () {
       uniform vec4 screenSize;
       uniform vec3 outlineColor;
       uniform float intensity;
-      uniform float falloff;
-      uniform int blur;
 
       in vec2 vUv;
       out vec4 fragColor;
@@ -223,26 +195,21 @@ export function createOutlineMaterial () {
       void main() {
         float depth = getPixelDepth(0, 0);
 
-        // Early-out: skip blur for background pixels (no geometry)
+        // Early-out: skip for background pixels (no geometry)
         if (depth >= 0.99) {
           fragColor = vec4(0.0, 0.0, 0.0, 0.0);
           return;
         }
 
-        // Cross pattern edge detection (4 samples instead of 9)
-        // Faster and simpler than full square blur
-        float depthDiff = 0.0;
-        depthDiff += abs(depth - getPixelDepth( 0, -1));  // Top
-        depthDiff += abs(depth - getPixelDepth(-1,  0));  // Left
-        depthDiff += abs(depth - getPixelDepth( 1,  0));  // Right
-        depthDiff += abs(depth - getPixelDepth( 0,  1));  // Bottom
-        depthDiff /= 4.0;
-
-        depthDiff = depthDiff * intensity;
-        depthDiff = saturate(depthDiff);
-        depthDiff = pow(depthDiff, falloff);
-
-        float outline = depthDiff;
+        // Cross edge detection: 4 neighbors at distance 1.
+        // step() converts depth diff to binary (edge or not).
+        // Thickness is controlled by outlineScale (render target resolution).
+        float outline = 0.0;
+        outline += step(0.001, abs(depth - getPixelDepth( 0, -1)));
+        outline += step(0.001, abs(depth - getPixelDepth( 0,  1)));
+        outline += step(0.001, abs(depth - getPixelDepth(-1,  0)));
+        outline += step(0.001, abs(depth - getPixelDepth( 1,  0)));
+        outline = saturate(outline * 0.25 * intensity);
 
         // Output outline intensity to R channel only (RedFormat texture)
         // Merge pass will use this to blend outline color with scene

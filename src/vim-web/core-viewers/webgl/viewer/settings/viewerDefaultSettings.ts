@@ -83,10 +83,9 @@ export function getDefaultViewerSettings(): ViewerSettings {
         strokeColor: new THREE.Color(0xf6f6f6)
       },
       outline: {
-        intensity: 10,
-        falloff: 2,
-        blur: 3,
-        color: new THREE.Color(0x00ffff)
+        intensity: 2,
+        color: new THREE.Color(0x00ffff),
+        scale: 0.75
       }
     },
     axes: getDefaultAxesSettings(),

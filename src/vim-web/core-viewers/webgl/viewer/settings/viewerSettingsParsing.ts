@@ -100,9 +100,8 @@ function parseSettingsFromUrl (url: string) {
       },
       outline: {
         intensity: get('materials.outline.intensity', Number.parseFloat),
-        falloff: get('materials.outline.falloff', Number.parseFloat),
-        blur: get('materials.outline.blur', Number.parseFloat),
-        color: get('materials.outline.color', strToColor)
+        color: get('materials.outline.color', strToColor),
+        scale: get('materials.outline.scale', Number.parseFloat)
       }
     },
     axes: undefined,

@@ -116,6 +116,7 @@ export class Renderer implements IRenderer {
       camera
     )
 
+    this.outlineScale = settings.materials.outline.scale
     this.section = new RenderingSection(this, this._materials)
 
     this.fitViewport()
@@ -309,6 +310,18 @@ export class Renderer implements IRenderer {
 
   set samples (value: number) {
     this._composer.samples = value
+  }
+
+  /**
+   * Scale factor for outline/selection render target resolution (0-1).
+   * Lower = faster, higher = sharper outlines. Default: 0.75.
+   */
+  get outlineScale () {
+    return this._composer.outlineScale
+  }
+
+  set outlineScale (value: number) {
+    this._composer.outlineScale = value
   }
 
   private fitViewport = () => {

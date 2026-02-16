@@ -54,7 +54,7 @@ export class RenderingComposer {
 
   // Scale factor for outline/selection render target (0.5 = 50% resolution = 4x faster)
   // Lower values = better performance, higher values = better quality
-  private readonly OUTLINE_RESOLUTION_SCALE = 0.75
+  private _outlineScale = 0.75
 
   /**
    * Creates a new RenderingComposer instance
@@ -117,11 +117,11 @@ export class RenderingComposer {
    */
   private initOutlinePipeline () {
     // Calculate scaled dimensions for outline/selection rendering
-    const outlineWidth = Math.floor(this._size.x * this.OUTLINE_RESOLUTION_SCALE)
-    const outlineHeight = Math.floor(this._size.y * this.OUTLINE_RESOLUTION_SCALE)
+    const outlineWidth = Math.floor(this._size.x * this._outlineScale)
+    const outlineHeight = Math.floor(this._size.y * this._outlineScale)
 
     // Create texture for outline rendering with depth information at reduced resolution
-    // No MSAA needed - the outline shader's blur provides anti-aliasing
+    // No MSAA needed for outline target
     // RedFormat uses only 1 channel instead of 4 (RGBA) - 75% less memory bandwidth!
     this._outlineTarget = new THREE.WebGLRenderTarget(
       outlineWidth,
@@ -160,6 +160,20 @@ export class RenderingComposer {
     this._transferPass = new TransferPass(this._sceneTarget.texture)
     this._transferPass.enabled = true
     this._composer.addPass(this._transferPass)
+  }
+
+  /**
+   * Scale factor for outline/selection render target resolution (0-1).
+   * Lower = faster, higher = sharper outlines. Default: 0.75.
+   * Takes effect immediately by resizing the outline render target.
+   */
+  get outlineScale () {
+    return this._outlineScale
+  }
+
+  set outlineScale (value: number) {
+    this._outlineScale = value
+    this.setSize(this._size.x, this._size.y)
   }
 
   /**
@@ -210,8 +224,8 @@ export class RenderingComposer {
     this._renderPass.setSize(width, height)
 
     // Update outline/selection target with scaled dimensions for performance
-    const outlineWidth = Math.floor(width * this.OUTLINE_RESOLUTION_SCALE)
-    const outlineHeight = Math.floor(height * this.OUTLINE_RESOLUTION_SCALE)
+    const outlineWidth = Math.floor(width * this._outlineScale)
+    const outlineHeight = Math.floor(height * this._outlineScale)
     this._composer.setSize(outlineWidth, outlineHeight)
   }
 
