@@ -353,12 +353,12 @@ export class Materials {
    * Size of the blur convolution on the selection outline effect. Minimum 2.
    */
   get outlineBlur () {
-    return this.outline.strokeBlur
+    return this.outline.blur
   }
 
   set outlineBlur (value: number) {
-    if (this.outline.strokeBlur === value) return
-    this.outline.strokeBlur = Math.max(value, 2)
+    if (this.outline.blur === value) return
+    this.outline.blur = Math.max(value, 2)
     this._onUpdate.dispatch()
   }
 
@@ -366,12 +366,12 @@ export class Materials {
    * Gradient of the the selection outline effect.
    */
   get outlineFalloff () {
-    return this.outline.strokeBias
+    return this.outline.falloff
   }
 
   set outlineFalloff (value: number) {
-    if (this.outline.strokeBias === value) return
-    this.outline.strokeBias = value
+    if (this.outline.falloff === value) return
+    this.outline.falloff = value
     this._onUpdate.dispatch()
   }
 
@@ -379,12 +379,12 @@ export class Materials {
    * Intensity of the the selection outline effect.
    */
   get outlineIntensity () {
-    return this.outline.strokeMultiplier
+    return this.outline.intensity
   }
 
   set outlineIntensity (value: number) {
-    if (this.outline.strokeMultiplier === value) return
-    this.outline.strokeMultiplier = value
+    if (this.outline.intensity === value) return
+    this.outline.intensity = value
     this._onUpdate.dispatch()
   }
 

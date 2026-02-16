@@ -83,36 +83,36 @@ export class OutlineMaterial {
   /**
    * Blur of the outline. This is used to smooth the outline.
    */
-  get strokeBlur () {
-    return this.three.uniforms.strokeBlur.value
+  get blur () {
+    return this.three.uniforms.blur.value
   }
 
-  set strokeBlur (value: number) {
-    this.three.uniforms.strokeBlur.value = value
+  set blur (value: number) {
+    this.three.uniforms.blur.value = value
     this.three.uniformsNeedUpdate = true
   }
 
   /**
-   * Bias of the outline. This is used to control the strength of the outline.
+   * Falloff of the outline. Controls the gradient/sharpness of the edge.
    */
-  get strokeBias () {
-    return this.three.uniforms.strokeBias.value
+  get falloff () {
+    return this.three.uniforms.falloff.value
   }
 
-  set strokeBias (value: number) {
-    this.three.uniforms.strokeBias.value = value
+  set falloff (value: number) {
+    this.three.uniforms.falloff.value = value
     this.three.uniformsNeedUpdate = true
   }
 
   /**
-   * Multiplier of the outline. This is used to control the strength of the outline.
+   * Intensity of the outline. Controls the strength of the edge detection.
    */
-  get strokeMultiplier () {
-    return this.three.uniforms.strokeMultiplier.value
+  get intensity () {
+    return this.three.uniforms.intensity.value
   }
 
-  set strokeMultiplier (value: number) {
-    this.three.uniforms.strokeMultiplier.value = value
+  set intensity (value: number) {
+    this.three.uniforms.intensity.value = value
     this.three.uniformsNeedUpdate = true
   }
 
@@ -182,9 +182,9 @@ export function createOutlineMaterial () {
 
       // Options
       outlineColor: { value: new THREE.Color(0xffffff) },
-      strokeMultiplier: { value: 2 },
-      strokeBias: { value: 2 },
-      strokeBlur: { value: 3 }
+      intensity: { value: 2 },
+      falloff: { value: 2 },
+      blur: { value: 3 }
     },
     vertexShader: `
       out vec2 vUv;
@@ -201,9 +201,9 @@ export function createOutlineMaterial () {
       uniform float cameraFar;
       uniform vec4 screenSize;
       uniform vec3 outlineColor;
-      uniform float strokeMultiplier;
-      uniform float strokeBias;
-      uniform int strokeBlur;
+      uniform float intensity;
+      uniform float falloff;
+      uniform int blur;
 
       in vec2 vUv;
       out vec4 fragColor;
@@ -238,9 +238,9 @@ export function createOutlineMaterial () {
         depthDiff += abs(depth - getPixelDepth( 0,  1));  // Bottom
         depthDiff /= 4.0;
 
-        depthDiff = depthDiff * strokeMultiplier;
+        depthDiff = depthDiff * intensity;
         depthDiff = saturate(depthDiff);
-        depthDiff = pow(depthDiff, strokeBias);
+        depthDiff = pow(depthDiff, falloff);
 
         float outline = depthDiff;
 
