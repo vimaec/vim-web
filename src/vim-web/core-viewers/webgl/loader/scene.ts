@@ -5,7 +5,6 @@
 import * as THREE from 'three'
 import { Submesh } from './mesh'
 import { Vim } from './vim'
-import { estimateBytesUsed } from 'three/examples/jsm/utils/BufferGeometryUtils'
 import { InsertableMesh } from './progressive/insertableMesh'
 import { InstancedMesh } from './progressive/instancedMesh'
 import { getAverageBoundingBox } from './averageBoundingBox'
@@ -95,12 +94,6 @@ export class Scene {
       this.renderer?.updateBox(this._boundingBox)
       this._averageBoundingBox = undefined
     }
-  }
-
-  getMemory () {
-    return this.meshes
-      .map((m) => estimateBytesUsed(m.mesh.geometry))
-      .reduce((n1, n2) => n1 + n2, 0)
   }
 
   /**

@@ -24,7 +24,6 @@ export class RenderScene {
   // Sparse storage indexed by stable vim ID for GPU picking
   private _vimScenesById: (Scene | undefined)[] = new Array(MAX_VIMS).fill(undefined)
   private _boundingBox: THREE.Box3 | undefined
-  private _memory = 0
   private _2dCount = 0
   private _outlineCount = 0
   private _modelMaterial: ModelMaterial
@@ -39,10 +38,6 @@ export class RenderScene {
     this.threeScene = new THREE.Scene()
     // Initialize with simple material (fast mode) - will be overridden by isolation system
     this._modelMaterial = Materials.getInstance().createSimpleModelMaterial()
-  }
-
-  get estimatedMemory () {
-    return this._memory
   }
 
   has2dObjects () {
@@ -135,7 +130,6 @@ export class RenderScene {
     this.threeScene.clear()
     this._vimScenesById.fill(undefined)
     this._boundingBox = undefined
-    this._memory = 0
   }
 
   get modelMaterial() {
@@ -179,9 +173,6 @@ export class RenderScene {
     })
 
     this.updateBox(scene.getBoundingBox())
-
-    // Memory
-    this._memory += scene.getMemory()
   }
 
   updateBox (box: THREE.Box3 | undefined) {
@@ -208,6 +199,5 @@ export class RenderScene {
           .map((s) => s.getBoundingBox())
           .reduce((b1, b2) => b1.union(b2))
         : undefined
-    this._memory -= scene.getMemory()
   }
 }

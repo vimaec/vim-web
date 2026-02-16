@@ -47,8 +47,6 @@ export class Renderer implements IRenderer {
   private _onBoxUpdated = new SignalDispatcher()
   private _sceneUpdated = false
 
-  // 3GB
-  private maxMemory = 3 * Math.pow(10, 9)
   private _outlineCount = 0
 
   /**
@@ -276,18 +274,12 @@ export class Renderer implements IRenderer {
    */
   add (target: Scene | THREE.Object3D) {
     if (target instanceof Scene) {
-      const mem = target.getMemory()
-      const remaining = this.maxMemory - this.estimatedMemory
-      if (mem > remaining) {
-        return false
-      }
       target.renderer = this
       this._sceneUpdated = true
     }
 
     this._scene.add(target)
     this.notifySceneUpdate()
-    return true
   }
 
   /**
@@ -305,13 +297,6 @@ export class Renderer implements IRenderer {
   clear () {
     this._scene.clear()
     this._needsUpdate = true
-  }
-
-  /**
-   * Returns an estimate of the memory used by the renderer.
-   */
-  get estimatedMemory () {
-    return this._scene.estimatedMemory
   }
 
   /**

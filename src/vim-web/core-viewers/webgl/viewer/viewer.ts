@@ -193,18 +193,14 @@ export class Viewer {
   /**
    * Adds a Vim object to the renderer, triggering the appropriate actions and dispatching events upon successful addition.
    * @param {Vim} vim - The Vim object to add to the renderer.
-   * @throws {Error} If the Vim object is already added or if loading the Vim would exceed maximum geometry memory.
+   * @throws {Error} If the Vim object is already added.
    */
   add (vim: Vim) {
     if (this._vimCollection.has(vim)) {
       throw new Error('Vim cannot be added again, unless removed first.')
     }
 
-    const success = this.renderer.add(vim.scene)
-    if (!success) {
-      throw new Error('Could not load vim. Max geometry memory reached.')
-    }
-
+    this.renderer.add(vim.scene)
     this._vimCollection.add(vim)
     this._onVimLoaded.dispatch()
   }
