@@ -70,11 +70,6 @@ export class Viewer {
   readonly materials: Materials
 
   /**
-   * The environment of the viewer, including the ground plane and lights.
-   */
-  readonly environment: Environment
-
-  /**
    * The interface for manipulating the viewer's camera.
    */
   get camera () {
@@ -120,9 +115,6 @@ export class Viewer {
     this.inputs = createInputHandler(this)
     this.gizmos = new Gizmos(this, this._camera)
     this.materials.applySettings(this.settings)
-
-    // Ground plane and lights
-    this.environment = new Environment(this.camera, this.renderer, this.materials, this.settings)
 
     // Input and Selection
     this.selection = createSelection()
