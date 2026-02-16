@@ -238,21 +238,6 @@ export class RenderingComposer {
   }
 
   /**
-   * @returns The current MSAA sample count for outline/selection rendering (always 0 - not used)
-   * @deprecated Outline MSAA removed - the blur shader provides anti-aliasing
-   */
-  get outlineSamples () {
-    return 0
-  }
-
-  /**
-   * @deprecated Outline MSAA removed - no effect
-   */
-  set outlineSamples (value: number) {
-    // No-op: MSAA removed from outline target
-  }
-
-  /**
    * Executes the complete rendering pipeline
    * First renders the main scene, then processes outlines if enabled
    */

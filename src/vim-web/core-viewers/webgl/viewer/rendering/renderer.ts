@@ -323,18 +323,6 @@ export class Renderer implements IRenderer {
     this._composer.samples = value
   }
 
-  /**
-   * Determines the MSAA sample count for outline/selection rendering.
-   * Higher number increases outline quality at lower resolutions.
-   */
-  get outlineSamples () {
-    return this._composer.outlineSamples
-  }
-
-  set outlineSamples (value: number) {
-    this._composer.outlineSamples = value
-  }
-
   private fitViewport = () => {
     const size = this._viewport.getParentSize()
     this.renderer.setPixelRatio(window.devicePixelRatio)
