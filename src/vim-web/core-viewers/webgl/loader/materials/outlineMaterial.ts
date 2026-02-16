@@ -14,19 +14,16 @@ export class OutlineMaterial {
 
   private _resolution: THREE.Vector2
   private _precision: number = 1
-  private _antialias: boolean = false
 
   constructor (
     options?: Partial<{
       sceneBuffer: THREE.Texture
       resolution: THREE.Vector2
       precision: number
-      antialias: boolean
       camera: THREE.PerspectiveCamera | THREE.OrthographicCamera
     }>
   ) {
     this.material = createOutlineMaterial()
-    this._antialias = options?.antialias ?? false
     this._precision = options?.precision ?? 1
     this._resolution = options?.resolution ?? new THREE.Vector2(1, 1)
     this.resolution = this._resolution
@@ -34,19 +31,6 @@ export class OutlineMaterial {
       this.sceneBuffer = options.sceneBuffer
     }
     this.camera = options?.camera
-  }
-
-  /**
-   * Enable antialiasing for the outline.
-   * This is actually applied in the rendering composer.
-   */
-  get antialias () {
-    return this._antialias
-  }
-
-  set antialias (value: boolean) {
-    this._antialias = value
-    this.material.uniformsNeedUpdate = true
   }
 
   /**

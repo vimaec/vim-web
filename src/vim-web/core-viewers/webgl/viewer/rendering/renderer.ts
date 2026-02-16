@@ -34,11 +34,6 @@ export class Renderer implements IRenderer {
    */
   readonly section: RenderingSection
 
-  /**
-   * Determines whether antialias will be applied to rendering or not.
-   */
-  antialias: boolean = true
-
   private _scene: RenderScene
   private _viewport: Viewport
   private _camera: Camera

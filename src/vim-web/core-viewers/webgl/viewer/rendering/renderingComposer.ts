@@ -5,8 +5,6 @@
 import * as THREE from 'three'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
-import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js'
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 
 import { Viewport } from '../viewport'
 import { RenderScene } from './renderScene'
@@ -19,20 +17,19 @@ import { Camera } from '../camera/camera'
 /*
   * Rendering Pipeline Flow:
   *---------------------*
-  | Regular/SSAA Render | ---------------------------------------
-  *---------------------*                                       |
-                                                               |
-  *-----------------*     *----------*      *------*     *----------------*     *--------*
-  |Render Selection | --- | Outlines | ---  | FXAA | --- | Merge/Transfer | --- | Screen |
-  *-----------------*     *----------*      *------*     *----------------*     *--------*
+  | Regular/MSAA Render | ------------------------------------
+  *---------------------*                                     |
+                                                              |
+  *-----------------*     *----------*     *----------------*     *--------*
+  |Render Selection | --- | Outlines | --- | Merge/Transfer | --- | Screen |
+  *-----------------*     *----------*     *----------------*     *--------*
 */
 
 /**
- * Composer for managing the rendering pipeline including anti-aliasing and outline effects.
+ * Composer for managing the rendering pipeline including outline effects.
  * Handles the orchestration of multiple render passes including:
- * - Main scene rendering
+ * - Main scene rendering (MSAA)
  * - Selection outline rendering
- * - FXAA anti-aliasing
  * - Final composition and screen output
  */
 export class RenderingComposer {
@@ -46,7 +43,6 @@ export class RenderingComposer {
   private _renderPass: RenderPass
   private _selectionRenderPass: RenderPass
   private _transferPass: TransferPass
-  private _outlineFxaaPass: ShaderPass
   private _outlines: boolean = false
   private _clock: THREE.Clock
 
@@ -155,11 +151,6 @@ export class RenderingComposer {
     )
     this._composer.addPass(this._outlinePass)
 
-    // Add FXAA pass for anti-aliasing the outlines
-    this._outlineFxaaPass = new ShaderPass(FXAAShader)
-    this._outlineFxaaPass.enabled = this._materials.outlineAntialias
-    //this._composer.addPass(this._outlineFxaaPass)
-
     // Setup final composition passes
     this._mergePass = new MergePass(this._sceneTarget.texture, this._materials)
     this._mergePass.enabled = false
@@ -266,7 +257,6 @@ export class RenderingComposer {
     this._outlineTarget.dispose()
     this._selectionRenderPass.dispose()
     this._outlinePass.dispose()
-    this._outlineFxaaPass.dispose()
     this._mergePass.dispose()
     this._transferPass.dispose()
 

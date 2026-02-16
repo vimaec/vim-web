@@ -83,7 +83,6 @@ export function getDefaultViewerSettings(): ViewerSettings {
         strokeColor: new THREE.Color(0xf6f6f6)
       },
       outline: {
-        antialias: true,
         intensity: 10,
         falloff: 2,
         blur: 3,

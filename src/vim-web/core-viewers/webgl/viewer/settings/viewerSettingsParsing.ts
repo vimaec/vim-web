@@ -99,7 +99,6 @@ function parseSettingsFromUrl (url: string) {
         strokeColor: get('materials.section.strokeColor', strToColor)
       },
       outline: {
-        antialias: get('materials.outline.antialias', strToBool),
         intensity: get('materials.outline.intensity', Number.parseFloat),
         falloff: get('materials.outline.falloff', Number.parseFloat),
         blur: get('materials.outline.blur', Number.parseFloat),

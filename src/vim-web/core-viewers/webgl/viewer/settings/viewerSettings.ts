@@ -266,11 +266,6 @@ materials: {
   outline: {
 
     /**
-    * Enable antialiasing for the outline.
-    * Default: false
-    */
-    antialias: boolean
-    /**
     * Selection outline intensity.
     * Default: 3
     */
