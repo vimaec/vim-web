@@ -12,36 +12,40 @@ export function createMaskMaterial () {
     side: THREE.DoubleSide,
     uniforms: {},
     clipping: true,
-    vertexShader: `
+    // Use GLSL ES 3.0 for WebGL 2
+    glslVersion: THREE.GLSL3,
+    // Only write depth, not color (outline shader only reads depth)
+    colorWrite: false,
+    vertexShader: /* glsl */ `
       #include <common>
-      #include <logdepthbuf_pars_vertex>
       #include <clipping_planes_pars_vertex>
-      
-      // Used as instance attribute for instanced mesh and as vertex attribute for merged meshes. 
-      attribute float selected;
 
-      varying float vKeep;
+      // Used as instance attribute for instanced mesh and as vertex attribute for merged meshes.
+      in float selected;
 
       void main() {
         #include <begin_vertex>
         #include <project_vertex>
         #include <clipping_planes_vertex>
-        #include <logdepthbuf_vertex>
 
-        // SELECTION
-        // selected 
-        vKeep = selected;
+        // EARLY DISCARD: Push non-selected vertices out of view to skip rasterization
+        // Much faster than fragment shader discard
+        if (selected < 0.5) {
+          gl_Position = vec4(1e10, 1e10, 1e10, 1.0);
+          return;
+        }
       }
     `,
-    fragmentShader: `
+    fragmentShader: /* glsl */ `
       #include <clipping_planes_pars_fragment>
-      varying float vKeep;
+
+      out vec4 fragColor;
 
       void main() {
         #include <clipping_planes_fragment>
-        if(vKeep == 0.0f) discard;
 
-        gl_FragColor =  vec4(1.0f,1.0f,1.0f,1.0f);
+        // All fragments reaching here are selected (non-selected culled in vertex shader)
+        fragColor = vec4(1.0, 1.0, 1.0, 1.0);
       }
     `
   })

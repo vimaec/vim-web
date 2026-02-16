@@ -209,8 +209,6 @@ export function createOutlineMaterial () {
       `,
     fragmentShader: `
       #include <packing>
-      // The above include imports "perspectiveDepthToViewZ"
-      // and other GLSL functions from ThreeJS we need for reading depth.
       uniform sampler2D depthBuffer;
       uniform float cameraNear;
       uniform float cameraFar;
@@ -219,28 +217,15 @@ export function createOutlineMaterial () {
       uniform float strokeMultiplier;
       uniform float strokeBias;
       uniform int strokeBlur;
-  
+
       varying vec2 vUv;
-  
-      // Helper functions for reading from depth buffer.
-      float readDepth (sampler2D depthSampler, vec2 coord) {
-        float fragCoordZ = texture2D(depthSampler, coord).x;
-        float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );
-        return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );
-      }
-      float getLinearDepth(vec3 pos) {
-        return -(viewMatrix * vec4(pos, 1.0)).z;
-      }
-  
-      float getLinearScreenDepth(sampler2D map) {
-          vec2 uv = gl_FragCoord.xy * screenSize.zw;
-          return readDepth(map,uv);
-      }
-      // Helper functions for reading normals and depth of neighboring pixels.
+
+      // Use texelFetch for faster indexed access (WebGL 2)
       float getPixelDepth(int x, int y) {
-        // screenSize.zw is pixel size 
-        // vUv is current position
-        return readDepth(depthBuffer, vUv + screenSize.zw * vec2(x, y));
+        ivec2 pixelCoord = ivec2(vUv * screenSize.xy) + ivec2(x, y);
+        float fragCoordZ = texelFetch(depthBuffer, pixelCoord, 0).x;
+        float viewZ = perspectiveDepthToViewZ(fragCoordZ, cameraNear, cameraFar);
+        return viewZToOrthographicDepth(viewZ, cameraNear, cameraFar);
       }
   
       float saturate(float num) {
@@ -249,24 +234,28 @@ export function createOutlineMaterial () {
   
       void main() {
         float depth = getPixelDepth(0, 0);
-  
-        // Get the difference between depth of neighboring pixels and current.
-        float depthDiff = 0.0;
-        int start = -strokeBlur / 2;
-        for(int i=0; i < strokeBlur; i ++){
-          for(int j=0; j < strokeBlur; j ++){
-            depthDiff += abs(depth - getPixelDepth(start +i, start + j));
-          }
+
+        // Early-out: skip blur for background pixels (no geometry)
+        if (depth >= 0.99) {
+          gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+          return;
         }
-  
-        depthDiff = depthDiff / (float(strokeBlur*strokeBlur) -1.0); 
-        
+
+        // Cross pattern edge detection (4 samples instead of 9)
+        // Faster and simpler than full square blur
+        float depthDiff = 0.0;
+        depthDiff += abs(depth - getPixelDepth( 0, -1));  // Top
+        depthDiff += abs(depth - getPixelDepth(-1,  0));  // Left
+        depthDiff += abs(depth - getPixelDepth( 1,  0));  // Right
+        depthDiff += abs(depth - getPixelDepth( 0,  1));  // Bottom
+        depthDiff /= 4.0;
+
         depthDiff = depthDiff * strokeMultiplier;
         depthDiff = saturate(depthDiff);
         depthDiff = pow(depthDiff, strokeBias);
-  
+
         float outline = depthDiff;
-  
+
         // Combine outline with scene color.
         vec4 outlineColor = vec4(outlineColor, 1.0f);
         gl_FragColor = vec4(mix(vec4(0.0,0.0,0.0,0.0), outlineColor, outline));

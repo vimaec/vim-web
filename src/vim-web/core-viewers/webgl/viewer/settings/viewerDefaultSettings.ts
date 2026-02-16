@@ -84,9 +84,9 @@ export function getDefaultViewerSettings(): ViewerSettings {
       },
       outline: {
         antialias: true,
-        intensity: 3,
-        falloff: 3,
-        blur: 2,
+        intensity: 10,
+        falloff: 2,
+        blur: 3,
         color: new THREE.Color(0x00ffff)
       }
     },
