@@ -19,7 +19,7 @@ export class RenderScene {
   boxUpdated = false
 
   // public value
-  smallGhostThreshold: number | undefined = 10
+  smallGhostThreshold: number = 10
 
   // Sparse storage indexed by stable vim ID for GPU picking
   private _vimScenesById: (Scene | undefined)[] = new Array(MAX_VIMS).fill(undefined)

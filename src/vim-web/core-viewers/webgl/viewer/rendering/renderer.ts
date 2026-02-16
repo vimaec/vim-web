@@ -195,6 +195,11 @@ export class Renderer implements IRenderer {
     this.textRenderer.domElement.style.display = value ? 'block' : 'none'
   }
 
+  /**
+   * Instance count below which ghosted meshes are hidden entirely.
+   * Set to -1 to disable (show all ghosted meshes regardless of size).
+   * @default 10
+   */
   get smallGhostThreshold(){
     return this._scene.smallGhostThreshold
   }
