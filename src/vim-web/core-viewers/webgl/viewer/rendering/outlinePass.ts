@@ -57,12 +57,7 @@ export class OutlinePass extends Pass {
     this.material.depthBuffer = readBuffer.depthTexture
     this.material.sceneBuffer = readBuffer.texture
 
-    // 2. Draw the outlines using the depth texture and normal texture
-    // and combine it with the scene color
     if (this.renderToScreen) {
-      // If this is the last effect, then renderToScreen is true.
-      // So we should render to the screen by setting target null
-      // Otherwise, just render into the writeBuffer that the next effect will use as its read buffer.
       renderer.setRenderTarget(null)
       this._fsQuad.render(renderer)
     } else {

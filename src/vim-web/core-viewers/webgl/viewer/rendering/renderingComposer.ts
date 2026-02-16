@@ -111,7 +111,7 @@ export class RenderingComposer {
 
   /**
    * Initializes the outline rendering pipeline
-   * Sets up render targets and passes for selection, outline, FXAA, and final composition
+   * Sets up render targets and passes for selection, outline, and final composition
    * Renders selection at reduced resolution for better performance (3-4x faster)
    * @private
    */

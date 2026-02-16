@@ -161,7 +161,7 @@ export class OutlineMaterial {
 }
 
 /**
- * This material =computes outline using the depth buffer and combines it with the scene buffer to create a final scene.
+ * Creates outline material using depth-based edge detection.
  */
 export function createOutlineMaterial () {
   return new THREE.ShaderMaterial({
