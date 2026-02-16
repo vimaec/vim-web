@@ -265,7 +265,7 @@ state.useMemo((v) => compute(v))
 
 ## Input System
 
-> **📖 Full Documentation**: See [INPUT.md](./INPUT.md) for architecture, patterns, and advanced customization
+> **📖 Full Documentation**: See [INPUT.md](./.claude/INPUT.md) for architecture, patterns, and advanced customization
 
 ### Default Bindings
 
@@ -326,7 +326,7 @@ viewer.core.inputs.mouse.onClick = (pos) => { /* custom logic */ }
 // Restore: viewer.core.inputs.pointerActive = originalMode
 ```
 
-See [INPUT.md](./INPUT.md) for more patterns, coordinate systems, performance optimization, and debugging techniques
+See [INPUT.md](./.claude/INPUT.md) for more patterns, coordinate systems, performance optimization, and debugging techniques
 
 ---
 
@@ -551,6 +551,8 @@ npm run documentation # TypeDoc
 
 ### Loading Pipeline (WebGL)
 
+> **📖 Loading Optimization**: See [.claude/optimization.md](./.claude/optimization.md) for geometry building performance, lazy Element3D creation, and profiling techniques
+
 Full call chain from `viewer.load()` to rendered scene:
 
 ```
@@ -583,6 +585,8 @@ viewer.load(url)
 
 ### Rendering Pipeline (WebGL)
 
+> **📖 Optimization Guide**: See [.claude/RENDERING_OPTIMIZATIONS.md](./.claude/RENDERING_OPTIMIZATIONS.md) for shader optimizations, GLSL3 migration, and performance improvements
+
 Multi-pass compositor:
 ```
 Scene (MSAA) → Selection Mask (mask material) → Outline Pass (depth edge detection) → FXAA → Merge → Screen
@@ -610,6 +614,8 @@ Scene (MSAA) → Selection Mask (mask material) → Outline Pass (depth edge det
 - `Vim` depends directly on `VimSubsetBuilder`
 
 ### GPU Picking (WebGL)
+
+> **📖 Attribute Types**: See [.claude/ATTRIBUTE_TYPE_INVESTIGATION.md](./.claude/ATTRIBUTE_TYPE_INVESTIGATION.md) for WebGL attribute type handling (Uint vs float in shaders)
 
 GPU-based object picking using a custom shader that renders element metadata to a Float32 render target.
 

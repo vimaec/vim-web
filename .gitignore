@@ -3,3 +3,4 @@ dist
 docs
 docs2
 src/pages/*.vim
+.claude/settings.local.json
