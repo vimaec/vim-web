@@ -11,7 +11,6 @@ import { ViewerSettings } from '../../viewer/settings/viewerSettings'
 import { MergeMaterial } from './mergeMaterial'
 import { SimpleMaterial, createSimpleOpaque, createSimpleTransparent } from './simpleMaterial'
 import { SignalDispatcher } from 'ste-signals'
-import { SkyboxMaterial } from './skyboxMaterial'
 import { ModelMaterial } from './materialSet'
 
 export type { ModelMaterial }
@@ -103,11 +102,6 @@ export class Materials {
   readonly outline: OutlineMaterial
 
   /**
-   * Material used for the skybox effect.
-   */
-  readonly skyBox: SkyboxMaterial
-
-  /**
    * Material used to merge outline effect with scene render.
    */
   readonly merge: MergeMaterial
@@ -133,7 +127,6 @@ export class Materials {
     mask?: THREE.ShaderMaterial,
     outline?: OutlineMaterial,
     merge?: MergeMaterial,
-    skyBox?: SkyboxMaterial
   ) {
     this.opaque = opaque ?? createOpaque()
     this.transparent = transparent ?? createTransparent()
@@ -144,7 +137,6 @@ export class Materials {
     this.mask = mask ?? createMaskMaterial()
     this.outline = outline ?? new OutlineMaterial()
     this.merge = merge ?? new MergeMaterial()
-    this.skyBox = skyBox ?? new SkyboxMaterial()
   }
 
   /**
@@ -169,7 +161,6 @@ export class Materials {
     this.outlineFalloff = settings.materials.outline.falloff
     this.outlineBlur = settings.materials.outline.blur
     this.outlineColor = settings.materials.outline.color
-    // outline.antialias is applied in the rendering composer
   }
 
   /**
@@ -358,15 +349,6 @@ export class Materials {
     this._onUpdate.dispatch()
   }
 
-  get outlineAntialias () {
-    return this.outline.antialias
-  }
-
-  set outlineAntialias (value: boolean) {
-    this.outline.antialias = value
-    this._onUpdate.dispatch()
-  }
-
   /**
    * Size of the blur convolution on the selection outline effect. Minimum 2.
    */
@@ -403,33 +385,6 @@ export class Materials {
   set outlineIntensity (value: number) {
     if (this.outline.strokeMultiplier === value) return
     this.outline.strokeMultiplier = value
-    this._onUpdate.dispatch()
-  }
-
-  get skyboxSkyColor () {
-    return this.skyBox.skyColor
-  }
-
-  set skyboxSkyColor (value: THREE.Color) {
-    this.skyBox.skyColor = value
-    this._onUpdate.dispatch()
-  }
-
-  get skyboxGroundColor () {
-    return this.skyBox.groundColor
-  }
-
-  set skyboxGroundColor (value: THREE.Color) {
-    this.skyBox.groundColor = value
-    this._onUpdate.dispatch()
-  }
-
-  get skyboxSharpness () {
-    return this.skyBox.sharpness
-  }
-
-  set skyboxSharpness (value: number) {
-    this.skyBox.sharpness = value
     this._onUpdate.dispatch()
   }
 
@@ -534,7 +489,6 @@ export class Materials {
     this.mask.dispose()
     this.outline.dispose()
     this.merge.material.dispose()
-    this.skyBox.dispose()
   }
 }
 
