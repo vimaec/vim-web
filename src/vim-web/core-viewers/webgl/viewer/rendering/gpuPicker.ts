@@ -11,6 +11,7 @@ import { Element3D } from '../../loader/element3d'
 import { Vim } from '../../loader/vim'
 import { VimCollection } from '../../loader/vimCollection'
 import type { IRaycaster, IRaycastResult } from '../../../shared'
+import { Layers } from '../raycaster'
 import { Marker } from '../gizmos/markers/gizmoMarker'
 import type { GizmoMarkers } from '../gizmos/markers/gizmoMarkers'
 import type { Selectable } from '../selection'
@@ -204,8 +205,8 @@ export class GpuPicker implements IRaycaster<Selectable> {
     // Override scene materials with picking material
     this._scene.threeScene.overrideMaterial = this._pickingMaterial.three
 
-    // Disable layer 1 (NoRaycast) to hide skybox and gizmos
-    camera.layers.disable(1)
+    // Disable NoRaycast layer to hide skybox and gizmos
+    camera.layers.disable(Layers.NoRaycast)
 
     // Render to target
     this._renderer.setRenderTarget(this._renderTarget)
@@ -215,7 +216,7 @@ export class GpuPicker implements IRaycaster<Selectable> {
 
     // Restore state
     this._renderer.setRenderTarget(currentRenderTarget)
-    camera.layers.enable(1)
+    camera.layers.enable(Layers.NoRaycast)
     this._scene.threeScene.overrideMaterial = currentOverrideMaterial
     this._scene.threeScene.background = currentBackground
 
@@ -289,7 +290,7 @@ export class GpuPicker implements IRaycaster<Selectable> {
     const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 })
     this._debugSphere = new THREE.Mesh(sphereGeometry, sphereMaterial)
     this._debugSphere.position.copy(result.worldPosition)
-    this._debugSphere.layers.set(1) // NoRaycast layer
+    this._debugSphere.layers.set(Layers.NoRaycast)
     this._scene.threeScene.add(this._debugSphere)
 
     // Create line segment showing normal direction
@@ -299,7 +300,7 @@ export class GpuPicker implements IRaycaster<Selectable> {
     const lineGeometry = new THREE.BufferGeometry().setFromPoints([lineStart, lineEnd])
     const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 2 })
     this._debugLine = new THREE.Line(lineGeometry, lineMaterial)
-    this._debugLine.layers.set(1) // NoRaycast layer
+    this._debugLine.layers.set(Layers.NoRaycast)
     this._scene.threeScene.add(this._debugLine)
 
     // Request re-render
