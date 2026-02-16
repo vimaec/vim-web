@@ -166,7 +166,9 @@ export class Renderer implements IRenderer {
   }
 
   /**
-   * Signal dispatched at the end of each frame if the scene was updated, such as visibility changes.
+   * Signal dispatched once per render frame if the scene was updated (e.g. visibility changes).
+   * Fires during `render()`, not when `notifySceneUpdate()` is called,
+   * so multiple updates within a frame are coalesced into a single dispatch.
    */
   get onSceneUpdated () {
     return this._onSceneUpdate.asEvent()
