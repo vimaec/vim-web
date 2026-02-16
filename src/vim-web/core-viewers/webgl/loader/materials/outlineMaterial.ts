@@ -256,9 +256,9 @@ export function createOutlineMaterial () {
 
         float outline = depthDiff;
 
-        // Combine outline with scene color.
-        vec4 outlineColor = vec4(outlineColor, 1.0f);
-        gl_FragColor = vec4(mix(vec4(0.0,0.0,0.0,0.0), outlineColor, outline));
+        // Output outline intensity to R channel only (RedFormat texture)
+        // Merge pass will use this to blend outline color with scene
+        gl_FragColor = vec4(outline, 0.0, 0.0, 0.0);
       }
       `
   })

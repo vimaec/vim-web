@@ -94,10 +94,12 @@ export class RenderingComposer {
    */
   private initSceneRenderingPipeline () {
     // Create render texture with maximum available MSAA samples
+    // Use half-float (16-bit) precision - plenty for display, 50% less bandwidth
     this._sceneTarget = new THREE.WebGLRenderTarget(
       this._size.x,
       this._size.y,
       {
+        type: THREE.HalfFloatType,
         samples: this._renderer.capabilities.maxSamples
       }
     )
@@ -124,10 +126,13 @@ export class RenderingComposer {
 
     // Create texture for outline rendering with depth information at reduced resolution
     // No MSAA needed - the outline shader's blur provides anti-aliasing
+    // RedFormat uses only 1 channel instead of 4 (RGBA) - 75% less memory bandwidth!
     this._outlineTarget = new THREE.WebGLRenderTarget(
       outlineWidth,
       outlineHeight,
       {
+        format: THREE.RedFormat,
+        type: THREE.UnsignedByteType,
         depthTexture: new THREE.DepthTexture(outlineWidth, outlineHeight),
       }
     )
@@ -239,7 +244,9 @@ export class RenderingComposer {
     this._sceneTarget.dispose()
 
     // Create new render target with updated sample count
+    // Preserve HalfFloatType for reduced bandwidth
     this._sceneTarget = new THREE.WebGLRenderTarget(width, height, {
+      type: THREE.HalfFloatType,
       samples: Math.min(value, this._renderer.capabilities.maxSamples),
     })
   }
