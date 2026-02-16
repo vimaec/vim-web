@@ -52,25 +52,11 @@ export class ModelMaterial {
 
     // Return array for ghost rendering
     if (this.hidden) {
-      return [visibleMat, this.hidden]
+      return this.getArray()
     }
 
     // Single material
     return visibleMat
-  }
-
-  /**
-   * Get material for a specific mesh based on its properties.
-   *
-   * @param transparent Whether the mesh has transparent geometry
-   * @param isHidden Whether the mesh should be rendered as hidden/ghosted
-   * @deprecated Use get() instead
-   */
-  getMaterial(transparent: boolean, isHidden: boolean = false): THREE.Material {
-    if (isHidden && this.hidden) {
-      return this.hidden
-    }
-    return transparent ? this.transparent : this.opaque
   }
 
   /**
@@ -86,13 +72,6 @@ export class ModelMaterial {
       this._cachedArray = [this.opaque, this.transparent]
     }
     return this._cachedArray
-  }
-
-  /**
-   * Create a ModelMaterial from a single material (used for both opaque and transparent).
-   */
-  static fromSingle(material: THREE.Material): ModelMaterial {
-    return new ModelMaterial(material, material)
   }
 
   /**
