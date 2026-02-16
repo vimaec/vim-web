@@ -47,6 +47,8 @@ export class TransferPass extends Pass {
       renderer.setRenderTarget(null)
       this._fsQuad.render(renderer)
     } else {
+      // Write to readBuffer (not writeBuffer) because needsSwap=false.
+      // This pass just copies the scene texture through without consuming a swap.
       renderer.setRenderTarget(readBuffer)
       this._fsQuad.render(renderer)
     }
