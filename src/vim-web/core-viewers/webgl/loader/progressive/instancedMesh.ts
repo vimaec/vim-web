@@ -15,7 +15,6 @@ export class InstancedMesh {
   private _boxes?: THREE.Box3[]
 
   // State
-  ignoreSceneMaterial: boolean
   transparent: boolean
 
   private _material: THREE.Material | THREE.Material[]
@@ -81,7 +80,7 @@ export class InstancedMesh {
   }
 
   setMaterial(value: ModelMaterial) {
-    applyMaterial(this.mesh, value, this.ignoreSceneMaterial)
+    applyMaterial(this.mesh, value)
   }
 
   private computeBoundingBoxes () {

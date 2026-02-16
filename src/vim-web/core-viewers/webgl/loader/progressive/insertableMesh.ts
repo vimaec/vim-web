@@ -37,11 +37,6 @@ export class InsertableMesh {
   }
 
   /**
-   * Set to true to ignore SetMaterial calls.
-   */
-  ignoreSceneMaterial: boolean
-
-  /**
    * initial material.
    */
   private _material: THREE.Material
@@ -130,7 +125,7 @@ export class InsertableMesh {
   }
 
   setMaterial(value: ModelMaterial) {
-    applyMaterial(this.mesh, value, this.ignoreSceneMaterial)
+    applyMaterial(this.mesh, value)
   }
 
 }

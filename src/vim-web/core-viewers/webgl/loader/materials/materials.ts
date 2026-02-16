@@ -23,15 +23,11 @@ export type { ModelMaterial }
  *
  * @param mesh The mesh to apply material to
  * @param value The ModelMaterial containing opaque/transparent/hidden materials
- * @param ignoreSceneMaterial If true, skip material application (for scene-managed materials)
  */
 export function applyMaterial(
   mesh: THREE.Mesh,
   value: ModelMaterial,
-  ignoreSceneMaterial: boolean
 ) {
-  if (ignoreSceneMaterial) return
-
   const isTransparent = mesh.userData.transparent === true
   const mat = value.get(isTransparent)
 
@@ -531,10 +527,14 @@ export class Materials {
 
     this.opaque.dispose()
     this.transparent.dispose()
+    this.simple.dispose()
+    this.simpleTransparent.dispose()
     this.wireframe.dispose()
     this.ghost.dispose()
     this.mask.dispose()
     this.outline.dispose()
+    this.merge.material.dispose()
+    this.skyBox.dispose()
   }
 }
 
