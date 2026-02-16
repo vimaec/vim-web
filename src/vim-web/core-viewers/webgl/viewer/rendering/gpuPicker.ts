@@ -45,29 +45,23 @@ export function unpackPickingId(packedId: number): { vimIndex: number; elementIn
  * Implements IRaycastResult for compatibility with the raycaster interface.
  */
 export class GpuPickResult implements IRaycastResult<Selectable> {
-  /** The element index in the vim (or marker index if vimIndex === MARKER_VIM_INDEX) */
-  readonly elementIndex: number
-  /** The vim index identifying which vim the element belongs to (255 = marker) */
-  readonly vimIndex: number
   /** The world position of the hit */
   readonly worldPosition: THREE.Vector3
   /** The world normal at the hit point */
   readonly worldNormal: THREE.Vector3
-  /** Reference to the vim containing the element */
+
+  private _elementIndex: number
   private _vim: Vim | undefined
-  /** Reference to the marker if this is a marker hit */
   private _marker: Marker | undefined
 
   constructor(
     elementIndex: number,
-    vimIndex: number,
     worldPosition: THREE.Vector3,
     worldNormal: THREE.Vector3,
     vim: Vim | undefined,
     marker?: Marker
   ) {
-    this.elementIndex = elementIndex
-    this.vimIndex = vimIndex
+    this._elementIndex = elementIndex
     this.worldPosition = worldPosition
     this.worldNormal = worldNormal
     this._vim = vim
@@ -87,7 +81,7 @@ export class GpuPickResult implements IRaycastResult<Selectable> {
    * @returns The Element3D object, or undefined if not found or if this is a marker hit
    */
   getElement(): Element3D | undefined {
-    return this._vim?.getElementFromIndex(this.elementIndex)
+    return this._vim?.getElementFromIndex(this._elementIndex)
   }
 
   /**
@@ -259,7 +253,7 @@ export class GpuPicker implements IRaycaster<Selectable> {
     // Check if this is a marker hit
     if (vimIndex === MARKER_VIM_INDEX) {
       const marker = this._markers?.getMarkerFromIndex(elementIndex)
-      const result = new GpuPickResult(elementIndex, vimIndex, worldPosition, worldNormal, undefined, marker)
+      const result = new GpuPickResult(elementIndex, worldPosition, worldNormal, undefined, marker)
       if (this.debug) {
         this.showDebugVisuals(result)
       }
@@ -269,7 +263,7 @@ export class GpuPicker implements IRaycaster<Selectable> {
     // Get the vim by its stable ID
     const vim = this._vims.getFromId(vimIndex)
 
-    const result = new GpuPickResult(elementIndex, vimIndex, worldPosition, worldNormal, vim)
+    const result = new GpuPickResult(elementIndex, worldPosition, worldNormal, vim)
 
     if (this.debug) {
       this.showDebugVisuals(result)

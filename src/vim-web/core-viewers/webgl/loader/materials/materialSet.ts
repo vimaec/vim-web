@@ -51,7 +51,9 @@ export class ModelMaterial {
       return undefined // Hide mesh
     }
 
-    // Return cached [visible, hidden] array for ghost rendering
+    // Return [visible, hidden] array for ghost rendering.
+    // Index 0 = visible material, index 1 = ghost material.
+    // applyMaterial() creates matching geometry groups via addGroup(0, Infinity, materialIndex).
     if (this.hidden) {
       if (transparent) {
         this._cachedTransparentArray ??= [visibleMat, this.hidden]

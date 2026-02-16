@@ -184,17 +184,16 @@ export class Materials {
   }
 
   /**
-   * Determines the opacity of the ghost material.
-   * Internally stored divided by 10 to match Ultra's ghost opacity.
+   * Determines the opacity of the ghost material. Range 0-1.
    */
   get ghostOpacity () {
     const mat = this.ghost as THREE.ShaderMaterial
-    return mat.uniforms.opacity.value * 10
+    return mat.uniforms.opacity.value
   }
 
   set ghostOpacity (opacity: number) {
     const mat = this.ghost as THREE.ShaderMaterial
-    mat.uniforms.opacity.value = opacity / 10
+    mat.uniforms.opacity.value = opacity
     mat.uniformsNeedUpdate = true
     this._onUpdate.dispatch()
   }

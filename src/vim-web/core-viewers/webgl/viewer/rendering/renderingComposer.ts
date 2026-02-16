@@ -170,7 +170,9 @@ export class RenderingComposer {
   }
 
   /**
-   * Enables or disables outline rendering
+   * Switches between two rendering paths:
+   * - true: selection render → outline → merge (3 passes)
+   * - false: transfer only (1 pass)
    */
   set outlines (value: boolean) {
     this._outlines = value

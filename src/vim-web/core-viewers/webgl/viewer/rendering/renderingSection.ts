@@ -48,6 +48,8 @@ export class RenderingSection {
    * @param box The bounding box to match the section box to.
    */
   fitBox (box: THREE.Box3) {
+    // THREE.Plane equation: normal · point + constant = 0
+    // Min planes have positive normals, so constant = -position.
     this.maxX.constant = box.max.x
     this.minX.constant = -box.min.x
     this.maxY.constant = box.max.y

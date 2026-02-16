@@ -123,9 +123,9 @@ function createSimpleMaterialShader (transparent: boolean = false) {
         #include <clipping_planes_vertex>
         #include <logdepthbuf_vertex>
 
-        // If ignore is greater than 0, hide the object by moving it far out of view.
+        // Place ignored vertices behind near plane to clip them.
         if (ignore > 0.5) {
-          gl_Position = vec4(1e10, 1e10, 1e10, 1.0);
+          gl_Position = vec4(0.0, 0.0, -2.0, 1.0);
           return;
         }
 

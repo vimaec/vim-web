@@ -51,9 +51,9 @@ export function createPickingMaterial() {
 
         vIgnore = ignore;
 
-        // If ignore is set, hide the object by moving it far out of view
+        // Place ignored vertices behind near plane to clip them.
         if (ignore > 0.0) {
-          gl_Position = vec4(1e20, 1e20, 1e20, 1.0);
+          gl_Position = vec4(0.0, 0.0, -2.0, 1.0);
           return;
         }
 

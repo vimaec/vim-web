@@ -22,8 +22,7 @@ export function createGhostMaterial() {
     },
     uniforms: {
       // Overall transparency for non-visible objects.
-      // Pre-divided by 10 (0.25 / 10 = 0.025) to match Ultra ghost opacity.
-      opacity: { value: 0.025 },
+      opacity: { value: 7 / 255 },
       // Fill color for non-visible objects. Pre-computed to avoid per-uniform divisions.
       fillColor: { value: new THREE.Vector3(0.0549, 0.0549, 0.0549) }
     },
@@ -54,9 +53,10 @@ export function createGhostMaterial() {
         #include <clipping_planes_vertex>
 
         // Hide objects where ignore == 0.0 (visible items are excluded from ghost rendering).
+        // Placing behind near plane (z = -2 in clip space) clips the triangle.
+        // Faster than fragment discard since no fragments are generated.
         if (ignore == 0.0) {
-          // Push vertex out of view and skip remaining vertex processing.
-          gl_Position = vec4(1e20, 1e20, 1e20, 1.0);
+          gl_Position = vec4(0.0, 0.0, -2.0, 1.0);
           return;
         }
       }
