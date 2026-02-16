@@ -44,7 +44,7 @@ export function createBasicTransparent () {
  * Material used for both opaque and tranparent surfaces of a VIM model.
  */
 export class StandardMaterial {
-  material: THREE.Material
+  three: THREE.Material
   uniforms: ShaderUniforms | undefined
 
   // Parameters
@@ -59,7 +59,7 @@ export class StandardMaterial {
   _submeshColorTexture: THREE.DataTexture | undefined
 
   constructor (material: THREE.Material) {
-    this.material = material
+    this.three = material
     this.patchShader(material)
   }
 
@@ -77,15 +77,15 @@ export class StandardMaterial {
   }
 
   get color () {
-    if (this.material instanceof THREE.MeshLambertMaterial) {
-      return this.material.color
+    if (this.three instanceof THREE.MeshLambertMaterial) {
+      return this.three.color
     }
     return new THREE.Color(0xffffff)
   }
 
   set color (color: THREE.Color) {
-    if (this.material instanceof THREE.MeshLambertMaterial) {
-      this.material.color = color
+    if (this.three instanceof THREE.MeshLambertMaterial) {
+      this.three.color = color
     }
   }
 
@@ -145,16 +145,16 @@ export class StandardMaterial {
   }
 
   get clippingPlanes () {
-    return this.material.clippingPlanes
+    return this.three.clippingPlanes
   }
 
   set clippingPlanes (value: THREE.Plane[] | null) {
-    this.material.clippingPlanes = value
+    this.three.clippingPlanes = value
   }
 
   dispose () {
     // Don't dispose texture - it's owned by Materials singleton
-    this.material.dispose()
+    this.three.dispose()
   }
 
   /**

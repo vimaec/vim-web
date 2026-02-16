@@ -10,13 +10,13 @@ import * as THREE from 'three'
  * Uses screen-space derivative normals instead of vertex normals for faster performance.
  */
 export class SimpleMaterial {
-  material: THREE.ShaderMaterial
+  three: THREE.ShaderMaterial
 
   // Submesh color palette texture (shared, owned by Materials singleton)
   _submeshColorTexture: THREE.DataTexture | undefined
 
   constructor (material?: THREE.ShaderMaterial) {
-    this.material = material ?? createSimpleMaterialShader()
+    this.three = material ?? createSimpleMaterialShader()
   }
 
   /**
@@ -27,22 +27,22 @@ export class SimpleMaterial {
     // Don't dispose - texture is owned by Materials singleton
     this._submeshColorTexture = texture
 
-    if (this.material.uniforms) {
-      this.material.uniforms.submeshColorTexture.value = texture ?? null
+    if (this.three.uniforms) {
+      this.three.uniforms.submeshColorTexture.value = texture ?? null
     }
   }
 
   get clippingPlanes () {
-    return this.material.clippingPlanes
+    return this.three.clippingPlanes
   }
 
   set clippingPlanes (value: THREE.Plane[] | null) {
-    this.material.clippingPlanes = value
+    this.three.clippingPlanes = value
   }
 
   dispose () {
     // Don't dispose texture - it's owned by Materials singleton
-    this.material.dispose()
+    this.three.dispose()
   }
 }
 

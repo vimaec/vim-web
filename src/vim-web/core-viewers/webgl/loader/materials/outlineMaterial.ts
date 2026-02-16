@@ -6,7 +6,7 @@ import * as THREE from 'three'
 
 /** Outline Material based on edge detection. */
 export class OutlineMaterial {
-  material: THREE.ShaderMaterial
+  three: THREE.ShaderMaterial
   private _camera:
     | THREE.PerspectiveCamera
     | THREE.OrthographicCamera
@@ -23,7 +23,7 @@ export class OutlineMaterial {
       camera: THREE.PerspectiveCamera | THREE.OrthographicCamera
     }>
   ) {
-    this.material = createOutlineMaterial()
+    this.three = createOutlineMaterial()
     this._precision = options?.precision ?? 1
     this._resolution = options?.resolution ?? new THREE.Vector2(1, 1)
     this.resolution = this._resolution
@@ -53,7 +53,7 @@ export class OutlineMaterial {
   }
 
   set resolution (value: THREE.Vector2) {
-    this.material.uniforms.screenSize.value.set(
+    this.three.uniforms.screenSize.value.set(
       value.x * this._precision,
       value.y * this._precision,
       1 / (value.x * this._precision),
@@ -61,7 +61,7 @@ export class OutlineMaterial {
     )
 
     this._resolution = value
-    this.material.uniformsNeedUpdate = true
+    this.three.uniformsNeedUpdate = true
   }
 
   /**
@@ -75,88 +75,88 @@ export class OutlineMaterial {
     value: THREE.PerspectiveCamera | THREE.OrthographicCamera | undefined
   ) {
     this._camera = value
-    this.material.uniforms.cameraNear.value = value?.near ?? 1
-    this.material.uniforms.cameraFar.value = value?.far ?? 1000
-    this.material.uniformsNeedUpdate = true
+    this.three.uniforms.cameraNear.value = value?.near ?? 1
+    this.three.uniforms.cameraFar.value = value?.far ?? 1000
+    this.three.uniformsNeedUpdate = true
   }
 
   /**
    * Blur of the outline. This is used to smooth the outline.
    */
   get strokeBlur () {
-    return this.material.uniforms.strokeBlur.value
+    return this.three.uniforms.strokeBlur.value
   }
 
   set strokeBlur (value: number) {
-    this.material.uniforms.strokeBlur.value = value
-    this.material.uniformsNeedUpdate = true
+    this.three.uniforms.strokeBlur.value = value
+    this.three.uniformsNeedUpdate = true
   }
 
   /**
    * Bias of the outline. This is used to control the strength of the outline.
    */
   get strokeBias () {
-    return this.material.uniforms.strokeBias.value
+    return this.three.uniforms.strokeBias.value
   }
 
   set strokeBias (value: number) {
-    this.material.uniforms.strokeBias.value = value
-    this.material.uniformsNeedUpdate = true
+    this.three.uniforms.strokeBias.value = value
+    this.three.uniformsNeedUpdate = true
   }
 
   /**
    * Multiplier of the outline. This is used to control the strength of the outline.
    */
   get strokeMultiplier () {
-    return this.material.uniforms.strokeMultiplier.value
+    return this.three.uniforms.strokeMultiplier.value
   }
 
   set strokeMultiplier (value: number) {
-    this.material.uniforms.strokeMultiplier.value = value
-    this.material.uniformsNeedUpdate = true
+    this.three.uniforms.strokeMultiplier.value = value
+    this.three.uniformsNeedUpdate = true
   }
 
   /**
    * Color of the outline.
    */
   get color () {
-    return this.material.uniforms.outlineColor.value
+    return this.three.uniforms.outlineColor.value
   }
 
   set color (value: THREE.Color) {
-    this.material.uniforms.outlineColor.value.set(value)
-    this.material.uniformsNeedUpdate = true
+    this.three.uniforms.outlineColor.value.set(value)
+    this.three.uniformsNeedUpdate = true
   }
 
   /**
    * Scene buffer used to render the outline.
    */
   get sceneBuffer () {
-    return this.material.uniforms.sceneBuffer.value
+    return this.three.uniforms.sceneBuffer.value
   }
 
   set sceneBuffer (value: THREE.Texture) {
-    this.material.uniforms.sceneBuffer.value = value
-    this.material.uniformsNeedUpdate = true
+    this.three.uniforms.sceneBuffer.value = value
+    this.three.uniformsNeedUpdate = true
   }
 
   /**
    * Depth buffer used to render the outline.
    */
   get depthBuffer () {
-    return this.material.uniforms.depthBuffer.value
+    return this.three.uniforms.depthBuffer.value
   }
 
   set depthBuffer (value: THREE.Texture) {
-    this.material.uniforms.depthBuffer.value = value
-    this.material.uniformsNeedUpdate = true
+    this.three.uniforms.depthBuffer.value = value
+    this.three.uniformsNeedUpdate = true
   }
 
   /**
    * Dispose of the outline material.
    */
   dispose () {
-    this.material.dispose()
+    this.three.dispose()
   }
 }
 

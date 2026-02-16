@@ -24,7 +24,7 @@ export class OutlinePass extends Pass {
 
     this.material = material ?? new OutlineMaterial()
     this.material.camera = camera
-    this._fsQuad = new FullScreenQuad(this.material.material)
+    this._fsQuad = new FullScreenQuad(this.material.three)
     this.needsSwap = true
   }
 

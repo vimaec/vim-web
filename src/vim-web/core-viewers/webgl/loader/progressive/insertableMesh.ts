@@ -56,8 +56,8 @@ export class InsertableMesh {
     this.geometry = new InsertableGeometry(offsets, materials, transparent, mapping, vimIndex)
 
     this._material = transparent
-      ? Materials.getInstance().transparent.material
-      : Materials.getInstance().opaque.material
+      ? Materials.getInstance().transparent.three
+      : Materials.getInstance().opaque.three
 
     this.mesh = new THREE.Mesh(this.geometry.geometry, this._material)
     this.mesh.userData.vim = this

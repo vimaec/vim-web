@@ -49,7 +49,7 @@ export class GizmoMarkers {
       shininess: 1,
       transparent: false,
       depthTest: false
-    })).material
+    })).three
 
     const mesh = new THREE.InstancedMesh(geometry, mat, capacity)
     mesh.renderOrder = 100

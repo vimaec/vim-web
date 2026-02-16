@@ -6,7 +6,6 @@ import * as THREE from 'three'
 
 // internal
 import { Camera } from './camera/camera'
-import { Environment } from './environment/environment'
 import { Gizmos } from './gizmos/gizmos'
 import { IRaycaster } from './raycaster'
 import { GpuPicker } from './rendering/gpuPicker'
@@ -241,7 +240,6 @@ export class Viewer {
    */
   dispose () {
     cancelAnimationFrame(this._updateId)
-    this.environment.dispose()
     this.selection.clear()
     this.viewport.dispose()
     this.renderer.dispose()

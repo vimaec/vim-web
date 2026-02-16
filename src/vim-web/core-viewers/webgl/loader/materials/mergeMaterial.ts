@@ -5,37 +5,37 @@
 import * as THREE from 'three'
 
 export class MergeMaterial {
-  material: THREE.ShaderMaterial
+  three: THREE.ShaderMaterial
 
   constructor () {
-    this.material = createMergeMaterial()
+    this.three = createMergeMaterial()
   }
 
   get color () {
-    return this.material.uniforms.color.value
+    return this.three.uniforms.color.value
   }
 
   set color (value: THREE.Color) {
-    this.material.uniforms.color.value.copy(value)
-    this.material.uniformsNeedUpdate = true
+    this.three.uniforms.color.value.copy(value)
+    this.three.uniformsNeedUpdate = true
   }
 
   get sourceA () {
-    return this.material.uniforms.sourceA.value
+    return this.three.uniforms.sourceA.value
   }
 
   set sourceA (value: THREE.Texture) {
-    this.material.uniforms.sourceA.value = value
-    this.material.uniformsNeedUpdate = true
+    this.three.uniforms.sourceA.value = value
+    this.three.uniformsNeedUpdate = true
   }
 
   get sourceB () {
-    return this.material.uniforms.sourceB.value
+    return this.three.uniforms.sourceB.value
   }
 
   set sourceB (value: THREE.Texture) {
-    this.material.uniforms.sourceB.value = value
-    this.material.uniformsNeedUpdate = true
+    this.three.uniforms.sourceB.value = value
+    this.three.uniformsNeedUpdate = true
   }
 }
 

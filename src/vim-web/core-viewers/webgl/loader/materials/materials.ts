@@ -452,8 +452,8 @@ export class Materials {
    */
   createStandardModelMaterial(hidden?: THREE.Material): ModelMaterial {
     return new ModelMaterial(
-      this.opaque.material,
-      this.transparent.material,
+      this.opaque.three,
+      this.transparent.three,
       hidden
     )
   }
@@ -467,8 +467,8 @@ export class Materials {
    */
   createSimpleModelMaterial(hidden?: THREE.Material): ModelMaterial {
     return new ModelMaterial(
-      this.simple.material,
-      this.simpleTransparent.material,
+      this.simple.three,
+      this.simpleTransparent.three,
       hidden
     )
   }
@@ -488,7 +488,7 @@ export class Materials {
     this.ghost.dispose()
     this.mask.dispose()
     this.outline.dispose()
-    this.merge.material.dispose()
+    this.merge.three.dispose()
   }
 }
 

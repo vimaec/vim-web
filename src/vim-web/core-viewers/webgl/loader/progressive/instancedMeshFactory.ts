@@ -62,7 +62,7 @@ export class InstancedMeshFactory {
 
     const threeMesh = new THREE.InstancedMesh(
       geometry,
-      material.material,
+      material.three,
       instances?.length ?? g3d.getMeshInstanceCount(mesh)
     )
 

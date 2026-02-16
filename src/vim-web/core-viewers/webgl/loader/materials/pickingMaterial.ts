@@ -116,11 +116,11 @@ export function createPickingMaterial() {
  * PickingMaterial class that wraps the shader material with camera update functionality.
  */
 export class PickingMaterial {
-  readonly material: THREE.ShaderMaterial
+  readonly three: THREE.ShaderMaterial
   private static _tempDir = new THREE.Vector3()
 
   constructor() {
-    this.material = createPickingMaterial()
+    this.three = createPickingMaterial()
   }
 
   /**
@@ -129,25 +129,25 @@ export class PickingMaterial {
    */
   updateCamera(camera: THREE.Camera): void {
     camera.getWorldDirection(PickingMaterial._tempDir)
-    this.material.uniforms.uCameraPos.value.copy(camera.position)
-    this.material.uniforms.uCameraDir.value.copy(PickingMaterial._tempDir)
+    this.three.uniforms.uCameraPos.value.copy(camera.position)
+    this.three.uniforms.uCameraDir.value.copy(PickingMaterial._tempDir)
   }
 
   /**
    * Gets or sets the clipping planes for section box support.
    */
   get clippingPlanes(): THREE.Plane[] {
-    return this.material.clippingPlanes ?? []
+    return this.three.clippingPlanes ?? []
   }
 
   set clippingPlanes(planes: THREE.Plane[]) {
-    this.material.clippingPlanes = planes
+    this.three.clippingPlanes = planes
   }
 
   /**
    * Disposes of the material resources.
    */
   dispose(): void {
-    this.material.dispose()
+    this.three.dispose()
   }
 }

@@ -202,7 +202,7 @@ export class GpuPicker implements IRaycaster<Selectable> {
     this._scene.threeScene.background = null
 
     // Override scene materials with picking material
-    this._scene.threeScene.overrideMaterial = this._pickingMaterial.material
+    this._scene.threeScene.overrideMaterial = this._pickingMaterial.three
 
     // Disable layer 1 (NoRaycast) to hide skybox and gizmos
     camera.layers.disable(1)
