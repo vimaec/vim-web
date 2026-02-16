@@ -63,7 +63,7 @@ export class RenderingSection {
    */
   set active (value: boolean) {
     this._materials.clippingPlanes = this.planes
-    this._renderer.renderer.localClippingEnabled = value
+    this._renderer.three.localClippingEnabled = value
     this._active = value
     this._renderer.needsUpdate = true
   }

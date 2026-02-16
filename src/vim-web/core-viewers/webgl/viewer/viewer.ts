@@ -119,9 +119,9 @@ export class Viewer {
     this.selection = createSelection()
 
     // GPU-based raycaster for element picking and world position queries
-    const size = this.renderer.renderer.getSize(new THREE.Vector2())
+    const size = this.renderer.three.getSize(new THREE.Vector2())
     const gpuPicker = new GpuPicker(
-      this.renderer.renderer,
+      this.renderer.three,
       this._camera,
       scene,
       this._vimCollection,

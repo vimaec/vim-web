@@ -22,7 +22,7 @@ export class Renderer implements IRenderer {
   /**
    * The THREE WebGL renderer.
    */
-  readonly renderer: THREE.WebGLRenderer
+  readonly three: THREE.WebGLRenderer
 
   /**
    * The THREE sample ui renderer
@@ -93,7 +93,7 @@ export class Renderer implements IRenderer {
       throw new Error('WebGL 2 is not supported by this browser')
     }
 
-    this.renderer = new THREE.WebGLRenderer({
+    this.three = new THREE.WebGLRenderer({
       canvas: viewport.canvas,
       context: context,
       antialias: true,
@@ -110,7 +110,7 @@ export class Renderer implements IRenderer {
     this.textEnabled = true
 
     this._composer = new RenderingComposer(
-      this.renderer,
+      this.three,
       scene,
       viewport,
       materials,
@@ -135,9 +135,9 @@ export class Renderer implements IRenderer {
   dispose () {
     this.clear()
 
-    this.renderer.clear()
-    this.renderer.forceContextLoss()
-    this.renderer.dispose()
+    this.three.clear()
+    this.three.forceContextLoss()
+    this.three.dispose()
     this._composer.dispose()
   }
 
@@ -320,8 +320,8 @@ export class Renderer implements IRenderer {
 
   private fitViewport = () => {
     const size = this._viewport.getParentSize()
-    this.renderer.setPixelRatio(window.devicePixelRatio)
-    this.renderer.setSize(size.x, size.y)
+    this.three.setPixelRatio(window.devicePixelRatio)
+    this.three.setSize(size.x, size.y)
     this._composer.setSize(size.x, size.y)
     this.textRenderer.setSize(size.x, size.y)
     this.needsUpdate = true
