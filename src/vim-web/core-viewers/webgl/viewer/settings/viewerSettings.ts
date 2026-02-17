@@ -11,6 +11,79 @@ import { RecursivePartial } from '../../../../utils/partial'
 
 export type TextureEncoding = 'url' | 'base64' | undefined
 
+export type MaterialSettings = {
+  /**
+   * Use fast simple materials instead of standard Lambert materials
+   * - Enables: Significantly faster rendering (no Lambert lighting calculations)
+   * - Trade-off: Simpler pseudo-lighting using screen-space derivatives
+   * - Useful for: Performance-critical scenarios, large models, lower-end hardware
+   * Default: false
+   */
+  useFastMaterials: boolean
+  /**
+  * Default color of standard material
+  */
+  standard: {
+    color: THREE.Color
+  }
+  /**
+  * Ghost material options
+  */
+  ghost: {
+    /**
+    * Ghost material color
+    * Default: rgb(78, 82, 92)
+    */
+    color: THREE.Color
+    /**
+    * Ghost material opacity
+    * Default: 0.08
+    */
+    opacity: number
+  }
+  /**
+  * Section box intersection highlight options
+  */
+  section: {
+    /**
+    * Intersection highlight stroke width.
+    * Default: 0.01
+    */
+    strokeWidth: number;
+    /**
+    * Intersection highlight stroke falloff.
+    * Default: 0.75
+    */
+    strokeFalloff: number;
+    /**
+    * Intersection highlight stroke color.
+    * Default: rgb(246, 246, 246)
+    */
+    strokeColor: THREE.Color;
+  }
+  /**
+  * Selection outline options
+  */
+  outline: {
+    /**
+    * Selection outline intensity (brightness multiplier).
+    * Default: 2
+    */
+    intensity: number;
+    /**
+    * Selection outline color.
+    * Default: rgb(0, 255, 255)
+    */
+    color: THREE.Color;
+    /**
+    * Scale factor for outline render target resolution (0-1).
+    * Lower = faster, higher = sharper outlines.
+    * Default: 0.75
+    */
+    scale: number;
+  }
+}
+
 /** Viewer related options independant from vims */
 export type ViewerSettings = {
   /**
@@ -193,95 +266,9 @@ export type ViewerSettings = {
   },
 
 /**
-* Object highlight on click options
+* Material options
 */
-materials: {
-  /**
-   * Use fast simple materials instead of standard Lambert materials
-   * - Enables: Significantly faster rendering (no Lambert lighting calculations)
-   * - Trade-off: Simpler pseudo-lighting using screen-space derivatives
-   * - Useful for: Performance-critical scenarios, large models, lower-end hardware
-   * Default: false
-   */
-  useFastMaterials: boolean
-  /**
-  * Default color of standard material
-  */
-  standard: {
-    color: THREE.Color
-  }
-  /**
-  * Highlight on hover options
-  */
-  highlight: {
-    /**
-    * Highlight color
-    * Default: rgb(106, 210, 255)
-    */
-    color: THREE.Color
-    /**
-    * Highlight opacity
-    * Default: 0.5
-    */
-    opacity: number
-  }
-  /**
-  * Ghost material options
-  */
-  ghost: {
-    /**
-    * Ghost material color
-    * Default: rgb(78, 82, 92)
-    */
-    color: THREE.Color
-    /**
-    * Ghost material opacity
-    * Default: 0.08
-    */
-    opacity: number
-  }
-  /**
-  * Section box intersection highlight options
-  */
-  section: {
-    /**
-    * Intersection highlight stroke width.
-    * Default: 0.01
-    */
-    strokeWidth: number;
-    /**
-    * Intersection highlight stroke falloff.
-    * Default: 0.75
-    */
-    strokeFalloff: number;
-    /**
-    * Intersection highlight stroke color.
-    * Default: rgb(246, 246, 246)
-    */
-    strokeColor: THREE.Color;
-  }
-  /**
-  * Selection outline options
-  */
-  outline: {
-    /**
-    * Selection outline intensity (brightness multiplier).
-    * Default: 2
-    */
-    intensity: number;
-    /**
-    * Selection outline color.
-    * Default: rgb(0, 255, 255)
-    */
-    color: THREE.Color;
-    /**
-    * Scale factor for outline render target resolution (0-1).
-    * Lower = faster, higher = sharper outlines.
-    * Default: 0.75
-    */
-    scale: number;
-  }
-}
+materials: MaterialSettings
 
   /**
    * Axes gizmo options

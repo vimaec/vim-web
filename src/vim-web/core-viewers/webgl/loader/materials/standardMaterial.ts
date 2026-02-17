@@ -48,9 +48,6 @@ export class StandardMaterial {
   uniforms: ShaderUniforms | undefined
 
   // Parameters
-  _focusIntensity: number = 0.5
-  _focusColor: THREE.Color = new THREE.Color(0xffffff)
-
   _sectionStrokeWidth: number = 0.01
   _sectionStrokeFalloff: number = 0.75
   _sectionStrokeColor: THREE.Color = new THREE.Color(0xf6f6f6)
@@ -86,28 +83,6 @@ export class StandardMaterial {
   set color (color: THREE.Color) {
     if (this.three instanceof THREE.MeshLambertMaterial) {
       this.three.color = color
-    }
-  }
-
-  get focusIntensity () {
-    return this._focusIntensity
-  }
-
-  set focusIntensity (value: number) {
-    this._focusIntensity = value
-    if (this.uniforms) {
-      this.uniforms.focusIntensity.value = value
-    }
-  }
-
-  get focusColor () {
-    return this._focusColor
-  }
-
-  set focusColor (value: THREE.Color) {
-    this._focusColor = value
-    if (this.uniforms) {
-      this.uniforms.focusColor.value = value
     }
   }
 
@@ -166,8 +141,6 @@ export class StandardMaterial {
   patchShader (material: THREE.Material) {
     material.onBeforeCompile = (shader) => {
       this.uniforms = shader.uniforms
-      this.uniforms.focusIntensity = { value: this._focusIntensity }
-      this.uniforms.focusColor = { value: this._focusColor }
       this.uniforms.sectionStrokeWidth = { value: this._sectionStrokeWidth }
       this.uniforms.sectionStrokeFalloff = { value: this._sectionStrokeFalloff }
       this.uniforms.sectionStrokeColor = { value: this._sectionStrokeColor }
@@ -211,11 +184,6 @@ export class StandardMaterial {
         // Passed to fragment to discard them
         varying float vIgnore;
 
-        // FOCUS
-        // Instance or vertex attribute to higlight objects
-        // Used as instance attribute for instanced mesh and as vertex attribute for merged meshes.
-        attribute float focused;
-        varying float vHighlight;
         `
         )
         // VERTEX IMPLEMENTATION
@@ -239,9 +207,6 @@ export class StandardMaterial {
 
           // VISIBILITY
           vIgnore = ignore;
-
-          // FOCUS
-          vHighlight = focused;
         `
         )
       // FRAGMENT DECLARATIONS
@@ -262,10 +227,6 @@ export class StandardMaterial {
         uniform float sectionStrokeFalloff;
         uniform vec3 sectionStrokeColor;
 
-        // FOCUS
-        varying float vHighlight;
-        uniform float focusIntensity;
-        uniform vec3 focusColor; 
         `
         )
         // FRAGMENT IMPLEMENTATION
@@ -283,9 +244,6 @@ export class StandardMaterial {
           // vColored == 0 -> Phong Color 
           float d = length(outgoingLight);
           gl_FragColor = vec4(vColored * vColor.xyz * d + (1.0f - vColored) * outgoingLight.xyz, diffuseColor.a);
-          
-          // FOCUS
-          gl_FragColor = mix(gl_FragColor, vec4(focusColor,1.0f), vHighlight * focusIntensity);
           
           // STROKES WHERE GEOMETRY INTERSECTS CLIPPING PLANE
           #if NUM_CLIPPING_PLANES > 0

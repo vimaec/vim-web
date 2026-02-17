@@ -1,6 +1,6 @@
 import * as Core from "../../core-viewers";
 import { Element3D, Selectable } from "../../core-viewers/webgl";
-import { ModelMaterial } from "../../core-viewers/webgl/loader/materials/materialSet";
+import { MaterialSet } from "../../core-viewers/webgl/loader/materials/materialSet";
 import { IsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
 
 export function useWebglIsolation(viewer: Core.Webgl.Viewer){
@@ -15,10 +15,10 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
 
   function updateMaterials(){
     const m = viewer.materials
-    viewer.renderer.modelMaterial = new ModelMaterial(
-      m.simpleOpaque.three,
-      transparency ? m.simpleTransparent.three : m.simpleOpaque.three,
-      ghost ? m.ghost.three : undefined
+    viewer.renderer.modelMaterial = new MaterialSet(
+      m.modelOpaqueMaterial,
+      transparency ? m.modelTransparentMaterial : m.modelOpaqueMaterial,
+      ghost ? m.ghostMaterial : undefined
     )
   }
 

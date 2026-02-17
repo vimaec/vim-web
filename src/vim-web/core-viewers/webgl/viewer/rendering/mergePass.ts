@@ -18,7 +18,7 @@ export class MergePass extends Pass {
     super()
 
     this._fsQuad = new FullScreenQuad()
-    this._material = materials?.merge ?? new MergeMaterial()
+    this._material = materials?.system.merge ?? new MergeMaterial()
     this._fsQuad.material = this._material.three
     this._material.sourceA = source
     this.needsSwap = true

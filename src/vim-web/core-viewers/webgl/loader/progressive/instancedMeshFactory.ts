@@ -56,13 +56,12 @@ export class InstancedMeshFactory {
   ) {
     const geometry = Geometry.createGeometryFromMesh(g3d, mesh, section)
 
-    const material = transparent
-      ? Materials.getInstance().transparent
-      : Materials.getInstance().opaque
+    const m = Materials.getInstance()
+    const material = transparent ? m.modelTransparentMaterial : m.modelOpaqueMaterial
 
     const threeMesh = new THREE.InstancedMesh(
       geometry,
-      material.three,
+      material,
       instances?.length ?? g3d.getMeshInstanceCount(mesh)
     )
 

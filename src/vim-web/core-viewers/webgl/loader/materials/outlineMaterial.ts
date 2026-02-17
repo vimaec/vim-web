@@ -14,6 +14,7 @@ export class OutlineMaterial {
 
   private _resolution: THREE.Vector2
   private _precision: number = 1
+  private _onUpdate?: () => void
 
   constructor (
     options?: Partial<{
@@ -21,9 +22,11 @@ export class OutlineMaterial {
       resolution: THREE.Vector2
       precision: number
       camera: THREE.PerspectiveCamera | THREE.OrthographicCamera
-    }>
+    }>,
+    onUpdate?: () => void
   ) {
     this.three = createOutlineMaterial()
+    this._onUpdate = onUpdate
     this._precision = options?.precision ?? 1
     this._resolution = options?.resolution ?? new THREE.Vector2(1, 1)
     this.resolution = this._resolution
@@ -43,6 +46,7 @@ export class OutlineMaterial {
   set precision (value: number) {
     this._precision = value
     this.resolution = this._resolution
+    this._onUpdate?.()
   }
 
   /**
@@ -62,6 +66,7 @@ export class OutlineMaterial {
 
     this._resolution = value
     this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
   }
 
   /**
@@ -78,6 +83,7 @@ export class OutlineMaterial {
     this.three.uniforms.cameraNear.value = value?.near ?? 1
     this.three.uniforms.cameraFar.value = value?.far ?? 1000
     this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
   }
 
   /**
@@ -90,6 +96,7 @@ export class OutlineMaterial {
   set intensity (value: number) {
     this.three.uniforms.intensity.value = value
     this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
   }
 
   /**
@@ -102,6 +109,7 @@ export class OutlineMaterial {
   set color (value: THREE.Color) {
     this.three.uniforms.outlineColor.value.set(value)
     this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
   }
 
   /**
@@ -114,6 +122,7 @@ export class OutlineMaterial {
   set sceneBuffer (value: THREE.Texture) {
     this.three.uniforms.sceneBuffer.value = value
     this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
   }
 
   /**
@@ -126,6 +135,7 @@ export class OutlineMaterial {
   set depthBuffer (value: THREE.Texture) {
     this.three.uniforms.depthBuffer.value = value
     this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
   }
 
   /**

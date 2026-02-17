@@ -12,9 +12,11 @@ import * as THREE from 'three'
  */
 export class GhostMaterial {
   three: THREE.ShaderMaterial
+  private _onUpdate?: () => void
 
-  constructor (material?: THREE.ShaderMaterial) {
+  constructor (material?: THREE.ShaderMaterial, onUpdate?: () => void) {
     this.three = material ?? createGhostShader()
+    this._onUpdate = onUpdate
   }
 
   get opacity () {
@@ -24,6 +26,7 @@ export class GhostMaterial {
   set opacity (value: number) {
     this.three.uniforms.opacity.value = value
     this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
   }
 
   get color (): THREE.Color {
@@ -33,6 +36,7 @@ export class GhostMaterial {
   set color (value: THREE.Color) {
     this.three.uniforms.fillColor.value = value
     this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
   }
 
   get clippingPlanes () {
@@ -41,6 +45,7 @@ export class GhostMaterial {
 
   set clippingPlanes (value: THREE.Plane[] | null) {
     this.three.clippingPlanes = value
+    this._onUpdate?.()
   }
 
   dispose () {

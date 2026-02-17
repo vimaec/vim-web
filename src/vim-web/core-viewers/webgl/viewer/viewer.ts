@@ -17,7 +17,7 @@ import { Viewport } from './viewport'
 // loader
 import { ISignal, SignalDispatcher } from 'ste-signals'
 import type {InputHandler} from '../../shared'
-import { Materials } from '../loader/materials/materials'
+import { IMaterials, Materials } from '../loader/materials/materials'
 import { Vim } from '../loader/vim'
 import { Scene } from '../loader/scene'
 import { VimCollection } from '../loader/vimCollection'
@@ -67,7 +67,8 @@ export class Viewer {
   /**
    * The materials used by the viewer to render the vims.
    */
-  readonly materials: Materials
+  get materials (): IMaterials { return this._materials }
+  private readonly _materials: Materials
 
   /**
    * The interface for manipulating the viewer's camera.
@@ -100,7 +101,7 @@ export class Viewer {
   constructor (settings?: PartialViewerSettings) {
     this.settings = createViewerSettings(settings)
 
-    this.materials = Materials.getInstance()
+    this._materials = Materials.getInstance()
 
     const scene = new RenderScene()
     this.viewport = new Viewport(this.settings)
@@ -108,14 +109,14 @@ export class Viewer {
     this.renderer = new Renderer(
       scene,
       this.viewport,
-      this.materials,
+      this._materials,
       this._camera,
       this.settings
     )
 
     this.inputs = createInputHandler(this)
     this.gizmos = new Gizmos(this, this._camera)
-    this.materials.applySettings(this.settings)
+    this.materials.applySettings(this.settings.materials)
 
     // Input and Selection
     this.selection = createSelection()
@@ -231,7 +232,7 @@ export class Viewer {
       vim?.dispose()
     }
     this.vimCollection.clear()
-    this.materials.dispose()
+    this._materials.dispose()
     this.gizmos.dispose()
   }
 }

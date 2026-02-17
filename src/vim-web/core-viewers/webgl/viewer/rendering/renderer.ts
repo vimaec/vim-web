@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { IRenderer, Scene } from '../../loader/scene'
 import { Viewport } from '../viewport'
 import { RenderScene } from './renderScene'
-import { ModelMaterial, Materials } from '../../loader/materials/materials'
+import { MaterialSet, Materials } from '../../loader/materials/materials'
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer'
 
 import { Camera } from '../camera/camera'
@@ -160,7 +160,7 @@ export class Renderer implements IRenderer {
     return this._scene.modelMaterial
   }
 
-  set modelMaterial (material: ModelMaterial) {
+  set modelMaterial (material: MaterialSet) {
     this._scene.modelMaterial = material
   }
 

@@ -69,10 +69,6 @@ export function getDefaultViewerSettings(): ViewerSettings {
       standard: {
         color: new THREE.Color(0xcccccc)
       },
-      highlight: {
-        color: new THREE.Color(0x6ad2ff),
-        opacity: 0.5
-      },
       ghost: {
         color: new THREE.Color(0x0E0E0E),
         opacity: 7 / 255

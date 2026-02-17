@@ -5,7 +5,7 @@
 import * as THREE from 'three'
 import { Vim } from '../vim'
 import { InstancedSubmesh } from './instancedSubmesh'
-import { ModelMaterial, applyMaterial } from '../materials/materials'
+import { MaterialSet, applyMaterial } from '../materials/materials'
 
 export class InstancedMesh {
   vim: Vim
@@ -79,7 +79,7 @@ export class InstancedMesh {
     }
   }
 
-  setMaterial(value: ModelMaterial) {
+  setMaterial(value: MaterialSet) {
     applyMaterial(this.mesh, value)
   }
 

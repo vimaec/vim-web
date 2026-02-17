@@ -8,7 +8,7 @@ import { Vim } from './vim'
 import { InsertableMesh } from './progressive/insertableMesh'
 import { InstancedMesh } from './progressive/instancedMesh'
 import { getAverageBoundingBox } from './averageBoundingBox'
-import { ModelMaterial } from './materials/materials'
+import { MaterialSet } from './materials/materials'
 import { Renderer } from '../viewer/rendering/renderer'
 
 /**
@@ -30,7 +30,7 @@ export interface IScene {
   /** Bounding box using average mesh centers. More stable against outliers. */
   getAverageBoundingBox(): THREE.Box3
   /** Material override for all meshes in this scene. Set undefined to remove. */
-  material: ModelMaterial
+  material: MaterialSet
 }
 
 /**
@@ -53,7 +53,7 @@ export class Scene implements IScene {
 
   // Array-based lookup for O(1) access (instance indices are dense 0..N)
   private _instanceToMeshes: Array<Submesh[] | undefined> = []
-  private _material: ModelMaterial
+  private _material: MaterialSet
 
   constructor (matrix: THREE.Matrix4) {
     this._matrix = matrix
@@ -225,7 +225,7 @@ export class Scene implements IScene {
   /**
    * Sets and apply a material override to the scene, set to undefined to remove override.
    */
-  set material (value: ModelMaterial) {
+  set material (value: MaterialSet) {
     // Always update - don't check equality to ensure materials propagate
     this.setDirty()
     this._material = value

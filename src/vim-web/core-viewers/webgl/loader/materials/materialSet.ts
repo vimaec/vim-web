@@ -1,7 +1,7 @@
 /**
  * @module vim-loader/materials
  *
- * ModelMaterial provides a cleaner API for managing material overrides.
+ * MaterialSet provides a cleaner API for managing material overrides.
  * Instead of confusing arrays [visible, hidden], we explicitly name each material type.
  */
 
@@ -18,7 +18,7 @@ import * as THREE from 'three'
  * - transparent: For see-through geometry (undefined = don't render transparent meshes)
  * - hidden: For ghosted/hidden objects (undefined = don't render ghost)
  */
-export class ModelMaterial {
+export class MaterialSet {
   readonly opaque?: THREE.Material
   readonly transparent?: THREE.Material
   readonly hidden?: THREE.Material
@@ -68,10 +68,10 @@ export class ModelMaterial {
   }
 
   /**
-   * Check if this ModelMaterial is equivalent to another.
+   * Check if this MaterialSet is equivalent to another.
    * Used to avoid unnecessary material updates.
    */
-  equals(other: ModelMaterial | undefined): boolean {
+  equals(other: MaterialSet | undefined): boolean {
     if (!other) return false
     return (
       this.opaque === other.opaque &&

@@ -6,17 +6,19 @@
 import * as THREE from 'three'
 
 /**
- * Material wrapper for fast rendering mode (SimpleMaterial).
+ * Material wrapper for fast rendering mode (ModelMaterial).
  * Uses screen-space derivative normals instead of vertex normals for faster performance.
  */
-export class SimpleMaterial {
+export class ModelMaterial {
   three: THREE.ShaderMaterial
+  private _onUpdate?: () => void
 
   // Submesh color palette texture (shared, owned by Materials singleton)
   _submeshColorTexture: THREE.DataTexture | undefined
 
-  constructor (material?: THREE.ShaderMaterial) {
-    this.three = material ?? createSimpleMaterialShader()
+  constructor (material?: THREE.ShaderMaterial, onUpdate?: () => void) {
+    this.three = material ?? createModelMaterialShader()
+    this._onUpdate = onUpdate
   }
 
   /**
@@ -30,6 +32,7 @@ export class SimpleMaterial {
     if (this.three.uniforms) {
       this.three.uniforms.submeshColorTexture.value = texture ?? null
     }
+    this._onUpdate?.()
   }
 
   get clippingPlanes () {
@@ -38,6 +41,7 @@ export class SimpleMaterial {
 
   set clippingPlanes (value: THREE.Plane[] | null) {
     this.three.clippingPlanes = value
+    this._onUpdate?.()
   }
 
   dispose () {
@@ -47,17 +51,17 @@ export class SimpleMaterial {
 }
 
 /**
- * Creates an opaque SimpleMaterial for fast rendering mode.
+ * Creates an opaque ModelMaterial for fast rendering mode.
  */
-export function createSimpleOpaque(): SimpleMaterial {
-  return new SimpleMaterial(createSimpleMaterialShader(false))
+export function createModelOpaque(onUpdate?: () => void): ModelMaterial {
+  return new ModelMaterial(createModelMaterialShader(false), onUpdate)
 }
 
 /**
- * Creates a transparent SimpleMaterial for fast rendering mode.
+ * Creates a transparent ModelMaterial for fast rendering mode.
  */
-export function createSimpleTransparent(): SimpleMaterial {
-  return new SimpleMaterial(createSimpleMaterialShader(true))
+export function createModelTransparent(onUpdate?: () => void): ModelMaterial {
+  return new ModelMaterial(createModelMaterialShader(true), onUpdate)
 }
 
 /**
@@ -71,7 +75,7 @@ export function createSimpleTransparent(): SimpleMaterial {
  *
  * @returns {THREE.ShaderMaterial} A custom shader material for isolation mode.
  */
-function createSimpleMaterialShader (transparent: boolean = false) {
+function createModelMaterialShader (transparent: boolean = false) {
 
   return new THREE.ShaderMaterial({
     side: THREE.DoubleSide,

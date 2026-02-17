@@ -85,10 +85,6 @@ function parseSettingsFromUrl (url: string) {
       standard: {
         color: get('materials.standard.color', strToColor)
       },
-      highlight: {
-        color: get('materials.highlight.color', strToColor),
-        opacity: get('materials.highlight.opacity', Number.parseFloat)
-      },
       ghost: {
         color: get('materials.ghost.color', strToColor),
         opacity: get('materials.ghost.opacity', Number.parseFloat)

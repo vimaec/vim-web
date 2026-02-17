@@ -140,14 +140,14 @@ export class RenderingComposer {
     this._selectionRenderPass = new RenderPass(
       this._scene.threeScene,
       this._camera,
-      this._materials.mask
+      this._materials.system.mask
     )
     this._composer.addPass(this._selectionRenderPass)
 
     // Setup outline pass using the selection render result
     this._outlinePass = new OutlinePass(
       this._camera,
-      this._materials.outline
+      this._materials.system.outline
     )
     this._composer.addPass(this._outlinePass)
 

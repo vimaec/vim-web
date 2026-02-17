@@ -5,27 +5,66 @@
 import * as THREE from 'three'
 import { StandardMaterial, createOpaque, createTransparent } from './standardMaterial'
 import { createMaskMaterial } from './maskMaterial'
-import { GhostMaterial, createGhostMaterial } from './ghostMaterial'
+import { GhostMaterial } from './ghostMaterial'
 import { OutlineMaterial } from './outlineMaterial'
-import { ViewerSettings } from '../../viewer/settings/viewerSettings'
 import { MergeMaterial } from './mergeMaterial'
-import { SimpleMaterial, createSimpleOpaque, createSimpleTransparent } from './simpleMaterial'
-import { SignalDispatcher } from 'ste-signals'
-import { ModelMaterial } from './materialSet'
+import { ModelMaterial, createModelOpaque, createModelTransparent } from './modelMaterial'
 
-export type { ModelMaterial }
+import { SignalDispatcher } from 'ste-signals'
+import { MaterialSettings } from '../../viewer/settings/viewerSettings'
+import { MaterialSet } from './materialSet'
+
+export type { MaterialSet }
 
 /**
- * Applies a ModelMaterial to a THREE.Mesh.
- * Converts ModelMaterial to the appropriate THREE.Material or array based on mesh properties.
- * This is the only place where ModelMaterial.get() is called to extract actual materials.
+ * Public API for material configuration.
+ * Users interact with this interface via `viewer.materials`.
+ *
+ * Raw THREE materials are exposed for building MaterialSet.
+ * All property mutation goes through flat proxy getters/setters.
+ */
+export interface IMaterials {
+  /** The opaque model material. Used as the opaque slot when building a MaterialSet. */
+  readonly modelOpaqueMaterial: THREE.Material
+  /** The transparent model material. Used as the transparent slot when building a MaterialSet. */
+  readonly modelTransparentMaterial: THREE.Material
+  /** The ghost material used to render hidden/ghosted elements. */
+  readonly ghostMaterial: THREE.Material
+
+  /** Base color tint applied to opaque and transparent model materials. */
+  modelColor: THREE.Color
+  /** Opacity of the ghost material (0 = invisible, 1 = fully opaque). */
+  ghostOpacity: number
+  /** Color of the ghost material. */
+  ghostColor: THREE.Color
+  /** Intensity of the selection outline post-process effect. */
+  outlineIntensity: number
+  /** Color of the selection outline post-process effect. */
+  outlineColor: THREE.Color
+  /** Width of the stroke rendered where the section box intersects the model. */
+  sectionStrokeWidth: number
+  /** Gradient falloff of the section box intersection stroke. */
+  sectionStrokeFalloff: number
+  /** Color of the section box intersection stroke. */
+  sectionStrokeColor: THREE.Color
+  /** Clipping planes applied to all materials. Set to undefined to disable clipping. */
+  clippingPlanes: THREE.Plane[] | undefined
+
+  /** Applies a full set of material settings from the viewer configuration. */
+  applySettings (settings: MaterialSettings): void
+}
+
+/**
+ * Applies a MaterialSet to a THREE.Mesh.
+ * Converts MaterialSet to the appropriate THREE.Material or array based on mesh properties.
+ * This is the only place where MaterialSet.get() is called to extract actual materials.
  *
  * @param mesh The mesh to apply material to
- * @param value The ModelMaterial containing opaque/transparent/hidden materials
+ * @param value The MaterialSet containing opaque/transparent/hidden materials
  */
 export function applyMaterial(
   mesh: THREE.Mesh,
-  value: ModelMaterial,
+  value: MaterialSet,
 ) {
   const isTransparent = mesh.userData.transparent === true
   const mat = value.get(isTransparent)
@@ -53,7 +92,7 @@ export function applyMaterial(
 /**
  * Defines the materials to be used by the vim loader and allows for material injection.
  */
-export class Materials {
+export class Materials implements IMaterials {
   // eslint-disable-next-line no-use-before-define
   static instance: Materials
 
@@ -68,50 +107,26 @@ export class Materials {
     return this.instance
   }
 
-  /**
-   * Material used for opaque model geometry.
-   */
-  readonly opaque: StandardMaterial
-  /**
-   * Material used for transparent model geometry.
-   */
-  readonly transparent: StandardMaterial
-  /**
-   * Material used for maximum performance (fast mode, opaque).
-   */
-  readonly simpleOpaque: SimpleMaterial
-  /**
-   * Material used for maximum performance (fast mode, transparent).
-   */
-  readonly simpleTransparent: SimpleMaterial
-  /**
-   * Material used when creating wireframe geometry of the model.
-   */
-  readonly wireframe: THREE.LineBasicMaterial
-  /**
-   * Material used to show traces of hidden objects.
-   */
-  readonly ghost: GhostMaterial
-  /**
-   * Material used to filter out what is not selected for selection outline effect.
-   */
-  readonly mask: THREE.ShaderMaterial
-  /**
-   * Material used for selection outline effect.
-   */
-  readonly outline: OutlineMaterial
+  private readonly _opaque: StandardMaterial
+  private readonly _transparent: StandardMaterial
+  private readonly _modelOpaque: ModelMaterial
+  private readonly _modelTransparent: ModelMaterial
+  private readonly _ghost: GhostMaterial
 
-  /**
-   * Material used to merge outline effect with scene render.
-   */
-  readonly merge: MergeMaterial
+  // System materials — used by rendering pipeline only, not part of public API
+  private readonly _mask: THREE.ShaderMaterial
+  private readonly _outline: OutlineMaterial
+  private readonly _merge: MergeMaterial
+
+  /** @internal Rendering pipeline access to system materials */
+  get system () {
+    return { mask: this._mask, outline: this._outline, merge: this._merge }
+  }
 
   private _clippingPlanes: THREE.Plane[] | undefined
   private _sectionStrokeWidth: number = 0.01
   private _sectionStrokeFalloff: number = 0.75
   private _sectionStrokeColor: THREE.Color = new THREE.Color(0xf6f6f6)
-  private _focusIntensity: number = 0.75
-  private _focusColor: THREE.Color = new THREE.Color(0xffffff)
   private _onUpdate = new SignalDispatcher()
 
   // Shared color palette texture for both opaque and transparent materials
@@ -120,151 +135,91 @@ export class Materials {
   constructor (
     opaque?: StandardMaterial,
     transparent?: StandardMaterial,
-    simpleOpaque?: SimpleMaterial,
-    simpleTransparent?: SimpleMaterial,
-    wireframe?: THREE.LineBasicMaterial,
+    modelOpaque?: ModelMaterial,
+    modelTransparent?: ModelMaterial,
     ghost?: GhostMaterial,
     mask?: THREE.ShaderMaterial,
     outline?: OutlineMaterial,
     merge?: MergeMaterial,
   ) {
-    this.opaque = opaque ?? createOpaque()
-    this.transparent = transparent ?? createTransparent()
-    this.simpleOpaque = simpleOpaque ?? createSimpleOpaque()
-    this.simpleTransparent = simpleTransparent ?? createSimpleTransparent()
-    this.wireframe = wireframe ?? createWireframe()
-    this.ghost = ghost ?? createGhostMaterial()
-    this.mask = mask ?? createMaskMaterial()
-    this.outline = outline ?? new OutlineMaterial()
-    this.merge = merge ?? new MergeMaterial()
+    this._opaque = opaque ?? createOpaque()
+    this._transparent = transparent ?? createTransparent()
+    const onUpdate = () => this._onUpdate.dispatch()
+    this._modelOpaque = modelOpaque ?? createModelOpaque(onUpdate)
+    this._modelTransparent = modelTransparent ?? createModelTransparent(onUpdate)
+    this._ghost = ghost ?? new GhostMaterial(undefined, onUpdate)
+    this._mask = mask ?? createMaskMaterial()
+    this._outline = outline ?? new OutlineMaterial(undefined, onUpdate)
+    this._merge = merge ?? new MergeMaterial(onUpdate)
   }
+
+  /** The opaque model material. */
+  get modelOpaqueMaterial (): THREE.Material { return this._modelOpaque.three }
+  /** The transparent model material. */
+  get modelTransparentMaterial (): THREE.Material { return this._modelTransparent.three }
+  /** The ghost material used to render hidden/ghosted elements. */
+  get ghostMaterial (): THREE.Material { return this._ghost.three }
+
+  /** Opacity of the ghost material (0 = invisible, 1 = fully opaque). */
+  get ghostOpacity () { return this._ghost.opacity }
+  set ghostOpacity (value: number) { this._ghost.opacity = value }
+
+  /** Color of the ghost material. */
+  get ghostColor () { return this._ghost.color }
+  set ghostColor (value: THREE.Color) { this._ghost.color = value }
 
   /**
    * Updates material settings based on the provided configuration.
-   * @param {ViewerSettings} settings - The settings to apply to the materials.
    */
-  applySettings (settings: ViewerSettings) {
-    this.opaque.color = settings.materials.standard.color
-    this.transparent.color = settings.materials.standard.color
+  applySettings (settings: MaterialSettings) {
+    this.modelColor = settings.standard.color
 
-    this.ghostOpacity = settings.materials.ghost.opacity
-    this.ghostColor = settings.materials.ghost.color
+    this._ghost.opacity = settings.ghost.opacity
+    this._ghost.color = settings.ghost.color
 
-    this.wireframeColor = settings.materials.highlight.color
-    this.wireframeOpacity = settings.materials.highlight.opacity
+    this.sectionStrokeWidth = settings.section.strokeWidth
+    this.sectionStrokeFalloff = settings.section.strokeFalloff
+    this.sectionStrokeColor = settings.section.strokeColor
 
-    this.sectionStrokeWidth = settings.materials.section.strokeWidth
-    this.sectionStrokeFalloff = settings.materials.section.strokeFalloff
-    this.sectionStrokeColor = settings.materials.section.strokeColor
-
-    this.outlineIntensity = settings.materials.outline.intensity
-    this.outlineColor = settings.materials.outline.color
+    this.outlineIntensity = settings.outline.intensity
+    this.outlineColor = settings.outline.color
   }
 
-  /**
-   * A signal dispatched whenever a material is modified.
-   */
+  /** @internal Signal dispatched whenever a material is modified. */
   get onUpdate () {
     return this._onUpdate.asEvent()
   }
 
-  /**
-   * Determines the color of the model regular opaque and transparent materials.
-   */
+  /** Base color tint applied to opaque and transparent model materials. */
   get modelColor () {
-    return this.opaque.color
+    return this._opaque.color
   }
 
   set modelColor (color: THREE.Color) {
-    this.opaque.color = color
-    this.transparent.color = color
+    this._opaque.color = color
+    this._transparent.color = color
     this._onUpdate.dispatch()
   }
 
-  /**
-   * Determines the opacity of the ghost material. Range 0-1.
-   */
-  get ghostOpacity () {
-    return this.ghost.opacity
+  /** Intensity of the selection outline post-process effect. */
+  get outlineIntensity () {
+    return this._outline.intensity
   }
 
-  set ghostOpacity (opacity: number) {
-    this.ghost.opacity = opacity
-    this._onUpdate.dispatch()
+  set outlineIntensity (value: number) {
+    this._outline.intensity = value
   }
 
-  /**
-   * Determines the color of the ghost material.
-   */
-  get ghostColor (): THREE.Color {
-    return this.ghost.color
+  /** Color of the selection outline post-process effect. */
+  get outlineColor () {
+    return this._merge.color
   }
 
-  set ghostColor (color: THREE.Color) {
-    this.ghost.color = color
-    this._onUpdate.dispatch()
+  set outlineColor (value: THREE.Color) {
+    this._merge.color = value
   }
 
-  /**
-   * Determines the color intensity of the highlight effect on mouse hover.
-   */
-  get focusIntensity () {
-    return this._focusIntensity
-  }
-
-  set focusIntensity (value: number) {
-    if (this._focusIntensity === value) return
-    this._focusIntensity = value
-    this.opaque.focusIntensity = value
-    this.transparent.focusIntensity = value
-    this._onUpdate.dispatch()
-  }
-
-  /**
-   * Determines the color of the highlight effect on mouse hover.
-   */
-  get focusColor () {
-    return this._focusColor
-  }
-
-  set focusColor (value: THREE.Color) {
-    if (this._focusColor === value) return
-    this._focusColor = value
-    this.opaque.focusColor = value
-    this.transparent.focusColor = value
-    this._onUpdate.dispatch()
-  }
-
-  /**
-   * Determines the color of wireframe meshes.
-   */
-  get wireframeColor () {
-    return this.wireframe.color
-  }
-
-  set wireframeColor (value: THREE.Color) {
-    if (this.wireframe.color === value) return
-    this.wireframe.color = value
-    this._onUpdate.dispatch()
-  }
-
-  /**
-   * Determines the opacity of wireframe meshes.
-   */
-  get wireframeOpacity () {
-    return this.wireframe.opacity
-  }
-
-  set wireframeOpacity (value: number) {
-    if (this.wireframe.opacity === value) return
-
-    this.wireframe.opacity = value
-    this._onUpdate.dispatch()
-  }
-
-  /**
-   * The clipping planes applied to all relevent materials
-   */
+  /** Clipping planes applied to all materials. Set to undefined to disable clipping. */
   get clippingPlanes () {
     return this._clippingPlanes
   }
@@ -272,19 +227,16 @@ export class Materials {
   set clippingPlanes (value: THREE.Plane[] | undefined) {
     // THREE Materials will break if assigned undefined
     this._clippingPlanes = value
-    this.simpleOpaque.clippingPlanes = value ?? null
-    this.simpleTransparent.clippingPlanes = value ?? null
-    this.opaque.clippingPlanes = value ?? null
-    this.transparent.clippingPlanes = value ?? null
-    this.wireframe.clippingPlanes = value ?? null
-    this.ghost.clippingPlanes = value ?? null
-    this.mask.clippingPlanes = value ?? null
+    this._modelOpaque.clippingPlanes = value ?? null
+    this._modelTransparent.clippingPlanes = value ?? null
+    this._opaque.clippingPlanes = value ?? null
+    this._transparent.clippingPlanes = value ?? null
+    this._ghost.clippingPlanes = value ?? null
+    this._mask.clippingPlanes = value ?? null
     this._onUpdate.dispatch()
   }
 
-  /**
-   * The width of the stroke effect where the section box intersects the model.
-   */
+  /** Width of the stroke rendered where the section box intersects the model. */
   get sectionStrokeWidth () {
     return this._sectionStrokeWidth
   }
@@ -292,14 +244,12 @@ export class Materials {
   set sectionStrokeWidth (value: number) {
     if (this._sectionStrokeWidth === value) return
     this._sectionStrokeWidth = value
-    this.opaque.sectionStrokeWidth = value
-    this.transparent.sectionStrokeWidth = value
+    this._opaque.sectionStrokeWidth = value
+    this._transparent.sectionStrokeWidth = value
     this._onUpdate.dispatch()
   }
 
-  /**
-   * Gradient of the stroke effect where the section box intersects the model.
-   */
+  /** Gradient falloff of the section box intersection stroke. */
   get sectionStrokeFalloff () {
     return this._sectionStrokeFalloff
   }
@@ -307,14 +257,12 @@ export class Materials {
   set sectionStrokeFalloff (value: number) {
     if (this._sectionStrokeFalloff === value) return
     this._sectionStrokeFalloff = value
-    this.opaque.sectionStrokeFalloff = value
-    this.transparent.sectionStrokeFalloff = value
+    this._opaque.sectionStrokeFalloff = value
+    this._transparent.sectionStrokeFalloff = value
     this._onUpdate.dispatch()
   }
 
-  /**
-   * Color of the stroke effect where the section box intersects the model.
-   */
+  /** Color of the section box intersection stroke. */
   get sectionStrokeColor () {
     return this._sectionStrokeColor
   }
@@ -322,34 +270,8 @@ export class Materials {
   set sectionStrokeColor (value: THREE.Color) {
     if (this._sectionStrokeColor === value) return
     this._sectionStrokeColor = value
-    this.opaque.sectionStrokeColor = value
-    this.transparent.sectionStrokeColor = value
-    this._onUpdate.dispatch()
-  }
-
-  /**
-   * Color of the selection outline effect.
-   */
-  get outlineColor () {
-    return this.merge.color
-  }
-
-  set outlineColor (value: THREE.Color) {
-    if (this.merge.color === value) return
-    this.merge.color = value
-    this._onUpdate.dispatch()
-  }
-
-  /**
-   * Intensity of the the selection outline effect.
-   */
-  get outlineIntensity () {
-    return this.outline.intensity
-  }
-
-  set outlineIntensity (value: number) {
-    if (this.outline.intensity === value) return
-    this.outline.intensity = value
+    this._opaque.sectionStrokeColor = value
+    this._transparent.sectionStrokeColor = value
     this._onUpdate.dispatch()
   }
 
@@ -400,10 +322,10 @@ export class Materials {
     this._submeshColorTexture.magFilter = THREE.NearestFilter
 
     // Set the same texture on all materials
-    this.opaque.setSubmeshColorTexture(this._submeshColorTexture)
-    this.transparent.setSubmeshColorTexture(this._submeshColorTexture)
-    this.simpleOpaque.setSubmeshColorTexture(this._submeshColorTexture)
-    this.simpleTransparent.setSubmeshColorTexture(this._submeshColorTexture)
+    this._opaque.setSubmeshColorTexture(this._submeshColorTexture)
+    this._transparent.setSubmeshColorTexture(this._submeshColorTexture)
+    this._modelOpaque.setSubmeshColorTexture(this._submeshColorTexture)
+    this._modelTransparent.setSubmeshColorTexture(this._submeshColorTexture)
 
     this._onUpdate.dispatch()
   }
@@ -415,28 +337,13 @@ export class Materials {
       this._submeshColorTexture = undefined
     }
 
-    this.opaque.dispose()
-    this.transparent.dispose()
-    this.simpleOpaque.dispose()
-    this.simpleTransparent.dispose()
-    this.wireframe.dispose()
-    this.ghost.dispose()
-    this.mask.dispose()
-    this.outline.dispose()
-    this.merge.three.dispose()
+    this._opaque.dispose()
+    this._transparent.dispose()
+    this._modelOpaque.dispose()
+    this._modelTransparent.dispose()
+    this._ghost.dispose()
+    this._mask.dispose()
+    this._outline.dispose()
+    this._merge.three.dispose()
   }
-}
-
-/**
- * Creates a new instance of the default wireframe material.
- * @returns {THREE.LineBasicMaterial} A new instance of LineBasicMaterial.
- */
-export function createWireframe () {
-  const material = new THREE.LineBasicMaterial({
-    depthTest: false,
-    opacity: 1,
-    color: new THREE.Color(0x0000ff),
-    transparent: true
-  })
-  return material
 }

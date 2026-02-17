@@ -6,9 +6,11 @@ import * as THREE from 'three'
 
 export class MergeMaterial {
   three: THREE.ShaderMaterial
+  private _onUpdate?: () => void
 
-  constructor () {
+  constructor (onUpdate?: () => void) {
     this.three = createMergeMaterial()
+    this._onUpdate = onUpdate
   }
 
   get color () {
@@ -18,6 +20,7 @@ export class MergeMaterial {
   set color (value: THREE.Color) {
     this.three.uniforms.color.value.copy(value)
     this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
   }
 
   get sourceA () {
@@ -27,6 +30,7 @@ export class MergeMaterial {
   set sourceA (value: THREE.Texture) {
     this.three.uniforms.sourceA.value = value
     this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
   }
 
   get sourceB () {
@@ -36,6 +40,7 @@ export class MergeMaterial {
   set sourceB (value: THREE.Texture) {
     this.three.uniforms.sourceB.value = value
     this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
   }
 }
 

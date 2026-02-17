@@ -9,7 +9,7 @@ import { InsertableSubmesh } from './insertableSubmesh'
 import { G3dMeshOffsets } from './g3dOffsets'
 import { Vim } from '../vim'
 import { Scene } from '../scene'
-import { ModelMaterial, Materials, applyMaterial } from '../materials/materials'
+import { MaterialSet, Materials, applyMaterial } from '../materials/materials'
 import { ElementMapping } from '../elementMapping'
 import { MappedG3d } from './mappedG3d'
 
@@ -56,9 +56,8 @@ export class InsertableMesh {
 
     this.geometry = new InsertableGeometry(offsets, materials, transparent, mapping, vimIndex)
 
-    this._material = transparent
-      ? Materials.getInstance().transparent.three
-      : Materials.getInstance().opaque.three
+    const m = Materials.getInstance()
+    this._material = transparent ? m.modelTransparentMaterial : m.modelOpaqueMaterial
 
     this.mesh = new THREE.Mesh(this.geometry.geometry, this._material)
     this.mesh.userData.vim = this
@@ -127,7 +126,7 @@ export class InsertableMesh {
     // }
   }
 
-  setMaterial(value: ModelMaterial) {
+  setMaterial(value: MaterialSet) {
     applyMaterial(this.mesh, value)
   }
 

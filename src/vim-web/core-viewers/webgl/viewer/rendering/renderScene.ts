@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { Scene } from '../../loader/scene'
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer'
 import { Materials } from '../../loader/materials/materials'
-import { ModelMaterial } from '../../loader/materials/materialSet'
+import { MaterialSet } from '../../loader/materials/materialSet'
 import { InstancedMesh } from '../../loader/progressive/instancedMesh'
 import { MAX_VIMS } from '../../loader/vimCollection'
 
@@ -27,7 +27,7 @@ export class RenderScene {
   private _boundingBox: THREE.Box3 | undefined
   private _2dCount = 0
   private _outlineCount = 0
-  private _modelMaterial: ModelMaterial
+  private _modelMaterial: MaterialSet
 
   get meshes() {
     return this._vimScenesById
@@ -39,7 +39,7 @@ export class RenderScene {
     this.threeScene = new THREE.Scene()
     // Initialize with simple material (fast mode) - will be overridden by isolation system
     const m = Materials.getInstance()
-    this._modelMaterial = new ModelMaterial(m.simpleOpaque.three, m.simpleTransparent.three)
+    this._modelMaterial = new MaterialSet(m.modelOpaqueMaterial, m.modelTransparentMaterial)
   }
 
   has2dObjects () {
@@ -137,7 +137,7 @@ export class RenderScene {
   get modelMaterial() {
     return this._modelMaterial
   }
-  set modelMaterial(material: ModelMaterial) {
+  set modelMaterial(material: MaterialSet) {
     this._modelMaterial = material
     for (const scene of this._vimScenesById) {
       if (scene) scene.material = material
