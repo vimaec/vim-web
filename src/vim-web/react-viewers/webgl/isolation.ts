@@ -1,5 +1,6 @@
 import * as Core from "../../core-viewers";
 import { Element3D, Selectable } from "../../core-viewers/webgl";
+import { ModelMaterial } from "../../core-viewers/webgl/loader/materials/materialSet";
 import { IsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
 
 export function useWebglIsolation(viewer: Core.Webgl.Viewer){
@@ -8,16 +9,17 @@ export function useWebglIsolation(viewer: Core.Webgl.Viewer){
 }
 
 function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapter {
-  var quality: boolean = false; // Start in fast mode
   var ghost: boolean = false;
+  var transparency: boolean = true;
   var rooms: boolean = false;
 
   function updateMaterials(){
-    viewer.renderer.modelMaterial =
-      !ghost && quality ? viewer.materials.createStandardModelMaterial()
-      : ghost && quality ? viewer.materials.createStandardModelMaterial(viewer.materials.ghost)
-      : !ghost && !quality ? viewer.materials.createSimpleModelMaterial()
-      : viewer.materials.createSimpleModelMaterial(viewer.materials.ghost);
+    const m = viewer.materials
+    viewer.renderer.modelMaterial = new ModelMaterial(
+      m.simpleOpaque.three,
+      transparency ? m.simpleTransparent.three : m.simpleOpaque.three,
+      ghost ? m.ghost.three : undefined
+    )
   }
 
   // Don't call updateMaterials() immediately - let RenderScene default handle initial state
@@ -85,13 +87,6 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
       }
     },
     
-    enableQuality: (enable: boolean) => {
-      if(quality !== enable){
-        quality = enable;
-        updateMaterials();
-      };
-    },
-
     showGhost: (show: boolean) => {
       ghost = show;
       updateMaterials();
@@ -99,6 +94,11 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
 
     getGhostOpacity: () => viewer.materials.ghostOpacity,
     setGhostOpacity: (opacity: number) => viewer.materials.ghostOpacity = opacity,
+
+    setTransparency: (enabled: boolean) => {
+      transparency = enabled;
+      updateMaterials();
+    },
 
     getShowRooms: () => rooms,
     setShowRooms: (show: boolean) => {

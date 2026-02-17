@@ -6,16 +6,64 @@
 import * as THREE from 'three'
 
 /**
- * Creates a material for the ghost effect in isolation mode.
+ * Material wrapper for the ghost effect in isolation mode.
+ * Non-visible items are rendered as transparent objects using a customizable fill color.
+ * Visible items are completely excluded from rendering.
+ */
+export class GhostMaterial {
+  three: THREE.ShaderMaterial
+
+  constructor (material?: THREE.ShaderMaterial) {
+    this.three = material ?? createGhostShader()
+  }
+
+  get opacity () {
+    return this.three.uniforms.opacity.value
+  }
+
+  set opacity (value: number) {
+    this.three.uniforms.opacity.value = value
+    this.three.uniformsNeedUpdate = true
+  }
+
+  get color (): THREE.Color {
+    return this.three.uniforms.fillColor.value
+  }
+
+  set color (value: THREE.Color) {
+    this.three.uniforms.fillColor.value = value
+    this.three.uniformsNeedUpdate = true
+  }
+
+  get clippingPlanes () {
+    return this.three.clippingPlanes
+  }
+
+  set clippingPlanes (value: THREE.Plane[] | null) {
+    this.three.clippingPlanes = value
+  }
+
+  dispose () {
+    this.three.dispose()
+  }
+}
+
+/**
+ * Creates a GhostMaterial for isolation mode.
+ */
+export function createGhostMaterial(): GhostMaterial {
+  return new GhostMaterial(createGhostShader())
+}
+
+/**
+ * Creates the shader material for the ghost effect.
  *
  * - **Non-visible items**: Rendered as transparent objects using a customizable fill color.
  * - **Visible items**: Completely excluded from rendering.
  * - Designed for use with instanced or merged meshes.
  * - Includes clipping plane support and transparency.
- *
- * @returns {THREE.ShaderMaterial} A custom shader material for the ghost effect.
  */
-export function createGhostMaterial() {
+function createGhostShader() {
   return new THREE.ShaderMaterial({
     userData: {
       isGhost: true
@@ -27,7 +75,7 @@ export function createGhostMaterial() {
       fillColor: { value: new THREE.Vector3(0.0549, 0.0549, 0.0549) }
     },
 
-    // Render only the front side of faces to prevent drawing internal geometry.
+    // Draw only front faces for performance, ghost are approximate anyway.
     side: THREE.FrontSide,
     // Use GLSL ES 3.0 for WebGL 2
     glslVersion: THREE.GLSL3,

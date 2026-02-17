@@ -111,14 +111,12 @@ function createAdapter(viewer: Viewer): IsolationAdapter {
         }
       }
     },
-    enableQuality: (enable: boolean) => {
-      console.log("enableQuality not implemented for Ultra viewer")
-    },
-
     getGhostOpacity: () => viewer.renderer.ghostOpacity,
     setGhostOpacity: (opacity: number) => {
       viewer.renderer.ghostOpacity = opacity
     },
+
+    setTransparency: (enabled: boolean) => {console.log("setTransparency not implemented")},
 
     getShowRooms: () => true,
     setShowRooms: (show: boolean) => {console.log("setShowRooms not implemented")},

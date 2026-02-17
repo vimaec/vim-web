@@ -5,10 +5,10 @@ import { GenericPanel, GenericPanelHandle } from "../generic/genericPanel";
 export const Ids = {
   showGhost: "isolationPanel.showGhost",
   ghostOpacity: "isolationPanel.ghostOpacity",
-  quality: "isolationPanel.quality",
+  transparency: "isolationPanel.transparency",
 }
 
-export const IsolationPanel = forwardRef<GenericPanelHandle, { state: IsolationRef, quality: boolean }>(
+export const IsolationPanel = forwardRef<GenericPanelHandle, { state: IsolationRef }>(
   (props, ref) => {
     return (
       <GenericPanel
@@ -19,18 +19,16 @@ export const IsolationPanel = forwardRef<GenericPanelHandle, { state: IsolationR
         entries={[
           {
             type: "bool",
+            id: Ids.transparency,
+            label: "Transparency",
+            state: props.state.transparency
+          },
+          {
+            type: "bool",
             id: Ids.showGhost,
             label: "Show Ghost",
             state: props.state.showGhost
           },
-          /*
-          {
-            type: "bool",
-            id: "showRooms",
-            label: "Show Rooms",
-            state: props.state.showRooms
-          },
-          */
           {
             type: "number",
             id: Ids.ghostOpacity,
@@ -40,13 +38,6 @@ export const IsolationPanel = forwardRef<GenericPanelHandle, { state: IsolationR
             min: 0,
             max: 1,
             step: 0.05
-          },
-          {
-            type: "bool",
-            visible: () => props.quality,
-            id: Ids.quality,
-            label: "Quality",
-            state: props.state.quality
           },
         ]}
       />

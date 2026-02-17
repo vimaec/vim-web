@@ -5,7 +5,7 @@
 import * as THREE from 'three'
 import { StandardMaterial, createOpaque, createTransparent } from './standardMaterial'
 import { createMaskMaterial } from './maskMaterial'
-import { createGhostMaterial as createGhostMaterial } from './ghostMaterial'
+import { GhostMaterial, createGhostMaterial } from './ghostMaterial'
 import { OutlineMaterial } from './outlineMaterial'
 import { ViewerSettings } from '../../viewer/settings/viewerSettings'
 import { MergeMaterial } from './mergeMaterial'
@@ -79,7 +79,7 @@ export class Materials {
   /**
    * Material used for maximum performance (fast mode, opaque).
    */
-  readonly simple: SimpleMaterial
+  readonly simpleOpaque: SimpleMaterial
   /**
    * Material used for maximum performance (fast mode, transparent).
    */
@@ -91,7 +91,7 @@ export class Materials {
   /**
    * Material used to show traces of hidden objects.
    */
-  readonly ghost: THREE.Material
+  readonly ghost: GhostMaterial
   /**
    * Material used to filter out what is not selected for selection outline effect.
    */
@@ -120,17 +120,17 @@ export class Materials {
   constructor (
     opaque?: StandardMaterial,
     transparent?: StandardMaterial,
-    simple?: SimpleMaterial,
+    simpleOpaque?: SimpleMaterial,
     simpleTransparent?: SimpleMaterial,
     wireframe?: THREE.LineBasicMaterial,
-    ghost?: THREE.Material,
+    ghost?: GhostMaterial,
     mask?: THREE.ShaderMaterial,
     outline?: OutlineMaterial,
     merge?: MergeMaterial,
   ) {
     this.opaque = opaque ?? createOpaque()
     this.transparent = transparent ?? createTransparent()
-    this.simple = simple ?? createSimpleOpaque()
+    this.simpleOpaque = simpleOpaque ?? createSimpleOpaque()
     this.simpleTransparent = simpleTransparent ?? createSimpleTransparent()
     this.wireframe = wireframe ?? createWireframe()
     this.ghost = ghost ?? createGhostMaterial()
@@ -185,14 +185,11 @@ export class Materials {
    * Determines the opacity of the ghost material. Range 0-1.
    */
   get ghostOpacity () {
-    const mat = this.ghost as THREE.ShaderMaterial
-    return mat.uniforms.opacity.value
+    return this.ghost.opacity
   }
 
   set ghostOpacity (opacity: number) {
-    const mat = this.ghost as THREE.ShaderMaterial
-    mat.uniforms.opacity.value = opacity
-    mat.uniformsNeedUpdate = true
+    this.ghost.opacity = opacity
     this._onUpdate.dispatch()
   }
 
@@ -200,14 +197,11 @@ export class Materials {
    * Determines the color of the ghost material.
    */
   get ghostColor (): THREE.Color {
-    const mat = this.ghost as THREE.ShaderMaterial
-    return mat.uniforms.fillColor.value
+    return this.ghost.color
   }
 
   set ghostColor (color: THREE.Color) {
-    const mat = this.ghost as THREE.ShaderMaterial
-    mat.uniforms.fillColor.value = color
-    mat.uniformsNeedUpdate = true
+    this.ghost.color = color
     this._onUpdate.dispatch()
   }
 
@@ -278,7 +272,7 @@ export class Materials {
   set clippingPlanes (value: THREE.Plane[] | undefined) {
     // THREE Materials will break if assigned undefined
     this._clippingPlanes = value
-    this.simple.clippingPlanes = value ?? null
+    this.simpleOpaque.clippingPlanes = value ?? null
     this.simpleTransparent.clippingPlanes = value ?? null
     this.opaque.clippingPlanes = value ?? null
     this.transparent.clippingPlanes = value ?? null
@@ -408,40 +402,10 @@ export class Materials {
     // Set the same texture on all materials
     this.opaque.setSubmeshColorTexture(this._submeshColorTexture)
     this.transparent.setSubmeshColorTexture(this._submeshColorTexture)
-    this.simple.setSubmeshColorTexture(this._submeshColorTexture)
+    this.simpleOpaque.setSubmeshColorTexture(this._submeshColorTexture)
     this.simpleTransparent.setSubmeshColorTexture(this._submeshColorTexture)
 
     this._onUpdate.dispatch()
-  }
-
-  /**
-   * Creates a ModelMaterial for standard/quality mode rendering.
-   * Uses StandardMaterial (MeshLambertMaterial) with proper lighting.
-   *
-   * @param hidden Optional material for ghosted/hidden objects. If undefined, ghost rendering is disabled.
-   * @returns ModelMaterial with opaque and transparent StandardMaterials
-   */
-  createStandardModelMaterial(hidden?: THREE.Material): ModelMaterial {
-    return new ModelMaterial(
-      this.opaque.three,
-      this.transparent.three,
-      hidden
-    )
-  }
-
-  /**
-   * Creates a ModelMaterial for simple/fast mode rendering.
-   * Uses SimpleMaterial with screen-space derivative normals for better performance.
-   *
-   * @param hidden Optional material for ghosted/hidden objects. If undefined, ghost rendering is disabled.
-   * @returns ModelMaterial with simple materials (separate opaque and transparent)
-   */
-  createSimpleModelMaterial(hidden?: THREE.Material): ModelMaterial {
-    return new ModelMaterial(
-      this.simple.three,
-      this.simpleTransparent.three,
-      hidden
-    )
   }
 
   /** dispose all materials. */
@@ -453,7 +417,7 @@ export class Materials {
 
     this.opaque.dispose()
     this.transparent.dispose()
-    this.simple.dispose()
+    this.simpleOpaque.dispose()
     this.simpleTransparent.dispose()
     this.wireframe.dispose()
     this.ghost.dispose()

@@ -5,7 +5,8 @@
 import * as THREE from 'three'
 import { Scene } from '../../loader/scene'
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer'
-import { ModelMaterial, Materials } from '../../loader/materials/materials'
+import { Materials } from '../../loader/materials/materials'
+import { ModelMaterial } from '../../loader/materials/materialSet'
 import { InstancedMesh } from '../../loader/progressive/instancedMesh'
 import { MAX_VIMS } from '../../loader/vimCollection'
 
@@ -37,7 +38,8 @@ export class RenderScene {
   constructor () {
     this.threeScene = new THREE.Scene()
     // Initialize with simple material (fast mode) - will be overridden by isolation system
-    this._modelMaterial = Materials.getInstance().createSimpleModelMaterial()
+    const m = Materials.getInstance()
+    this._modelMaterial = new ModelMaterial(m.simpleOpaque.three, m.simpleTransparent.three)
   }
 
   has2dObjects () {

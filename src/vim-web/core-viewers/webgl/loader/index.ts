@@ -1,7 +1,6 @@
 // Full export
 export type { VimSettings, VimPartialSettings } from './vimSettings';
 export type { RequestSource, LoadRequest, ILoadRequest } from './progressive/loadRequest';
-export * as Materials from './materials';
 
 // Types
 export type { Transparency } from './geometry';
