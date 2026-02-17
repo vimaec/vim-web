@@ -8,6 +8,7 @@ import { InsertableGeometry } from './insertableGeometry'
 import { InsertableSubmesh } from './insertableSubmesh'
 import { G3dMeshOffsets } from './g3dOffsets'
 import { Vim } from '../vim'
+import { Scene } from '../scene'
 import { ModelMaterial, Materials, applyMaterial } from '../materials/materials'
 import { ElementMapping } from '../elementMapping'
 import { MappedG3d } from './mappedG3d'
@@ -75,7 +76,9 @@ export class InsertableMesh {
 
   update () {
     this.geometry.update()
-    this.vim?.scene.updateBox(this.geometry.boundingBox)
+    if (this.vim) {
+      (this.vim.scene as Scene).updateBox(this.geometry.boundingBox)
+    }
   }
 
   clearUpdate () {

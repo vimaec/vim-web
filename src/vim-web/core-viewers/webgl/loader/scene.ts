@@ -23,12 +23,21 @@ export interface IRenderer {
   notifySceneUpdate()
 }
 
+/** Public-facing interface for vim.scene. Represents loaded geometry in the renderer. */
+export interface IScene {
+  /** Bounding box of currently loaded geometry. Undefined if nothing loaded yet. */
+  getBoundingBox(target?: THREE.Box3): THREE.Box3 | undefined
+  /** Bounding box using average mesh centers. More stable against outliers. */
+  getAverageBoundingBox(): THREE.Box3
+  /** Material override for all meshes in this scene. Set undefined to remove. */
+  material: ModelMaterial
+}
+
 /**
  * Represents a scene that contains multiple meshes.
  * It tracks the global bounding box as meshes are added and maintains a mapping between g3d instance indices and meshes.
  */
-// TODO: Only expose what should be public to vim.scene
-export class Scene {
+export class Scene implements IScene {
   // Dependencies
   private _renderer: Renderer
   private _vim: Vim | undefined

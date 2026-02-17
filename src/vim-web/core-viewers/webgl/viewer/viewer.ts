@@ -19,6 +19,7 @@ import { ISignal, SignalDispatcher } from 'ste-signals'
 import type {InputHandler} from '../../shared'
 import { Materials } from '../loader/materials/materials'
 import { Vim } from '../loader/vim'
+import { Scene } from '../loader/scene'
 import { VimCollection } from '../loader/vimCollection'
 import { createInputHandler } from './inputAdapter'
 import { Renderer } from './rendering/renderer'
@@ -91,7 +92,8 @@ export class Viewer {
   private _clock = new THREE.Clock()
 
   // State
-  private _vimCollection = new VimCollection()
+  /** @internal */
+  readonly vimCollection = new VimCollection()
   private _onVimLoaded = new SignalDispatcher()
   private _updateId: number
 
@@ -124,7 +126,7 @@ export class Viewer {
       this.renderer.three,
       this._camera,
       scene,
-      this._vimCollection,
+      this.vimCollection,
       this.renderer.section,
       size.x || 1,
       size.y || 1
@@ -164,30 +166,14 @@ export class Viewer {
    * @returns {Vim[]} An array of all Vim objects currently loaded in the viewer.
    */
   get vims () {
-    return this._vimCollection.getAll()
+    return this.vimCollection.getAll()
   }
 
   /**
    * The number of Vim objects currently loaded in the viewer.
    */
   get vimCount () {
-    return this._vimCollection.count
-  }
-
-  /**
-   * Allocates a stable ID for a new vim to be loaded.
-   * The ID persists for the vim's lifetime and is used for GPU picking.
-   * @returns The allocated ID (0-255), or undefined if all 256 slots are in use
-   */
-  allocateVimId (): number | undefined {
-    return this._vimCollection.allocateId()
-  }
-
-  /**
-   * Whether the viewer has reached maximum capacity (256 vims).
-   */
-  get isVimsFull (): boolean {
-    return this._vimCollection.isFull
+    return this.vimCollection.count
   }
 
   /**
@@ -196,12 +182,12 @@ export class Viewer {
    * @throws {Error} If the Vim object is already added.
    */
   add (vim: Vim) {
-    if (this._vimCollection.has(vim)) {
+    if (this.vimCollection.has(vim)) {
       throw new Error('Vim cannot be added again, unless removed first.')
     }
 
-    this.renderer.add(vim.scene)
-    this._vimCollection.add(vim)
+    this.renderer.add(vim.scene as Scene)
+    this.vimCollection.add(vim)
     this._onVimLoaded.dispatch()
   }
 
@@ -211,11 +197,11 @@ export class Viewer {
    * @throws {Error} If attempting to remove a Vim object that is not present in the viewer.
    */
   remove (vim: Vim) {
-    if (!this._vimCollection.has(vim)) {
+    if (!this.vimCollection.has(vim)) {
       throw new Error('Cannot remove missing vim from viewer.')
     }
-    this._vimCollection.remove(vim)
-    this.renderer.remove(vim.scene)
+    this.vimCollection.remove(vim)
+    this.renderer.remove(vim.scene as Scene)
     this.selection.removeFromVim(vim)
     this._onVimLoaded.dispatch()
   }
@@ -225,7 +211,7 @@ export class Viewer {
    */
   clear () {
     // Get a copy of all vims before clearing
-    const vims = this._vimCollection.getAll()
+    const vims = this.vimCollection.getAll()
     for (const vim of vims) {
       this.remove(vim)
     }
@@ -241,10 +227,10 @@ export class Viewer {
     this.renderer.dispose()
     ;(this.raycaster as GpuPicker).dispose()
     this.inputs.unregisterAll()
-    for (const vim of this._vimCollection.getAll()) {
+    for (const vim of this.vimCollection.getAll()) {
       vim?.dispose()
     }
-    this._vimCollection.clear()
+    this.vimCollection.clear()
     this.materials.dispose()
     this.gizmos.dispose()
   }

@@ -2,15 +2,30 @@
  * @module vim-loader
  */
 
-import { MeshSection, FilterMode } from 'vim-format'
+import { MeshSection } from 'vim-format'
 import { G3dMeshOffsets } from './g3dOffsets'
 import { MappedG3d } from './mappedG3d'
+
+/** Filter mode for subset operations. Only exports modes that are actually implemented. */
+export type SubsetFilter = 'instance' | 'mesh'
+
+/** Public-facing interface for geometry subsets. Used for progressive loading. */
+export interface ISubset {
+  /** Total instance count in this subset. */
+  getInstanceCount(): number
+  /** Split into smaller subsets by index count threshold (for chunked loading). */
+  chunks(count: number): ISubset[]
+  /** Return a new subset excluding instances matching the filter. */
+  except(mode: SubsetFilter, filter: number[] | Set<number>): ISubset
+  /** Return a new subset including only instances matching the filter. */
+  filter(mode: SubsetFilter, filter: number[] | Set<number>): ISubset
+}
 
 /**
  * Represents a subset of a complete scene definition.
  * Allows for further filtering or to get offsets needed to build the scene.
  */
-export class G3dSubset {
+export class G3dSubset implements ISubset {
   private _source: MappedG3d
 
   /** Lazy flat instance list — only materialized when filter/getVimInstance needs it */
@@ -244,7 +259,7 @@ export class G3dSubset {
    * @param mode Defines which field the filter will be applied to.
    * @param filter Array or Set of values to exclude.
    */
-  except (mode: FilterMode, filter: number[] | Set<number>): G3dSubset {
+  except (mode: SubsetFilter, filter: number[] | Set<number>): G3dSubset {
     return this._filter(mode, filter, false)
   }
 
@@ -253,29 +268,21 @@ export class G3dSubset {
    * @param mode Defines which field the filter will be applied to.
    * @param filter Array of all values to match for.
    */
-  filter (mode: FilterMode, filter: number[] | Set<number>): G3dSubset {
+  filter (mode: SubsetFilter, filter: number[] | Set<number>): G3dSubset {
     return this._filter(mode, filter, true)
   }
 
   private _filter (
-    mode: FilterMode,
+    mode: SubsetFilter,
     filter: number[] | Set<number>,
     has: boolean
   ): G3dSubset {
-    if (filter === undefined || mode === undefined) {
-      return new G3dSubset(this._source)
-    }
-
     // Short-circuit: empty filter
     const filterSize = filter instanceof Set ? filter.size : filter.length
     if (filterSize === 0) {
       return has
         ? G3dSubset._fromPrebuilt(this._source, 0, [], [])
         : this
-    }
-
-    if (mode === 'tag' || mode === 'group') {
-      throw new Error('Filter Mode Not implemented')
     }
 
     // Filter per-mesh directly — no flat instance list needed

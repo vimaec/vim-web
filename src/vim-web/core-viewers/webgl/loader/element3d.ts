@@ -7,11 +7,13 @@ import * as THREE from 'three'
 
 // Vim
 import { Vim } from './vim'
+import { Scene } from './scene'
 import { IElement, VimHelpers } from 'vim-format'
 import { WebglAttribute } from './webglAttribute'
 import { WebglColorAttribute } from './colorAttribute'
 import { Submesh } from './mesh'
 import { IVimElement } from '../../shared/vim'
+import { MappedG3d } from './progressive/mappedG3d'
 
 /**
  * High level api to interact with the loaded vim   ometry and data.
@@ -20,7 +22,7 @@ export class Element3D implements IVimElement {
   private _color: THREE.Color | undefined
   private _boundingBox: THREE.Box3 | undefined
   private _meshes: Submesh[] | undefined
-  
+  private readonly _g3d: MappedG3d | undefined
 
   private readonly _outlineAttribute: WebglAttribute<boolean>
   private readonly _visibleAttribute: WebglAttribute<boolean>
@@ -47,7 +49,7 @@ export class Element3D implements IVimElement {
    * The ID of the element associated with this object.
    */
   get elementId () : bigint {
-    return this.vim.map.getElementId(this.element)
+    return this.vim.map.getElementId(this.element)!
   }
 
   /**
@@ -65,7 +67,7 @@ export class Element3D implements IVimElement {
 
   get isRoom(){
     const instance = this.instances[0] ?? -1
-    return this.vim.g3d.getInstanceHasFlag(instance, 1)
+    return this._g3d?.getInstanceHasFlag(instance, 1) ?? false
   }
 
   /**
@@ -133,7 +135,7 @@ export class Element3D implements IVimElement {
   }
 
   private get renderer(){
-    return this.vim.scene.renderer
+    return (this.vim.scene as Scene).renderer
   }
 
   /**
@@ -147,12 +149,14 @@ export class Element3D implements IVimElement {
     vim: Vim,
     element: number,
     instances: number[] | undefined,
-    meshes: Submesh[] | undefined
+    meshes: Submesh[] | undefined,
+    g3d: MappedG3d | undefined
   ) {
     this.vim = vim
     this.element = element
     this.instances = instances
     this._meshes = meshes
+    this._g3d = g3d
 
     this._outlineAttribute = new WebglAttribute(
       false,

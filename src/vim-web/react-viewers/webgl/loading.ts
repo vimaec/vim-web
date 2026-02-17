@@ -93,7 +93,7 @@ export class ComponentLoader {
   }
 
   private loadInternal (source: Core.Webgl.RequestSource, settings: OpenSettings, loadGeometry: boolean) {
-    const vimIndex = this._viewer.allocateVimId()
+    const vimIndex = this._viewer.vimCollection.allocateId()
     if (vimIndex === undefined) {
       throw new Error('Cannot load vim: maximum of 256 vims already loaded')
     }

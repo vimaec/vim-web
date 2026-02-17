@@ -3,9 +3,24 @@
  */
 
 import { VimDocument } from 'vim-format'
-import { MappedG3d } from './progressive/mappedG3d'
 
-export class ElementNoMapping {
+/** Public-facing interface for BIM-to-geometry mapping. */
+export interface IElementMapping {
+  /** Returns element indices associated with element ID. */
+  getElementsFromElementId(id: number | bigint): number[] | undefined
+  /** Returns true if element exists in the vim. */
+  hasElement(element: number): boolean
+  /** Returns all element indices. */
+  getElements(): Iterable<number>
+  /** Returns instance indices for a given element. */
+  getInstancesFromElement(element: number): number[] | undefined
+  /** Returns the element index for a given instance. */
+  getElementFromInstance(instance: number): number | undefined
+  /** Returns the element ID for a given element index. */
+  getElementId(element: number): bigint | undefined
+}
+
+export class ElementNoMapping implements IElementMapping {
   getElementsFromElementId (id: number) {
     return undefined
   }
@@ -31,17 +46,15 @@ export class ElementNoMapping {
   }
 }
 
-export class ElementMapping {
+export class ElementMapping implements IElementMapping {
   private _instanceToElement: number[] | Int32Array
-  private _instanceMeshes: Int32Array
   private _elementToInstances: (number[] | undefined)[]
   private _elementIds: BigInt64Array
   private _elementIdToElements: Map<bigint, number[]> | null = null
 
   constructor (
     instanceToElement: number[] | Int32Array,
-    elementIds: BigInt64Array,
-    instanceMeshes?: Int32Array
+    elementIds: BigInt64Array
   ) {
     // Direct reference - no copy needed (read-only)
     this._instanceToElement = instanceToElement
@@ -53,17 +66,15 @@ export class ElementMapping {
     )
 
     this._elementIds = elementIds
-    this._instanceMeshes = instanceMeshes
   }
 
-  static async fromG3d (g3d: MappedG3d, bim: VimDocument) {
+  static async fromG3d (bim: VimDocument) {
     const instanceToElement = await bim.node.getAllElementIndex()
     const elementIds = await bim.element.getAllId()
 
     return new ElementMapping(
       instanceToElement, // No conversion - use directly to avoid memory duplication
-      elementIds,
-      g3d.instanceMeshes
+      elementIds
     )
   }
 
@@ -83,18 +94,6 @@ export class ElementMapping {
    */
   hasElement (element: number) {
     return element >= 0 && element < this._elementIds.length
-  }
-
-  hasMesh (element: number) {
-    if (!this._instanceMeshes) return true
-    const instances = this._elementToInstances[element]
-    if (!instances) return false
-    for (const i of instances) {
-      if (this._instanceMeshes[i] >= 0) {
-        return true
-      }
-    }
-    return false
   }
 
   /**

@@ -85,7 +85,7 @@ export class LoadRequest extends BaseLoadRequest<Vim> {
     const materials = new G3dMaterial(mappedG3d.materialColors)
 
     const doc = await VimDocument.createFromBfast(bfast)
-    const mapping = await ElementMapping.fromG3d(mappedG3d, doc)
+    const mapping = await ElementMapping.fromG3d(doc)
 
     const scene = new Scene(fullSettings.matrix)
     const factory = new VimMeshFactory(mappedG3d, materials, scene, mapping, vimIndex)

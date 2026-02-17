@@ -3,17 +3,18 @@
  */
 
 import * as THREE from 'three'
-import { VimDocument, VimHeader, FilterMode } from 'vim-format'
-import { Scene } from './scene'
+import { VimDocument, VimHeader } from 'vim-format'
+import { Scene, IScene } from './scene'
 import { VimSettings } from './vimSettings'
 import { Element3D } from './element3d'
 import {
+  IElementMapping,
   ElementMapping,
   ElementNoMapping
 } from './elementMapping'
 import { ISignal, SignalDispatcher } from 'ste-signals'
 import { SimpleEventDispatcher } from 'ste-simple-events'
-import { G3dSubset } from './progressive/g3dSubset'
+import { G3dSubset, ISubset, SubsetFilter } from './progressive/g3dSubset'
 import { VimMeshFactory } from './progressive/vimMeshFactory'
 import { IVim } from '../../shared/vim'
 import { IProgress } from '../../shared/loadResult'
@@ -51,25 +52,24 @@ export class Vim implements IVim<Element3D> {
    */
   readonly bim: VimDocument | undefined
 
-  /**
-   * The raw g3d geometry scene definition with pre-computed mesh map.
-   */
-  readonly g3d: MappedG3d | undefined
+  private readonly _g3d: MappedG3d | undefined
 
   /**
    * The settings used when this vim was opened.
    */
   readonly settings: VimSettings
 
+  private readonly _scene: Scene
+
   /**
-   * Mostly Internal - The scene in which the vim geometry is added.
+   * The scene in which the vim geometry is added.
    */
-  readonly scene: Scene
+  get scene (): IScene { return this._scene }
 
   /**
    * The mapping from Bim to Geometry for this vim.
    */
-  readonly map: ElementMapping | ElementNoMapping
+  readonly map: IElementMapping
 
   private readonly _factory: VimMeshFactory
   private readonly _elementToObject = new Map<number, Element3D>()
@@ -106,9 +106,9 @@ export class Vim implements IVim<Element3D> {
     source: string) {
     this.header = header
     this.bim = document
-    this.g3d = g3d
+    this._g3d = g3d
     scene.vim = this
-    this.scene = scene
+    this._scene = scene
     this.settings = settings
     this.vimIndex = vimIndex
 
@@ -118,7 +118,7 @@ export class Vim implements IVim<Element3D> {
   }
 
   getBoundingBox(): Promise<THREE.Box3> {
-    const box = this.scene.getBoundingBox()
+    const box = this._scene.getBoundingBox()
     return Promise.resolve(box)
   }
 
@@ -166,9 +166,9 @@ export class Vim implements IVim<Element3D> {
     }
 
     const instances = this.map.getInstancesFromElement(element)
-    const meshes = this.scene.getMeshesFromInstances(instances)
+    const meshes = this._scene.getMeshesFromInstances(instances)
 
-    const result = new Element3D(this, element, instances, meshes)
+    const result = new Element3D(this, element, instances, meshes, this._g3d)
     this._elementToObject.set(element, result)
     return result
   }
@@ -188,9 +188,9 @@ export class Vim implements IVim<Element3D> {
 
   /**
    * Retrieves all instances as a subset.
-   * @returns {G3dSubset} A subset containing all instances.
+   * @returns {ISubset} A subset containing all instances.
    */
-  getFullSet (): G3dSubset {
+  getFullSet (): ISubset {
     return new G3dSubset(this._factory.g3d)
   }
 
@@ -204,12 +204,12 @@ export class Vim implements IVim<Element3D> {
   /**
    * Loads geometry for the given subset.
    * Caller is responsible for not loading the same subset twice.
-   * @param {G3dSubset} subset - The subset to load resources for.
+   * @param {ISubset} subset - The subset to load resources for.
    */
-  async loadSubset (subset: G3dSubset) {
+  async loadSubset (subset: ISubset) {
     if (subset.getInstanceCount() === 0) return
 
-    this._factory.add(subset)
+    this._factory.add(subset as G3dSubset)
     this._loadedInstanceCount += subset.getInstanceCount()
     this._onUpdate.dispatch({
       type: 'percent',
@@ -220,11 +220,11 @@ export class Vim implements IVim<Element3D> {
 
   /**
    * Asynchronously loads geometry based on a specified filter mode and criteria.
-   * @param {FilterMode} filterMode - The mode of filtering to apply.
+   * @param {SubsetFilter} filterMode - The mode of filtering to apply.
    * @param {number[]} filter - The filter criteria.
    */
   async loadFilter (
-    filterMode: FilterMode,
+    filterMode: SubsetFilter,
     filter: number[]
   ) {
     const subset = this.getFullSet().filter(filterMode, filter)
@@ -237,7 +237,7 @@ export class Vim implements IVim<Element3D> {
   clear () {
     this._elementToObject.clear()
     this._loadedInstanceCount = 0
-    this.scene.clear()
+    this._scene.clear()
     this._onUpdate.dispatch({
       type: 'percent',
       current: 0,
@@ -251,6 +251,6 @@ export class Vim implements IVim<Element3D> {
   dispose () {
     this._onDispose.dispatch()
     this._onDispose.clear()
-    this.scene.dispose()
+    this._scene.dispose()
   }
 }
