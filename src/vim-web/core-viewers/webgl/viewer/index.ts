@@ -7,7 +7,6 @@ export * from './settings';
 export {Layers} from './raycaster';
 
 // Type only
-export type * from './environment';
 export type * from './gizmos';
 export type * from './raycaster';
 export type * from './selection';

@@ -187,26 +187,6 @@ export class Vim implements IVim<Element3D> {
   }
 
   /**
-   * Retrieves an array containing all objects within the specified subset.
-   * @param {G3dSubset} subset - The subset to retrieve objects from.
-   * @returns {WebglElement3D[]} An array of objects within the specified subset.
-   */
-  getObjectsInSubset (subset: G3dSubset) {
-    const set = new Set<Element3D>()
-    const result: Element3D[] = []
-    const count = subset.getInstanceCount()
-    for (let i = 0; i < count; i++) {
-      const instance = subset.getVimInstance(i)
-      const obj = this.getElement(instance)
-      if (!set.has(obj)) {
-        result.push(obj)
-        set.add(obj)
-      }
-    }
-    return result
-  }
-
-  /**
    * Retrieves all instances as a subset.
    * @returns {G3dSubset} A subset containing all instances.
    */
