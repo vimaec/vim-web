@@ -9,10 +9,10 @@
 export const CLICK_MOVEMENT_THRESHOLD = 0.003
 
 /**
- * Maximum distance (in pixels) between two clicks
- * to be considered a double-click
+ * Maximum distance (in normalized canvas units [0-1]) between two clicks
+ * to be considered a double-click (~5px on a 1000px canvas)
  */
-export const DOUBLE_CLICK_DISTANCE_THRESHOLD = 5
+export const DOUBLE_CLICK_DISTANCE_THRESHOLD = 0.005
 
 /**
  * Maximum time (in milliseconds) between two clicks

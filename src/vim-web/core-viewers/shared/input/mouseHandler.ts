@@ -138,7 +138,7 @@ export class MouseHandler extends BaseInputHandler {
     if(this._doubleClickHandler.check(pos)){
       this.handleDoubleClick(event);
       return
-  }
+    }
     if(this._clickHandler.isClick(event.button, 0)){
       this.handleMouseClick(event);
       return
