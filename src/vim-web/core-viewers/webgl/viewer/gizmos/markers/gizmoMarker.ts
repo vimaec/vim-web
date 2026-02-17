@@ -4,13 +4,13 @@ import * as THREE from 'three'
 import { SimpleInstanceSubmesh } from '../../../loader/mesh'
 import { WebglAttribute } from '../../../loader/webglAttribute'
 import { WebglColorAttribute } from '../../../loader/colorAttribute'
-import { IVimElement } from '../../../../shared/vim'
+import { Selectable } from '../../selection'
 
 /**
  * Marker gizmo that displays an interactive sphere at a 3D position.
  * Marker gizmos are still under development.
  */
-export class Marker implements IVimElement {
+export class Marker implements Selectable {
   public readonly type = 'Marker'
   private _viewer: Viewer
   private _submesh: SimpleInstanceSubmesh

@@ -21,7 +21,7 @@ export function useViewerState (viewer: Core.Webgl.Viewer) : ViewerState {
   }
 
   const getSelection = () => {
-    return [...viewer.selection.getAll()].filter(o => o.type === 'Element3D')
+    return [...viewer.selection.getAll()].filter((o): o is Core.Webgl.Element3D => o.type === 'Element3D')
   }
 
   const vim = useStateRef<Core.Webgl.Vim>(getVim())

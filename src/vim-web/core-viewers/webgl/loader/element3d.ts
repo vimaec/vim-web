@@ -12,13 +12,13 @@ import { IElement, VimHelpers } from 'vim-format'
 import { WebglAttribute } from './webglAttribute'
 import { WebglColorAttribute } from './colorAttribute'
 import { Submesh } from './mesh'
-import { IVimElement } from '../../shared/vim'
 import { MappedG3d } from './progressive/mappedG3d'
+import { Selectable } from '../viewer/selection'
 
 /**
- * High level api to interact with the loaded vim   ometry and data.
+ * High level api to interact with the loaded vim geometry and data.
  */
-export class Element3D implements IVimElement {
+export class Element3D implements Selectable {
   private _color: THREE.Color | undefined
   private _boundingBox: THREE.Box3 | undefined
   private _meshes: Submesh[] | undefined
