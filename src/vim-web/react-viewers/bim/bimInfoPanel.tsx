@@ -10,7 +10,7 @@ import { AugmentedElement } from '../helpers/element'
 import { Data, BimInfoPanelApi } from './bimInfoData'
 
 export function BimInfoPanel (props : {
-    object: Core.Webgl.Element3D,
+    object: Core.Webgl.IElement3D,
     vim: Core.Webgl.IWebglVim,
     elements: AugmentedElement[],
     full : boolean

@@ -6,7 +6,7 @@
 import * as THREE from 'three'
 
 // Vim
-import { Vim } from './vim'
+import { Vim, type IWebglVim } from './vim'
 import { Scene } from './scene'
 import { IElement, VimHelpers } from 'vim-format'
 import { WebglAttribute } from './webglAttribute'
@@ -16,9 +16,54 @@ import { MappedG3d } from './progressive/mappedG3d'
 import { ISelectable } from '../viewer/selection'
 
 /**
+ * Public interface for a loaded BIM element with geometry and visual state.
+ *
+ * Obtained via `vim.getElementFromIndex(index)` or `vim.getAllElements()`.
+ *
+ * @example
+ * ```ts
+ * const element = vim.getElementFromIndex(301)
+ * element.color = new THREE.Color(0xff0000)
+ * element.visible = false
+ * const params = await element.getBimParameters()
+ * ```
+ */
+export interface IElement3D extends ISelectable {
+  readonly type: 'Element3D'
+  /** The vim from which this element came. */
+  readonly vim: IWebglVim
+  /** The BIM element index. */
+  readonly element: number
+  /** The unique element ID. */
+  readonly elementId: bigint
+  /** The geometry instances associated with this element. */
+  readonly instances: number[] | undefined
+  /** True if this element has associated geometry. */
+  readonly hasMesh: boolean
+  /** True if this element is a room. */
+  readonly isRoom: boolean
+  /** Whether to render selection outline for this element. */
+  outline: boolean
+  /** Whether to render focus highlight for this element. */
+  focused: boolean
+  /** Whether to render this element. */
+  visible: boolean
+  /** The display color override. Set to undefined to revert to default. */
+  color: THREE.Color | undefined
+  /** Retrieves BIM data for this element. */
+  getBimElement(): Promise<IElement>
+  /** Retrieves all BIM parameters for this element. */
+  getBimParameters(): Promise<VimHelpers.ElementParameter[]>
+  /** Retrieves the bounding box, or undefined if the element has no geometry. */
+  getBoundingBox(): Promise<THREE.Box3 | undefined>
+  /** Retrieves the center position, or undefined if the element has no geometry. */
+  getCenter(target?: THREE.Vector3): Promise<THREE.Vector3 | undefined>
+}
+
+/**
  * High level api to interact with the loaded vim geometry and data.
  */
-export class Element3D implements ISelectable {
+export class Element3D implements IElement3D {
   private _color: THREE.Color | undefined
   private _boundingBox: THREE.Box3 | undefined
   private _meshes: Submesh[] | undefined

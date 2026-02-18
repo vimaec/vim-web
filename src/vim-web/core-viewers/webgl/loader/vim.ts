@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { VimDocument, VimHeader } from 'vim-format'
 import { Scene, IScene } from './scene'
 import { VimSettings } from './vimSettings'
-import { Element3D } from './element3d'
+import { Element3D, type IElement3D } from './element3d'
 import {
   IElementMapping,
   ElementMapping,
@@ -39,7 +39,7 @@ import { MappedG3d } from './progressive/mappedG3d'
  * await vim.load(sub)
  * ```
  */
-export interface IWebglVim extends IVim<Element3D> {
+export interface IWebglVim extends IVim<IElement3D> {
   readonly type: 'webgl'
   /** The URL this vim was loaded from, if applicable. */
   readonly source: string | undefined

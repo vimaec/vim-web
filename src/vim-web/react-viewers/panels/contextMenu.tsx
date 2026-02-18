@@ -103,7 +103,7 @@ export function ContextMenu (props: {
   camera: CameraApi
   modal: ModalHandle
   isolation: IsolationApi
-  selection: Core.Webgl.Element3D[]
+  selection: Core.Webgl.IElement3D[]
   customization?: (e: ContextMenuElement[]) => ContextMenuElement[]
   treeRef: React.MutableRefObject<TreeActionApi | undefined>
 }) {

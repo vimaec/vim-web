@@ -12,7 +12,7 @@ export type ElementParameter = {
   isInstance: boolean;
 };
 
-export async function getObjectData (object: Core.Webgl.Element3D, elements: AugmentedElement[]) : Promise<BIM.Data> {
+export async function getObjectData (object: Core.Webgl.IElement3D, elements: AugmentedElement[]) : Promise<BIM.Data> {
   const element = object
     ? elements.find((e) => e.index === object.element)
     : undefined
@@ -62,7 +62,7 @@ export function getHeader (info: AugmentedElement | undefined): BIM.Entry[] | un
 }
 
 export async function getBody (
-  object: Core.Webgl.Element3D
+  object: Core.Webgl.IElement3D
 ): Promise<BIM.Section[]> {
   let parameters = await object?.getBimParameters()
   if (!parameters) return null

@@ -3,7 +3,7 @@
  */
 
 import { Camera } from './camera'
-import { Element3D } from '../../loader/element3d'
+import { Element3D, type IElement3D } from '../../loader/element3d'
 import { ISelectable } from '../selection'
 import * as THREE from 'three'
 import { Marker } from '../gizmos/markers/gizmoMarker'
@@ -175,8 +175,8 @@ export abstract class CameraMovement {
    * Orients the camera to look at the given point. The orbit target is updated.
    * @param target - The target element or world position to look at.
    */
-  async lookAt (target: Element3D | THREE.Vector3) {
-    const pos = target instanceof Element3D ? (await target.getCenter()) : target
+  async lookAt (target: IElement3D | THREE.Vector3) {
+    const pos = target instanceof THREE.Vector3 ? target : (await target.getCenter())
     if (!pos) return
     this._camera.screenTarget.set(0.5, 0.5)
     this._camera.isTargetFloating = false
@@ -189,8 +189,8 @@ export abstract class CameraMovement {
    * Moves the orbit target without moving the camera or changing orientation.
    * @param target - The new orbit target (element or world position).
    */
-  async setTarget (target: Element3D | THREE.Vector3) {
-    const pos = target instanceof Element3D ? (await target.getCenter()) : target
+  async setTarget (target: IElement3D | THREE.Vector3) {
+    const pos = target instanceof THREE.Vector3 ? target : (await target.getCenter())
     if (!pos) return
     this._camera.target.copy(pos)
     this._camera.isTargetFloating = false

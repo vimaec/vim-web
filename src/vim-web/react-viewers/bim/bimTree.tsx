@@ -17,14 +17,14 @@ import { ArrayEquals } from '../helpers/data'
 import { BimTreeData, VimTreeNode } from './bimTreeData'
 import { IsolationApi } from '../state/sharedIsolation'
 
-import Element3D = Core.Webgl.Element3D
+type IElement3D = Core.Webgl.IElement3D
 import Viewer = Core.Webgl.Viewer
 
 export type TreeActionApi = {
   showAll: () => void
   hideAll: () => void
   collapseAll: () => void
-  selectSiblings: (element: Element3D) => void
+  selectSiblings: (element: IElement3D) => void
 }
 
 /**
@@ -38,12 +38,12 @@ export function BimTree (props: {
   actionRef: React.MutableRefObject<TreeActionApi>
   viewer: Viewer
   camera: CameraApi
-  objects: Element3D[]
+  objects: IElement3D[]
   isolation: IsolationApi
   treeData: BimTreeData
 }) {
   // Data state
-  const [objects, setObjects] = useState<Element3D[]>([])
+  const [objects, setObjects] = useState<IElement3D[]>([])
 
   // Tree state
   const [expandedItems, setExpandedItems] = useState<number[]>([])
@@ -65,7 +65,7 @@ export function BimTree (props: {
       collapseAll: () => {
         setExpandedItems([])
       },
-      selectSiblings: (object: Element3D) => {
+      selectSiblings: (object: IElement3D) => {
         const element = object.element
         const node = props.treeData.getNodeFromElement(element)
         const siblings = props.treeData.getSiblings(node)
@@ -286,7 +286,7 @@ function updateViewerSelection (
   nodes: number[],
   operation: 'add' | 'remove' | 'set'
 ) {
-  const objects: Element3D[] = []
+  const objects: IElement3D[] = []
   nodes.forEach((n) => {
     const item = tree.nodes[n]
     const element = item.data.index

@@ -1,5 +1,5 @@
 import * as Core from "../../core-viewers";
-import { Element3D, ISelectable } from "../../core-viewers/webgl";
+import { ISelectable } from "../../core-viewers/webgl";
 import { IIsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
 
 export function useWebglIsolation(viewer: Core.Webgl.Viewer){
