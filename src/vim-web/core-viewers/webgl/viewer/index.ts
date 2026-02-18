@@ -6,10 +6,10 @@ export { Layers } from './raycaster'
 export type { ViewerSettings, PartialViewerSettings, MaterialSettings } from './settings'
 
 // Camera
-export type { ICamera, CameraMovement } from './camera'
+export type { ICamera, ICameraMovement } from './camera'
 
 // Rendering
-export type { Renderer, RenderingSection } from './rendering'
+export type { IRenderer, RenderingSection } from './rendering'
 
 // Selection
 export type { ISelectable, ISelection } from './selection'

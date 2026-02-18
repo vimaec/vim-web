@@ -1,6 +1,109 @@
 import { ISignal } from 'ste-signals';
 import * as THREE from 'three';
-import { CameraMovement } from './cameraMovement';
+import type { IElement3D } from '../../loader/element3d';
+import type { IWebglVim } from '../../loader/vim';
+import type { ISelectable } from '../selection';
+
+/**
+ * Public interface for camera movement operations.
+ *
+ * Obtained via `camera.snap()` (instant) or `camera.lerp(duration)` (animated).
+ *
+ * @example
+ * ```ts
+ * camera.lerp(1).frame(element)           // Animate to frame element
+ * camera.snap().set(position, target)     // Instant position/target
+ * camera.lerp(0.5).orbit(new THREE.Vector2(45, 0))  // Animated orbit
+ * ```
+ */
+export interface ICameraMovement {
+  /**
+   * Moves the camera along a single axis.
+   * @param axis The Z-up axis to move along ('X' = right, 'Y' = forward, 'Z' = up).
+   * @param amount The distance to move.
+   * @param space 'local' to move relative to camera orientation, 'world' for absolute axes.
+   */
+  move(axis: 'X' | 'Y' | 'Z', amount: number, space: 'local' | 'world'): void
+  /**
+   * Moves the camera along two axes.
+   * @param axes The Z-up plane to move in (e.g. 'XY' = ground, 'XZ' = vertical).
+   * @param vector The 2D displacement, components mapped to the specified axes.
+   * @param space 'local' to move relative to camera orientation, 'world' for absolute axes.
+   */
+  move(axes: 'XY' | 'XZ' | 'YZ', vector: THREE.Vector2, space: 'local' | 'world'): void
+  /**
+   * Moves the camera along all three axes.
+   * @param axes Must be 'XYZ'.
+   * @param vector The 3D displacement in Z-up convention (X = right, Y = forward, Z = up).
+   * @param space 'local' to move relative to camera orientation, 'world' for absolute axes.
+   */
+  move(axes: 'XYZ', vector: THREE.Vector3, space: 'local' | 'world'): void
+
+  /**
+   * Rotates the camera in place by the given angles.
+   * @param angle - x: yaw (around Z), y: pitch (up/down), in degrees.
+   */
+  rotate(angle: THREE.Vector2): void
+
+  /**
+   * Changes the distance between the camera and its target by a specified factor.
+   * @param amount - The zoom factor (e.g., 2 to zoom in / halve the distance, 0.5 to zoom out / double the distance).
+   */
+  zoom(amount: number): void
+
+  /**
+   * Zooms the camera toward a specific world point while preserving camera orientation.
+   * The orbit target is updated to the world point for future orbit operations.
+   * @param amount - The zoom factor (e.g., 2 to zoom in / move closer, 0.5 to zoom out / move farther).
+   * @param worldPoint - The world position to zoom toward.
+   * @param screenPoint - Screen position of the world point, used to keep the target pinned under the cursor.
+   */
+  zoomTowards(amount: number, worldPoint: THREE.Vector3, screenPoint?: THREE.Vector2): void
+
+  /**
+   * Orbits the camera around its target while maintaining the distance.
+   * @param angle - x: azimuth change, y: elevation change, in degrees.
+   */
+  orbit(angle: THREE.Vector2): void
+
+  /**
+   * Orbits the camera around its target to align with the given direction.
+   * @param direction - The direction towards which the camera should be oriented.
+   */
+  orbitTowards(direction: THREE.Vector3): void
+
+  /**
+   * Orients the camera to look at the given point. The orbit target is updated.
+   * @param target - The target element or world position to look at.
+   */
+  lookAt(target: IElement3D | THREE.Vector3): Promise<void>
+
+  /**
+   * Moves the orbit target without moving the camera or changing orientation.
+   * @param target - The new orbit target (element or world position).
+   */
+  setTarget(target: IElement3D | THREE.Vector3): Promise<void>
+
+  /**
+   * Resets the camera to its last saved position and orientation.
+   */
+  reset(): void
+
+  /**
+   * Sets the camera position and target, orienting the camera to look at the target.
+   * Elevation is clamped to avoid gimbal lock at poles.
+   * @param position - The new camera position.
+   * @param target - The new orbit target. Defaults to the current target.
+   */
+  set(position: THREE.Vector3, target?: THREE.Vector3): void
+
+  /**
+   * Sets the camera's orientation and position to focus on the specified target.
+   * @param target - The target to frame, or 'all' to frame everything.
+   * @param forward - Optional forward direction after framing.
+   */
+  frame(target: ISelectable | IWebglVim | THREE.Sphere | THREE.Box3 | 'all', forward?: THREE.Vector3): Promise<void>
+}
 
 /**
  * Interface representing a camera with various properties and methods for controlling its behavior.
@@ -42,17 +145,17 @@ export interface ICamera {
   /**
    * Interface for instantaneously moving the camera.
    * @param {boolean} [force=false] - Set to true to ignore locked axis and rotation.
-   * @returns {CameraMovement} The camera movement api.
+   * @returns {ICameraMovement} The camera movement api.
    */
-  snap(force?: boolean): CameraMovement;
+  snap(force?: boolean): ICameraMovement;
 
   /**
    * Interface for smoothly moving the camera over time.
    * @param {number} [duration=1] - The duration of the camera movement animation.
    * @param {boolean} [force=false] - Set to true to ignore locked axis and rotation.
-   * @returns {CameraMovement} The camera movement api.
+   * @returns {ICameraMovement} The camera movement api.
    */
-  lerp(duration: number, force?: boolean): CameraMovement;
+  lerp(duration: number, force?: boolean): ICameraMovement;
 
   /**
    * Calculates the frustum size at a given point in the scene.

@@ -1,10 +1,6 @@
 // Links files to generate package type exports
 import './style.css'
 
-// Useful definitions from vim-format
-import { BFastSource } from 'vim-format'
-export type VimSource = BFastSource
-
 // Loader
 export { MaterialSet } from './loader'
 export type { VimSettings, VimPartialSettings } from './loader'
@@ -20,8 +16,8 @@ export type { ISubset, SubsetFilter } from './loader'
 // Viewer
 export { Viewer, Layers } from './viewer'
 export type { ViewerSettings, PartialViewerSettings, MaterialSettings } from './viewer'
-export type { ICamera, CameraMovement } from './viewer'
-export type { Renderer, RenderingSection } from './viewer'
+export type { ICamera, ICameraMovement } from './viewer'
+export type { IRenderer, RenderingSection } from './viewer'
 export type { ISelectable, ISelection } from './viewer'
 export type { IViewport } from './viewer'
 export type { IRaycaster, IRaycastResult } from './viewer'

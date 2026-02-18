@@ -1,2 +1,1 @@
-export type { ICamera } from './cameraInterface'
-export type { CameraMovement } from './cameraMovement'
+export type { ICamera, ICameraMovement } from './cameraInterface'

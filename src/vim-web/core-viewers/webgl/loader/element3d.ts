@@ -83,7 +83,12 @@ export class Element3D implements IElement3D {
   /**
    * The vim object from which this object came from.
    */
-  readonly vim: Vim
+  readonly vim: IWebglVim
+
+  /** @internal */
+  private get _vim (): Vim {
+    return this.vim as Vim
+  }
 
   /**
    * The bim element index associated with this object.
@@ -94,7 +99,7 @@ export class Element3D implements IElement3D {
    * The ID of the element associated with this object.
    */
   get elementId () : bigint {
-    return this.vim.map.getElementId(this.element)!
+    return this._vim.map.getElementId(this.element)!
   }
 
   /**
@@ -180,7 +185,7 @@ export class Element3D implements IElement3D {
   }
 
   private get renderer(){
-    return (this.vim.scene as Scene).renderer
+    return (this._vim.scene as Scene).renderer
   }
 
   /**
@@ -243,7 +248,7 @@ export class Element3D implements IElement3D {
    * @returns {IElement} An object containing the bim data for this element.
    */
   async getBimElement (): Promise<IElement> {
-    return this.vim.bim.element.get(this.element)
+    return this._vim.bim.element.get(this.element)
   }
 
   /**
@@ -251,7 +256,7 @@ export class Element3D implements IElement3D {
    * @returns {VimHelpers.ElementParameter[]} An array of all bim parameters for this elements.
    */
   async getBimParameters (): Promise<VimHelpers.ElementParameter[]> {
-    return VimHelpers.getElementParameters(this.vim.bim, this.element)
+    return VimHelpers.getElementParameters(this._vim.bim, this.element)
   }
 
   /**

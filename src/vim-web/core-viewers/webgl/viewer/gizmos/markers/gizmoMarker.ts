@@ -1,4 +1,4 @@
-import { Vim } from '../../../loader/vim'
+import { IWebglVim } from '../../../loader/vim'
 import { Viewer } from '../../viewer'
 import * as THREE from 'three'
 import { SimpleInstanceSubmesh } from '../../../loader/mesh'
@@ -22,7 +22,7 @@ export class Marker implements ISelectable {
    * The Vim object from which this object came.
    * Can be undefined if the object is not part of a Vim.
    */
-  vim: Vim | undefined
+  vim: IWebglVim | undefined
 
   /**
    * The BIM element index associated with this object.

@@ -8,11 +8,11 @@ import { ISelectable } from '../selection'
 import * as THREE from 'three'
 import { Marker } from '../gizmos/markers/gizmoMarker'
 import { type IWebglVim, Vim } from '../../loader/vim'
-import { CameraSaveState } from './cameraInterface'
+import { CameraSaveState, ICameraMovement } from './cameraInterface'
 
 
 
-export abstract class CameraMovement {
+export abstract class CameraMovement implements ICameraMovement {
   protected static readonly MAX_PITCH = Math.PI * 0.48
 
   protected _camera: Camera
