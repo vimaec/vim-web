@@ -4,11 +4,11 @@
 
 import { useEffect } from 'react'
 import * as THREE from 'three'
-import { SectionBoxRef } from './sectionBoxState'
+import { SectionBoxApi } from './sectionBoxState'
 import { ActionRef, AsyncFuncRef, StateRef, useActionRef, useAsyncFuncRef, useStateRef } from '../helpers/reactUtils'
 import { ISignal } from 'ste-signals'
 
-export interface CameraRef {
+export interface CameraApi {
   autoCamera: StateRef<boolean>
   reset : ActionRef
 
@@ -28,7 +28,7 @@ interface ICameraAdapter {
   getSceneBox: () => Promise<THREE.Box3 | undefined>
 }
 
-export function useCamera(adapter: ICameraAdapter, section: SectionBoxRef){
+export function useCamera(adapter: ICameraAdapter, section: SectionBoxApi){
 
   const autoCamera = useStateRef(false)
   autoCamera.useOnChange((v) => {
@@ -69,10 +69,10 @@ export function useCamera(adapter: ICameraAdapter, section: SectionBoxRef){
     reset,
     frameSelection,
     frameScene
-  } as CameraRef
+  } as CameraApi
 }
 
-function frame(adapter: ICameraAdapter, section: SectionBoxRef, box: THREE.Box3) {
+function frame(adapter: ICameraAdapter, section: SectionBoxApi, box: THREE.Box3) {
   if(!box) return
 
   // Take into account section box for framing.

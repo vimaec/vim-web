@@ -85,7 +85,7 @@ export class GizmoOrbit {
   private onUpdate () {
     this.updateScale()
     this.setPosition(this._camera.target)
-    this.show(this._inputs.pointerActive === PointerMode.ORBIT)
+    this.show(this._inputs.pointerMode === PointerMode.ORBIT)
   }
 
   /**
@@ -112,13 +112,13 @@ export class GizmoOrbit {
 
     clearTimeout(this._timeout)
     this._gizmos.visible = show
-    this._renderer.needsUpdate = true
+    this._renderer.requestRender()
 
     // Hide after one second since last request
     if (show) {
       this._timeout = setTimeout(() => {
         this._gizmos.visible = false
-        this._renderer.needsUpdate = true
+        this._renderer.requestRender()
       }, this._showDurationMs)
     }
   }

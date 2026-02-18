@@ -62,7 +62,7 @@ export class InputHandler extends BaseInputHandler {
   orbitSpeed: number
   private _moveSpeed: number
 
-  private _pointerActive: PointerMode = PointerMode.ORBIT
+  private _pointerMode: PointerMode = PointerMode.ORBIT
   private _pointerOverride: PointerMode | undefined
   private _onPointerOverrideChanged = new SignalDispatcher()
   private _onPointerModeChanged = new SignalDispatcher()
@@ -73,7 +73,7 @@ export class InputHandler extends BaseInputHandler {
     super(canvas)
     this._adapter = adapter
 
-    this._pointerActive = (settings.orbit === undefined || settings.orbit) ? PointerMode.ORBIT : PointerMode.LOOK
+    this._pointerMode = (settings.orbit === undefined || settings.orbit) ? PointerMode.ORBIT : PointerMode.LOOK
     this.scrollSpeed = settings.scrollSpeed ?? 1.75
     this._moveSpeed = settings.moveSpeed ?? 1
     this.rotateSpeed = settings.rotateSpeed ?? 1
@@ -115,10 +115,10 @@ export class InputHandler extends BaseInputHandler {
     }
     this.mouse.onDrag = (delta: THREE.Vector2, button: number) =>{
       if(button === 0){
-        if(this.pointerActive === PointerMode.ORBIT) adapter.orbitCamera(toRotation(delta, this.orbitSpeed))
-        if(this.pointerActive === PointerMode.LOOK) adapter.rotateCamera(toRotation(delta, this.rotateSpeed))
-        if(this.pointerActive === PointerMode.PAN) adapter.panCamera(delta)
-        if(this.pointerActive === PointerMode.ZOOM) adapter.dollyCamera(delta)
+        if(this.pointerMode === PointerMode.ORBIT) adapter.orbitCamera(toRotation(delta, this.orbitSpeed))
+        if(this.pointerMode === PointerMode.LOOK) adapter.rotateCamera(toRotation(delta, this.rotateSpeed))
+        if(this.pointerMode === PointerMode.PAN) adapter.panCamera(delta)
+        if(this.pointerMode === PointerMode.ZOOM) adapter.dollyCamera(delta)
       } 
       if(button === 2){
         this.pointerOverride = PointerMode.LOOK
@@ -150,10 +150,10 @@ export class InputHandler extends BaseInputHandler {
     this.touch.onTap = (pos: THREE.Vector2) => adapter.selectAtPointer(pos, false)
     this.touch.onDoubleTap = adapter.frameAtPointer
     this.touch.onDrag = (delta: THREE.Vector2) => {
-      if(this.pointerActive === PointerMode.ORBIT) adapter.orbitCamera(toRotation(delta, this.orbitSpeed))
-      if(this.pointerActive === PointerMode.LOOK) adapter.rotateCamera(toRotation(delta, this.rotateSpeed))
-      if(this.pointerActive === PointerMode.PAN) adapter.panCamera(delta)
-      if(this.pointerActive === PointerMode.ZOOM) adapter.dollyCamera(delta)
+      if(this.pointerMode === PointerMode.ORBIT) adapter.orbitCamera(toRotation(delta, this.orbitSpeed))
+      if(this.pointerMode === PointerMode.LOOK) adapter.rotateCamera(toRotation(delta, this.rotateSpeed))
+      if(this.pointerMode === PointerMode.PAN) adapter.panCamera(delta)
+      if(this.pointerMode === PointerMode.ZOOM) adapter.dollyCamera(delta)
     }
     this.touch.onPinchStart = (center: THREE.Vector2) => adapter.pinchStart(center)
     this.touch.onPinchOrSpread = (totalRatio: number) => adapter.pinchZoom(totalRatio)
@@ -185,8 +185,8 @@ export class InputHandler extends BaseInputHandler {
   /**
    * Returns current pointer mode.
    */
-  get pointerActive (): PointerMode {
-    return this._pointerActive
+  get pointerMode (): PointerMode {
+    return this._pointerMode
   }
 
   /**
@@ -205,9 +205,9 @@ export class InputHandler extends BaseInputHandler {
   /**
    * Changes pointer interaction mode. Look mode will set camera orbitMode to false.
    */
-  set pointerActive (value: PointerMode) {
-    if (value === this._pointerActive) return
-    this._pointerActive = value
+  set pointerMode (value: PointerMode) {
+    if (value === this._pointerMode) return
+    this._pointerMode = value
     this._onPointerModeChanged.dispatch()
   }
 

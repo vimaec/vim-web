@@ -3,7 +3,7 @@ import { Icons } from "..";
 import { StateRef } from "../helpers/reactUtils";
 import { useFloatingPanelPosition } from "../helpers/layout";
 import { GenericEntryType, GenericEntry } from "./genericField";
-import { Customizer, useCustomizer } from "../helpers/customizer";
+import { ICustomizer, useCustomizer } from "../helpers/customizer";
 
 // Generic props for the panel.
 export interface GenericPanelProps {
@@ -14,7 +14,7 @@ export interface GenericPanelProps {
   anchorElement: HTMLElement | null;
 }
 
-export type GenericPanelHandle = Customizer<GenericEntryType[]>;
+export type GenericPanelHandle = ICustomizer<GenericEntryType[]>;
 
 export const GenericPanel = forwardRef<GenericPanelHandle, GenericPanelProps>((props, ref) => {
   const panelRef = useRef<HTMLDivElement>(null);

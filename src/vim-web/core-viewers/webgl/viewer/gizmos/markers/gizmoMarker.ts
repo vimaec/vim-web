@@ -4,13 +4,13 @@ import * as THREE from 'three'
 import { SimpleInstanceSubmesh } from '../../../loader/mesh'
 import { WebglAttribute } from '../../../loader/webglAttribute'
 import { WebglColorAttribute } from '../../../loader/colorAttribute'
-import { Selectable } from '../../selection'
+import { ISelectable } from '../../selection'
 
 /**
  * Marker gizmo that displays an interactive sphere at a 3D position.
  * Marker gizmos are still under development.
  */
-export class Marker implements Selectable {
+export class Marker implements ISelectable {
   public readonly type = 'Marker'
   private _viewer: Viewer
   private _submesh: SimpleInstanceSubmesh
@@ -84,7 +84,7 @@ export class Marker implements Selectable {
     this._outlineAttribute.updateMeshes(array)
     this._colorAttribute.updateMeshes(array)
     this._coloredAttribute.updateMeshes(array)
-    this._viewer.renderer.needsUpdate = true
+    this._viewer.renderer.requestRender()
   }
 
   /**
@@ -94,7 +94,7 @@ export class Marker implements Selectable {
     Marker._tmpMatrix.compose(value, new THREE.Quaternion(), new THREE.Vector3(1, 1, 1))
     this._submesh.mesh.setMatrixAt(this.index, Marker._tmpMatrix)
     this._submesh.mesh.instanceMatrix.needsUpdate = true
-    this._viewer.renderer.needsUpdate = true
+    this._viewer.renderer.requestRender()
     this._submesh.mesh.computeBoundingSphere() // Required for raycasting
   }
 
@@ -142,7 +142,7 @@ export class Marker implements Selectable {
    */
   set focused(value: boolean) {
     this._focusedAttribute.apply(value)
-    this._viewer.renderer.needsUpdate = true
+    this._viewer.renderer.requestRender()
   }
 
   /**
@@ -157,7 +157,7 @@ export class Marker implements Selectable {
    */
   set visible(value: boolean) {
     this._visibleAttribute.apply(value)
-    this._viewer.renderer.needsUpdate = true
+    this._viewer.renderer.requestRender()
   }
 
   /**
@@ -178,7 +178,7 @@ export class Marker implements Selectable {
     } else {
       this._coloredAttribute.apply(false)
     }
-    this._viewer.renderer.needsUpdate = true
+    this._viewer.renderer.requestRender()
   }
 
   /**
@@ -203,7 +203,7 @@ export class Marker implements Selectable {
       matrix.elements[10] = value
       this._submesh.mesh.setMatrixAt(this.index, matrix)
       this._submesh.mesh.instanceMatrix.needsUpdate = true
-      this._viewer.renderer.needsUpdate = true
+      this._viewer.renderer.requestRender()
       this._submesh.mesh.computeBoundingSphere() // Required for Raycast
     }
   }

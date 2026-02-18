@@ -17,7 +17,7 @@ import { RestOfScreen } from '../panels/restOfScreen'
 import { LogoMemo } from '../panels/logo'
 import { whenTrue } from '../helpers/utils'
 import { useSideState } from '../state/sideState'
-import { ViewerRef } from './viewerRef'
+import { ViewerApi } from './viewerApi'
 import ReactTooltip from 'react-tooltip'
 import { useUltraCamera } from './camera'
 import { useViewerInput } from '../state/viewerInputs'
@@ -41,9 +41,9 @@ import { isTrue } from '../settings/userBoolean'
 export function createViewer (
   container?: Container | HTMLElement,
   settings?: PartialUltraSettings 
-) : Promise<ViewerRef> {
+) : Promise<ViewerApi> {
   
-  const controllablePromise = new ControllablePromise<ViewerRef>()
+  const controllablePromise = new ControllablePromise<ViewerApi>()
   const cmpContainer = container instanceof HTMLElement
     ? createContainer(container)
     : container ?? createContainer()
@@ -55,7 +55,7 @@ export function createViewer (
   const reactRoot = createRoot(cmpContainer.ui)
 
   // Patch the viewer to clean up after itself
-  const attachDispose = (cmp : ViewerRef) => {
+  const attachDispose = (cmp : ViewerApi) => {
     cmp.dispose = () => {
       core.dispose()
       cmpContainer.dispose()
@@ -69,7 +69,7 @@ export function createViewer (
       container={cmpContainer}
       core={core}
       settings={settings}
-      onMount = {(cmp : ViewerRef) => controllablePromise.resolve(attachDispose(cmp))}
+      onMount = {(cmp : ViewerApi) => controllablePromise.resolve(attachDispose(cmp))}
     />
   )
   return controllablePromise.promise
@@ -86,7 +86,7 @@ export function Viewer (props: {
   container: Container
   core: Core.Ultra.Viewer
   settings?: PartialUltraSettings
-  onMount: (viewer: ViewerRef) => void}) {
+  onMount: (viewer: ViewerApi) => void}) {
 
   const settings = useSettings(props.settings ?? {}, getDefaultUltraSettings())
   const sectionBoxRef = useUltraSectionBox(props.core)

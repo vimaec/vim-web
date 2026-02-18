@@ -13,12 +13,12 @@ import { WebglAttribute } from './webglAttribute'
 import { WebglColorAttribute } from './colorAttribute'
 import { Submesh } from './mesh'
 import { MappedG3d } from './progressive/mappedG3d'
-import { Selectable } from '../viewer/selection'
+import { ISelectable } from '../viewer/selection'
 
 /**
  * High level api to interact with the loaded vim geometry and data.
  */
-export class Element3D implements Selectable {
+export class Element3D implements ISelectable {
   private _color: THREE.Color | undefined
   private _boundingBox: THREE.Box3 | undefined
   private _meshes: Submesh[] | undefined
@@ -266,7 +266,7 @@ export class Element3D implements Selectable {
 
   private updateMeshes (meshes: Submesh[] | undefined) {
     this._meshes = meshes
-    this.renderer.needsUpdate = true
+    this.renderer.requestRender()
 
     this._outlineAttribute.updateMeshes(meshes)
     this._visibleAttribute.updateMeshes(meshes)

@@ -9,7 +9,7 @@ import { createSection, IControlBarSection } from './controlBarSection'
 /**
  * Reference to manage control bar functionality in the viewer.
  */
-export type ControlBarRef = {
+export type ControlBarApi = {
   /**
    * Defines a callback function to dynamically customize the control bar.
    * @param customization The configuration object specifying the customization options for the control bar.

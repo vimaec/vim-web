@@ -3,16 +3,16 @@
  */
 
 import * as Core from '../../core-viewers'
-import { ContextMenuRef } from '../panels/contextMenu'
+import { ContextMenuApi } from '../panels/contextMenu'
 import { AnySettings } from '../settings/anySettings'
-import { CameraRef } from '../state/cameraState'
+import { CameraApi } from '../state/cameraState'
 import { Container } from '../container'
-import { BimInfoPanelRef } from '../bim/bimInfoData'
-import { ControlBarRef } from '../controlbar'
+import { BimInfoPanelApi } from '../bim/bimInfoData'
+import { ControlBarApi } from '../controlbar'
 import { OpenSettings } from './loading'
 import { ModalHandle } from '../panels/modal'
-import { SectionBoxRef } from '../state/sectionBoxState'
-import { IsolationRef } from '../state/sharedIsolation'
+import { SectionBoxApi } from '../state/sectionBoxState'
+import { IsolationApi } from '../state/sharedIsolation'
 import { GenericPanelHandle } from '../generic'
 import { SettingsItem } from '../settings/settingsItem'
 import { WebglSettings } from './settings'
@@ -21,7 +21,7 @@ export type { OpenSettings } from './loading'
 /**
 * Settings API managing settings applied to the viewer.
 */
-export type SettingsRef<T extends AnySettings> = {
+export type SettingsApi<T extends AnySettings> = {
   // Double lambda is required to prevent react from using reducer pattern
   // https://stackoverflow.com/questions/59040989/usestate-with-a-lambda-invokes-the-lambda-when-set
 
@@ -50,7 +50,7 @@ export type SettingsRef<T extends AnySettings> = {
 /**
  * Reference to manage help message functionality in the viewer.
  */
-export type HelpRef = {
+export type HelpApi = {
   /**
    * Displays the help message.
    * @param value Boolean value to show or hide the help message.
@@ -68,7 +68,7 @@ export type HelpRef = {
 /**
  * Root-level API of the Vim viewer.
  */
-export type ViewerRef = {
+export type ViewerApi = {
   /**
    * HTML structure containing the viewer.
    */
@@ -105,27 +105,27 @@ export type ViewerRef = {
   /**
    * Isolation API managing isolation state in the viewer.
    */
-  isolation: IsolationRef
+  isolation: IsolationApi
 
   /**
    * Section box API managing the section box in the viewer.
    */
-  sectionBox: SectionBoxRef
+  sectionBox: SectionBoxApi
 
   /**
    * Context menu API managing the content and behavior of the context menu.
    */
-  contextMenu: ContextMenuRef
+  contextMenu: ContextMenuApi
 
   /**
    * Control bar API managing the content and behavior of the control bar.
    */
-  controlBar: ControlBarRef
+  controlBar: ControlBarApi
 
   /**
    * Settings API managing settings applied to the viewer.
    */
-  settings: SettingsRef<WebglSettings>
+  settings: SettingsApi<WebglSettings>
 
   /**
    * Message API to interact with the loading box.
@@ -135,12 +135,12 @@ export type ViewerRef = {
   /**
    * Camera API to interact with the viewer camera at a higher level.
    */
-  camera: CameraRef
+  camera: CameraApi
 
   /**
    * API To interact with the BIM info panel.
    */
-  bimInfo: BimInfoPanelRef
+  bimInfo: BimInfoPanelApi
 
   /**
    * API to interact with the isolation panel.

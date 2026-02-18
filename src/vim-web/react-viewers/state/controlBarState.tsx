@@ -1,5 +1,5 @@
 import * as Core from "../../core-viewers";
-import { CameraRef } from './cameraState';
+import { CameraApi } from './cameraState';
 import { CursorManager } from '../helpers/cursor';
 
 import { SideState } from './sideState';
@@ -7,11 +7,11 @@ import * as Icons from '../icons';
 
 import { getPointerState } from './pointerState';
 import { getFullScreenState } from './fullScreenState';
-import { SectionBoxRef } from './sectionBoxState';
+import { SectionBoxApi } from './sectionBoxState';
 import { getMeasureState } from './measureState';
 import { ModalHandle } from '../panels/modal';
 
-import { IsolationRef } from './sharedIsolation';
+import { IsolationApi } from './sharedIsolation';
 import { PointerMode } from '../../core-viewers/shared';
 
 import * as ControlBar from '../controlbar'
@@ -35,7 +35,7 @@ export type ControlBarSectionBoxSettings = {
  * Returns a control bar section for the section box.
  */
 export function controlBarSectionBox(
-  section: SectionBoxRef,
+  section: SectionBoxApi,
   hasSelection : boolean,
   settings: ControlBarSectionBoxSettings
 ): ControlBar.IControlBarSection {
@@ -278,7 +278,7 @@ export type ControlBarCameraSettings ={
   cameraFrameScene: UserBoolean
 }
 
-export function controlBarCamera(camera: CameraRef, settings: ControlBarCameraSettings): ControlBar.IControlBarSection {
+export function controlBarCamera(camera: CameraApi, settings: ControlBarCameraSettings): ControlBar.IControlBarSection {
   return {
     id: Ids.cameraSpan,
     enable: () => true,
@@ -324,7 +324,7 @@ export type ControlBarVisibilitySettings = {
     visibilitySettings: UserBoolean
 }
 
-export function controlBarVisibility(isolation: IsolationRef, settings: ControlBarVisibilitySettings): ControlBar.IControlBarSection {
+export function controlBarVisibility(isolation: IsolationApi, settings: ControlBarVisibilitySettings): ControlBar.IControlBarSection {
   const adapter = isolation.adapter.current
   const someVisible = adapter.hasVisibleSelection() || !adapter.hasHiddenSelection()  
 
@@ -404,13 +404,13 @@ export function controlBarVisibility(isolation: IsolationRef, settings: ControlB
  */
 export function useControlBar(
   viewer: Core.Webgl.Viewer,
-  camera: CameraRef,
+  camera: CameraApi,
   modal: ModalHandle,
   side: SideState,
   cursor: CursorManager,
   settings: WebglSettings,
-  section: SectionBoxRef,
-  isolationRef: IsolationRef,
+  section: SectionBoxApi,
+  isolationRef: IsolationApi,
   customization: ControlBar.ControlBarCustomization | undefined
 ) {
   const measure = getMeasureState(viewer, cursor);

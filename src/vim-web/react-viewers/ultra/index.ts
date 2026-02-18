@@ -1,3 +1,3 @@
 export * from './viewer'
-export * from './viewerRef'
+export * from './viewerApi'
 export * from './settings'

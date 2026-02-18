@@ -12,7 +12,7 @@ export type Offsets = {
 
 export type OffsetField = keyof Offsets;
 
-export interface SectionBoxRef {
+export interface SectionBoxApi {
   enable: StateRef<boolean>;
   visible: StateRef<boolean>;
   auto: StateRef<boolean>;
@@ -32,7 +32,7 @@ export interface SectionBoxRef {
   getSceneBox: AsyncFuncRef<THREE.Box3>;
 }
 
-export interface SectionBoxAdapter {
+export interface ISectionBoxAdapter {
   setClip : (b: boolean) => void;
   setVisible: (visible: boolean) => void;
   getBox: () => THREE.Box3;
@@ -45,8 +45,8 @@ export interface SectionBoxAdapter {
 }
 
 export function useSectionBox(
-  adapter: SectionBoxAdapter
-): SectionBoxRef {
+  adapter: ISectionBoxAdapter
+): SectionBoxApi {
   // Local state.
   const enable = useStateRef(false);
   const visible = useStateRef(false);

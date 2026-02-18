@@ -1,4 +1,4 @@
-import { IsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
+import { IIsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
 import * as Core from "../../core-viewers";
 import { useStateRef } from "../helpers/reactUtils";
 
@@ -12,7 +12,7 @@ export function useUltraIsolation(viewer: Viewer){
   return useSharedIsolation(adapter)
 }
 
-function createAdapter(viewer: Viewer): IsolationAdapter {
+function createAdapter(viewer: Viewer): IIsolationAdapter {
 
   const ghost = useStateRef<boolean>(false);
 

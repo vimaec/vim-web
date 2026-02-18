@@ -4,13 +4,13 @@
 
 import * as Core from '../../core-viewers'
 import { SideState } from '../state/sideState'
-import { CameraRef } from '../state/cameraState'
-import { IsolationRef } from '../state/sharedIsolation'
+import { CameraApi } from '../state/cameraState'
+import { IsolationApi } from '../state/sharedIsolation'
 
 export function applyWebglBindings(
   viewer: Core.Webgl.Viewer,
-  camera: CameraRef,
-  isolation: IsolationRef,
+  camera: CameraApi,
+  isolation: IsolationApi,
   sideState: SideState)
 {
   const k = viewer.inputs.keyboard

@@ -116,13 +116,13 @@ export type ViewerSettings = {
      * Vector3 of 0 or 1 to enable/disable movement along each axis
      * Default: THREE.Vector3(1, 1, 1)
      */
-    allowedMovement: THREE.Vector3
+    lockMovement: THREE.Vector3
 
     /**
      * Vector2 of 0 or 1 to enable/disable rotation around x or y.
      * Default: THREE.Vector2(1, 1)
      */
-    allowedRotation: THREE.Vector2
+    lockRotation: THREE.Vector2
 
     /**
      * Near clipping plane distance
@@ -313,10 +313,10 @@ materials: MaterialSettings
 
   rendering: {
     /**
-     * Enable on-demand rendering which wait for changes before rendering to the canvas.
+     * When true, only renders when changes are detected. When false, renders every frame.
      * Default: true
      */
-    onDemand: boolean
+    autoRender: boolean
   }
 }
 

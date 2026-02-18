@@ -56,7 +56,7 @@ export class CursorManager {
    */
   register () {
     // Update and Register cursor for pointers
-    this.setCursor(pointerToCursor(this._viewer.inputs.pointerActive))
+    this.setCursor(pointerToCursor(this._viewer.inputs.pointerMode))
 
     const sub1 = this._viewer.inputs.onPointerModeChanged.subscribe(() =>
       this._updateCursor()
@@ -103,7 +103,7 @@ export class CursorManager {
       ? pointerToCursor(this._viewer.inputs.pointerOverride)
       : this._boxHover
         ? 'cursor-section-box'
-        : pointerToCursor(this._viewer.inputs.pointerActive)
+        : pointerToCursor(this._viewer.inputs.pointerMode)
     this.setCursor(cursor)
   }
 }

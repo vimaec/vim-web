@@ -1,14 +1,14 @@
 import * as Core from "../../core-viewers";
-import { Element3D, Selectable } from "../../core-viewers/webgl";
+import { Element3D, ISelectable } from "../../core-viewers/webgl";
 import { MaterialSet } from "../../core-viewers/webgl/loader/materials/materialSet";
-import { IsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
+import { IIsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
 
 export function useWebglIsolation(viewer: Core.Webgl.Viewer){
   const adapter = createWebglIsolationAdapter(viewer)
   return useSharedIsolation(adapter)
 }
 
-function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapter {
+function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IIsolationAdapter {
   var ghost: boolean = false;
   var transparency: boolean = true;
   var rooms: boolean = false;
@@ -24,7 +24,7 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
 
   // Don't call updateMaterials() immediately - let RenderScene default handle initial state
 
-  function updateVisibility(elements: 'all' | Selectable[], predicate: (object: Selectable) => boolean){
+  function updateVisibility(elements: 'all' | ISelectable[], predicate: (object: ISelectable) => boolean){
     if(elements === 'all'){
       for(let v of viewer.vims){
         for(let o of v.getAllElements()){

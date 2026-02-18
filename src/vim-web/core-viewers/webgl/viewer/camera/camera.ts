@@ -38,7 +38,7 @@ export class Camera implements ICamera {
   private _orthographic: boolean = false
   private _target = new THREE.Vector3()
   private _screenTarget = new THREE.Vector2(0.5, 0.5)
-  private _floatingTarget = false
+  private _isTargetFloating = false
   private _cachedFrustumLength = 0
 
   // updates
@@ -91,33 +91,33 @@ export class Camera implements ICamera {
    * Allowed movement axes in Z-up space (X = right, Y = forward, Z = up).
    * Each component should be 0 (locked) or 1 (free).
    */
-  private _allowedMovement = new THREE.Vector3(1, 1, 1)
-  get allowedMovement () {
-    return this._force ? Camera._ALL_MOVEMENT : this._allowedMovement
+  private _lockMovement = new THREE.Vector3(1, 1, 1)
+  get lockMovement () {
+    return this._force ? Camera._ALL_MOVEMENT : this._lockMovement
   }
 
-  set allowedMovement (axes: THREE.Vector3) {
-    this._allowedMovement.copy(axes)
-    this._allowedMovement.x = this._allowedMovement.x === 0 ? 0 : 1
-    this._allowedMovement.y = this._allowedMovement.y === 0 ? 0 : 1
-    this._allowedMovement.z = this._allowedMovement.z === 0 ? 0 : 1
+  set lockMovement (axes: THREE.Vector3) {
+    this._lockMovement.copy(axes)
+    this._lockMovement.x = this._lockMovement.x === 0 ? 0 : 1
+    this._lockMovement.y = this._lockMovement.y === 0 ? 0 : 1
+    this._lockMovement.z = this._lockMovement.z === 0 ? 0 : 1
   }
 
   /**
    * Allowed rotation axes. x = yaw (around Z), y = pitch (up/down).
    * Each component should be 0 (locked) or 1 (free).
    */
-  get allowedRotation () {
-    return this._force ? Camera._ALL_ROTATION : this._allowedRotation
+  get lockRotation () {
+    return this._force ? Camera._ALL_ROTATION : this._lockRotation
   }
 
-  set allowedRotation (axes: THREE.Vector2) {
-    this._allowedRotation.copy(axes)
-    this._allowedRotation.x = this._allowedRotation.x === 0 ? 0 : 1
-    this._allowedRotation.y = this._allowedRotation.y === 0 ? 0 : 1
+  set lockRotation (axes: THREE.Vector2) {
+    this._lockRotation.copy(axes)
+    this._lockRotation.x = this._lockRotation.x === 0 ? 0 : 1
+    this._lockRotation.y = this._lockRotation.y === 0 ? 0 : 1
   }
 
-  private _allowedRotation = new THREE.Vector2(1, 1)
+  private _lockRotation = new THREE.Vector2(1, 1)
 
   /**
    * The default forward direction that can be used to initialize the camera.
@@ -158,8 +158,8 @@ export class Camera implements ICamera {
     
     this.defaultForward = settings.camera.forward
     this._orthographic = settings.camera.orthographic
-    this.allowedMovement = settings.camera.allowedMovement
-    this.allowedRotation = settings.camera.allowedRotation
+    this.lockMovement = settings.camera.lockMovement
+    this.lockRotation = settings.camera.lockRotation
 
     // Values
     this._onValueChanged.dispatch()
@@ -308,15 +308,15 @@ export class Camera implements ICamera {
    * off-screen. Cleared when the target is explicitly set (select,
    * lookAt, frame, zoomTowards, etc.).
    */
-  get floatingTarget () {
-    return this._floatingTarget
+  get isTargetFloating () {
+    return this._isTargetFloating
   }
 
-  set floatingTarget (value: boolean) {
-    if (value && !this._floatingTarget) {
+  set isTargetFloating (value: boolean) {
+    if (value && !this._isTargetFloating) {
       this._cachedFrustumLength = this.frustumSizeAt(this._target).length()
     }
-    this._floatingTarget = value
+    this._isTargetFloating = value
   }
 
   /**
@@ -416,7 +416,7 @@ export class Camera implements ICamera {
   private getVelocityMultiplier () {
     const rotated = !this._lastQuaternion.equals(this.quaternion)
     const mod = rotated ? 1 : 1.66
-    const frustum = this._floatingTarget && this._cachedFrustumLength > 0
+    const frustum = this._isTargetFloating && this._cachedFrustumLength > 0
       ? this._cachedFrustumLength
       : this.frustumSizeAt(this.target).length()
     return mod * frustum

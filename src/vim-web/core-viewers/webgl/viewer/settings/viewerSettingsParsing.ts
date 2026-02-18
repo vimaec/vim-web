@@ -32,8 +32,8 @@ function parseSettingsFromUrl (url: string) {
     },
     camera: {
       orthographic: get('camera.orthographic', strToBool),
-      allowedMovement: get('camera.allowedMovement', strToVector3),
-      allowedRotation: get('camera.allowedRotation', strToVector2),
+      lockMovement: get('camera.lockMovement', strToVector3),
+      lockRotation: get('camera.lockRotation', strToVector2),
       near: get('camera.near', Number.parseFloat),
       far: get('camera.far', Number.parseFloat),
       fov: get('camera.fov', Number.parseInt),
@@ -102,7 +102,7 @@ function parseSettingsFromUrl (url: string) {
     },
     axes: undefined,
     rendering: {
-      onDemand: get('rendering.onDemand', strToBool)
+      autoRender: get('rendering.autoRender', strToBool)
     }
   } as ViewerSettings
 

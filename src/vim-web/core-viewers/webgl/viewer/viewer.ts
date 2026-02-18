@@ -6,6 +6,7 @@ import * as THREE from 'three'
 
 // internal
 import { Camera } from './camera/camera'
+import { ICamera } from './camera/cameraInterface'
 import { Gizmos } from './gizmos/gizmos'
 import { IRaycaster } from './raycaster'
 import { GpuPicker } from './rendering/gpuPicker'
@@ -73,8 +74,8 @@ export class Viewer {
   /**
    * The interface for manipulating the viewer's camera.
    */
-  get camera () {
-    return this._camera as Camera
+  get camera (): ICamera {
+    return this._camera
   }
 
   /**
@@ -153,7 +154,7 @@ export class Viewer {
     this._updateId = requestAnimationFrame(() => this.animate())
 
     // Camera
-    this.renderer.needsUpdate = this._camera.update(deltaTime)
+    if (this._camera.update(deltaTime)) this.renderer.requestRender()
 
     // Gizmos
     this.gizmos.updateAfterCamera()
@@ -168,13 +169,6 @@ export class Viewer {
    */
   get vims () {
     return this.vimCollection.getAll()
-  }
-
-  /**
-   * The number of Vim objects currently loaded in the viewer.
-   */
-  get vimCount () {
-    return this.vimCollection.count
   }
 
   /**

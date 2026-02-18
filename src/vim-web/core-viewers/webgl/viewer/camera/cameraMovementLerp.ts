@@ -72,7 +72,7 @@ export class CameraLerp extends CameraMovement {
   }
 
   rotate (angle: THREE.Vector2): void {
-    const locked = angle.clone().multiply(this._camera.allowedRotation)
+    const locked = angle.clone().multiply(this._camera.lockRotation)
     const start = this._camera.quaternion.clone()
     const end = this.computeRotation(locked)
     const rot = new THREE.Quaternion()
@@ -108,7 +108,7 @@ export class CameraLerp extends CameraMovement {
 
     // Set orbit target immediately (not animated)
     this._camera.target.copy(worldPoint)
-    this._camera.floatingTarget = false
+    this._camera.isTargetFloating = false
 
     // Update screen target so orbit pivot stays at cursor position
     if (screenPoint) {
@@ -123,7 +123,7 @@ export class CameraLerp extends CameraMovement {
   }
 
   protected applyOrbit (angle: THREE.Vector2): void {
-    const locked = angle.clone().multiply(this._camera.allowedRotation)
+    const locked = angle.clone().multiply(this._camera.lockRotation)
     const radius = this._camera.orbitDistance
 
     const start = SphereCoord.fromForward(this._camera.forward, radius)
@@ -161,7 +161,7 @@ export class CameraLerp extends CameraMovement {
   }
 
   set (position: THREE.Vector3, target?: THREE.Vector3) {
-    this._camera.floatingTarget = false
+    this._camera.isTargetFloating = false
     const endTarget = target ?? this._camera.target
     const startPos = this._camera.position.clone()
     const startTarget = this._camera.target.clone()

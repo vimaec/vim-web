@@ -4,8 +4,8 @@ import { ISignal } from "ste-signals";
 
 export type VisibilityStatus = 'all' | 'allButSelection' |'onlySelection' | 'some' | 'none';  
 
-export interface IsolationRef {
-  adapter: RefObject<IsolationAdapter>;
+export interface IsolationApi {
+  adapter: RefObject<IIsolationAdapter>;
   visibility: StateRef<VisibilityStatus>
   autoIsolate: StateRef<boolean>;
   showPanel: StateRef<boolean>;
@@ -17,7 +17,7 @@ export interface IsolationRef {
   onVisibilityChange: FuncRef<void>;
 }
 
-export interface IsolationAdapter{
+export interface IIsolationAdapter{
   onSelectionChanged: ISignal,
   onVisibilityChange: ISignal,
   computeVisibility: () => VisibilityStatus,
@@ -49,7 +49,7 @@ export interface IsolationAdapter{
   setShowRooms(show: boolean): void;
 }
 
-export function useSharedIsolation(adapter : IsolationAdapter){
+export function useSharedIsolation(adapter : IIsolationAdapter){
   const _adapter = useRef(adapter);
   const visibility = useStateRef<VisibilityStatus>(() => adapter.computeVisibility(), true);
   const autoIsolate = useStateRef<boolean>(false);
@@ -105,5 +105,5 @@ export function useSharedIsolation(adapter : IsolationAdapter){
     ghostOpacity,
     onAutoIsolate,
     onVisibilityChange,
-  } as IsolationRef
+  } as IsolationApi
 }

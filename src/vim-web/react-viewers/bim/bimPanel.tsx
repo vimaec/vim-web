@@ -6,13 +6,13 @@ import React, { useMemo, useState } from 'react'
 import * as Core from '../../core-viewers'
 
 import { whenAllTrue, whenFalse, whenSomeTrue, whenTrue } from '../helpers/utils'
-import { CameraRef } from '../state/cameraState'
-import { IsolationRef } from '../state/sharedIsolation'
+import { CameraApi } from '../state/cameraState'
+import { IsolationApi } from '../state/sharedIsolation'
 import { ViewerState } from '../webgl/viewerState'
-import { BimInfoPanelRef } from './bimInfoData'
+import { BimInfoPanelApi } from './bimInfoData'
 import { BimInfoPanel } from './bimInfoPanel'
 import { BimSearch } from './bimSearch'
-import { BimTree, TreeActionRef } from './bimTree'
+import { BimTree, TreeActionApi } from './bimTree'
 import { toTreeData } from './bimTreeData'
 import { WebglSettings } from '../webgl/settings'
 import { isFalse } from '../settings/userBoolean'
@@ -22,13 +22,13 @@ import { isFalse } from '../settings/userBoolean'
 // The error appears only in JSFiddle when the module is directly imported in a script tag.
 export function OptionalBimPanel (props: {
   viewer: Core.Webgl.Viewer
-  camera: CameraRef
+  camera: CameraApi
   viewerState: ViewerState
-  isolation: IsolationRef
+  isolation: IsolationApi
   visible: boolean
   settings: WebglSettings
-  treeRef: React.MutableRefObject<TreeActionRef | undefined>
-  bimInfoRef: BimInfoPanelRef
+  treeRef: React.MutableRefObject<TreeActionApi | undefined>
+  bimInfoRef: BimInfoPanelApi
 }) {
   return whenSomeTrue([
     props.settings.ui.panelBimTree,
@@ -47,13 +47,13 @@ export function OptionalBimPanel (props: {
  */
 export function BimPanel (props: {
   viewer: Core.Webgl.Viewer
-  camera: CameraRef
+  camera: CameraApi
   viewerState: ViewerState
-  isolation: IsolationRef
+  isolation: IsolationApi
   visible: boolean
   settings: WebglSettings
-  treeRef: React.MutableRefObject<TreeActionRef | undefined>
-  bimInfoRef: BimInfoPanelRef
+  treeRef: React.MutableRefObject<TreeActionApi | undefined>
+  bimInfoRef: BimInfoPanelApi
 }) {
 
   const tree = useMemo(() => {

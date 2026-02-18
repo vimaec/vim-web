@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import { IsolationRef } from "../state/sharedIsolation";
+import { IsolationApi } from "../state/sharedIsolation";
 import { GenericPanel, GenericPanelHandle } from "../generic/genericPanel";
 
 export const Ids = {
@@ -8,7 +8,7 @@ export const Ids = {
   transparency: "isolationPanel.transparency",
 }
 
-export const IsolationPanel = forwardRef<GenericPanelHandle, { state: IsolationRef }>(
+export const IsolationPanel = forwardRef<GenericPanelHandle, { state: IsolationApi }>(
   (props, ref) => {
     return (
       <GenericPanel

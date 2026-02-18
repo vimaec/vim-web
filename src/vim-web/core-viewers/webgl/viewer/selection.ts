@@ -5,8 +5,8 @@
 import {Selection, type ISelectionAdapter} from '../../shared/selection'
 import { IVimElement } from '../../shared/vim'
 
-/** Selectable object in the WebGL viewer. Both Element3D and Marker implement this. */
-export interface Selectable extends IVimElement {
+/** ISelectable object in the WebGL viewer. Both Element3D and Marker implement this. */
+export interface ISelectable extends IVimElement {
   readonly type: string
   readonly element: number | undefined
   outline: boolean
@@ -15,14 +15,14 @@ export interface Selectable extends IVimElement {
   readonly instances: number[] | undefined
 }
 
-export type ISelection = Selection<Selectable>
+export type ISelection = Selection<ISelectable>
 
 export function createSelection() {
-  return new Selection<Selectable>(new SelectionAdapter())
+  return new Selection<ISelectable>(new SelectionAdapter())
 }
 
-class SelectionAdapter implements ISelectionAdapter<Selectable>{
-  outline(object: Selectable, state: boolean): void {
+class SelectionAdapter implements ISelectionAdapter<ISelectable>{
+  outline(object: ISelectable, state: boolean): void {
     object.outline = state
   }
 }

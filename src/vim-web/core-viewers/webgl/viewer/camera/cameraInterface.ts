@@ -23,16 +23,16 @@ export interface ICamera {
   get hasMoved(): boolean;
 
   /**
-   * Represents allowed movement along each axis using a Vector3 object.
-   * Each component of the Vector3 should be either 0 or 1 to enable/disable movement along the corresponding axis.
+   * Movement lock per axis in Z-up space (X = right, Y = forward, Z = up).
+   * Each component should be 0 (locked) or 1 (free).
    */
-  allowedMovement: THREE.Vector3;
+  lockMovement: THREE.Vector3;
 
   /**
-   * Represents allowed rotation using a Vector2 object.
-   * Each component of the Vector2 should be either 0 or 1 to enable/disable rotation around the corresponding axis.
+   * Rotation lock per axis. x = yaw (around Z), y = pitch (up/down).
+   * Each component should be 0 (locked) or 1 (free).
    */
-  allowedRotation: THREE.Vector2;
+  lockRotation: THREE.Vector2;
 
   /**
    * The default forward direction that can be used to initialize the camera.

@@ -1,15 +1,15 @@
 import { RefObject } from 'react';
 import * as Core from '../../core-viewers/ultra';
 import { ModalHandle } from '../panels/modal';
-import { CameraRef } from '../state/cameraState';
-import { SectionBoxRef } from '../state/sectionBoxState';
-import { IsolationRef } from '../state/sharedIsolation';
-import { ControlBarRef } from '../controlbar';
+import { CameraApi } from '../state/cameraState';
+import { SectionBoxApi } from '../state/sectionBoxState';
+import { IsolationApi } from '../state/sharedIsolation';
+import { ControlBarApi } from '../controlbar';
 import { GenericPanelHandle } from '../generic/';
-import { SettingsRef } from '../webgl';
+import { SettingsApi } from '../webgl';
 import { UltraSettings } from './settings';
 
-export type ViewerRef = {
+export type ViewerApi = {
   /**
    * The Vim viewer instance associated with the viewer.
    */
@@ -23,21 +23,21 @@ export type ViewerRef = {
   /**
    * API to manage the section box.
    */
-  sectionBox: SectionBoxRef;
+  sectionBox: SectionBoxApi;
 
   /**
    * API to customize the control.
    */
-  controlBar: ControlBarRef
+  controlBar: ControlBarApi
 
   /**
    * Camera API to interact with the viewer camera at a higher level.
    */
-  camera: CameraRef
+  camera: CameraApi
 
-  isolation: IsolationRef
+  isolation: IsolationApi
 
-  settings: SettingsRef<UltraSettings>
+  settings: SettingsApi<UltraSettings>
   
   /**
    * API to interact with the isolation panel.

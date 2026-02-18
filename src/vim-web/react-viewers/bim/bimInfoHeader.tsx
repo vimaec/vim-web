@@ -1,9 +1,9 @@
 import React from 'react'
 import * as BIM from './bimInfoData'
-import { BimInfoPanelRef } from './bimInfoData'
+import { BimInfoPanelApi } from './bimInfoData'
 
 export function BimHeader (props: {
-  bimInfoRef: BimInfoPanelRef
+  bimInfoRef: BimInfoPanelApi
   entries: BIM.Entry[]
 }) {
   if (props.entries === undefined) {
@@ -28,7 +28,7 @@ export function BimHeader (props: {
   )
 }
 
-function createEntry (bimInfoRef: BimInfoPanelRef, entry: BIM.Entry) {
+function createEntry (bimInfoRef: BimInfoPanelApi, entry: BIM.Entry) {
   const create = () => {
     const standard = () => (<>{entry.value?.toString()}</>)
     if (bimInfoRef.onRenderHeaderEntryValue !== undefined) {

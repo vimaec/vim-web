@@ -160,7 +160,7 @@ export class GizmoMarkers {
     this._mesh.count -= 1
 
     // Notify the renderer
-    this._viewer.renderer.needsUpdate = true
+    this._viewer.renderer.requestRender()
   }
 
   /**
@@ -171,6 +171,6 @@ export class GizmoMarkers {
     this._viewer.selection.remove(this._markers)
     this._mesh.count = 0
     this._markers.length = 0
-    this._viewer.renderer.needsUpdate = true
+    this._viewer.renderer.requestRender()
   }
 }

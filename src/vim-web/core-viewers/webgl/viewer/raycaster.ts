@@ -16,14 +16,14 @@ import type {
   IRaycastResult as IRaycastResultBase,
 } from '../../shared'
 import { Validation } from '../../../utils'
-import type { Selectable } from './selection'
+import type { ISelectable } from './selection'
 
 /**
  * Type alias for an array of THREE.Intersection objects.
  */
 export type ThreeIntersectionList = THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>>[]
-export type IRaycastResult = IRaycastResultBase<Selectable>
-export type IRaycaster = IRaycasterBase<Selectable>
+export type IRaycastResult = IRaycastResultBase<ISelectable>
+export type IRaycaster = IRaycasterBase<ISelectable>
 export enum Layers {
   Default = 0,
   NoRaycast = 1,

@@ -18,7 +18,7 @@ export class CameraMovementSnap extends CameraMovement {
   }
 
   rotate (angle: THREE.Vector2): void {
-    const locked = angle.clone().multiply(this._camera.allowedRotation)
+    const locked = angle.clone().multiply(this._camera.lockRotation)
     const rotation = this.computeRotation(locked)
     this.applyRotation(rotation)
   }
@@ -28,7 +28,7 @@ export class CameraMovementSnap extends CameraMovement {
   }
 
   protected applyOrbit (angle: THREE.Vector2): void {
-    const locked = angle.clone().multiply(this._camera.allowedRotation)
+    const locked = angle.clone().multiply(this._camera.lockRotation)
 
     const start = SphereCoord.fromForward(this._camera.forward, this._camera.orbitDistance)
     const end = start.rotate(locked.x, locked.y)
@@ -44,7 +44,7 @@ export class CameraMovementSnap extends CameraMovement {
 
   protected applyMove (worldVector: THREE.Vector3): void {
     this.lockVector(worldVector, CameraMovementSnap._ZERO, this._snTmp1)
-    if (this._camera.floatingTarget) {
+    if (this._camera.isTargetFloating) {
       this._camera.target.add(this._snTmp1)
     }
     this._snTmp2.copy(this._camera.position).add(this._snTmp1)
@@ -68,7 +68,7 @@ export class CameraMovementSnap extends CameraMovement {
     this.lockVector(finalPos, this._camera.position, this._snTmp1)
     this._camera.position.copy(this._snTmp1)
     this._camera.target.copy(target)
-    this._camera.floatingTarget = false
+    this._camera.isTargetFloating = false
 
     this._camera.camPerspective.camera.up.set(0, 0, 1)
     this._camera.camPerspective.camera.lookAt(target)
@@ -80,7 +80,7 @@ export class CameraMovementSnap extends CameraMovement {
     this._camera.position.copy(this._snTmp1)
     if (target) {
       this._camera.target.copy(target)
-      this._camera.floatingTarget = false
+      this._camera.isTargetFloating = false
     }
     this.updateScreenTarget()
   }

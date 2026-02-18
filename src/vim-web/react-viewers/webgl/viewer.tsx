@@ -25,11 +25,11 @@ import { addPerformanceCounter } from '../panels/performance'
 import { applyWebglBindings } from './inputsBindings'
 import { CursorManager } from '../helpers/cursor'
 import { useSettings } from '../settings/settingsState'
-import { TreeActionRef } from '../bim/bimTree'
+import { TreeActionApi } from '../bim/bimTree'
 import { Container, createContainer } from '../container'
 import { useViewerState } from './viewerState'
 import { LogoMemo } from '../panels/logo'
-import { ViewerRef } from './viewerRef'
+import { ViewerApi } from './viewerApi'
 import { useBimInfo } from '../bim/bimInfoData'
 import { whenTrue } from '../helpers/utils'
 import { ComponentLoader } from './loading'
@@ -59,8 +59,8 @@ export function createViewer (
   container?: Container | HTMLElement,
   settings: PartialWebglSettings = {},
   coreSettings: Core.Webgl.PartialViewerSettings = {}
-) : Promise<ViewerRef> {
-  const controllablePromise = new ControllablePromise<ViewerRef>()
+) : Promise<ViewerApi> {
+  const controllablePromise = new ControllablePromise<ViewerApi>()
 
   // Create the container
   const cmpContainer = container instanceof HTMLElement
@@ -75,7 +75,7 @@ export function createViewer (
   const reactRoot = createRoot(cmpContainer.ui)
 
   // Patch the viewer to clean up after itself
-  const patchRef = (cmp : ViewerRef) => {
+  const patchRef = (cmp : ViewerApi) => {
     cmp.dispose = () => {
       viewer.dispose()
       cmpContainer.dispose()  
@@ -90,7 +90,7 @@ export function createViewer (
     <Viewer
       container={cmpContainer}
       viewer={viewer}
-      onMount = {(cmp : ViewerRef) => controllablePromise.resolve(patchRef(cmp))}
+      onMount = {(cmp : ViewerApi) => controllablePromise.resolve(patchRef(cmp))}
       settings={settings}
     />
   )
@@ -107,7 +107,7 @@ export function createViewer (
 export function Viewer (props: {
   container: Container
   viewer: Core.Webgl.Viewer
-  onMount: (viewer: ViewerRef) => void
+  onMount: (viewer: ViewerApi) => void
   settings?: PartialWebglSettings
 }) {
   const settings = useSettings(props.settings ?? {}, getDefaultSettings(), (s) => applyWebglSettings(s))
@@ -132,7 +132,7 @@ export function Viewer (props: {
   const bimInfoRef = useBimInfo()
 
   const viewerState = useViewerState(props.viewer)
-  const treeRef = useRef<TreeActionRef>()
+  const treeRef = useRef<TreeActionApi>()
   const performanceRef = useRef<HTMLDivElement>(null)
   const isolationRef = useWebglIsolation(props.viewer)
   const controlBar = useControlBar(props.viewer, camera, modal.current, side, cursor, settings.value, sectionBoxRef, isolationRef, controlBarCustom)

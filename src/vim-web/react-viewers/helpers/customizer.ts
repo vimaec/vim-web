@@ -1,12 +1,12 @@
 import { useEffect, useImperativeHandle, useRef, useState } from "react";
 
-export interface Customizer<TData> {
+export interface ICustomizer<TData> {
   customize(fn: (entries: TData) => TData);
 }
 
 export function useCustomizer<TData>(
   baseEntries: TData,
-  ref: React.Ref<Customizer<TData>>
+  ref: React.Ref<ICustomizer<TData>>
 ) {
   const customization = useRef<(entries: TData) => TData>();
   const [entries, setEntries] = useState<TData>(baseEntries);

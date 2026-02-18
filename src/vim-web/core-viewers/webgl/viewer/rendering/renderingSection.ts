@@ -57,7 +57,7 @@ export class RenderingSection {
     this.maxZ.constant = box.max.z
     this.minZ.constant = -box.min.z
     this.box.copy(box)
-    this._renderer.needsUpdate = true
+    this._renderer.requestRender()
   }
 
   /**
@@ -67,7 +67,7 @@ export class RenderingSection {
     this._materials.clippingPlanes = this.planes
     this._renderer.three.localClippingEnabled = value
     this._active = value
-    this._renderer.needsUpdate = true
+    this._renderer.requestRender()
   }
 
   get active () {

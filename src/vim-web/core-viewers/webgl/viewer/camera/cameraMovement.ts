@@ -4,7 +4,7 @@
 
 import { Camera } from './camera'
 import { Element3D } from '../../loader/element3d'
-import { Selectable } from '../selection'
+import { ISelectable } from '../selection'
 import * as THREE from 'three'
 import { Marker } from '../gizmos/markers/gizmoMarker'
 import { Vim } from '../../loader/vim'
@@ -123,7 +123,7 @@ export abstract class CameraMovement {
       this._camera.target.copy(this._camera.position)
         .add(this._camera.forward.multiplyScalar(10))
       this._camera.screenTarget.set(0.5, 0.5)
-      this._camera.floatingTarget = true
+      this._camera.isTargetFloating = true
     }
     this.applyOrbit(angle)
   }
@@ -179,7 +179,7 @@ export abstract class CameraMovement {
     const pos = target instanceof Element3D ? (await target.getCenter()) : target
     if (!pos) return
     this._camera.screenTarget.set(0.5, 0.5)
-    this._camera.floatingTarget = false
+    this._camera.isTargetFloating = false
     this.lookAtPoint(pos)
   }
 
@@ -193,7 +193,7 @@ export abstract class CameraMovement {
     const pos = target instanceof Element3D ? (await target.getCenter()) : target
     if (!pos) return
     this._camera.target.copy(pos)
-    this._camera.floatingTarget = false
+    this._camera.isTargetFloating = false
     this.updateScreenTarget()
   }
 
@@ -202,7 +202,7 @@ export abstract class CameraMovement {
    */
   reset () {
     this._camera.screenTarget.set(0.5, 0.5)
-    this._camera.floatingTarget = false
+    this._camera.isTargetFloating = false
     this.set(this._savedState.position, this._savedState.target)
   }
 
@@ -220,7 +220,7 @@ export abstract class CameraMovement {
    * @param [forward] - Optional forward direction after framing.
    */
   async frame (
-    target: Selectable | Vim | THREE.Sphere | THREE.Box3 | 'all',
+    target: ISelectable | Vim | THREE.Sphere | THREE.Box3 | 'all',
     forward?: THREE.Vector3
   ) {
     if ((target instanceof Marker) || (target instanceof Element3D)) {
@@ -256,7 +256,7 @@ export abstract class CameraMovement {
     const pos = direction.multiplyScalar(-safeDist).add(sphere.center)
 
     this._camera.screenTarget.set(0.5, 0.5)
-    this._camera.floatingTarget = false
+    this._camera.isTargetFloating = false
     this.set(pos, sphere.center)
   }
 
@@ -334,7 +334,7 @@ export abstract class CameraMovement {
   }
 
   protected lockVector (position: THREE.Vector3, fallback: THREE.Vector3, out: THREE.Vector3): THREE.Vector3 {
-    const allowed = this._camera.allowedMovement
+    const allowed = this._camera.lockMovement
     return out.set(
       allowed.x === 0 ? fallback.x : position.x,
       allowed.y === 0 ? fallback.y : position.y,

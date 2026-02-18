@@ -2,18 +2,18 @@
 import * as Core from '../../core-viewers/ultra'
 import { ControlBarCustomization } from '../controlbar/controlBar'
 import { ModalHandle } from '../panels'
-import { CameraRef } from '../state/cameraState'
+import { CameraApi } from '../state/cameraState'
 import { controlBarCamera, controlBarSectionBox, controlBarMiscUltra, controlBarVisibility } from '../state/controlBarState'
-import { SectionBoxRef } from '../state/sectionBoxState'
-import { IsolationRef } from '../state/sharedIsolation'
+import { SectionBoxApi } from '../state/sectionBoxState'
+import { IsolationApi } from '../state/sharedIsolation'
 import { SideState } from '../state/sideState'
 import { UltraSettings } from './settings'
 
 export function useUltraControlBar (
   viewer: Core.Viewer,
-  section: SectionBoxRef,
-  isolation: IsolationRef,
-  camera: CameraRef,
+  section: SectionBoxApi,
+  isolation: IsolationApi,
+  camera: CameraApi,
   settings: UltraSettings,
   side: SideState,
   modal: ModalHandle,

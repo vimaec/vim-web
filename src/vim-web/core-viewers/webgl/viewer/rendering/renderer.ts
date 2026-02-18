@@ -50,22 +50,24 @@ export class Renderer implements IRenderer {
   private _outlineCount = 0
 
   /**
-   * Indicates whether the scene should be re-rendered on change only.
+   * When true, the renderer only renders when a render has been requested.
+   * When false, the renderer renders every frame.
    */
-  onDemand: boolean
-
+  autoRender: boolean
 
   /**
-   * Indicates whether the scene needs to be re-rendered.
-   * Setting to `true` requests a re-render. Setting to `false` is ignored (OR semantics).
+   * Whether a re-render has been requested for the current frame.
    * Cleared automatically after each render frame.
    */
   get needsUpdate () {
     return this._needsUpdate
   }
 
-  set needsUpdate (value: boolean) {
-    this._needsUpdate = this._needsUpdate || value
+  /**
+   * Requests a re-render on the next frame.
+   */
+  requestRender () {
+    this._needsUpdate = true
   }
 
   constructor (
@@ -104,7 +106,7 @@ export class Renderer implements IRenderer {
 
     })
 
-    this.onDemand = settings.rendering.onDemand
+    this.autoRender = settings.rendering.autoRender
     this.textRenderer = this._viewport.textRenderer
     this.textEnabled = true
 
@@ -123,9 +125,9 @@ export class Renderer implements IRenderer {
     this._viewport.onResize.subscribe(() => this.fitViewport())
     this._camera.onSettingsChanged.sub(() => {
       this._composer.camera = this._camera.three
-      this.needsUpdate = true
+      this._needsUpdate = true
     })
-    this._materials.onUpdate.sub(() => (this.needsUpdate = true))
+    this._materials.onUpdate.sub(() => (this._needsUpdate = true))
     this.background = settings.background.color
   }
 
@@ -150,7 +152,7 @@ export class Renderer implements IRenderer {
 
   set background (color: THREE.Color | THREE.Texture) {
     this._scene.threeScene.background = color
-    this.needsUpdate = true
+    this._needsUpdate = true
   }
 
   /**
@@ -189,7 +191,7 @@ export class Renderer implements IRenderer {
 
   set textEnabled (value: boolean) {
     if (value === this._renderText) return
-    this.needsUpdate = true
+    this._needsUpdate = true
     this._renderText = value
     this.textRenderer.domElement.style.display = value ? 'block' : 'none'
   }
@@ -229,17 +231,17 @@ export class Renderer implements IRenderer {
    */
   notifySceneUpdate () {
     this._sceneUpdated = true
-    this.needsUpdate = true
+    this._needsUpdate = true
   }
 
   addOutline () {
     this._outlineCount++
-    this.needsUpdate = true
+    this._needsUpdate = true
   }
 
   removeOutline () {
     this._outlineCount--
-    this.needsUpdate = true
+    this._needsUpdate = true
   }
 
   /**
@@ -257,7 +259,7 @@ export class Renderer implements IRenderer {
     }
 
     this._composer.outlines = this._outlineCount > 0
-    if(this.needsUpdate || !this.onDemand) {
+    if(this._needsUpdate || !this.autoRender) {
       this._composer.render()
     }
     this._needsUpdate = false
@@ -330,6 +332,6 @@ export class Renderer implements IRenderer {
     this.three.setSize(size.x, size.y)
     this._composer.setSize(size.x, size.y)
     this.textRenderer.setSize(size.x, size.y)
-    this.needsUpdate = true
+    this._needsUpdate = true
   }
 }

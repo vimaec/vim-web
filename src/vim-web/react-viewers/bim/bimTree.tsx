@@ -12,15 +12,15 @@ import 'react-complex-tree/lib/style.css'
 import ReactTooltip from 'react-tooltip'
 import * as Core from '../../core-viewers'
 import { showContextMenu } from '../panels/contextMenu'
-import { CameraRef } from '../state/cameraState'
+import { CameraApi } from '../state/cameraState'
 import { ArrayEquals } from '../helpers/data'
 import { BimTreeData, VimTreeNode } from './bimTreeData'
-import { IsolationRef } from '../state/sharedIsolation'
+import { IsolationApi } from '../state/sharedIsolation'
 
 import Element3D = Core.Webgl.Element3D
 import Viewer = Core.Webgl.Viewer
 
-export type TreeActionRef = {
+export type TreeActionApi = {
   showAll: () => void
   hideAll: () => void
   collapseAll: () => void
@@ -35,11 +35,11 @@ export type TreeActionRef = {
  * @param isolation current isolation state.
  */
 export function BimTree (props: {
-  actionRef: React.MutableRefObject<TreeActionRef>
+  actionRef: React.MutableRefObject<TreeActionApi>
   viewer: Viewer
-  camera: CameraRef
+  camera: CameraApi
   objects: Element3D[]
-  isolation: IsolationRef
+  isolation: IsolationApi
   treeData: BimTreeData
 }) {
   // Data state
@@ -262,7 +262,7 @@ export function BimTree (props: {
 
 function toggleVisibility (
   viewer: Viewer,
-  isolation: IsolationRef,
+  isolation: IsolationApi,
   tree: BimTreeData,
   index: number
 ) {

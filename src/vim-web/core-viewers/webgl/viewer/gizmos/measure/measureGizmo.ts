@@ -241,7 +241,7 @@ export class MeasureGizmo {
     // Set start marker
     this._startMarker.setPosition(start)
     this._startMarker.mesh.visible = true
-    this._viewer.renderer.needsUpdate = true
+    this._viewer.renderer.requestRender()
   }
 
   /**
@@ -253,7 +253,7 @@ export class MeasureGizmo {
       this._line.label.visible = false
     }
     this._label.visible = false
-    this._viewer.renderer.needsUpdate = true
+    this._viewer.renderer.requestRender()
   }
 
   /**
@@ -264,7 +264,7 @@ export class MeasureGizmo {
       this._line.setPoints(start, pos)
       this._line.mesh.visible = true
     }
-    this._viewer.renderer.needsUpdate = true
+    this._viewer.renderer.requestRender()
   }
 
   /**
@@ -308,7 +308,7 @@ export class MeasureGizmo {
 
     // Start update of collapse.
     this._animate()
-    this._viewer.renderer.needsUpdate = true
+    this._viewer.renderer.requestRender()
     return true
   }
 

@@ -5,7 +5,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import * as Core from '../../core-viewers'
 import * as Icons from '../icons'
-import { CameraRef } from '../state/cameraState'
+import { CameraApi } from '../state/cameraState'
 import { SettingsState } from '../settings/settingsState'
 import { whenAllTrue, whenTrue } from '../helpers/utils'
 import { WebglSettings } from '../webgl/settings'
@@ -26,7 +26,7 @@ export const AxesPanelMemo = React.memo(AxesPanel)
 /**
  * JSX Component for axes gizmo.
  */
-function AxesPanel (props: { viewer: Core.Webgl.Viewer, camera: CameraRef, settings: SettingsState<WebglSettings> }) {
+function AxesPanel (props: { viewer: Core.Webgl.Viewer, camera: CameraApi, settings: SettingsState<WebglSettings> }) {
   const viewer = props.viewer
 
   const [ortho, setOrtho] = useState<boolean>(viewer.camera.orthographic)

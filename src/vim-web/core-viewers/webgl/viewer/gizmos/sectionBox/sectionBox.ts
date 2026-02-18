@@ -105,7 +105,7 @@ export class SectionBox {
     // When the pointer enters/leaves a face, dispatch hover state.
     this._inputs.onFaceEnter = (normal) => {
       this._onHover.dispatch(normal.x !== 0 || normal.y !== 0 || normal.z !== 0);
-      this.renderer.needsUpdate = true;
+      this.renderer.requestRender();
     };
 
     // When user drags the box, resize and update.
@@ -172,7 +172,7 @@ export class SectionBox {
     }
 
     this._interactive = value;
-    this.renderer.needsUpdate = true;
+    this.renderer.requestRender();
     this._onStateChanged.dispatch();
   }
 
@@ -190,7 +190,7 @@ export class SectionBox {
     if (value) {
       this.update();
     }
-    this.renderer.needsUpdate = true;
+    this.renderer.requestRender();
     this._onStateChanged.dispatch();
   }
 
@@ -212,7 +212,7 @@ export class SectionBox {
     this._gizmos.fitBox(box);
     this.renderer.section.fitBox(box);
     this._onBoxConfirm.dispatch(box);
-    this.renderer.needsUpdate = true;
+    this.renderer.requestRender();
   }
 
   /**
@@ -222,7 +222,7 @@ export class SectionBox {
    */
   public update(): void {
     this.setBox(this.section.box);
-    this.renderer.needsUpdate = true;
+    this.renderer.requestRender();
   }
 
   /**

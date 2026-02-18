@@ -14,7 +14,7 @@ import type { IRaycaster, IRaycastResult } from '../../../shared'
 import { Layers } from '../raycaster'
 import { Marker } from '../gizmos/markers/gizmoMarker'
 import type { GizmoMarkers } from '../gizmos/markers/gizmoMarkers'
-import type { Selectable } from '../selection'
+import type { ISelectable } from '../selection'
 
 /**
  * Reserved vimIndex for marker gizmos in GPU picking.
@@ -44,7 +44,7 @@ export function unpackPickingId(packedId: number): { vimIndex: number; elementIn
  * Result of a GPU pick operation containing element index, world position, and surface normal.
  * Implements IRaycastResult for compatibility with the raycaster interface.
  */
-export class GpuPickResult implements IRaycastResult<Selectable> {
+export class GpuPickResult implements IRaycastResult<ISelectable> {
   /** The world position of the hit */
   readonly worldPosition: THREE.Vector3
   /** The world normal at the hit point */
@@ -72,7 +72,7 @@ export class GpuPickResult implements IRaycastResult<Selectable> {
    * The object property for IRaycastResult interface.
    * Returns the Element3D or Marker for the picked object.
    */
-  get object(): Selectable | undefined {
+  get object(): ISelectable | undefined {
     return this._marker ?? this.getElement()
   }
 
@@ -105,7 +105,7 @@ export class GpuPickResult implements IRaycastResult<Selectable> {
  *
  * Normal.z is reconstructed as: sqrt(1 - x² - y²), always positive since normal faces camera.
  */
-export class GpuPicker implements IRaycaster<Selectable> {
+export class GpuPicker implements IRaycaster<ISelectable> {
   private _renderer: THREE.WebGLRenderer
   private _camera: Camera
   private _scene: RenderScene

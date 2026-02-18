@@ -13,8 +13,8 @@ export function getDefaultViewerSettings(): ViewerSettings {
     },
     camera: {
       orthographic: false,
-      allowedMovement: new THREE.Vector3(1, 1, 1),
-      allowedRotation: new THREE.Vector2(1, 1),
+      lockMovement: new THREE.Vector3(1, 1, 1),
+      lockRotation: new THREE.Vector2(1, 1),
       near: 0.001,
       far: 15000,
       fov: 50,
@@ -86,7 +86,7 @@ export function getDefaultViewerSettings(): ViewerSettings {
     },
     axes: getDefaultAxesSettings(),
     rendering: {
-      onDemand: true
+      autoRender: true
     }
   }
 }
