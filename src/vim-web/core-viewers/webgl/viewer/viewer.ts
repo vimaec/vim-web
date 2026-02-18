@@ -19,7 +19,7 @@ import { Viewport } from './viewport'
 import { ISignal, SignalDispatcher } from 'ste-signals'
 import {type IInputHandler, type InputHandler} from '../../shared'
 import { IMaterials, Materials } from '../loader/materials/materials'
-import { Vim } from '../loader/vim'
+import { Vim, IWebglVim } from '../loader/vim'
 import { Scene } from '../loader/scene'
 import { VimCollection } from '../loader/vimCollection'
 import { createInputHandler } from './inputAdapter'
@@ -165,10 +165,9 @@ export class Viewer {
   }
 
   /**
-   * Retrieves an array containing all currently loaded Vim objects.
-   * @returns {Vim[]} An array of all Vim objects currently loaded in the viewer.
+   * All currently loaded Vim models.
    */
-  get vims () {
+  get vims (): IWebglVim[] {
     return this.vimCollection.getAll()
   }
 
@@ -188,17 +187,20 @@ export class Viewer {
   }
 
   /**
-   * Unloads the given Vim object from the viewer, updating the scene and triggering necessary actions.
-   * @param {Vim} vim - The Vim object to remove from the viewer.
-   * @throws {Error} If attempting to remove a Vim object that is not present in the viewer.
+   * Removes and disposes the given Vim from the viewer.
+   * This is the proper way to unload a vim — do not call `vim.dispose()` directly.
+   * @param vim - The Vim to remove.
+   * @throws If the vim is not present in the viewer.
    */
-  remove (vim: Vim) {
-    if (!this.vimCollection.has(vim)) {
+  remove (vim: IWebglVim) {
+    const v = vim as Vim
+    if (!this.vimCollection.has(v)) {
       throw new Error('Cannot remove missing vim from viewer.')
     }
-    this.vimCollection.remove(vim)
-    this.renderer.remove(vim.scene as Scene)
-    this.selection.removeFromVim(vim)
+    this.vimCollection.remove(v)
+    this.renderer.remove(v.scene as Scene)
+    this.selection.removeFromVim(v)
+    v.dispose()
     this._onVimLoaded.dispatch()
   }
 
@@ -219,14 +221,11 @@ export class Viewer {
   dispose () {
     cancelAnimationFrame(this._updateId)
     this.selection.clear()
+    this.clear()
     this.viewport.dispose()
     this.renderer.dispose()
     ;(this.raycaster as GpuPicker).dispose()
     this._inputs.dispose()
-    for (const vim of this.vimCollection.getAll()) {
-      vim?.dispose()
-    }
-    this.vimCollection.clear()
     this._materials.dispose()
     this.gizmos.dispose()
   }

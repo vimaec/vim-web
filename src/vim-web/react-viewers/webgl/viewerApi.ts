@@ -89,7 +89,7 @@ export type ViewerApi = {
 
   /**
    * Opens a vim file without loading geometry.
-   * Use for BIM queries or selective loading via vim.loadAll()/loadSubset().
+   * Use for BIM queries or selective loading via vim.load()/vim.load(subset).
    * @param source The url or buffer of the vim file
    * @param settings Optional settings
    * @returns LoadRequest to track progress and get result
@@ -100,7 +100,7 @@ export type ViewerApi = {
    * Removes a vim from the viewer and disposes it.
    * @param vim The vim to remove
    */
-  remove: (vim: Core.Webgl.Vim) => void
+  remove: (vim: Core.Webgl.IWebglVim) => void
 
   /**
    * Isolation API managing isolation state in the viewer.

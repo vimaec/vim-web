@@ -70,7 +70,7 @@ export class ComponentLoader {
   /**
    * Opens a vim file without loading geometry.
    * Use this for querying BIM data or selective loading.
-   * Call vim.loadAll() or vim.loadSubset() to load geometry later.
+   * Call vim.load() or vim.load(subset) to load geometry later.
    * @param source The url to the vim file or a buffer of the file.
    * @param settings Settings to apply to vim file.
    * @returns A LoadRequest to track progress and get result. The vim is auto-added on success.
@@ -113,15 +113,13 @@ export class ComponentLoader {
 
   private async initVim (vim: Core.Webgl.Vim, settings: AddSettings, loadGeometry: boolean) {
     this._viewer.add(vim)
-    vim.onLoadingUpdate.subscribe(() => {
+    if (loadGeometry) {
+      await vim.load()
       this._viewer.gizmos.loading.visible = false
       if (settings.autoFrame !== false) {
         this._viewer.camera.snap().frame(vim)
         this._viewer.camera.save()
       }
-    })
-    if (loadGeometry) {
-      await vim.loadAll()
     }
   }
 }

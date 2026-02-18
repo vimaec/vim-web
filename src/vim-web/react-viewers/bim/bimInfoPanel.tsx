@@ -11,7 +11,7 @@ import { Data, BimInfoPanelApi } from './bimInfoData'
 
 export function BimInfoPanel (props : {
     object: Core.Webgl.Element3D,
-    vim: Core.Webgl.Vim,
+    vim: Core.Webgl.IWebglVim,
     elements: AugmentedElement[],
     full : boolean
     bimInfoRef: BimInfoPanelApi

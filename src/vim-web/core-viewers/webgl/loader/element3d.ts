@@ -225,7 +225,7 @@ export class Element3D implements ISelectable {
       box = box ? box.union(b) : b.clone()
     })
     if (box) {
-      box.applyMatrix4(this.vim.getMatrix())
+      box.applyMatrix4(this.vim.scene.matrix)
       this._boundingBox = box
     }
 

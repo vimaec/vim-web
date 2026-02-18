@@ -1,12 +1,12 @@
 /**
  * Core VIM parsing entry point. Loads a VIM file (BFast container) and produces
  * a Vim object with G3d geometry, BIM document, element mapping, and mesh factory.
- * The Vim is created WITHOUT geometry — call vim.loadAll() or vim.loadSubset()
+ * The Vim is created WITHOUT geometry — call vim.load() or vim.load(subset)
  * separately to build Three.js meshes.
  */
 
 import { createVimSettings, VimPartialSettings } from '../vimSettings'
-import { Vim } from '../vim'
+import { Vim, IWebglVim } from '../vim'
 import { Scene } from '../scene'
 import { ElementMapping } from '../elementMapping'
 import { VimMeshFactory } from './vimMeshFactory'
@@ -30,7 +30,7 @@ export type RequestSource = {
   headers?: Record<string, string>,
 }
 
-export type ILoadRequest = BaseILoadRequest<Vim>
+export type ILoadRequest = BaseILoadRequest<IWebglVim>
 
 /**
  * A request to load a VIM file. Extends the base LoadRequest to add BFast abort handling.
@@ -63,7 +63,7 @@ export class LoadRequest extends BaseLoadRequest<Vim> {
    * 3. Parse BIM document (VimDocument) from the BFast
    * 4. Build ElementMapping (instance → element index) needed for GPU picking
    * 5. Create Scene and VimMeshFactory (no geometry built yet)
-   * 6. Return Vim — caller must invoke loadAll()/loadSubset() to build meshes
+   * 6. Return Vim — caller must invoke vim.load() to build meshes
    */
   private async loadFromVim (
     bfast: BFast,
@@ -93,7 +93,7 @@ export class LoadRequest extends BaseLoadRequest<Vim> {
 
     const header = await requestHeader(bfast)
 
-    // Step 6: Create Vim — geometry will be built later via loadAll()/loadSubset()
+    // Step 6: Create Vim — geometry will be built later via vim.load()
     const vim = new Vim(
       header,
       doc,

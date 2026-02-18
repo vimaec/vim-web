@@ -12,19 +12,58 @@ import {
   ElementMapping,
   ElementNoMapping
 } from './elementMapping'
-import { ISignal, SignalDispatcher } from 'ste-signals'
-import { SimpleEventDispatcher } from 'ste-simple-events'
-import { G3dSubset, ISubset, SubsetFilter } from './progressive/g3dSubset'
+import { G3dSubset, ISubset } from './progressive/g3dSubset'
 import { VimMeshFactory } from './progressive/vimMeshFactory'
 import { IVim } from '../../shared/vim'
-import { IProgress } from '../../shared/loadResult'
 import { MappedG3d } from './progressive/mappedG3d'
 
 /**
- * Represents a container for the built three.js meshes and the vim data from which they were constructed.
- * Facilitates high-level scene manipulation by providing access to objects.
+ * Public API for a loaded VIM model, accessed via `viewer.vims`.
+ *
+ * Provides element queries, BIM data access, scene/material control,
+ * and progressive geometry loading.
+ *
+ * @example
+ * ```ts
+ * const vim = await viewer.load({ url }).getVim()
+ *
+ * // Query elements
+ * const element = vim.getElementFromIndex(301)
+ * const all = vim.getAllElements()
+ *
+ * // BIM data
+ * const doc = vim.bim
+ *
+ * // Progressive loading
+ * const sub = vim.subset().filter('instance', indices)
+ * await vim.load(sub)
+ * ```
  */
-export class Vim implements IVim<Element3D> {
+export interface IWebglVim extends IVim<Element3D> {
+  readonly type: 'webgl'
+  /** The URL this vim was loaded from, if applicable. */
+  readonly source: string | undefined
+  /** The VIM file header. */
+  readonly header: VimHeader | undefined
+  /** BIM document for querying element properties, categories, levels, etc. */
+  readonly bim: VimDocument | undefined
+  /** The scene containing this vim's geometry. */
+  readonly scene: IScene
+  /** The bounding box of all loaded geometry. */
+  getBoundingBox(): Promise<THREE.Box3>
+  /** Returns a subset representing all instances, for use with {@link load} and filtering. */
+  subset(): ISubset
+  /**
+   * Loads geometry for the given subset, or all geometry if no subset is provided.
+   * @param subset - The subset to load. Omit to load everything.
+   */
+  load(subset?: ISubset): Promise<void>
+  /** Removes all loaded geometry from the renderer. */
+  clear(): void
+}
+
+/** @internal */
+export class Vim implements IWebglVim {
   /**
    * The type of the viewer, indicating it is a WebGL viewer.
    * Useful for distinguishing between different viewer types in a multi-viewer application.
@@ -66,33 +105,11 @@ export class Vim implements IVim<Element3D> {
    */
   get scene (): IScene { return this._scene }
 
-  /**
-   * The mapping from Bim to Geometry for this vim.
-   */
+  /** @internal */
   readonly map: IElementMapping
 
   private readonly _factory: VimMeshFactory
   private readonly _elementToObject = new Map<number, Element3D>()
-  private _loadedInstanceCount = 0
-  private _onUpdate = new SimpleEventDispatcher<IProgress>()
-
-  /**
-   * Getter for accessing the event dispatched whenever a subset begins or finishes loading.
-   * Consumers can subscribe to track loading progress.
-   */
-  get onLoadingUpdate () {
-    return this._onUpdate.asEvent()
-  }
-
-  /**
-   * Getter for accessing the signal dispatched when the object is disposed.
-   * @returns {ISignal} The signal for disposal events.
-   */
-  get onDispose () {
-    return this._onDispose as ISignal
-  }
-
-  private _onDispose = new SignalDispatcher()
 
   constructor (
     header: VimHeader | undefined,
@@ -120,14 +137,6 @@ export class Vim implements IVim<Element3D> {
   getBoundingBox(): Promise<THREE.Box3> {
     const box = this._scene.getBoundingBox()
     return Promise.resolve(box)
-  }
-
-  /**
-   * Retrieves the matrix representation of the Vim object's position, rotation, and scale.
-   * @returns {THREE.Matrix4} The matrix representing the Vim object's transformation.
-   */
-  getMatrix () {
-    return this.settings.matrix
   }
 
   /**
@@ -190,45 +199,19 @@ export class Vim implements IVim<Element3D> {
    * Retrieves all instances as a subset.
    * @returns {ISubset} A subset containing all instances.
    */
-  getFullSet (): ISubset {
+  subset (): ISubset {
     return new G3dSubset(this._factory.g3d)
   }
 
   /**
-   * Asynchronously loads all geometry.
-   */
-  async loadAll () {
-    await this.loadSubset(this.getFullSet())
-  }
-
-  /**
-   * Loads geometry for the given subset.
+   * Loads geometry for the given subset, or all geometry if no subset is provided.
    * Caller is responsible for not loading the same subset twice.
-   * @param {ISubset} subset - The subset to load resources for.
+   * @param subset - The subset to load. Omit to load everything.
    */
-  async loadSubset (subset: ISubset) {
+  async load (subset?: ISubset) {
+    subset ??= this.subset()
     if (subset.getInstanceCount() === 0) return
-
     this._factory.add(subset as G3dSubset)
-    this._loadedInstanceCount += subset.getInstanceCount()
-    this._onUpdate.dispatch({
-      type: 'percent',
-      current: this._loadedInstanceCount,
-      total: this.getFullSet().getInstanceCount()
-    })
-  }
-
-  /**
-   * Asynchronously loads geometry based on a specified filter mode and criteria.
-   * @param {SubsetFilter} filterMode - The mode of filtering to apply.
-   * @param {number[]} filter - The filter criteria.
-   */
-  async loadFilter (
-    filterMode: SubsetFilter,
-    filter: number[]
-  ) {
-    const subset = this.getFullSet().filter(filterMode, filter)
-    await this.loadSubset(subset)
   }
 
   /**
@@ -236,21 +219,11 @@ export class Vim implements IVim<Element3D> {
    */
   clear () {
     this._elementToObject.clear()
-    this._loadedInstanceCount = 0
     this._scene.clear()
-    this._onUpdate.dispatch({
-      type: 'percent',
-      current: 0,
-      total: this.getFullSet().getInstanceCount()
-    })
   }
 
-  /**
-   * Cleans up and releases resources associated with the vim.
-   */
+  /** @internal Called by Viewer.remove() — do not call directly. */
   dispose () {
-    this._onDispose.dispatch()
-    this._onDispose.clear()
     this._scene.dispose()
   }
 }

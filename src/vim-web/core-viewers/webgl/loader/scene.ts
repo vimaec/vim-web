@@ -25,6 +25,8 @@ export interface IRenderer {
 
 /** Public-facing interface for vim.scene. Represents loaded geometry in the renderer. */
 export interface IScene {
+  /** The world transform matrix applied to all meshes in this scene. */
+  readonly matrix: THREE.Matrix4
   /** Bounding box of currently loaded geometry. Undefined if nothing loaded yet. */
   getBoundingBox(target?: THREE.Box3): THREE.Box3 | undefined
   /** Bounding box using average mesh centers. More stable against outliers. */
@@ -42,6 +44,7 @@ export class Scene implements IScene {
   private _renderer: Renderer
   private _vim: Vim | undefined
   private _matrix = new THREE.Matrix4()
+  get matrix (): THREE.Matrix4 { return this._matrix }
 
   // State
   insertables: InsertableMesh[] = []

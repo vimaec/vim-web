@@ -174,10 +174,7 @@ export function Viewer (props: {
       core: props.viewer,
       load: (source, loadSettings) => loader.current.load(source, loadSettings),
       open: (source, loadSettings) => loader.current.open(source, loadSettings),
-      remove: (vim) => {
-        props.viewer.remove(vim)
-        vim.dispose()
-      },
+      remove: (vim) => props.viewer.remove(vim),
       isolation: isolationRef,
       camera,
       settings: {

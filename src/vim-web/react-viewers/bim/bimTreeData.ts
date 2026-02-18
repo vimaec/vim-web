@@ -30,7 +30,7 @@ export type VimTreeNode = TreeItem<AugmentedElement> & {
  * @returns
  */
 export function toTreeData (
-  vim: Core.Webgl.Vim,
+  vim: Core.Webgl.IWebglVim,
   elements: AugmentedElement[],
   grouping: Grouping
 ) {
@@ -59,11 +59,11 @@ export function toTreeData (
 }
 
 export class BimTreeData {
-  vim : Core.Webgl.Vim
+  vim : Core.Webgl.IWebglVim
   nodes: Record<number, VimTreeNode>
   elementToNode: Map<number, number>
 
-  constructor (vim: Core.Webgl.Vim, map: MapTree<string, AugmentedElement>) {
+  constructor (vim: Core.Webgl.IWebglVim, map: MapTree<string, AugmentedElement>) {
     this.vim = vim
     this.nodes = {}
     this.elementToNode = new Map<number, number>()
