@@ -131,6 +131,7 @@ export function Viewer (props: {
       setSelectState(i => (i+1)%2)
     } )
     props.onMount({
+      type: 'ultra',
       core: props.core,
       get modal() { return modalHandle.current },
       isolation: isolationRef,

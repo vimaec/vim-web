@@ -1,3 +1,2 @@
-export * from './axes'
-export * from './axesSettings'
-export * from './gizmoAxes'
+export type { AxesSettings } from './axesSettings'
+export type { GizmoAxes } from './gizmoAxes'

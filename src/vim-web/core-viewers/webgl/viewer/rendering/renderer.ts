@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { IRenderer, Scene } from '../../loader/scene'
+import { ISceneRenderer, Scene } from '../../loader/scene'
 import { Viewport } from '../viewport'
 import { RenderScene } from './renderScene'
 import { MaterialSet, Materials } from '../../loader/materials/materials'
@@ -13,12 +13,49 @@ import { Camera } from '../camera/camera'
 import { RenderingSection } from './renderingSection'
 import { RenderingComposer } from './renderingComposer'
 import { ViewerSettings } from '../settings/viewerSettings'
-import { SignalDispatcher } from 'ste-signals'
+import { ISignal, SignalDispatcher } from 'ste-signals'
+
+/**
+ * Public interface for the WebGL renderer.
+ * Exposes only the members needed by API consumers.
+ */
+export interface IRenderer {
+  /** The THREE WebGL renderer. */
+  readonly three: THREE.WebGLRenderer
+  /** Interface to interact with section box directly without using the gizmo. */
+  readonly section: RenderingSection
+  /** Whether a re-render has been requested for the current frame. */
+  readonly needsUpdate: boolean
+  /** Requests a re-render on the next frame. */
+  requestRender(): void
+  /** Renders the current frame. Useful for capturing screenshots. */
+  render(): void
+  /** Gets or sets the background color or texture of the scene. */
+  background: THREE.Color | THREE.Texture
+  /** Gets or sets the material used to render models. */
+  modelMaterial: MaterialSet
+  /** The target MSAA sample count. Higher = better quality. */
+  samples: number
+  /** Scale factor for outline/selection render target resolution (0-1). */
+  outlineScale: number
+  /** Signal dispatched once per render frame if the scene was updated. */
+  readonly onSceneUpdated: ISignal
+  /** Signal dispatched when bounding box is updated. */
+  readonly onBoxUpdated: ISignal
+  /** Whether text rendering is enabled. */
+  textEnabled: boolean
+  /** Instance count below which ghosted meshes are hidden entirely. */
+  smallGhostThreshold: number
+  /** Returns the bounding box encompassing all rendered objects. */
+  getBoundingBox(target?: THREE.Box3): THREE.Box3 | undefined
+  /** When true, the renderer only renders on request. When false, renders every frame. */
+  autoRender: boolean
+}
 
 /**
  * Manages how vim objects are added and removed from the THREE.Scene to be rendered
  */
-export class Renderer implements IRenderer {
+export class Renderer implements ISceneRenderer {
   /**
    * The THREE WebGL renderer.
    */

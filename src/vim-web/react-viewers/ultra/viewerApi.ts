@@ -11,6 +11,11 @@ import { UltraSettings } from './settings';
 
 export type ViewerApi = {
   /**
+   * Discriminant to distinguish Ultra from WebGL viewer.
+   */
+  type: 'ultra'
+
+  /**
    * The Vim viewer instance associated with the viewer.
    */
   core: Core.Viewer;

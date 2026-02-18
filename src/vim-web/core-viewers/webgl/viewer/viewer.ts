@@ -17,13 +17,14 @@ import { Viewport } from './viewport'
 
 // loader
 import { ISignal, SignalDispatcher } from 'ste-signals'
-import {type IInputHandler, type InputHandler} from '../../shared'
+import {type IInputHandler} from '../../shared'
+import {type InputHandler} from '../../shared/input/inputHandler'
 import { IMaterials, Materials } from '../loader/materials/materials'
 import { Vim, IWebglVim } from '../loader/vim'
 import { Scene } from '../loader/scene'
 import { VimCollection } from '../loader/vimCollection'
 import { createInputHandler } from './inputAdapter'
-import { Renderer } from './rendering/renderer'
+import { IRenderer, Renderer } from './rendering/renderer'
 
 /**
  * Viewer and loader for vim files.
@@ -42,7 +43,9 @@ export class Viewer {
   /**
    * The renderer used by the viewer for rendering scenes.
    */
-  readonly renderer: Renderer
+  get renderer(): IRenderer { return this._renderer }
+  /** @internal */
+  readonly _renderer: Renderer
 
   /**
    * The interface for managing the HTML canvas viewport.
@@ -108,7 +111,7 @@ export class Viewer {
     const scene = new RenderScene()
     this.viewport = new Viewport(this.settings)
     this._camera = new Camera(scene, this.viewport, this.settings)
-    this.renderer = new Renderer(
+    this._renderer = new Renderer(
       scene,
       this.viewport,
       this._materials,
@@ -124,13 +127,13 @@ export class Viewer {
     this.selection = createSelection()
 
     // GPU-based raycaster for element picking and world position queries
-    const size = this.renderer.three.getSize(new THREE.Vector2())
+    const size = this._renderer.three.getSize(new THREE.Vector2())
     const gpuPicker = new GpuPicker(
-      this.renderer.three,
+      this._renderer.three,
       this._camera,
       scene,
       this.vimCollection,
-      this.renderer.section,
+      this._renderer.section,
       size.x || 1,
       size.y || 1
     )
@@ -155,13 +158,13 @@ export class Viewer {
     this._updateId = requestAnimationFrame(() => this.animate())
 
     // Camera
-    if (this._camera.update(deltaTime)) this.renderer.requestRender()
+    if (this._camera.update(deltaTime)) this._renderer.requestRender()
 
     // Gizmos
     this.gizmos.updateAfterCamera()
 
     // Rendering
-    this.renderer.render()
+    this._renderer.render()
   }
 
   /**
@@ -182,7 +185,7 @@ export class Viewer {
       throw new Error('Vim cannot be added again, unless removed first.')
     }
 
-    this.renderer.add(vim.scene as Scene)
+    this._renderer.add(vim.scene as Scene)
     this.vimCollection.add(vim)
     this._onVimLoaded.dispatch()
   }
@@ -199,7 +202,7 @@ export class Viewer {
       throw new Error('Cannot remove missing vim from viewer.')
     }
     this.vimCollection.remove(v)
-    this.renderer.remove(v.scene as Scene)
+    this._renderer.remove(v.scene as Scene)
     this.selection.removeFromVim(v)
     v.dispose()
     this._onVimLoaded.dispatch()
@@ -224,7 +227,7 @@ export class Viewer {
     this.selection.clear()
     this.clear()
     this.viewport.dispose()
-    this.renderer.dispose()
+    this._renderer.dispose()
     ;(this.raycaster as GpuPicker).dispose()
     this._inputs.dispose()
     this._materials.dispose()

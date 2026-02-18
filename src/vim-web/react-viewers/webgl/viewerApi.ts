@@ -70,6 +70,11 @@ export type HelpApi = {
  */
 export type ViewerApi = {
   /**
+   * Discriminant to distinguish WebGL from Ultra viewer.
+   */
+  type: 'webgl'
+
+  /**
    * HTML structure containing the viewer.
    */
   container: Container

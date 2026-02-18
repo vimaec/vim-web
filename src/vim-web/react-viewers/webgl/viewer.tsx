@@ -170,6 +170,7 @@ export function Viewer (props: {
       props.viewer.inputs.onContextMenu.subscribe(showContextMenu)
 
     props.onMount({
+      type: 'webgl',
       container: props.container,
       core: props.viewer,
       load: (source, loadSettings) => loader.current.load(source, loadSettings),

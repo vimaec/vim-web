@@ -1,4 +1,2 @@
-// Type export
-// Rendering internals are accessed via Viewer, not directly.
-export type * from './renderingSection'
-export type * from './renderer'
+export type { IRenderer, Renderer } from './renderer'
+export type { RenderingSection } from './renderingSection'

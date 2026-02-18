@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { Camera } from '../../camera'
+import { Camera } from '../../camera/camera'
 import { Viewport } from '../../viewport'
 import { AxesSettings, createAxesSettings } from './axesSettings'
 import { Axis, createAxes } from './axes'

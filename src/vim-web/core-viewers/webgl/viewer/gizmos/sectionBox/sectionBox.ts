@@ -95,11 +95,11 @@ export class SectionBox {
   constructor(viewer: Viewer) {
     this._viewer = viewer;
 
-    this._gizmos = new SectionBoxGizmo(viewer.renderer, viewer.camera);
+    this._gizmos = new SectionBoxGizmo(viewer._renderer, viewer.camera);
     this._inputs = new BoxInputs(
       viewer,
       this._gizmos.handles,
-      this._viewer.renderer.section.box
+      this._viewer._renderer.section.box
     );
 
     // When the pointer enters/leaves a face, dispatch hover state.

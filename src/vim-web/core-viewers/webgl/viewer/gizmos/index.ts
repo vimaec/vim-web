@@ -1,9 +1,7 @@
-export * from './gizmos';   
-export * from './gizmoLoading';
-
-// Type exports
-export type * from './gizmoOrbit';
-export type * from './axes';
-export type * from './markers';
-export type * from './measure';
-export type * from './sectionBox';
+export type { Gizmos } from './gizmos'
+export type { GizmoLoading } from './gizmoLoading'
+export type { GizmoOrbit } from './gizmoOrbit'
+export type { AxesSettings, GizmoAxes } from './axes'
+export type { Marker, GizmoMarkers } from './markers'
+export type { IMeasure, MeasureStage } from './measure'
+export type { SectionBox } from './sectionBox'

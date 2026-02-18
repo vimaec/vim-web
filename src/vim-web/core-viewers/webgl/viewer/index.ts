@@ -1,18 +1,28 @@
+// Value exports
+export { Viewer } from './viewer'
+export { Layers } from './raycaster'
 
-// Full export
-export * from './viewer';
-export * from './settings';
+// Settings
+export type { ViewerSettings, PartialViewerSettings, MaterialSettings } from './settings'
 
-// Partial export
-export {Layers} from './raycaster';
+// Camera
+export type { ICamera, CameraMovement } from './camera'
 
-// Type only
-export type * from './gizmos';
-export type {IRaycaster, IRaycastResult} from './raycaster';
-export type * from './selection';
-export type * from './viewport';
-export type * from './rendering';
-export type * from './camera';
+// Rendering
+export type { Renderer, RenderingSection } from './rendering'
 
-// Not exported
-// export * from './inputsAdapter';
+// Selection
+export type { ISelectable, ISelection } from './selection'
+
+// Viewport
+export type { Viewport } from './viewport'
+
+// Raycaster
+export type { IRaycaster, IRaycastResult } from './raycaster'
+
+// Gizmos
+export type { Gizmos, GizmoLoading, GizmoOrbit } from './gizmos'
+export type { GizmoAxes, AxesSettings } from './gizmos'
+export type { Marker, GizmoMarkers } from './gizmos'
+export type { IMeasure, MeasureStage } from './gizmos'
+export type { SectionBox } from './gizmos'

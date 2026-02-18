@@ -1,2 +1,2 @@
-export * from './gizmoMarker'
-export * from './gizmoMarkers'
+export type { Marker } from './gizmoMarker'
+export type { GizmoMarkers } from './gizmoMarkers'

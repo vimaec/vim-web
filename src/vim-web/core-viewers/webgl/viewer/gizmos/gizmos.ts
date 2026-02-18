@@ -54,7 +54,7 @@ export class Gizmos {
     this.sectionBox = new SectionBox(viewer)
     this.loading = new GizmoLoading(viewer)
     this.orbit = new GizmoOrbit(
-      viewer.renderer,
+      viewer._renderer,
       camera,
       viewer.inputs,
       viewer.settings

@@ -69,7 +69,7 @@ export class GizmoMarkers {
     const ignoreAttr = new THREE.InstancedBufferAttribute(ignoreArray, 1)
     mesh.geometry.setAttribute('ignore', ignoreAttr)
 
-    this._viewer.renderer.add(mesh)
+    this._viewer._renderer.add(mesh)
     return mesh
   }
 
@@ -96,7 +96,7 @@ export class GizmoMarkers {
     newPackedId.needsUpdate = true
     newIgnore.needsUpdate = true
 
-    this._viewer.renderer.remove(this._mesh)
+    this._viewer._renderer.remove(this._mesh)
     this._mesh = larger
   }
 
@@ -160,7 +160,7 @@ export class GizmoMarkers {
     this._mesh.count -= 1
 
     // Notify the renderer
-    this._viewer.renderer.requestRender()
+    this._viewer._renderer.requestRender()
   }
 
   /**
@@ -171,6 +171,6 @@ export class GizmoMarkers {
     this._viewer.selection.remove(this._markers)
     this._mesh.count = 0
     this._markers.length = 0
-    this._viewer.renderer.requestRender()
+    this._viewer._renderer.requestRender()
   }
 }

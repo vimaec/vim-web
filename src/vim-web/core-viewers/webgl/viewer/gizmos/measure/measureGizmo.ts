@@ -195,7 +195,7 @@ export class MeasureGizmo {
       this._label
     )
 
-    this._viewer.renderer.add(this._group)
+    this._viewer._renderer.add(this._group)
   }
 
   private _animate () {
@@ -241,7 +241,7 @@ export class MeasureGizmo {
     // Set start marker
     this._startMarker.setPosition(start)
     this._startMarker.mesh.visible = true
-    this._viewer.renderer.requestRender()
+    this._viewer._renderer.requestRender()
   }
 
   /**
@@ -253,7 +253,7 @@ export class MeasureGizmo {
       this._line.label.visible = false
     }
     this._label.visible = false
-    this._viewer.renderer.requestRender()
+    this._viewer._renderer.requestRender()
   }
 
   /**
@@ -264,7 +264,7 @@ export class MeasureGizmo {
       this._line.setPoints(start, pos)
       this._line.mesh.visible = true
     }
-    this._viewer.renderer.requestRender()
+    this._viewer._renderer.requestRender()
   }
 
   /**
@@ -308,7 +308,7 @@ export class MeasureGizmo {
 
     // Start update of collapse.
     this._animate()
-    this._viewer.renderer.requestRender()
+    this._viewer._renderer.requestRender()
     return true
   }
 
@@ -319,7 +319,7 @@ export class MeasureGizmo {
     if (this._animId !== undefined) cancelAnimationFrame(this._animId)
 
     this._html.div.remove()
-    this._viewer.renderer.remove(this._group)
+    this._viewer._renderer.remove(this._group)
 
     this._startMarker.dispose()
     this._endMarker.dispose()

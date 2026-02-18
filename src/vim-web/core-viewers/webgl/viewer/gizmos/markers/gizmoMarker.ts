@@ -84,7 +84,7 @@ export class Marker implements ISelectable {
     this._outlineAttribute.updateMeshes(array)
     this._colorAttribute.updateMeshes(array)
     this._coloredAttribute.updateMeshes(array)
-    this._viewer.renderer.requestRender()
+    this._viewer._renderer.requestRender()
   }
 
   /**
@@ -94,7 +94,7 @@ export class Marker implements ISelectable {
     Marker._tmpMatrix.compose(value, new THREE.Quaternion(), new THREE.Vector3(1, 1, 1))
     this._submesh.mesh.setMatrixAt(this.index, Marker._tmpMatrix)
     this._submesh.mesh.instanceMatrix.needsUpdate = true
-    this._viewer.renderer.requestRender()
+    this._viewer._renderer.requestRender()
     this._submesh.mesh.computeBoundingSphere() // Required for raycasting
   }
 
@@ -125,8 +125,8 @@ export class Marker implements ISelectable {
    */
   set outline(value: boolean) {
     if (this._outlineAttribute.apply(value)) {
-      if (value) this._viewer.renderer.addOutline()
-      else this._viewer.renderer.removeOutline()
+      if (value) this._viewer._renderer.addOutline()
+      else this._viewer._renderer.removeOutline()
     }
   }
 
@@ -142,7 +142,7 @@ export class Marker implements ISelectable {
    */
   set focused(value: boolean) {
     this._focusedAttribute.apply(value)
-    this._viewer.renderer.requestRender()
+    this._viewer._renderer.requestRender()
   }
 
   /**
@@ -157,7 +157,7 @@ export class Marker implements ISelectable {
    */
   set visible(value: boolean) {
     this._visibleAttribute.apply(value)
-    this._viewer.renderer.requestRender()
+    this._viewer._renderer.requestRender()
   }
 
   /**
@@ -178,7 +178,7 @@ export class Marker implements ISelectable {
     } else {
       this._coloredAttribute.apply(false)
     }
-    this._viewer.renderer.requestRender()
+    this._viewer._renderer.requestRender()
   }
 
   /**
@@ -203,7 +203,7 @@ export class Marker implements ISelectable {
       matrix.elements[10] = value
       this._submesh.mesh.setMatrixAt(this.index, matrix)
       this._submesh.mesh.instanceMatrix.needsUpdate = true
-      this._viewer.renderer.requestRender()
+      this._viewer._renderer.requestRender()
       this._submesh.mesh.computeBoundingSphere() // Required for Raycast
     }
   }

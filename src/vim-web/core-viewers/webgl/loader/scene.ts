@@ -12,9 +12,10 @@ import { MaterialSet } from './materials/materials'
 import { Renderer } from '../viewer/rendering/renderer'
 
 /**
- * Interface for a renderer object, providing methods to add and remove objects from a scene, update bounding boxes, and notify scene updates.
+ * @internal
+ * Internal renderer callback interface used by Scene to notify the renderer of changes.
  */
-export interface IRenderer {
+export interface ISceneRenderer {
   // eslint-disable-next-line no-use-before-define
   add(scene: Scene | THREE.Object3D)
   // eslint-disable-next-line no-use-before-define

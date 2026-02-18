@@ -1,5 +1,6 @@
 import type { ISimpleEvent } from 'ste-simple-events'
-import {type IInputHandler, type InputHandler} from '../shared'
+import {type IInputHandler} from '../shared'
+import {type InputHandler} from '../shared/input/inputHandler'
 import { Camera, ICamera } from './camera'
 import { ColorManager } from './colorManager'
 import { Decoder, IDecoder } from './decoder'
