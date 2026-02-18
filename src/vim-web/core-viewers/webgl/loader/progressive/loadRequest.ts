@@ -11,9 +11,9 @@ import { Scene } from '../scene'
 import { ElementMapping } from '../elementMapping'
 import { VimMeshFactory } from './vimMeshFactory'
 import { LoadRequest as BaseLoadRequest, ILoadRequest as BaseILoadRequest, LoadError, LoadSuccess } from '../../../shared/loadResult'
-import { VimSource } from '../..'
 import {
   BFast,
+  BFastSource,
   RemoteBuffer,
   requestHeader,
   VimDocument,
@@ -39,7 +39,7 @@ export type ILoadRequest = BaseILoadRequest<IWebglVim>
 export class LoadRequest extends BaseLoadRequest<Vim> {
   private _bfast: BFast
 
-  constructor (source: VimSource, settings: VimPartialSettings, vimIndex: number) {
+  constructor (source: BFastSource, settings: VimPartialSettings, vimIndex: number) {
     super()
     this._bfast = new BFast(source)
     this.startRequest(settings, vimIndex)

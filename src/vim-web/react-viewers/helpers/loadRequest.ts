@@ -1,11 +1,9 @@
 import * as Core from '../../core-viewers'
-import { LoadRequest as CoreLoadRequest, ILoadRequest as CoreILoadRequest } from '../../core-viewers/webgl/loader/progressive/loadRequest'
-import { IProgress, LoadResult } from '../../core-viewers/shared/loadResult'
 import { AsyncQueue } from '../../utils/asyncQueue'
 import { LoadingError } from '../webgl/loading'
 
 type RequestCallbacks = {
-  onProgress: (p: IProgress) => void
+  onProgress: (p: Core.IProgress) => void
   onError: (e: LoadingError) => void
   onDone: () => void
 }
@@ -14,13 +12,13 @@ type RequestCallbacks = {
  * Class to handle loading a request.
  * Implements ILoadRequest for compatibility with Ultra viewer's load request interface.
  */
-export class LoadRequest implements CoreILoadRequest {
+export class LoadRequest implements Core.Webgl.ILoadRequest {
   private _source: Core.Webgl.RequestSource
   private _request: Core.Webgl.LoadRequest
   private _callbacks: RequestCallbacks
   private _onLoaded?: (vim: Core.Webgl.Vim) => Promise<void> | void
-  private _progressQueue = new AsyncQueue<IProgress>()
-  private _resultPromise: Promise<LoadResult<Core.Webgl.Vim>>
+  private _progressQueue = new AsyncQueue<Core.IProgress>()
+  private _resultPromise: Promise<Core.LoadResult<Core.Webgl.Vim>>
 
   constructor (
     callbacks: RequestCallbacks,
@@ -32,11 +30,11 @@ export class LoadRequest implements CoreILoadRequest {
     this._source = source
     this._callbacks = callbacks
     this._onLoaded = onLoaded
-    this._request = new CoreLoadRequest(source, settings, vimIndex)
+    this._request = new Core.Webgl.LoadRequest(source, settings, vimIndex)
     this._resultPromise = this.trackAndGetResult()
   }
 
-  private async trackAndGetResult (): Promise<LoadResult<Core.Webgl.Vim>> {
+  private async trackAndGetResult (): Promise<Core.LoadResult<Core.Webgl.Vim>> {
     try {
       for await (const progress of this._request.getProgress()) {
         this._callbacks.onProgress(progress)
@@ -63,7 +61,7 @@ export class LoadRequest implements CoreILoadRequest {
     return this._request.isCompleted
   }
 
-  async * getProgress (): AsyncGenerator<IProgress> {
+  async * getProgress (): AsyncGenerator<Core.IProgress> {
     yield * this._progressQueue
   }
 
