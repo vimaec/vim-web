@@ -15,7 +15,7 @@ export type { Renderer, RenderingSection } from './rendering'
 export type { ISelectable, ISelection } from './selection'
 
 // Viewport
-export type { Viewport } from './viewport'
+export type { IViewport } from './viewport'
 
 // Raycaster
 export type { IRaycaster, IRaycastResult } from './raycaster'

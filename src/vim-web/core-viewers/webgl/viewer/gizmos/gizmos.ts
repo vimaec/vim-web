@@ -59,9 +59,9 @@ export class Gizmos {
       viewer.inputs,
       viewer.settings
     )
-    this.axes = new GizmoAxes(camera, viewer.viewport, viewer.settings.axes)
+    this.axes = new GizmoAxes(camera, viewer._viewport, viewer.settings.axes)
     this.markers = new GizmoMarkers(viewer)
-    viewer.viewport.canvas.parentElement?.prepend(this.axes.canvas)
+    viewer._viewport.canvas.parentElement?.prepend(this.axes.canvas)
   }
 
   /** @internal */

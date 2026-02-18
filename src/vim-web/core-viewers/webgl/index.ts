@@ -23,7 +23,7 @@ export type { ViewerSettings, PartialViewerSettings, MaterialSettings } from './
 export type { ICamera, CameraMovement } from './viewer'
 export type { Renderer, RenderingSection } from './viewer'
 export type { ISelectable, ISelection } from './viewer'
-export type { Viewport } from './viewer'
+export type { IViewport } from './viewer'
 export type { IRaycaster, IRaycastResult } from './viewer'
 export type { Gizmos, GizmoLoading, GizmoOrbit } from './viewer'
 export type { GizmoAxes, AxesSettings } from './viewer'

@@ -137,10 +137,7 @@ export class Measure implements IMeasure {
     }
   }
 
-  /**
-   * Should be private.
-   */
-  onFirstClick (hit: IRaycastResult) {
+  private onFirstClick (hit: IRaycastResult) {
     this.clear()
     this._meshes = new MeasureGizmo(this._viewer)
     this._startPos = hit.worldPosition
@@ -170,10 +167,7 @@ export class Measure implements IMeasure {
   //   }
   // }
 
-  /**
-   * Should be private.
-   */
-  onSecondClick (hit : IRaycastResult) {
+  private onSecondClick (hit : IRaycastResult) {
     // Compute measurement vector component
     this._endPos = hit.worldPosition
 

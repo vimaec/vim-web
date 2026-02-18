@@ -7,7 +7,7 @@ import { Camera } from '../camera/camera'
 import { RenderScene } from './renderScene'
 import { RenderingSection } from './renderingSection'
 import { PickingMaterial } from '../../loader/materials/pickingMaterial'
-import { Element3D } from '../../loader/element3d'
+import { type IElement3D } from '../../loader/element3d'
 import { Vim } from '../../loader/vim'
 import { VimCollection } from '../../loader/vimCollection'
 import type { IRaycaster, IRaycastResult } from '../../../shared'
@@ -80,7 +80,7 @@ export class GpuPickResult implements IRaycastResult<ISelectable> {
    * Gets the Element3D object for the picked element.
    * @returns The Element3D object, or undefined if not found or if this is a marker hit
    */
-  getElement(): Element3D | undefined {
+  getElement(): IElement3D | undefined {
     return this._vim?.getElementFromIndex(this._elementIndex)
   }
 

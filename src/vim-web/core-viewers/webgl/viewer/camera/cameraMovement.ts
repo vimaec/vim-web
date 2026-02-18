@@ -7,7 +7,7 @@ import { Element3D, type IElement3D } from '../../loader/element3d'
 import { ISelectable } from '../selection'
 import * as THREE from 'three'
 import { Marker } from '../gizmos/markers/gizmoMarker'
-import { Vim } from '../../loader/vim'
+import { type IWebglVim, Vim } from '../../loader/vim'
 import { CameraSaveState } from './cameraInterface'
 
 
@@ -220,7 +220,7 @@ export abstract class CameraMovement {
    * @param [forward] - Optional forward direction after framing.
    */
   async frame (
-    target: ISelectable | Vim | THREE.Sphere | THREE.Box3 | 'all',
+    target: ISelectable | IWebglVim | THREE.Sphere | THREE.Box3 | 'all',
     forward?: THREE.Vector3
   ) {
     if ((target instanceof Marker) || (target instanceof Element3D)) {

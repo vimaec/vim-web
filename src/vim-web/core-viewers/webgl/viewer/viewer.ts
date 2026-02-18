@@ -13,7 +13,7 @@ import { GpuPicker } from './rendering/gpuPicker'
 import { RenderScene } from './rendering/renderScene'
 import { createSelection, ISelection } from './selection'
 import { createViewerSettings, PartialViewerSettings, ViewerSettings } from './settings/viewerSettings'
-import { Viewport } from './viewport'
+import { IViewport, Viewport } from './viewport'
 
 // loader
 import { ISignal, SignalDispatcher } from 'ste-signals'
@@ -50,8 +50,9 @@ export class Viewer {
   /**
    * The interface for managing the HTML canvas viewport.
    */
-
-  readonly viewport: Viewport
+  get viewport(): IViewport { return this._viewport }
+  /** @internal */
+  readonly _viewport: Viewport
 
   /**
    * The interface for managing viewer selection.
@@ -109,11 +110,11 @@ export class Viewer {
     this._materials = Materials.getInstance()
 
     const scene = new RenderScene()
-    this.viewport = new Viewport(this.settings)
-    this._camera = new Camera(scene, this.viewport, this.settings)
+    this._viewport = new Viewport(this.settings)
+    this._camera = new Camera(scene, this._viewport, this.settings)
     this._renderer = new Renderer(
       scene,
-      this.viewport,
+      this._viewport,
       this._materials,
       this._camera,
       this.settings
@@ -141,8 +142,8 @@ export class Viewer {
     this.raycaster = gpuPicker
 
     // Update raycaster size on viewport resize
-    this.viewport.onResize.sub(() => {
-      const size = this.viewport.getParentSize()
+    this._viewport.onResize.sub(() => {
+      const size = this._viewport.getParentSize()
       ;(this.raycaster as GpuPicker).setSize(size.x, size.y)
     })
 
@@ -226,7 +227,7 @@ export class Viewer {
     cancelAnimationFrame(this._updateId)
     this.selection.clear()
     this.clear()
-    this.viewport.dispose()
+    this._viewport.dispose()
     this._renderer.dispose()
     ;(this.raycaster as GpuPicker).dispose()
     this._inputs.dispose()

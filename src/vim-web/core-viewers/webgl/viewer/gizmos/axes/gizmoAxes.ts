@@ -4,7 +4,7 @@
 
 import * as THREE from 'three'
 import { Camera } from '../../camera/camera'
-import { Viewport } from '../../viewport'
+import { IViewport } from '../../viewport'
 import { AxesSettings, createAxesSettings } from './axesSettings'
 import { Axis, createAxes } from './axes'
 
@@ -46,7 +46,7 @@ export class GizmoAxes {
     return this._canvas
   }
 
-  constructor (camera: Camera, viewport: Viewport, options?: Partial<AxesSettings>) {
+  constructor (camera: Camera, viewport: IViewport, options?: Partial<AxesSettings>) {
     this._initialOptions = createAxesSettings(options)
     this._options = createAxesSettings(options)
     this._camera = camera
@@ -329,4 +329,3 @@ export class GizmoAxes {
   }
 }
 
-export { GizmoAxes as OrbitControlsGizmo }

@@ -2,12 +2,37 @@
  @module viw-webgl-viewer
 */
 
-import { SignalDispatcher } from 'ste-signals'
+import { ISignal, SignalDispatcher } from 'ste-signals'
 import * as THREE from 'three'
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer'
 import { ViewerSettings } from './settings/viewerSettings'
 
-export class Viewport {
+/**
+ * Public interface for the viewport.
+ * Exposes only the members needed by API consumers.
+ */
+export interface IViewport {
+  /** HTML Canvas on which the model is rendered. */
+  readonly canvas: HTMLCanvasElement
+  /** The parent element of the canvas. */
+  readonly parent: HTMLElement | null
+  /** Moves the canvas to a new parent element. */
+  reparent(parent: HTMLElement): void
+  /** Returns the pixel size of the parent element. */
+  getParentSize(): THREE.Vector2
+  /** Returns the pixel size of the canvas. */
+  getSize(): THREE.Vector2
+  /** Returns the aspect ratio (width / height) of the parent element. */
+  getAspectRatio(): number
+  /** Triggers a resize to match parent dimensions. */
+  resizeToParent(): void
+  /** Signal dispatched when the canvas is reparented. */
+  readonly onReparent: ISignal
+  /** Signal dispatched when the canvas is resized. */
+  readonly onResize: ISignal
+}
+
+export class Viewport implements IViewport {
   /**
    *  HTML Canvas on which the model is rendered
    */
