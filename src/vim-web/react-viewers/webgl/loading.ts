@@ -4,6 +4,7 @@
 
 import * as Errors from '../errors'
 import * as Core from '../../core-viewers'
+import { Vim } from '../../core-viewers/webgl/loader/vim'
 import { LoadRequest } from '../helpers/loadRequest'
 import { ModalHandle } from '../panels/modal'
 import { UltraSuggestion } from '../panels/loadingBox'
@@ -110,7 +111,7 @@ export class ComponentLoader {
     )
   }
 
-  private async initVim (vim: Core.Webgl.Vim, settings: AddSettings, loadGeometry: boolean) {
+  private async initVim (vim: Vim, settings: AddSettings, loadGeometry: boolean) {
     this._viewer.add(vim)
     if (loadGeometry) {
       await vim.load()

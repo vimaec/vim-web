@@ -1,5 +1,5 @@
-export { InputHandler, PointerMode } from './inputHandler'
-export type { IInputHandler } from './inputHandler'
+export { PointerMode } from './inputHandler'
+export type { IInputHandler, InputHandler } from './inputHandler'
 export type { IMouseInput, MouseOverrides } from './mouseHandler'
 export type { ITouchInput, TouchOverrides } from './touchHandler'
 export type { IKeyboardInput } from './keyboardHandler'

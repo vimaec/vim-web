@@ -47,6 +47,7 @@ export class Gizmos {
    */
   readonly markers: GizmoMarkers
 
+  /** @internal */
   constructor (viewer: Viewer, camera : Camera) {
     this.viewer = viewer
     this._measure = new Measure(viewer)
@@ -63,6 +64,7 @@ export class Gizmos {
     viewer.viewport.canvas.parentElement?.prepend(this.axes.canvas)
   }
 
+  /** @internal */
   updateAfterCamera () {
     this.axes.update()
   }

@@ -1,4 +1,6 @@
 import * as Core from '../../core-viewers'
+import { LoadRequest as CoreLoadRequest } from '../../core-viewers/webgl/loader/progressive/loadRequest'
+import { Vim } from '../../core-viewers/webgl/loader/vim'
 import { AsyncQueue } from '../../utils/asyncQueue'
 import { LoadingError } from '../webgl/loading'
 
@@ -14,27 +16,27 @@ type RequestCallbacks = {
  */
 export class LoadRequest implements Core.Webgl.ILoadRequest {
   private _source: Core.Webgl.RequestSource
-  private _request: Core.Webgl.LoadRequest
+  private _request: CoreLoadRequest
   private _callbacks: RequestCallbacks
-  private _onLoaded?: (vim: Core.Webgl.Vim) => Promise<void> | void
+  private _onLoaded?: (vim: Vim) => Promise<void> | void
   private _progressQueue = new AsyncQueue<Core.IProgress>()
-  private _resultPromise: Promise<Core.LoadResult<Core.Webgl.Vim>>
+  private _resultPromise: Promise<Core.LoadResult<Vim>>
 
   constructor (
     callbacks: RequestCallbacks,
     source: Core.Webgl.RequestSource,
     settings: Core.Webgl.VimPartialSettings,
     vimIndex: number,
-    onLoaded?: (vim: Core.Webgl.Vim) => Promise<void> | void
+    onLoaded?: (vim: Vim) => Promise<void> | void
   ) {
     this._source = source
     this._callbacks = callbacks
     this._onLoaded = onLoaded
-    this._request = new Core.Webgl.LoadRequest(source, settings, vimIndex)
+    this._request = new CoreLoadRequest(source, settings, vimIndex)
     this._resultPromise = this.trackAndGetResult()
   }
 
-  private async trackAndGetResult (): Promise<Core.LoadResult<Core.Webgl.Vim>> {
+  private async trackAndGetResult (): Promise<Core.LoadResult<Vim>> {
     try {
       for await (const progress of this._request.getProgress()) {
         this._callbacks.onProgress(progress)

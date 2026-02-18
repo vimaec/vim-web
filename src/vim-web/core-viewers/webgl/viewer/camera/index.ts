@@ -1,6 +1,6 @@
 // Types only
 export type * from './camera';
-export type * from './cameraInterface';
+export type { ICamera } from './cameraInterface';
 export type * from './cameraMovement';
 export type * from './cameraMovementLerp';
 export type * from './cameraMovementSnap';

@@ -172,6 +172,7 @@ export class Viewer {
   }
 
   /**
+   * @internal
    * Adds a Vim object to the renderer, triggering the appropriate actions and dispatching events upon successful addition.
    * @param {Vim} vim - The Vim object to add to the renderer.
    * @throws {Error} If the Vim object is already added.
@@ -187,12 +188,12 @@ export class Viewer {
   }
 
   /**
-   * Removes and disposes the given Vim from the viewer.
+   * Unloads and disposes the given Vim from the viewer.
    * This is the proper way to unload a vim — do not call `vim.dispose()` directly.
-   * @param vim - The Vim to remove.
+   * @param vim - The Vim to unload.
    * @throws If the vim is not present in the viewer.
    */
-  remove (vim: IWebglVim) {
+  unload (vim: IWebglVim) {
     const v = vim as Vim
     if (!this.vimCollection.has(v)) {
       throw new Error('Cannot remove missing vim from viewer.')
@@ -211,7 +212,7 @@ export class Viewer {
     // Get a copy of all vims before clearing
     const vims = this.vimCollection.getAll()
     for (const vim of vims) {
-      this.remove(vim)
+      this.unload(vim)
     }
   }
 

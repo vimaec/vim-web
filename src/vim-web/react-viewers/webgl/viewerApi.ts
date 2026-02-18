@@ -97,10 +97,10 @@ export type ViewerApi = {
   open: (source: Core.Webgl.RequestSource, settings?: OpenSettings) => Core.Webgl.ILoadRequest
 
   /**
-   * Removes a vim from the viewer and disposes it.
-   * @param vim The vim to remove
+   * Unloads a vim from the viewer and disposes it.
+   * @param vim The vim to unload
    */
-  remove: (vim: Core.Webgl.IWebglVim) => void
+  unload: (vim: Core.Webgl.IWebglVim) => void
 
   /**
    * Isolation API managing isolation state in the viewer.
