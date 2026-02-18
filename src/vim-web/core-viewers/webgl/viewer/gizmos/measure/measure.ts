@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { IRaycastResult, RaycastResult } from '../../raycaster'
+import { IRaycastResult } from '../../raycaster'
 import { Viewer } from '../../viewer'
 import { Renderer } from '../../rendering/renderer'
 import { MeasureGizmo } from './measureGizmo'
@@ -147,44 +147,10 @@ export class Measure implements IMeasure {
     this._meshes.start(this._startPos)
   }
 
-  // onMouseMove () {
-  //   this._meshes?.hide()
-  // }
-
-  // onMouseIdle (hit: RaycastResult) {
-  //   // Show markers and line on hit
-  //   if (!hit.isHit) {
-  //     this._meshes?.hide()
-  //     return
-  //   }
-  //   if (hit.position && this._startPos) {
-  //     this._measurement = hit.object
-  //       ? hit.position.clone().sub(this._startPos)
-  //       : undefined
-  //   }
-
-  //   if (hit.object && hit.position && this._startPos) {
-  //     this._meshes?.update(this._startPos, hit.position)
-  //   } else {
-  //     this._meshes?.hide()
-  //   }
-  // }
-
   private onSecondClick (hit : IRaycastResult) {
-    // Compute measurement vector component
     this._endPos = hit.worldPosition
-
     this._measurement = this._endPos.clone().sub(this._startPos)
-    console.log(`Distance: ${this._measurement.length()}`)
-    console.log(
-      `
-      X: ${this._measurement.x},
-      Y: ${this._measurement.y},
-      Z: ${this._measurement.z} 
-      `
-    )
     this._meshes?.finish(this._startPos, this._endPos)
-
     return true
   }
 

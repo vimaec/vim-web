@@ -7,7 +7,7 @@ import * as THREE from 'three'
 // internal
 import { Camera } from './camera/camera'
 import { ICamera } from './camera/cameraInterface'
-import { Gizmos } from './gizmos/gizmos'
+import { Gizmos, IGizmos } from './gizmos/gizmos'
 import { IRaycaster } from './raycaster'
 import { GpuPicker } from './rendering/gpuPicker'
 import { RenderScene } from './rendering/renderScene'
@@ -25,7 +25,7 @@ import { Scene } from '../loader/scene'
 import { VimCollection } from '../loader/vimCollection'
 import { createInputHandler } from './inputAdapter'
 import { IRenderer, Renderer } from './rendering/renderer'
-import { LoadRequest as CoreLoadRequest, RequestSource } from '../loader/progressive/loadRequest'
+import { LoadRequest as CoreLoadRequest, RequestSource, ILoadRequest } from '../loader/progressive/loadRequest'
 import { VimPartialSettings } from '../loader/vimSettings'
 
 /**
@@ -86,7 +86,8 @@ export class Viewer {
   /**
    * The collection of gizmos available for visualization and interaction within the viewer.
    */
-  gizmos: Gizmos
+  get gizmos (): IGizmos { return this._gizmos }
+  private _gizmos: Gizmos
 
   /**
    * A signal that is dispatched when a new Vim object is loaded or unloaded.
@@ -120,7 +121,7 @@ export class Viewer {
     )
 
     this._inputs = createInputHandler(this)
-    this.gizmos = new Gizmos(this._renderer, this._viewport, this, this._camera)
+    this._gizmos = new Gizmos(this._renderer, this._viewport, this, this._camera)
     this.materials.applySettings(this.settings.materials)
 
     // Input and Selection
@@ -161,16 +162,32 @@ export class Viewer {
     if (this._camera.update(deltaTime)) this._renderer.requestRender()
 
     // Gizmos
-    this.gizmos.updateAfterCamera()
+    this._gizmos.updateAfterCamera()
 
     // Rendering
     this._renderer.render()
   }
 
-  /** @internal */
-  readonly addVim = (vim: Vim) => this.add(vim)
-  /** @internal */
-  readonly allocateVimId = () => this.vimCollection.allocateId()
+  /**
+   * Starts loading a VIM file. The resulting Vim is auto-added to the viewer on success.
+   * @param source The url or buffer to load from.
+   * @param settings Optional settings for the vim.
+   * @returns A load request to track progress and get the result.
+   * @throws Error if the viewer has reached maximum capacity (256 vims)
+   */
+  load (source: RequestSource, settings?: VimPartialSettings): ILoadRequest {
+    const vimIndex = this.vimCollection.allocateId()
+    if (vimIndex === undefined) {
+      throw new Error('Cannot load vim: maximum of 256 vims already loaded')
+    }
+    const request = new CoreLoadRequest(source, settings ?? {}, vimIndex)
+    request.getResult().then((result) => {
+      if (result.isSuccess) {
+        this.add(result.vim)
+      }
+    })
+    return request
+  }
 
   /**
    * All currently loaded Vim models.
@@ -234,6 +251,6 @@ export class Viewer {
     ;(this.raycaster as GpuPicker).dispose()
     this._inputs.dispose()
     this._materials.dispose()
-    this.gizmos.dispose()
+    this._gizmos.dispose()
   }
 }

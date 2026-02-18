@@ -9,9 +9,19 @@ import { AxesSettings, createAxesSettings } from './axesSettings'
 import { Axis, createAxes } from './axes'
 
 /**
+ * Public interface for the axis gizmo.
+ */
+export interface IGizmoAxes {
+  /** The canvas on which the axes are drawn. */
+  readonly canvas: HTMLCanvasElement
+  /** Resizes the gizmo to the given pixel size. */
+  resize(size: number): void
+}
+
+/**
  * The axis gizmos of the viewer.
  */
-export class GizmoAxes {
+export class GizmoAxes implements IGizmoAxes {
   // settings
   private _initialOptions: AxesSettings
   private _options: AxesSettings

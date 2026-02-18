@@ -21,8 +21,8 @@ export type { IViewport } from './viewport'
 export type { IRaycaster, IRaycastResult } from './raycaster'
 
 // Gizmos
-export type { Gizmos, GizmoLoading, GizmoOrbit } from './gizmos'
-export type { GizmoAxes, AxesSettings } from './gizmos'
+export type { IGizmos, IGizmoOrbit } from './gizmos'
+export type { IGizmoAxes, AxesSettings } from './gizmos'
 export type { IMarker, GizmoMarkers } from './gizmos'
 export type { IMeasure, MeasureStage } from './gizmos'
-export type { SectionBox } from './gizmos'
+export type { ISectionBox } from './gizmos'

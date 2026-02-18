@@ -1,6 +1,4 @@
 import * as Core from '../../core-viewers'
-import { LoadRequest as CoreLoadRequest } from '../../core-viewers/webgl/loader/progressive/loadRequest'
-import { Vim } from '../../core-viewers/webgl/loader/vim'
 import { AsyncQueue } from '../../utils/asyncQueue'
 import { LoadingError } from '../webgl/loading'
 
@@ -15,28 +13,27 @@ type RequestCallbacks = {
  * Implements ILoadRequest for compatibility with Ultra viewer's load request interface.
  */
 export class LoadRequest implements Core.Webgl.ILoadRequest {
-  private _source: Core.Webgl.RequestSource
-  private _request: CoreLoadRequest
+  private _sourceUrl: string | undefined
+  private _request: Core.Webgl.ILoadRequest
   private _callbacks: RequestCallbacks
-  private _onLoaded?: (vim: Vim) => Promise<void> | void
+  private _onLoaded?: (vim: Core.Webgl.IWebglVim) => Promise<void> | void
   private _progressQueue = new AsyncQueue<Core.IProgress>()
-  private _resultPromise: Promise<Core.LoadResult<Vim>>
+  private _resultPromise: Promise<Core.LoadResult<Core.Webgl.IWebglVim>>
 
   constructor (
     callbacks: RequestCallbacks,
-    source: Core.Webgl.RequestSource,
-    settings: Core.Webgl.VimPartialSettings,
-    vimIndex: number,
-    onLoaded?: (vim: Vim) => Promise<void> | void
+    request: Core.Webgl.ILoadRequest,
+    sourceUrl: string | undefined,
+    onLoaded?: (vim: Core.Webgl.IWebglVim) => Promise<void> | void
   ) {
-    this._source = source
+    this._sourceUrl = sourceUrl
     this._callbacks = callbacks
     this._onLoaded = onLoaded
-    this._request = new CoreLoadRequest(source, settings, vimIndex)
+    this._request = request
     this._resultPromise = this.trackAndGetResult()
   }
 
-  private async trackAndGetResult (): Promise<Core.LoadResult<Vim>> {
+  private async trackAndGetResult (): Promise<Core.LoadResult<Core.Webgl.IWebglVim>> {
     try {
       for await (const progress of this._request.getProgress()) {
         this._callbacks.onProgress(progress)
@@ -45,7 +42,7 @@ export class LoadRequest implements Core.Webgl.ILoadRequest {
 
       const result = await this._request.getResult()
       if (result.isSuccess === false) {
-        this._callbacks.onError({ url: this._source.url, error: result.error })
+        this._callbacks.onError({ url: this._sourceUrl, error: result.error })
       } else {
         await this._onLoaded?.(result.vim)
         this._callbacks.onDone()
@@ -53,7 +50,7 @@ export class LoadRequest implements Core.Webgl.ILoadRequest {
       this._progressQueue.close()
       return result
     } catch (err) {
-      this._callbacks.onError({ url: this._source.url, error: String(err) })
+      this._callbacks.onError({ url: this._sourceUrl, error: String(err) })
       this._progressQueue.close()
       throw err
     }

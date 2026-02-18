@@ -6,21 +6,43 @@ import { Viewer } from '../../viewer';
 import { Renderer } from '../../rendering/renderer';
 import * as THREE from 'three';
 import { BoxInputs } from './sectionBoxInputs';
-import { SignalDispatcher } from 'ste-signals';
-import { SimpleEventDispatcher } from 'ste-simple-events';
+import { ISignal, SignalDispatcher } from 'ste-signals';
+import { ISimpleEvent, SimpleEventDispatcher } from 'ste-simple-events';
 import { SectionBoxGizmo } from './sectionBoxGizmo';
 import { safeBox } from '../../../../../utils/threeUtils';
 
 /**
+ * Public interface for the section box gizmo.
+ */
+export interface ISectionBox {
+  /** Dispatches when clip, visible, or interactive change. */
+  readonly onStateChanged: ISignal
+  /** Dispatches when the user finishes manipulating the box. */
+  readonly onBoxConfirm: ISimpleEvent<THREE.Box3>
+  /** Dispatches boolean indicating pointer hover state on box handles. */
+  readonly onHover: ISimpleEvent<boolean>
+  /** Returns a copy of the current section box. */
+  getBox(): THREE.Box3
+  /** Whether clipping planes are applied to the model. */
+  clip: boolean
+  /** Whether the gizmo responds to pointer events. */
+  interactive: boolean
+  /** Whether the section box gizmo is visible. */
+  visible: boolean
+  /** Resizes the section gizmo to match the given box. */
+  setBox(box: THREE.Box3): void
+}
+
+/**
  * Manages a section box gizmo, serving as a proxy between the renderer and the user.
- * 
+ *
  * This class:
  *  - Maintains a Three.js `Box3` that defines the clipping region.
  *  - Handles user interaction via {@link BoxInputs}.
  *  - Updates a {@link SectionBoxGizmo} to visualize the clipping box.
  *  - Dispatches signals when the box is resized or interaction state changes.
  */
-export class SectionBox {
+export class SectionBox implements ISectionBox {
   // -------------------------------------------------------------------------
   // Private fields
   // -------------------------------------------------------------------------

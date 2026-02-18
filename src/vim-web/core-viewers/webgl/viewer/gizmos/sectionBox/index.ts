@@ -1,1 +1,1 @@
-export type { SectionBox } from './sectionBox'
+export type { ISectionBox } from './sectionBox'

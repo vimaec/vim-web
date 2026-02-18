@@ -17,11 +17,25 @@ const TUBULAR_SEGMENTS = 16
 const SQRT1_2 = Math.SQRT1_2 // √2/2 ≈ 0.707
 
 /**
+ * Public interface for the orbit target gizmo.
+ */
+export interface IGizmoOrbit {
+  /** Whether the orbit gizmo is enabled. */
+  enabled: boolean
+  /** Updates the size of the orbit gizmo (fraction of screen 0-1). */
+  setSize(size: number): void
+  /** Updates the colors of the orbit gizmo. */
+  setColors(color: THREE.Color, colorHorizontal: THREE.Color): void
+  /** Updates the opacities of the orbit gizmo. */
+  setOpacity(opacity: number, opacityAlways: number): void
+}
+
+/**
  * Manages the camera target gizmo - displays orbital rings at the camera target
  * 2 vertical rings (great circles) + 3 horizontal rings (latitude circles)
  * Each rendered twice: once with depth test, once always visible (for see-through effect)
  */
-export class GizmoOrbit {
+export class GizmoOrbit implements IGizmoOrbit {
   // Dependencies
   private _renderer: Renderer
   private _camera: Camera

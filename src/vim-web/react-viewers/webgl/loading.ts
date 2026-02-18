@@ -4,7 +4,6 @@
 
 import * as Errors from '../errors'
 import * as Core from '../../core-viewers'
-import { Vim } from '../../core-viewers/webgl/loader/vim'
 import { LoadRequest } from '../helpers/loadRequest'
 import { ModalHandle } from '../panels/modal'
 import { UltraSuggestion } from '../panels/loadingBox'
@@ -34,7 +33,11 @@ export class ComponentLoader {
   private _modal: React.RefObject<ModalHandle>
   private _addLink : boolean = false
 
-  constructor (viewer : Core.Webgl.Viewer, modal: React.RefObject<ModalHandle>, settings: WebglSettings) {
+  constructor (
+    viewer : Core.Webgl.Viewer,
+    modal: React.RefObject<ModalHandle>,
+    settings: WebglSettings
+  ) {
     this._viewer = viewer
     this._modal = modal
     // TODO: Enable this when we are ready to support it
@@ -93,10 +96,7 @@ export class ComponentLoader {
   }
 
   private loadInternal (source: Core.Webgl.RequestSource, settings: OpenSettings, loadGeometry: boolean) {
-    const vimIndex = this._viewer.vimCollection.allocateId()
-    if (vimIndex === undefined) {
-      throw new Error('Cannot load vim: maximum of 256 vims already loaded')
-    }
+    const request = this._viewer.load(source, settings)
 
     return new LoadRequest(
       {
@@ -104,18 +104,15 @@ export class ComponentLoader {
         onError: (e) => this.onError(e),
         onDone: () => this.onDone()
       },
-      source,
-      settings,
-      vimIndex,
+      request,
+      source.url,
       (vim) => this.initVim(vim, settings, loadGeometry)
     )
   }
 
-  private async initVim (vim: Vim, settings: AddSettings, loadGeometry: boolean) {
-    this._viewer.add(vim)
+  private async initVim (vim: Core.Webgl.IWebglVim, settings: AddSettings, loadGeometry: boolean) {
     if (loadGeometry) {
       await vim.load()
-      this._viewer.gizmos.loading.visible = false
       if (settings.autoFrame !== false) {
         this._viewer.camera.snap().frame(vim)
         this._viewer.camera.save()

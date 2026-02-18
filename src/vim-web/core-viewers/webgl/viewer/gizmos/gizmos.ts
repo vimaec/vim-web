@@ -1,18 +1,34 @@
 import { Viewer } from '../viewer'
-import { GizmoAxes } from './axes/gizmoAxes'
-import { GizmoLoading } from './gizmoLoading'
-import { GizmoOrbit } from './gizmoOrbit'
+import { GizmoAxes, IGizmoAxes } from './axes/gizmoAxes'
+import { GizmoOrbit, IGizmoOrbit } from './gizmoOrbit'
 import { IMeasure, Measure } from './measure/measure'
-import { SectionBox } from './sectionBox/sectionBox'
+import { ISectionBox, SectionBox } from './sectionBox/sectionBox'
 import { GizmoMarkers } from './markers/gizmoMarkers'
 import { Camera } from '../camera/camera'
 import { Renderer } from '../rendering/renderer'
 import { Viewport } from '../viewport'
 
 /**
+ * Public interface for the gizmo collection.
+ * Exposes only the members needed by API consumers.
+ */
+export interface IGizmos {
+  /** The interface to start and manage measure tool interaction. */
+  readonly measure: IMeasure
+  /** The section box gizmo. */
+  readonly sectionBox: ISectionBox
+  /** The camera orbit target gizmo. */
+  readonly orbit: IGizmoOrbit
+  /** The axis gizmos of the viewer. */
+  readonly axes: IGizmoAxes
+  /** The interface for adding and managing sprite markers in the scene. */
+  readonly markers: GizmoMarkers
+}
+
+/**
  * Represents a collection of gizmos used for various visualization and interaction purposes within the viewer.
  */
-export class Gizmos {
+export class Gizmos implements IGizmos {
   private readonly _viewport: Viewport
 
   /**
@@ -30,11 +46,6 @@ export class Gizmos {
   readonly sectionBox: SectionBox
 
   /**
-   * The loading indicator gizmo.
-   */
-  readonly loading: GizmoLoading
-
-  /**
    * The camera orbit target gizmo.
    */
   readonly orbit: GizmoOrbit
@@ -49,12 +60,10 @@ export class Gizmos {
    */
   readonly markers: GizmoMarkers
 
-  /** @internal */
   constructor (renderer: Renderer, viewport: Viewport, viewer: Viewer, camera : Camera) {
     this._viewport = viewport
     this._measure = new Measure(viewer, renderer)
     this.sectionBox = new SectionBox(renderer, viewer)
-    this.loading = new GizmoLoading(viewer)
     this.orbit = new GizmoOrbit(
       renderer,
       camera,
@@ -66,7 +75,6 @@ export class Gizmos {
     viewport.canvas.parentElement?.prepend(this.axes.canvas)
   }
 
-  /** @internal */
   updateAfterCamera () {
     this.axes.update()
   }
@@ -78,7 +86,6 @@ export class Gizmos {
     this._viewport.canvas.parentElement?.removeChild(this.axes.canvas)
     this._measure.clear()
     this.sectionBox.dispose()
-    this.loading.dispose()
     this.orbit.dispose()
     this.axes.dispose()
   }
