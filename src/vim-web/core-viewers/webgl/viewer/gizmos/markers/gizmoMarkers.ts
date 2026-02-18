@@ -1,6 +1,6 @@
 import { Viewer } from '../../viewer'
 import * as THREE from 'three'
-import { Marker } from './gizmoMarker'
+import { Marker, type IMarker } from './gizmoMarker'
 import { StandardMaterial } from '../../../loader/materials/standardMaterial'
 import { SimpleInstanceSubmesh } from '../../../loader/mesh'
 import { packPickingId, MARKER_VIM_INDEX } from '../../rendering/gpuPicker'
@@ -29,7 +29,7 @@ export class GizmoMarkers {
    * @param index - The marker index.
    * @returns The Marker instance or undefined.
    */
-  getMarkerFromIndex (index: number): Marker | undefined {
+  getMarkerFromIndex (index: number): IMarker | undefined {
     return this._markers[index]
   }
 
@@ -106,7 +106,7 @@ export class GizmoMarkers {
    * @param position - The world position to add the marker at.
    * @returns The newly created Marker.
    */
-  add (position: THREE.Vector3): Marker {
+  add (position: THREE.Vector3): IMarker {
     if (this._mesh.count === this._mesh.instanceMatrix.count) {
       this.resizeMesh()
     }
@@ -131,7 +131,7 @@ export class GizmoMarkers {
    * Uses swap-and-pop to maintain dense storage.
    * @param marker - The marker to remove.
    */
-  remove (marker: Marker): void {
+  remove (marker: IMarker): void {
     this._viewer.selection.remove(marker)
 
     const fromIndex = this._markers.length - 1

@@ -222,6 +222,7 @@ export interface ICamera {
   orthographic: boolean;
 }
 
+/** @internal */
 export class CameraSaveState{
   private _camera: ICamera
   private _position: THREE.Vector3 = new THREE.Vector3() 

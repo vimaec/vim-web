@@ -3,7 +3,7 @@
  */
 
 import deepmerge from 'deepmerge'
-import { Transparency } from './geometry'
+import { TransparencyMode, isTransparencyModeValid } from './geometry'
 import * as THREE from 'three'
 
 /**
@@ -35,7 +35,7 @@ export type VimSettings = {
   /**
    * Determines whether objects are drawn based on their transparency.
    */
-  transparency: Transparency.Mode
+  transparency: TransparencyMode
 
   /**
    * Set to true to enable verbose HTTP logging.
@@ -72,7 +72,7 @@ export function createVimSettings (options?: VimPartialSettings): VimSettings {
     ? deepmerge(getDefaultVimSettings(), options, undefined)
     : getDefaultVimSettings()) as VimSettings
 
-  merge.transparency = Transparency.isValid(merge.transparency)
+  merge.transparency = isTransparencyModeValid(merge.transparency)
     ? merge.transparency
     : 'all'
 

@@ -199,7 +199,7 @@ export class GizmoAxes {
     this._selectedAxis = null
   }
 
-  public update = () => {
+  public update () {
     if (!this._camera.hasMoved && !this._pointerInside && !this._isDragging && !this._resized) {
       return
     }

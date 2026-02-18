@@ -1,7 +1,7 @@
 // Types
 export type { VimSettings, VimPartialSettings } from './vimSettings';
 export type { RequestSource, ILoadRequest } from './progressive/loadRequest';
-export type { Transparency } from './geometry';
+export type { TransparencyMode } from './geometry';
 export type { IElement3D } from './element3d';
 export type { IElementMapping } from './elementMapping';
 export type { IScene } from './scene';

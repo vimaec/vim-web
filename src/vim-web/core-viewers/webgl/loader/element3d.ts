@@ -294,11 +294,12 @@ export class Element3D implements IElement3D {
   }
 
   /**
-   * Internal method used to replace this object's meshes and apply color as needed.
+   * @internal
+   * Replaces this object's meshes and apply color as needed.
    * @param {Submesh} mesh The new mesh to be added.
    * @throws {Error} Throws an error if the provided mesh instance does not match any existing instances.
    */
-  _addMesh (mesh: Submesh) {
+  addMesh (mesh: Submesh) {
     if (this.instances.findIndex((i) => i === mesh.instance) < 0) {
       throw new Error('Cannot update mismatched instance')
     }

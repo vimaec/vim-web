@@ -7,10 +7,45 @@ import { WebglColorAttribute } from '../../../loader/colorAttribute'
 import { ISelectable } from '../../selection'
 
 /**
+ * Public interface for a marker gizmo in the scene.
+ *
+ * Obtained via `viewer.gizmos.markers.add(position)`.
+ */
+export interface IMarker extends ISelectable {
+  readonly type: 'Marker'
+  /** The Vim object from which this marker came, if any. */
+  vim: IWebglVim | undefined
+  /** The BIM element index, if associated with a Vim element. */
+  element: number | undefined
+  /** The geometry instances, if derived from multiple instances. */
+  instances: number[] | undefined
+  /** The index of the marker in the marker collection. */
+  readonly index: number
+  /** Always false for markers. */
+  readonly isRoom: boolean
+  /** Always false; marker is a gizmo, not an actual mesh. */
+  readonly hasMesh: boolean
+  /** Whether the marker is outlined (highlighted). */
+  outline: boolean
+  /** Whether the marker is visible in the scene. */
+  visible: boolean
+  /** Whether the marker is focused (enlarged). */
+  focused: boolean
+  /** The color override for the marker. */
+  color: THREE.Color | undefined
+  /** The uniform scale factor applied to the marker. */
+  size: number
+  /** The world position of the marker. */
+  position: THREE.Vector3
+  /** Retrieves the bounding box of the marker. */
+  getBoundingBox(): Promise<THREE.Box3>
+}
+
+/**
  * Marker gizmo that displays an interactive sphere at a 3D position.
  * Marker gizmos are still under development.
  */
-export class Marker implements ISelectable {
+export class Marker implements IMarker {
   public readonly type = 'Marker'
   private _viewer: Viewer
   private _submesh: SimpleInstanceSubmesh
@@ -73,6 +108,7 @@ export class Marker implements ISelectable {
   }
 
   /**
+   * @internal
    * Updates the underlying submesh and rebinds all attributes to the new mesh.
    * @param mesh - The new submesh to bind to this marker.
    */

@@ -9,7 +9,7 @@ import { InstancedMesh } from '../loader/progressive/instancedMesh'
 import { RenderScene } from './rendering/renderScene'
 import { Camera } from './camera/camera'
 import { Renderer } from './rendering/renderer'
-import { Marker } from './gizmos/markers/gizmoMarker'
+import { type IMarker } from './gizmos/markers/gizmoMarker'
 import { GizmoMarkers } from './gizmos/markers/gizmoMarkers'
 import type {
   IRaycaster as IRaycasterBase,
@@ -33,7 +33,7 @@ export enum Layers {
  * A simple container for raycast results.
  */
 export class RaycastResult implements IRaycastResult {
-  object: Element3D | Marker | undefined
+  object: Element3D | IMarker | undefined
   intersections: ThreeIntersectionList
   firstHit: THREE.Intersection | undefined
 
@@ -45,7 +45,7 @@ export class RaycastResult implements IRaycastResult {
     return this.firstHit?.point
   }
 
-  constructor(intersections: ThreeIntersectionList, firstHit?: THREE.Intersection, object?: Element3D | Marker) {
+  constructor(intersections: ThreeIntersectionList, firstHit?: THREE.Intersection, object?: Element3D | IMarker) {
     this.intersections = intersections
     this.firstHit = firstHit
     this.object = object
@@ -107,7 +107,7 @@ export class Raycaster implements IRaycaster {
    * Processes the list of intersections to determine the first valid hit.
    * It first checks for a marker hit, then for a model object hit.
    */
-  private processIntersections(intersections: ThreeIntersectionList): { firstHit?: THREE.Intersection, object?: Element3D | Marker } {
+  private processIntersections(intersections: ThreeIntersectionList): { firstHit?: THREE.Intersection, object?: Element3D | IMarker } {
     // Check for marker hit first
     for (let i = 0; i < intersections.length; i++) {
       const userData = intersections[i].object.userData.vim

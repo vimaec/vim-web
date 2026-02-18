@@ -17,6 +17,7 @@ export interface ISelectable extends IVimElement {
 
 export type ISelection = Selection<ISelectable>
 
+/** @internal */
 export function createSelection() {
   return new Selection<ISelectable>(new SelectionAdapter())
 }

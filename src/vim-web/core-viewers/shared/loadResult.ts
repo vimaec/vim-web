@@ -76,10 +76,12 @@ export class LoadRequest<TVim, TError extends ILoadError = ILoadError>
     return result.vim
   }
 
+  /** @internal */
   pushProgress (progress: IProgress) {
     this._progressQueue.push(progress)
   }
 
+  /** @internal */
   complete (result: LoadResult<TVim, TError>) {
     if (this._result !== undefined) return
     this._result = result

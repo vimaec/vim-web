@@ -12,7 +12,7 @@ import { Vim } from '../../loader/vim'
 import { VimCollection } from '../../loader/vimCollection'
 import type { IRaycaster, IRaycastResult } from '../../../shared'
 import { Layers } from '../raycaster'
-import { Marker } from '../gizmos/markers/gizmoMarker'
+import { type IMarker } from '../gizmos/markers/gizmoMarker'
 import type { GizmoMarkers } from '../gizmos/markers/gizmoMarkers'
 import type { ISelectable } from '../selection'
 
@@ -52,14 +52,14 @@ export class GpuPickResult implements IRaycastResult<ISelectable> {
 
   private _elementIndex: number
   private _vim: Vim | undefined
-  private _marker: Marker | undefined
+  private _marker: IMarker | undefined
 
   constructor(
     elementIndex: number,
     worldPosition: THREE.Vector3,
     worldNormal: THREE.Vector3,
     vim: Vim | undefined,
-    marker?: Marker
+    marker?: IMarker
   ) {
     this._elementIndex = elementIndex
     this.worldPosition = worldPosition
@@ -70,7 +70,7 @@ export class GpuPickResult implements IRaycastResult<ISelectable> {
 
   /**
    * The object property for IRaycastResult interface.
-   * Returns the Element3D or Marker for the picked object.
+   * Returns the Element3D or IMarker for the picked object.
    */
   get object(): ISelectable | undefined {
     return this._marker ?? this.getElement()
@@ -85,10 +85,10 @@ export class GpuPickResult implements IRaycastResult<ISelectable> {
   }
 
   /**
-   * Gets the Marker object if this is a marker hit.
-   * @returns The Marker object, or undefined if this is an element hit
+   * Gets the IMarker object if this is a marker hit.
+   * @returns The IMarker object, or undefined if this is an element hit
    */
-  getMarker(): Marker | undefined {
+  getMarker(): IMarker | undefined {
     return this._marker
   }
 }
