@@ -103,25 +103,25 @@ src/vim-web/
     └── helpers/            # StateRef, hooks, utilities
 ```
 
-### ViewerRef (React-to-Core API)
+### ViewerApi (React-to-Core API)
 
 ```typescript
-// WebGL ViewerRef
-type ViewerRef = {
+// WebGL ViewerApi
+type ViewerApi = {
   core: Core.Webgl.Viewer    // Direct core access
   loader: ComponentLoader    // Load VIM files
-  camera: CameraRef          // Camera controls
-  sectionBox: SectionBoxRef  // Section box
-  isolation: IsolationRef    // Isolation mode
-  controlBar: ControlBarRef  // Toolbar customization
-  contextMenu: ContextMenuRef
-  bimInfo: BimInfoPanelRef
+  camera: CameraApi          // Camera controls
+  sectionBox: SectionBoxApi  // Section box
+  isolation: IsolationApi    // Isolation mode
+  controlBar: ControlBarApi  // Toolbar customization
+  contextMenu: ContextMenuApi
+  bimInfo: BimInfoPanelApi
   modal: ModalHandle
-  settings: SettingsRef
+  settings: SettingsApi
   dispose: () => void
 }
 
-// Ultra ViewerRef (similar but with RPC-based core)
+// Ultra ViewerApi (similar but with RPC-based core)
 ```
 
 ---
@@ -210,13 +210,13 @@ camera.snap().set(position, target)     // Set position/target
 camera.position                         // Current position
 camera.target                           // Look-at target
 camera.orthographic = true              // Ortho projection
-camera.allowedRotation = new THREE.Vector2(0, 0)  // Lock rotation
+camera.lockRotation = new THREE.Vector2(0, 0)  // Lock rotation
 
 // Plan view setup
 camera.snap().orbitTowards(new THREE.Vector3(0, 0, -1))
-camera.allowedRotation = new THREE.Vector2(0, 0)
+camera.lockRotation = new THREE.Vector2(0, 0)
 camera.orthographic = true
-viewer.core.inputs.pointerActive = VIM.Core.PointerMode.PAN
+viewer.core.inputs.pointerMode = VIM.Core.PointerMode.PAN
 ```
 
 ### Gizmos (WebGL)
@@ -265,7 +265,7 @@ state.useMemo((v) => compute(v))
 
 ## Input System
 
-> **📖 Full Documentation**: See [INPUT.md](./.claude/INPUT.md) for architecture, patterns, and advanced customization
+> **📖 Full Documentation**: See [INPUT.md](./.claude/docs/INPUT.md) for architecture, patterns, and advanced customization
 
 ### Default Bindings
 
@@ -293,7 +293,7 @@ state.useMemo((v) => compute(v))
 const inputs = viewer.core.inputs
 
 // Pointer modes: ORBIT | LOOK | PAN | ZOOM | RECT
-inputs.pointerActive = VIM.Core.PointerMode.LOOK
+inputs.pointerMode = VIM.Core.PointerMode.LOOK
 inputs.moveSpeed = 5  // Range: -10 to +10, exponential (1.25^speed)
 
 // Custom key handlers (mode: 'replace' | 'append' | 'prepend')
@@ -313,20 +313,20 @@ inputs.touch.onPinchOrSpread = (ratio) => { /* ... */ }
 **Plan View (Top-Down, Pan-Only)**:
 ```typescript
 viewer.camera.snap().orbitTowards(new VIM.THREE.Vector3(0, 0, -1))
-viewer.camera.allowedRotation = new VIM.THREE.Vector2(0, 0)
+viewer.camera.lockRotation = new VIM.THREE.Vector2(0, 0)
 viewer.camera.orthographic = true
-viewer.core.inputs.pointerActive = VIM.Core.PointerMode.PAN
+viewer.core.inputs.pointerMode = VIM.Core.PointerMode.PAN
 ```
 
 **Custom Tool Mode**:
 ```typescript
-const originalMode = viewer.core.inputs.pointerActive
-viewer.core.inputs.pointerActive = VIM.Core.PointerMode.RECT
+const originalMode = viewer.core.inputs.pointerMode
+viewer.core.inputs.pointerMode = VIM.Core.PointerMode.RECT
 viewer.core.inputs.mouse.onClick = (pos) => { /* custom logic */ }
-// Restore: viewer.core.inputs.pointerActive = originalMode
+// Restore: viewer.core.inputs.pointerMode = originalMode
 ```
 
-See [INPUT.md](./.claude/INPUT.md) for more patterns, coordinate systems, performance optimization, and debugging techniques
+See [INPUT.md](./.claude/docs/INPUT.md) for more patterns, coordinate systems, performance optimization, and debugging techniques
 
 ---
 
@@ -475,9 +475,9 @@ viewer.sectionBox.sectionBox.call(box)
 ### Screenshot
 
 ```typescript
-viewer.core.renderer.needsUpdate = true
+viewer.core.renderer.requestRender()
 viewer.core.renderer.render()
-const url = viewer.core.renderer.renderer.domElement.toDataURL('image/png')
+const url = viewer.core.renderer.three.domElement.toDataURL('image/png')
 const link = document.createElement('a')
 link.href = url
 link.download = 'screenshot.png'
@@ -523,8 +523,9 @@ for (let row = 0; row < gridSize; row++) {
 
 | Pattern | Usage | Example |
 |---------|-------|---------|
-| `I` prefix | Interfaces | `IVim`, `ICamera` |
-| `Ref` suffix | Reference types | `StateRef`, `ViewerRef` |
+| `I` prefix | Interfaces | `IVim`, `ICamera`, `ISelectable` |
+| `Api` suffix | React API handles | `ViewerApi`, `CameraApi` |
+| `Ref` suffix | Reactive primitives | `StateRef`, `ActionRef` |
 | `use` prefix | React hooks | `useStateRef` |
 | `vc-` prefix | Tailwind classes | `vc-flex` |
 | `--c-` prefix | CSS variables | `--c-primary` |
@@ -535,6 +536,11 @@ for (let row = 0; row < gridSize; row++) {
 - Index files control module exports
 - No test framework configured
 - Do not keep deprecated code or backwards-compatibility shims unless explicitly requested
+
+### Import Discipline
+
+- **Core files** (`core-viewers/`): Import directly from source files, never through barrel files (index.ts)
+- **React layer** (`react-viewers/`): Import through barrel files (`import * as Core from '../../core-viewers'`), never reach into deep internal paths
 
 ## Commands
 
@@ -551,7 +557,7 @@ npm run documentation # TypeDoc
 
 ### Loading Pipeline (WebGL)
 
-> **📖 Loading Optimization**: See [.claude/optimization.md](./.claude/optimization.md) for geometry building performance, lazy Element3D creation, and profiling techniques
+> **📖 Loading Optimization**: See [.claude/optimization.md](./.claude/docs/optimization.md) for geometry building performance, lazy Element3D creation, and profiling techniques
 
 Full call chain from `viewer.load()` to rendered scene:
 
@@ -560,32 +566,39 @@ viewer.load(url)
   → ComponentLoader.load() — allocates vimIndex (0-255)
     → Core LoadRequest — parses BFast → G3d + VimDocument + ElementMapping
       → Creates Vim (no geometry yet)
-    → initVim() — viewer.add(vim), vim.loadAll()
-      → Vim.loadSubset(fullSet)
-        → VimMeshFactory.add(subset) — splits merged vs instanced
-          → Scene.addMesh() → addSubmesh() → Element3D._addMesh()
+    → initVim() — viewer.add(vim), await vim.load()
+      → VimMeshFactory.add(subset) — splits merged vs instanced
+        → Scene.addMesh() → addSubmesh() → Element3D._addMesh()
 ```
 
 **Key steps:**
 1. `ComponentLoader` allocates a `vimIndex` (0-255) and creates a `LoadRequest`
 2. `LoadRequest.loadFromVim()` parses the BFast container: fetches G3d geometry, creates `G3dMaterial`, parses `VimDocument` (BIM data), builds `ElementMapping` (instance-to-element map), creates `Scene` and `VimMeshFactory`
-3. `Vim` is constructed with the factory but **no geometry yet** — geometry is loaded separately via `loadAll()`/`loadSubset()`
-4. `Vim.loadAll()` creates a `G3dSubset` of all instances and delegates to `loadSubset()`
-5. `VimMeshFactory.add()` splits the subset: ≤5 instances → `InsertableMeshFactory` (merged, chunked), >5 → `InstancedMeshFactory` (GPU instanced)
-6. `Scene.addMesh()` adds the Three.js mesh to the renderer, applies the scene transform matrix, iterates submeshes, and wires each to its `Element3D` via `addSubmesh()`
+3. `Vim` is constructed with the factory but **no geometry yet** — geometry is loaded separately via `vim.load()` or `vim.load(subset)`
+4. `VimMeshFactory.add()` splits the subset: ≤5 instances → `InsertableMeshFactory` (merged, chunked), >5 → `InstancedMeshFactory` (GPU instanced)
+5. `Scene.addMesh()` adds the Three.js mesh to the renderer, applies the scene transform matrix, iterates submeshes, and wires each to its `Element3D` via `addSubmesh()`
 
-**`load()` vs `open()`:** Both parse the VIM file, but only `load()` (via `ComponentLoader`) triggers `vim.loadAll()` to build geometry. Direct `LoadRequest` usage creates a Vim with no meshes until `loadSubset()` is called.
+**`load()` vs `open()`:** Both parse the VIM file, but only `load()` (via `ComponentLoader`) triggers `vim.load()` to build geometry. `open()` creates a Vim with no meshes — call `vim.load()` or `vim.load(subset)` later.
 
 ### Progressive Loading
 
 - `G3dSubset`: A filtered view of G3d instances, grouped by mesh. Supports further filtering by instance count (`filterByCount`), exclusion (`except`), and chunking (`chunks`)
-- `Vim.loadSubset()`: The core progressive loading method — tracks `_loadedInstances` Set, calls `subset.except('instance', loaded)` to skip already-loaded instances, then delegates to `VimMeshFactory.add()` and dispatches `onUpdate`
-- `Vim.loadFilter()`: Convenience method that creates a filtered subset and calls `loadSubset()`
+- `vim.subset()`: Returns an `ISubset` of all instances — the starting point for filtering
+- `vim.load(subset?)`: Loads geometry for the given subset, or all geometry if omitted. Caller is responsible for not loading the same subset twice
 - `G3dSubset.chunks(count)`: Splits a subset into smaller subsets by **index count** threshold (not vertex count)
+
+```typescript
+// Load everything
+await vim.load()
+
+// Load a filtered subset
+const sub = vim.subset().filter('instance', indices)
+await vim.load(sub)
+```
 
 ### Rendering Pipeline (WebGL)
 
-> **📖 Optimization Guide**: See [.claude/RENDERING_OPTIMIZATIONS.md](./.claude/RENDERING_OPTIMIZATIONS.md) for shader optimizations, GLSL3 migration, and performance improvements
+> **📖 Optimization Guide**: See [.claude/RENDERING_OPTIMIZATIONS.md](./.claude/docs/RENDERING_OPTIMIZATIONS.md) for shader optimizations, GLSL3 migration, and performance improvements
 
 Multi-pass compositor:
 ```
@@ -609,13 +622,12 @@ Scene (MSAA) → Selection Mask (mask material) → Outline Pass (depth edge det
 - Both `InsertableMesh` and `InstancedMesh` delegate material application to the shared `applyMaterial()` helper in `materials/materials.ts`
 
 **Subset Loading:**
-- `VimSubsetBuilder` (in `progressive/subsetBuilder.ts`) — concrete class, no interface
-- Owns a `VimMeshFactory`, dispatches `onUpdate` signal consumed by `Vim.onLoadingUpdate`
-- `Vim` depends directly on `VimSubsetBuilder`
+- `Vim.load(subset?)` delegates directly to `VimMeshFactory.add()`
+- No intermediate builder or progress signals — `load()` is awaitable
 
 ### GPU Picking (WebGL)
 
-> **📖 Attribute Types**: See [.claude/ATTRIBUTE_TYPE_INVESTIGATION.md](./.claude/ATTRIBUTE_TYPE_INVESTIGATION.md) for WebGL attribute type handling (Uint vs float in shaders)
+> **📖 Attribute Types**: See [.claude/ATTRIBUTE_TYPE_INVESTIGATION.md](./.claude/docs/ATTRIBUTE_TYPE_INVESTIGATION.md) for WebGL attribute type handling (Uint vs float in shaders)
 
 GPU-based object picking using a custom shader that renders element metadata to a Float32 render target.
 
@@ -735,10 +747,22 @@ viewer.load({ url }, { rotation: new THREE.Vector3(0, 0, 45), scale: 2 })
 | G3D | Geometry container |
 | VimDocument | BIM tables (accessed via `vim.bim`) |
 
+The public API for a loaded VIM is `IWebglVim` (concrete `Vim` class is `@internal`):
+
 ```typescript
+// Querying elements
 vim.getElement(instance)           // Instance → Element3D
 vim.getElementFromIndex(element)   // Element index → Element3D
 vim.getElementsFromId(id)          // Element ID → Element3D[]
 vim.getAllElements()               // All Element3D
 vim.bim                            // VimDocument for BIM queries
+
+// Geometry loading
+await vim.load()                   // Load all geometry
+await vim.load(subset)             // Load filtered subset
+vim.subset()                       // Get ISubset for filtering
+vim.clear()                        // Remove loaded geometry
+
+// Unloading — do NOT call vim.dispose() directly
+viewer.remove(vim)                 // Removes and disposes the vim
 ```
