@@ -4,13 +4,12 @@
  * See INPUT.md for architecture, pointer modes, and customization patterns.
  */
 
-import { SignalDispatcher } from 'ste-signals'
-import { SimpleEventDispatcher } from 'ste-simple-events'
+import { ISignal, SignalDispatcher } from 'ste-signals'
+import { ISimpleEvent, SimpleEventDispatcher } from 'ste-simple-events'
 import * as THREE from 'three'
-import { BaseInputHandler } from './baseInputHandler'
-import { KeyboardHandler } from './keyboardHandler'
-import { MouseHandler } from './mouseHandler'
-import { TouchHandler } from './touchHandler'
+import { KeyboardHandler, type IKeyboardInput } from './keyboardHandler'
+import { MouseHandler, type IMouseInput } from './mouseHandler'
+import { TouchHandler, type ITouchInput } from './touchHandler'
 import { IInputAdapter } from './inputAdapter'
 import { MIN_MOVE_SPEED, MAX_MOVE_SPEED } from './inputConstants'
 import { canvasToClient } from './coordinates'
@@ -18,7 +17,15 @@ import { canvasToClient } from './coordinates'
 /** Base multiplier for exponential move speed scaling (1.25^moveSpeed) */
 const MOVE_SPEED_BASE = 1.25
 
-/** Pointer interaction modes. See INPUT.md for details. */
+/**
+ * Determines how left-drag (mouse) or single-finger drag (touch) is interpreted.
+ *
+ * - `ORBIT` — Rotate camera around its target point.
+ * - `LOOK` — Rotate camera in place (first-person).
+ * - `PAN` — Slide camera laterally.
+ * - `ZOOM` — Dolly camera forward/backward.
+ * - `RECT` — Rectangle selection (reserved).
+ */
 export enum PointerMode {
   ORBIT = 'orbit',
   LOOK = 'look',
@@ -31,8 +38,53 @@ interface InputSettings{
   orbit: boolean
   scrollSpeed: number
   moveSpeed: number
-  rotateSpeed: number
-  orbitSpeed: number
+}
+
+/**
+ * Public API for the input system, accessed via `viewer.inputs`.
+ *
+ * Provides access to the three device handlers (keyboard, mouse, touch),
+ * pointer mode control, and speed settings.
+ *
+ * @example
+ * ```ts
+ * // Change pointer mode to pan
+ * viewer.inputs.pointerMode = PointerMode.PAN
+ *
+ * // Override a keyboard binding
+ * const restore = viewer.inputs.keyboard.override('KeyF', 'up', () => myFrameLogic())
+ * // Later: restore()
+ *
+ * // Override mouse click behavior
+ * const restore = viewer.inputs.mouse.override({
+ *   onClick: (pos, ctrl, original) => { myLogic(pos); original(pos, ctrl) }
+ * })
+ * ```
+ */
+export interface IInputHandler {
+  /** Keyboard input handler. Override key bindings via {@link IKeyboardInput.override}. */
+  keyboard: IKeyboardInput
+  /** Mouse input handler. Override callbacks via {@link IMouseInput.override}. */
+  mouse: IMouseInput
+  /** Touch input handler. Override callbacks via {@link ITouchInput.override}. */
+  touch: ITouchInput
+
+  /** The active pointer mode controlling how left-drag is interpreted. */
+  pointerMode: PointerMode
+  /** Temporary pointer mode during drag (e.g., right-drag = LOOK). Read-only. */
+  readonly pointerOverride: PointerMode | undefined
+  /** Fires when {@link pointerMode} or {@link pointerOverride} changes. */
+  readonly onPointerModeChanged: ISignal
+
+  /** WASD move speed. Exponential scale: actual speed = 1.25^moveSpeed. Range: [-10, +10]. */
+  moveSpeed: number
+  /** Scroll wheel zoom speed. Higher = faster zoom per scroll tick. */
+  scrollSpeed: number
+  /** Fires when any speed setting changes (moveSpeed, scrollSpeed). */
+  readonly onSettingsChanged: ISignal
+
+  /** Fires when a right-click context menu should be shown. Payload is client-space position. */
+  readonly onContextMenu: ISimpleEvent<THREE.Vector2 | undefined>
 }
 
 /**
@@ -41,127 +93,118 @@ interface InputSettings{
  * Manages two-tier pointer modes (active/override).
  * See INPUT.md for mode system and customization.
  */
-export class InputHandler extends BaseInputHandler {
+export class InputHandler implements IInputHandler {
 
-  /**
-   * Touch input handler
-   */
-  touch: TouchHandler
-  /**
-   * Mouse input handler
-   */
-  mouse: MouseHandler
-  /**
-   * Keyboard input handler
-   */
-  keyboard: KeyboardHandler
+  private _canvas: HTMLCanvasElement
+  private _touch: TouchHandler
+  private _mouse: MouseHandler
+  private _keyboard: KeyboardHandler
 
+  get touch(): ITouchInput { return this._touch }
+  get mouse(): IMouseInput { return this._mouse }
+  get keyboard(): IKeyboardInput { return this._keyboard }
 
-  scrollSpeed: number
-  rotateSpeed: number
-  orbitSpeed: number
+  private _scrollSpeed: number
+  private _rotateSpeed: number = 1
+  private _orbitSpeed: number = 1
   private _moveSpeed: number
 
   private _pointerMode: PointerMode = PointerMode.ORBIT
   private _pointerOverride: PointerMode | undefined
-  private _onPointerOverrideChanged = new SignalDispatcher()
   private _onPointerModeChanged = new SignalDispatcher()
   private _onSettingsChanged = new SignalDispatcher()
   private _adapter : IInputAdapter
 
   constructor (canvas: HTMLCanvasElement, adapter: IInputAdapter, settings: Partial<InputSettings> = {}) {
-    super(canvas)
+    this._canvas = canvas
     this._adapter = adapter
 
     this._pointerMode = (settings.orbit === undefined || settings.orbit) ? PointerMode.ORBIT : PointerMode.LOOK
-    this.scrollSpeed = settings.scrollSpeed ?? 1.75
+    this._scrollSpeed = settings.scrollSpeed ?? 1.75
     this._moveSpeed = settings.moveSpeed ?? 1
-    this.rotateSpeed = settings.rotateSpeed ?? 1
-    this.orbitSpeed = settings.orbitSpeed ?? 1
 
-    this.keyboard = new KeyboardHandler(canvas)
-    this.mouse = new MouseHandler(canvas)
-    this.touch = new TouchHandler(canvas)
+    this._keyboard = new KeyboardHandler(canvas, {
+      onKeyDown: (key: string) => adapter.keyDown(key),
+      onKeyUp: (key: string) => adapter.keyUp(key),
+      onMove: (value: THREE.Vector3) => {
+        const mul = Math.pow(MOVE_SPEED_BASE, this._moveSpeed)
+        adapter.moveCamera(value.multiplyScalar(mul))
+      },
+    })
 
-    // Keyboard controls
-    this.keyboard.onKeyDown = (key: string) => adapter.keyDown(key)
-    this.keyboard.onKeyUp = (key: string) => adapter.keyUp(key)
+    this._keyboard.override('KeyP', 'up', () => adapter.toggleOrthographic());
+    this._keyboard.override(['Equal', 'NumpadAdd'], 'up', () => this.moveSpeed++);
+    this._keyboard.override(['Minus', 'NumpadSubtract'], 'up', () => this.moveSpeed--);
+    this._keyboard.override('Home', 'up', () => adapter.resetCamera());
+    this._keyboard.override('Escape', 'up', () => adapter.clearSelection());
+    this._keyboard.override('KeyF', 'up', () => adapter.frameCamera());
 
-    this.keyboard.registerKeyUp('KeyP', 'replace', () => adapter.toggleOrthographic());
-    this.keyboard.registerKeyUp(['Equal', 'NumpadAdd'], 'replace', () => this.moveSpeed++);
-    this.keyboard.registerKeyUp(['Minus', 'NumpadSubtract'], 'replace', () => this.moveSpeed--);
-    this.keyboard.registerKeyUp('Home', 'replace', () => adapter.resetCamera());
-    this.keyboard.registerKeyUp('Escape', 'replace', () => adapter.clearSelection());
-    this.keyboard.registerKeyUp('KeyF', 'replace', () => {
-      adapter.frameCamera();
-    });
+    this._mouse = new MouseHandler(canvas, {
+      onClick: (pos: THREE.Vector2, modif: boolean) => adapter.selectAtPointer(pos, modif),
+      onDoubleClick: adapter.frameAtPointer,
+      onDrag: (delta: THREE.Vector2, button: number) => {
+        if(button === 0){
+          if(this.pointerMode === PointerMode.ORBIT) adapter.orbitCamera(toRotation(delta, this._orbitSpeed))
+          if(this.pointerMode === PointerMode.LOOK) adapter.rotateCamera(toRotation(delta, this._rotateSpeed))
+          if(this.pointerMode === PointerMode.PAN) adapter.panCamera(delta)
+          if(this.pointerMode === PointerMode.ZOOM) adapter.dollyCamera(delta)
+        }
+        if(button === 2){
+          this._setPointerOverride(PointerMode.LOOK)
+          adapter.rotateCamera(toRotation(delta,1))
+        }
+        if(button === 1){
+          this._setPointerOverride(PointerMode.PAN)
+          adapter.panCamera(delta)
+        }
+      },
+      onPointerDown: adapter.pointerDown,
+      onPointerUp: (pos: THREE.Vector2, button: number) => {
+        this._setPointerOverride(undefined)
+        adapter.pointerUp(pos, button)
+      },
+      onPointerMove: adapter.pointerMove,
+      onWheel: (value: number, ctrl: boolean, clientX: number, clientY: number) => {
+        if(ctrl){
+          this.moveSpeed -= Math.sign(value)
+        }
+        else{
+          const rect = this._canvas.getBoundingClientRect()
+          const screenX = (clientX - rect.left) / rect.width
+          const screenY = (clientY - rect.top) / rect.height
+          _tempScreenPos.set(screenX, screenY)
+          adapter.zoom(this._getZoomValue(value), _tempScreenPos)
+        }
+      },
+      onContextMenu: (pos: THREE.Vector2) => {
+        canvasToClient(pos.x, pos.y, canvas, _tempClientPos)
+        this._onContextMenu.dispatch(_tempClientPos)
+      },
+    })
 
-    this.keyboard.onMove = (value: THREE.Vector3 ) =>{
-      const mul = Math.pow(MOVE_SPEED_BASE, this._moveSpeed)
-      adapter.moveCamera(value.multiplyScalar(mul))
-    } 
-
-    // Mouse controls
-    this.mouse.onContextMenu = (pos: THREE.Vector2) => {
-      // Convert canvas-relative coords (0-1) back to client coords (pixels) for menu positioning
-      canvasToClient(pos.x, pos.y, canvas, _tempClientPos)
-      this._onContextMenu.dispatch(_tempClientPos)
-    };
-    this.mouse.onPointerDown = adapter.pointerDown
-    this.mouse.onPointerMove = adapter.pointerMove
-    this.mouse.onPointerUp = (pos: THREE.Vector2, button: number) => {
-      this.pointerOverride = undefined
-      adapter.pointerUp(pos, button)
-    }
-    this.mouse.onDrag = (delta: THREE.Vector2, button: number) =>{
-      if(button === 0){
-        if(this.pointerMode === PointerMode.ORBIT) adapter.orbitCamera(toRotation(delta, this.orbitSpeed))
-        if(this.pointerMode === PointerMode.LOOK) adapter.rotateCamera(toRotation(delta, this.rotateSpeed))
+    this._touch = new TouchHandler(canvas, {
+      onTap: (pos: THREE.Vector2) => adapter.selectAtPointer(pos, false),
+      onDoubleTap: adapter.frameAtPointer,
+      onDrag: (delta: THREE.Vector2) => {
+        if(this.pointerMode === PointerMode.ORBIT) adapter.orbitCamera(toRotation(delta, this._orbitSpeed))
+        if(this.pointerMode === PointerMode.LOOK) adapter.rotateCamera(toRotation(delta, this._rotateSpeed))
         if(this.pointerMode === PointerMode.PAN) adapter.panCamera(delta)
         if(this.pointerMode === PointerMode.ZOOM) adapter.dollyCamera(delta)
-      } 
-      if(button === 2){
-        this.pointerOverride = PointerMode.LOOK
-        adapter.rotateCamera(toRotation(delta,1))
-        
-      } 
-      if(button === 1){
-        this.pointerOverride = PointerMode.PAN
-        adapter.panCamera(delta)
-      }
-    }
-
-    this.mouse.onClick = (pos: THREE.Vector2, modif: boolean) => adapter.selectAtPointer(pos, modif)
-    this.mouse.onDoubleClick = adapter.frameAtPointer
-    this.mouse.onWheel = (value: number, ctrl: boolean, clientX: number, clientY: number) => {
-      if(ctrl){
-        this.moveSpeed -= Math.sign(value)
-      }
-      else{
-        const rect = this._canvas.getBoundingClientRect()
-        const screenX = (clientX - rect.left) / rect.width
-        const screenY = (clientY - rect.top) / rect.height
-        _tempScreenPos.set(screenX, screenY)
-        adapter.zoom(this.getZoomValue(value), _tempScreenPos)
-      }
-    }
-
-    // Touch controls
-    this.touch.onTap = (pos: THREE.Vector2) => adapter.selectAtPointer(pos, false)
-    this.touch.onDoubleTap = adapter.frameAtPointer
-    this.touch.onDrag = (delta: THREE.Vector2) => {
-      if(this.pointerMode === PointerMode.ORBIT) adapter.orbitCamera(toRotation(delta, this.orbitSpeed))
-      if(this.pointerMode === PointerMode.LOOK) adapter.rotateCamera(toRotation(delta, this.rotateSpeed))
-      if(this.pointerMode === PointerMode.PAN) adapter.panCamera(delta)
-      if(this.pointerMode === PointerMode.ZOOM) adapter.dollyCamera(delta)
-    }
-    this.touch.onPinchStart = (center: THREE.Vector2) => adapter.pinchStart(center)
-    this.touch.onPinchOrSpread = (totalRatio: number) => adapter.pinchZoom(totalRatio)
-    this.touch.onDoubleDrag = (value : THREE.Vector2) => adapter.panCamera(value)
+      },
+      onPinchStart: (center: THREE.Vector2) => adapter.pinchStart(center),
+      onPinchOrSpread: (totalRatio: number) => adapter.pinchZoom(totalRatio),
+      onDoubleDrag: (value: THREE.Vector2) => adapter.panCamera(value),
+    })
   }
 
-  getZoomValue (value: number) {
-    return Math.pow(this.scrollSpeed, -value)
+  private _getZoomValue (value: number) {
+    return Math.pow(this._scrollSpeed, -value)
+  }
+
+  private _setPointerOverride (value: PointerMode | undefined) {
+    if (value === this._pointerOverride) return
+    this._pointerOverride = value
+    this._onPointerModeChanged.dispatch()
   }
 
   init(){
@@ -178,6 +221,12 @@ export class InputHandler extends BaseInputHandler {
     this._onSettingsChanged.dispatch()
   }
 
+  get scrollSpeed () { return this._scrollSpeed }
+  set scrollSpeed (value: number) {
+    this._scrollSpeed = value
+    this._onSettingsChanged.dispatch()
+  }
+
   get onSettingsChanged() {
     return this._onSettingsChanged.asEvent()
   }
@@ -190,20 +239,14 @@ export class InputHandler extends BaseInputHandler {
   }
 
   /**
-   * A temporary pointer mode used for temporary icons.
+   * A temporary pointer mode during drag (e.g., right-drag = LOOK).
    */
   get pointerOverride (): PointerMode | undefined {
     return this._pointerOverride
   }
 
-  set pointerOverride (value: PointerMode | undefined) {
-    if (value === this._pointerOverride) return
-    this._pointerOverride = value
-    this._onPointerOverrideChanged.dispatch()
-  }
-
   /**
-   * Changes pointer interaction mode. Look mode will set camera orbitMode to false.
+   * Changes pointer interaction mode.
    */
   set pointerMode (value: PointerMode) {
     if (value === this._pointerMode) return
@@ -212,18 +255,10 @@ export class InputHandler extends BaseInputHandler {
   }
 
   /**
-   * Event called when pointer interaction mode changes.
+   * Event fired when pointer mode or pointer override changes.
    */
   get onPointerModeChanged () {
     return this._onPointerModeChanged.asEvent()
-  }
-
-
-  /**
-   * Event called when the pointer is temporarily overriden.
-   */
-  get onPointerOverrideChanged () {
-    return this._onPointerOverrideChanged.asEvent()
   }
 
   private _onContextMenu = new SimpleEventDispatcher<
@@ -238,38 +273,30 @@ export class InputHandler extends BaseInputHandler {
   }
 
   /**
-   * Calls context menu action
-   */
-  ContextMenu (position: THREE.Vector2 | undefined) {
-    this._onContextMenu.dispatch(position)
-  }
-
-
-  /**
  * Register inputs handlers for default viewer behavior
  */
   registerAll () {
-    this.keyboard.register()
-    this.mouse.register()
-    this.touch.register()
+    this._keyboard.register()
+    this._mouse.register()
+    this._touch.register()
   }
 
   /**
    * Unregisters all input handlers
    */
   unregisterAll = () => {
-    this.mouse.unregister()
-    this.keyboard.unregister()
-    this.touch.unregister()
+    this._mouse.unregister()
+    this._keyboard.unregister()
+    this._touch.unregister()
   }
 
   /**
    * Resets all input state
    */
   resetAll () {
-    this.mouse.reset()
-    this.keyboard.reset()
-    this.touch.reset()
+    this._mouse.reset()
+    this._keyboard.reset()
+    this._touch.reset()
   }
 
   dispose(){

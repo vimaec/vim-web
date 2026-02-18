@@ -14,6 +14,71 @@ import { PointerCapture } from "./pointerCapture";
 
 import * as THREE from 'three';
 
+type ClickHandler = (position: THREE.Vector2, ctrl: boolean) => void
+type DoubleClickHandler = (position: THREE.Vector2) => void
+type PointerButtonHandler = (pos: THREE.Vector2, button: number) => void
+type MoveHandler = (pos: THREE.Vector2) => void
+type WheelHandler = (value: number, ctrl: boolean, clientX: number, clientY: number) => void
+type ContextMenuHandler = (position: THREE.Vector2) => void
+
+export type MouseCallbacks = {
+  onClick: ClickHandler
+  onDoubleClick: DoubleClickHandler
+  onDrag: DragCallback
+  onPointerDown: PointerButtonHandler
+  onPointerUp: PointerButtonHandler
+  onPointerMove: MoveHandler
+  onWheel: WheelHandler
+  onContextMenu: ContextMenuHandler
+}
+
+/**
+ * Public API for mouse input, accessed via `viewer.inputs.mouse`.
+ *
+ * Supports overriding any mouse callback with automatic restore. Each override
+ * handler receives the original callback as its last parameter for chaining.
+ *
+ * @example
+ * ```ts
+ * // Override click to add custom logic
+ * const restore = viewer.inputs.mouse.override({
+ *   onClick: (pos, ctrl, original) => {
+ *     if (myCondition) myAction(pos)
+ *     else original(pos, ctrl)
+ *   }
+ * })
+ * // Later: restore()
+ * ```
+ */
+export interface IMouseInput {
+  /** Whether mouse event listeners are active. Set to `false` to suspend all mouse handling. */
+  active: boolean
+  /**
+   * Temporarily overrides mouse callbacks. Only provided handlers are replaced;
+   * others keep their current behavior. Each handler receives the original as its last param.
+   *
+   * @param handlers - Partial set of callbacks to override.
+   * @returns A function that restores all overridden callbacks when called.
+   */
+  override(handlers: MouseOverrides): () => void
+}
+
+/**
+ * Partial set of mouse callbacks for use with {@link IMouseInput.override}.
+ * Each handler receives the original callback as its last parameter.
+ * All positions are canvas-relative, normalized to [0, 1].
+ */
+export type MouseOverrides = {
+  onClick?: (pos: THREE.Vector2, ctrl: boolean, original: ClickHandler) => void
+  onDoubleClick?: (pos: THREE.Vector2, original: DoubleClickHandler) => void
+  onDrag?: (delta: THREE.Vector2, button: number, original: DragCallback) => void
+  onPointerDown?: (pos: THREE.Vector2, button: number, original: PointerButtonHandler) => void
+  onPointerUp?: (pos: THREE.Vector2, button: number, original: PointerButtonHandler) => void
+  onPointerMove?: (pos: THREE.Vector2, original: MoveHandler) => void
+  onWheel?: (value: number, ctrl: boolean, clientX: number, clientY: number, original: WheelHandler) => void
+  onContextMenu?: (pos: THREE.Vector2, original: ContextMenuHandler) => void
+}
+
 /**
  * Handles mouse/pointer input with support for click, drag, and double-click detection.
  *
@@ -29,66 +94,29 @@ export class MouseHandler extends BaseInputHandler {
   // Reusable vectors to avoid per-frame allocations
   private _tempPosition = new THREE.Vector2();
 
-  /**
-   * Called on every pointer down event.
-   * @param pos Canvas-relative position [0-1]
-   * @param button 0=left, 1=middle, 2=right
-   */
-  onPointerDown: (pos: THREE.Vector2, button: number) => void;
+  // Callbacks
+  private _onClick: ClickHandler
+  private _onDoubleClick: DoubleClickHandler
+  private _onDrag: DragCallback
+  private _onPointerDown: PointerButtonHandler
+  private _onPointerUp: PointerButtonHandler
+  private _onPointerMove: MoveHandler
+  private _onWheel: WheelHandler
+  private _onContextMenu: ContextMenuHandler
 
-  /**
-   * Called on every pointer up event.
-   * @param pos Canvas-relative position [0-1]
-   * @param button 0=left, 1=middle, 2=right
-   */
-  onPointerUp: (pos: THREE.Vector2, button: number) => void;
-
-  /**
-   * Called on every pointer move (regardless of button state).
-   * @param pos Canvas-relative position [0-1]
-   */
-  onPointerMove: (event: THREE.Vector2) => void;
-
-  /**
-   * Called during pointer drag (pointer down + move).
-   * @param delta Canvas-relative movement since last frame
-   * @param button Button being dragged (0=left, 1=middle, 2=right)
-   * @note Delta is a reference to reusable vector - do not store!
-   */
-  onDrag: DragCallback;
-
-  /**
-   * Called on single click (pointer down + up without drag).
-   * @param position Canvas-relative click position [0-1]
-   * @param ctrl True if Shift or Ctrl was held
-   */
-  onClick: (position: THREE.Vector2, ctrl: boolean) => void;
-
-  /**
-   * Called on double-click within 300ms.
-   * @param position Canvas-relative click position [0-1]
-   */
-  onDoubleClick: (position: THREE.Vector2) => void;
-
-  /**
-   * Called on mouse wheel scroll.
-   * @param value Scroll direction: +1 (down) or -1 (up)
-   * @param ctrl True if Ctrl key was held
-   * @param clientX Client X coordinate in pixels
-   * @param clientY Client Y coordinate in pixels
-   */
-  onWheel: (value: number, ctrl: boolean, clientX: number, clientY: number) => void;
-
-  /**
-   * Called on right-click without drag.
-   * @param position Canvas-relative position [0-1]
-   */
-  onContextMenu: (position: THREE.Vector2) => void;
-
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, callbacks: MouseCallbacks) {
     super(canvas);
+    this._onClick = callbacks.onClick
+    this._onDoubleClick = callbacks.onDoubleClick
+    this._onDrag = callbacks.onDrag
+    this._onPointerDown = callbacks.onPointerDown
+    this._onPointerUp = callbacks.onPointerUp
+    this._onPointerMove = callbacks.onPointerMove
+    this._onWheel = callbacks.onWheel
+    this._onContextMenu = callbacks.onContextMenu
+
     this._capture = new PointerCapture(canvas);
-    this._dragHandler = new DragTracker((delta: THREE.Vector2, button:number) => this.onDrag(delta, button));
+    this._dragHandler = new DragTracker((delta: THREE.Vector2, button:number) => this._onDrag(delta, button));
     this._doubleClickHandler = new DoubleClickDetector(DOUBLE_CLICK_TIME_THRESHOLD, DOUBLE_CLICK_DISTANCE_THRESHOLD);
     this._clickHandler = new ClickDetector(CLICK_MOVEMENT_THRESHOLD);
   }
@@ -103,6 +131,42 @@ export class MouseHandler extends BaseInputHandler {
   }
 
   /**
+   * Temporarily overrides mouse callbacks. Each handler receives the original as its last param.
+   * Returns a function that restores the previous callbacks. Only one level of override at a time.
+   */
+  override(handlers: MouseOverrides): () => void {
+    const saved = {
+      onClick: this._onClick,
+      onDoubleClick: this._onDoubleClick,
+      onDrag: this._onDrag,
+      onPointerDown: this._onPointerDown,
+      onPointerUp: this._onPointerUp,
+      onPointerMove: this._onPointerMove,
+      onWheel: this._onWheel,
+      onContextMenu: this._onContextMenu,
+    }
+    if (handlers.onClick) this._onClick = (p, c) => handlers.onClick(p, c, saved.onClick)
+    if (handlers.onDoubleClick) this._onDoubleClick = (p) => handlers.onDoubleClick(p, saved.onDoubleClick)
+    if (handlers.onDrag) this._onDrag = (d, b) => handlers.onDrag(d, b, saved.onDrag)
+    if (handlers.onPointerDown) this._onPointerDown = (p, b) => handlers.onPointerDown(p, b, saved.onPointerDown)
+    if (handlers.onPointerUp) this._onPointerUp = (p, b) => handlers.onPointerUp(p, b, saved.onPointerUp)
+    if (handlers.onPointerMove) this._onPointerMove = (p) => handlers.onPointerMove(p, saved.onPointerMove)
+    if (handlers.onWheel) this._onWheel = (v, c, x, y) => handlers.onWheel(v, c, x, y, saved.onWheel)
+    if (handlers.onContextMenu) this._onContextMenu = (p) => handlers.onContextMenu(p, saved.onContextMenu)
+
+    return () => {
+      this._onClick = saved.onClick
+      this._onDoubleClick = saved.onDoubleClick
+      this._onDrag = saved.onDrag
+      this._onPointerDown = saved.onPointerDown
+      this._onPointerUp = saved.onPointerUp
+      this._onPointerMove = saved.onPointerMove
+      this._onWheel = saved.onWheel
+      this._onContextMenu = saved.onContextMenu
+    }
+  }
+
+  /**
    * Cleanup method - unregisters all event listeners.
    */
   dispose(): void {
@@ -113,7 +177,7 @@ export class MouseHandler extends BaseInputHandler {
     if (event.pointerType !== 'mouse') return; // We don't handle touch yet
 
     const pos = this.relativePosition(event);
-    this.onPointerDown?.(pos, event.button);
+    this._onPointerDown?.(pos, event.button);
     // Start drag
     this._dragHandler.onPointerDown(pos, event.button);
     this._clickHandler.onPointerDown(pos);
@@ -128,7 +192,7 @@ export class MouseHandler extends BaseInputHandler {
     const pos = this.relativePosition(event);
 
     // Button up event
-    this.onPointerUp?.(pos, event.button);
+    this._onPointerUp?.(pos, event.button);
     this._capture.onPointerUp();
     this._dragHandler.onPointerUp();
     this._clickHandler.onPointerUp();
@@ -165,7 +229,7 @@ export class MouseHandler extends BaseInputHandler {
 
     const pos = this.relativePosition(event);
     const modif = event.getModifierState('Shift') || event.getModifierState('Control');
-    this.onClick?.(pos, modif);
+    this._onClick?.(pos, modif);
   }
 
     private async handleContextMenu(event: PointerEvent): Promise<void> {
@@ -178,9 +242,9 @@ export class MouseHandler extends BaseInputHandler {
     }
 
     const pos = this.relativePosition(event);
-    this.onContextMenu?.(pos);
+    this._onContextMenu?.(pos);
   }
-  
+
 
   private handlePointerMove(event: PointerEvent): void {
     if (event.pointerType !== 'mouse') return;
@@ -188,17 +252,17 @@ export class MouseHandler extends BaseInputHandler {
     const pos = this.relativePosition(event);
     this._dragHandler.onPointerMove(pos);
     this._clickHandler.onPointerMove(pos);
-    this.onPointerMove?.(pos);
+    this._onPointerMove?.(pos);
   }
 
   private async handleDoubleClick(event: MouseEvent): Promise<void> {
     const pos = this.relativePosition(event);
-    this.onDoubleClick?.(pos);
+    this._onDoubleClick?.(pos);
     event.preventDefault();
   }
 
   private onMouseScroll(event: WheelEvent): void {
-    this.onWheel?.(Math.sign(event.deltaY), event.ctrlKey, event.clientX, event.clientY);
+    this._onWheel?.(Math.sign(event.deltaY), event.ctrlKey, event.clientX, event.clientY);
     event.preventDefault();
   }
 

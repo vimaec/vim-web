@@ -27,8 +27,20 @@ export class BaseInputHandler {
   }
 
   /**
-   * Register handler to related browser events
-   * Prevents double registrations
+   * Whether this handler is actively listening to browser events.
+   */
+  get active (): boolean {
+    return this._disconnect.length > 0
+  }
+
+  set active (value: boolean) {
+    if (value) this.register()
+    else this.unregister()
+  }
+
+  /**
+   * Register handler to related browser events.
+   * Prevents double registrations.
    */
   register () {
     if (this._disconnect.length > 0) return
@@ -38,8 +50,8 @@ export class BaseInputHandler {
   protected addListeners () {}
 
   /**
-   * Unregister handler from related browser events
-   * Prevents double unregistration
+   * Unregister handler from related browser events.
+   * Prevents double unregistration.
    */
   unregister () {
     this._disconnect.forEach((f) => f())

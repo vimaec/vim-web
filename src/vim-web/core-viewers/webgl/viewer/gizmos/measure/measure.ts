@@ -68,7 +68,6 @@ export class Measure implements IMeasure {
 
   private _endPos: THREE.Vector3 | undefined
   private _measurement: THREE.Vector3 | undefined
-  private _previousOnClick: (pos: THREE.Vector2, ctrl: boolean ) => void
   private _promise : ControllablePromise<void> | undefined
   private _stage : MeasureStage = 'ready'
 
@@ -115,14 +114,10 @@ export class Measure implements IMeasure {
 
     this._promise = new ControllablePromise<void>()
     this._stage = 'ready'
-    this._previousOnClick = this._viewer.inputs.mouse.onClick
-    this._viewer.inputs.mouse.onClick = async (pos: THREE.Vector2) => this.onClick(pos)
-    return this._promise.promise.finally(() => {
-      if (this._previousOnClick) {
-        this._viewer.inputs.mouse.onClick = this._previousOnClick
-        this._previousOnClick = undefined
-      }
+    const restore = this._viewer.inputs.mouse.override({
+      onClick: async (pos: THREE.Vector2, _ctrl, _original) => this.onClick(pos)
     })
+    return this._promise.promise.finally(restore)
   }
 
   private async onClick (pos: THREE.Vector2) {

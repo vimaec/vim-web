@@ -1,5 +1,5 @@
 import type { ISimpleEvent } from 'ste-simple-events'
-import type {InputHandler} from '../shared'
+import {type IInputHandler, type InputHandler} from '../shared'
 import { Camera, ICamera } from './camera'
 import { ColorManager } from './colorManager'
 import { Decoder, IDecoder } from './decoder'
@@ -60,7 +60,7 @@ export class Viewer {
   /**
    * The input API for handling user input events.
    */
-  get inputs () {
+  get inputs (): IInputHandler {
     return this._input
   }
 

@@ -5,7 +5,7 @@ import * as THREE from 'three'
 import { Renderer } from '../rendering/renderer'
 import { Camera } from '../camera/camera'
 import { ViewerSettings } from '../settings/viewerSettings'
-import {type InputHandler, PointerMode} from '../../../shared'
+import {type IInputHandler, PointerMode} from '../../../shared'
 import { Layers } from '../raycaster'
 
 // Torus geometry parameters
@@ -25,7 +25,7 @@ export class GizmoOrbit {
   // Dependencies
   private _renderer: Renderer
   private _camera: Camera
-  private _inputs: InputHandler
+  private _inputs: IInputHandler
 
   // Settings
   private _size: number = 0.1
@@ -57,7 +57,7 @@ export class GizmoOrbit {
   constructor (
     renderer: Renderer,
     camera: Camera,
-    input: InputHandler,
+    input: IInputHandler,
     settings: ViewerSettings
   ) {
     this._renderer = renderer

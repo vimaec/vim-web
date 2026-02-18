@@ -17,7 +17,7 @@ import { Viewport } from './viewport'
 
 // loader
 import { ISignal, SignalDispatcher } from 'ste-signals'
-import type {InputHandler} from '../../shared'
+import {type IInputHandler, type InputHandler} from '../../shared'
 import { IMaterials, Materials } from '../loader/materials/materials'
 import { Vim } from '../loader/vim'
 import { Scene } from '../loader/scene'
@@ -58,7 +58,8 @@ export class Viewer {
   /**
    * The interface for manipulating default viewer inputs.
    */
-  readonly inputs: InputHandler
+  get inputs(): IInputHandler { return this._inputs }
+  private readonly _inputs: InputHandler
 
   /**
    * The interface for performing raycasting into the scene to find objects.
@@ -115,7 +116,7 @@ export class Viewer {
       this.settings
     )
 
-    this.inputs = createInputHandler(this)
+    this._inputs = createInputHandler(this)
     this.gizmos = new Gizmos(this, this._camera)
     this.materials.applySettings(this.settings.materials)
 
@@ -142,7 +143,7 @@ export class Viewer {
       ;(this.raycaster as GpuPicker).setSize(size.x, size.y)
     })
 
-    this.inputs.init()
+    this._inputs.init()
 
     // Start Loop
     this.animate()
@@ -221,7 +222,7 @@ export class Viewer {
     this.viewport.dispose()
     this.renderer.dispose()
     ;(this.raycaster as GpuPicker).dispose()
-    this.inputs.unregisterAll()
+    this._inputs.dispose()
     for (const vim of this.vimCollection.getAll()) {
       vim?.dispose()
     }

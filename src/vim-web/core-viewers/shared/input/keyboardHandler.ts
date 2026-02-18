@@ -5,44 +5,60 @@
 import * as THREE from 'three';
 import { BaseInputHandler } from './baseInputHandler';
 
-/**
- * Mode for registering key handlers.
- *
- * - replace: Replace existing handler
- * - append: Run after existing handler
- * - prepend: Run before existing handler
- */
-export type CallbackMode = 'replace' | 'append' | 'prepend';
+type KeyHandler = (code: string) => boolean
+type MoveHandler = (value: THREE.Vector3) => void
+
+export type KeyboardCallbacks = {
+  onKeyDown: KeyHandler
+  onKeyUp: KeyHandler
+  onMove: MoveHandler
+}
 
 /**
- * KeyboardHandler
- * 
- * A modern keyboard handler that manages keyboard events using a stateful pattern.
- * It supports separate handlers for key down, key up, and continuous key pressed events.
- * The handler calculates a movement vector based on currently pressed keys.
+ * Public API for keyboard input, accessed via `viewer.inputs.keyboard`.
+ *
+ * Supports per-key overrides with automatic restore, and an `active` toggle
+ * to temporarily disable all keyboard handling (e.g., when a text input has focus).
+ *
+ * @example
+ * ```ts
+ * // Override the F key (key up)
+ * const restore = viewer.inputs.keyboard.override('KeyF', 'up', () => myAction())
+ * // Later: restore()
+ *
+ * // Chain with the original handler
+ * viewer.inputs.keyboard.override('KeyF', 'up', (original) => {
+ *   original?.()
+ *   myExtraAction()
+ * })
+ *
+ * // Disable keyboard while typing
+ * viewer.inputs.keyboard.active = false
+ * // Re-enable
+ * viewer.inputs.keyboard.active = true
+ * ```
  */
+export interface IKeyboardInput {
+  /** Whether keyboard event listeners are active. Set to `false` to suspend all keyboard handling. */
+  active: boolean
+  /**
+   * Overrides a key handler. Returns a function that restores the previous handler.
+   *
+   * @param code - The `KeyboardEvent.code` (e.g., `'KeyF'`, `'Escape'`) or an array of codes.
+   * @param on - Whether to intercept key `'down'` or `'up'` events.
+   * @param handler - Callback invoked on the event. Receives the previous handler as `original`.
+   * @returns A function that restores the previous handler when called.
+   */
+  override(code: string | string[], on: 'down' | 'up', handler: (original?: () => void) => void): () => void
+}
+
 export class KeyboardHandler extends BaseInputHandler {
 
-  /**
-   * Callback invoked whenever the calculated movement vector is updated.
-   */
-  public onMove: (value: THREE.Vector3) => void;
+  // Callbacks
+  private _onMove: MoveHandler;
+  private _onKeyUp: KeyHandler;
+  private _onKeyDown: KeyHandler;
 
-  /**
-   * Called on key up event - return true if handled to prevent default.
-   */
-  public onKeyUp: (code: string) => boolean;
-
-  /**
-   * Called on key down event - return true if handled to prevent default.
-   */
-  public onKeyDown: (code: string) => boolean;
-
-
-  /**
-   * Speed multiplier applied when the Shift key is held.
-   * @private
-   */
   private readonly SHIFT_MULTIPLIER: number = 3.0;
 
 
@@ -68,8 +84,12 @@ export class KeyboardHandler extends BaseInputHandler {
    * Creates an instance of KeyboardHandler.
    * @param canvas The HTMLCanvasElement to attach keyboard events to.
    */
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, callbacks: KeyboardCallbacks) {
     super(canvas);
+    this._onKeyDown = callbacks.onKeyDown
+    this._onKeyUp = callbacks.onKeyUp
+    this._onMove = callbacks.onMove
+
     // Ensure the canvas can receive focus.
     this._canvas.tabIndex = 0;
     this.addListeners();
@@ -82,8 +102,8 @@ export class KeyboardHandler extends BaseInputHandler {
    */
   protected override addListeners(): void {
     // Listen for keyboard events on the canvas.
-    this.reg(this._canvas, 'keydown', this._onKeyDown);
-    this.reg(this._canvas, 'keyup', this._onKeyUp);
+    this.reg(this._canvas, 'keydown', this._handleKeyDown);
+    this.reg(this._canvas, 'keyup', this._handleKeyUp);
 
     // Reset state when focus is lost or on window resize.
     this.reg(this._canvas, 'focusout', () => this.reset());
@@ -97,7 +117,7 @@ export class KeyboardHandler extends BaseInputHandler {
       if (document.hidden) this.reset();
     });
   }
-  
+
   private registerMovementHandlers(): void {
     const movementKeys = [
       'KeyD', 'ArrowRight', // Move right
@@ -108,11 +128,11 @@ export class KeyboardHandler extends BaseInputHandler {
       'KeyQ',               // Move down
       // 'ShiftLeft', 'ShiftRight' // Speed boost. They don't provoke any movement. Don't register.
     ];
-  
+
     // Register movement keys for both key down and key up
     movementKeys.forEach(key => {
-      this.registerKeyDown(key, 'replace', () => this.applyMove());
-      this.registerKeyUp(key, 'replace', () => this.applyMove());
+      this.override(key, 'down', () => this.applyMove());
+      this.override(key, 'up', () => this.applyMove());
     });
   }
 
@@ -136,45 +156,34 @@ export class KeyboardHandler extends BaseInputHandler {
   }
 
   /**
-   * Registers a handler for a key down event.
-   * @param code The event.code of the key.
-   * @param handler Callback invoked on key down.
+   * Overrides a key handler. Returns a function that restores the previous handler.
+   * @param code The event.code of the key (or array of codes).
+   * @param on Whether to handle key down or key up.
+   * @param handler Callback invoked on the event. Receives the previous handler as `original`.
    */
-  public registerKeyDown(code: string, mode: CallbackMode, handler: () => void): void {
-    this.registerKey(this.keyDownHandlers, code, mode, handler);
-  }
-
-  /**
-   * Registers a handler for a key up event.
-   * @param code The event.code of the key.
-   * @param handler Callback invoked on key up.
-   */
-  public registerKeyUp(code: string | string[], mode: CallbackMode, handler: () => void): void {
+  public override(code: string | string[], on: 'down' | 'up', handler: (original?: () => void) => void): () => void {
+    const map = on === 'down' ? this.keyDownHandlers : this.keyUpHandlers
     if (Array.isArray(code)) {
-      code.forEach(c => this.registerKey(this.keyUpHandlers, c, mode, handler));
+      const restores = code.map(c => this.registerKey(map, c, handler));
+      return () => restores.forEach(r => r())
     } else {
-      this.registerKey(this.keyUpHandlers, code, mode, handler);
+      return this.registerKey(map, code, handler);
     }
   }
 
-  private registerKey(map: Map<string, () => void>, code: string, mode: CallbackMode, callback: () => void){
-    mode = map.has(code) ? mode : 'replace'
-  
+  private registerKey(map: Map<string, () => void>, code: string, handler: (original?: () => void) => void): () => void {
     const previous = map.get(code)
-    const next = mode === 'replace' ? callback
-      : mode === 'prepend' ? () => {callback(); previous()}
-      : mode === 'append' ? () => {previous(); callback()}
-      : undefined
-    map.set(code, next)
+    map.set(code, () => handler(previous))
+    return () => { map.set(code, previous) }
   }
-  
+
 
   /**
    * Internal key down event handler.
    * @param event The KeyboardEvent object.
    * @private
    */
-  private _onKeyDown = (event: KeyboardEvent): void => {
+  private _handleKeyDown = (event: KeyboardEvent): void => {
     this.pressedKeys.add(event.code);
 
     // Invoke the registered key down handler, if any.
@@ -185,7 +194,7 @@ export class KeyboardHandler extends BaseInputHandler {
     }
 
      // Key is not registered, call the onKeyDown callback if defined.
-    if(this.onKeyDown?.(event.code) ?? false){
+    if(this._onKeyDown?.(event.code) ?? false){
       event.preventDefault();
     }
   };
@@ -195,7 +204,7 @@ export class KeyboardHandler extends BaseInputHandler {
    * @param event The KeyboardEvent object.
    * @private
    */
-  private _onKeyUp = (event: KeyboardEvent): void => {
+  private _handleKeyUp = (event: KeyboardEvent): void => {
     this.pressedKeys.delete(event.code);
 
     // Invoke the registered key up handler, if any.
@@ -206,7 +215,7 @@ export class KeyboardHandler extends BaseInputHandler {
     }
 
     // Key is not registered, call the onKeyUp callback if defined.
-    if(this.onKeyUp?.(event.code) ?? false){
+    if(this._onKeyUp?.(event.code) ?? false){
       event.preventDefault();
     }
   };
@@ -217,7 +226,7 @@ export class KeyboardHandler extends BaseInputHandler {
    * @private
    */
   private applyMove(): void {
-    
+
     // Calculate horizontal movement: right (D/ArrowRight) minus left (A/ArrowLeft).
     const moveX = (this.isKeyPressed('KeyD') || this.isKeyPressed('ArrowRight') ? 1 : 0)
                 - (this.isKeyPressed('KeyA') || this.isKeyPressed('ArrowLeft') ? 1 : 0);
@@ -225,7 +234,7 @@ export class KeyboardHandler extends BaseInputHandler {
     // Calculate forward/backward movement: forward (W/ArrowUp) minus backward (S/ArrowDown).
     const moveZ = (this.isKeyPressed('KeyW') || this.isKeyPressed('ArrowUp') ? 1 : 0)
                 - (this.isKeyPressed('KeyS') || this.isKeyPressed('ArrowDown') ? 1 : 0);
-    
+
     // Calculate vertical movement: up (E) minus down (Q).
     const moveY = (this.isKeyPressed('KeyE') ? 1 : 0)
                 - (this.isKeyPressed('KeyQ') ? 1 : 0);
@@ -233,13 +242,13 @@ export class KeyboardHandler extends BaseInputHandler {
 
 
     let move = new THREE.Vector3(moveX, moveY, moveZ);
-    
+
     // Apply speed multiplier if Shift is held.
     if (this.isKeyPressed('ShiftLeft') || this.isKeyPressed('ShiftRight')) {
       move.multiplyScalar(this.SHIFT_MULTIPLIER);
     }
 
     // Call the onMove callback if defined.
-    this.onMove?.(move);
+    this._onMove?.(move);
   }
 }

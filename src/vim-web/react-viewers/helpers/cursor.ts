@@ -61,9 +61,6 @@ export class CursorManager {
     const sub1 = this._viewer.inputs.onPointerModeChanged.subscribe(() =>
       this._updateCursor()
     )
-    const sub2 = this._viewer.inputs.onPointerOverrideChanged.subscribe(() =>
-      this._updateCursor()
-    )
     const sub3 = this._viewer.gizmos.sectionBox.onStateChanged.subscribe(() => {
       if (!this._viewer.gizmos.sectionBox.visible) {
         this._boxHover = false
@@ -74,7 +71,7 @@ export class CursorManager {
       this._boxHover = hover
       this._updateCursor()
     })
-    this._subscriptions = [sub1, sub2, sub3, sub4]
+    this._subscriptions = [sub1, sub3, sub4]
   }
 
   /**

@@ -51,8 +51,8 @@ export class BoxInputs {
   /** The box state before the current drag. */
   private _lastBox: THREE.Box3 = new THREE.Box3();
 
-  /** A callback to restore the original input listeners after unregistering. */
-  private _restoreOriginalInputs: () => void;
+  /** Restores mouse overrides when unregistering. */
+  private _restore: (() => void) | undefined;
 
   // -------------------------------------------------------------------------
   // Callbacks
@@ -102,40 +102,14 @@ export class BoxInputs {
    * If already registered, it does nothing.
    */
   public register(): void {
-    if(this._restoreOriginalInputs) return; // Don't register twice
+    if(this._restore) return; // Don't register twice
 
-    const mouse = this._viewer.inputs.mouse;
-
-    const up = mouse.onPointerUp
-    const down = mouse.onPointerDown
-    const move = mouse.onPointerMove
-    const drag = mouse.onDrag
-
-    this._restoreOriginalInputs = () => {
-      mouse.onPointerUp = up
-      mouse.onPointerDown = down
-      mouse.onPointerMove = move
-      mouse.onDrag = drag
-    }
-
-    mouse.onPointerUp = (pos, btn) => {
-      up(pos, btn)
-      this.onMouseUp(pos)
-    }
-    mouse.onPointerDown = (pos, btn) => {
-      down(pos, btn)
-      this.onMouseDown(pos)
-    }
-
-    mouse.onPointerMove = (pos) => {
-      move(pos)
-      this.onMouseMove(pos)
-    }
-
-    mouse.onDrag = (pos, btn) => {
-      if(this._handle) return
-      drag(pos, btn)
-    }
+    this._restore = this._viewer.inputs.mouse.override({
+      onPointerUp: (pos, btn, original) => { original(pos, btn); this.onMouseUp(pos) },
+      onPointerDown: (pos, btn, original) => { original(pos, btn); this.onMouseDown(pos) },
+      onPointerMove: (pos, original) => { original(pos); this.onMouseMove(pos) },
+      onDrag: (delta, btn, original) => { if(this._handle) return; original(delta, btn) },
+    })
   }
 
   /**
@@ -147,8 +121,8 @@ export class BoxInputs {
     this._handle?.highlight(false);
     this._handle = undefined;
 
-    this._restoreOriginalInputs?.();
-    this._restoreOriginalInputs = undefined
+    this._restore?.()
+    this._restore = undefined
   }
 
   // -------------------------------------------------------------------------

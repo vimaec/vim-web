@@ -46,6 +46,7 @@ export interface ILoadRequest<TVim, TError extends ILoadError = ILoadError> {
   readonly isCompleted: boolean
   getProgress(): AsyncGenerator<IProgress>
   getResult(): Promise<LoadResult<TVim, TError>>
+  getVim(): Promise<TVim>
   abort(): void
 }
 
@@ -67,6 +68,12 @@ export class LoadRequest<TVim, TError extends ILoadError = ILoadError>
 
   async getResult (): Promise<LoadResult<TVim, TError>> {
     return this._resultPromise.promise
+  }
+
+  async getVim (): Promise<TVim> {
+    const result = await this.getResult()
+    if (result.isSuccess === false) throw new Error(result.error)
+    return result.vim
   }
 
   pushProgress (progress: IProgress) {

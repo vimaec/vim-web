@@ -47,11 +47,11 @@ export function BimSearch (props: {
   }
 
   const onFocus = () => {
-    props.viewer.inputs.keyboard.unregister()
+    props.viewer.inputs.keyboard.active = false
   }
 
   const onBlur = () => {
-    props.viewer.inputs.keyboard.register()
+    props.viewer.inputs.keyboard.active = true
   }
 
   return (

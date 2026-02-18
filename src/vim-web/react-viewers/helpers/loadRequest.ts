@@ -71,6 +71,12 @@ export class LoadRequest implements CoreILoadRequest {
     return this._resultPromise
   }
 
+  async getVim () {
+    const result = await this.getResult()
+    if (result.isSuccess === false) throw new Error(result.error)
+    return result.vim
+  }
+
   abort () {
     this._request.abort()
   }

@@ -9,25 +9,76 @@ import { BaseInputHandler } from './baseInputHandler';
 import { TAP_DURATION_MS, TAP_MOVEMENT_THRESHOLD, DOUBLE_CLICK_TIME_THRESHOLD } from './inputConstants';
 import { clientToCanvas } from './coordinates';
 
+type TapHandler = (position: THREE.Vector2) => void
+type DragHandler = (delta: THREE.Vector2) => void
+type PinchStartHandler = (screenCenter: THREE.Vector2) => void
+type PinchHandler = (totalRatio: number) => void
+
+export type TouchCallbacks = {
+  onTap: TapHandler
+  onDoubleTap: TapHandler
+  onDrag: DragHandler
+  onDoubleDrag: DragHandler
+  onPinchStart: PinchStartHandler
+  onPinchOrSpread: PinchHandler
+}
+
+/**
+ * Public API for touch input, accessed via `viewer.inputs.touch`.
+ *
+ * Supports overriding any touch callback with automatic restore. Each override
+ * handler receives the original callback as its last parameter for chaining.
+ *
+ * @example
+ * ```ts
+ * const restore = viewer.inputs.touch.override({
+ *   onTap: (pos, original) => { myAction(pos) }
+ * })
+ * // Later: restore()
+ * ```
+ */
+export interface ITouchInput {
+  /** Whether touch event listeners are active. Set to `false` to suspend all touch handling. */
+  active: boolean
+  /**
+   * Temporarily overrides touch callbacks. Only provided handlers are replaced;
+   * others keep their current behavior. Each handler receives the original as its last param.
+   *
+   * @param handlers - Partial set of callbacks to override.
+   * @returns A function that restores all overridden callbacks when called.
+   */
+  override(handlers: TouchOverrides): () => void
+}
+
+/**
+ * Partial set of touch callbacks for use with {@link ITouchInput.override}.
+ * Each handler receives the original callback as its last parameter.
+ * All positions are canvas-relative, normalized to [0, 1].
+ */
+export type TouchOverrides = {
+  /** Single-finger tap. */
+  onTap?: (pos: THREE.Vector2, original: TapHandler) => void
+  /** Double tap. */
+  onDoubleTap?: (pos: THREE.Vector2, original: TapHandler) => void
+  /** Single-finger drag. Delta is normalized to canvas size. */
+  onDrag?: (delta: THREE.Vector2, original: DragHandler) => void
+  /** Two-finger drag (pan). Delta is normalized to canvas size. */
+  onDoubleDrag?: (delta: THREE.Vector2, original: DragHandler) => void
+  /** Two-finger pinch/spread started. Center is canvas-relative position. */
+  onPinchStart?: (center: THREE.Vector2, original: PinchStartHandler) => void
+  /** Two-finger pinch/spread. Ratio is cumulative distance relative to start (1.0 = no change). */
+  onPinchOrSpread?: (ratio: number, original: PinchHandler) => void
+}
+
 /** Handles touch gestures with zero-allocation vector reuse. */
 export class TouchHandler extends BaseInputHandler {
-  /** Called on single tap (touch down + up within 500ms, <5px movement) */
-  onTap: (position: THREE.Vector2) => void
-
-  /** Called on double-tap (two taps within 300ms) */
-  onDoubleTap: (position: THREE.Vector2) => void
-
-  /** Called during single-finger drag */
-  onDrag: (delta: THREE.Vector2) => void
-
-  /** Called during two-finger pan (average position moves) */
-  onDoubleDrag: (delta: THREE.Vector2) => void
-
-  /** Called when two-finger pinch starts at screen center */
-  onPinchStart: (screenCenter: THREE.Vector2) => void
-
-  /** Called during pinch/spread (totalRatio: 2.0 = 2x zoom, 0.5 = 0.5x zoom) */
-  onPinchOrSpread: (totalRatio: number) => void
+  // Callbacks
+  private _onTap: TapHandler
+  private _onDoubleTap: TapHandler
+  private _onDrag: DragHandler
+  private _onDoubleDrag: DragHandler
+  private _onPinchStart: PinchStartHandler
+  private _onPinchOrSpread: PinchHandler
 
   // Temp vectors (reused, never store references!)
   private _tempVec = new THREE.Vector2()
@@ -38,8 +89,14 @@ export class TouchHandler extends BaseInputHandler {
   private _tempTouch1 = new THREE.Vector2()
   private _tempTouch2 = new THREE.Vector2()
 
-  constructor (canvas: HTMLCanvasElement) {
+  constructor (canvas: HTMLCanvasElement, callbacks: TouchCallbacks) {
     super(canvas)
+    this._onTap = callbacks.onTap
+    this._onDoubleTap = callbacks.onDoubleTap
+    this._onDrag = callbacks.onDrag
+    this._onDoubleDrag = callbacks.onDoubleDrag
+    this._onPinchStart = callbacks.onPinchStart
+    this._onPinchOrSpread = callbacks.onPinchOrSpread
   }
 
   // Storage vectors (actual values, use .copy() when storing from temp)
@@ -70,13 +127,43 @@ export class TouchHandler extends BaseInputHandler {
   }
 
   /**
+   * Temporarily overrides touch callbacks. Each handler receives the original as its last param.
+   * Returns a function that restores the previous callbacks. Only one level of override at a time.
+   */
+  override(handlers: TouchOverrides): () => void {
+    const saved = {
+      onTap: this._onTap,
+      onDoubleTap: this._onDoubleTap,
+      onDrag: this._onDrag,
+      onDoubleDrag: this._onDoubleDrag,
+      onPinchStart: this._onPinchStart,
+      onPinchOrSpread: this._onPinchOrSpread,
+    }
+    if (handlers.onTap) this._onTap = (p) => handlers.onTap(p, saved.onTap)
+    if (handlers.onDoubleTap) this._onDoubleTap = (p) => handlers.onDoubleTap(p, saved.onDoubleTap)
+    if (handlers.onDrag) this._onDrag = (d) => handlers.onDrag(d, saved.onDrag)
+    if (handlers.onDoubleDrag) this._onDoubleDrag = (d) => handlers.onDoubleDrag(d, saved.onDoubleDrag)
+    if (handlers.onPinchStart) this._onPinchStart = (c) => handlers.onPinchStart(c, saved.onPinchStart)
+    if (handlers.onPinchOrSpread) this._onPinchOrSpread = (r) => handlers.onPinchOrSpread(r, saved.onPinchOrSpread)
+
+    return () => {
+      this._onTap = saved.onTap
+      this._onDoubleTap = saved.onDoubleTap
+      this._onDrag = saved.onDrag
+      this._onDoubleDrag = saved.onDoubleDrag
+      this._onPinchStart = saved.onPinchStart
+      this._onPinchOrSpread = saved.onPinchOrSpread
+    }
+  }
+
+  /**
    * Cleanup method - unregisters all event listeners and resets state.
    */
   dispose(): void {
     this.unregister()
   }
 
-  private _onTap = (position: THREE.Vector2) => {
+  private _handleTap = (position: THREE.Vector2) => {
     const time = Date.now()
     const double =
       this._lastTapMs && time - this._lastTapMs < DOUBLE_CLICK_TIME_THRESHOLD
@@ -85,9 +172,9 @@ export class TouchHandler extends BaseInputHandler {
     clientToCanvas(position.x, position.y, this._canvas, this._tempScreenPos)
 
     if(double)
-      this.onDoubleTap?.(this._tempScreenPos)
+      this._onDoubleTap?.(this._tempScreenPos)
     else
-      this.onTap?.(this._tempScreenPos)
+      this._onTap?.(this._tempScreenPos)
   }
 
   private onTouchStart = (event: TouchEvent) => {
@@ -109,7 +196,7 @@ export class TouchHandler extends BaseInputHandler {
       this._startDist = this._touch1.distanceTo(this._touch2)
 
       clientToCanvas(this._touch.x, this._touch.y, this._canvas, this._tempScreenPos)
-      this.onPinchStart?.(this._tempScreenPos)
+      this._onPinchStart?.(this._tempScreenPos)
     }
     this._touchStart.copy(this._touch)
     this._hasTouchStart = true
@@ -127,7 +214,7 @@ export class TouchHandler extends BaseInputHandler {
         .multiply(this._tempSize.set(1 / this._tempSize.x, 1 / this._tempSize.y))
 
       this._touch.copy(pos)
-      this.onDrag?.(this._tempDelta)
+      this._onDrag?.(this._tempDelta)
       return
     }
 
@@ -146,9 +233,9 @@ export class TouchHandler extends BaseInputHandler {
       this._touch1.copy(this._tempTouch1)
       this._touch2.copy(this._tempTouch2)
 
-      this.onDoubleDrag?.(this._tempDelta)
+      this._onDoubleDrag?.(this._tempDelta)
       if (this._startDist) {
-        this.onPinchOrSpread?.(dist / this._startDist)
+        this._onPinchOrSpread?.(dist / this._startDist)
       }
     }
   }
@@ -171,7 +258,7 @@ export class TouchHandler extends BaseInputHandler {
         touchDurationMs < TAP_DURATION_MS &&
         length < TAP_MOVEMENT_THRESHOLD
       ) {
-        this._onTap(this._touch)
+        this._handleTap(this._touch)
       }
     }
     this.reset()
