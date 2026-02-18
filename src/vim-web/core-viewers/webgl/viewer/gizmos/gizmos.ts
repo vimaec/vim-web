@@ -6,12 +6,14 @@ import { IMeasure, Measure } from './measure/measure'
 import { SectionBox } from './sectionBox/sectionBox'
 import { GizmoMarkers } from './markers/gizmoMarkers'
 import { Camera } from '../camera/camera'
+import { Renderer } from '../rendering/renderer'
+import { Viewport } from '../viewport'
 
 /**
  * Represents a collection of gizmos used for various visualization and interaction purposes within the viewer.
  */
 export class Gizmos {
-  private readonly viewer: Viewer
+  private readonly _viewport: Viewport
 
   /**
    * The interface to start and manage measure tool interaction.
@@ -48,20 +50,20 @@ export class Gizmos {
   readonly markers: GizmoMarkers
 
   /** @internal */
-  constructor (viewer: Viewer, camera : Camera) {
-    this.viewer = viewer
-    this._measure = new Measure(viewer)
-    this.sectionBox = new SectionBox(viewer)
+  constructor (renderer: Renderer, viewport: Viewport, viewer: Viewer, camera : Camera) {
+    this._viewport = viewport
+    this._measure = new Measure(viewer, renderer)
+    this.sectionBox = new SectionBox(renderer, viewer)
     this.loading = new GizmoLoading(viewer)
     this.orbit = new GizmoOrbit(
-      viewer._renderer,
+      renderer,
       camera,
       viewer.inputs,
       viewer.settings
     )
-    this.axes = new GizmoAxes(camera, viewer._viewport, viewer.settings.axes)
-    this.markers = new GizmoMarkers(viewer)
-    viewer._viewport.canvas.parentElement?.prepend(this.axes.canvas)
+    this.axes = new GizmoAxes(camera, viewport, viewer.settings.axes)
+    this.markers = new GizmoMarkers(renderer, viewer.selection)
+    viewport.canvas.parentElement?.prepend(this.axes.canvas)
   }
 
   /** @internal */
@@ -73,7 +75,7 @@ export class Gizmos {
    * Disposes of all gizmos.
    */
   dispose () {
-    this.viewer.viewport.canvas.parentElement?.removeChild(this.axes.canvas)
+    this._viewport.canvas.parentElement?.removeChild(this.axes.canvas)
     this._measure.clear()
     this.sectionBox.dispose()
     this.loading.dispose()

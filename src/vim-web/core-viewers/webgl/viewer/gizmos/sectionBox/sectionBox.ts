@@ -3,6 +3,7 @@
  */
 
 import { Viewer } from '../../viewer';
+import { Renderer } from '../../rendering/renderer';
 import * as THREE from 'three';
 import { BoxInputs } from './sectionBoxInputs';
 import { SignalDispatcher } from 'ste-signals';
@@ -24,6 +25,7 @@ export class SectionBox {
   // Private fields
   // -------------------------------------------------------------------------
 
+  private _renderer: Renderer;
   private _viewer: Viewer;
   private _gizmos: SectionBoxGizmo;
   private _inputs: BoxInputs;
@@ -36,20 +38,12 @@ export class SectionBox {
   private _onBoxConfirm = new SimpleEventDispatcher<THREE.Box3>();
   private _onHover = new SimpleEventDispatcher<boolean>();
 
-  /**
-   * @internal
-   * A convenience getter to the viewer's renderer.
-   */
   private get renderer() {
-    return this._viewer.renderer;
+    return this._renderer;
   }
 
-  /**
-   * @internal
-   * A convenience getter to the `Section` module in the renderer.
-   */
   private get section() {
-    return this._viewer.renderer.section;
+    return this._renderer.section;
   }
 
   // -------------------------------------------------------------------------
@@ -92,14 +86,15 @@ export class SectionBox {
    * 
    * @param viewer - The parent {@link Viewer} in which the section box is rendered.
    */
-  constructor(viewer: Viewer) {
+  constructor(renderer: Renderer, viewer: Viewer) {
+    this._renderer = renderer;
     this._viewer = viewer;
 
-    this._gizmos = new SectionBoxGizmo(viewer._renderer, viewer.camera);
+    this._gizmos = new SectionBoxGizmo(renderer, viewer.camera);
     this._inputs = new BoxInputs(
       viewer,
       this._gizmos.handles,
-      this._viewer._renderer.section.box
+      this._renderer.section.box
     );
 
     // When the pointer enters/leaves a face, dispatch hover state.

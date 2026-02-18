@@ -1,5 +1,5 @@
 import { IWebglVim } from '../../../loader/vim'
-import { Viewer } from '../../viewer'
+import { Renderer } from '../../rendering/renderer'
 import * as THREE from 'three'
 import { SimpleInstanceSubmesh } from '../../../loader/mesh'
 import { WebglAttribute } from '../../../loader/webglAttribute'
@@ -47,7 +47,7 @@ export interface IMarker extends ISelectable {
  */
 export class Marker implements IMarker {
   public readonly type = 'Marker'
-  private _viewer: Viewer
+  private _renderer: Renderer
   private _submesh: SimpleInstanceSubmesh
 
   private static _tmpMatrix = new THREE.Matrix4()
@@ -93,8 +93,8 @@ export class Marker implements IMarker {
    * @param viewer - The viewer managing rendering and interaction.
    * @param submesh - The instanced submesh this marker is bound to.
    */
-  constructor(viewer: Viewer, submesh: SimpleInstanceSubmesh) {
-    this._viewer = viewer
+  constructor(renderer: Renderer, submesh: SimpleInstanceSubmesh) {
+    this._renderer = renderer
     this._submesh = submesh
 
     const array = [submesh]
@@ -120,7 +120,7 @@ export class Marker implements IMarker {
     this._outlineAttribute.updateMeshes(array)
     this._colorAttribute.updateMeshes(array)
     this._coloredAttribute.updateMeshes(array)
-    this._viewer._renderer.requestRender()
+    this._renderer.requestRender()
   }
 
   /**
@@ -130,7 +130,7 @@ export class Marker implements IMarker {
     Marker._tmpMatrix.compose(value, new THREE.Quaternion(), new THREE.Vector3(1, 1, 1))
     this._submesh.mesh.setMatrixAt(this.index, Marker._tmpMatrix)
     this._submesh.mesh.instanceMatrix.needsUpdate = true
-    this._viewer._renderer.requestRender()
+    this._renderer.requestRender()
     this._submesh.mesh.computeBoundingSphere() // Required for raycasting
   }
 
@@ -161,8 +161,8 @@ export class Marker implements IMarker {
    */
   set outline(value: boolean) {
     if (this._outlineAttribute.apply(value)) {
-      if (value) this._viewer._renderer.addOutline()
-      else this._viewer._renderer.removeOutline()
+      if (value) this._renderer.addOutline()
+      else this._renderer.removeOutline()
     }
   }
 
@@ -178,7 +178,7 @@ export class Marker implements IMarker {
    */
   set focused(value: boolean) {
     this._focusedAttribute.apply(value)
-    this._viewer._renderer.requestRender()
+    this._renderer.requestRender()
   }
 
   /**
@@ -193,7 +193,7 @@ export class Marker implements IMarker {
    */
   set visible(value: boolean) {
     this._visibleAttribute.apply(value)
-    this._viewer._renderer.requestRender()
+    this._renderer.requestRender()
   }
 
   /**
@@ -214,7 +214,7 @@ export class Marker implements IMarker {
     } else {
       this._coloredAttribute.apply(false)
     }
-    this._viewer._renderer.requestRender()
+    this._renderer.requestRender()
   }
 
   /**
@@ -239,7 +239,7 @@ export class Marker implements IMarker {
       matrix.elements[10] = value
       this._submesh.mesh.setMatrixAt(this.index, matrix)
       this._submesh.mesh.instanceMatrix.needsUpdate = true
-      this._viewer._renderer.requestRender()
+      this._renderer.requestRender()
       this._submesh.mesh.computeBoundingSphere() // Required for Raycast
     }
   }

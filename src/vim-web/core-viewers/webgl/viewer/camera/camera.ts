@@ -207,6 +207,18 @@ export class Camera implements ICamera {
   }
 
   /**
+   * Returns the world-space direction from the camera through the given screen position.
+   * @param screenPos Screen position in 0-1 range (0,0 is top-left).
+   */
+  screenToDirection (screenPos: THREE.Vector2): THREE.Vector3 {
+    const cam = this.camPerspective.camera
+    cam.updateMatrixWorld(true)
+    const ndc = new THREE.Vector3(screenPos.x * 2 - 1, -(screenPos.y * 2 - 1), 1)
+    ndc.unproject(cam)
+    return ndc.sub(this.position).normalize()
+  }
+
+  /**
    * The current THREE Camera
    */
   get three () {

@@ -1,16 +1,18 @@
-import { Viewer } from '../../viewer'
 import * as THREE from 'three'
 import { Marker, type IMarker } from './gizmoMarker'
 import { StandardMaterial } from '../../../loader/materials/standardMaterial'
 import { SimpleInstanceSubmesh } from '../../../loader/mesh'
 import { packPickingId, MARKER_VIM_INDEX } from '../../rendering/gpuPicker'
+import { Renderer } from '../../rendering/renderer'
+import { ISelection } from '../../selection'
 
 /**
  * API for adding and managing sprite markers in the scene.
  * Uses THREE.InstancedMesh for performance.
  */
 export class GizmoMarkers {
-  private _viewer: Viewer
+  private _renderer: Renderer
+  private _selection: ISelection
   private _markers: Marker[] = []
   private _mesh : THREE.InstancedMesh
   private _reusableMatrix = new THREE.Matrix4()
@@ -19,8 +21,9 @@ export class GizmoMarkers {
    * Constructs the marker manager and sets up an initial instanced mesh.
    * @param viewer - The rendering context this marker system belongs to.
    */
-  constructor (viewer: Viewer) {
-    this._viewer = viewer
+  constructor (renderer: Renderer, selection: ISelection) {
+    this._renderer = renderer
+    this._selection = selection
     this._mesh = this.createMesh(undefined, 100)
   }
 
@@ -69,7 +72,7 @@ export class GizmoMarkers {
     const ignoreAttr = new THREE.InstancedBufferAttribute(ignoreArray, 1)
     mesh.geometry.setAttribute('ignore', ignoreAttr)
 
-    this._viewer._renderer.add(mesh)
+    this._renderer.add(mesh)
     return mesh
   }
 
@@ -96,7 +99,7 @@ export class GizmoMarkers {
     newPackedId.needsUpdate = true
     newIgnore.needsUpdate = true
 
-    this._viewer._renderer.remove(this._mesh)
+    this._renderer.remove(this._mesh)
     this._mesh = larger
   }
 
@@ -120,7 +123,7 @@ export class GizmoMarkers {
     packedIdAttr.needsUpdate = true
 
     const sub = new SimpleInstanceSubmesh(this._mesh, markerIndex)
-    const marker = new Marker(this._viewer, sub)
+    const marker = new Marker(this._renderer, sub)
     marker.position = position
     this._markers.push(marker)
     return marker
@@ -132,7 +135,7 @@ export class GizmoMarkers {
    * @param marker - The marker to remove.
    */
   remove (marker: IMarker): void {
-    this._viewer.selection.remove(marker)
+    this._selection.remove(marker)
 
     const fromIndex = this._markers.length - 1
     const destIndex = marker.index
@@ -160,7 +163,7 @@ export class GizmoMarkers {
     this._mesh.count -= 1
 
     // Notify the renderer
-    this._viewer._renderer.requestRender()
+    this._renderer.requestRender()
   }
 
   /**
@@ -168,9 +171,9 @@ export class GizmoMarkers {
    */
   clear (): void {
     // Assumes selection.remove supports arrays
-    this._viewer.selection.remove(this._markers)
+    this._selection.remove(this._markers)
     this._mesh.count = 0
     this._markers.length = 0
-    this._viewer._renderer.requestRender()
+    this._renderer.requestRender()
   }
 }

@@ -25,6 +25,8 @@ import { Scene } from '../loader/scene'
 import { VimCollection } from '../loader/vimCollection'
 import { createInputHandler } from './inputAdapter'
 import { IRenderer, Renderer } from './rendering/renderer'
+import { LoadRequest as CoreLoadRequest, RequestSource } from '../loader/progressive/loadRequest'
+import { VimPartialSettings } from '../loader/vimSettings'
 
 /**
  * Viewer and loader for vim files.
@@ -44,15 +46,13 @@ export class Viewer {
    * The renderer used by the viewer for rendering scenes.
    */
   get renderer(): IRenderer { return this._renderer }
-  /** @internal */
-  readonly _renderer: Renderer
+  private readonly _renderer: Renderer
 
   /**
    * The interface for managing the HTML canvas viewport.
    */
   get viewport(): IViewport { return this._viewport }
-  /** @internal */
-  readonly _viewport: Viewport
+  private readonly _viewport: Viewport
 
   /**
    * The interface for managing viewer selection.
@@ -99,8 +99,7 @@ export class Viewer {
   private _clock = new THREE.Clock()
 
   // State
-  /** @internal */
-  readonly vimCollection = new VimCollection()
+  private readonly vimCollection = new VimCollection()
   private _onVimLoaded = new SignalDispatcher()
   private _updateId: number
 
@@ -121,7 +120,7 @@ export class Viewer {
     )
 
     this._inputs = createInputHandler(this)
-    this.gizmos = new Gizmos(this, this._camera)
+    this.gizmos = new Gizmos(this._renderer, this._viewport, this, this._camera)
     this.materials.applySettings(this.settings.materials)
 
     // Input and Selection
@@ -168,6 +167,11 @@ export class Viewer {
     this._renderer.render()
   }
 
+  /** @internal */
+  readonly addVim = (vim: Vim) => this.add(vim)
+  /** @internal */
+  readonly allocateVimId = () => this.vimCollection.allocateId()
+
   /**
    * All currently loaded Vim models.
    */
@@ -176,12 +180,10 @@ export class Viewer {
   }
 
   /**
-   * @internal
-   * Adds a Vim object to the renderer, triggering the appropriate actions and dispatching events upon successful addition.
-   * @param {Vim} vim - The Vim object to add to the renderer.
+   * Adds a Vim object to the renderer.
    * @throws {Error} If the Vim object is already added.
    */
-  add (vim: Vim) {
+  private add (vim: Vim) {
     if (this.vimCollection.has(vim)) {
       throw new Error('Vim cannot be added again, unless removed first.')
     }

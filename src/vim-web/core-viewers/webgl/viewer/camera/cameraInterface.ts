@@ -165,6 +165,12 @@ export interface ICamera {
   frustumSizeAt(point: THREE.Vector3): THREE.Vector2;
 
   /**
+   * Returns the world-space direction from the camera through the given screen position.
+   * @param screenPos Screen position in 0-1 range (0,0 is top-left).
+   */
+  screenToDirection(screenPos: THREE.Vector2): THREE.Vector3;
+
+  /**
    * The current THREE Camera
    */
   get three(): THREE.Camera;

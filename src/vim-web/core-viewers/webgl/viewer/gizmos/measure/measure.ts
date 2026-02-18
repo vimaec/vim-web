@@ -5,6 +5,7 @@
 import * as THREE from 'three'
 import { IRaycastResult, RaycastResult } from '../../raycaster'
 import { Viewer } from '../../viewer'
+import { Renderer } from '../../rendering/renderer'
 import { MeasureGizmo } from './measureGizmo'
 import { ControllablePromise } from '../../../../../utils/promise'
 
@@ -59,6 +60,7 @@ export type MeasureStage = 'ready' | 'active' | 'done' | 'failed'
 export class Measure implements IMeasure {
   // dependencies
   private _viewer: Viewer
+  private _renderer: Renderer
 
   // resources
   private _meshes: MeasureGizmo | undefined
@@ -99,8 +101,9 @@ export class Measure implements IMeasure {
     return this._stage
   }
 
-  constructor (viewer: Viewer) {
+  constructor (viewer: Viewer, renderer: Renderer) {
     this._viewer = viewer
+    this._renderer = renderer
   }
 
   /**
@@ -139,7 +142,7 @@ export class Measure implements IMeasure {
 
   private onFirstClick (hit: IRaycastResult) {
     this.clear()
-    this._meshes = new MeasureGizmo(this._viewer)
+    this._meshes = new MeasureGizmo(this._renderer, this._viewer.viewport, this._viewer.camera)
     this._startPos = hit.worldPosition
     this._meshes.start(this._startPos)
   }

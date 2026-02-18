@@ -78,6 +78,11 @@ function createAdapter(viewer: Viewer ) : IInputAdapter {
           viewer.camera.lerp(0.25).zoomTowards(value, result.worldPosition, screenPos)
           return
         }
+        // No hit: zoom in the direction of the cursor without updating target
+        const dir = viewer.camera.screenToDirection(screenPos)
+        const displacement = dir.multiplyScalar(viewer.camera.orbitDistance * (1 - 1 / value))
+        viewer.camera.lerp(0.25).move('XYZ', displacement, 'world')
+        return
       }
       viewer.camera.lerp(0.75).zoom(value)
     },
