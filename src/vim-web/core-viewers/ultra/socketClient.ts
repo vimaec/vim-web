@@ -16,7 +16,7 @@ export type ConnectionSettings = {
 }
 
 export type ClientState = ClientStateConnecting | ClientStateConnected | ClientStateDisconnected | ClientStateValidating | ClientError
-export type ClientError = ClientStateCompatibilityError | ClientStateConnectionError | ClientStreamError// | other types of errors
+export type ClientError = ClientStateCompatibilityError | ClientStateConnectionError | ClientStateStreamError// | other types of errors
 
 export type ClientStateConnecting = {
   status: 'connecting'
@@ -44,7 +44,7 @@ export type ClientStateConnectionError = {
   serverUrl: string
 }
 
-export type ClientStreamError = {
+export type ClientStateStreamError = {
   status: 'error'
   error: 'stream'
   serverUrl: string

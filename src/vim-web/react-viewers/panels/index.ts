@@ -1,13 +1,3 @@
-// Context menu
-export type {
-  ContextMenuApi,
-  ContextMenuCustomization,
-  ContextMenuElement,
-  IContextMenuButton,
-  IContextMenuDivider,
-} from './contextMenu'
-export { contextMenuElementIds } from './contextMenu'
-
 // Panel customization IDs
 import { Ids as SectionBoxIds } from './sectionBoxPanel'
 export const SectionBoxPanel = { Ids: SectionBoxIds }

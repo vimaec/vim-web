@@ -1,8 +1,8 @@
-import * as Core from "../../core-viewers/ultra";
+import * as Core from "../../core-viewers";
 import { useCamera } from "../state/cameraState";
 import { SectionBoxApi } from "../state/sectionBoxState";
 
-export function useUltraCamera(viewer: Core.Viewer, section: SectionBoxApi) {
+export function useUltraCamera(viewer: Core.Ultra.Viewer, section: SectionBoxApi) {
 
   return useCamera({
     onSelectionChanged: viewer.selection.onSelectionChanged,

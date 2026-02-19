@@ -42,14 +42,7 @@ export type {
 } from './bim/bimInfoData'
 
 // Context menu
-export type {
-  ContextMenuApi,
-  ContextMenuCustomization,
-  ContextMenuElement,
-  IContextMenuButton,
-  IContextMenuDivider,
-} from './panels/contextMenu'
-export { contextMenuElementIds } from './panels/contextMenu'
+export * as ContextMenu from './contextMenu'
 
 // Panel customization IDs
 export { SectionBoxPanel, IsolationPanel } from './panels'

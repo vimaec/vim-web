@@ -41,26 +41,7 @@ export function showContextMenu (
   FireMenu.showMenu(showMenuConfig)
 }
 
-/**
- * Current list of context menu item ids. Used to find and replace items when customizing the context menu.
- */
-export const contextMenuElementIds = {
-  showControls: 'showControls',
-  dividerCamera: 'dividerCamera',
-  resetCamera: 'resetCamera',
-  zoomToFit: 'zoomToFit',
-  dividerSelection: 'dividerSelection',
-  isolateSelection: 'isolateObject',
-  selectSimilar: 'selectSimilar',
-  hideObject: 'hideObject',
-  showObject: 'showObject',
-  clearSelection: 'clearSelection',
-  showAll: 'showAll',
-  dividerSection: 'dividerSection',
-  ignoreSection: 'ignoreSection',
-  resetSection: 'resetSection',
-  fitSectionToSelection: 'fitSectionToSelection'
-}
+import * as Ids from '../contextMenu/contextMenuIds'
 
 /**
  * Represents a button in the context menu. It can't be clicked triggering given action.
@@ -188,53 +169,53 @@ export function ContextMenu (props: {
 
   let elements: ContextMenuElement[] = [
     {
-      id: contextMenuElementIds.showControls,
+      id: Ids.showControls,
       label: 'Show Controls',
       action: onShowControlsBtn,
       enabled: true
     },
-    { id: contextMenuElementIds.dividerCamera, enabled: true },
+    { id: Ids.dividerCamera, enabled: true },
     {
-      id: contextMenuElementIds.resetCamera,
+      id: Ids.resetCamera,
       label: 'Reset Camera',
       keyboard: 'HOME',
       action: onCameraResetBtn,
       enabled: true
     },
     {
-      id: contextMenuElementIds.zoomToFit,
+      id: Ids.zoomToFit,
       label: 'Frame Camera',
       keyboard: 'F',
       action: onCameraFrameBtn,
       enabled: hasSelection
     },
     {
-      id: contextMenuElementIds.dividerSelection,
+      id: Ids.dividerSelection,
       enabled: hasSelection || visibility !== 'all'
     },
     {
-      id: contextMenuElementIds.isolateSelection,
+      id: Ids.isolateSelection,
       label: 'Isolate Object',
       keyboard: 'I',
       action: onSelectionIsolateBtn,
       enabled: hasSelection && visibility === 'onlySelection'
     },
     {
-      id: contextMenuElementIds.hideObject,
+      id: Ids.hideObject,
       label: 'Hide Object',
       keyboard: 'V',
       action: onSelectionHideBtn,
       enabled: hasSelection && !props.isolation.adapter.current.hasHiddenSelection()
     },
     {
-      id: contextMenuElementIds.showObject,
+      id: Ids.showObject,
       label: 'Show Object',
       keyboard: 'V',
       action: onSelectionShowBtn,
       enabled: hasSelection && props.isolation.adapter.current.hasHiddenSelection()
     },
     {
-      id: contextMenuElementIds.showAll,
+      id: Ids.showAll,
       label: 'Show All',
       keyboard: 'Esc',
       action: onShowAllBtn,

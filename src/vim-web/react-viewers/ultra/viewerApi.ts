@@ -1,5 +1,5 @@
 import { RefObject } from 'react';
-import * as Core from '../../core-viewers/ultra';
+import * as Core from '../../core-viewers';
 import { ModalApi } from '../panels/modal';
 import { CameraApi } from '../state/cameraState';
 import { SectionBoxApi } from '../state/sectionBoxState';
@@ -18,7 +18,7 @@ export type ViewerApi = {
   /**
    * The Vim viewer instance associated with the viewer.
    */
-  core: Core.Viewer;
+  core: Core.Ultra.Viewer;
 
   /**
    * API to manage the modal dialog.
@@ -43,7 +43,7 @@ export type ViewerApi = {
   isolation: IsolationApi
 
   settings: SettingsApi<UltraSettings>
-  
+
   /**
    * API to interact with the isolation panel.
    */
@@ -63,5 +63,5 @@ export type ViewerApi = {
    * Loads a file into the viewer.
    * @param url The URL of the file to load.
    */
-  load(url: Core.VimSource): Core.ILoadRequest;
+  load(url: Core.Ultra.VimSource): Core.Ultra.ILoadRequest;
 };

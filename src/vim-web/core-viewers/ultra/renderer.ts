@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { Validation } from "../../utils";
 import { ILogger } from "./logger";
 import { defaultSceneSettings, RpcSafeClient, SceneSettings } from "./rpcSafeClient";
-import { ClientStreamError } from "./socketClient";
+import { ClientStateStreamError } from "./socketClient";
 
 import * as RpcUtils from "./rpcUtils";
 
@@ -72,9 +72,9 @@ export class Renderer implements IRenderer {
 
   /**
    * Validates the connection to the server by attempting to start a scene.
-   * @returns A promise that resolves to a ClientStreamError if the connection fails, or undefined if successful.
+   * @returns A promise that resolves to a ClientStateStreamError if the connection fails, or undefined if successful.
    */
-  async validateConnection() : Promise<ClientStreamError | undefined>{
+  async validateConnection() : Promise<ClientStateStreamError | undefined>{
     const success = await this._rpc.RPCStartScene(this._settings)
     if(success) {
       this._logger.log('Scene stream started successfully')

@@ -1,5 +1,5 @@
 
-import * as Core from '../../core-viewers/ultra'
+import * as Core from '../../core-viewers'
 import { ControlBarCustomization } from '../controlbar/controlBar'
 import { ModalApi } from '../panels/modal'
 import { CameraApi } from '../state/cameraState'
@@ -10,7 +10,7 @@ import { SideState } from '../state/sideState'
 import { UltraSettings } from './settings'
 
 export function useUltraControlBar (
-  viewer: Core.Viewer,
+  viewer: Core.Ultra.Viewer,
   section: SectionBoxApi,
   isolation: IsolationApi,
   camera: CameraApi,

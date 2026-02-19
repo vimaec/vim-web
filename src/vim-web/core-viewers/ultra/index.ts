@@ -1,38 +1,55 @@
 import "./style.css"
 
-// Full export
-export * from './viewer';
+// Viewer
+export { Viewer, INVALID_HANDLE } from './viewer'
 
-// Partial export
-// We don't want to reexport THREE.Box3 and THREE.Vector3
-export {Segment, type SectionBoxState, type HitCheckResult, type VimStatus} from './rpcTypes'
+// Data model
+export { Element3D } from './element3d'
+export { Vim } from './vim'
 
-// We don't want to export RPCClient
-export {materialHandles, MaterialHandles, type MaterialHandle, } from './rpcClient'
-export {InputMode, VimLoadingStatus} from './rpcSafeClient';
-export {VisibilityState} from './visibility'; //Runtime values for enum
+// Viewer component interfaces (returned by Viewer getters)
+export type { ICamera } from './camera'
+export type { IRenderer } from './renderer'
+export type { IDecoder } from './decoder'
+export type { IViewport } from './viewport'
+export type { ISelection } from './selection'
+export type { IUltraRaycaster, IUltraRaycastResult } from './raycaster'
+export type { IReadonlyVimCollection } from './vimCollection'
+export type { ILogger } from './logger'
 
-// Type exports
-export type * from './camera';
-export type * from './colorManager';
-export type * from './decoder';
-export type * from './visibility';
-export type * from './element3d';
-export type * from './inputAdapter';
-export type * from './loadRequest';
-export type * from './logger';
-export type * from './protocol';
-export type * from './raycaster';
-export type * from './remoteColor';
-export type * from './renderer';
-export type * from './rpcClient';
-export type * from './rpcMarshal';
-export type * from './rpcSafeClient';
-export type * from './sectionBox';
-export type * from './selection';
-export type * from './socketClient';
-export type * from './streamLogger';
-export type * from './streamRenderer';
-export type * from './viewport';
-export type * from './vim';
-export type * from './vimCollection';
+// Viewer component classes (exposed directly on Viewer)
+export type { ColorManager } from './colorManager'
+export type { RemoteColor } from './remoteColor'
+export type { SectionBox } from './sectionBox'
+export type { RpcSafeClient } from './rpcSafeClient'
+
+// RPC types
+export { Segment } from './rpcTypes'
+
+// Enums (runtime values)
+export { VisibilityState } from './visibility'
+export { InputMode, VimLoadingStatus } from './rpcSafeClient'
+
+// Settings
+export type { RenderSettings } from './renderer'
+export { defaultRenderSettings } from './renderer'
+export type { SceneSettings } from './rpcSafeClient'
+export { defaultSceneSettings } from './rpcSafeClient'
+
+// Loading
+export type { VimSource, VimLoadingState } from './rpcSafeClient'
+export type { ILoadRequest, VimRequestErrorType } from './loadRequest'
+
+// Connection
+export type { ConnectionSettings } from './socketClient'
+export type {
+  ClientState,
+  ClientError,
+  ClientStateConnecting,
+  ClientStateValidating,
+  ClientStateConnected,
+  ClientStateDisconnected,
+  ClientStateCompatibilityError,
+  ClientStateConnectionError,
+  ClientStateStreamError,
+} from './socketClient'

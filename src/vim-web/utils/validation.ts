@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import * as Core from '../core-viewers'
 import { isURL } from './url'
 import { RGBA } from '../core-viewers/ultra/rpcTypes'
+import { materialHandles, type MaterialHandle } from '../core-viewers/ultra/rpcClient'
 
 export class Validation {
   //= ===========================================================================
@@ -75,7 +76,7 @@ export class Validation {
   }
 
   static isMaterialHandle (handle: number): boolean {
-    if (!Core.Ultra.materialHandles.includes(handle as Core.Ultra.MaterialHandle)) {
+    if (!materialHandles.includes(handle as MaterialHandle)) {
       console.warn(`Invalid material handle ${handle}. Aborting operation.`)
       return false
     }
