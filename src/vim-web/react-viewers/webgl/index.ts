@@ -1,6 +1,6 @@
 // Public API
 export { createViewer, Viewer } from './viewer'
-export type { ViewerApi, SettingsApi, HelpApi, OpenSettings } from './viewerApi'
+export type { ViewerApi, OpenSettings } from './viewerApi'
 
 // Settings
 export { getDefaultSettings } from './settings'

@@ -3,7 +3,7 @@ import { GizmoAxes, IGizmoAxes } from './axes/gizmoAxes'
 import { GizmoOrbit, IGizmoOrbit } from './gizmoOrbit'
 import { IMeasure, Measure } from './measure/measure'
 import { ISectionBox, SectionBox } from './sectionBox/sectionBox'
-import { GizmoMarkers } from './markers/gizmoMarkers'
+import { GizmoMarkers, type IGizmoMarkers } from './markers/gizmoMarkers'
 import { Camera } from '../camera/camera'
 import { Renderer } from '../rendering/renderer'
 import { Viewport } from '../viewport'
@@ -22,7 +22,7 @@ export interface IGizmos {
   /** The axis gizmos of the viewer. */
   readonly axes: IGizmoAxes
   /** The interface for adding and managing sprite markers in the scene. */
-  readonly markers: GizmoMarkers
+  readonly markers: IGizmoMarkers
 }
 
 /**

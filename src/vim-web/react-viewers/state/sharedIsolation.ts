@@ -5,7 +5,6 @@ import { ISignal } from "ste-signals";
 export type VisibilityStatus = 'all' | 'allButSelection' |'onlySelection' | 'some' | 'none';  
 
 export interface IsolationApi {
-  adapter: RefObject<IIsolationAdapter>;
   visibility: StateRef<VisibilityStatus>
   autoIsolate: StateRef<boolean>;
   showPanel: StateRef<boolean>;
@@ -15,6 +14,25 @@ export interface IsolationApi {
   showRooms: StateRef<boolean>;
   onAutoIsolate: FuncRef<void>;
   onVisibilityChange: FuncRef<void>;
+
+  hasSelection(): boolean
+  hasVisibleSelection(): boolean
+  hasHiddenSelection(): boolean
+  clearSelection(): void
+  isolateSelection(): void
+  hideSelection(): void
+  showSelection(): void
+  isolate(instances: number[]): void
+  show(instances: number[]): void
+  hide(instances: number[]): void
+  hideAll(): void
+  showAll(): void
+}
+
+/** @internal */
+export type IsolationApiInternal = IsolationApi & {
+  /** @internal */
+  adapter: RefObject<IIsolationAdapter>
 }
 
 export interface IIsolationAdapter{
@@ -105,5 +123,18 @@ export function useSharedIsolation(adapter : IIsolationAdapter){
     ghostOpacity,
     onAutoIsolate,
     onVisibilityChange,
-  } as IsolationApi
+
+    hasSelection: () => _adapter.current.hasSelection(),
+    hasVisibleSelection: () => _adapter.current.hasVisibleSelection(),
+    hasHiddenSelection: () => _adapter.current.hasHiddenSelection(),
+    clearSelection: () => _adapter.current.clearSelection(),
+    isolateSelection: () => _adapter.current.isolateSelection(),
+    hideSelection: () => _adapter.current.hideSelection(),
+    showSelection: () => _adapter.current.showSelection(),
+    isolate: (instances: number[]) => _adapter.current.isolate(instances),
+    show: (instances: number[]) => _adapter.current.show(instances),
+    hide: (instances: number[]) => _adapter.current.hide(instances),
+    hideAll: () => _adapter.current.hideAll(),
+    showAll: () => _adapter.current.showAll(),
+  } as IsolationApiInternal
 }

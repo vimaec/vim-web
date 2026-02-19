@@ -132,6 +132,7 @@ export function Viewer (props: {
     } )
     props.onMount({
       type: 'ultra',
+      container: props.container,
       core: props.core,
       get modal() { return modalHandle.current },
       isolation: isolationRef,
@@ -199,7 +200,7 @@ export function Viewer (props: {
 
 function patchLoad(viewer: Core.Ultra.Viewer, modal: RefObject<ModalApi>) {
   return function load (source: Core.Ultra.VimSource): Core.Ultra.ILoadRequest {
-    const request = viewer.loadVim(source)
+    const request = viewer.load(source)
 
     // We don't want to block the main thread to get progress updates
     void modalProgress(request, modal.current)

@@ -7,9 +7,20 @@ import { Materials } from '../../loader/materials/materials'
 import { Renderer } from './renderer'
 
 /**
+ * Public interface for section box management.
+ * Exposes only the members needed by API consumers.
+ */
+export interface IRenderingSection {
+  readonly box: THREE.Box3
+  fitBox(box: THREE.Box3): void
+  active: boolean
+  readonly clippingPlanes: THREE.Plane[]
+}
+
+/**
  * Manages a section box from renderer clipping planes
  */
-export class RenderingSection {
+export class RenderingSection implements IRenderingSection {
   private _renderer: Renderer
 
   private _materials: Materials

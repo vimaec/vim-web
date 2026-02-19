@@ -269,7 +269,7 @@ export class Viewer {
    * @param source - The path or URL to the VIM file.
    * @returns A load request object that can be used to wait for the load to complete.
    */
-  loadVim (source: VimSource): ILoadRequest {
+  load (source: VimSource): ILoadRequest {
     if (typeof source.url !== 'string' || source.url.trim() === '') {
       const request = new LoadRequest()
       request.error('loadingError', 'Invalid path')
@@ -291,7 +291,7 @@ export class Viewer {
    * Unloads the given VIM from the viewer.
    * @param vim - The VIM instance to unload.
    */
-  unloadVim (vim: Vim): void {
+  unload (vim: Vim): void {
     this._vims.remove(vim)
     vim.disconnect()
   }
@@ -299,7 +299,7 @@ export class Viewer {
   /**
    * Clears all loaded VIMs from the viewer.
    */
-  clearVims (): void {
+  clear (): void {
     this._vims.getAll().forEach((vim) => vim.disconnect())
     this._vims.clear()
   }

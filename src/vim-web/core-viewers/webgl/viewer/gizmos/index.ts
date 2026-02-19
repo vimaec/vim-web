@@ -1,6 +1,6 @@
 export type { IGizmos } from './gizmos'
 export type { IGizmoOrbit } from './gizmoOrbit'
 export type { AxesSettings, IGizmoAxes } from './axes'
-export type { IMarker, GizmoMarkers } from './markers'
+export type { IMarker, IGizmoMarkers } from './markers'
 export type { IMeasure, MeasureStage } from './measure'
 export type { ISectionBox } from './sectionBox'

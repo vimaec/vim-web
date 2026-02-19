@@ -6,14 +6,20 @@ import { SectionBoxApi } from '../state/sectionBoxState';
 import { IsolationApi } from '../state/sharedIsolation';
 import { ControlBarApi } from '../controlbar/controlBar';
 import { GenericPanelApi } from '../generic/genericPanel';
-import { SettingsApi } from '../webgl/viewerApi';
+import { SettingsApi } from '../state/settingsApi';
 import { UltraSettings } from './settings';
+import { Container } from '../container';
 
 export type ViewerApi = {
   /**
    * Discriminant to distinguish Ultra from WebGL viewer.
    */
   type: 'ultra'
+
+  /**
+   * HTML structure containing the viewer.
+   */
+  container: Container
 
   /**
    * The Vim viewer instance associated with the viewer.
@@ -50,7 +56,7 @@ export type ViewerApi = {
   isolationPanel : GenericPanelApi
 
   /**
-   * API to interact with the isolation panel.
+   * API to interact with the section box panel.
    */
   sectionBoxPanel : GenericPanelApi
 

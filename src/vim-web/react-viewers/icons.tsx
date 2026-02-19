@@ -155,7 +155,7 @@ export function home ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function fullsScreen ({ height, width, fill, className }: IconOptions) {
+export function fullScreen ({ height, width, fill, className }: IconOptions) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path

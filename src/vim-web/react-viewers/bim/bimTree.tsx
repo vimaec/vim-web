@@ -57,10 +57,10 @@ export function BimTree (props: {
   props.actionRef.current = useMemo(
     () => ({
       showAll: () => {
-        props.isolation.adapter.current.showAll()
+        props.isolation.showAll()
       },
       hideAll: () => {
-        props.isolation.adapter.current.hideAll()
+        props.isolation.hideAll()
       },
       collapseAll: () => {
         setExpandedItems([])
@@ -274,9 +274,9 @@ function toggleVisibility (
 
   const visibility = tree.nodes[index].visible
   if (visibility !== 'vim-visible') {
-    isolation.adapter.current.show(objs.flatMap(o => o?.instances ?? []))
+    isolation.show(objs.flatMap(o => o?.instances ?? []))
   } else {
-    isolation.adapter.current.hide(objs.flatMap(o => o?.instances ?? []))
+    isolation.hide(objs.flatMap(o => o?.instances ?? []))
   }
 }
 

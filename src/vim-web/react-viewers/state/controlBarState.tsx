@@ -266,7 +266,7 @@ function controlBarMisc(
           settings.capacity.canGoFullScreen,
         tip: fullScreen.get() ? 'Minimize' : 'Fullscreen',
         action: () => fullScreen.toggle(),
-        icon: fullScreen.get() ? Icons.minimize : Icons.fullsScreen,
+        icon: fullScreen.get() ? Icons.minimize : Icons.fullScreen,
         style: Style.buttonDefaultStyle
       }
     ]
@@ -326,8 +326,7 @@ export type ControlBarVisibilitySettings = {
 }
 
 export function controlBarVisibility(isolation: IsolationApi, settings: ControlBarVisibilitySettings): IControlBarSection {
-  const adapter = isolation.adapter.current
-  const someVisible = adapter.hasVisibleSelection() || !adapter.hasHiddenSelection()  
+  const someVisible = isolation.hasVisibleSelection() || !isolation.hasHiddenSelection()
 
   return {
     id: Ids.visibilitySpan,
@@ -338,16 +337,16 @@ export function controlBarVisibility(isolation: IsolationApi, settings: ControlB
         id: Ids.visibilityClearSelection,
         enabled: () => isTrue(settings.visibilityClearSelection),
         tip: 'Clear Selection',
-        action: () => adapter.clearSelection(),
+        action: () => isolation.clearSelection(),
         icon: Icons.pointer,
-        isOn: () => adapter.hasSelection(),
+        isOn: () => isolation.hasSelection(),
         style: Style.buttonDisableDefaultStyle,
       },
       {
         id: Ids.visibilityShowAll,
         tip: 'Show All',
         enabled: () => isTrue(settings.visibilityShowAll),
-        action: () =>  adapter.showAll(),
+        action: () => isolation.showAll(),
         icon: Icons.showAll,
         isOn: () =>!isolation.autoIsolate.get() && isolation.visibility.get() !== 'all',
         style: Style.buttonDisableStyle,
@@ -357,27 +356,27 @@ export function controlBarVisibility(isolation: IsolationApi, settings: ControlB
         id: Ids.visibilityHideSelection,
         enabled: () => someVisible && isTrue(settings.visibilityToggle),
         tip: 'Hide Selection',
-        action: () => adapter.hideSelection(),
+        action: () => isolation.hideSelection(),
         icon: Icons.hideSelection,
-        isOn: () =>!isolation.autoIsolate.get() && adapter.hasVisibleSelection(),
+        isOn: () =>!isolation.autoIsolate.get() && isolation.hasVisibleSelection(),
         style: Style.buttonDisableStyle,
       },
       {
         id: Ids.visibilityShowSelection,
         enabled: () => !someVisible && isTrue(settings.visibilityToggle),
         tip: 'Show Selection',
-        action: () => adapter.showSelection(),
+        action: () => isolation.showSelection(),
         icon: Icons.showSelection,
-        isOn: () => !isolation.autoIsolate.get() && adapter.hasHiddenSelection(),
+        isOn: () => !isolation.autoIsolate.get() && isolation.hasHiddenSelection(),
         style: Style.buttonDisableStyle,
       },
       {
         id: Ids.visibilityIsolateSelection,
         enabled: () => isTrue(settings.visibilityIsolate),
         tip: 'Isolate Selection',
-        action: () => adapter.isolateSelection(),
+        action: () => isolation.isolateSelection(),
         icon: Icons.isolateSelection,
-        isOn: () =>!isolation.autoIsolate.get() &&  adapter.hasSelection() && isolation.visibility.get() !== 'onlySelection',
+        isOn: () =>!isolation.autoIsolate.get() && isolation.hasSelection() && isolation.visibility.get() !== 'onlySelection',
         style: Style.buttonDisableStyle,
       },
       {

@@ -14,7 +14,7 @@ import { GizmoMarkers } from './gizmos/markers/gizmoMarkers'
 import type {
   IRaycaster as IRaycasterBase,
   IRaycastResult as IRaycastResultBase,
-} from '../../shared'
+} from '../../shared/raycaster'
 import { Validation } from '../../../utils'
 import type { ISelectable } from './selection'
 

@@ -1,6 +1,6 @@
 export interface ILogger {
   log(message: string, obj?: any): void
-  error:(message: string, e :unknown) => void
+  error(message: string, e: unknown): void
 }
 
 export const defaultLogger: ILogger = {

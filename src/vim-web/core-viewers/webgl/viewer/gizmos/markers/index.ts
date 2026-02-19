@@ -1,2 +1,2 @@
 export type { IMarker } from './gizmoMarker'
-export type { GizmoMarkers } from './gizmoMarkers'
+export type { IGizmoMarkers } from './gizmoMarkers'

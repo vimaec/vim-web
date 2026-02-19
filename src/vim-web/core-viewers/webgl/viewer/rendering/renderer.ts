@@ -10,7 +10,7 @@ import { MaterialSet, Materials } from '../../loader/materials/materials'
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer'
 
 import { Camera } from '../camera/camera'
-import { RenderingSection } from './renderingSection'
+import { IRenderingSection, RenderingSection } from './renderingSection'
 import { RenderingComposer } from './renderingComposer'
 import { ViewerSettings } from '../settings/viewerSettings'
 import { ISignal, SignalDispatcher } from 'ste-signals'
@@ -23,7 +23,7 @@ export interface IRenderer {
   /** The THREE WebGL renderer. */
   readonly three: THREE.WebGLRenderer
   /** Interface to interact with section box directly without using the gizmo. */
-  readonly section: RenderingSection
+  readonly section: IRenderingSection
   /** Whether a re-render has been requested for the current frame. */
   readonly needsUpdate: boolean
   /** Requests a re-render on the next frame. */

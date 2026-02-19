@@ -18,20 +18,20 @@ export function applyWebglBindings(
   k.override("NumpadDivide", 'up', () => sideState.toggleContent('settings'))
   k.override("KeyF", 'up', () => camera.frameSelection.call())
   k.override("KeyI", 'up', () =>{
-    if(isolation.adapter.current.hasVisibleSelection() && isolation.visibility.get() !== 'onlySelection'){
-      isolation.adapter.current.isolateSelection()
+    if(isolation.hasVisibleSelection() && isolation.visibility.get() !== 'onlySelection'){
+      isolation.isolateSelection()
     }
     else{
-      isolation.adapter.current.showAll()
+      isolation.showAll()
     }
   })
   k.override("escape", 'up', () => viewer.selection.clear())
   k.override("KeyV", 'up', () => {
-    if(isolation.adapter.current.hasVisibleSelection()){
-      isolation.adapter.current.hideSelection()
+    if(isolation.hasVisibleSelection()){
+      isolation.hideSelection()
     }
     else{
-      isolation.adapter.current.showSelection()
+      isolation.showSelection()
     }
   })
 }

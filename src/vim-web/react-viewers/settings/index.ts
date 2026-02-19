@@ -1,5 +1,4 @@
 // Settings types
-export type { AnySettings } from './anySettings'
 export type {
   SettingsCustomization,
   SettingsItem,
@@ -10,5 +9,4 @@ export type {
 } from './settingsItem'
 
 // Settings utilities
-export { getLocalSettings, saveSettingsToLocal } from './settingsStorage'
 export { type UserBoolean, isTrue, isFalse } from './userBoolean'

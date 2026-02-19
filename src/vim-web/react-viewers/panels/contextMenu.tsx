@@ -47,9 +47,10 @@ import * as Ids from '../contextMenu/contextMenuIds'
  * Represents a button in the context menu. It can't be clicked triggering given action.
  */
 export interface IContextMenuButton {
+  type: 'button'
   id: string
   label: string
-  keyboard: string
+  keyboard?: string
   action: (e: ClickCallback) => void
   enabled: boolean
 }
@@ -58,6 +59,7 @@ export interface IContextMenuButton {
  * Represents a divider in the context menu. It can't be clicked.
  */
 export interface IContextMenuDivider {
+  type: 'divider'
   id: string
   enabled: boolean
 }
@@ -94,8 +96,8 @@ export function ContextMenu (props: {
 
   useEffect(() => {
     // force re-render and reevalution of isolation.
-    props.isolation.adapter.current.onVisibilityChange.subscribe(() => {
-      setVisibility(props.isolation.visibility.get())
+    return props.isolation.visibility.onChange.subscribe((v) => {
+      setVisibility(v)
     })
   }, [])
 
@@ -115,22 +117,22 @@ export function ContextMenu (props: {
   }
 
   const onSelectionIsolateBtn = (e: ClickCallback) => {
-    props.isolation.adapter.current.isolateSelection()
+    props.isolation.isolateSelection()
     e.stopPropagation()
   }
 
   const onSelectionHideBtn = (e: ClickCallback) => {
-    props.isolation.adapter.current.hideSelection()
+    props.isolation.hideSelection()
     e.stopPropagation()
   }
 
   const onSelectionShowBtn = (e: ClickCallback) => {
-    props.isolation.adapter.current.showSelection()
+    props.isolation.showSelection()
     e.stopPropagation()
   }
 
   const onShowAllBtn = (e: ClickCallback) => {
-    props.isolation.adapter.current.showAll()
+    props.isolation.showAll()
     e.stopPropagation()
   }
 
@@ -164,18 +166,20 @@ export function ContextMenu (props: {
       : null
   }
 
-  const hasSelection = props.isolation.adapter.current.hasSelection()
+  const hasSelection = props.isolation.hasSelection()
   const measuring = !!viewer.gizmos.measure.stage
 
   let elements: ContextMenuElement[] = [
     {
+      type: 'button',
       id: Ids.showControls,
       label: 'Show Controls',
       action: onShowControlsBtn,
       enabled: true
     },
-    { id: Ids.dividerCamera, enabled: true },
+    { type: 'divider', id: Ids.dividerCamera, enabled: true },
     {
+      type: 'button',
       id: Ids.resetCamera,
       label: 'Reset Camera',
       keyboard: 'HOME',
@@ -183,6 +187,7 @@ export function ContextMenu (props: {
       enabled: true
     },
     {
+      type: 'button',
       id: Ids.zoomToFit,
       label: 'Frame Camera',
       keyboard: 'F',
@@ -190,10 +195,12 @@ export function ContextMenu (props: {
       enabled: hasSelection
     },
     {
+      type: 'divider',
       id: Ids.dividerSelection,
       enabled: hasSelection || visibility !== 'all'
     },
     {
+      type: 'button',
       id: Ids.isolateSelection,
       label: 'Isolate Object',
       keyboard: 'I',
@@ -201,20 +208,23 @@ export function ContextMenu (props: {
       enabled: hasSelection && visibility === 'onlySelection'
     },
     {
+      type: 'button',
       id: Ids.hideObject,
       label: 'Hide Object',
       keyboard: 'V',
       action: onSelectionHideBtn,
-      enabled: hasSelection && !props.isolation.adapter.current.hasHiddenSelection()
+      enabled: hasSelection && !props.isolation.hasHiddenSelection()
     },
     {
+      type: 'button',
       id: Ids.showObject,
       label: 'Show Object',
       keyboard: 'V',
       action: onSelectionShowBtn,
-      enabled: hasSelection && props.isolation.adapter.current.hasHiddenSelection()
+      enabled: hasSelection && props.isolation.hasHiddenSelection()
     },
     {
+      type: 'button',
       id: Ids.showAll,
       label: 'Show All',
       keyboard: 'Esc',
@@ -238,7 +248,7 @@ export function ContextMenu (props: {
         id={VIM_CONTEXT_MENU_ID}
       >
         {elements.map((e) => {
-          return 'label' in e ? createButton(e) : createDivider(e)
+          return e.type === 'button' ? createButton(e) : createDivider(e)
         })}
       </FireMenu.ContextMenu>
     </div>

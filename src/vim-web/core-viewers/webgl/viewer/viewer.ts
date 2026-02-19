@@ -138,7 +138,7 @@ export class Viewer {
       size.x || 1,
       size.y || 1
     )
-    gpuPicker.setMarkers(this.gizmos.markers)
+    gpuPicker.setMarkers(this._gizmos.markers)
     this.raycaster = gpuPicker
 
     // Update raycaster size on viewport resize

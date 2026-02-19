@@ -4,7 +4,6 @@
 
 import * as Core from '../../core-viewers'
 import { ContextMenuApi } from '../panels/contextMenu'
-import { AnySettings } from '../settings/anySettings'
 import { CameraApi } from '../state/cameraState'
 import { Container } from '../container'
 import { BimInfoPanelApi } from '../bim/bimInfoData'
@@ -14,56 +13,10 @@ import { ModalApi } from '../panels/modal'
 import { SectionBoxApi } from '../state/sectionBoxState'
 import { IsolationApi } from '../state/sharedIsolation'
 import { GenericPanelApi } from '../generic/genericPanel'
-import { SettingsItem } from '../settings/settingsItem'
+import { SettingsApi } from '../state/settingsApi'
 import { WebglSettings } from './settings'
 
 export type { OpenSettings } from './loading'
-/**
-* Settings API managing settings applied to the viewer.
-*/
-export type SettingsApi<T extends AnySettings> = {
-  // Double lambda is required to prevent react from using reducer pattern
-  // https://stackoverflow.com/questions/59040989/usestate-with-a-lambda-invokes-the-lambda-when-set
-
-  /**
-   * Allows updating settings by providing a callback function.
-   * @param updater A function that updates the current settings.
-   */
-  update : (updater: (settings: T) => void) => void
-
-  /**
-   * Registers a callback function to be notified when settings are updated.
-   * @param callback A function to be called when settings are updated, receiving the updated settings.
-   */
-  register : (callback: (settings: T) => void) => void
-
-  /**
-   * Customizes the settings panel by providing a customizer function.
-   * @param customizer A function that modifies the settings items.
-   */
-  customize : (customizer: (items: SettingsItem<T>[]) => SettingsItem<T>[]) => void
-
-}
-
-
-
-/**
- * Reference to manage help message functionality in the viewer.
- */
-export type HelpApi = {
-  /**
-   * Displays the help message.
-   * @param value Boolean value to show or hide the help message.
-   * @returns void
-   */
-  show(value: boolean): void
-
-  /**
-   * Returns the current state of the help message.
-   * @returns boolean indicating if help message is currently shown
-   */
-  isShow(): boolean
-}
 
 /**
  * Root-level API of the Vim viewer.
@@ -153,7 +106,7 @@ export type ViewerApi = {
   isolationPanel : GenericPanelApi
 
   /**
-   * API to interact with the isolation panel.
+   * API to interact with the section box panel.
    */
   sectionBoxPanel : GenericPanelApi
 

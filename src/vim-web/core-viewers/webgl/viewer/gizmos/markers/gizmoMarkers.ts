@@ -7,10 +7,20 @@ import { Renderer } from '../../rendering/renderer'
 import { ISelection } from '../../selection'
 
 /**
+ * Public interface for adding and managing sprite markers in the scene.
+ */
+export interface IGizmoMarkers {
+  getMarkerFromIndex(index: number): IMarker | undefined
+  add(position: THREE.Vector3): IMarker
+  remove(marker: IMarker): void
+  clear(): void
+}
+
+/**
  * API for adding and managing sprite markers in the scene.
  * Uses THREE.InstancedMesh for performance.
  */
-export class GizmoMarkers {
+export class GizmoMarkers implements IGizmoMarkers {
   private _renderer: Renderer
   private _selection: ISelection
   private _markers: Marker[] = []

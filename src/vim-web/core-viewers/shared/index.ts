@@ -4,10 +4,7 @@ export type { IInputHandler, IMouseInput, MouseOverrides, ITouchInput, TouchOver
 
 // Loading
 export { LoadSuccess, LoadError } from './loadResult'
-export type { ILoadSuccess, ILoadError, IProgress, ProgressType, LoadResult, ILoadRequest } from './loadResult'
-
-// Raycaster
-export type { IRaycastResult, IRaycaster } from './raycaster'
+export type { ILoadSuccess, ILoadError, IProgress, ProgressType, LoadResult } from './loadResult'
 
 // Selection
 export type { Selection } from './selection'
@@ -16,4 +13,4 @@ export type { Selection } from './selection'
 export type { IVimElement, IVim } from './vim'
 
 // Vim Collection
-export type { IReadonlyVimCollection, IVimCollection } from './vimCollection'
+export type { IReadonlyVimCollection } from './vimCollection'

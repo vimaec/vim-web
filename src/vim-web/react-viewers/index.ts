@@ -19,6 +19,7 @@ export { type Container, createContainer } from './container'
 export type { CameraApi } from './state/cameraState'
 export type { SectionBoxApi } from './state/sectionBoxState'
 export type { IsolationApi, VisibilityStatus } from './state/sharedIsolation'
+export type { SettingsApi } from './state/settingsApi'
 
 // Ref types
 export type {
