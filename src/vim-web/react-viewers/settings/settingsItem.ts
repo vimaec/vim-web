@@ -2,7 +2,7 @@ import { AnySettings } from './anySettings'
 import { UserBoolean } from './userBoolean'
 
 
-export type SettingsCustomizer<T extends AnySettings> = (items: SettingsItem<T>[]) => SettingsItem<T>[]
+export type SettingsCustomization<T extends AnySettings> = (items: SettingsItem<T>[]) => SettingsItem<T>[]
 
 export type SettingsItem<T extends AnySettings> = SettingsSubtitle | SettingsToggle<T> | SettingsBox<T> | SettingsElement
 

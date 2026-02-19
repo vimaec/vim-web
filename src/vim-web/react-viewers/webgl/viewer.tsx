@@ -33,16 +33,16 @@ import { ViewerApi } from './viewerApi'
 import { useBimInfo } from '../bim/bimInfoData'
 import { whenTrue } from '../helpers/utils'
 import { ComponentLoader } from './loading'
-import { Modal, ModalHandle } from '../panels/modal'
+import { Modal, ModalApi } from '../panels/modal'
 import { SectionBoxPanel } from '../panels/sectionBoxPanel'
 import { useWebglSectionBox } from './sectionBox'
 import { useWebglCamera } from './camera'
 import { useViewerInput } from '../state/viewerInputs'
 import { IsolationPanel } from '../panels/isolationPanel'
 import { useWebglIsolation } from './isolation'
-import { GenericPanelHandle } from '../generic/genericPanel'
+import { GenericPanelApi } from '../generic/genericPanel'
 import { ControllablePromise } from '../../utils'
-import { SettingsCustomizer } from '../settings/settingsItem'
+import { SettingsCustomization } from '../settings/settingsItem'
 import { getDefaultSettings, PartialWebglSettings, WebglSettings } from './settings'
 import { isTrue } from '../settings/userBoolean'
 import { SettingsPanel } from '../settings/settingsPanel'
@@ -111,11 +111,11 @@ export function Viewer (props: {
   settings?: PartialWebglSettings
 }) {
   const settings = useSettings(props.settings ?? {}, getDefaultSettings(), (s) => applyWebglSettings(s))
-  const modal = useRef<ModalHandle>(null)
+  const modal = useRef<ModalApi>(null)
 
   const sectionBoxRef = useWebglSectionBox(props.viewer)
-  const isolationPanelHandle = useRef<GenericPanelHandle>(null)
-  const sectionBoxPanelHandle = useRef<GenericPanelHandle>(null)
+  const isolationPanelHandle = useRef<GenericPanelApi>(null)
+  const sectionBoxPanelHandle = useRef<GenericPanelApi>(null)
 
   const camera = useWebglCamera(props.viewer, sectionBoxRef)
   const cursor = useMemo(() => new CursorManager(props.viewer), [])
@@ -181,7 +181,7 @@ export function Viewer (props: {
       settings: {
         update : settings.update,
         register : settings.register,
-        customize : (c: SettingsCustomizer<WebglSettings>) => settings.customizer.set(c)
+        customize : (c: SettingsCustomization<WebglSettings>) => settings.customizer.set(c)
       },
       get isolationPanel(){
         return isolationPanelHandle.current

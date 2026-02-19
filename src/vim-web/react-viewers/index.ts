@@ -55,12 +55,12 @@ export { contextMenuElementIds } from './panels/contextMenu'
 export { SectionBoxPanel, IsolationPanel } from './panels'
 
 // Modal
-export type { ModalHandle, ModalProps } from './panels/modal'
+export type { ModalApi, ModalProps } from './panels/modal'
 export type { MessageBoxProps } from './panels/messageBox'
 export type { LoadingBoxProps, ProgressMode } from './panels/loadingBox'
 
 // Generic panel
-export type { GenericPanelHandle } from './generic/genericPanel'
+export type { GenericPanelApi } from './generic/genericPanel'
 export type {
   GenericEntryType,
   GenericTextEntry,

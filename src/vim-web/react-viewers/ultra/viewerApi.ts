@@ -1,11 +1,11 @@
 import { RefObject } from 'react';
 import * as Core from '../../core-viewers/ultra';
-import { ModalHandle } from '../panels/modal';
+import { ModalApi } from '../panels/modal';
 import { CameraApi } from '../state/cameraState';
 import { SectionBoxApi } from '../state/sectionBoxState';
 import { IsolationApi } from '../state/sharedIsolation';
 import { ControlBarApi } from '../controlbar/controlBar';
-import { GenericPanelHandle } from '../generic/genericPanel';
+import { GenericPanelApi } from '../generic/genericPanel';
 import { SettingsApi } from '../webgl/viewerApi';
 import { UltraSettings } from './settings';
 
@@ -23,7 +23,7 @@ export type ViewerApi = {
   /**
    * API to manage the modal dialog.
    */
-  modal: ModalHandle;
+  modal: ModalApi;
 
   /**
    * API to manage the section box.
@@ -47,12 +47,12 @@ export type ViewerApi = {
   /**
    * API to interact with the isolation panel.
    */
-  isolationPanel : GenericPanelHandle
+  isolationPanel : GenericPanelApi
 
   /**
    * API to interact with the isolation panel.
    */
-  sectionBoxPanel : GenericPanelHandle
+  sectionBoxPanel : GenericPanelApi
 
   /**
    * Disposes of the viewer and its resources.

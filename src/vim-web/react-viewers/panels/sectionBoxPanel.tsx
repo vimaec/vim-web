@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import { SectionBoxApi } from "../state/sectionBoxState";
-import { GenericPanel, GenericPanelHandle } from "../generic/genericPanel";
+import { GenericPanel, GenericPanelApi } from "../generic/genericPanel";
 
 export const Ids = {
   topOffset: "sectionBoxPanel.TopOffset",
@@ -8,7 +8,7 @@ export const Ids = {
   bottomOffset: "sectionBoxPanel.BottomOffset",
 }
 
-export const SectionBoxPanel = forwardRef<GenericPanelHandle, { state: SectionBoxApi }>(
+export const SectionBoxPanel = forwardRef<GenericPanelApi, { state: SectionBoxApi }>(
   (props, ref) => {
     return (
       <GenericPanel

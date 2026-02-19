@@ -6,7 +6,7 @@ import * as FireMenu from '@firefox-devtools/react-contextmenu'
 import React, { useEffect, useState } from 'react'
 import { CameraApi } from '../state/cameraState'
 import { TreeActionApi } from '../bim/bimTree'
-import { ModalHandle } from './modal'
+import { ModalApi } from './modal'
 import { IsolationApi } from '../state/sharedIsolation'
 import * as Core from '../../core-viewers'
 
@@ -101,7 +101,7 @@ export const VimContextMenuMemo = React.memo(ContextMenu)
 export function ContextMenu (props: {
   viewer: Core.Webgl.Viewer
   camera: CameraApi
-  modal: ModalHandle
+  modal: ModalApi
   isolation: IsolationApi
   selection: Core.Webgl.IElement3D[]
   customization?: (e: ContextMenuElement[]) => ContextMenuElement[]

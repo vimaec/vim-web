@@ -1,7 +1,7 @@
 // Settings types
 export type { AnySettings } from './anySettings'
 export type {
-  SettingsCustomizer,
+  SettingsCustomization,
   SettingsItem,
   SettingsSubtitle,
   SettingsToggle,

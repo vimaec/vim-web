@@ -16,6 +16,6 @@ import { Ids as IsolationIds } from './isolationPanel'
 export const IsolationPanel = { Ids: IsolationIds }
 
 // Modal
-export type { ModalHandle, ModalProps } from './modal'
+export type { ModalApi, ModalProps } from './modal'
 export type { MessageBoxProps } from './messageBox'
 export type { LoadingBoxProps, ProgressMode } from './loadingBox'

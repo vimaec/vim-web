@@ -14,9 +14,9 @@ export interface GenericPanelProps {
   anchorElement: HTMLElement | null;
 }
 
-export type GenericPanelHandle = ICustomizer<GenericEntryType[]>;
+export type GenericPanelApi = ICustomizer<GenericEntryType[]>;
 
-export const GenericPanel = forwardRef<GenericPanelHandle, GenericPanelProps>((props, ref) => {
+export const GenericPanel = forwardRef<GenericPanelApi, GenericPanelProps>((props, ref) => {
   const panelRef = useRef<HTMLDivElement>(null);
 
   const panelPosition = useFloatingPanelPosition(

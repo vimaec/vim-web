@@ -1,7 +1,7 @@
 
 import * as Core from '../../core-viewers/ultra'
 import { ControlBarCustomization } from '../controlbar/controlBar'
-import { ModalHandle } from '../panels/modal'
+import { ModalApi } from '../panels/modal'
 import { CameraApi } from '../state/cameraState'
 import { controlBarCamera, controlBarSectionBox, controlBarMiscUltra, controlBarVisibility } from '../state/controlBarState'
 import { SectionBoxApi } from '../state/sectionBoxState'
@@ -16,7 +16,7 @@ export function useUltraControlBar (
   camera: CameraApi,
   settings: UltraSettings,
   side: SideState,
-  modal: ModalHandle,
+  modal: ModalApi,
   customization: ControlBarCustomization | undefined
 ) {
   let bar = [

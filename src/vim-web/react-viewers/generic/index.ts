@@ -1,5 +1,5 @@
 // Public types for generic panel customization
-export type { GenericPanelHandle } from './genericPanel'
+export type { GenericPanelApi } from './genericPanel'
 export type {
   GenericEntryType,
   GenericTextEntry,

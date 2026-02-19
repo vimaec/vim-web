@@ -5,7 +5,7 @@
 import { serverFileDownloadingError } from '../errors/errors'
 import * as Core from '../../core-viewers'
 import { LoadRequest } from '../helpers/loadRequest'
-import { ModalHandle } from '../panels/modal'
+import { ModalApi } from '../panels/modal'
 import { UltraSuggestion } from '../panels/loadingBox'
 import { WebglSettings } from './settings'
 
@@ -30,12 +30,12 @@ export type LoadingError = {
  */
 export class ComponentLoader {
   private _viewer : Core.Webgl.Viewer
-  private _modal: React.RefObject<ModalHandle>
+  private _modal: React.RefObject<ModalApi>
   private _addLink : boolean = false
 
   constructor (
     viewer : Core.Webgl.Viewer,
-    modal: React.RefObject<ModalHandle>,
+    modal: React.RefObject<ModalApi>,
     settings: WebglSettings
   ) {
     this._viewer = viewer

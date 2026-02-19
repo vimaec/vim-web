@@ -10,10 +10,10 @@ import { Container } from '../container'
 import { BimInfoPanelApi } from '../bim/bimInfoData'
 import { ControlBarApi } from '../controlbar/controlBar'
 import { OpenSettings } from './loading'
-import { ModalHandle } from '../panels/modal'
+import { ModalApi } from '../panels/modal'
 import { SectionBoxApi } from '../state/sectionBoxState'
 import { IsolationApi } from '../state/sharedIsolation'
-import { GenericPanelHandle } from '../generic/genericPanel'
+import { GenericPanelApi } from '../generic/genericPanel'
 import { SettingsItem } from '../settings/settingsItem'
 import { WebglSettings } from './settings'
 
@@ -135,7 +135,7 @@ export type ViewerApi = {
   /**
    * Message API to interact with the loading box.
    */
-  modal: ModalHandle
+  modal: ModalApi
 
   /**
    * Camera API to interact with the viewer camera at a higher level.
@@ -150,12 +150,12 @@ export type ViewerApi = {
   /**
    * API to interact with the isolation panel.
    */
-  isolationPanel : GenericPanelHandle
+  isolationPanel : GenericPanelApi
 
   /**
    * API to interact with the isolation panel.
    */
-  sectionBoxPanel : GenericPanelHandle
+  sectionBoxPanel : GenericPanelApi
 
   /**
    * Cleans up and releases resources used by the viewer.

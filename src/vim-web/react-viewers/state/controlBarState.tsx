@@ -9,7 +9,7 @@ import { getPointerState } from './pointerState';
 import { getFullScreenState } from './fullScreenState';
 import { SectionBoxApi } from './sectionBoxState';
 import { getMeasureState } from './measureState';
-import { ModalHandle } from '../panels/modal';
+import { ModalApi } from '../panels/modal';
 
 import { IsolationApi } from './sharedIsolation';
 import { PointerMode } from '../../core-viewers/shared';
@@ -206,7 +206,7 @@ function createMiscSettingsButton(
 }
 
 function createMiscHelpButton(
-  modal : ModalHandle,
+  modal : ModalApi,
   settings: AnySettings,
 ){
   return {
@@ -221,7 +221,7 @@ function createMiscHelpButton(
 
 // Ultra version
 export function controlBarMiscUltra(
-  modal : ModalHandle,
+  modal : ModalApi,
   side: SideState,
   settings: UltraSettings
 ): IControlBarSection {
@@ -238,7 +238,7 @@ export function controlBarMiscUltra(
 
 // WebGL version
 function controlBarMisc(
-  modal: ModalHandle,
+  modal: ModalApi,
   side: SideState,
   settings: WebglSettings
 ): IControlBarSection {
@@ -406,7 +406,7 @@ export function controlBarVisibility(isolation: IsolationApi, settings: ControlB
 export function useControlBar(
   viewer: Core.Webgl.Viewer,
   camera: CameraApi,
-  modal: ModalHandle,
+  modal: ModalApi,
   side: SideState,
   cursor: CursorManager,
   settings: WebglSettings,

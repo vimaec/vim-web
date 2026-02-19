@@ -6,7 +6,7 @@ import {useRef, RefObject, useEffect, useState } from 'react'
 import { Container, createContainer } from '../container'
 import { createRoot } from 'react-dom/client'
 import { Overlay } from '../panels/overlay'
-import { Modal, ModalHandle } from '../panels/modal'
+import { Modal, ModalApi } from '../panels/modal'
 import { getRequestErrorMessage } from './errors/ultraErrors'
 import { updateModal, updateProgress as modalProgress } from './modal'
 import { ControlBar, ControlBarCustomization } from '../controlbar/controlBar'
@@ -23,13 +23,13 @@ import { useUltraCamera } from './camera'
 import { useViewerInput } from '../state/viewerInputs'
 import { useUltraIsolation } from './isolation'
 import { IsolationPanel } from '../panels/isolationPanel'
-import { GenericPanelHandle } from '../generic/genericPanel'
+import { GenericPanelApi } from '../generic/genericPanel'
 import { ControllablePromise } from '../../utils'
 import { SettingsPanel } from '../settings/settingsPanel'
 import { SidePanelMemo } from '../panels/sidePanel'
 import { getDefaultUltraSettings, PartialUltraSettings, UltraSettings } from './settings'
 import { getUltraSettingsContent } from './settingsPanel'
-import { SettingsCustomizer } from '../settings/settingsItem'
+import { SettingsCustomization } from '../settings/settingsItem'
 import { isTrue } from '../settings/userBoolean'
 
 
@@ -91,9 +91,9 @@ export function Viewer (props: {
   const settings = useSettings(props.settings ?? {}, getDefaultUltraSettings())
   const sectionBoxRef = useUltraSectionBox(props.core)
   const camera = useUltraCamera(props.core, sectionBoxRef)
-  const isolationPanelHandle = useRef<GenericPanelHandle>(null)
-  const sectionBoxPanelHandle = useRef<GenericPanelHandle>(null)
-  const modalHandle = useRef<ModalHandle>(null)
+  const isolationPanelHandle = useRef<GenericPanelApi>(null)
+  const sectionBoxPanelHandle = useRef<GenericPanelApi>(null)
+  const modalHandle = useRef<ModalApi>(null)
 
   const side = useSideState(true, 400)
   const [_, setSelectState] = useState(0)
@@ -140,7 +140,7 @@ export function Viewer (props: {
       settings: {
         update : settings.update,
         register : settings.register,
-        customize : (c: SettingsCustomizer<UltraSettings>) => settings.customizer.set(c)
+        customize : (c: SettingsCustomization<UltraSettings>) => settings.customizer.set(c)
       },
       get isolationPanel(){
         return isolationPanelHandle.current
@@ -197,7 +197,7 @@ export function Viewer (props: {
   </>
 }
 
-function patchLoad(viewer: Core.Ultra.Viewer, modal: RefObject<ModalHandle>) {
+function patchLoad(viewer: Core.Ultra.Viewer, modal: RefObject<ModalApi>) {
   return function load (source: Core.Ultra.VimSource): Core.Ultra.ILoadRequest {
     const request = viewer.loadVim(source)
 

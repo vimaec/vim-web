@@ -5,4 +5,4 @@ export * as Style from './style'
 // Public types
 export type { ControlBarApi, ControlBarCustomization } from './controlBar'
 export type { IControlBarSection } from './controlBarSection'
-export type { IControlBarButtonItem } from './controlBarButton'
+export type { IControlBarButton } from './controlBarButton'
