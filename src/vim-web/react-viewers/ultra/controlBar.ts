@@ -1,7 +1,7 @@
 
 import * as Core from '../../core-viewers/ultra'
 import { ControlBarCustomization } from '../controlbar/controlBar'
-import { ModalHandle } from '../panels'
+import { ModalHandle } from '../panels/modal'
 import { CameraApi } from '../state/cameraState'
 import { controlBarCamera, controlBarSectionBox, controlBarMiscUltra, controlBarVisibility } from '../state/controlBarState'
 import { SectionBoxApi } from '../state/sectionBoxState'

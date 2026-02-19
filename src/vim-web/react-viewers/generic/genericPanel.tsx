@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
-import { Icons } from "..";
+import * as Icons from '../icons';
 import { StateRef } from "../helpers/reactUtils";
 import { useFloatingPanelPosition } from "../helpers/layout";
 import { GenericEntryType, GenericEntry } from "./genericField";

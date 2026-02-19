@@ -3,7 +3,7 @@
  */
 
 import React, { ReactNode } from 'react'
-import { Urls } from '..';
+
 
 export type ProgressMode = 'percent' | 'bytes'
 
@@ -81,7 +81,7 @@ export function UltraSuggestion() {
         Check out {' '}
         <a
           className='vc-text-primary vc-underline vc-font-bold'
-          href={Urls.supportUltra}
+          href='https://docs.vimaec.com/docs/vim-for-windows/configuring-vim-ultra'
           target="_blank"
           rel="noopener noreferrer"
         >

@@ -4,9 +4,9 @@ import { ModalHandle } from '../panels/modal';
 import { CameraApi } from '../state/cameraState';
 import { SectionBoxApi } from '../state/sectionBoxState';
 import { IsolationApi } from '../state/sharedIsolation';
-import { ControlBarApi } from '../controlbar';
-import { GenericPanelHandle } from '../generic/';
-import { SettingsApi } from '../webgl';
+import { ControlBarApi } from '../controlbar/controlBar';
+import { GenericPanelHandle } from '../generic/genericPanel';
+import { SettingsApi } from '../webgl/viewerApi';
 import { UltraSettings } from './settings';
 
 export type ViewerApi = {

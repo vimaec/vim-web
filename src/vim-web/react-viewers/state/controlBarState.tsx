@@ -14,13 +14,14 @@ import { ModalHandle } from '../panels/modal';
 import { IsolationApi } from './sharedIsolation';
 import { PointerMode } from '../../core-viewers/shared';
 
-import * as ControlBar from '../controlbar'
-import Style = ControlBar.Style;
-import Ids = ControlBar.Ids;
+import * as Style from '../controlbar/style'
+import * as Ids from '../controlbar/controlBarIds'
+import type { IControlBarSection } from '../controlbar/controlBarSection'
+import type { ControlBarCustomization } from '../controlbar/controlBar'
 import { isFalse, isTrue, UserBoolean } from "../settings/userBoolean";
 import { UltraSettings } from "../ultra/settings";
 import { WebglSettings } from "../webgl/settings";
-import { AnySettings } from "../settings";
+import { AnySettings } from "../settings/anySettings";
 
 export type ControlBarSectionBoxSettings = {
   sectioningEnable: UserBoolean
@@ -38,7 +39,7 @@ export function controlBarSectionBox(
   section: SectionBoxApi,
   hasSelection : boolean,
   settings: ControlBarSectionBoxSettings
-): ControlBar.IControlBarSection {
+): IControlBarSection {
 
   return {
     id: Ids.sectioningSpan,
@@ -116,7 +117,7 @@ export type ControlBarCursorSettings = {
 function controlBarPointer(
   viewer: Core.Webgl.Viewer,
   settings: ControlBarCursorSettings,
-): ControlBar.IControlBarSection {
+): IControlBarSection {
   const pointer = getPointerState(viewer);
 
   return {
@@ -223,7 +224,7 @@ export function controlBarMiscUltra(
   modal : ModalHandle,
   side: SideState,
   settings: UltraSettings
-): ControlBar.IControlBarSection {
+): IControlBarSection {
   return {
     id: Ids.miscSpan,
     enable: () => anyUltraMiscButton(settings),
@@ -240,7 +241,7 @@ function controlBarMisc(
   modal: ModalHandle,
   side: SideState,
   settings: WebglSettings
-): ControlBar.IControlBarSection {
+): IControlBarSection {
   const fullScreen = getFullScreenState();
 
   return {
@@ -278,7 +279,7 @@ export type ControlBarCameraSettings ={
   cameraFrameScene: UserBoolean
 }
 
-export function controlBarCamera(camera: CameraApi, settings: ControlBarCameraSettings): ControlBar.IControlBarSection {
+export function controlBarCamera(camera: CameraApi, settings: ControlBarCameraSettings): IControlBarSection {
   return {
     id: Ids.cameraSpan,
     enable: () => true,
@@ -324,7 +325,7 @@ export type ControlBarVisibilitySettings = {
     visibilitySettings: UserBoolean
 }
 
-export function controlBarVisibility(isolation: IsolationApi, settings: ControlBarVisibilitySettings): ControlBar.IControlBarSection {
+export function controlBarVisibility(isolation: IsolationApi, settings: ControlBarVisibilitySettings): IControlBarSection {
   const adapter = isolation.adapter.current
   const someVisible = adapter.hasVisibleSelection() || !adapter.hasHiddenSelection()  
 
@@ -411,7 +412,7 @@ export function useControlBar(
   settings: WebglSettings,
   section: SectionBoxApi,
   isolationRef: IsolationApi,
-  customization: ControlBar.ControlBarCustomization | undefined
+  customization: ControlBarCustomization | undefined
 ) {
   const measure = getMeasureState(viewer, cursor);
 

@@ -1,7 +1,7 @@
 
 
 import * as Core from '../../core-viewers'
-import { useSettings } from '../../react-viewers/settings/settingsState'
+import { useSettings } from '../settings/settingsState'
 import {useRef, RefObject, useEffect, useState } from 'react'
 import { Container, createContainer } from '../container'
 import { createRoot } from 'react-dom/client'

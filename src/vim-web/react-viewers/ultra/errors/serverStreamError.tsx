@@ -1,6 +1,6 @@
 import { MessageBoxProps } from '../../panels/messageBox'
 import * as style from '../../errors/errorStyle'
-import * as Urls from '../../urls'
+
 
 export function serverStreamError (url: string): MessageBoxProps {
   return {

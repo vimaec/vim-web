@@ -1,8 +1,8 @@
-// Full exports
+// Constant namespaces (all values are public for customization)
 export * as Ids from './controlBarIds'
 export * as Style from './style'
-  
-// Type Exports
-export type * from './controlBarButton'
-export type * from './controlBar'
-export type * from './controlBarSection'
+
+// Public types
+export type { ControlBarApi, ControlBarCustomization } from './controlBar'
+export type { IControlBarSection } from './controlBarSection'
+export type { IControlBarButtonItem } from './controlBarButton'

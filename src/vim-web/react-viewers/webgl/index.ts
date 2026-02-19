@@ -1,15 +1,7 @@
+// Public API
+export { createViewer, Viewer } from './viewer'
+export type { ViewerApi, SettingsApi, HelpApi, OpenSettings } from './viewerApi'
 
-// Full exports
-export * from './viewer';
-export * from './viewerApi';
-export * from './settings'
-
-// Type exports
-export type * from './loading';
-
-// Not exported
-// export * from './camera';
-// export * from './inputsBindings';
-// export * from './isolation';
-// export * from './sectionBox';
-// export * from './viewerState';
+// Settings
+export { getDefaultSettings } from './settings'
+export type { WebglSettings, PartialWebglSettings } from './settings'
