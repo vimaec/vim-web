@@ -766,3 +766,69 @@ vim.clear()                        // Remove loaded geometry
 // Unloading — do NOT call vim.dispose() directly
 viewer.remove(vim)                 // Removes and disposes the vim
 ```
+
+---
+
+## React Layer Patterns & Gotchas
+
+### StateRef<T> Interface vs Concrete Type
+
+The `StateRef<T>` interface only exposes: `get()`, `set()`, `confirm()`, `onChange`.
+
+The object returned by `useStateRef()` also has: `useOnChange()`, `useValidate()`, `useMemo()` — but these are NOT on the `StateRef<T>` interface type.
+
+If a variable is typed as `StateRef<T>` (e.g., in ViewerState), you cannot call `useOnChange` on it. Use `onChange.subscribe()` in a useEffect instead.
+
+### Subscription Cleanup
+
+ste-signals `.sub()` and `.subscribe()` both return unsubscribe functions. Always return them from useEffect cleanup:
+
+```typescript
+// CORRECT
+useEffect(() => {
+    const unsub = signal.subscribe(() => { ... });
+    return unsub
+}, []);
+
+// WRONG — leaks subscription
+useEffect(() => {
+    signal.subscribe(() => { ... });
+}, []);
+```
+
+### Resource Cleanup Checklist
+
+When writing or reviewing useEffect hooks, ensure cleanup for:
+1. `.subscribe()` / `.sub()` — return unsub from effect
+2. `ResizeObserver` — call `.disconnect()` in cleanup
+3. `setTimeout` — call `clearTimeout()` in cleanup
+4. Event listeners — call `removeEventListener()` in cleanup
+
+### Hook Naming Convention
+
+Any function calling React hooks (useState, useEffect, useRef, etc.) MUST be prefixed with `use`. Non-hook helper functions must NOT call hooks.
+
+### Intentional useEffect Without Dependencies
+
+These run every render and are intentional:
+- `ReactTooltip.rebuild()` — tooltips need DOM re-scan after changes
+- `resizeGfx()` in sidePanel — canvas must resize on every render
+
+State updates should NOT be in depless effects — use `onChange.subscribe` pattern instead.
+
+### IsolationApi Pattern
+
+`IsolationApi` has delegation methods (`hasSelection`, `showAll`, `isolateSelection`, etc.). Consumers call `isolation.showAll()` directly — never expose the internal adapter.
+
+The adapter (`IIsolationAdapter`) is an implementation detail:
+- WebGL adapter uses closure variables (`let ghost = false`)
+- Ultra adapter also uses closure variables (NOT useStateRef — that would be a Rules of Hooks violation since the adapter factory is not a hook)
+
+### Control Bar Customization
+
+Both viewers apply customization through the hook parameter, not at render time:
+
+```typescript
+const controlBar = useControlBar(..., customization)
+<ControlBar content={controlBar} />
+```
