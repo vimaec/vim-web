@@ -23,17 +23,3 @@ export function whenSomeTrue (value: (UserBoolean| boolean)[], element: JSX.Elem
 export function whenSomeFalse (value: (UserBoolean| boolean)[], element: JSX.Element) {
   return value.some(isFalse) ? element : null
 }
-
-
-/**
- * Makes all fields optional recursively
- * @template T - The type to make recursively partial
- * @returns A type with all nested properties made optional
- */
-export type RecursivePartial<T> = {
-  [P in keyof T]?: T[P] extends (infer U)[]
-    ? RecursivePartial<U>[]
-    : T[P] extends object
-    ? RecursivePartial<T[P]>
-    : T[P]
-}

@@ -4,7 +4,7 @@
 
 import * as THREE from 'three'
 import { Camera } from '../../camera/camera'
-import { IViewport } from '../../viewport'
+import { IWebglViewport } from '../../viewport'
 import { AxesSettings, createAxesSettings } from './axesSettings'
 import { Axis, createAxes } from './axes'
 
@@ -57,7 +57,7 @@ export class GizmoAxes implements IGizmoAxes {
     return this._canvas
   }
 
-  constructor (camera: Camera, viewport: IViewport, options?: Partial<AxesSettings>) {
+  constructor (camera: Camera, viewport: IWebglViewport, options?: Partial<AxesSettings>) {
     this._initialOptions = createAxesSettings(options)
     this._options = createAxesSettings(options)
     this._camera = camera

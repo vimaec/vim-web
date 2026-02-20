@@ -11,7 +11,6 @@ import { IsolationApi } from '../state/sharedIsolation'
 import * as Core from '../../core-viewers'
 
 const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
-type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
 
 /**
  * Reference to manage context menu functionality in the viewer.
@@ -41,7 +40,7 @@ export function showContextMenu (
   FireMenu.showMenu(showMenuConfig)
 }
 
-import * as Ids from '../contextMenu/contextMenuIds'
+import { contextMenuIds as Ids } from '../contextMenu/contextMenuIds'
 
 /**
  * Represents a button in the context menu. It can't be clicked triggering given action.
@@ -51,7 +50,7 @@ export interface IContextMenuButton {
   id: string
   label: string
   keyboard?: string
-  action: (e: ClickCallback) => void
+  action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   enabled: boolean
 }
 
@@ -82,7 +81,7 @@ export const VimContextMenuMemo = React.memo(ContextMenu)
  * Context menu viewer definition according to current state.
  */
 export function ContextMenu (props: {
-  viewer: Core.Webgl.Viewer
+  viewer: Core.Webgl.WebglCoreViewer
   camera: CameraApi
   modal: ModalApi
   isolation: IsolationApi
@@ -101,43 +100,43 @@ export function ContextMenu (props: {
     })
   }, [])
 
-  const onShowControlsBtn = (e: ClickCallback) => {
+  const onShowControlsBtn = (e: React.MouseEvent) => {
     props.modal.help(true)
     e.stopPropagation()
   }
 
-  const onCameraResetBtn = (e: ClickCallback) => {
+  const onCameraResetBtn = (e: React.MouseEvent) => {
     camera.reset.call()
     e.stopPropagation()
   }
 
-  const onCameraFrameBtn = (e: ClickCallback) => {
+  const onCameraFrameBtn = (e: React.MouseEvent) => {
     camera.frameSelection.call()
     e.stopPropagation()
   }
 
-  const onSelectionIsolateBtn = (e: ClickCallback) => {
+  const onSelectionIsolateBtn = (e: React.MouseEvent) => {
     props.isolation.isolateSelection()
     e.stopPropagation()
   }
 
-  const onSelectionHideBtn = (e: ClickCallback) => {
+  const onSelectionHideBtn = (e: React.MouseEvent) => {
     props.isolation.hideSelection()
     e.stopPropagation()
   }
 
-  const onSelectionShowBtn = (e: ClickCallback) => {
+  const onSelectionShowBtn = (e: React.MouseEvent) => {
     props.isolation.showSelection()
     e.stopPropagation()
   }
 
-  const onShowAllBtn = (e: ClickCallback) => {
+  const onShowAllBtn = (e: React.MouseEvent) => {
     props.isolation.showAll()
     e.stopPropagation()
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onMeasureDeleteBtn = (e: ClickCallback) => {
+  const onMeasureDeleteBtn = (e: React.MouseEvent) => {
     viewer.gizmos.measure.abort()
   }
 

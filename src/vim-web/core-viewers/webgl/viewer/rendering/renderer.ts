@@ -19,7 +19,7 @@ import { ISignal, SignalDispatcher } from 'ste-signals'
  * Public interface for the WebGL renderer.
  * Exposes only the members needed by API consumers.
  */
-export interface IRenderer {
+export interface IWebglRenderer {
   /** The THREE WebGL renderer. */
   readonly three: THREE.WebGLRenderer
   /** Interface to interact with section box directly without using the gizmo. */

@@ -8,7 +8,7 @@ import { ISignal, SignalDispatcher } from 'ste-signals'
 import { RenderScene } from '../rendering/renderScene'
 import { ViewerSettings } from '../settings/viewerSettings'
 import { Viewport } from '../viewport'
-import { CameraSaveState, ICamera } from './cameraInterface'
+import { CameraSaveState, IWebglCamera } from './cameraInterface'
 import { CameraMovement } from './cameraMovement'
 import { CameraLerp } from './cameraMovementLerp'
 import { CameraMovementSnap } from './cameraMovementSnap'
@@ -19,7 +19,7 @@ import { PerspectiveCamera } from './cameraPerspective'
  * @internal
  * Manages viewer camera movement and position
  */
-export class Camera implements ICamera {
+export class Camera implements IWebglCamera {
   readonly camPerspective: PerspectiveCamera
   readonly camOrthographic: OrthographicCamera
 

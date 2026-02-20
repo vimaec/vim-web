@@ -28,7 +28,7 @@ const RenderDelayMs = 500
 /**
  * Interface defining the basic decoder operations
  */
-export interface IDecoder {
+export interface IUltraDecoder {
   /** Indicates if the decoder is ready to process frames */
   ready: boolean;
   /** Indicates if the decoder is currently paused */
@@ -42,7 +42,7 @@ export interface IDecoder {
 /**
  * @internal
  */
-export class Decoder implements IDecoder {
+export class Decoder implements IUltraDecoder {
   private _decoder: globalThis.VideoDecoder | undefined
   private readonly _canvas: OffscreenCanvas
   private readonly _renderer: WebGLRenderer

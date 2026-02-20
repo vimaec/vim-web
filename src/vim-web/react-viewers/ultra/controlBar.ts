@@ -10,7 +10,7 @@ import { SideState } from '../state/sideState'
 import { UltraSettings } from './settings'
 
 export function useUltraControlBar (
-  viewer: Core.Ultra.Viewer,
+  viewer: Core.Ultra.UltraCoreViewer,
   section: SectionBoxApi,
   isolation: IsolationApi,
   camera: CameraApi,

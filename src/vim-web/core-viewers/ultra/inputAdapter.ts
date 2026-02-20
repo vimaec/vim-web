@@ -1,6 +1,6 @@
 import { IInputAdapter } from "../shared/input/inputAdapter";
 import { InputHandler } from "../shared/input/inputHandler";
-import { Viewer } from "./viewer";
+import { UltraViewer } from "./viewer";
 import * as THREE from 'three';
 
 /**
@@ -25,7 +25,7 @@ const CODE_TO_KEYCODE: Record<string, number> = {
  * @param viewer - The target viewer.
  * @returns An `InputHandler` instance wired to the viewer.
  */
-export function ultraInputAdapter(viewer: Viewer) {
+export function ultraInputAdapter(viewer: UltraViewer) {
   return new InputHandler(
     viewer.viewport.canvas,
     createAdapter(viewer),
@@ -37,7 +37,7 @@ export function ultraInputAdapter(viewer: Viewer) {
  * @param viewer - The viewer instance.
  * @returns A configured `IInputAdapter`.
  */
-function createAdapter(viewer: Viewer): IInputAdapter {
+function createAdapter(viewer: UltraViewer): IInputAdapter {
   return {
     init: () => {
       // No initialization needed
@@ -138,7 +138,7 @@ function createAdapter(viewer: Viewer): IInputAdapter {
 /**
  * Frames the camera around the current selection.
  */
-async function frameSelection(viewer: Viewer) {
+async function frameSelection(viewer: UltraViewer) {
   const box = await viewer.selection.getBoundingBox();
   if (!box) return;
   viewer.camera.frameBox(box);
@@ -147,7 +147,7 @@ async function frameSelection(viewer: Viewer) {
 /**
  * Sends a key event to the viewer RPC system.
  */
-function sendKey(viewer: Viewer, code: string, pressed: boolean): boolean {
+function sendKey(viewer: UltraViewer, code: string, pressed: boolean): boolean {
   const key = CODE_TO_KEYCODE[code];
   if (!key) return false;
   viewer.rpc.RPCKeyEvent(key, pressed);

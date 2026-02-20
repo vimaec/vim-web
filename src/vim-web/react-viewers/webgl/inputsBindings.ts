@@ -8,7 +8,7 @@ import { CameraApi } from '../state/cameraState'
 import { IsolationApi } from '../state/sharedIsolation'
 
 export function applyWebglBindings(
-  viewer: Core.Webgl.Viewer,
+  viewer: Core.Webgl.WebglCoreViewer,
   camera: CameraApi,
   isolation: IsolationApi,
   sideState: SideState)

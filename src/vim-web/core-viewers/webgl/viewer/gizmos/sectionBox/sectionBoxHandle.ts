@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils';
-import { ICamera } from '../../camera';
+import { IWebglCamera } from '../../camera';
 /** @internal */
 export type AxisName = 'x' | 'y' | 'z';
 
@@ -15,7 +15,7 @@ export class SectionBoxHandle extends THREE.Mesh {
   
   private _materials: THREE.MeshBasicMaterial[];
 
-  private _camera : ICamera | undefined
+  private _camera : IWebglCamera | undefined
   private _camSub : () => void
 
   constructor(axes: AxisName, sign: number, size: number, color?: THREE.Color) {
@@ -54,7 +54,7 @@ export class SectionBoxHandle extends THREE.Mesh {
     this.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), this._forward);
   }
 
-  trackCamera(camera: ICamera) {
+  trackCamera(camera: IWebglCamera) {
     this._camera = camera
     this.update()
     this._camSub = camera.onMoved.subscribe(() => this.update());

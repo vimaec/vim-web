@@ -4,7 +4,7 @@
 
 import * as THREE from 'three'
 import { SectionBoxHandle } from './sectionBoxHandle'
-import { ICamera } from '../../camera'
+import { IWebglCamera } from '../../camera'
 
 /** @internal */
 export class SectionBoxHandles {
@@ -17,7 +17,7 @@ export class SectionBoxHandles {
 
   readonly meshes : THREE.Group
 
-  constructor(camera: ICamera){
+  constructor(camera: IWebglCamera){
     const size = 2
     this.up = new SectionBoxHandle('y', 1, size, new THREE.Color(0x00ff00))
     this.down = new SectionBoxHandle('y', -1, size, new THREE.Color(0x00ff00))

@@ -29,12 +29,12 @@ export type LoadingError = {
  * Includes event emitters for progress updates and completion notifications.
  */
 export class ComponentLoader {
-  private _viewer : Core.Webgl.Viewer
+  private _viewer : Core.Webgl.WebglCoreViewer
   private _modal: React.RefObject<ModalApi>
   private _addLink : boolean = false
 
   constructor (
-    viewer : Core.Webgl.Viewer,
+    viewer : Core.Webgl.WebglCoreViewer,
     modal: React.RefObject<ModalApi>,
     settings: WebglSettings
   ) {
@@ -79,7 +79,7 @@ export class ComponentLoader {
    * @returns A LoadRequest to track progress and get result. The vim is auto-added on success.
    * @throws Error if the viewer has reached maximum capacity (256 vims)
    */
-  open (source: Core.Webgl.RequestSource, settings: OpenSettings = {}): Core.Webgl.ILoadRequest {
+  open (source: Core.Webgl.RequestSource, settings: OpenSettings = {}): Core.Webgl.IWebglLoadRequest {
     return this.loadInternal(source, settings, false)
   }
 
@@ -91,7 +91,7 @@ export class ComponentLoader {
    * @returns A LoadRequest to track progress and get result. The vim is auto-added on success.
    * @throws Error if the viewer has reached maximum capacity (256 vims)
    */
-  load (source: Core.Webgl.RequestSource, settings: OpenSettings = {}): Core.Webgl.ILoadRequest {
+  load (source: Core.Webgl.RequestSource, settings: OpenSettings = {}): Core.Webgl.IWebglLoadRequest {
     return this.loadInternal(source, settings, true)
   }
 

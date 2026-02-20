@@ -1,11 +1,11 @@
 import {type IInputAdapter} from "../../shared/input/inputAdapter"
 import {InputHandler} from "../../shared/input/inputHandler"
-import { Viewer } from "./viewer"
+import { WebglViewer } from "./viewer"
 import { Element3D } from '../loader/element3d'
 import * as THREE from 'three'
 
 /** @internal */
-export function createInputHandler(viewer: Viewer) {
+export function createInputHandler(viewer: WebglViewer) {
   return new InputHandler(
     viewer.viewport.canvas,
     createAdapter(viewer),
@@ -13,7 +13,7 @@ export function createInputHandler(viewer: Viewer) {
   )
 }
 
-function createAdapter(viewer: Viewer ) : IInputAdapter {
+function createAdapter(viewer: WebglViewer ) : IInputAdapter {
   let _pinchWorldPoint: THREE.Vector3 | undefined
   let _pinchStartDist = 0
 

@@ -1,31 +1,31 @@
 import type { ISimpleEvent } from 'ste-simple-events'
 import {type IInputHandler} from '../shared'
 import {type InputHandler} from '../shared/input/inputHandler'
-import { Camera, ICamera } from './camera'
+import { Camera, IUltraCamera } from './camera'
 import { ColorManager, type IColorManager } from './colorManager'
-import { Decoder, IDecoder } from './decoder'
+import { Decoder, IUltraDecoder } from './decoder'
 import { DecoderWithWorker } from './decoderWithWorker'
 import { ultraInputAdapter } from './inputAdapter'
-import { type ILoadRequest, LoadRequest } from './loadRequest'
+import { type IUltraLoadRequest, LoadRequest } from './loadRequest'
 import { defaultLogger, ILogger } from '../shared/logger'
 import { IUltraRaycaster, Raycaster } from './raycaster'
-import { IRenderer, Renderer } from './renderer'
+import { IUltraRenderer, Renderer } from './renderer'
 import { RpcClient } from './rpcClient'
 import { RpcSafeClient, VimSource } from './rpcSafeClient'
-import { SectionBox, type ISectionBox } from './sectionBox'
-import { createSelection, ISelection } from './selection'
+import { SectionBox, type IUltraSectionBox } from './sectionBox'
+import { createSelection, IUltraSelection } from './selection'
 import { ClientError, ClientState, ConnectionSettings, SocketClient } from './socketClient'
-import { IViewport, Viewport } from './viewport'
+import { IUltraViewport, Viewport } from './viewport'
 import { Vim, type IUltraVim } from './vim'
 import { type IReadonlyVimCollection, VimCollection } from '../shared/vimCollection'
 
 export const INVALID_HANDLE = 0xffffffff
 
 /**
- * The main Viewer class responsible for managing VIM files,
+ * The main UltraViewer class responsible for managing VIM files,
  * handling connections, and coordinating various components like the camera, decoder, and inputs.
  */
-export class Viewer {
+export class UltraViewer {
   /**
    * The type of the viewer, indicating it is a WebGL viewer.
    * Useful for distinguishing between different viewer types in a multi-viewer application.
@@ -40,7 +40,7 @@ export class Viewer {
   private readonly _renderer : Renderer
   private readonly _viewport: Viewport
   private readonly _camera: Camera
-  private readonly _selection: ISelection
+  private readonly _selection: IUltraSelection
   private readonly _raycaster: Raycaster
   private readonly _vims : VimCollection<Vim>
   private _disposed = false
@@ -49,7 +49,7 @@ export class Viewer {
   /**
    * The camera API for controlling camera movements and settings.
    */
-  get camera (): ICamera {
+  get camera (): IUltraCamera {
     return this._camera
   }
 
@@ -73,15 +73,15 @@ export class Viewer {
   /**
    * The viewport API for managing the rendering viewport.
    */
-  get viewport (): IViewport {
+  get viewport (): IUltraViewport {
     return this._viewport
   }
 
-  get renderer (): IRenderer {
+  get renderer (): IUltraRenderer {
     return this._renderer
   }
 
-  get decoder (): IDecoder {
+  get decoder (): IUltraDecoder {
     return this._decoder
   }
 
@@ -89,7 +89,7 @@ export class Viewer {
     return this._raycaster
   }
 
-  get selection (): ISelection {
+  get selection (): IUltraSelection {
     return this._selection
   }
 
@@ -131,27 +131,27 @@ export class Viewer {
   /**
    * The section box API for controlling the section box.
    */
-  get sectionBox (): ISectionBox {
+  get sectionBox (): IUltraSectionBox {
     return this._sectionBox
   }
 
   /**
-   * Creates a Viewer instance with a new canvas element appended to the given parent element.
+   * Creates an UltraViewer instance with a new canvas element appended to the given parent element.
    * @param parent - The parent HTML element to which the canvas will be appended.
    * @param logger - Optional logger for logging messages.
-   * @returns A new instance of the Viewer class.
+   * @returns A new instance of the UltraViewer class.
    */
-  static createWithCanvas (parent: HTMLElement, logger?: ILogger): Viewer {
+  static createWithCanvas (parent: HTMLElement, logger?: ILogger): UltraViewer {
     const canvas = document.createElement('canvas')
     parent.appendChild(canvas)
     canvas.style.width = '100%'
     canvas.style.height = '100%'
-    const uv = new Viewer(canvas, logger)
+    const uv = new UltraViewer(canvas, logger)
     return uv
   }
 
   /**
-   * Constructs a new Viewer instance.
+   * Constructs a new UltraViewer instance.
    * @param canvas - The HTML canvas element for rendering.
    * @param logger - Optional logger for logging messages.
    */
@@ -278,7 +278,7 @@ export class Viewer {
    * @param source - The path or URL to the VIM file.
    * @returns A load request object that can be used to wait for the load to complete.
    */
-  load (source: VimSource): ILoadRequest {
+  load (source: VimSource): IUltraLoadRequest {
     if (typeof source.url !== 'string' || source.url.trim() === '') {
       const request = new LoadRequest()
       request.error('loadingError', 'Invalid path')

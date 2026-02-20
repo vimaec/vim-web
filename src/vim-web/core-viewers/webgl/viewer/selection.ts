@@ -15,7 +15,7 @@ export interface ISelectable extends IVimElement {
   readonly instances: number[] | undefined
 }
 
-export type ISelection = Selection<ISelectable>
+export type IWebglSelection = Selection<ISelectable>
 
 /** @internal */
 export function createSelection() {

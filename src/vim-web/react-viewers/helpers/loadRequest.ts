@@ -13,9 +13,9 @@ type RequestCallbacks = {
  * Implements ILoadRequest for compatibility with Ultra viewer's load request interface.
  * @internal
  */
-export class LoadRequest implements Core.Webgl.ILoadRequest {
+export class LoadRequest implements Core.Webgl.IWebglLoadRequest {
   private _sourceUrl: string | undefined
-  private _request: Core.Webgl.ILoadRequest
+  private _request: Core.Webgl.IWebglLoadRequest
   private _callbacks: RequestCallbacks
   private _onLoaded?: (vim: Core.Webgl.IWebglVim) => Promise<void> | void
   private _progressQueue = new AsyncQueue<Core.IProgress>()
@@ -23,7 +23,7 @@ export class LoadRequest implements Core.Webgl.ILoadRequest {
 
   constructor (
     callbacks: RequestCallbacks,
-    request: Core.Webgl.ILoadRequest,
+    request: Core.Webgl.IWebglLoadRequest,
     sourceUrl: string | undefined,
     onLoaded?: (vim: Core.Webgl.IWebglVim) => Promise<void> | void
   ) {

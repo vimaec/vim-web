@@ -2,7 +2,7 @@
  * @module viw-webgl-viewer/gizmos/sectionBox
  */
 
-import { Viewer } from '../../viewer';
+import { WebglViewer } from '../../viewer';
 import { Renderer } from '../../rendering/renderer';
 import * as THREE from 'three';
 import { BoxInputs } from './sectionBoxInputs';
@@ -14,7 +14,7 @@ import { safeBox } from '../../../../../utils/threeUtils';
 /**
  * Public interface for the section box gizmo.
  */
-export interface ISectionBox {
+export interface IWebglSectionBox {
   /** Dispatches when clip, visible, or interactive change. */
   readonly onStateChanged: ISignal
   /** Dispatches when the user finishes manipulating the box. */
@@ -43,13 +43,13 @@ export interface ISectionBox {
  *  - Updates a {@link SectionBoxGizmo} to visualize the clipping box.
  *  - Dispatches signals when the box is resized or interaction state changes.
  */
-export class SectionBox implements ISectionBox {
+export class SectionBox implements IWebglSectionBox {
   // -------------------------------------------------------------------------
   // Private fields
   // -------------------------------------------------------------------------
 
   private _renderer: Renderer;
-  private _viewer: Viewer;
+  private _viewer: WebglViewer;
   private _gizmos: SectionBoxGizmo;
   private _inputs: BoxInputs;
   
@@ -107,9 +107,9 @@ export class SectionBox implements ISectionBox {
   /**
    * Creates a new SectionBox gizmo controller.
    * 
-   * @param viewer - The parent {@link Viewer} in which the section box is rendered.
+   * @param viewer - The parent {@link WebglViewer} in which the section box is rendered.
    */
-  constructor(renderer: Renderer, viewer: Viewer) {
+  constructor(renderer: Renderer, viewer: WebglViewer) {
     this._renderer = renderer;
     this._viewer = viewer;
 

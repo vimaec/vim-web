@@ -29,7 +29,7 @@ import { TreeActionApi } from '../bim/bimTree'
 import { Container, createContainer } from '../container'
 import { useViewerState } from './viewerState'
 import { LogoMemo } from '../panels/logo'
-import { ViewerApi } from './viewerApi'
+import { WebglViewerApi } from './viewerApi'
 import { useBimInfo } from '../bim/bimInfoData'
 import { whenTrue } from '../helpers/utils'
 import { ComponentLoader } from './loading'
@@ -55,12 +55,12 @@ import { applyWebglSettings, getWebglSettingsContent } from './settingsPanel'
 *  @param coreSettings Viewer settings.
  * @returns An object containing the resulting container, reactRoot, and viewer.
  */
-export function createViewer (
+export function createWebglViewer (
   container?: Container | HTMLElement,
   settings: PartialWebglSettings = {},
   coreSettings: Core.Webgl.PartialViewerSettings = {}
-) : Promise<ViewerApi> {
-  const controllablePromise = new ControllablePromise<ViewerApi>()
+) : Promise<WebglViewerApi> {
+  const controllablePromise = new ControllablePromise<WebglViewerApi>()
 
   // Create the container
   const cmpContainer = container instanceof HTMLElement
@@ -68,14 +68,14 @@ export function createViewer (
     : container ?? createContainer()
 
   // Create the viewer inside the container
-  const viewer = new Core.Webgl.Viewer(coreSettings)
+  const viewer = new Core.Webgl.WebglCoreViewer(coreSettings)
   viewer.viewport.reparent(cmpContainer.gfx)
 
   // Create the React root
   const reactRoot = createRoot(cmpContainer.ui)
 
   // Patch the viewer to clean up after itself
-  const patchRef = (cmp : ViewerApi) => {
+  const patchRef = (cmp : WebglViewerApi) => {
     cmp.dispose = () => {
       viewer.dispose()
       cmpContainer.dispose()  
@@ -87,10 +87,10 @@ export function createViewer (
   }
 
   reactRoot.render(
-    <Viewer
+    <WebglViewerComponent
       container={cmpContainer}
       viewer={viewer}
-      onMount = {(cmp : ViewerApi) => controllablePromise.resolve(patchRef(cmp))}
+      onMount = {(cmp : WebglViewerApi) => controllablePromise.resolve(patchRef(cmp))}
       settings={settings}
     />
   )
@@ -104,10 +104,10 @@ export function createViewer (
  * @param onMount A callback function triggered when the viewer is mounted. Receives a reference to the Vim viewer.
  * @param settings Optional settings for configuring the Vim viewer's behavior.
  */
-export function Viewer (props: {
+export function WebglViewerComponent (props: {
   container: Container
-  viewer: Core.Webgl.Viewer
-  onMount: (viewer: ViewerApi) => void
+  viewer: Core.Webgl.WebglCoreViewer
+  onMount: (viewer: WebglViewerApi) => void
   settings?: PartialWebglSettings
 }) {
   const settings = useSettings(props.settings ?? {}, getDefaultSettings(), (s) => applyWebglSettings(s))

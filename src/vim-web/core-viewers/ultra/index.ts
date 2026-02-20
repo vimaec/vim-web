@@ -1,24 +1,24 @@
 import "./style.css"
 
 // Viewer
-export { Viewer, INVALID_HANDLE } from './viewer'
+export { UltraViewer as UltraCoreViewer, INVALID_HANDLE } from './viewer'
 
 // Data model (interfaces — concrete classes are @internal)
 export type { IUltraElement3D } from './element3d'
 export type { IUltraVim } from './vim'
 
 // Viewer component interfaces (returned by Viewer getters)
-export type { ICamera } from './camera'
-export type { IRenderer } from './renderer'
-export type { IDecoder } from './decoder'
-export type { IViewport } from './viewport'
-export type { ISelection } from './selection'
+export type { IUltraCamera } from './camera'
+export type { IUltraRenderer } from './renderer'
+export type { IUltraDecoder } from './decoder'
+export type { IUltraViewport } from './viewport'
+export type { IUltraSelection } from './selection'
 export type { IUltraRaycaster, IUltraRaycastResult } from './raycaster'
 export type { IReadonlyVimCollection } from '../shared/vimCollection'
 export type { ILogger } from '../shared/logger'
 export type { IColorManager } from './colorManager'
 export type { IRemoteColor } from './remoteColor'
-export type { ISectionBox } from './sectionBox'
+export type { IUltraSectionBox } from './sectionBox'
 
 // RPC types
 export { Segment } from './rpcTypes'
@@ -36,7 +36,7 @@ export { defaultSceneSettings } from './rpcSafeClient'
 
 // Loading
 export type { VimSource, VimLoadingState } from './rpcSafeClient'
-export type { ILoadRequest, VimRequestErrorType } from './loadRequest'
+export type { IUltraLoadRequest, VimRequestErrorType } from './loadRequest'
 
 // Connection
 export type { ConnectionSettings } from './socketClient'

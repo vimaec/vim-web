@@ -5,7 +5,7 @@ import { RpcSafeClient } from "./rpcSafeClient";
 /**
  * Interface defining viewport functionality
  */
-export interface IViewport {
+export interface IUltraViewport {
   /** The HTML canvas element used for rendering */
   canvas: HTMLCanvasElement
   

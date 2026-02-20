@@ -30,7 +30,7 @@ export type RequestSource = {
   headers?: Record<string, string>,
 }
 
-export type ILoadRequest = BaseILoadRequest<IWebglVim>
+export type IWebglLoadRequest = BaseILoadRequest<IWebglVim>
 
 /**
  * @internal

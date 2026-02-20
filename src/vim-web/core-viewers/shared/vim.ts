@@ -8,7 +8,7 @@ export interface IVimElement{
   /**
    * The vim from which this object came.
    */
-  vim: IVim<IVimElement>
+  vim: IVim<IVimElement> | undefined
 
   /**
    * The bounding box of the object.

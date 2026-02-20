@@ -109,7 +109,7 @@ export interface ICameraMovement {
  * Interface representing a camera with various properties and methods for controlling its behavior.
  */
 
-export interface ICamera {
+export interface IWebglCamera {
   /**
    * A signal that is dispatched when camera settings change.
    */
@@ -230,11 +230,11 @@ export interface ICamera {
 
 /** @internal */
 export class CameraSaveState{
-  private _camera: ICamera
-  private _position: THREE.Vector3 = new THREE.Vector3() 
+  private _camera: IWebglCamera
+  private _position: THREE.Vector3 = new THREE.Vector3()
   private _target: THREE.Vector3 = new THREE.Vector3()
 
-  constructor (camera: ICamera) {
+  constructor (camera: IWebglCamera) {
     this._camera = camera
   }
   save () {

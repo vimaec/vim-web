@@ -1,6 +1,6 @@
 import { useEffect, useImperativeHandle, useRef, useState } from "react";
 
-export interface ICustomizer<TData> {
+interface ICustomizer<TData> {
   customize(fn: (entries: TData) => TData);
 }
 

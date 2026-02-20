@@ -28,7 +28,7 @@ export const defaultRenderSettings: RenderSettings = {
 /**
  * Interface defining the basic renderer capabilities
  */
-export interface IRenderer {
+export interface IUltraRenderer {
   onSceneUpdated: ISignal
   ghostColor: THREE.Color
   ghostOpacity: number
@@ -45,7 +45,7 @@ export interface IRenderer {
  * Renderer class that handles 3D scene rendering and settings management
  * @internal
  */
-export class Renderer implements IRenderer {
+export class Renderer implements IUltraRenderer {
 
   private _rpc: RpcSafeClient
   private _logger : ILogger
@@ -164,7 +164,7 @@ export class Renderer implements IRenderer {
    * @returns Current background color as RGBA
    */
   get backgroundColor(): THREE.Color {
-    return this._settings.backgroundColor.toThree();
+    return this._settings.backgroundColor;
   }
 
   // Setters
@@ -253,9 +253,8 @@ export class Renderer implements IRenderer {
    * @param value - New background color as THREE.Color
    */
   set backgroundColor(value: THREE.Color) {
-    const color = RpcUtils.RGBAfromThree(value, 1);
-    if (this._settings.backgroundColor.equals(color)) return;
-    this._settings.backgroundColor = color;
+    if (this._settings.backgroundColor.equals(value)) return;
+    this._settings.backgroundColor = value.clone();
     this._updateLighting = true
     this.requestSettingsUpdate();
   }

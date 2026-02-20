@@ -1,15 +1,17 @@
-export const showControls = 'showControls'
-export const dividerCamera = 'dividerCamera'
-export const resetCamera = 'resetCamera'
-export const zoomToFit = 'zoomToFit'
-export const dividerSelection = 'dividerSelection'
-export const isolateSelection = 'isolateObject'
-export const selectSimilar = 'selectSimilar'
-export const hideObject = 'hideObject'
-export const showObject = 'showObject'
-export const clearSelection = 'clearSelection'
-export const showAll = 'showAll'
-export const dividerSection = 'dividerSection'
-export const ignoreSection = 'ignoreSection'
-export const resetSection = 'resetSection'
-export const fitSectionToSelection = 'fitSectionToSelection'
+export const contextMenuIds = {
+  showControls: 'showControls',
+  dividerCamera: 'dividerCamera',
+  resetCamera: 'resetCamera',
+  zoomToFit: 'zoomToFit',
+  dividerSelection: 'dividerSelection',
+  isolateSelection: 'isolateObject',
+  selectSimilar: 'selectSimilar',
+  hideObject: 'hideObject',
+  showObject: 'showObject',
+  clearSelection: 'clearSelection',
+  showAll: 'showAll',
+  dividerSection: 'dividerSection',
+  ignoreSection: 'ignoreSection',
+  resetSection: 'resetSection',
+  fitSectionToSelection: 'fitSectionToSelection',
+} as const

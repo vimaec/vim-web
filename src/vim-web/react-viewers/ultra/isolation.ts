@@ -3,16 +3,16 @@ import * as Core from "../../core-viewers";
 import { useStateRef } from "../helpers/reactUtils";
 
 import VisibilityState = Core.Ultra.VisibilityState
-import Viewer = Core.Ultra.Viewer
+import UltraCoreViewer = Core.Ultra.UltraCoreViewer
 type Vim = Core.Ultra.IUltraVim
 type Element3D = Core.Ultra.IUltraElement3D
 
-export function useUltraIsolation(viewer: Viewer){
+export function useUltraIsolation(viewer: UltraCoreViewer){
   const adapter = createAdapter(viewer)
   return useSharedIsolation(adapter)
 }
 
-function createAdapter(viewer: Viewer): IIsolationAdapter {
+function createAdapter(viewer: UltraCoreViewer): IIsolationAdapter {
 
   const ghost = useStateRef<boolean>(false);
 
@@ -125,7 +125,7 @@ function createAdapter(viewer: Viewer): IIsolationAdapter {
   };
 }
 
-function checkSelectionState(viewer: Viewer, test: (state: VisibilityState) => boolean): boolean {
+function checkSelectionState(viewer: UltraCoreViewer, test: (state: VisibilityState) => boolean): boolean {
   if(!viewer.selection.any()){
     return false
   }
@@ -133,7 +133,7 @@ function checkSelectionState(viewer: Viewer, test: (state: VisibilityState) => b
   return viewer.selection.getAll().every(obj => test(obj.state))
 }
 
-function getVisibilityState(viewer: Viewer): VisibilityStatus {
+function getVisibilityState(viewer: UltraCoreViewer): VisibilityStatus {
   let all = true;
   let none = true;
   let allButSelectionFlag = true;
@@ -159,11 +159,11 @@ function getVisibilityState(viewer: Viewer): VisibilityStatus {
 }
 
 //returns true if only the selection is visible
-function onlySelection(viewer: Viewer, vim: Vim): boolean {
+function onlySelection(viewer: UltraCoreViewer, vim: Vim): boolean {
   return false
 }
 
 //returns true if only the selection is hidden
-function allButSelection(viewer: Viewer, vim: Vim): boolean {
+function allButSelection(viewer: UltraCoreViewer, vim: Vim): boolean {
   return false
 }

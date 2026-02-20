@@ -8,7 +8,7 @@ import * as THREE from 'three'
  * Interface defining camera control operations in the 3D viewer
  * @interface
  */
-export interface ICamera {
+export interface IUltraCamera {
   /**
    * Frames all Vim models in the viewer to fit within the camera view
    * @param {number} [blendTime=0.5] - Animation duration in seconds
@@ -64,7 +64,7 @@ export interface ICamera {
 /**
  * @internal
  */
-export class Camera implements ICamera {
+export class Camera implements IUltraCamera {
   private _rpc: RpcSafeClient
   private _lastPosition : Segment | undefined
   private _defaultBlendTime = 0.5

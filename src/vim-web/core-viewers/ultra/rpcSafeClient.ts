@@ -1,4 +1,6 @@
 import * as RpcTypes from "./rpcTypes"
+import * as RpcUtils from "./rpcUtils"
+import * as THREE from "three"
 import { MaterialHandle, RpcClient } from "./rpcClient"
 import { Validation } from "../../utils";
 import { batchArray, batchArrays } from "../../utils/array"
@@ -85,9 +87,9 @@ export type SceneSettings = {
   backgroundBlur: number;
 
   /**
-   * Background color in linear RGBA format.
+   * Background color in linear RGB format.
    */
-  backgroundColor: RpcTypes.RGBA;
+  backgroundColor: THREE.Color;
 }
 
 /**
@@ -99,7 +101,7 @@ export const defaultSceneSettings: SceneSettings = {
   hdrBackgroundScale: 1.0,
   hdrBackgroundSaturation: 1.0,
   backgroundBlur: 1.0,
-  backgroundColor: new RpcTypes.RGBA(0.9, 0.9, 0.9, 1.0)
+  backgroundColor: new THREE.Color(0.9, 0.9, 0.9)
 }
 
 /**
@@ -190,7 +192,7 @@ export class RpcSafeClient {
         Validation.clamp01(s.hdrBackgroundScale),
         Validation.clamp01(s.hdrBackgroundSaturation),
         Validation.clamp01(s.backgroundBlur),
-        Validation.clampRGBA01(s.backgroundColor)
+        RpcUtils.RGBAfromThree(s.backgroundColor, 1)
       ),
       false
     )
@@ -208,7 +210,7 @@ export class RpcSafeClient {
       Validation.clamp01(s.hdrBackgroundScale),
       Validation.clamp01(s.hdrBackgroundSaturation),
       Validation.clamp01(s.backgroundBlur),
-      Validation.clampRGBA01(s.backgroundColor)
+      RpcUtils.RGBAfromThree(s.backgroundColor, 1)
     )
   }
 

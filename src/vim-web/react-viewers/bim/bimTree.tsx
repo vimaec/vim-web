@@ -18,7 +18,7 @@ import { BimTreeData, VimTreeNode } from './bimTreeData'
 import { IsolationApi } from '../state/sharedIsolation'
 
 type IElement3D = Core.Webgl.IElement3D
-import Viewer = Core.Webgl.Viewer
+import WebglCoreViewer = Core.Webgl.WebglCoreViewer
 
 export type TreeActionApi = {
   showAll: () => void
@@ -36,7 +36,7 @@ export type TreeActionApi = {
  */
 export function BimTree (props: {
   actionRef: React.MutableRefObject<TreeActionApi>
-  viewer: Viewer
+  viewer: WebglCoreViewer
   camera: CameraApi
   objects: IElement3D[]
   isolation: IsolationApi
@@ -261,7 +261,7 @@ export function BimTree (props: {
 }
 
 function toggleVisibility (
-  viewer: Viewer,
+  viewer: WebglCoreViewer,
   isolation: IsolationApi,
   tree: BimTreeData,
   index: number
@@ -282,7 +282,7 @@ function toggleVisibility (
 
 function updateViewerSelection (
   tree: BimTreeData,
-  viewer: Viewer,
+  viewer: WebglCoreViewer,
   nodes: number[],
   operation: 'add' | 'remove' | 'set'
 ) {

@@ -15,7 +15,7 @@ const SEARCH_DELAY_MS = 200
  * @param count current search result count.
  */
 export function BimSearch (props: {
-  viewer: Core.Webgl.Viewer
+  viewer: Core.Webgl.WebglCoreViewer
   filter: string
   setFilter: (s: string) => void
   count: number

@@ -1,1 +1,1 @@
-export type { ICamera, ICameraMovement } from './cameraInterface'
+export type { IWebglCamera, ICameraMovement } from './cameraInterface'

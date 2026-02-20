@@ -6,14 +6,14 @@ import * as THREE from 'three'
 
 // internal
 import { Camera } from './camera/camera'
-import { ICamera } from './camera/cameraInterface'
+import { IWebglCamera } from './camera/cameraInterface'
 import { Gizmos, IGizmos } from './gizmos/gizmos'
-import { IRaycaster } from './raycaster'
+import { IWebglRaycaster } from './raycaster'
 import { GpuPicker } from './rendering/gpuPicker'
 import { RenderScene } from './rendering/renderScene'
-import { createSelection, ISelection } from './selection'
+import { createSelection, IWebglSelection } from './selection'
 import { createViewerSettings, PartialViewerSettings, ViewerSettings } from './settings/viewerSettings'
-import { IViewport, Viewport } from './viewport'
+import { IWebglViewport, Viewport } from './viewport'
 
 // loader
 import { ISignal, SignalDispatcher } from 'ste-signals'
@@ -24,14 +24,14 @@ import { Vim, IWebglVim } from '../loader/vim'
 import { Scene } from '../loader/scene'
 import { VimCollection } from '../../shared/vimCollection'
 import { createInputHandler } from './inputAdapter'
-import { IRenderer, Renderer } from './rendering/renderer'
-import { LoadRequest as CoreLoadRequest, RequestSource, ILoadRequest } from '../loader/progressive/loadRequest'
+import { IWebglRenderer, Renderer } from './rendering/renderer'
+import { LoadRequest as CoreLoadRequest, RequestSource, IWebglLoadRequest } from '../loader/progressive/loadRequest'
 import { VimPartialSettings } from '../loader/vimSettings'
 
 /**
  * Viewer and loader for vim files.
  */
-export class Viewer {
+export class WebglViewer {
   /**
    * The type of the viewer, indicating it is a WebGL viewer.
    * Useful for distinguishing between different viewer types in a multi-viewer application.
@@ -45,19 +45,19 @@ export class Viewer {
   /**
    * The renderer used by the viewer for rendering scenes.
    */
-  get renderer(): IRenderer { return this._renderer }
+  get renderer(): IWebglRenderer { return this._renderer }
   private readonly _renderer: Renderer
 
   /**
    * The interface for managing the HTML canvas viewport.
    */
-  get viewport(): IViewport { return this._viewport }
+  get viewport(): IWebglViewport { return this._viewport }
   private readonly _viewport: Viewport
 
   /**
    * The interface for managing viewer selection.
    */
-  readonly selection: ISelection
+  readonly selection: IWebglSelection
 
   /**
    * The interface for manipulating default viewer inputs.
@@ -68,7 +68,7 @@ export class Viewer {
   /**
    * The interface for performing raycasting into the scene to find objects.
    */
-  readonly raycaster: IRaycaster
+  readonly raycaster: IWebglRaycaster
 
   /**
    * The materials used by the viewer to render the vims.
@@ -79,7 +79,7 @@ export class Viewer {
   /**
    * The interface for manipulating the viewer's camera.
    */
-  get camera (): ICamera {
+  get camera (): IWebglCamera {
     return this._camera
   }
 
@@ -175,7 +175,7 @@ export class Viewer {
    * @returns A load request to track progress and get the result.
    * @throws Error if the viewer has reached maximum capacity (256 vims)
    */
-  load (source: RequestSource, settings?: VimPartialSettings): ILoadRequest {
+  load (source: RequestSource, settings?: VimPartialSettings): IWebglLoadRequest {
     const vimIndex = this.vimCollection.allocateId()
     if (vimIndex === undefined) {
       throw new Error('Cannot load vim: maximum of 256 vims already loaded')

@@ -1,4 +1,4 @@
-export * as Ids from './contextMenuIds'
+export { contextMenuIds as Ids } from './contextMenuIds'
 
 export type {
   ContextMenuApi,

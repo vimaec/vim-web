@@ -10,7 +10,7 @@ import { SettingsApi } from '../state/settingsApi';
 import { UltraSettings } from './settings';
 import { Container } from '../container';
 
-export type ViewerApi = {
+export type UltraViewerApi = {
   /**
    * Discriminant to distinguish Ultra from WebGL viewer.
    */
@@ -24,7 +24,7 @@ export type ViewerApi = {
   /**
    * The Vim viewer instance associated with the viewer.
    */
-  core: Core.Ultra.Viewer;
+  core: Core.Ultra.UltraCoreViewer;
 
   /**
    * API to manage the modal dialog.
@@ -69,5 +69,5 @@ export type ViewerApi = {
    * Loads a file into the viewer.
    * @param url The URL of the file to load.
    */
-  load(url: Core.Ultra.VimSource): Core.Ultra.ILoadRequest;
+  load(url: Core.Ultra.VimSource): Core.Ultra.IUltraLoadRequest;
 };

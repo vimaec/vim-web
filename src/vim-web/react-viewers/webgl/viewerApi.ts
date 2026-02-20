@@ -21,7 +21,7 @@ export type { OpenSettings } from './loading'
 /**
  * Root-level API of the Vim viewer.
  */
-export type ViewerApi = {
+export type WebglViewerApi = {
   /**
    * Discriminant to distinguish WebGL from Ultra viewer.
    */
@@ -35,7 +35,7 @@ export type ViewerApi = {
   /**
    * Vim WebGL viewer around which the WebGL viewer is built.
    */
-  core: Core.Webgl.Viewer
+  core: Core.Webgl.WebglCoreViewer
 
   /**
    * Loads a vim file with all geometry for immediate viewing.
@@ -43,7 +43,7 @@ export type ViewerApi = {
    * @param settings Optional settings
    * @returns LoadRequest to track progress and get result
    */
-  load: (source: Core.Webgl.RequestSource, settings?: OpenSettings) => Core.Webgl.ILoadRequest
+  load: (source: Core.Webgl.RequestSource, settings?: OpenSettings) => Core.Webgl.IWebglLoadRequest
 
   /**
    * Opens a vim file without loading geometry.
@@ -52,7 +52,7 @@ export type ViewerApi = {
    * @param settings Optional settings
    * @returns LoadRequest to track progress and get result
    */
-  open: (source: Core.Webgl.RequestSource, settings?: OpenSettings) => Core.Webgl.ILoadRequest
+  open: (source: Core.Webgl.RequestSource, settings?: OpenSettings) => Core.Webgl.IWebglLoadRequest
 
   /**
    * Unloads a vim from the viewer and disposes it.

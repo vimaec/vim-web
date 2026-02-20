@@ -10,9 +10,9 @@ import {
   MeasureStyle,
   MeasureElement
 } from './measureHtml'
-import { ICamera } from '../../camera/cameraInterface'
+import { IWebglCamera } from '../../camera/cameraInterface'
 import { Renderer } from '../../rendering/renderer'
-import { IViewport } from '../../viewport'
+import { IWebglViewport } from '../../viewport'
 import { Layers } from '../../raycaster'
 
 /**
@@ -97,10 +97,10 @@ class MeasureMarker {
   mesh: THREE.Mesh
   private _material: THREE.Material
   private _materialAlways: THREE.Material
-  private _camera: ICamera
+  private _camera: IWebglCamera
   private disconnect: () => void
 
-  constructor (color: THREE.Color, camera: ICamera) {
+  constructor (color: THREE.Color, camera: IWebglCamera) {
     this._material = new THREE.MeshBasicMaterial({
       color
     })
@@ -148,7 +148,7 @@ class MeasureMarker {
  */
 export class MeasureGizmo {
   private _renderer: Renderer
-  private _camera: ICamera
+  private _camera: IWebglCamera
   private _startMarker: MeasureMarker
   private _endMarker: MeasureMarker
   private _line: MeasureLine
@@ -160,7 +160,7 @@ export class MeasureGizmo {
   private _html: MeasureElement
   private _animId: number | undefined
 
-  constructor (renderer: Renderer, viewport: IViewport, camera: ICamera) {
+  constructor (renderer: Renderer, viewport: IWebglViewport, camera: IWebglCamera) {
     this._renderer = renderer
     this._camera = camera
     const canvasSize = viewport.getSize()

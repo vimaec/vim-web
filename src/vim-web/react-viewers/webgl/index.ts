@@ -1,6 +1,6 @@
 // Public API
-export { createViewer, Viewer } from './viewer'
-export type { ViewerApi, OpenSettings } from './viewerApi'
+export { createWebglViewer, WebglViewerComponent as WebglViewer } from './viewer'
+export type { WebglViewerApi, OpenSettings } from './viewerApi'
 
 // Settings
 export { getDefaultSettings } from './settings'

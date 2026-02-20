@@ -23,7 +23,7 @@ export class LoadError extends SharedLoadError implements IUltraLoadError {
   }
 }
 
-export type ILoadRequest = BaseILoadRequest<IUltraVim, IUltraLoadError>
+export type IUltraLoadRequest = BaseILoadRequest<IUltraVim, IUltraLoadError>
 
 /** @internal */
 export class LoadRequest extends BaseLoadRequest<Vim, LoadError> {

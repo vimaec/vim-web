@@ -1,8 +1,8 @@
-import { Viewer } from '../viewer'
+import { WebglViewer } from '../viewer'
 import { GizmoAxes, IGizmoAxes } from './axes/gizmoAxes'
 import { GizmoOrbit, IGizmoOrbit } from './gizmoOrbit'
 import { IMeasure, Measure } from './measure/measure'
-import { ISectionBox, SectionBox } from './sectionBox/sectionBox'
+import { IWebglSectionBox, SectionBox } from './sectionBox/sectionBox'
 import { GizmoMarkers, type IGizmoMarkers } from './markers/gizmoMarkers'
 import { Camera } from '../camera/camera'
 import { Renderer } from '../rendering/renderer'
@@ -16,7 +16,7 @@ export interface IGizmos {
   /** The interface to start and manage measure tool interaction. */
   readonly measure: IMeasure
   /** The section box gizmo. */
-  readonly sectionBox: ISectionBox
+  readonly sectionBox: IWebglSectionBox
   /** The camera orbit target gizmo. */
   readonly orbit: IGizmoOrbit
   /** The axis gizmos of the viewer. */
@@ -61,7 +61,7 @@ export class Gizmos implements IGizmos {
    */
   readonly markers: GizmoMarkers
 
-  constructor (renderer: Renderer, viewport: Viewport, viewer: Viewer, camera : Camera) {
+  constructor (renderer: Renderer, viewport: Viewport, viewer: WebglViewer, camera : Camera) {
     this._viewport = viewport
     this._measure = new Measure(viewer, renderer)
     this.sectionBox = new SectionBox(renderer, viewer)

@@ -15,7 +15,7 @@ import { IsolationApi } from './sharedIsolation';
 import { PointerMode } from '../../core-viewers/shared';
 
 import * as Style from '../controlbar/style'
-import * as Ids from '../controlbar/controlBarIds'
+import { controlBarIds as Ids } from '../controlbar/controlBarIds'
 import type { IControlBarSection } from '../controlbar/controlBarSection'
 import type { ControlBarCustomization } from '../controlbar/controlBar'
 import { isFalse, isTrue, UserBoolean } from "../settings/userBoolean";
@@ -115,7 +115,7 @@ export type ControlBarCursorSettings = {
  * Returns a control bar section for pointer/camera modes.
  */
 function controlBarPointer(
-  viewer: Core.Webgl.Viewer,
+  viewer: Core.Webgl.WebglCoreViewer,
   settings: ControlBarCursorSettings,
 ): IControlBarSection {
   const pointer = getPointerState(viewer);
@@ -403,7 +403,7 @@ export function controlBarVisibility(isolation: IsolationApi, settings: ControlB
  * Combines all control bar sections into one control bar.
  */
 export function useControlBar(
-  viewer: Core.Webgl.Viewer,
+  viewer: Core.Webgl.WebglCoreViewer,
   camera: CameraApi,
   modal: ModalApi,
   side: SideState,

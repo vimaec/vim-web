@@ -3,22 +3,22 @@ import React from "react";
 import { InputNumber } from "./inputNumber";
 import { StateRef, useRefresher } from "../helpers/reactUtils";
 
-// Base interface for a panel field.
-interface BaseGenericEntry {
+// A text field.
+export interface GenericTextEntry {
+  type: "text";
   id: string;
   label: string;
   enabled?: () => boolean;
   visible?: () => boolean;
-}
-
-// A text field.
-export interface GenericTextEntry extends BaseGenericEntry {
-  type: "text";
   state: StateRef<string>;
 }
 
-export interface GenericNumberEntry extends BaseGenericEntry {
+export interface GenericNumberEntry {
   type: "number";
+  id: string;
+  label: string;
+  enabled?: () => boolean;
+  visible?: () => boolean;
   state: StateRef<number>;
   min?: number;
   max?: number;
@@ -26,8 +26,12 @@ export interface GenericNumberEntry extends BaseGenericEntry {
 }
 
 // A boolean field.
-export interface GenericBoolEntry extends BaseGenericEntry {
+export interface GenericBoolEntry {
   type: "bool";
+  id: string;
+  label: string;
+  enabled?: () => boolean;
+  visible?: () => boolean;
   state: StateRef<boolean>;
 }
 

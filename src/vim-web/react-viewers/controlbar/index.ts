@@ -1,5 +1,5 @@
 // Constant namespaces (all values are public for customization)
-export * as Ids from './controlBarIds'
+export { controlBarIds as Ids } from './controlBarIds'
 export * as Style from './style'
 
 // Public types

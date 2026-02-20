@@ -7,7 +7,7 @@ import * as THREE from "three"
  * Public interface for the Ultra section box.
  * Controls clipping, visibility, and interactivity of the section box.
  */
-export interface ISectionBox {
+export interface IUltraSectionBox {
   readonly onUpdate: ISignal
   visible: boolean
   interactive: boolean
@@ -20,7 +20,7 @@ export interface ISectionBox {
 /**
  * @internal
  */
-export class SectionBox implements ISectionBox {
+export class SectionBox implements IUltraSectionBox {
 
   private _visible: boolean = false
   private _interactible: boolean = false

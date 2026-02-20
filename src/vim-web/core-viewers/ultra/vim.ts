@@ -3,7 +3,7 @@ import type { IVim } from '../shared/vim';
 import type { ILogger } from '../shared/logger';
 import { ColorManager } from './colorManager';
 import { Element3D, type IUltraElement3D } from './element3d';
-import { LoadRequest, type ILoadRequest } from './loadRequest';
+import { LoadRequest, type IUltraLoadRequest } from './loadRequest';
 import { VisibilityState, type IVisibilitySynchronizer, VisibilitySynchronizer } from './visibility';
 import { Renderer } from './renderer';
 import { MaterialHandles } from './rpcClient';
@@ -22,7 +22,7 @@ export interface IUltraVim extends IVim<IUltraElement3D> {
   readonly visibility: IVisibilitySynchronizer
   readonly handle: number
   readonly connected: boolean
-  connect(): ILoadRequest
+  connect(): IUltraLoadRequest
   disconnect(): void
   getObjectsInBox(box: THREE.Box3): IUltraElement3D[]
   getBoundingBoxForElements(elements: number[] | 'all'): Promise<THREE.Box3 | undefined>
@@ -121,7 +121,7 @@ export class Vim implements IUltraVim {
     return this._handle >= 0;
   }
 
-  connect(): ILoadRequest {
+  connect(): IUltraLoadRequest {
     if (this._request) {
       return this._request;
     }

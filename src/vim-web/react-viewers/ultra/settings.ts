@@ -1,4 +1,4 @@
-import { RecursivePartial } from "../helpers/utils"
+import { RecursivePartial } from "../../utils"
 import { UserBoolean } from "../settings/userBoolean"
 import { ControlBarCameraSettings, ControlBarCursorSettings, ControlBarMeasureSettings, ControlBarSectionBoxSettings, ControlBarVisibilitySettings } from "../state/controlBarState"
 

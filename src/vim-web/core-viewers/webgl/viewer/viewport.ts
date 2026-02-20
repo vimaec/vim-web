@@ -11,7 +11,7 @@ import { ViewerSettings } from './settings/viewerSettings'
  * Public interface for the viewport.
  * Exposes only the members needed by API consumers.
  */
-export interface IViewport {
+export interface IWebglViewport {
   /** HTML Canvas on which the model is rendered. */
   readonly canvas: HTMLCanvasElement
   /** The parent element of the canvas. */
@@ -33,7 +33,7 @@ export interface IViewport {
 }
 
 /** @internal */
-export class Viewport implements IViewport {
+export class Viewport implements IWebglViewport {
   /**
    *  HTML Canvas on which the model is rendered
    */

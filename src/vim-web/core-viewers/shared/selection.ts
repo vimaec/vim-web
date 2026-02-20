@@ -3,6 +3,7 @@ import { IVimElement, IVim } from "./vim";
 import { THREE } from "../..";
 import { DebouncedSignal } from "../../utils";
 
+/** @internal */
 export interface ISelectionAdapter<T extends IVimElement> {
   outline(target: T, state: boolean): void;
 }
@@ -29,6 +30,7 @@ export class Selection<T extends IVimElement>{
   /**
    * Creates a new Selection manager.
    * @param adapter - Adapter responsible for visual selection feedback.
+   * @internal
    */
   constructor(adapter: ISelectionAdapter<T>) {
     this._adapter = adapter;

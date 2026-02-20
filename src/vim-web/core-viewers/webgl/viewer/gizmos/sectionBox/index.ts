@@ -1,1 +1,1 @@
-export type { ISectionBox } from './sectionBox'
+export type { IWebglSectionBox } from './sectionBox'

@@ -4,7 +4,7 @@ import { StandardMaterial } from '../../../loader/materials/standardMaterial'
 import { SimpleInstanceSubmesh } from '../../../loader/mesh'
 import { packPickingId, MARKER_VIM_INDEX } from '../../rendering/gpuPicker'
 import { Renderer } from '../../rendering/renderer'
-import { ISelection } from '../../selection'
+import { IWebglSelection } from '../../selection'
 
 /**
  * Public interface for adding and managing sprite markers in the scene.
@@ -23,7 +23,7 @@ export interface IGizmoMarkers {
  */
 export class GizmoMarkers implements IGizmoMarkers {
   private _renderer: Renderer
-  private _selection: ISelection
+  private _selection: IWebglSelection
   private _markers: Marker[] = []
   private _mesh : THREE.InstancedMesh
   private _reusableMatrix = new THREE.Matrix4()
@@ -32,7 +32,7 @@ export class GizmoMarkers implements IGizmoMarkers {
    * Constructs the marker manager and sets up an initial instanced mesh.
    * @param viewer - The rendering context this marker system belongs to.
    */
-  constructor (renderer: Renderer, selection: ISelection) {
+  constructor (renderer: Renderer, selection: IWebglSelection) {
     this._renderer = renderer
     this._selection = selection
     this._mesh = this.createMesh(undefined, 100)

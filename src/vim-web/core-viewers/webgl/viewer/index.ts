@@ -1,27 +1,27 @@
 // Value exports
-export { Viewer } from './viewer'
+export { WebglViewer } from './viewer'
 
 // Settings
 export type { ViewerSettings, PartialViewerSettings, MaterialSettings } from './settings'
 
 // Camera
-export type { ICamera, ICameraMovement } from './camera'
+export type { IWebglCamera, ICameraMovement } from './camera'
 
 // Rendering
-export type { IRenderer, IRenderingSection } from './rendering'
+export type { IWebglRenderer, IRenderingSection } from './rendering'
 
 // Selection
-export type { ISelectable, ISelection } from './selection'
+export type { ISelectable, IWebglSelection } from './selection'
 
 // Viewport
-export type { IViewport } from './viewport'
+export type { IWebglViewport } from './viewport'
 
 // Raycaster
-export type { IRaycaster, IRaycastResult } from './raycaster'
+export type { IWebglRaycaster, IWebglRaycastResult } from './raycaster'
 
 // Gizmos
 export type { IGizmos, IGizmoOrbit } from './gizmos'
 export type { IGizmoAxes, AxesSettings } from './gizmos'
 export type { IMarker, IGizmoMarkers } from './gizmos'
 export type { IMeasure, MeasureStage } from './gizmos'
-export type { ISectionBox } from './gizmos'
+export type { IWebglSectionBox } from './gizmos'

@@ -23,8 +23,8 @@ import type { ISelectable } from './selection'
  * Type alias for an array of THREE.Intersection objects.
  */
 export type ThreeIntersectionList = THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>>[]
-export type IRaycastResult = IRaycastResultBase<ISelectable>
-export type IRaycaster = IRaycasterBase<ISelectable>
+export type IWebglRaycastResult = IRaycastResultBase<ISelectable>
+export type IWebglRaycaster = IRaycasterBase<ISelectable>
 /** @internal */
 export enum Layers {
   Default = 0,
@@ -35,7 +35,7 @@ export enum Layers {
  * @internal
  * A simple container for raycast results.
  */
-export class RaycastResult implements IRaycastResult {
+export class RaycastResult implements IWebglRaycastResult {
   object: Element3D | IMarker | undefined
   intersections: ThreeIntersectionList
   firstHit: THREE.Intersection | undefined
@@ -61,7 +61,7 @@ export class RaycastResult implements IRaycastResult {
  * This is kept as a reference/fallback implementation.
  * The primary raycaster is GpuPicker which implements IRaycaster.
  */
-export class Raycaster implements IRaycaster {
+export class Raycaster implements IWebglRaycaster {
   private _camera: Camera
   private _scene: RenderScene
   private _renderer: Renderer
