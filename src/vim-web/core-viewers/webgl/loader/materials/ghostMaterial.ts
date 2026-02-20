@@ -6,6 +6,7 @@
 import * as THREE from 'three'
 
 /**
+ * @internal
  * Material wrapper for the ghost effect in isolation mode.
  * Non-visible items are rendered as transparent objects using a customizable fill color.
  * Visible items are completely excluded from rendering.
@@ -54,6 +55,7 @@ export class GhostMaterial {
 }
 
 /**
+ * @internal
  * Creates a GhostMaterial for isolation mode.
  */
 export function createGhostMaterial(): GhostMaterial {

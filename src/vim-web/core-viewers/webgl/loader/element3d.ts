@@ -189,11 +189,7 @@ export class Element3D implements IElement3D {
   }
 
   /**
-   * Constructs a new instance of Object.
-   * @param {Vim} vim The Vim instance.
-   * @param {number} element The element index.
-   * @param {number[] | undefined} instances An optional array of instance numbers.
-   * @param {Submesh[] | undefined} meshes An optional array of submeshes.
+   * @internal
    */
   constructor (
     vim: Vim,

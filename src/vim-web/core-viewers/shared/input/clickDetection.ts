@@ -21,6 +21,7 @@ import * as THREE from 'three'
  * - Call onPointerMove during pointer movement
  * - Call onPointerUp when pointer is released
  * - Check isClick() or wasMoved() to determine interaction type
+ * @internal
  */
 export class ClickDetector {
   private _moved: boolean = false

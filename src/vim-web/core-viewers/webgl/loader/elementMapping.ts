@@ -20,6 +20,7 @@ export interface IElementMapping {
   getElementId(element: number): bigint | undefined
 }
 
+/** @internal */
 export class ElementNoMapping implements IElementMapping {
   getElementsFromElementId (id: number) {
     return undefined
@@ -46,6 +47,7 @@ export class ElementNoMapping implements IElementMapping {
   }
 }
 
+/** @internal */
 export class ElementMapping implements IElementMapping {
   private _instanceToElement: number[] | Int32Array
   private _elementToInstances: (number[] | undefined)[]

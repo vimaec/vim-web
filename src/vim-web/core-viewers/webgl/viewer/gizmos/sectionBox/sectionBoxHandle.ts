@@ -1,8 +1,10 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils';
 import { ICamera } from '../../camera';
+/** @internal */
 export type AxisName = 'x' | 'y' | 'z';
 
+/** @internal */
 export class SectionBoxHandle extends THREE.Mesh {
   readonly axis : AxisName
   readonly sign: number;

@@ -113,6 +113,7 @@ export function createPickingMaterial() {
 }
 
 /**
+ * @internal
  * PickingMaterial class that wraps the shader material with camera update functionality.
  */
 export class PickingMaterial {

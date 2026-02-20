@@ -17,6 +17,7 @@ export interface IGizmoMarkers {
 }
 
 /**
+ * @internal
  * API for adding and managing sprite markers in the scene.
  * Uses THREE.InstancedMesh for performance.
  */

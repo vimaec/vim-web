@@ -17,6 +17,7 @@
  * - Call onPointerDown when pointer is pressed
  * - Call onPointerUp when pointer is released
  * - Call onPointerCancel if pointer is cancelled
+ * @internal
  */
 export class PointerCapture {
   private _canvas: HTMLCanvasElement

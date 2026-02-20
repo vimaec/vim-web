@@ -12,6 +12,7 @@ import { MappedG3d } from './progressive/mappedG3d'
 export type TransparencyMode = 'opaqueOnly' | 'transparentOnly' | 'allAsOpaque' | 'all'
 
 /**
+ * @internal
  * Returns true if the transparency mode is one of the valid values
  */
 export function isTransparencyModeValid (value: string | undefined | null): value is TransparencyMode {
@@ -22,6 +23,7 @@ export function isTransparencyModeValid (value: string | undefined | null): valu
 }
 
 /**
+ * @internal
  * Creates a BufferGeometry from a given mesh index in the g3d
  * @param mesh g3d mesh index
  */
@@ -77,6 +79,7 @@ function createColorPaletteIndices (
 }
 
 /**
+ * @internal
  * Creates a BufferGeometry from given geometry data arrays
  * @param vertices vertex data with 3 number per vertex (XYZ)
  * @param indices index data with 3 indices per face

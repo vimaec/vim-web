@@ -17,12 +17,14 @@ import type { GizmoMarkers } from '../gizmos/markers/gizmoMarkers'
 import type { ISelectable } from '../selection'
 
 /**
+ * @internal
  * Reserved vimIndex for marker gizmos in GPU picking.
  * Markers use this index to distinguish them from vim elements.
  */
 export const MARKER_VIM_INDEX = 255
 
 /**
+ * @internal
  * Packs vimIndex (8 bits) and elementIndex (24 bits) into a single uint32.
  * Used for GPU picking attribute.
  */
@@ -31,6 +33,7 @@ export function packPickingId(vimIndex: number, elementIndex: number): number {
 }
 
 /**
+ * @internal
  * Unpacks vimIndex and elementIndex from a packed uint32.
  */
 export function unpackPickingId(packedId: number): { vimIndex: number; elementIndex: number } {
@@ -41,6 +44,7 @@ export function unpackPickingId(packedId: number): { vimIndex: number; elementIn
 }
 
 /**
+ * @internal
  * Result of a GPU pick operation containing element index, world position, and surface normal.
  * Implements IRaycastResult for compatibility with the raycaster interface.
  */
@@ -94,6 +98,7 @@ export class GpuPickResult implements IRaycastResult<ISelectable> {
 }
 
 /**
+ * @internal
  * Unified GPU picker that outputs element index, depth, vim index, and surface normal in a single render pass.
  * Implements IRaycaster for compatibility with the viewer's raycaster interface.
  *

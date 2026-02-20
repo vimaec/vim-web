@@ -17,6 +17,7 @@ export interface AxesSettings {
   colorZSub: string;
 }
 
+/** @internal */
 export function getDefaultAxesSettings() :AxesSettings {
   return{
     size: 84,
@@ -39,6 +40,7 @@ export function getDefaultAxesSettings() :AxesSettings {
 
 };
 
+/** @internal */
 export function createAxesSettings(
   init?: Partial<AxesSettings>
 ): AxesSettings {

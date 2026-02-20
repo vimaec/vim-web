@@ -41,6 +41,7 @@ export class LoadError implements ILoadError {
 
 /**
  * Interface for load requests that can be used as a type constraint.
+ * @internal
  */
 export interface ILoadRequest<TVim, TError extends ILoadError = ILoadError> {
   readonly isCompleted: boolean
@@ -53,6 +54,7 @@ export interface ILoadRequest<TVim, TError extends ILoadError = ILoadError> {
 /**
  * Base class for loading requests that provides progress tracking via AsyncQueue.
  * Both WebGL and Ultra extend this class with their specific loading logic.
+ * @internal
  */
 export class LoadRequest<TVim, TError extends ILoadError = ILoadError>
   implements ILoadRequest<TVim, TError> {

@@ -7,6 +7,7 @@ import { Vim } from '../vim'
 import { InstancedSubmesh } from './instancedSubmesh'
 import { MaterialSet, applyMaterial } from '../materials/materials'
 
+/** @internal */
 export class InstancedMesh {
   vim: Vim
   mesh: THREE.InstancedMesh

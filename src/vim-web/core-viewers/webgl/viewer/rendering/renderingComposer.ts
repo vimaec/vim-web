@@ -26,6 +26,7 @@ import { Camera } from '../camera/camera'
 */
 
 /**
+ * @internal
  * Composer for managing the rendering pipeline including outline effects.
  * Handles the orchestration of multiple render passes including:
  * - Main scene rendering (MSAA)

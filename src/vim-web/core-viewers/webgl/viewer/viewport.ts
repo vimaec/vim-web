@@ -32,6 +32,7 @@ export interface IViewport {
   readonly onResize: ISignal
 }
 
+/** @internal */
 export class Viewport implements IViewport {
   /**
    *  HTML Canvas on which the model is rendered

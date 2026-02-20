@@ -11,6 +11,7 @@ import { InstancedMesh } from '../../loader/progressive/instancedMesh'
 import { MAX_VIMS } from '../../loader/vimCollection'
 
 /**
+ * @internal
  * Wrapper around the THREE scene that tracks bounding box and other information.
  */
 export class RenderScene {

@@ -21,6 +21,7 @@ type MoveHandler = (pos: THREE.Vector2) => void
 type WheelHandler = (value: number, ctrl: boolean, clientX: number, clientY: number) => void
 type ContextMenuHandler = (position: THREE.Vector2) => void
 
+/** @internal */
 export type MouseCallbacks = {
   onClick: ClickHandler
   onDoubleClick: DoubleClickHandler
@@ -84,6 +85,7 @@ export type MouseOverrides = {
  *
  * Uses Pointer Events API for unified mouse/pen/touch handling.
  * Filters to mouse-only via pointerType check.
+ * @internal
  */
 export class MouseHandler extends BaseInputHandler {
   private _capture: PointerCapture;

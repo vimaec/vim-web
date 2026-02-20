@@ -16,6 +16,7 @@ import { OrthographicCamera } from './cameraOrthographic'
 import { PerspectiveCamera } from './cameraPerspective'
 
 /**
+ * @internal
  * Manages viewer camera movement and position
  */
 export class Camera implements ICamera {

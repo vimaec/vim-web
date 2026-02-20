@@ -17,6 +17,7 @@ import * as THREE from 'three'
  * Usage:
  * - Call check() on each click/tap with the position
  * - Returns true if this was a double-click, false otherwise
+ * @internal
  */
 export class DoubleClickDetector {
   private _lastTime: number = 0

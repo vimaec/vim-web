@@ -11,6 +11,7 @@ import { SphereCoord } from './sphereCoord'
 
 
 
+/** @internal */
 export class CameraLerp extends CameraMovement {
   private _movement: CameraMovementSnap
   private _clock = new THREE.Clock()

@@ -26,6 +26,7 @@ import { ElementMapping } from '../elementMapping'
 import { packPickingId } from '../../viewer/rendering/gpuPicker'
 import { MappedG3d } from './mappedG3d'
 
+/** @internal */
 export class GeometrySubmesh {
   instance: number
   start: number
@@ -39,6 +40,7 @@ export class GeometrySubmesh {
   }
 }
 
+/** @internal */
 export class InsertableGeometry {
   _scene: Scene
   materials: G3dMaterial

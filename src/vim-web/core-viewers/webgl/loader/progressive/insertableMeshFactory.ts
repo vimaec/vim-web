@@ -21,6 +21,7 @@ import { G3dSubset } from './g3dSubset'
 import { ElementMapping } from '../elementMapping'
 import { MappedG3d } from './mappedG3d'
 
+/** @internal */
 export class InsertableMeshFactory {
   private _materials: G3dMaterial
   private _mapping: ElementMapping

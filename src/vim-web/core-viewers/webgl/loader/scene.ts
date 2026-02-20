@@ -37,6 +37,7 @@ export interface IScene {
 }
 
 /**
+ * @internal
  * Represents a scene that contains multiple meshes.
  * It tracks the global bounding box as meshes are added and maintains a mapping between g3d instance indices and meshes.
  */

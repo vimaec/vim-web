@@ -7,6 +7,7 @@ import { SphereCoord } from './sphereCoord'
 import * as THREE from 'three'
 
 
+/** @internal */
 export class CameraMovementSnap extends CameraMovement {
   private static readonly _ZERO = new THREE.Vector3()
   private _snTmp1 = new THREE.Vector3()

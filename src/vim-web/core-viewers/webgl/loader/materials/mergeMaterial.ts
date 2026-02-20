@@ -4,6 +4,7 @@
 
 import * as THREE from 'three'
 
+/** @internal */
 export class MergeMaterial {
   three: THREE.ShaderMaterial
   private _onUpdate?: () => void

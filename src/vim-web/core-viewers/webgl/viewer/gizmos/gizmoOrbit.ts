@@ -31,6 +31,7 @@ export interface IGizmoOrbit {
 }
 
 /**
+ * @internal
  * Manages the camera target gizmo - displays orbital rings at the camera target
  * 2 vertical rings (great circles) + 3 horizontal rings (latitude circles)
  * Each rendered twice: once with depth test, once always visible (for see-through effect)

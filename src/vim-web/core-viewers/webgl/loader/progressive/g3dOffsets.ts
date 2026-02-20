@@ -12,6 +12,7 @@
 import { MeshSection } from 'vim-format'
 import { G3dSubset } from './g3dSubset'
 
+/** @internal */
 export class G3dMeshCounts {
   instances: number = 0
   meshes: number = 0
@@ -20,6 +21,7 @@ export class G3dMeshCounts {
 }
 
 /**
+ * @internal
  * Holds the offsets needed to preallocate geometry for a given meshIndexSubset
  */
 export class G3dMeshOffsets {

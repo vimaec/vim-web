@@ -7,6 +7,7 @@ import { MergedSubmesh } from './mesh'
 import { Vim } from './vim'
 import { WebglAttributeTarget } from './webglAttribute'
 
+/** @internal */
 export class WebglColorAttribute {
   readonly vim: Vim
   private _meshes: WebglAttributeTarget[] | undefined

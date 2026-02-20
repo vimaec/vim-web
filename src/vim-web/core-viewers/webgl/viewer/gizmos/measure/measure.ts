@@ -55,6 +55,7 @@ export interface IMeasure {
 
 export type MeasureStage = 'ready' | 'active' | 'done' | 'failed'
 /**
+ * @internal
  * Manages measure flow and gizmos
  */
 export class Measure implements IMeasure {

@@ -6,6 +6,7 @@ import * as THREE from 'three'
 import { ViewerSettings } from '../settings/viewerSettings'
 import { Layers } from '../raycaster'
 
+/** @internal */
 export class PerspectiveCamera {
   camera: THREE.PerspectiveCamera
 

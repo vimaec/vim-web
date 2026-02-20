@@ -19,17 +19,20 @@ import { Validation } from '../../../utils'
 import type { ISelectable } from './selection'
 
 /**
+ * @internal
  * Type alias for an array of THREE.Intersection objects.
  */
 export type ThreeIntersectionList = THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>>[]
 export type IRaycastResult = IRaycastResultBase<ISelectable>
 export type IRaycaster = IRaycasterBase<ISelectable>
+/** @internal */
 export enum Layers {
   Default = 0,
   NoRaycast = 1,
 }
 
 /**
+ * @internal
  * A simple container for raycast results.
  */
 export class RaycastResult implements IRaycastResult {
@@ -53,6 +56,7 @@ export class RaycastResult implements IRaycastResult {
 }
 
 /**
+ * @internal
  * Performs CPU-based raycasting operations using Three.js.
  * This is kept as a reference/fallback implementation.
  * The primary raycaster is GpuPicker which implements IRaycaster.
@@ -151,6 +155,7 @@ export class Raycaster implements IRaycaster {
 }
 
 /**
+ * @internal
  * Converts normalized screen coordinates (0-1 range) into Three.js NDC ([-1, 1] range).
  */
 export function threeNDCFromVector2(position: THREE.Vector2): THREE.Vector2 {

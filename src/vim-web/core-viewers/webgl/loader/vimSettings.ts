@@ -44,6 +44,7 @@ export type VimSettings = {
 }
 
 /**
+ * @internal
  * Default configuration settings for a vim object.
  */
 export function getDefaultVimSettings(): VimSettings {
@@ -63,6 +64,7 @@ export function getDefaultVimSettings(): VimSettings {
 export type VimPartialSettings = Partial<VimSettings>
 
 /**
+ * @internal
  * Wraps Vim options, converting values to related THREE.js types and providing default values.
  * @param {VimPartialSettings} [options] - Optional partial settings for the Vim object.
  * @returns {VimSettings} The complete settings for the Vim object, including defaults.

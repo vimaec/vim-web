@@ -11,6 +11,7 @@ import { MappedG3d } from '../progressive/mappedG3d'
 const MAX_COLORS = 16384 // 128×128 texture (RGBA)
 const QUANTIZATION_LEVELS = 25 // 25³ = 15,625 max colors
 
+/** @internal */
 export type ColorPaletteResult = {
   palette: Float32Array | undefined
   submeshColor: Uint16Array
@@ -18,6 +19,7 @@ export type ColorPaletteResult = {
 }
 
 /**
+ * @internal
  * Builds a unique color palette from submesh colors.
  * If uniqueColorCount > MAX_COLORS, quantizes colors in-place in mappedG3d.materialColors.
  *

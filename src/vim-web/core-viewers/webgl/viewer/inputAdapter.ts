@@ -4,6 +4,7 @@ import { Viewer } from "./viewer"
 import { Element3D } from '../loader/element3d'
 import * as THREE from 'three'
 
+/** @internal */
 export function createInputHandler(viewer: Viewer) {
   return new InputHandler(
     viewer.viewport.canvas,

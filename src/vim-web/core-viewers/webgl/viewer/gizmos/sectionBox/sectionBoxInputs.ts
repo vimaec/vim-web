@@ -14,6 +14,7 @@ const MIN_BOX_SIZE = 3;
  * Manages pointer interactions (mouse, touch, etc.) on a {@link SectionBoxHandles} to
  * reshape a Three.js `Box3`. This includes detecting which handle is hovered or dragged,
  * capturing the pointer for smooth dragging, and enforcing a minimum box size.
+ * @internal
  */
 export class BoxInputs {
   // -------------------------------------------------------------------------

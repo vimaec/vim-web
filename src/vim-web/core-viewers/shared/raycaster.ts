@@ -1,5 +1,6 @@
 import { THREE } from "../..";
 
+/** @internal */
 export interface IRaycastResult<T>{
   /** The model Object hit */
   object: T | undefined;
@@ -13,6 +14,7 @@ export interface IRaycastResult<T>{
 /**
  * Interface for raycasting against a 3D scene.
  * @template T - The type of object to raycast against.
+ * @internal
  */
 export interface IRaycaster<T> {
   /**

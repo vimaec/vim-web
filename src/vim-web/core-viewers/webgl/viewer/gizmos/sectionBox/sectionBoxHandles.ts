@@ -6,6 +6,7 @@ import * as THREE from 'three'
 import { SectionBoxHandle } from './sectionBoxHandle'
 import { ICamera } from '../../camera'
 
+/** @internal */
 export class SectionBoxHandles {
   readonly up: SectionBoxHandle
   readonly down: SectionBoxHandle

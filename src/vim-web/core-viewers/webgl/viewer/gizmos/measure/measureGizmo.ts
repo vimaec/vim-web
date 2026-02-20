@@ -144,6 +144,7 @@ class MeasureMarker {
 
 /**
  * Reprents all graphical elements associated with a measure.
+ * @internal
  */
 export class MeasureGizmo {
   private _renderer: Renderer

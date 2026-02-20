@@ -18,6 +18,7 @@ export interface IRenderingSection {
 }
 
 /**
+ * @internal
  * Manages a section box from renderer clipping planes
  */
 export class RenderingSection implements IRenderingSection {

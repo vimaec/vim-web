@@ -19,6 +19,7 @@ export interface IGizmoAxes {
 }
 
 /**
+ * @internal
  * The axis gizmos of the viewer.
  */
 export class GizmoAxes implements IGizmoAxes {

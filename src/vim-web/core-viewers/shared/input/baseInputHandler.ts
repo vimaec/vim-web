@@ -5,6 +5,7 @@
 /**
  * Base class for various input handlers.
  * It provides convenience to register to and unregister from events.
+ * @internal
  */
 export class BaseInputHandler {
   protected _canvas: HTMLCanvasElement

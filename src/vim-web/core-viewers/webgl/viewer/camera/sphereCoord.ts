@@ -8,6 +8,7 @@ const MAX_PHI = THREE.MathUtils.degToRad(179.5)
  * - theta: azimuth around Z axis (radians)
  * - phi: angle from +Z (0 = up, PI = down)
  * - radius: distance from center
+ * @internal
  */
 export class SphereCoord {
   readonly theta: number

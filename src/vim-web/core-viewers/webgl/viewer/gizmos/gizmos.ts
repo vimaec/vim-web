@@ -26,6 +26,7 @@ export interface IGizmos {
 }
 
 /**
+ * @internal
  * Represents a collection of gizmos used for various visualization and interaction purposes within the viewer.
  */
 export class Gizmos implements IGizmos {

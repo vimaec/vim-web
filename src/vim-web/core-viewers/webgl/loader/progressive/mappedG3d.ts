@@ -6,6 +6,7 @@ import { G3d } from 'vim-format'
 import { buildColorPalette } from '../materials/colorPalette'
 
 /**
+ * @internal
  * G3d augmented with a pre-computed mesh→instances map and color palette optimization.
  * The map is computed once during loading and shared by all G3dSubsets,
  * eliminating O(N) iterations on every subset construction.

@@ -7,6 +7,7 @@ import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass'
 import { createTransferMaterial } from '../../loader/materials/transferMaterial'
 
 /**
+ * @internal
  * Copies a source buffer to the current write buffer.
  */
 export class TransferPass extends Pass {

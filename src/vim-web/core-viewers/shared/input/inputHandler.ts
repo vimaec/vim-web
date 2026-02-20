@@ -92,6 +92,7 @@ export interface IInputHandler {
  *
  * Manages two-tier pointer modes (active/override).
  * See INPUT.md for mode system and customization.
+ * @internal
  */
 export class InputHandler implements IInputHandler {
 

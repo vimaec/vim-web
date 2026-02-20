@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 
 /**
+ * @internal
  * Returns the bounding box of the average center of all meshes.
  * Less precise but is more stable against outliers.
  */

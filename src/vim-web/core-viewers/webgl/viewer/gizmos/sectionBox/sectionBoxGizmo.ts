@@ -5,6 +5,7 @@ import { SectionBoxHandles } from './sectionBoxHandles'
 import { Renderer } from '../../rendering/renderer'
 import { ICamera } from '../../camera'
 
+/** @internal */
 export class SectionBoxGizmo
 {
     private _renderer: Renderer

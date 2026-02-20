@@ -23,6 +23,7 @@ export interface IReadonlyVimCollection<T extends IVim<IVimElement>> {
 
 /**
  * Mutable interface for a collection of vims.
+ * @internal
  */
 export interface IVimCollection<T extends IVim<IVimElement>>
   extends IReadonlyVimCollection<T> {

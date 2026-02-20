@@ -8,6 +8,7 @@ import { BaseInputHandler } from './baseInputHandler';
 type KeyHandler = (code: string) => boolean
 type MoveHandler = (value: THREE.Vector3) => void
 
+/** @internal */
 export type KeyboardCallbacks = {
   onKeyDown: KeyHandler
   onKeyUp: KeyHandler
@@ -52,6 +53,7 @@ export interface IKeyboardInput {
   override(code: string | string[], on: 'down' | 'up', handler: (original?: () => void) => void): () => void
 }
 
+/** @internal */
 export class KeyboardHandler extends BaseInputHandler {
 
   // Callbacks

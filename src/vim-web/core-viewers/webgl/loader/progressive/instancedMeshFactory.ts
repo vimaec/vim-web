@@ -18,6 +18,7 @@ import { ElementMapping } from '../elementMapping'
 import { packPickingId } from '../../viewer/rendering/gpuPicker'
 import { MappedG3d } from './mappedG3d'
 
+/** @internal */
 export class InstancedMeshFactory {
   private _mapping: ElementMapping
   private _vimIndex: number

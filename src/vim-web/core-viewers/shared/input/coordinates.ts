@@ -14,6 +14,7 @@ import * as THREE from 'three'
  * @param canvas - Target canvas element
  * @param result - Vector to store result (modified in-place)
  * @returns The result vector (for chaining)
+ * @internal
  */
 export function pointerToCanvas(
   event: PointerEvent | MouseEvent,
@@ -35,6 +36,7 @@ export function pointerToCanvas(
  * @param canvas - Target canvas element
  * @param result - Vector to store result (modified in-place)
  * @returns The result vector (for chaining)
+ * @internal
  */
 export function clientToCanvas(
   clientX: number,
@@ -57,6 +59,7 @@ export function clientToCanvas(
  * @param canvas - Target canvas element
  * @param result - Vector to store result (modified in-place)
  * @returns The result vector (for chaining)
+ * @internal
  */
 export function canvasToClient(
   canvasX: number,

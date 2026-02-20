@@ -53,6 +53,7 @@ export interface IRenderer {
 }
 
 /**
+ * @internal
  * Manages how vim objects are added and removed from the THREE.Scene to be rendered
  */
 export class Renderer implements ISceneRenderer {

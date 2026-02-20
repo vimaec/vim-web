@@ -5,8 +5,10 @@
 import * as THREE from 'three'
 import { MergedSubmesh, SimpleInstanceSubmesh, Submesh } from './mesh'
 
+/** @internal */
 export type WebglAttributeTarget = Submesh | SimpleInstanceSubmesh
 
+/** @internal */
 export class WebglAttribute<T> {
   readonly vertexAttribute: string
   readonly instanceAttribute: string

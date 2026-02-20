@@ -33,6 +33,7 @@ export type RequestSource = {
 export type ILoadRequest = BaseILoadRequest<IWebglVim>
 
 /**
+ * @internal
  * A request to load a VIM file. Extends the base LoadRequest to add BFast abort handling.
  * Loading starts immediately upon construction.
  */

@@ -8,6 +8,7 @@ import { Materials } from '../../loader/materials/materials'
 import { MergeMaterial } from '../../loader/materials/mergeMaterial'
 
 /**
+ * @internal
  * Merges a source buffer into the the current write buffer.
  */
 export class MergePass extends Pass {

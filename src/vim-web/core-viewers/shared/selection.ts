@@ -3,6 +3,7 @@ import { IVimElement, IVim } from "./vim";
 import { THREE } from "../..";
 import { DebouncedSignal } from "../../utils";
 
+/** @internal */
 export interface ISelectionAdapter<T extends IVimElement> {
   outline(target: T, state: boolean): void;
 }

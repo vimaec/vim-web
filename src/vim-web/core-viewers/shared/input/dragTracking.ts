@@ -11,6 +11,7 @@ import * as THREE from 'three'
  * Callback type for drag events.
  * @param delta - Movement delta since last frame (reusable vector - do not store!)
  * @param button - Button being dragged (0=left, 1=middle, 2=right)
+ * @internal
  */
 export type DragCallback = (delta: THREE.Vector2, button: number) => void
 
@@ -22,6 +23,7 @@ export type DragCallback = (delta: THREE.Vector2, button: number) => void
  * - Call onPointerMove during drag
  * - Call onPointerUp when drag ends
  * - Callback is invoked during onPointerMove with delta
+ * @internal
  */
 export class DragTracker {
   private _lastDragPosition = new THREE.Vector2() // Storage (use .copy())

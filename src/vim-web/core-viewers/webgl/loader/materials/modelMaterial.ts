@@ -6,6 +6,7 @@
 import * as THREE from 'three'
 
 /**
+ * @internal
  * Material wrapper for fast rendering mode (ModelMaterial).
  * Uses screen-space derivative normals instead of vertex normals for faster performance.
  */
@@ -51,6 +52,7 @@ export class ModelMaterial {
 }
 
 /**
+ * @internal
  * Creates an opaque ModelMaterial for fast rendering mode.
  */
 export function createModelOpaque(onUpdate?: () => void): ModelMaterial {
@@ -58,6 +60,7 @@ export function createModelOpaque(onUpdate?: () => void): ModelMaterial {
 }
 
 /**
+ * @internal
  * Creates a transparent ModelMaterial for fast rendering mode.
  */
 export function createModelTransparent(onUpdate?: () => void): ModelMaterial {

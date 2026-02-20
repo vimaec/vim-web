@@ -13,6 +13,7 @@ import { MaterialSet, Materials, applyMaterial } from '../materials/materials'
 import { ElementMapping } from '../elementMapping'
 import { MappedG3d } from './mappedG3d'
 
+/** @internal */
 export class InsertableMesh {
   offsets: G3dMeshOffsets
   mesh: THREE.Mesh

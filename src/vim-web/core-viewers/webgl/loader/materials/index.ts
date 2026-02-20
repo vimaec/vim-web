@@ -1,10 +1,3 @@
-export * from './ghostMaterial';
-export * from './maskMaterial';
-export * from './materialSet';
-export * from './materials';
-export * from './mergeMaterial';
-export * from './outlineMaterial';
-export * from './pickingMaterial';
-export * from './modelMaterial';
-export * from './standardMaterial';
-export * from './transferMaterial';
+export type { IMaterials } from './materials'
+export { MaterialSet } from './materialSet'
+export { applyMaterial } from './materials'

@@ -7,6 +7,7 @@ import { IVimCollection } from '../../shared/vimCollection'
 import { Vim } from './vim'
 
 /**
+ * @internal
  * Maximum number of vims that can be loaded simultaneously.
  * Limited by the 8-bit vimIndex in GPU picking.
  * Index 255 is reserved for marker gizmos, so vims use 0-254.
@@ -14,6 +15,7 @@ import { Vim } from './vim'
 export const MAX_VIMS = 255
 
 /**
+ * @internal
  * Manages a collection of Vim objects with stable IDs for GPU picking.
  *
  * Each vim is assigned a stable ID (0-255) that persists for its lifetime.

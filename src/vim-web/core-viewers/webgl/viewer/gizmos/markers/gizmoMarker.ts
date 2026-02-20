@@ -42,6 +42,7 @@ export interface IMarker extends ISelectable {
 }
 
 /**
+ * @internal
  * Marker gizmo that displays an interactive sphere at a 3D position.
  * Marker gizmos are still under development.
  */

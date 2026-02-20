@@ -12,6 +12,7 @@ import { CameraSaveState, ICameraMovement } from './cameraInterface'
 
 
 
+/** @internal */
 export abstract class CameraMovement implements ICameraMovement {
   protected static readonly MAX_PITCH = Math.PI * 0.48
 

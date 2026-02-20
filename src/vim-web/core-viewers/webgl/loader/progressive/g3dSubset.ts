@@ -22,6 +22,7 @@ export interface ISubset {
 }
 
 /**
+ * @internal
  * Represents a subset of a complete scene definition.
  * Allows for further filtering or to get offsets needed to build the scene.
  */

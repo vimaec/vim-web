@@ -5,6 +5,7 @@
 import { Submesh } from '../mesh'
 import { InsertableMesh } from './insertableMesh'
 
+/** @internal */
 export class InsertableSubmesh {
   mesh: InsertableMesh
   index: number

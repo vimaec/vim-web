@@ -5,19 +5,23 @@
 import * as THREE from 'three'
 
 /**
+ * @internal
  * Type alias for THREE uniforms
  */
 export type ShaderUniforms = { [uniform: string]: THREE.IUniform<any> }
 
+/** @internal */
 export function createOpaque () {
   return new StandardMaterial(createBasicOpaque())
 }
 
+/** @internal */
 export function createTransparent () {
   return new StandardMaterial(createBasicTransparent())
 }
 
 /**
+ * @internal
  * Creates a new instance of the default loader opaque material.
  * @returns {THREE.MeshLambertMaterial} A new instance of MeshLambertMaterial with transparency.
  */
@@ -30,6 +34,7 @@ export function createBasicOpaque () {
 }
 
 /**
+ * @internal
  * Creates a new instance of the default loader transparent material.
  * @returns {THREE.MeshPhongMaterial} A new instance of MeshPhongMaterial with transparency.
  */
@@ -41,6 +46,7 @@ export function createBasicTransparent () {
 }
 
 /**
+ * @internal
  * Material used for both opaque and tranparent surfaces of a VIM model.
  */
 export class StandardMaterial {

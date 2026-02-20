@@ -5,6 +5,7 @@ import * as THREE from 'three'
  *
  * Allows the same input handlers to work with both WebGL (local rendering)
  * and Ultra (server-side streaming) viewers.
+ * @internal
  */
 export interface IInputAdapter{
   /** Initialize the adapter (called once during setup) */

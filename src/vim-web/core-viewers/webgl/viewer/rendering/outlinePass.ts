@@ -10,6 +10,7 @@ import { OutlineMaterial } from '../../loader/materials/outlineMaterial'
 // https://github.com/mrdoob/three.js/blob/master/examples/jsm/postprocessing/OutlinePass.js
 // Based on https://github.com/OmarShehata/webgl-outlines/blob/cf81030d6f2bc20e6113fbf6cfd29170064dce48/threejs/src/CustomOutlinePass.js
 /**
+ * @internal
  * Edge detection pass on the current readbuffer depth texture.
  */
 export class OutlinePass extends Pass {

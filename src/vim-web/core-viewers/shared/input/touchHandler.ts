@@ -14,6 +14,7 @@ type DragHandler = (delta: THREE.Vector2) => void
 type PinchStartHandler = (screenCenter: THREE.Vector2) => void
 type PinchHandler = (totalRatio: number) => void
 
+/** @internal */
 export type TouchCallbacks = {
   onTap: TapHandler
   onDoubleTap: TapHandler
@@ -70,7 +71,10 @@ export type TouchOverrides = {
   onPinchOrSpread?: (ratio: number, original: PinchHandler) => void
 }
 
-/** Handles touch gestures with zero-allocation vector reuse. */
+/**
+ * Handles touch gestures with zero-allocation vector reuse.
+ * @internal
+ */
 export class TouchHandler extends BaseInputHandler {
   // Callbacks
   private _onTap: TapHandler

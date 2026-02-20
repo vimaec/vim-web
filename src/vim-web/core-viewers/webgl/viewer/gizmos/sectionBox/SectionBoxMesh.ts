@@ -5,6 +5,7 @@ import { Layers } from '../../raycaster';
  * Defines the box mesh for the section box.
  */
 
+/** @internal */
 export class SectionBoxMesh extends THREE.Mesh {
   constructor() {
     const geo = new THREE.BoxGeometry();

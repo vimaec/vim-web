@@ -90,6 +90,7 @@ export function applyMaterial(
 }
 
 /**
+ * @internal
  * Defines the materials to be used by the vim loader and allows for material injection.
  */
 export class Materials implements IMaterials {

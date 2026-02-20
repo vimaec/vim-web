@@ -34,6 +34,7 @@ export interface ISectionBox {
 }
 
 /**
+ * @internal
  * Manages a section box gizmo, serving as a proxy between the renderer and the user.
  *
  * This class:
