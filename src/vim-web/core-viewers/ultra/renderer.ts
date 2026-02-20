@@ -1,7 +1,7 @@
 import { ISignal, SignalDispatcher } from "ste-signals";
 import * as THREE from "three";
 import { Validation } from "../../utils";
-import { ILogger } from "./logger";
+import { ILogger } from "../shared/logger";
 import { defaultSceneSettings, RpcSafeClient, SceneSettings } from "./rpcSafeClient";
 import { ClientStateStreamError } from "./socketClient";
 
@@ -43,6 +43,7 @@ export interface IRenderer {
 
 /**
  * Renderer class that handles 3D scene rendering and settings management
+ * @internal
  */
 export class Renderer implements IRenderer {
 

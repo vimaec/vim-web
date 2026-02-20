@@ -3,7 +3,6 @@ export { PointerMode } from './input'
 export type { IInputHandler, IMouseInput, MouseOverrides, ITouchInput, TouchOverrides, IKeyboardInput } from './input'
 
 // Loading
-export { LoadSuccess, LoadError } from './loadResult'
 export type { ILoadSuccess, ILoadError, IProgress, ProgressType, LoadResult } from './loadResult'
 
 // Selection

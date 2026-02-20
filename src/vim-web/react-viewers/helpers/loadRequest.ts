@@ -11,6 +11,7 @@ type RequestCallbacks = {
 /**
  * Class to handle loading a request.
  * Implements ILoadRequest for compatibility with Ultra viewer's load request interface.
+ * @internal
  */
 export class LoadRequest implements Core.Webgl.ILoadRequest {
   private _sourceUrl: string | undefined

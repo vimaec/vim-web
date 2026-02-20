@@ -1,7 +1,8 @@
-import { Vim } from './vim'
+import { Vim, type IUltraVim } from './vim'
 import {
   LoadRequest as BaseLoadRequest,
   ILoadRequest as BaseILoadRequest,
+  ILoadError,
   IProgress,
   LoadSuccess,
   LoadError as SharedLoadError
@@ -9,7 +10,12 @@ import {
 
 export type VimRequestErrorType = 'loadingError' | 'downloadingError' | 'serverDisconnected' | 'unknown' | 'cancelled'
 
-export class LoadError extends SharedLoadError {
+export interface IUltraLoadError extends ILoadError {
+  readonly type: VimRequestErrorType
+}
+
+/** @internal */
+export class LoadError extends SharedLoadError implements IUltraLoadError {
   readonly type: VimRequestErrorType
   constructor (error: VimRequestErrorType, details?: string) {
     super(error, details)
@@ -17,8 +23,9 @@ export class LoadError extends SharedLoadError {
   }
 }
 
-export type ILoadRequest = BaseILoadRequest<Vim, LoadError>
+export type ILoadRequest = BaseILoadRequest<IUltraVim, IUltraLoadError>
 
+/** @internal */
 export class LoadRequest extends BaseLoadRequest<Vim, LoadError> {
   onProgress (progress: IProgress) {
     this.pushProgress(progress)

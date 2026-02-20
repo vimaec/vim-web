@@ -1,6 +1,6 @@
 import { WebGLRenderer } from './streamRenderer'
 import type { VideoFrameMessage } from './protocol'
-import { ILogger } from './logger'
+import { ILogger } from '../shared/logger'
 
 /**
  * Configuration for the video decoder.
@@ -40,8 +40,7 @@ export interface IDecoder {
 }
 
 /**
- * Decoder class responsible for decoding video frames and rendering them using WebGL.
- * Handles frame queueing, decoding, and rendering through WebGL.
+ * @internal
  */
 export class Decoder implements IDecoder {
   private _decoder: globalThis.VideoDecoder | undefined

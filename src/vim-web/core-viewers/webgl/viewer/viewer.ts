@@ -22,7 +22,7 @@ import {type InputHandler} from '../../shared/input/inputHandler'
 import { IMaterials, Materials } from '../loader/materials/materials'
 import { Vim, IWebglVim } from '../loader/vim'
 import { Scene } from '../loader/scene'
-import { VimCollection } from '../loader/vimCollection'
+import { VimCollection } from '../../shared/vimCollection'
 import { createInputHandler } from './inputAdapter'
 import { IRenderer, Renderer } from './rendering/renderer'
 import { LoadRequest as CoreLoadRequest, RequestSource, ILoadRequest } from '../loader/progressive/loadRequest'
@@ -100,7 +100,7 @@ export class Viewer {
   private _clock = new THREE.Clock()
 
   // State
-  private readonly vimCollection = new VimCollection()
+  private readonly vimCollection = new VimCollection<Vim>()
   private _onVimLoaded = new SignalDispatcher()
   private _updateId: number
 

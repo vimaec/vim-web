@@ -8,7 +8,7 @@ import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer'
 import { Materials } from '../../loader/materials/materials'
 import { MaterialSet } from '../../loader/materials/materialSet'
 import { InstancedMesh } from '../../loader/progressive/instancedMesh'
-import { MAX_VIMS } from '../../loader/vimCollection'
+import { MAX_VIMS } from '../../../shared/vimCollection'
 
 /**
  * @internal

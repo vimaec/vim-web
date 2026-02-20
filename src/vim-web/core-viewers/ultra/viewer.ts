@@ -2,22 +2,22 @@ import type { ISimpleEvent } from 'ste-simple-events'
 import {type IInputHandler} from '../shared'
 import {type InputHandler} from '../shared/input/inputHandler'
 import { Camera, ICamera } from './camera'
-import { ColorManager } from './colorManager'
+import { ColorManager, type IColorManager } from './colorManager'
 import { Decoder, IDecoder } from './decoder'
 import { DecoderWithWorker } from './decoderWithWorker'
 import { ultraInputAdapter } from './inputAdapter'
 import { type ILoadRequest, LoadRequest } from './loadRequest'
-import { defaultLogger, ILogger } from './logger'
+import { defaultLogger, ILogger } from '../shared/logger'
 import { IUltraRaycaster, Raycaster } from './raycaster'
 import { IRenderer, Renderer } from './renderer'
 import { RpcClient } from './rpcClient'
 import { RpcSafeClient, VimSource } from './rpcSafeClient'
-import { SectionBox } from './sectionBox'
+import { SectionBox, type ISectionBox } from './sectionBox'
 import { createSelection, ISelection } from './selection'
 import { ClientError, ClientState, ConnectionSettings, SocketClient } from './socketClient'
 import { IViewport, Viewport } from './viewport'
-import { Vim } from './vim'
-import { IReadonlyVimCollection, VimCollection } from './vimCollection'
+import { Vim, type IUltraVim } from './vim'
+import { type IReadonlyVimCollection, VimCollection } from '../shared/vimCollection'
 
 export const INVALID_HANDLE = 0xffffffff
 
@@ -42,7 +42,7 @@ export class Viewer {
   private readonly _camera: Camera
   private readonly _selection: ISelection
   private readonly _raycaster: Raycaster
-  private readonly _vims : VimCollection
+  private readonly _vims : VimCollection<Vim>
   private _disposed = false
 
   // API components
@@ -55,6 +55,7 @@ export class Viewer {
 
   /**
    * The RPC client for making remote procedure calls.
+   * @internal
    */
   readonly rpc: RpcSafeClient
 
@@ -65,7 +66,7 @@ export class Viewer {
     return this._input
   }
 
-  get vims (): IReadonlyVimCollection {
+  get vims (): IReadonlyVimCollection<IUltraVim> {
     return this._vims
   }
 
@@ -92,10 +93,14 @@ export class Viewer {
     return this._selection
   }
 
+  private readonly _colors: ColorManager
+
   /**
    * API to create, manage, and destroy colors.
    */
-  readonly colors: ColorManager
+  get colors (): IColorManager {
+    return this._colors
+  }
 
   /**
    * Gets the current URL to which the viewer is connected.
@@ -121,10 +126,14 @@ export class Viewer {
     return this._socketClient.state
   }
 
+  private readonly _sectionBox: SectionBox
+
   /**
    * The section box API for controlling the section box.
    */
-  readonly sectionBox : SectionBox
+  get sectionBox (): ISectionBox {
+    return this._sectionBox
+  }
 
   /**
    * Creates a Viewer instance with a new canvas element appended to the given parent element.
@@ -153,18 +162,18 @@ export class Viewer {
     this.rpc = new RpcSafeClient(new RpcClient(this._socketClient))
 
     this._canvas = canvas
-    this._vims = new VimCollection()
+    this._vims = new VimCollection<Vim>()
     
     this._viewport = new Viewport(canvas, this.rpc, this._logger)
     this._decoder = new Decoder(canvas, this._logger)
     this._selection = createSelection()
     this._renderer = new Renderer(this.rpc, this._logger)
-    this.colors = new ColorManager(this.rpc)
+    this._colors = new ColorManager(this.rpc)
     this._camera = new Camera(this.rpc)
-    this._raycaster = new Raycaster(this.rpc, this.vims)
+    this._raycaster = new Raycaster(this.rpc, this._vims)
     this._input = ultraInputAdapter(this)
 
-    this.sectionBox = new SectionBox(this.rpc)
+    this._sectionBox = new SectionBox(this.rpc)
 
     // Set up the video frame handler
     this._socketClient.onVideoFrame = (msg) => this._decoder.enqueue(msg)
@@ -194,7 +203,7 @@ export class Viewer {
     this._camera.onConnect()
     
     this._vims.getAll().forEach((vim) => vim.connect())
-    this.sectionBox.onConnect() //needs to be called after vims are connected
+    this._sectionBox.onConnect() //needs to be called after vims are connected
 
     this._viewport.update()
     this._decoder.start()
@@ -244,7 +253,7 @@ export class Viewer {
   private onDisconnect (): void {
     this._decoder.stop()
     this._decoder.clear()
-    this.colors.clear()
+    this._colors.clear()
     this._vims.getAll().forEach((vim) => vim.disconnect())
   }
 
@@ -276,7 +285,14 @@ export class Viewer {
       return request
     }
 
-    const vim = new Vim(this.rpc, this.colors, this._renderer, source, this._logger)
+    const vimIndex = this._vims.allocateId()
+    if (vimIndex === undefined) {
+      const request = new LoadRequest()
+      request.error('loadingError', 'Maximum vim capacity reached')
+      return request
+    }
+
+    const vim = new Vim(vimIndex, this.rpc, this._colors, this._renderer, source, this._logger)
     this._vims.add(vim)
     const request = vim.connect()
     request.getResult().then((result) => {
@@ -291,8 +307,8 @@ export class Viewer {
    * Unloads the given VIM from the viewer.
    * @param vim - The VIM instance to unload.
    */
-  unload (vim: Vim): void {
-    this._vims.remove(vim)
+  unload (vim: IUltraVim): void {
+    this._vims.remove(vim as Vim)
     vim.disconnect()
   }
 
@@ -302,10 +318,6 @@ export class Viewer {
   clear (): void {
     this._vims.getAll().forEach((vim) => vim.disconnect())
     this._vims.clear()
-  }
-
-  getElement3Ds() : Promise<number> {
-    return this.rpc.RPCGetElementCountForScene()  
   }
 
   /**
@@ -319,7 +331,7 @@ export class Viewer {
     this._viewport.dispose()
     this._decoder.dispose()
     this._input.dispose()
-    this.sectionBox.dispose()
+    this._sectionBox.dispose()
     this._canvas.remove()
     window.onbeforeunload = null
   }

@@ -9,7 +9,7 @@ import { RenderingSection } from './renderingSection'
 import { PickingMaterial } from '../../loader/materials/pickingMaterial'
 import { type IElement3D } from '../../loader/element3d'
 import { Vim } from '../../loader/vim'
-import { VimCollection } from '../../loader/vimCollection'
+import { VimCollection } from '../../../shared/vimCollection'
 import type { IRaycaster, IRaycastResult } from '../../../shared/raycaster'
 import { Layers } from '../raycaster'
 import { type IMarker } from '../gizmos/markers/gizmoMarker'
@@ -114,7 +114,7 @@ export class GpuPicker implements IRaycaster<ISelectable> {
   private _renderer: THREE.WebGLRenderer
   private _camera: Camera
   private _scene: RenderScene
-  private _vims: VimCollection
+  private _vims: VimCollection<Vim>
   private _markers: GizmoMarkers | undefined
   private _section: RenderingSection
 
@@ -131,7 +131,7 @@ export class GpuPicker implements IRaycaster<ISelectable> {
     renderer: THREE.WebGLRenderer,
     camera: Camera,
     scene: RenderScene,
-    vims: VimCollection,
+    vims: VimCollection<Vim>,
     section: RenderingSection,
     width: number,
     height: number

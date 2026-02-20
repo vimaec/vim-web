@@ -22,6 +22,12 @@ export interface IVimElement{
  */
 export interface IVim<T extends IVimElement> {
     /**
+     * Stable index assigned by the viewer (0-254).
+     * Used by VimCollection for O(1) lookup.
+     */
+    readonly vimIndex: number
+
+    /**
      * Retrieves the element associated with the specified instance index.
      * @param instance - The instance index of the of one of the instance included in the element.
      * @returns The object corresponding to the instance, or undefined if not found.

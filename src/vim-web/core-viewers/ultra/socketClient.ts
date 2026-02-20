@@ -1,6 +1,6 @@
 import { SimpleEventDispatcher } from 'ste-simple-events'
 import * as Utils from '../../utils'
-import { ILogger } from './logger'
+import { ILogger } from '../shared/logger'
 import * as Protocol from './protocol'
 import { Marshal, ReadMarshal } from './rpcMarshal'
 import { Segment } from './rpcTypes'

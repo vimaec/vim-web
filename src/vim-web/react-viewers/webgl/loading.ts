@@ -79,7 +79,7 @@ export class ComponentLoader {
    * @returns A LoadRequest to track progress and get result. The vim is auto-added on success.
    * @throws Error if the viewer has reached maximum capacity (256 vims)
    */
-  open (source: Core.Webgl.RequestSource, settings: OpenSettings = {}) {
+  open (source: Core.Webgl.RequestSource, settings: OpenSettings = {}): Core.Webgl.ILoadRequest {
     return this.loadInternal(source, settings, false)
   }
 
@@ -91,7 +91,7 @@ export class ComponentLoader {
    * @returns A LoadRequest to track progress and get result. The vim is auto-added on success.
    * @throws Error if the viewer has reached maximum capacity (256 vims)
    */
-  load (source: Core.Webgl.RequestSource, settings: OpenSettings = {}) {
+  load (source: Core.Webgl.RequestSource, settings: OpenSettings = {}): Core.Webgl.ILoadRequest {
     return this.loadInternal(source, settings, true)
   }
 

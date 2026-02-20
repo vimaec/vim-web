@@ -137,9 +137,7 @@ export enum VimLoadingStatus {
   FailedToLoad = 5
 }
 /**
- * Provides safe, validated methods to interact with the RpcClient.
- * This class wraps low-level RPC calls with input validation, error handling,
- * and batching support to ensure robustness and performance when dealing with large data.
+ * @internal
  */
 export class RpcSafeClient {
   private readonly rpc: RpcClient
@@ -163,6 +161,7 @@ export class RpcSafeClient {
    * Creates a new RpcSafeClient instance.
    * @param rpc - The underlying RpcClient used for communication
    * @param batchSize - Maximum size of batched data for operations (default: 10000)
+   * @internal
    */
   constructor(rpc: RpcClient, batchSize: number = defaultBatchSize) {
     this.rpc = rpc

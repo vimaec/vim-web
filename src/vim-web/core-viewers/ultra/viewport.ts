@@ -1,5 +1,5 @@
 import * as Utils from "../../utils"
-import { ILogger } from "./logger";
+import { ILogger } from "../shared/logger";
 import { RpcSafeClient } from "./rpcSafeClient";
 
 /**
@@ -17,7 +17,7 @@ export interface IViewport {
 }
 
 /**
- * Class managing the viewport and canvas resizing functionality
+ * @internal
  */
 export class Viewport {
   /** The HTML canvas element used for rendering */

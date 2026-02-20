@@ -14,10 +14,26 @@ export enum VisibilityState {
 }
 
 /**
+ * Public interface for visibility state management.
+ * Accessed via `vim.visibility` on Ultra Vim instances.
+ */
+export interface IVisibilitySynchronizer {
+  areAllInState(state: VisibilityState | VisibilityState[]): boolean
+  getElementState(elementIndex: number): VisibilityState
+  getElementsInState(state: VisibilityState): number[] | 'all'
+  getDefaultState(): VisibilityState
+  setStateForElement(elementIndex: number, state: VisibilityState): void
+  setStateForAll(state: VisibilityState): void
+  replaceState(fromState: VisibilityState | VisibilityState[], toState: VisibilityState): void
+  reapplyStates(): void
+}
+
+/**
  * A class that wraps a StateTracker and is responsible for synchronizing its state updates with the remote RPCs.
  * It batches updates to optimize performance and handles the communication with the remote system.
+ * @internal
  */
-export class VisibilitySynchronizer {
+export class VisibilitySynchronizer implements IVisibilitySynchronizer {
   //TODO: Take advantage of the new rpcs that can take multiple states at once
   private _tracker: VisibilityTracker;
   private _rpc: RpcSafeClient;

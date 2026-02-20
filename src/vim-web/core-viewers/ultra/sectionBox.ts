@@ -1,9 +1,26 @@
-import { SignalDispatcher } from "ste-signals"
+import { SignalDispatcher, type ISignal } from "ste-signals"
 import { RpcSafeClient } from "./rpcSafeClient"
 import { safeBox } from "../../utils/threeUtils"
 import * as THREE from "three"
 
-export class SectionBox {
+/**
+ * Public interface for the Ultra section box.
+ * Controls clipping, visibility, and interactivity of the section box.
+ */
+export interface ISectionBox {
+  readonly onUpdate: ISignal
+  visible: boolean
+  interactive: boolean
+  clip: boolean
+  setBox(box: THREE.Box3): void
+  getBox(): THREE.Box3 | undefined
+  dispose(): void
+}
+
+/**
+ * @internal
+ */
+export class SectionBox implements ISectionBox {
 
   private _visible: boolean = false
   private _interactible: boolean = false

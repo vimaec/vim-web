@@ -24,12 +24,14 @@ export interface IProgress {
 
 export type LoadResult<TValue, TError extends ILoadError = ILoadError> = ILoadSuccess<TValue> | TError
 
+/** @internal */
 export class LoadSuccess<T> implements ILoadSuccess<T> {
   readonly isSuccess = true as const
   readonly isError = false as const
   constructor(readonly vim: T) {}
 }
 
+/** @internal */
 export class LoadError implements ILoadError {
   readonly isSuccess = false as const
   readonly isError = true as const
@@ -41,7 +43,6 @@ export class LoadError implements ILoadError {
 
 /**
  * Interface for load requests that can be used as a type constraint.
- * @internal
  */
 export interface ILoadRequest<TVim, TError extends ILoadError = ILoadError> {
   readonly isCompleted: boolean

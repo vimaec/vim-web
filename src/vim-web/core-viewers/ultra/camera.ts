@@ -1,6 +1,6 @@
 import { RpcSafeClient } from './rpcSafeClient'
-import { Element3D } from './element3d'
-import { Vim } from './vim'
+import type { IUltraElement3D } from './element3d'
+import type { IUltraVim } from './vim'
 import { Segment } from './rpcTypes'
 import * as THREE from 'three'
 
@@ -31,15 +31,15 @@ export interface ICamera {
    * @param {number} [blendTime=0.5] - Animation duration in seconds
    * @returns {Promise<Segment | undefined>} Promise resolving to the final camera position segment
    */
-  frameVim(vim: Vim, nodes: number[] | 'all', blendTime?: number): Promise<Segment | undefined>
+  frameVim(vim: IUltraVim, nodes: number[] | 'all', blendTime?: number): Promise<Segment | undefined>
 
   /**
    * Frames a specific object in the camera view
-   * @param {Element3D} object - The target object to frame
+   * @param {IUltraElement3D} object - The target object to frame
    * @param {number} [blendTime=0.5] - Animation duration in seconds
    * @returns {Promise<Segment | undefined>} Promise resolving to the final camera position segment
    */
-  frameObject(object: Element3D, blendTime?: number): Promise<Segment | undefined>
+  frameObject(object: IUltraElement3D, blendTime?: number): Promise<Segment | undefined>
 
   /**
    * Saves the current camera position for later restoration
@@ -62,8 +62,7 @@ export interface ICamera {
 }
 
 /**
- * Implements camera control operations for the 3D viewer
- * @class
+ * @internal
  */
 export class Camera implements ICamera {
   private _rpc: RpcSafeClient
@@ -161,7 +160,7 @@ export class Camera implements ICamera {
    * @param blendTime - Duration of the camera animation in seconds (defaults to 0.5)
    * @returns Promise that resolves when the framing animation is complete
    */
-  async frameVim(vim: Vim, elements: number[] | 'all', blendTime: number = this._defaultBlendTime): Promise<Segment | undefined> {
+  async frameVim(vim: IUltraVim, elements: number[] | 'all', blendTime: number = this._defaultBlendTime): Promise<Segment | undefined> {
     let segment: Segment | undefined
     if (elements === 'all') {
       segment = await this._rpc.RPCFrameVim(vim.handle, blendTime);
@@ -172,8 +171,8 @@ export class Camera implements ICamera {
     return segment
   }
 
-  async frameObject(object: Element3D, blendTime: number = this._defaultBlendTime) : Promise<Segment | undefined> {
-    const segment = await this._rpc.RPCFrameElements(object.vim.handle, [object.element], blendTime)
+  async frameObject(object: IUltraElement3D, blendTime: number = this._defaultBlendTime) : Promise<Segment | undefined> {
+    const segment = await this._rpc.RPCFrameElements(object.vimHandle, [object.element], blendTime)
     this._savedPosition = this._savedPosition ?? segment
     return segment
   }

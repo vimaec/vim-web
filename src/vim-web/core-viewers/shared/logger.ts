@@ -4,23 +4,23 @@ export interface ILogger {
 }
 
 export const defaultLogger: ILogger = {
-  
+
   log: (message: string, obj?: any) => {
     const caller = getCaller()
-    const msg = `VIM Ultra : ${message}` 
-    if(obj){
-      console.log(msg, obj, {caller})
-    } 
-    else{
-      console.log(msg, {caller})
-    } 
+    const msg = `VIM: ${message}`
+    if (obj) {
+      console.log(msg, obj, { caller })
+    }
+    else {
+      console.log(msg, { caller })
+    }
   },
   error: (message: string, e: unknown) => {
-    console.error('VIM Ultra ' + message, e)
+    console.error('VIM: ' + message, e)
   }
 }
 
-export function createLogger (onMsg : (str : string) => void) {
+export function createLogger (onMsg: (str: string) => void): ILogger {
   return {
     log: (str: string) => {
       defaultLogger.log(str)
@@ -33,11 +33,11 @@ export function createLogger (onMsg : (str : string) => void) {
   }
 }
 
-function getCaller(): string {
-  const stack = new Error().stack;
-  if (!stack) return '';
+function getCaller (): string {
+  const stack = new Error().stack
+  if (!stack) return ''
   const files = stack.split('/')
   const file = files[files.length - 1]
-  const clean = file.replace(/\?[^:]+/, ''); // Removes "?t=..." or similar
+  const clean = file.replace(/\?[^:]+/, '')
   return clean
 }

@@ -4,10 +4,21 @@ import { Vim } from "./vim";
 import * as THREE from "three";
 
 /**
- * Represents a single 3D element within a `Vim` model.
+ * Public interface for an Ultra 3D element.
  * Provides access to per-instance state, color, and bounding box.
  */
-export class Element3D implements IVimElement {
+export interface IUltraElement3D extends IVimElement {
+  readonly element: number
+  readonly vimHandle: number
+  state: VisibilityState
+  color: THREE.Color | undefined
+  getBoundingBox(): Promise<THREE.Box3 | undefined>
+}
+
+/**
+ * @internal
+ */
+export class Element3D implements IUltraElement3D {
   /**
    * The parent `Vim` instance this element belongs to.
    */

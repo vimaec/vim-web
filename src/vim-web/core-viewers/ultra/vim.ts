@@ -1,10 +1,10 @@
 import * as Utils from '../../utils';
 import type { IVim } from '../shared/vim';
-import type { ILogger } from './logger';
+import type { ILogger } from '../shared/logger';
 import { ColorManager } from './colorManager';
-import { Element3D } from './element3d';
-import { LoadRequest } from './loadRequest';
-import { VisibilityState, VisibilitySynchronizer } from './visibility';
+import { Element3D, type IUltraElement3D } from './element3d';
+import { LoadRequest, type ILoadRequest } from './loadRequest';
+import { VisibilityState, type IVisibilitySynchronizer, VisibilitySynchronizer } from './visibility';
 import { Renderer } from './renderer';
 import { MaterialHandles } from './rpcClient';
 import { RpcSafeClient, VimLoadingStatus, VimSource } from './rpcSafeClient';
@@ -12,8 +12,33 @@ import { INVALID_HANDLE } from './viewer';
 
 import * as THREE from 'three';
 
-export class Vim implements IVim<Element3D> {
+/**
+ * Public interface for an Ultra Vim model.
+ * Provides access to elements, visibility, colors, and bounding boxes.
+ */
+export interface IUltraVim extends IVim<IUltraElement3D> {
+  readonly type: 'ultra'
+  readonly source: VimSource
+  readonly visibility: IVisibilitySynchronizer
+  readonly handle: number
+  readonly connected: boolean
+  connect(): ILoadRequest
+  disconnect(): void
+  getObjectsInBox(box: THREE.Box3): IUltraElement3D[]
+  getBoundingBoxForElements(elements: number[] | 'all'): Promise<THREE.Box3 | undefined>
+  getColor(elementIndex: number): THREE.Color | undefined
+  setColor(elementIndex: number[], color: THREE.Color | undefined): Promise<void>
+  setColors(elements: number[], color: (THREE.Color | undefined)[]): Promise<void>
+  clearColor(elements: number[] | 'all'): void
+  reapplyColors(): void
+}
+
+/**
+ * @internal
+ */
+export class Vim implements IUltraVim {
   readonly type = 'ultra';
+  readonly vimIndex: number;
 
   readonly source: VimSource;
   private _handle: number = -1;
@@ -24,9 +49,7 @@ export class Vim implements IVim<Element3D> {
   private _renderer: Renderer;
   private _logger: ILogger;
 
-  // The StateSynchronizer wraps a StateTracker and handles RPC synchronization.
-  // Should be private
-  readonly visibility: VisibilitySynchronizer;
+  readonly visibility: IVisibilitySynchronizer;
 
   // Color tracking remains unchanged.
   private _elementColors: Map<number, THREE.Color> = new Map();
@@ -39,13 +62,16 @@ export class Vim implements IVim<Element3D> {
   private _elementCount: number = 0;
   private _objects: Map<number, Element3D> = new Map();
 
+  /** @internal */
   constructor(
+    vimIndex: number,
     rpc: RpcSafeClient,
     color: ColorManager,
     renderer: Renderer,
     source: VimSource,
     logger: ILogger
   ) {
+    this.vimIndex = vimIndex;
     this._rpc = rpc;
     this.source = source;
     this._colors = color;
@@ -95,7 +121,7 @@ export class Vim implements IVim<Element3D> {
     return this._handle >= 0;
   }
 
-  connect(): LoadRequest {
+  connect(): ILoadRequest {
     if (this._request) {
       return this._request;
     }

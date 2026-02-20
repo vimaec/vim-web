@@ -3,9 +3,9 @@ import "./style.css"
 // Viewer
 export { Viewer, INVALID_HANDLE } from './viewer'
 
-// Data model
-export { Element3D } from './element3d'
-export { Vim } from './vim'
+// Data model (interfaces — concrete classes are @internal)
+export type { IUltraElement3D } from './element3d'
+export type { IUltraVim } from './vim'
 
 // Viewer component interfaces (returned by Viewer getters)
 export type { ICamera } from './camera'
@@ -14,20 +14,18 @@ export type { IDecoder } from './decoder'
 export type { IViewport } from './viewport'
 export type { ISelection } from './selection'
 export type { IUltraRaycaster, IUltraRaycastResult } from './raycaster'
-export type { IReadonlyVimCollection } from './vimCollection'
-export type { ILogger } from './logger'
-
-// Viewer component classes (exposed directly on Viewer)
-export type { ColorManager } from './colorManager'
-export type { RemoteColor } from './remoteColor'
-export type { SectionBox } from './sectionBox'
-export type { RpcSafeClient } from './rpcSafeClient'
+export type { IReadonlyVimCollection } from '../shared/vimCollection'
+export type { ILogger } from '../shared/logger'
+export type { IColorManager } from './colorManager'
+export type { IRemoteColor } from './remoteColor'
+export type { ISectionBox } from './sectionBox'
 
 // RPC types
 export { Segment } from './rpcTypes'
 
 // Enums (runtime values)
 export { VisibilityState } from './visibility'
+export type { IVisibilitySynchronizer } from './visibility'
 export { InputMode, VimLoadingStatus } from './rpcSafeClient'
 
 // Settings

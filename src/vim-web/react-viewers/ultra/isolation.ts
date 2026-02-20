@@ -4,8 +4,8 @@ import { useStateRef } from "../helpers/reactUtils";
 
 import VisibilityState = Core.Ultra.VisibilityState
 import Viewer = Core.Ultra.Viewer
-import Vim = Core.Ultra.Vim
-import Element3D = Core.Ultra.Element3D
+type Vim = Core.Ultra.IUltraVim
+type Element3D = Core.Ultra.IUltraElement3D
 
 export function useUltraIsolation(viewer: Viewer){
   const adapter = createAdapter(viewer)
