@@ -9,10 +9,36 @@ export interface ISelectionAdapter<T extends IVimElement> {
 }
 
 /**
+ * Public interface for the selection manager.
+ */
+export interface ISelection<T extends IVimElement> {
+  toggleOnRepeatSelect: boolean
+  enabled: boolean
+  has(target: T): boolean
+  count(): number
+  any(): boolean
+  readonly onSelectionChanged: ISignal
+  select(object: T): void
+  select(objects: T[]): void
+  toggle(object: T): void
+  toggle(objects: T[]): void
+  add(object: T): void
+  add(objects: T[]): void
+  remove(object: T): void
+  remove(objects: T[]): void
+  clear(): void
+  getAll(): T[]
+  getFromVim(vim: IVim<T>): T[]
+  removeFromVim(vim: IVim<T>): void
+  getBoundingBox(): Promise<THREE.Box3 | undefined>
+}
+
+/**
+ * @internal
  * Selection manager that supports adding, removing, toggling, and querying selected objects.
  * The selection change signal is debounced to dispatch only once per animation frame.
  */
-export class Selection<T extends IVimElement>{
+export class Selection<T extends IVimElement> implements ISelection<T> {
   private _onSelectionChanged = new DebouncedSignal();
   private _selection = new Set<T>();
   private _adapter: ISelectionAdapter<T>;

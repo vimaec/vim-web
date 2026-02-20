@@ -1,6 +1,7 @@
 
 
 import * as Core from '../../core-viewers'
+import { UltraViewer } from '../../core-viewers/ultra/viewer'
 import { useSettings } from '../settings/settingsState'
 import {useRef, RefObject, useEffect, useState } from 'react'
 import { Container, createContainer } from '../container'
@@ -49,7 +50,7 @@ export function createUltraViewer (
     : container ?? createContainer()
 
   // Create the viewer and container
-  const core = Core.Ultra.UltraCoreViewer.createWithCanvas(cmpContainer.gfx)
+  const core = UltraViewer.createWithCanvas(cmpContainer.gfx)
 
   // Create the React root
   const reactRoot = createRoot(cmpContainer.ui)

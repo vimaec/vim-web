@@ -4,7 +4,7 @@
 
 import * as Core from '../../core-viewers'
 import PointerMode = Core.PointerMode
-import WebglCoreViewer = Core.Webgl.WebglCoreViewer
+type WebglCoreViewer = Core.Webgl.WebglCoreViewer
 
 /**
  * Css classes for custom cursors.

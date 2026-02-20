@@ -22,10 +22,37 @@ import { type IReadonlyVimCollection, VimCollection } from '../shared/vimCollect
 export const INVALID_HANDLE = 0xffffffff
 
 /**
+ * Public interface for the Ultra viewer.
+ * Consumers should use this instead of the concrete class.
+ */
+export interface IUltraViewer {
+  readonly type: 'ultra'
+  readonly camera: IUltraCamera
+  readonly inputs: IInputHandler
+  readonly vims: IReadonlyVimCollection<IUltraVim>
+  readonly viewport: IUltraViewport
+  readonly renderer: IUltraRenderer
+  readonly decoder: IUltraDecoder
+  readonly raycaster: IUltraRaycaster
+  readonly selection: IUltraSelection
+  readonly colors: IColorManager
+  readonly serverUrl: string | undefined
+  readonly onStateChanged: ISimpleEvent<ClientState>
+  readonly connectionState: ClientState
+  readonly sectionBox: IUltraSectionBox
+  connect (settings?: ConnectionSettings): Promise<boolean>
+  disconnect (): void
+  load (source: VimSource): IUltraLoadRequest
+  unload (vim: IUltraVim): void
+  clear (): void
+  dispose (): void
+}
+
+/**
  * The main UltraViewer class responsible for managing VIM files,
  * handling connections, and coordinating various components like the camera, decoder, and inputs.
  */
-export class UltraViewer {
+export class UltraViewer implements IUltraViewer {
   /**
    * The type of the viewer, indicating it is a WebGL viewer.
    * Useful for distinguishing between different viewer types in a multi-viewer application.

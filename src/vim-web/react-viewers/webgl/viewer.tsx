@@ -7,6 +7,7 @@ import { createRoot } from 'react-dom/client'
 import ReactTooltip from 'react-tooltip'
 
 import * as Core from '../../core-viewers'
+import { WebglViewer } from '../../core-viewers/webgl/viewer/viewer'
 import { AxesPanelMemo } from '../panels/axesPanel'
 import { ControlBar, ControlBarCustomization } from '../controlbar/controlBar'
 import { useControlBar } from '../state/controlBarState'
@@ -68,7 +69,7 @@ export function createWebglViewer (
     : container ?? createContainer()
 
   // Create the viewer inside the container
-  const viewer = new Core.Webgl.WebglCoreViewer(coreSettings)
+  const viewer = new WebglViewer(coreSettings)
   viewer.viewport.reparent(cmpContainer.gfx)
 
   // Create the React root

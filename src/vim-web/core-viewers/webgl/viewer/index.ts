@@ -1,5 +1,5 @@
-// Value exports
-export { WebglViewer } from './viewer'
+// Viewer interface (concrete class is internal)
+export type { IWebglViewer } from './viewer'
 
 // Settings
 export type { ViewerSettings, PartialViewerSettings, MaterialSettings } from './settings'

@@ -18,7 +18,7 @@ import { BimTreeData, VimTreeNode } from './bimTreeData'
 import { IsolationApi } from '../state/sharedIsolation'
 
 type IElement3D = Core.Webgl.IElement3D
-import WebglCoreViewer = Core.Webgl.WebglCoreViewer
+type WebglCoreViewer = Core.Webgl.WebglCoreViewer
 
 export type TreeActionApi = {
   showAll: () => void

@@ -3,7 +3,7 @@ import * as Core from "../../core-viewers";
 import { useStateRef } from "../helpers/reactUtils";
 
 import VisibilityState = Core.Ultra.VisibilityState
-import UltraCoreViewer = Core.Ultra.UltraCoreViewer
+type UltraCoreViewer = Core.Ultra.UltraCoreViewer
 type Vim = Core.Ultra.IUltraVim
 type Element3D = Core.Ultra.IUltraElement3D
 

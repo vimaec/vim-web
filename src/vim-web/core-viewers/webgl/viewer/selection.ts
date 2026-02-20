@@ -2,7 +2,7 @@
  * @module viw-webgl-viewer
  */
 
-import {Selection, type ISelectionAdapter} from '../../shared/selection'
+import {Selection, type ISelection, type ISelectionAdapter} from '../../shared/selection'
 import { IVimElement } from '../../shared/vim'
 
 /** ISelectable object in the WebGL viewer. Both Element3D and Marker implement this. */
@@ -15,7 +15,7 @@ export interface ISelectable extends IVimElement {
   readonly instances: number[] | undefined
 }
 
-export type IWebglSelection = Selection<ISelectable>
+export type IWebglSelection = ISelection<ISelectable>
 
 /** @internal */
 export function createSelection() {

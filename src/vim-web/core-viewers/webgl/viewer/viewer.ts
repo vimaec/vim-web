@@ -29,9 +29,32 @@ import { LoadRequest as CoreLoadRequest, RequestSource, IWebglLoadRequest } from
 import { VimPartialSettings } from '../loader/vimSettings'
 
 /**
+ * Public interface for the WebGL viewer.
+ * Consumers should use this instead of the concrete class.
+ */
+export interface IWebglViewer {
+  readonly type: 'webgl'
+  readonly settings: ViewerSettings
+  readonly renderer: IWebglRenderer
+  readonly viewport: IWebglViewport
+  readonly selection: IWebglSelection
+  readonly inputs: IInputHandler
+  readonly raycaster: IWebglRaycaster
+  readonly materials: IMaterials
+  readonly camera: IWebglCamera
+  readonly gizmos: IGizmos
+  readonly onVimLoaded: ISignal
+  readonly vims: IWebglVim[]
+  load (source: RequestSource, settings?: VimPartialSettings): IWebglLoadRequest
+  unload (vim: IWebglVim): void
+  clear (): void
+  dispose (): void
+}
+
+/**
  * Viewer and loader for vim files.
  */
-export class WebglViewer {
+export class WebglViewer implements IWebglViewer {
   /**
    * The type of the viewer, indicating it is a WebGL viewer.
    * Useful for distinguishing between different viewer types in a multi-viewer application.

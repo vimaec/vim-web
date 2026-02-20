@@ -1,7 +1,8 @@
 import "./style.css"
 
 // Viewer
-export { UltraViewer as UltraCoreViewer, INVALID_HANDLE } from './viewer'
+export type { IUltraViewer as UltraCoreViewer } from './viewer'
+export { INVALID_HANDLE } from './viewer'
 
 // Data model (interfaces — concrete classes are @internal)
 export type { IUltraElement3D } from './element3d'

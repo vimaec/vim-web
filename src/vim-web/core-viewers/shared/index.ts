@@ -5,9 +5,6 @@ export type { IInputHandler, IMouseInput, MouseOverrides, ITouchInput, TouchOver
 // Loading
 export type { ILoadSuccess, ILoadError, IProgress, ProgressType, LoadResult } from './loadResult'
 
-// Selection
-export type { Selection } from './selection'
-
 // Vim
 export type { IVimElement, IVim } from './vim'
 

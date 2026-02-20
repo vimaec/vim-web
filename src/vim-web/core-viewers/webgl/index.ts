@@ -14,7 +14,7 @@ export type { IWebglVim } from './loader'
 export type { ISubset, SubsetFilter } from './loader'
 
 // Viewer
-export { WebglViewer as WebglCoreViewer } from './viewer'
+export type { IWebglViewer as WebglCoreViewer } from './viewer'
 export type { ViewerSettings, PartialViewerSettings, MaterialSettings } from './viewer'
 export type { IWebglCamera, ICameraMovement } from './viewer'
 export type { IWebglRenderer, IRenderingSection } from './viewer'
