@@ -7,10 +7,30 @@ React-based 3D viewers for VIM files with BIM (Building Information Modeling) su
 ```bash
 npm install
 npm run dev           # Dev server at localhost:5173
-npm run build         # Production build
+npm run build         # Production build (vite + tsc declarations + rollup d.ts bundles)
 npm run eslint        # Lint
 npm run documentation # TypeDoc generation
 ```
+
+### Build Pipeline
+
+`npm run build` runs three steps in sequence:
+
+1. **Vite build** — bundles `vim-web.js` (ESM) and `vim-web.iife.js` (IIFE) into `dist/`
+2. **TypeScript declarations** (`tsc -p tsconfig.types.json`) — emits individual `.d.ts` files to `dist/types/`
+3. **Rollup d.ts bundling** — produces two self-contained type bundles:
+   - `dist/vim-web.d.ts` — full library API (3,300+ lines), referenced by `"types"` in package.json
+   - `dist/vim-bim.d.ts` — standalone BIM data types from `vim-format` (1,900+ lines)
+
+### Type Bundles & AI Tooling
+
+The bundled `.d.ts` files serve a dual purpose:
+
+**`vim-web.d.ts`** is the package's type entry point. It inlines types from `ste-signals`, `ste-events`, and `ste-core` so consumers get full type information without needing those packages. Types from `three`, `react`, `deepmerge`, and `vim-format` remain external imports.
+
+**`vim-bim.d.ts`** bundles all BIM data interfaces (`IElement`, `ICategory`, `IRoom`, `VimDocument`, etc.) from `vim-format` into a single self-contained file. This is designed as an **AI-readable reference** — an LLM can read this one file to understand the complete BIM data model without needing access to the `vim-format` package source. It is not imported by the library itself.
+
+Both files have semantic namespace names (e.g., `Core_Webgl`, `React_Ultra`) instead of the opaque `index_d$1` names that `rollup-plugin-dts` generates by default. This makes them readable by both humans and AI tools. The rollup configs (`rollup.dts.config.mjs`, `rollup.bim-dts.config.mjs`) handle the namespace renaming and various fixups.
 
 ## Architecture Overview
 
@@ -39,60 +59,10 @@ src/vim-web/
     └── helpers/            # StateRef, hooks, utilities
 ```
 
-## Loading Pipeline
+### Import Discipline
 
-High-level call chain from URL to rendered scene:
-
-```
-viewer.load(url)
-  → ComponentLoader.load() — allocates vimIndex (0-255)
-    → Core LoadRequest — parses BFast → G3d + VimDocument + ElementMapping
-      → Creates Vim (no geometry yet)
-    → initVim() — viewer.add(vim), vim.loadAll()
-      → Vim.loadSubset(fullSet)
-        → VimMeshFactory.add(subset) — splits merged vs instanced
-          → Scene.addMesh() → addSubmesh() → Element3D._addMesh()
-```
-
-1. **ComponentLoader** (`react-viewers/webgl/loading.ts`) allocates a `vimIndex` (0-255) and creates a `LoadRequest`
-2. **LoadRequest** (`progressive/loadRequest.ts`) parses the VIM file (BFast container) into G3d geometry, VimDocument (BIM data), and ElementMapping
-3. **Vim** is constructed with a `VimMeshFactory` but no geometry yet
-4. **Vim.loadAll()** creates a full G3dSubset and calls `loadSubset()`
-5. **VimMeshFactory** routes subsets: meshes with <=5 instances go to `InsertableMeshFactory` (merged), >5 go to `InstancedMeshFactory` (GPU instanced)
-6. **Scene.addMesh()** adds Three.js meshes to the renderer, applies transforms, and wires submeshes to Element3D objects
-
-## Rendering Pipeline
-
-Multi-pass compositor (WebGL):
-
-```
-Scene (MSAA) → Selection Mask → Outline Pass (edge detection) → FXAA → Merge → Screen
-```
-
-Rendering is on-demand: the `needsUpdate` flag is set by camera movements, selection changes, or visibility changes, and cleared after each frame. Key files: `rendering/renderer.ts`, `renderingComposer.ts`.
-
-## GPU Picking
-
-Clicks resolve to BIM elements via a custom shader that renders to a Float32 render target:
-
-- **R** = packed ID (`vimIndex << 24 | elementIndex`) — supports 256 vims x 16M elements
-- **G** = depth along camera direction (0 = miss)
-- **B/A** = surface normal (x, y); z is reconstructed
-
-IDs are pre-packed during mesh building as per-vertex attributes (merged meshes) or per-instance attributes (instanced meshes). See `gpuPicker.ts` and `pickingMaterial.ts`.
-
-## Mesh Building Strategy
-
-Two strategies based on instance count per unique mesh:
-
-| Strategy | Condition | Implementation | Chunking |
-|----------|-----------|----------------|----------|
-| **Merged** | <=5 instances | `InsertableMeshFactory` → `InsertableMesh` | Chunks at 4M indices |
-| **Instanced** | >5 instances | `InstancedMeshFactory` → `InstancedMesh` | One mesh per unique geometry |
-
-**Merged meshes** duplicate geometry per instance with baked transforms, enabling per-vertex attributes for GPU picking. **Instanced meshes** share geometry across instances using Three.js `InstancedMesh` with per-instance attributes.
-
-Progressive loading is supported via `Vim.loadSubset()` which tracks loaded instances and avoids duplicates using `G3dSubset.except()`.
+- **Core files** (`core-viewers/`): Import directly from source files, never through barrel files
+- **React layer** (`react-viewers/`): Import through barrel files (`import * as Core from '../../core-viewers'`)
 
 ## Key Concepts
 
@@ -100,13 +70,35 @@ Progressive loading is supported via `Vim.loadSubset()` which tracks loaded inst
 - **Selection**: Observable selection state with multi-select, events, and bounding box queries.
 - **Camera**: Fluent API with `snap()` (instant) and `lerp(duration)` (animated) for framing, orbiting, and zooming.
 - **Gizmos**: Section box, measurement tool, and markers.
-- **StateRef/ActionRef**: Observable state and action system used in the React layer for customization.
+- **StateRef/FuncRef**: Observable state and callable function references used in the React layer for customization.
+- **ViewerApi**: The root API handle returned by `createViewer()`. Provides `load()`, `open()`, `unload()`, and access to all subsystems (isolation, sectionBox, controlBar, etc.).
 
 ## Customization
 
 The React viewer exposes customization points for:
-- **Control bar**: Add/replace toolbar buttons
-- **Context menu**: Add custom menu items
-- **BIM info panel**: Modify displayed data or add custom sections
+- **Control bar**: Add/replace toolbar buttons via `viewer.controlBar.customize()`
+- **Context menu**: Add custom menu items via `viewer.contextMenu.customize()`
+- **BIM info panel**: Modify displayed data or override rendering at any level
+- **Settings panel**: Add/remove settings items via `viewer.settings.customize()`
+- **Floating panels**: Modify section box offset and isolation render settings fields
 
-See [CLAUDE.md](./CLAUDE.md) for detailed API examples and implementation reference.
+## Documentation
+
+- **[CLAUDE.md](./CLAUDE.md)** — Detailed API reference, code examples, architecture details, and patterns. This is the primary reference for both developers and AI tools.
+- **[.claude/docs/INPUT.md](./.claude/docs/INPUT.md)** — Input system architecture, coordinate systems, override patterns
+- **[.claude/docs/optimization.md](./.claude/docs/optimization.md)** — Loading pipeline performance and profiling
+- **[.claude/docs/RENDERING_OPTIMIZATIONS.md](./.claude/docs/RENDERING_OPTIMIZATIONS.md)** — Shader material architecture and rendering patterns
+
+## Tech Stack
+
+- **TypeScript 5.7**, **React 18.3**, **Vite 6**
+- **Three.js 0.171**, **Tailwind CSS 3.4** (`vc-` prefix)
+- **ste-events/ste-signals** for typed events, **vim-format** for BIM data
+- **Rollup** + **rollup-plugin-dts** for type bundle generation
+
+## Code Style
+
+- Prettier: no semicolons, trailing commas, single quotes
+- Index files control module exports
+- No test framework — build pass is the verification
+- No deprecated code or backwards-compatibility shims
