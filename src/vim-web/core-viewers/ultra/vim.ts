@@ -26,10 +26,8 @@ import * as THREE from 'three'
  * const element = vim.getElementFromIndex(301)
  * element.visible = false
  * element.outline = true
+ * element.ghosted = true
  * element.color = new THREE.Color(0xff0000)
- *
- * // Bulk visibility via visibility manager
- * vim.visibility.setStateForAll(VisibilityState.GHOSTED)
  *
  * // Scene queries
  * const box = vim.scene.getBoundingBox()
@@ -44,8 +42,6 @@ export interface IUltraVim extends IVim<IUltraElement3D> {
   readonly source: VimSource
   /** Scene providing bounding box and spatial queries. */
   readonly scene: IUltraScene
-  /** Bulk visibility state manager for all elements. */
-  readonly visibility: IVisibilitySynchronizer
   /** The server-side handle for this vim. */
   readonly handle: number
   /** Whether this vim is currently connected to the server. */

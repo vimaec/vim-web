@@ -106,10 +106,10 @@ export class BoxInputs {
     if(this._restore) return; // Don't register twice
 
     this._restore = this._viewer.inputs.mouse.override({
-      onPointerUp: (pos, btn, original) => { original(pos, btn); this.onMouseUp(pos) },
-      onPointerDown: (pos, btn, original) => { original(pos, btn); this.onMouseDown(pos) },
-      onPointerMove: (pos, original) => { original(pos); this.onMouseMove(pos) },
-      onDrag: (delta, btn, original) => { if(this._handle) return; original(delta, btn) },
+      onPointerUp: (original, pos, btn) => { original(pos, btn); this.onMouseUp(pos) },
+      onPointerDown: (original, pos, btn) => { original(pos, btn); this.onMouseDown(pos) },
+      onPointerMove: (original, pos) => { original(pos); this.onMouseMove(pos) },
+      onDrag: (original, delta, btn) => { if(this._handle) return; original(delta, btn) },
     })
   }
 

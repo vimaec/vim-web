@@ -59,7 +59,7 @@ interface InputSettings{
  *
  * // Override mouse click behavior
  * const restore = viewer.inputs.mouse.override({
- *   onClick: (pos, ctrl, original) => { myLogic(pos); original(pos, ctrl) }
+ *   onClick: (original, pos, ctrl) => { myLogic(pos); original(pos, ctrl) }
  * })
  * ```
  */

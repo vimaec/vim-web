@@ -68,7 +68,7 @@ export interface ISelection<T extends IVimElement> {
   getFromVim(vim: IVim<T>): T[]
   /** Removes all selected objects that belong to a specific VIM model. */
   removeFromVim(vim: IVim<T>): void
-  /** Computes the bounding box encompassing all selected objects. */
+  /** Computes the bounding box encompassing all selected objects, in Z-up world space (X = right, Y = forward, Z = up). */
   getBoundingBox(): Promise<THREE.Box3 | undefined>
 }
 

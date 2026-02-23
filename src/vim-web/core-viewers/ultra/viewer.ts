@@ -59,11 +59,17 @@ export interface IUltraViewer {
   /** The current connection state. */
   readonly connectionState: ClientState
   readonly sectionBox: IUltraSectionBox
-  /** Connects to the Ultra rendering server. Must be called before `load()`. */
+  /**
+   * Connects to the Ultra rendering server. Must be awaited before calling `load()`.
+   * Returns true on success, false on failure. Subscribe to `onStateChanged` for progress.
+   */
   connect (settings?: ConnectionSettings): Promise<boolean>
   /** Disconnects from the server. Loaded vims become inoperable. */
   disconnect (): void
-  /** Loads a VIM file via the server. The resulting vim is added to `vims` on success. */
+  /**
+   * Loads a VIM file via the server. Requires a successful `connect()` first.
+   * The resulting vim is added to `vims` on success.
+   */
   load (source: VimSource): IUltraLoadRequest
   /** Removes a vim from the viewer and disposes its resources. */
   unload (vim: IUltraVim): void

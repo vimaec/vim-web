@@ -123,13 +123,15 @@ export type ViewerSettings = {
     orthographic: boolean
 
     /**
-     * Vector3 of 0 or 1 to enable/disable movement along each axis
+     * Movement lock per axis in Z-up space (X = right, Y = forward, Z = up).
+     * Each component should be 0 (locked) or 1 (free).
      * Default: THREE.Vector3(1, 1, 1)
      */
     lockMovement: THREE.Vector3
 
     /**
-     * Vector2 of 0 or 1 to enable/disable rotation around x or y.
+     * Rotation lock per axis. x = yaw (around Z), y = pitch (up/down).
+     * Each component should be 0 (locked) or 1 (free).
      * Default: THREE.Vector2(1, 1)
      */
     lockRotation: THREE.Vector2
@@ -159,8 +161,8 @@ export type ViewerSettings = {
     zoom: number
 
     /**
-     * Initial forward vector of the camera
-     * THREE.Vector3(1, -1, 1)
+     * Initial forward vector of the camera in Z-up space (X = right, Y = forward, Z = up).
+     * Default: THREE.Vector3(1, -1, 1)
      */
     forward: THREE.Vector3
 

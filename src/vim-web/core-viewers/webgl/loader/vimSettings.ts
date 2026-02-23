@@ -17,12 +17,12 @@ import * as THREE from 'three'
 export type VimSettings = {
 
   /**
-   * The positional offset for the vim object.
+   * The positional offset for the vim object, in Z-up space (X = right, Y = forward, Z = up).
    */
   position: THREE.Vector3
 
   /**
-   * The XYZ rotation applied to the vim object.
+   * The XYZ rotation applied to the vim object, in degrees.
    */
   rotation: THREE.Vector3
 

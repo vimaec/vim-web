@@ -27,9 +27,16 @@ export interface IWebglRenderer {
   readonly section: IRenderingSection
   /** Whether a re-render has been requested for the current frame. */
   readonly needsUpdate: boolean
-  /** Requests a re-render on the next frame. */
+  /**
+   * Flags the scene as dirty so it will be re-rendered on the next animation frame.
+   * Selection, visibility, camera, and material changes call this automatically.
+   * Only needed when making direct Three.js changes the renderer can't detect.
+   */
   requestRender(): void
-  /** Renders the current frame. Useful for capturing screenshots. */
+  /**
+   * Immediately renders the current frame.
+   * For screenshots: call `requestRender()`, then `render()`, then read `canvas.toDataURL()`.
+   */
   render(): void
   /** Gets or sets the background color or texture of the scene. */
   background: THREE.Color | THREE.Texture
@@ -49,7 +56,7 @@ export interface IWebglRenderer {
   smallGhostThreshold: number
   /** Returns the bounding box encompassing all rendered objects. */
   getBoundingBox(target?: THREE.Box3): THREE.Box3 | undefined
-  /** When true, the renderer only renders on request. When false, renders every frame. */
+  /** When true (default), only renders when dirty (`requestRender()` was called). When false, renders every frame. */
   autoRender: boolean
 }
 

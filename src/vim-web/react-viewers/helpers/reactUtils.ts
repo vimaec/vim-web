@@ -219,7 +219,7 @@ export function useStateRef<T>(initialValue: T | (() => T), isLazy = false) {
  * ```
  */
 export interface FuncRef<TArg, TReturn> {
-  /** Invokes the stored function. */
+  /** Invokes the stored function. When `TArg` is `void`, no argument is needed. */
   call(arg: TArg): TReturn;
   /** Returns the current function. */
   get(): (arg: TArg) => TReturn;

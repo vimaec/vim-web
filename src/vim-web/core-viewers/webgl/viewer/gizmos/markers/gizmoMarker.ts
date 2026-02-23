@@ -35,9 +35,9 @@ export interface IMarker extends ISelectable {
   color: THREE.Color | undefined
   /** The uniform scale factor applied to the marker. */
   size: number
-  /** The world position of the marker. */
+  /** The world position of the marker in Z-up space (X = right, Y = forward, Z = up). */
   position: THREE.Vector3
-  /** Retrieves the bounding box of the marker. */
+  /** Retrieves the bounding box of the marker in Z-up world space. */
   getBoundingBox(): Promise<THREE.Box3>
 }
 

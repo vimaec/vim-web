@@ -58,9 +58,9 @@ export interface IElement3D extends ISelectable {
    * Type is `VimHelpers.ElementParameter` from vim-format (accessible via `VIM.BIM.VimHelpers`).
    */
   getBimParameters(): Promise<VimHelpers.ElementParameter[]>
-  /** Retrieves the bounding box, or undefined if the element has no geometry. */
+  /** Retrieves the bounding box in Z-up world space (X = right, Y = forward, Z = up), or undefined if the element has no geometry. */
   getBoundingBox(): Promise<THREE.Box3 | undefined>
-  /** Retrieves the center position, or undefined if the element has no geometry. */
+  /** Retrieves the center position in Z-up world space, or undefined if the element has no geometry. */
   getCenter(target?: THREE.Vector3): Promise<THREE.Vector3 | undefined>
 }
 

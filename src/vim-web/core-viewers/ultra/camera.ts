@@ -7,6 +7,8 @@ import * as THREE from 'three'
 /**
  * Camera movement operations obtained via `camera.snap()` or `camera.lerp(duration)`.
  *
+ * All positions use **Z-up**: X = right, Y = forward, Z = up.
+ *
  * @example
  * ```ts
  * camera.lerp(1).frame(element)          // Animated frame
@@ -23,8 +25,8 @@ export interface IUltraCameraMovement {
 
   /**
    * Sets the camera position and target.
-   * @param position - The new camera position.
-   * @param target - The new look-at target.
+   * @param position - The new camera position (Z-up).
+   * @param target - The new look-at target (Z-up).
    */
   set(position: THREE.Vector3, target: THREE.Vector3): void
 

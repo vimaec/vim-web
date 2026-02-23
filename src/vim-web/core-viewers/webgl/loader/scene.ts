@@ -28,9 +28,9 @@ export interface ISceneRenderer {
 export interface IScene {
   /** The world transform matrix applied to all meshes in this scene. */
   readonly matrix: THREE.Matrix4
-  /** Bounding box of currently loaded geometry. Undefined if nothing loaded yet. */
+  /** Bounding box of currently loaded geometry in Z-up world space (X = right, Y = forward, Z = up). Undefined if nothing loaded yet. */
   getBoundingBox(target?: THREE.Box3): THREE.Box3 | undefined
-  /** Bounding box using average mesh centers. More stable against outliers. */
+  /** Bounding box using average mesh centers, in Z-up world space. More stable against outliers. */
   getAverageBoundingBox(): THREE.Box3
   /** Material override for all meshes in this scene. */
   material: MaterialSet

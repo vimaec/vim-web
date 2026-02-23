@@ -1,11 +1,12 @@
 import { IIsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
 import * as Core from "../../core-viewers";
 import { useStateRef } from "../helpers/reactUtils";
+import { VisibilityState, type IVisibilitySynchronizer } from "../../core-viewers/ultra/visibility";
 
-import VisibilityState = Core.Ultra.VisibilityState
+// Internal access — these properties exist on concrete classes but are hidden from public API
 type Viewer = Core.Ultra.Viewer
-type Vim = Core.Ultra.IUltraVim
-type Element3D = Core.Ultra.IUltraElement3D
+type Vim = Core.Ultra.IUltraVim & { readonly visibility: IVisibilitySynchronizer }
+type Element3D = Core.Ultra.IUltraElement3D & { state: VisibilityState }
 
 export function useUltraIsolation(viewer: Viewer){
   const adapter = createAdapter(viewer)
@@ -20,7 +21,9 @@ function createAdapter(viewer: Viewer): IIsolationAdapter {
   const hide = (objects: Element3D[] | 'all') =>{
     const state = ghost.get() ? VisibilityState.GHOSTED : VisibilityState.HIDDEN
     if(objects === 'all'){
-      viewer.vims.forEach(vim => {vim.visibility.setStateForAll(state)})
+      for (const vim of viewer.vims as Vim[]) {
+        vim.visibility.setStateForAll(state)
+      }
       return
     }
 
@@ -47,18 +50,18 @@ function createAdapter(viewer: Viewer): IIsolationAdapter {
     clearSelection: () => viewer.selection.clear(),
 
     isolateSelection: () => {
-      hide('all') 
+      hide('all')
 
-      for(const obj of viewer.selection.getAll()){
+      for(const obj of viewer.selection.getAll() as Element3D[]){
         obj.state = VisibilityState.HIGHLIGHTED
       }
     },
     hideSelection: () => {
-      const objs = viewer.selection.getAll()
+      const objs = viewer.selection.getAll() as Element3D[]
       hide(objs)
     },
     showSelection: () => {
-      viewer.selection.getAll().forEach(obj => {
+      (viewer.selection.getAll() as Element3D[]).forEach(obj => {
         obj.state = VisibilityState.VISIBLE
       })
     },
@@ -67,10 +70,10 @@ function createAdapter(viewer: Viewer): IIsolationAdapter {
       hide('all')
     },
     showAll: () => {
-      for(const vim of viewer.vims){
+      for(const vim of viewer.vims as Vim[]){
         vim.visibility.setStateForAll(VisibilityState.VISIBLE)
       }
-      viewer.selection.getAll().forEach(obj => {
+      ;(viewer.selection.getAll() as Element3D[]).forEach(obj => {
         obj.state = VisibilityState.HIGHLIGHTED
       })
     },
@@ -78,14 +81,14 @@ function createAdapter(viewer: Viewer): IIsolationAdapter {
     // TODO: Change this api to use elements
     isolate: (instances: number[]) => {
       hide('all') // Hide all objects
-      viewer.selection.getAll().forEach(obj => {
+      ;(viewer.selection.getAll() as Element3D[]).forEach(obj => {
         obj.state = VisibilityState.HIGHLIGHTED
       })
     },
     show: (instances: number[]) => {
       for(const vim of viewer.vims){
         for(const i of instances){
-          vim.getElement(i).state = VisibilityState.VISIBLE
+          ;(vim.getElement(i) as Element3D).state = VisibilityState.VISIBLE
         }
       }
     },
@@ -93,17 +96,17 @@ function createAdapter(viewer: Viewer): IIsolationAdapter {
     hide: (instances: number[]) => {
       for(const vim of viewer.vims){
         for(const i of instances){
-          const obj = vim.getElement(i)
+          const obj = vim.getElement(i) as Element3D
           hide([obj])
         }
       }
-      const objs = viewer.selection.getAll()
+      const objs = viewer.selection.getAll() as Element3D[]
       hide(objs)
     },
     showGhost: (show: boolean) => {
       ghost.set(show)
-      
-      for(const vim of viewer.vims){
+
+      for(const vim of viewer.vims as Vim[]){
         if(show){
           vim.visibility.replaceState(VisibilityState.HIDDEN, VisibilityState.GHOSTED)
         } else {
@@ -129,8 +132,8 @@ function checkSelectionState(viewer: Viewer, test: (state: VisibilityState) => b
   if(!viewer.selection.any()){
     return false
   }
-  
-  return viewer.selection.getAll().every(obj => test(obj.state))
+
+  return (viewer.selection.getAll() as Element3D[]).every(obj => test(obj.state))
 }
 
 function getVisibilityState(viewer: Viewer): VisibilityStatus {
@@ -139,7 +142,7 @@ function getVisibilityState(viewer: Viewer): VisibilityStatus {
   let allButSelectionFlag = true;
   let onlySelectionFlag = true;
 
-  for (let v of viewer.vims) {
+  for (let v of viewer.vims as Vim[]) {
     const allVisible = v.visibility.areAllInState([VisibilityState.VISIBLE, VisibilityState.HIGHLIGHTED])
     const allHidden = v.visibility.areAllInState([VisibilityState.HIDDEN, VisibilityState.GHOSTED])
 
@@ -148,12 +151,12 @@ function getVisibilityState(viewer: Viewer): VisibilityStatus {
     onlySelectionFlag = onlySelection(viewer, v)
     allButSelectionFlag = allButSelection(viewer, v)
   }
-  
+
   if (all) return 'all';
   if (none) return 'none';
   if (allButSelectionFlag) return 'allButSelection';
   if (onlySelectionFlag) return 'onlySelection';
-  
+
   // If none of the above conditions are met, it must be 'some'
   return 'some';
 }

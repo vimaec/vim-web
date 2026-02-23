@@ -37,13 +37,13 @@ export type MouseCallbacks = {
  * Public API for mouse input, accessed via `viewer.inputs.mouse`.
  *
  * Supports overriding any mouse callback with automatic restore. Each override
- * handler receives the original callback as its last parameter for chaining.
+ * handler receives the original callback as its first parameter for chaining.
  *
  * @example
  * ```ts
  * // Override click to add custom logic
  * const restore = viewer.inputs.mouse.override({
- *   onClick: (pos, ctrl, original) => {
+ *   onClick: (original, pos, ctrl) => {
  *     if (myCondition) myAction(pos)
  *     else original(pos, ctrl)
  *   }
@@ -56,7 +56,7 @@ export interface IMouseInput {
   active: boolean
   /**
    * Temporarily overrides mouse callbacks. Only provided handlers are replaced;
-   * others keep their current behavior. Each handler receives the original as its last param.
+   * others keep their current behavior. Each handler receives the original as its first param.
    *
    * @param handlers - Partial set of callbacks to override.
    * @returns A function that restores all overridden callbacks when called.
@@ -66,18 +66,18 @@ export interface IMouseInput {
 
 /**
  * Partial set of mouse callbacks for use with {@link IMouseInput.override}.
- * Each handler receives the original callback as its last parameter.
+ * Each handler receives the original callback as its first parameter.
  * All positions are canvas-relative, normalized to [0, 1].
  */
 export type MouseOverrides = {
-  onClick?: (pos: THREE.Vector2, ctrl: boolean, original: ClickHandler) => void
-  onDoubleClick?: (pos: THREE.Vector2, original: DoubleClickHandler) => void
-  onDrag?: (delta: THREE.Vector2, button: number, original: DragCallback) => void
-  onPointerDown?: (pos: THREE.Vector2, button: number, original: PointerButtonHandler) => void
-  onPointerUp?: (pos: THREE.Vector2, button: number, original: PointerButtonHandler) => void
-  onPointerMove?: (pos: THREE.Vector2, original: MoveHandler) => void
-  onWheel?: (value: number, ctrl: boolean, clientX: number, clientY: number, original: WheelHandler) => void
-  onContextMenu?: (pos: THREE.Vector2, original: ContextMenuHandler) => void
+  onClick?: (original: ClickHandler, pos: THREE.Vector2, ctrl: boolean) => void
+  onDoubleClick?: (original: DoubleClickHandler, pos: THREE.Vector2) => void
+  onDrag?: (original: DragCallback, delta: THREE.Vector2, button: number) => void
+  onPointerDown?: (original: PointerButtonHandler, pos: THREE.Vector2, button: number) => void
+  onPointerUp?: (original: PointerButtonHandler, pos: THREE.Vector2, button: number) => void
+  onPointerMove?: (original: MoveHandler, pos: THREE.Vector2) => void
+  onWheel?: (original: WheelHandler, value: number, ctrl: boolean, clientX: number, clientY: number) => void
+  onContextMenu?: (original: ContextMenuHandler, pos: THREE.Vector2) => void
 }
 
 /**
@@ -133,7 +133,7 @@ export class MouseHandler extends BaseInputHandler {
   }
 
   /**
-   * Temporarily overrides mouse callbacks. Each handler receives the original as its last param.
+   * Temporarily overrides mouse callbacks. Each handler receives the original as its first param.
    * Returns a function that restores the previous callbacks. Only one level of override at a time.
    */
   override(handlers: MouseOverrides): () => void {
@@ -147,14 +147,14 @@ export class MouseHandler extends BaseInputHandler {
       onWheel: this._onWheel,
       onContextMenu: this._onContextMenu,
     }
-    if (handlers.onClick) this._onClick = (p, c) => handlers.onClick(p, c, saved.onClick)
-    if (handlers.onDoubleClick) this._onDoubleClick = (p) => handlers.onDoubleClick(p, saved.onDoubleClick)
-    if (handlers.onDrag) this._onDrag = (d, b) => handlers.onDrag(d, b, saved.onDrag)
-    if (handlers.onPointerDown) this._onPointerDown = (p, b) => handlers.onPointerDown(p, b, saved.onPointerDown)
-    if (handlers.onPointerUp) this._onPointerUp = (p, b) => handlers.onPointerUp(p, b, saved.onPointerUp)
-    if (handlers.onPointerMove) this._onPointerMove = (p) => handlers.onPointerMove(p, saved.onPointerMove)
-    if (handlers.onWheel) this._onWheel = (v, c, x, y) => handlers.onWheel(v, c, x, y, saved.onWheel)
-    if (handlers.onContextMenu) this._onContextMenu = (p) => handlers.onContextMenu(p, saved.onContextMenu)
+    if (handlers.onClick) this._onClick = (p, c) => handlers.onClick(saved.onClick, p, c)
+    if (handlers.onDoubleClick) this._onDoubleClick = (p) => handlers.onDoubleClick(saved.onDoubleClick, p)
+    if (handlers.onDrag) this._onDrag = (d, b) => handlers.onDrag(saved.onDrag, d, b)
+    if (handlers.onPointerDown) this._onPointerDown = (p, b) => handlers.onPointerDown(saved.onPointerDown, p, b)
+    if (handlers.onPointerUp) this._onPointerUp = (p, b) => handlers.onPointerUp(saved.onPointerUp, p, b)
+    if (handlers.onPointerMove) this._onPointerMove = (p) => handlers.onPointerMove(saved.onPointerMove, p)
+    if (handlers.onWheel) this._onWheel = (v, c, x, y) => handlers.onWheel(saved.onWheel, v, c, x, y)
+    if (handlers.onContextMenu) this._onContextMenu = (p) => handlers.onContextMenu(saved.onContextMenu, p)
 
     return () => {
       this._onClick = saved.onClick

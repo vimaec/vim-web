@@ -39,32 +39,38 @@ export class MaterialSet {
   }
 
   /**
-   * Get material for mesh rendering.
-   * Returns either a single material or an array [visible, hidden] for ghost rendering.
-   *
-   * @param transparent Whether the mesh renders transparent geometry
-   * @returns Material or array, or undefined if the variant doesn't exist (mesh should be hidden)
+   * Get material for opaque meshes.
+   * Returns a single material, or a `[visible, hidden]` array when a ghost material is set.
+   * Returns `undefined` if no opaque material exists (mesh should be hidden).
    */
-  get(transparent: boolean): THREE.Material | THREE.Material[] | undefined {
-    const visibleMat = transparent ? this.transparent : this.opaque
+  getOpaque(): THREE.Material | THREE.Material[] | undefined {
+    return this._resolve(this.opaque, this._cachedOpaqueArray, (arr) => { this._cachedOpaqueArray = arr })
+  }
 
-    if (!visibleMat) {
-      return undefined // Hide mesh
-    }
+  /**
+   * Get material for transparent meshes.
+   * Returns a single material, or a `[visible, hidden]` array when a ghost material is set.
+   * Returns `undefined` if no transparent material exists (mesh should be hidden).
+   */
+  getTransparent(): THREE.Material | THREE.Material[] | undefined {
+    return this._resolve(this.transparent, this._cachedTransparentArray, (arr) => { this._cachedTransparentArray = arr })
+  }
 
-    // Return [visible, hidden] array for ghost rendering.
-    // Index 0 = visible material, index 1 = ghost material.
-    // applyMaterial() creates matching geometry groups via addGroup(0, Infinity, materialIndex).
+  private _resolve(
+    visibleMat: THREE.Material | undefined,
+    cached: THREE.Material[] | undefined,
+    setCache: (arr: THREE.Material[]) => void,
+  ): THREE.Material | THREE.Material[] | undefined {
+    if (!visibleMat) return undefined
+
     if (this.hidden) {
-      if (transparent) {
-        this._cachedTransparentArray ??= [visibleMat, this.hidden]
-        return this._cachedTransparentArray
+      if (!cached) {
+        cached = [visibleMat, this.hidden]
+        setCache(cached)
       }
-      this._cachedOpaqueArray ??= [visibleMat, this.hidden]
-      return this._cachedOpaqueArray
+      return cached
     }
 
-    // Single material
     return visibleMat
   }
 

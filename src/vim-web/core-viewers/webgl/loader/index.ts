@@ -3,7 +3,6 @@ export type { VimSettings, VimPartialSettings } from './vimSettings';
 export type { RequestSource, IWebglLoadRequest } from './progressive/loadRequest';
 export type { TransparencyMode } from './geometry';
 export type { IElement3D } from './element3d';
-export type { IElementMapping } from './elementMapping';
 export type { IScene } from './scene';
 export type { IMaterials } from './materials/materials';
 export { MaterialSet } from './materials/materialSet';

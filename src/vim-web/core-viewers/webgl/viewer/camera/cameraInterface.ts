@@ -63,7 +63,7 @@ export interface ICameraMovement {
    * Zooms the camera toward a specific world point while preserving camera orientation.
    * The orbit target is updated to the world point for future orbit operations.
    * @param amount - The zoom factor (e.g., 2 to zoom in / move closer, 0.5 to zoom out / move farther).
-   * @param worldPoint - The world position to zoom toward.
+   * @param worldPoint - The world position to zoom toward (Z-up).
    * @param screenPoint - Screen position of the world point, used to keep the target pinned under the cursor.
    */
   zoomTowards(amount: number, worldPoint: THREE.Vector3, screenPoint?: THREE.Vector2): void
@@ -76,19 +76,19 @@ export interface ICameraMovement {
 
   /**
    * Orbits the camera around its target to align with the given direction.
-   * @param direction - The direction towards which the camera should be oriented.
+   * @param direction - The direction towards which the camera should be oriented (Z-up).
    */
   orbitTowards(direction: THREE.Vector3): void
 
   /**
    * Orients the camera to look at the given point. The orbit target is updated.
-   * @param target - The target element or world position to look at.
+   * @param target - The target element or world position (Z-up) to look at.
    */
   lookAt(target: IElement3D | THREE.Vector3): Promise<void>
 
   /**
    * Moves the orbit target without moving the camera or changing orientation.
-   * @param target - The new orbit target (element or world position).
+   * @param target - The new orbit target (element or world position in Z-up).
    */
   setTarget(target: IElement3D | THREE.Vector3): Promise<void>
 
@@ -100,15 +100,15 @@ export interface ICameraMovement {
   /**
    * Sets the camera position and target, orienting the camera to look at the target.
    * Elevation is clamped to avoid gimbal lock at poles.
-   * @param position - The new camera position.
-   * @param target - The new orbit target. Defaults to the current target.
+   * @param position - The new camera position (Z-up).
+   * @param target - The new orbit target (Z-up). Defaults to the current target.
    */
   set(position: THREE.Vector3, target?: THREE.Vector3): void
 
   /**
    * Sets the camera's orientation and position to focus on the specified target.
    * @param target - The target to frame, or 'all' to frame everything.
-   * @param forward - Optional forward direction after framing.
+   * @param forward - Optional forward direction after framing (Z-up).
    */
   frame(target: ISelectable | IWebglVim | THREE.Sphere | THREE.Box3 | 'all', forward?: THREE.Vector3): Promise<void>
 }
@@ -146,7 +146,7 @@ export interface IWebglCamera {
   lockRotation: THREE.Vector2;
 
   /**
-   * The default forward direction that can be used to initialize the camera.
+   * The default forward direction in Z-up space (X = right, Y = forward, Z = up).
    */
   defaultForward: THREE.Vector3;
 
@@ -189,7 +189,7 @@ export interface IWebglCamera {
   get quaternion(): THREE.Quaternion;
 
   /**
-  * The position of the camera.
+  * The position of the camera in Z-up world space.
   */
   get position(): THREE.Vector3;
 
@@ -199,7 +199,7 @@ export interface IWebglCamera {
   get matrix(): THREE.Matrix4;
 
   /**
-   * The forward direction of the camera.
+   * The forward direction of the camera in Z-up world space.
    */
   get forward(): THREE.Vector3;
 
@@ -216,7 +216,7 @@ export interface IWebglCamera {
   stop(): void;
 
   /**
-   * The target at which the camera is looking at and around which it rotates.
+   * The target at which the camera is looking at and around which it rotates, in Z-up world space.
    */
   get target(): THREE.Vector3;
 

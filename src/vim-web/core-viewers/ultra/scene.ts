@@ -7,11 +7,11 @@ import type { RpcSafeClient } from './rpcSafeClient'
  * Provides cached geometry information and spatial queries.
  */
 export interface IUltraScene {
-  /** Bounding box of the loaded geometry. Undefined before load or if empty. */
+  /** Bounding box of the loaded geometry in Z-up world space (X = right, Y = forward, Z = up). Undefined before load or if empty. */
   getBoundingBox(): THREE.Box3 | undefined
-  /** Returns elements whose bounding boxes intersect the given box. */
+  /** Returns elements whose bounding boxes intersect the given box. Box coordinates are in Z-up world space. */
   getObjectsInBox(box: THREE.Box3): IUltraElement3D[]
-  /** Returns the combined bounding box for the given elements, or all elements. */
+  /** Returns the combined bounding box for the given elements (or all), in Z-up world space. */
   getBoundingBoxForElements(elements: number[] | 'all'): Promise<THREE.Box3 | undefined>
 }
 

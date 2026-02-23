@@ -24,8 +24,6 @@ export type { IUltraSectionBox } from './sectionBox'
 export { Segment } from './rpcTypes'
 
 // Enums (runtime values)
-export { VisibilityState } from './visibility'
-export type { IVisibilitySynchronizer } from './visibility'
 export { InputMode, VimLoadingStatus } from './rpcSafeClient'
 
 // Settings

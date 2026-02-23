@@ -67,7 +67,7 @@ export function applyMaterial(
   value: MaterialSet,
 ) {
   const isTransparent = mesh.userData.transparent === true
-  const mat = value.get(isTransparent)
+  const mat = isTransparent ? value.getTransparent() : value.getOpaque()
 
   if (!mat) {
     mesh.visible = false

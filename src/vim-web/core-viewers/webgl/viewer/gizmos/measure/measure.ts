@@ -119,7 +119,7 @@ export class Measure implements IMeasure {
     this._promise = new ControllablePromise<void>()
     this._stage = 'ready'
     const restore = this._viewer.inputs.mouse.override({
-      onClick: async (pos: THREE.Vector2, _ctrl, _original) => this.onClick(pos)
+      onClick: async (_original, pos: THREE.Vector2, _ctrl) => this.onClick(pos)
     })
     return this._promise.promise.finally(restore)
   }

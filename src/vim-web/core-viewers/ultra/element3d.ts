@@ -17,8 +17,8 @@ import * as THREE from "three";
  * ```ts
  * element.visible = false                          // Hide
  * element.outline = true                           // Highlight
+ * element.ghosted = true                           // Ghosted appearance
  * element.color = new THREE.Color(0xff0000)        // Override color
- * element.state = VisibilityState.GHOSTED          // Advanced: ghosted appearance
  * const box = await element.getBoundingBox()       // Get bounding box
  * ```
  */
@@ -29,15 +29,15 @@ export interface IUltraElement3D extends IVimElement {
   readonly element: number
   /** The handle of the parent vim on the server. */
   readonly vimHandle: number
-  /** Low-level visibility state. For simple show/hide, use {@link visible} instead. */
-  state: VisibilityState
   /** Whether the element is visible (not hidden). Preserves highlight state. */
   visible: boolean
   /** Whether the element has an outline highlight. Preserves visibility state. */
   outline: boolean
+  /** Whether the element is rendered as a ghost. Preserves highlight state. */
+  ghosted: boolean
   /** The display color override. Set to undefined to revert to default. */
   color: THREE.Color | undefined
-  /** Retrieves the bounding box, or undefined if the element is abstract. */
+  /** Retrieves the bounding box in Z-up world space (X = right, Y = forward, Z = up), or undefined if the element is abstract. */
   getBoundingBox(): Promise<THREE.Box3 | undefined>
 }
 
@@ -111,6 +111,22 @@ export class Element3D implements IUltraElement3D {
     const s = this.state;
     const baseState = s >= 16 ? s - 16 : s;
     this.state = value ? baseState + 16 : baseState;
+  }
+
+  /**
+   * Whether the element is rendered as a ghost. Preserves highlight state.
+   */
+  get ghosted(): boolean {
+    const s = this.state;
+    return s === VisibilityState.GHOSTED || s === VisibilityState.GHOSTED_HIGHLIGHTED;
+  }
+  set ghosted(value: boolean) {
+    const highlighted = this.state >= 16;
+    if (value) {
+      this.state = highlighted ? VisibilityState.GHOSTED_HIGHLIGHTED : VisibilityState.GHOSTED;
+    } else {
+      this.state = highlighted ? VisibilityState.HIGHLIGHTED : VisibilityState.VISIBLE;
+    }
   }
 
   /**
