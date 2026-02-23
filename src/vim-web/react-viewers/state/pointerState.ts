@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import * as Core from '../../core-viewers'
 
-export function getPointerState (viewer: Core.Webgl.WebglCoreViewer) {
+export function getPointerState (viewer: Core.Webgl.Viewer) {
   const [mode, setMode] = useState<Core.PointerMode>(viewer.inputs.pointerMode)
 
   useEffect(() => {

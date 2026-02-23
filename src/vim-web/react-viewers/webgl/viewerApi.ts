@@ -33,21 +33,26 @@ export type WebglViewerApi = {
   container: Container
 
   /**
-   * Vim WebGL viewer around which the WebGL viewer is built.
+   * The underlying WebGL core viewer. Provides direct access to low-level 3D operations:
+   * camera, selection, gizmos, raycaster, renderer, and materials.
+   * Use for operations not exposed through the React API (e.g., `viewer.core.camera.lerp(1).frame(box)`).
    */
-  core: Core.Webgl.WebglCoreViewer
+  core: Core.Webgl.Viewer
 
   /**
    * Loads a vim file with all geometry for immediate viewing.
+   * Wraps core.load() with progress UI (loading modal), auto-framing on completion,
+   * and error reporting. For headless loading without UI, use core.load() directly.
    * @param source The url or buffer of the vim file
-   * @param settings Optional settings
+   * @param settings Optional settings for transforms and auto-framing
    * @returns LoadRequest to track progress and get result
    */
   load: (source: Core.Webgl.RequestSource, settings?: OpenSettings) => Core.Webgl.IWebglLoadRequest
 
   /**
    * Opens a vim file without loading geometry.
-   * Use for BIM queries or selective loading via vim.load()/vim.load(subset).
+   * Wraps core.load() without building geometry. Use for BIM-only queries or
+   * selective loading via vim.load(subset). For headless opening, use core.load() directly.
    * @param source The url or buffer of the vim file
    * @param settings Optional settings
    * @returns LoadRequest to track progress and get result

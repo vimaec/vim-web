@@ -19,12 +19,13 @@ export type VimSource = {
    * URL to the VIM file.
    * Can be a local path (file://) or remote URL (http:// or https://).
    */
-  url: string;
+  url: string
 
   /**
-   * Optional authentication token for accessing protected resources.
+   * Optional HTTP headers for authentication and other purposes.
+   * Use {@link authHeaders} to create Bearer token headers.
    */
-  authToken?: string;
+  headers?: Record<string, string>
 }
 
 /**
@@ -660,7 +661,7 @@ export class RpcSafeClient {
 
     // Run
     return await this.safeCall(
-      () => this.rpc.RPCLoadVimURL(source.url, source.authToken ?? ""),
+      () => this.rpc.RPCLoadVimURL(source.url, source.headers?.['Authorization']?.replace('Bearer ', '') ?? ""),
       INVALID_HANDLE
     )
   }

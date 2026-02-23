@@ -49,8 +49,8 @@ export interface IWebglVim extends IVim<IElement3D> {
   readonly bim: VimDocument | undefined
   /** The scene containing this vim's geometry. */
   readonly scene: IScene
-  /** The bounding box of all loaded geometry. */
-  getBoundingBox(): Promise<THREE.Box3>
+  /** The bounding box of all loaded geometry, or undefined if nothing loaded. */
+  getBoundingBox(): Promise<THREE.Box3 | undefined>
   /** Returns a subset representing all instances, for use with {@link load} and filtering. */
   subset(): ISubset
   /**
@@ -134,7 +134,7 @@ export class Vim implements IWebglVim {
     this.source = source
   }
 
-  getBoundingBox(): Promise<THREE.Box3> {
+  getBoundingBox(): Promise<THREE.Box3 | undefined> {
     const box = this._scene.getBoundingBox()
     return Promise.resolve(box)
   }

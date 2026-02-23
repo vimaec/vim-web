@@ -76,7 +76,7 @@ function closeButton (onButton: () => void) {
       className="vim-help-close vc-absolute vc-top-[20px] vc-right-[20px] vc-text-white"
       onClick={onButton}
     >
-      {Icons.close({
+      {Icons.closeIcon({
         height: '20px',
         width: '20px',
         fill: 'currentColor'

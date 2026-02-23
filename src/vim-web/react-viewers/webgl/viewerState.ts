@@ -14,7 +14,7 @@ export type ViewerState = {
   filter: StateRef<string>
 }
 
-export function useViewerState (viewer: Core.Webgl.WebglCoreViewer) : ViewerState {
+export function useViewerState (viewer: Core.Webgl.Viewer) : ViewerState {
   const getVim = () => {
     const v = viewer.vims?.[0]
     return v

@@ -2,7 +2,11 @@ import React, { MutableRefObject, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import * as VIM from './vim-web'
 
-type ViewerRef = VIM.React.Webgl.ViewerRef | VIM.React.Ultra.ViewerRef
+type ViewerRef = VIM.React.Webgl.ViewerApi | VIM.React.Ultra.ViewerApi
+
+function isWebglViewer (viewer: ViewerRef): viewer is VIM.React.Webgl.ViewerApi {
+  return viewer.type === 'webgl'
+}
 
 // Get the container div
 const container = document.getElementById("root");
@@ -56,11 +60,12 @@ function App() {
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file || !viewerRef.current) return
+    if (!isWebglViewer(viewerRef.current)) return
 
     console.log('Loading local file:', file.name)
     const buffer = await file.arrayBuffer()
     const request = viewerRef.current.load({ buffer })
-
+    
     const result = await request.getResult()
     if (result.isError) {
       console.error('Load failed:', result.error)
@@ -117,7 +122,7 @@ async function createWebgl (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDiv
 
   viewerRef.current = viewer
   globalThis.viewer = viewer // for testing in browser console
-
+  
   const url = getPathFromUrl() ?? 'https://storage.cdn.vimaec.com/samples/residence.v1.2.75.vim'
   const request = viewer.load({ url })
   
@@ -134,9 +139,8 @@ async function createWebgl (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDiv
 async function createUltra (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDivElement) {
   const viewer = await VIM.React.Ultra.createViewer(div)
   await viewer.core.connect()
-  viewerRef.current = viewer
+  
   globalThis.viewer = viewer // for testing in browser console
-
   const url = getPathFromUrl() ?? 'https://storage.cdn.vimaec.com/samples/residence.v1.2.75.vim'
   const request = viewer.load({ url })
 

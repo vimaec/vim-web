@@ -115,7 +115,7 @@ export type ControlBarCursorSettings = {
  * Returns a control bar section for pointer/camera modes.
  */
 function controlBarPointer(
-  viewer: Core.Webgl.WebglCoreViewer,
+  viewer: Core.Webgl.Viewer,
   settings: ControlBarCursorSettings,
 ): IControlBarSection {
   const pointer = getPointerState(viewer);
@@ -403,7 +403,7 @@ export function controlBarVisibility(isolation: IsolationApi, settings: ControlB
  * Combines all control bar sections into one control bar.
  */
 export function useControlBar(
-  viewer: Core.Webgl.WebglCoreViewer,
+  viewer: Core.Webgl.Viewer,
   camera: CameraApi,
   modal: ModalApi,
   side: SideState,

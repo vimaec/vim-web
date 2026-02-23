@@ -2,7 +2,7 @@ import type { ISimpleEvent } from 'ste-simple-events'
 import {type IInputHandler} from '../shared'
 import {type InputHandler} from '../shared/input/inputHandler'
 import { Camera, IUltraCamera } from './camera'
-import { ColorManager, type IColorManager } from './colorManager'
+import { ColorManager } from './colorManager'
 import { Decoder, IUltraDecoder } from './decoder'
 import { DecoderWithWorker } from './decoderWithWorker'
 import { ultraInputAdapter } from './inputAdapter'
@@ -17,7 +17,7 @@ import { createSelection, IUltraSelection } from './selection'
 import { ClientError, ClientState, ConnectionSettings, SocketClient } from './socketClient'
 import { IUltraViewport, Viewport } from './viewport'
 import { Vim, type IUltraVim } from './vim'
-import { type IReadonlyVimCollection, VimCollection } from '../shared/vimCollection'
+import { VimCollection } from '../shared/vimCollection'
 
 export const INVALID_HANDLE = 0xffffffff
 
@@ -29,13 +29,12 @@ export interface IUltraViewer {
   readonly type: 'ultra'
   readonly camera: IUltraCamera
   readonly inputs: IInputHandler
-  readonly vims: IReadonlyVimCollection<IUltraVim>
+  readonly vims: IUltraVim[]
   readonly viewport: IUltraViewport
   readonly renderer: IUltraRenderer
   readonly decoder: IUltraDecoder
   readonly raycaster: IUltraRaycaster
   readonly selection: IUltraSelection
-  readonly colors: IColorManager
   readonly serverUrl: string | undefined
   readonly onStateChanged: ISimpleEvent<ClientState>
   readonly connectionState: ClientState
@@ -93,8 +92,8 @@ export class UltraViewer implements IUltraViewer {
     return this._input
   }
 
-  get vims (): IReadonlyVimCollection<IUltraVim> {
-    return this._vims
+  get vims (): IUltraVim[] {
+    return this._vims.getAll()
   }
 
   /**
@@ -121,13 +120,6 @@ export class UltraViewer implements IUltraViewer {
   }
 
   private readonly _colors: ColorManager
-
-  /**
-   * API to create, manage, and destroy colors.
-   */
-  get colors (): IColorManager {
-    return this._colors
-  }
 
   /**
    * Gets the current URL to which the viewer is connected.
@@ -362,4 +354,14 @@ export class UltraViewer implements IUltraViewer {
     this._canvas.remove()
     window.onbeforeunload = null
   }
+}
+
+/**
+ * Creates a new Ultra viewer with a canvas appended to the given parent element.
+ * @param parent - The parent HTML element to which the canvas will be appended.
+ * @param logger - Optional logger for logging messages.
+ * @returns A new Ultra viewer.
+ */
+export function createCoreUltraViewer (parent: HTMLElement, logger?: ILogger): IUltraViewer {
+  return UltraViewer.createWithCanvas(parent, logger)
 }

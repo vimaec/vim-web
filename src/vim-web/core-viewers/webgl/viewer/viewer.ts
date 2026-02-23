@@ -277,3 +277,12 @@ export class WebglViewer implements IWebglViewer {
     this._gizmos.dispose()
   }
 }
+
+/**
+ * Creates a new WebGL viewer instance.
+ * @param settings - Optional viewer settings for canvas, camera, materials, etc.
+ * @returns A new WebGL viewer.
+ */
+export function createCoreWebglViewer (settings?: PartialViewerSettings): IWebglViewer {
+  return new WebglViewer(settings)
+}

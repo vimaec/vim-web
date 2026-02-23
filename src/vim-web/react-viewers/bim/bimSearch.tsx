@@ -15,7 +15,7 @@ const SEARCH_DELAY_MS = 200
  * @param count current search result count.
  */
 export function BimSearch (props: {
-  viewer: Core.Webgl.WebglCoreViewer
+  viewer: Core.Webgl.Viewer
   filter: string
   setFilter: (s: string) => void
   count: number
@@ -84,7 +84,7 @@ export function BimSearch (props: {
           className="search-clear vc-absolute vc-right-0 vc-flex vc-h-4 vc-w-4 vc-shrink-0 vc-items-center vc-justify-center vc-rounded-full vc-bg-gray-medium vc-text-white"
           onClick={onClear}
         >
-          {Icons.close({ width: 10, height: 10, fill: 'currentColor' })}{' '}
+          {Icons.closeIcon({ width: 10, height: 10, fill: 'currentColor' })}{' '}
         </button>
           )
         : null}

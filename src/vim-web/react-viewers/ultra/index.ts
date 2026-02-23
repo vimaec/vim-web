@@ -1,6 +1,6 @@
 // Public API
-export { createUltraViewer, UltraViewerComponent as UltraViewer } from './viewer'
-export type { UltraViewerApi } from './viewerApi'
+export { createUltraViewer as createViewer, UltraViewerComponent as ViewerComponent } from './viewer'
+export type { UltraViewerApi as ViewerApi } from './viewerApi'
 
 // Settings
 export { getDefaultUltraSettings } from './settings'

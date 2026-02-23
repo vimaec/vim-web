@@ -21,7 +21,7 @@ import { isFalse } from '../settings/userBoolean'
 // when I inline this method in viewer.tsx it causes an error.
 // The error appears only in JSFiddle when the module is directly imported in a script tag.
 export function OptionalBimPanel (props: {
-  viewer: Core.Webgl.WebglCoreViewer
+  viewer: Core.Webgl.Viewer
   camera: CameraApi
   viewerState: ViewerState
   isolation: IsolationApi
@@ -46,7 +46,7 @@ export function OptionalBimPanel (props: {
  * @returns
  */
 export function BimPanel (props: {
-  viewer: Core.Webgl.WebglCoreViewer
+  viewer: Core.Webgl.Viewer
   camera: CameraApi
   viewerState: ViewerState
   isolation: IsolationApi

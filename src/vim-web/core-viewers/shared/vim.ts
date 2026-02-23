@@ -58,6 +58,6 @@ export interface IVim<T extends IVimElement> {
      * Retrieves the bounding box of the Vim object.
      * @returns The bounding box of the Vim object.
      */
-    getBoundingBox(): Promise<THREE.Box3>
+    getBoundingBox(): Promise<THREE.Box3 | undefined>
   
 }

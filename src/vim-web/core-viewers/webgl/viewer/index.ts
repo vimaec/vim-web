@@ -1,5 +1,6 @@
 // Viewer interface (concrete class is internal)
 export type { IWebglViewer } from './viewer'
+export { createCoreWebglViewer } from './viewer'
 
 // Settings
 export type { ViewerSettings, PartialViewerSettings, MaterialSettings } from './settings'

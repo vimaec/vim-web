@@ -1,7 +1,6 @@
 
 
 import * as Core from '../../core-viewers'
-import { UltraViewer } from '../../core-viewers/ultra/viewer'
 import { useSettings } from '../settings/settingsState'
 import {useRef, RefObject, useEffect, useState } from 'react'
 import { Container, createContainer } from '../container'
@@ -50,7 +49,7 @@ export function createUltraViewer (
     : container ?? createContainer()
 
   // Create the viewer and container
-  const core = UltraViewer.createWithCanvas(cmpContainer.gfx)
+  const core = Core.Ultra.createViewer(cmpContainer.gfx)
 
   // Create the React root
   const reactRoot = createRoot(cmpContainer.ui)
@@ -85,7 +84,7 @@ export function createUltraViewer (
  */
 export function UltraViewerComponent (props: {
   container: Container
-  core: Core.Ultra.UltraCoreViewer
+  core: Core.Ultra.Viewer
   settings?: PartialUltraSettings
   onMount: (viewer: UltraViewerApi) => void}) {
 
@@ -154,7 +153,8 @@ export function UltraViewerComponent (props: {
       controlBar: {
         customize: (v) => setControlBarCustom(() => v)
       },
-      load: patchLoad(props.core, modalHandle)
+      load: patchLoad(props.core, modalHandle),
+      unload: (vim) => props.core.unload(vim)
     })
   }, [])
 
@@ -199,7 +199,7 @@ export function UltraViewerComponent (props: {
   </>
 }
 
-function patchLoad(viewer: Core.Ultra.UltraCoreViewer, modal: RefObject<ModalApi>) {
+function patchLoad(viewer: Core.Ultra.Viewer, modal: RefObject<ModalApi>) {
   return function load (source: Core.Ultra.VimSource): Core.Ultra.IUltraLoadRequest {
     const request = viewer.load(source)
 

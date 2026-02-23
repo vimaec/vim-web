@@ -14,7 +14,6 @@ export interface IUltraSectionBox {
   clip: boolean
   setBox(box: THREE.Box3): void
   getBox(): THREE.Box3 | undefined
-  dispose(): void
 }
 
 /**

@@ -1,5 +1,5 @@
 import { THREE } from "../..";
-import { WebglCoreViewer } from "../../core-viewers/webgl";
+import { Viewer } from "../../core-viewers/webgl";
 import { isTrue } from "../settings/userBoolean";
 import { SettingsItem } from "../settings/settingsItem";
 import { SettingsPanelKeys } from "../settings/settingsKeys";
@@ -99,7 +99,7 @@ export function getPanelsVisibilitySettings(): SettingsItem<WebglSettings>[] {
 }
 
 export function getInputsSettings(
-  viewer: WebglCoreViewer,
+  viewer: Viewer,
 ): SettingsItem<WebglSettings>[] {
   return [
     {
@@ -163,7 +163,7 @@ export function getControlBarMeasureSettings(): SettingsItem<WebglSettings>[] {
 }
 
 export function getWebglSettingsContent(
-  viewer: WebglCoreViewer,
+  viewer: Viewer,
 ): SettingsItem<WebglSettings>[] {
   return [
     ...getInputsSettings(viewer),

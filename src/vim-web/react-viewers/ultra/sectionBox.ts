@@ -2,7 +2,7 @@
 import * as Core from '../../core-viewers';
 import { useSectionBox, ISectionBoxAdapter, SectionBoxApi } from '../state/sectionBoxState';
 
-export function useUltraSectionBox(viewer: Core.Ultra.UltraCoreViewer): SectionBoxApi {
+export function useUltraSectionBox(viewer: Core.Ultra.Viewer): SectionBoxApi {
   const ultraAdapter: ISectionBoxAdapter = {
     setClip: (b) => {
       viewer.sectionBox.clip = b;

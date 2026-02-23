@@ -8,5 +8,5 @@ export type { ILoadSuccess, ILoadError, IProgress, ProgressType, LoadResult } fr
 // Vim
 export type { IVimElement, IVim } from './vim'
 
-// Vim Collection
-export type { IReadonlyVimCollection } from './vimCollection'
+// Helpers
+export { authHeaders } from './loadSource'

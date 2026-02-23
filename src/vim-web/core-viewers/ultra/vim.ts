@@ -3,6 +3,7 @@ import type { IVim } from '../shared/vim';
 import type { ILogger } from '../shared/logger';
 import { ColorManager } from './colorManager';
 import { Element3D, type IUltraElement3D } from './element3d';
+import { UltraScene, type IUltraScene } from './scene';
 import { LoadRequest, type IUltraLoadRequest } from './loadRequest';
 import { VisibilityState, type IVisibilitySynchronizer, VisibilitySynchronizer } from './visibility';
 import { Renderer } from './renderer';
@@ -19,6 +20,7 @@ import * as THREE from 'three';
 export interface IUltraVim extends IVim<IUltraElement3D> {
   readonly type: 'ultra'
   readonly source: VimSource
+  readonly scene: IUltraScene
   readonly visibility: IVisibilitySynchronizer
   readonly handle: number
   readonly connected: boolean
@@ -49,6 +51,7 @@ export class Vim implements IUltraVim {
   private _renderer: Renderer;
   private _logger: ILogger;
 
+  readonly scene = new UltraScene()
   readonly visibility: IVisibilitySynchronizer;
 
   // Color tracking remains unchanged.
@@ -175,6 +178,8 @@ export class Vim implements IUltraVim {
           case VimLoadingStatus.Done:
             this._handle = handle;
             this._elementCount = await this._rpc.RPCGetElementCountForVim(handle);
+            const box = await this._rpc.RPCGetAABBForVim(handle);
+            this.scene.setBox(box);
             return result.success(this);
         }
       } catch (e) {

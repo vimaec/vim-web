@@ -4,7 +4,7 @@
 
 import * as Core from '../../core-viewers'
 import PointerMode = Core.PointerMode
-type WebglCoreViewer = Core.Webgl.WebglCoreViewer
+type Viewer = Core.Webgl.Viewer
 
 /**
  * Css classes for custom cursors.
@@ -43,11 +43,11 @@ export function pointerToCursor (pointer: PointerMode): Cursor {
  * Listens to the vim viewer and updates css cursors classes on the canvas accordingly.
  */
 export class CursorManager {
-  private _viewer: WebglCoreViewer
+  private _viewer: Viewer
   private cursor: Cursor
   private _boxHover: boolean
   private _subscriptions: (() => void)[]
-  constructor (viewer: WebglCoreViewer) {
+  constructor (viewer: Viewer) {
     this._viewer = viewer
   }
 

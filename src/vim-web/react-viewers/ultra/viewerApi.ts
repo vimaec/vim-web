@@ -1,4 +1,3 @@
-import { RefObject } from 'react';
 import * as Core from '../../core-viewers';
 import { ModalApi } from '../panels/modal';
 import { CameraApi } from '../state/cameraState';
@@ -22,9 +21,11 @@ export type UltraViewerApi = {
   container: Container
 
   /**
-   * The Vim viewer instance associated with the viewer.
+   * The underlying Ultra core viewer. Provides direct access to the server connection,
+   * camera, selection, raycaster, renderer, and section box.
+   * Use for operations not exposed through the React API.
    */
-  core: Core.Ultra.UltraCoreViewer;
+  core: Core.Ultra.Viewer;
 
   /**
    * API to manage the modal dialog.
@@ -66,8 +67,17 @@ export type UltraViewerApi = {
   dispose: () => void;
 
   /**
-   * Loads a file into the viewer.
-   * @param url The URL of the file to load.
+   * Loads a VIM file via the Ultra server.
+   * Wraps core.load() with connection management, progress UI (loading modal),
+   * and error reporting. For headless loading, use core.load() directly.
+   * @param url The URL of the file to load
+   * @returns LoadRequest to track progress and get result
    */
   load(url: Core.Ultra.VimSource): Core.Ultra.IUltraLoadRequest;
+
+  /**
+   * Unloads a vim from the viewer and disposes it.
+   * @param vim The vim to unload
+   */
+  unload(vim: Core.Ultra.IUltraVim): void;
 };

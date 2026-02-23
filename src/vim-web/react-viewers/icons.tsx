@@ -132,7 +132,7 @@ export function undo ({ height = 20, width = 20, fill = 'currentColor', classNam
   )
 }
 
-export function close ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
+export function closeIcon ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path

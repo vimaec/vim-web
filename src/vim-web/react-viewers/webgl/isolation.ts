@@ -2,12 +2,12 @@ import * as Core from "../../core-viewers";
 import { ISelectable } from "../../core-viewers/webgl";
 import { IIsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
 
-export function useWebglIsolation(viewer: Core.Webgl.WebglCoreViewer){
+export function useWebglIsolation(viewer: Core.Webgl.Viewer){
   const adapter = createWebglIsolationAdapter(viewer)
   return useSharedIsolation(adapter)
 }
 
-function createWebglIsolationAdapter(viewer: Core.Webgl.WebglCoreViewer): IIsolationAdapter {
+function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IIsolationAdapter {
   var ghost: boolean = false;
   var transparency: boolean = true;
   var rooms: boolean = false;
@@ -109,7 +109,7 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.WebglCoreViewer): IIsola
   };
 }
 
-function getVisibilityState(viewer: Core.Webgl.WebglCoreViewer): VisibilityStatus {
+function getVisibilityState(viewer: Core.Webgl.Viewer): VisibilityStatus {
   let all = true;
   let none = true;
   let allButSelectionFlag = true;

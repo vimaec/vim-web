@@ -81,7 +81,7 @@ export const VimContextMenuMemo = React.memo(ContextMenu)
  * Context menu viewer definition according to current state.
  */
 export function ContextMenu (props: {
-  viewer: Core.Webgl.WebglCoreViewer
+  viewer: Core.Webgl.Viewer
   camera: CameraApi
   modal: ModalApi
   isolation: IsolationApi

@@ -1,4 +1,4 @@
-import { UltraCoreViewer } from "../../core-viewers/ultra";
+import { Viewer } from "../../core-viewers/ultra";
 import { SettingsItem } from "../settings/settingsItem";
 import { SettingsPanelKeys } from "../settings/settingsKeys";
 import { getControlBarCameraSettings, getControlBarSectionBoxSettings, getControlBarVisibilitySettings } from "../settings/settingsPanelContent";
@@ -30,7 +30,7 @@ export function getControlBarUltraSettings(): SettingsItem<UltraSettings>[] {
 
   // Ultra: only control bar–related sections
 export function getUltraSettingsContent(
-  viewer: UltraCoreViewer,
+  viewer: Viewer,
 ): SettingsItem<UltraSettings>[] {
   // viewer kept for a consistent signature, in case you need it later
   return [

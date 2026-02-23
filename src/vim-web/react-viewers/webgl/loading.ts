@@ -29,12 +29,12 @@ export type LoadingError = {
  * Includes event emitters for progress updates and completion notifications.
  */
 export class ComponentLoader {
-  private _viewer : Core.Webgl.WebglCoreViewer
+  private _viewer : Core.Webgl.Viewer
   private _modal: React.RefObject<ModalApi>
   private _addLink : boolean = false
 
   constructor (
-    viewer : Core.Webgl.WebglCoreViewer,
+    viewer : Core.Webgl.Viewer,
     modal: React.RefObject<ModalApi>,
     settings: WebglSettings
   ) {

@@ -52,7 +52,7 @@ export const GenericPanel = forwardRef<GenericPanelApi, GenericPanelProps>((prop
             className="vc-flex vc-border-none vc-bg-transparent vc-text-sm vc-cursor-pointer"
             onClick={props.onClose ?? (() => props.showPanel.set(false))}
           >
-            {Icons.close({ height: 12, width: 12, fill: "currentColor" })}
+            {Icons.closeIcon({ height: 12, width: 12, fill: "currentColor" })}
           </button>
         </div>
         <dl className="vc-text-xl vc-text-gray-darker vc-mb-2 vc-mx-2">

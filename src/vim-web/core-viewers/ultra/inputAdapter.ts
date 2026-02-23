@@ -58,7 +58,7 @@ function createAdapter(viewer: UltraViewer): IInputAdapter {
       console.log('toggleOrthographic. Not supported yet');
     },
     resetCamera: () => {
-      viewer.camera.restoreSavedPosition();
+      viewer.camera.lerp().reset();
     },
     clearSelection: () => {
       viewer.selection.clear();
@@ -67,7 +67,7 @@ function createAdapter(viewer: UltraViewer): IInputAdapter {
       if (viewer.selection.any()) {
         frameSelection(viewer);
       } else {
-        viewer.camera.frameAll();
+        viewer.camera.lerp().frame('all');
       }
     },
     selectAtPointer: async (pos: THREE.Vector2, add: boolean) => {
@@ -85,9 +85,9 @@ function createAdapter(viewer: UltraViewer): IInputAdapter {
     frameAtPointer: async (pos: THREE.Vector2) => {
       const hit = await viewer.raycaster.raycastFromScreen(pos);
       if (hit) {
-        viewer.camera.frameObject(hit.object);
+        viewer.camera.lerp().frame(hit.object);
       } else {
-        viewer.camera.frameAll(1);
+        viewer.camera.lerp(1).frame('all');
       }
     },
     zoom: (value: number, screenPos?: THREE.Vector2) => {
@@ -141,7 +141,7 @@ function createAdapter(viewer: UltraViewer): IInputAdapter {
 async function frameSelection(viewer: UltraViewer) {
   const box = await viewer.selection.getBoundingBox();
   if (!box) return;
-  viewer.camera.frameBox(box);
+  viewer.camera.lerp().frame(box);
 }
 
 /**

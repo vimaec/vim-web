@@ -29,7 +29,7 @@ export interface SectionBoxApi {
   bottomOffset: StateRef<number>;
 
   getSelectionBox: AsyncFuncRef<THREE.Box3 | undefined>;
-  getSceneBox: AsyncFuncRef<THREE.Box3>;
+  getSceneBox: AsyncFuncRef<THREE.Box3 | undefined>;
 }
 
 export interface ISectionBoxAdapter {
@@ -41,7 +41,7 @@ export interface ISectionBoxAdapter {
 
   // Allow to override these at the viewer level
   getSelectionBox: () => Promise<THREE.Box3 | undefined>;
-  getSceneBox: () => Promise<THREE.Box3>;
+  getSceneBox: () => Promise<THREE.Box3 | undefined>;
 }
 
 export function useSectionBox(
