@@ -12,6 +12,15 @@ export type Offsets = {
 
 export type OffsetField = keyof Offsets;
 
+/**
+ * Controls the section box clipping volume.
+ * Shared between WebGL and Ultra viewers.
+ *
+ * @example
+ * viewer.sectionBox.enable.set(true)
+ * viewer.sectionBox.sectionSelection.call()  // Fit to selection
+ * viewer.sectionBox.sectionScene.call()      // Fit to scene
+ */
 export interface SectionBoxApi {
   enable: StateRef<boolean>;
   visible: StateRef<boolean>;

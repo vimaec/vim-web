@@ -34,9 +34,17 @@ import { isTrue } from '../settings/userBoolean'
 
 
 /**
- * Creates a UI container along with a VIM.Viewer and its associated React viewer.
- * @param container An optional container object. If none is provided, a container will be created.
- * @returns An object containing the resulting container, reactRoot, and viewer.
+ * Creates an Ultra viewer with React UI for server-side rendered models.
+ * Returns an {@link UltraViewerApi} for programmatic interaction.
+ *
+ * @param container An optional container or DOM element. If none is provided, one will be created.
+ * @param settings React UI feature toggles (panels, buttons). See {@link UltraSettings}.
+ * @returns A promise resolving to the viewer API.
+ *
+ * @example
+ * const viewer = await React.Ultra.createViewer(document.getElementById('app'))
+ * await viewer.core.connect({ url: 'wss://server:8080' })
+ * viewer.load({ url: 'model.vim' })
  */
 export function createUltraViewer (
   container?: Container | HTMLElement,

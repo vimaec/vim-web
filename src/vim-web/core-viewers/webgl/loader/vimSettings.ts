@@ -7,7 +7,12 @@ import { TransparencyMode, isTransparencyModeValid } from './geometry'
 import * as THREE from 'three'
 
 /**
- * Represents settings for configuring the behavior and rendering of a vim object.
+ * Per-model transform and rendering settings, passed to `viewer.load(source, settings)`.
+ * Controls how an individual VIM file is positioned, rotated, and scaled in the scene.
+ * Not to be confused with {@link ViewerSettings} (renderer config) or WebglSettings (UI toggles).
+ *
+ * @example
+ * viewer.load({ url }, { position: new THREE.Vector3(100, 0, 0), scale: 2 })
  */
 export type VimSettings = {
 

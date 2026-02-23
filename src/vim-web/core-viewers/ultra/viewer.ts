@@ -357,10 +357,18 @@ export class UltraViewer implements IUltraViewer {
 }
 
 /**
- * Creates a new Ultra viewer with a canvas appended to the given parent element.
+ * Creates a headless Ultra viewer without React UI.
+ * Use this for programmatic-only usage or custom UI frameworks.
+ * For a full React UI viewer, use `React.Ultra.createViewer()` instead.
+ *
  * @param parent - The parent HTML element to which the canvas will be appended.
  * @param logger - Optional logger for logging messages.
  * @returns A new Ultra viewer.
+ *
+ * @example
+ * const viewer = Core.Ultra.createViewer(document.getElementById('app'))
+ * await viewer.connect({ url: 'wss://server:8080' })
+ * viewer.load({ url: 'model.vim' })
  */
 export function createCoreUltraViewer (parent: HTMLElement, logger?: ILogger): IUltraViewer {
   return UltraViewer.createWithCanvas(parent, logger)

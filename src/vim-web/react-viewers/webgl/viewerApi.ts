@@ -33,9 +33,15 @@ export type WebglViewerApi = {
   container: Container
 
   /**
-   * The underlying WebGL core viewer. Provides direct access to low-level 3D operations:
-   * camera, selection, gizmos, raycaster, renderer, and materials.
-   * Use for operations not exposed through the React API (e.g., `viewer.core.camera.lerp(1).frame(box)`).
+   * The underlying WebGL core viewer. Provides direct access to low-level 3D operations.
+   *
+   * Common uses:
+   * - `viewer.core.camera.lerp(1).frame(element)` — animated camera movement
+   * - `viewer.core.camera.snap().set(pos, target)` — instant camera placement
+   * - `viewer.core.selection.select(element)` — programmatic selection
+   * - `viewer.core.inputs.pointerMode` — change interaction mode
+   * - `viewer.core.gizmos.sectionBox` — direct section box manipulation
+   * - `viewer.core.renderer.requestRender()` — force re-render
    */
   core: Core.Webgl.Viewer
 
@@ -96,7 +102,9 @@ export type WebglViewerApi = {
   modal: ModalApi
 
   /**
-   * Camera API to interact with the viewer camera at a higher level.
+   * High-level camera API with semantic operations (frame selection, auto-camera).
+   * For low-level camera control (orbit, pan, zoom, snap/lerp), use {@link core}.camera instead.
+   * @see {@link CameraApi}
    */
   camera: CameraApi
 

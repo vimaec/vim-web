@@ -49,11 +49,18 @@ import { SettingsPanel } from '../settings/settingsPanel'
 import { applyWebglSettings, getWebglSettingsContent } from './settingsPanel'
 
 /**
- * Creates a UI container along with a VIM.Viewer and its associated React viewer.
- * @param container An optional container object. If none is provided, a container will be created.
- * @param settings UI Component settings.
-*  @param coreSettings Viewer settings.
- * @returns An object containing the resulting container, reactRoot, and viewer.
+ * Creates a WebGL viewer with full React UI (BIM tree, context menu, control bar, etc.).
+ * Returns a {@link WebglViewerApi} for programmatic interaction.
+ *
+ * @param container An optional container or DOM element. If none is provided, one will be created.
+ * @param settings React UI feature toggles (panels, buttons). See {@link WebglSettings}.
+ * @param coreSettings Core renderer config (camera, materials, lighting). See {@link ViewerSettings}.
+ * @returns A promise resolving to the viewer API.
+ *
+ * @example
+ * const viewer = await React.Webgl.createViewer(document.getElementById('app'))
+ * const vim = await viewer.load({ url: 'model.vim' }).getVim()
+ * viewer.camera.frameScene.call()
  */
 export function createWebglViewer (
   container?: Container | HTMLElement,

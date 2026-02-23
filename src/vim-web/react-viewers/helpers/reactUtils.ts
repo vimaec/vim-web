@@ -19,8 +19,12 @@ import type { ISimpleEvent } from '../../core-viewers/shared/events'
 import { SimpleEventDispatcher } from 'ste-simple-events'
 
 /**
- * Interface for a state reference.
- * Provides methods to get, set, and confirm the current state.
+ * Observable state container. Read, write, and subscribe to changes.
+ *
+ * @example
+ * state.get()                           // Read current value
+ * state.set(true)                       // Update value
+ * state.onChange.subscribe(v => ...)     // Subscribe (returns unsubscribe fn)
  */
 export interface StateRef<T> {
   /**
@@ -199,8 +203,14 @@ export function useStateRef<T>(initialValue: T | (() => T), isLazy = false) {
 }
 
 /**
- * Interface for an action reference (a function with no arguments).
- * Provides methods to call, get, set, and inject code before or after the stored function.
+ * A callable action with middleware support.
+ * Use `call()` to execute, `prepend()`/`append()` to add hooks.
+ *
+ * @example
+ * action.call()                 // Execute the action
+ * action.prepend(() => before()) // Add pre-hook
+ * action.append(() => after())   // Add post-hook
+ * action.set(() => custom())     // Replace the action
  */
 export interface ActionRef {
   /**
@@ -265,8 +275,11 @@ export function useActionRef(action: () => void): ActionRef {
 }
 
 /**
- * Interface for an action reference that accepts an argument.
- * Provides methods to call with an argument, get, set, and inject code before or after the stored function.
+ * A callable action that accepts an argument, with middleware support.
+ *
+ * @example
+ * action.call(box)              // Execute with argument
+ * action.prepend((box) => ...)  // Add pre-hook
  */
 export interface ArgActionRef<T> {
   /**
@@ -332,8 +345,11 @@ export function useArgActionRef<T>(action: (arg: T) => void): ArgActionRef<T> {
 }
 
 /**
- * Interface for a function reference that returns a value.
- * Provides methods to call, get, set, and inject code before or after the stored function.
+ * A callable function reference that returns a value, with middleware support.
+ *
+ * @example
+ * const result = func.call()    // Execute and get return value
+ * func.set(() => newImpl())     // Replace implementation
  */
 export interface FuncRef<T> {
   /**
@@ -400,8 +416,11 @@ export function useFuncRef<T>(fn: () => T): FuncRef<T> {
 }
 
 /**
- * Interface for an asynchronous function reference.
- * Provides methods to call, get, set, and inject code before or after the stored async function.
+ * An async callable function reference with middleware support.
+ *
+ * @example
+ * const result = await func.call()  // Execute and await result
+ * func.prepend(async () => ...)     // Add async pre-hook
  */
 export interface AsyncFuncRef<T> {
   /**
@@ -468,8 +487,11 @@ export function useAsyncFuncRef<T>(fn: () => Promise<T>): AsyncFuncRef<T> {
 }
 
 /**
- * Interface for a function reference that accepts an argument and returns a result.
- * Provides methods to call, get, set, and inject code before or after the stored function.
+ * A callable function reference that accepts an argument and returns a result, with middleware support.
+ *
+ * @example
+ * const result = func.call(arg)     // Execute with argument
+ * func.set((arg) => newImpl(arg))   // Replace implementation
  */
 export interface ArgFuncRef<TArg, TResult> {
   /**

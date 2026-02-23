@@ -84,7 +84,17 @@ export type MaterialSettings = {
   }
 }
 
-/** Viewer related options independant from vims */
+/**
+ * Core renderer configuration, passed to `Core.Webgl.createViewer(settings)` at initialization.
+ * Controls camera defaults, lighting, materials, canvas, and rendering pipeline.
+ * Not to be confused with {@link VimSettings} (per-model transform) or WebglSettings (React UI toggles).
+ *
+ * @example
+ * const viewer = Core.Webgl.createViewer({
+ *   camera: { orthographic: true, fov: 50 },
+ *   materials: { useFastMaterials: true }
+ * })
+ */
 export type ViewerSettings = {
   /**
    * Webgl canvas related options

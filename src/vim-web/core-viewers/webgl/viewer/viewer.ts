@@ -280,9 +280,17 @@ export class WebglViewer implements IWebglViewer {
 }
 
 /**
- * Creates a new WebGL viewer instance.
- * @param settings - Optional viewer settings for canvas, camera, materials, etc.
+ * Creates a headless WebGL viewer without React UI.
+ * Use this for programmatic-only usage or custom UI frameworks.
+ * For a full React UI viewer, use `React.Webgl.createViewer()` instead.
+ *
+ * @param settings - Optional renderer config (camera, materials, lighting). See {@link ViewerSettings}.
  * @returns A new WebGL viewer.
+ *
+ * @example
+ * const viewer = Core.Webgl.createViewer({ camera: { orthographic: true } })
+ * document.body.appendChild(viewer.viewport.canvas)
+ * const vim = await viewer.load({ url: 'model.vim' }).getVim()
  */
 export function createCoreWebglViewer (settings?: PartialViewerSettings): IWebglViewer {
   return new WebglViewer(settings)

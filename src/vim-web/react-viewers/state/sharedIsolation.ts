@@ -4,6 +4,15 @@ import type { ISignal } from '../../core-viewers/shared/events'
 
 export type VisibilityStatus = 'all' | 'allButSelection' |'onlySelection' | 'some' | 'none';  
 
+/**
+ * Controls element visibility and isolation in the viewer.
+ * Shared between WebGL and Ultra viewers.
+ *
+ * @example
+ * viewer.isolation.isolateSelection()  // Show only selected elements
+ * viewer.isolation.showAll()           // Reset visibility
+ * viewer.isolation.showGhost.set(true) // Show hidden elements as ghosts
+ */
 export interface IsolationApi {
   visibility: StateRef<VisibilityStatus>
   autoIsolate: StateRef<boolean>;

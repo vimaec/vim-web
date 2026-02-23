@@ -23,7 +23,14 @@ export type UltraViewerApi = {
   /**
    * The underlying Ultra core viewer. Provides direct access to the server connection,
    * camera, selection, raycaster, renderer, and section box.
-   * Use for operations not exposed through the React API.
+   *
+   * Common uses:
+   * - `viewer.core.camera.lerp(1).frame(element)` — animated camera movement
+   * - `viewer.core.camera.snap().set(pos, target)` — instant camera placement
+   * - `viewer.core.selection.select(element)` — programmatic selection
+   * - `viewer.core.inputs.pointerMode` — change interaction mode
+   * - `viewer.core.sectionBox` — direct section box manipulation
+   * - `viewer.core.renderer.ghostColor` — ghost rendering settings
    */
   core: Core.Ultra.Viewer;
 
@@ -43,7 +50,9 @@ export type UltraViewerApi = {
   controlBar: ControlBarApi
 
   /**
-   * Camera API to interact with the viewer camera at a higher level.
+   * High-level camera API with semantic operations (frame selection, auto-camera).
+   * For low-level camera control (snap/lerp, set position), use {@link core}.camera instead.
+   * @see {@link CameraApi}
    */
   camera: CameraApi
 
