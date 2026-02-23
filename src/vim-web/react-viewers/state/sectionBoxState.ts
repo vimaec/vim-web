@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useLayoutEffect, useMemo, useCallback } fr
 import * as THREE from 'three';
 import { addBox } from '../../utils/threeUtils';
 import type { ISignal } from '../../core-viewers/shared/events'
-import { ArgFuncRef, AsyncFuncRef, StateRef, useArgFuncRef, useAsyncFuncRef, useFuncRef, useStateRef } from '../helpers/reactUtils';
+import { FuncRef, StateRef, useFuncRef, useStateRef } from '../helpers/reactUtils';
 
 export type Offsets = {
   topOffset: string;
@@ -26,9 +26,9 @@ export interface SectionBoxApi {
   visible: StateRef<boolean>;
   auto: StateRef<boolean>;
 
-  sectionSelection: AsyncFuncRef<void>;
-  sectionScene: AsyncFuncRef<void>;
-  sectionBox: ArgFuncRef<THREE.Box3, void>;
+  sectionSelection: FuncRef<void, Promise<void>>;
+  sectionScene: FuncRef<void, Promise<void>>;
+  sectionBox: FuncRef<THREE.Box3, void>;
   getBox: () => THREE.Box3;
 
   showOffsetPanel: StateRef<boolean>;
@@ -37,8 +37,8 @@ export interface SectionBoxApi {
   sideOffset: StateRef<number>;
   bottomOffset: StateRef<number>;
 
-  getSelectionBox: AsyncFuncRef<THREE.Box3 | undefined>;
-  getSceneBox: AsyncFuncRef<THREE.Box3 | undefined>;
+  getSelectionBox: FuncRef<void, Promise<THREE.Box3 | undefined>>;
+  getSceneBox: FuncRef<void, Promise<THREE.Box3 | undefined>>;
 }
 
 export interface ISectionBoxAdapter {
@@ -68,8 +68,8 @@ export function useSectionBox(
 
   // The reference box on which the offsets are applied.
   const boxRef = useRef<THREE.Box3>(adapter.getBox());
-  const getSelectionBox = useAsyncFuncRef(adapter.getSelectionBox);
-  const getSceneBox = useAsyncFuncRef(adapter.getSceneBox);
+  const getSelectionBox = useFuncRef(adapter.getSelectionBox);
+  const getSceneBox = useFuncRef(adapter.getSceneBox);
 
   // One Time Setup
   useEffect(() => {
@@ -110,7 +110,7 @@ export function useSectionBox(
   visible.useOnChange((v) => adapter.setVisible(v));
 
   // Update the box by combining the base box and the computed offsets.
-  const sectionBox = useArgFuncRef<THREE.Box3, void>((box: THREE.Box3) => {
+  const sectionBox = useFuncRef((box: THREE.Box3) => {
     if(box === undefined) return
     requestId.current ++;
 

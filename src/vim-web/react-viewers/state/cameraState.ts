@@ -5,7 +5,7 @@
 import { useEffect } from 'react'
 import * as THREE from 'three'
 import { SectionBoxApi } from './sectionBoxState'
-import { AsyncFuncRef, StateRef, FuncRef, useAsyncFuncRef, useFuncRef, useStateRef } from '../helpers/reactUtils'
+import { FuncRef, StateRef, useFuncRef, useStateRef } from '../helpers/reactUtils'
 import type { ISignal } from '../../core-viewers/shared/events'
 
 /**
@@ -27,15 +27,15 @@ export interface FramingApi {
   /** When true, automatically frames the camera on the selection whenever it changes. */
   autoCamera: StateRef<boolean>
   /** Resets the camera to its last saved position. */
-  reset: FuncRef<void>
+  reset: FuncRef<void, void>
   /** Frames the camera on the current selection (or scene if nothing selected). */
-  frameSelection: AsyncFuncRef<void>
+  frameSelection: FuncRef<void, Promise<void>>
   /** Frames the camera to show all loaded geometry. */
-  frameScene: AsyncFuncRef<void>
+  frameScene: FuncRef<void, Promise<void>>
   /** Returns the bounding box of the current selection, or undefined if nothing selected. */
-  getSelectionBox: AsyncFuncRef<THREE.Box3 | undefined>
+  getSelectionBox: FuncRef<void, Promise<THREE.Box3 | undefined>>
   /** Returns the bounding box of all loaded geometry. */
-  getSceneBox: AsyncFuncRef<THREE.Box3 | undefined>
+  getSceneBox: FuncRef<void, Promise<THREE.Box3 | undefined>>
 }
 
 interface ICameraAdapter {
@@ -61,21 +61,21 @@ export function useFraming(adapter: ICameraAdapter, section: SectionBoxApi){
     }
     
     // Reframe on section box change.
-    section.sectionSelection.append(refresh)
-    section.sectionScene.append(refresh)
+    section.sectionSelection.update(prev => async () => { await prev(); refresh() })
+    section.sectionScene.update(prev => async () => { await prev(); refresh() })
     adapter.onSelectionChanged.sub(refresh)
   },[])
 
-  const reset = useFuncRef<void>(() => adapter.resetCamera(1))
-  const getSelectionBox = useAsyncFuncRef(adapter.getSelectionBox)
-  const getSceneBox = useAsyncFuncRef(adapter.getSceneBox)
+  const reset = useFuncRef(() => adapter.resetCamera(1))
+  const getSelectionBox = useFuncRef(adapter.getSelectionBox)
+  const getSceneBox = useFuncRef(adapter.getSceneBox)
 
-  const frameSelection = useAsyncFuncRef(async () => {
+  const frameSelection = useFuncRef(async () => {
     const box = (await getSelectionBox.call()) ?? (await getSceneBox.call())
     frame(adapter, section, box)
   })
 
-  const frameScene = useAsyncFuncRef(async () => {
+  const frameScene = useFuncRef(async () => {
     const box = await getSceneBox.call()
     frame(adapter, section, box)
   })

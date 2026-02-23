@@ -29,11 +29,7 @@ export type { SettingsApi } from './state/settingsApi'
 // Ref types
 export type {
   StateRef,
-  ActionRef,
-  ArgActionRef,
   FuncRef,
-  AsyncFuncRef,
-  ArgFuncRef,
 } from './helpers/reactUtils'
 
 // BIM data types

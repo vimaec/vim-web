@@ -21,8 +21,8 @@ export interface IsolationApi {
   ghostOpacity: StateRef<number>;
   transparency: StateRef<boolean>;
   showRooms: StateRef<boolean>;
-  onAutoIsolate: FuncRef<void>;
-  onVisibilityChange: FuncRef<void>;
+  onAutoIsolate: FuncRef<void, void>;
+  onVisibilityChange: FuncRef<void, void>;
 
   hasSelection(): boolean
   hasVisibleSelection(): boolean
