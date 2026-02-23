@@ -56,8 +56,16 @@ export type UltraViewerApi = {
    */
   framing: FramingApi
 
+  /**
+   * Isolation API managing element visibility and isolation state.
+   * @see {@link IsolationApi}
+   */
   isolation: IsolationApi
 
+  /**
+   * Settings API managing UI feature toggles applied to the viewer.
+   * Use `update()` to modify settings at runtime.
+   */
   settings: SettingsApi<UltraSettings>
 
   /**

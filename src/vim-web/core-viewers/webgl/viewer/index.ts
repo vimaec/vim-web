@@ -12,6 +12,7 @@ export type { IWebglCamera, ICameraMovement } from './camera'
 export type { IWebglRenderer, IRenderingSection } from './rendering'
 
 // Selection
+export { isElement3D } from './selection'
 export type { ISelectable, IWebglSelection } from './selection'
 
 // Viewport

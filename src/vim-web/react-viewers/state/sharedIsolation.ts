@@ -14,22 +14,38 @@ export type VisibilityStatus = 'all' | 'allButSelection' |'onlySelection' | 'som
  * viewer.isolation.showGhost.set(true) // Show hidden elements as ghosts
  */
 export interface IsolationApi {
+  /** Current visibility status (observable). */
   visibility: StateRef<VisibilityStatus>
+  /** Whether auto-isolate is enabled (observable). When true, selecting an element auto-isolates it. */
   autoIsolate: StateRef<boolean>;
+  /** Whether the isolation settings panel is shown (observable). */
   showPanel: StateRef<boolean>;
+  /** Whether hidden elements are rendered as ghosts (observable). */
   showGhost: StateRef<boolean>;
+  /** Ghost material opacity 0-1 (observable). */
   ghostOpacity: StateRef<number>;
+  /** Whether transparent materials are rendered (observable). */
   transparency: StateRef<boolean>;
+  /** Whether room elements are shown (observable). */
   showRooms: StateRef<boolean>;
+  /** Hook called when auto-isolate triggers. Use `update()` to add middleware. */
   onAutoIsolate: FuncRef<void, void>;
+  /** Hook called when visibility changes. Use `update()` to add middleware. */
   onVisibilityChange: FuncRef<void, void>;
 
+  /** Returns true if any elements are selected. */
   hasSelection(): boolean
+  /** Returns true if any selected elements are currently visible. */
   hasVisibleSelection(): boolean
+  /** Returns true if any selected elements are currently hidden. */
   hasHiddenSelection(): boolean
+  /** Clears the current selection. */
   clearSelection(): void
+  /** Shows only selected elements, hiding everything else. */
   isolateSelection(): void
+  /** Hides the currently selected elements. */
   hideSelection(): void
+  /** Makes the currently selected elements visible. */
   showSelection(): void
   /** Isolates elements by their instance indices (only these will be visible). */
   isolate(instances: number[]): void
@@ -37,7 +53,9 @@ export interface IsolationApi {
   show(instances: number[]): void
   /** Hides elements by their instance indices. */
   hide(instances: number[]): void
+  /** Hides all elements. */
   hideAll(): void
+  /** Resets visibility — makes all elements visible. */
   showAll(): void
 }
 

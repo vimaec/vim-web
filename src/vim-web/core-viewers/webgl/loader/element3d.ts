@@ -52,7 +52,11 @@ export interface IElement3D extends ISelectable {
   color: THREE.Color | undefined
   /** Retrieves BIM data for this element. */
   getBimElement(): Promise<IElement>
-  /** Retrieves all BIM parameters for this element. */
+  /**
+   * Retrieves all BIM parameters for this element.
+   * @returns Array of `{ name: string, value: string, group: string }` objects.
+   * Type is `VimHelpers.ElementParameter` from vim-format (accessible via `VIM.BIM.VimHelpers`).
+   */
   getBimParameters(): Promise<VimHelpers.ElementParameter[]>
   /** Retrieves the bounding box, or undefined if the element has no geometry. */
   getBoundingBox(): Promise<THREE.Box3 | undefined>

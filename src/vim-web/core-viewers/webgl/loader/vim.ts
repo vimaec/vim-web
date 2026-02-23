@@ -23,6 +23,10 @@ import { MappedG3d } from './progressive/mappedG3d'
  * Provides element queries, BIM data access, scene/material control,
  * and progressive geometry loading.
  *
+ * **Cleanup:** Do not call dispose directly — use `viewer.unload(vim)` to remove
+ * a vim from the viewer. Use `vim.clear()` only to remove loaded geometry
+ * while keeping the vim (e.g., before reloading a different subset).
+ *
  * @example
  * ```ts
  * const vim = await viewer.load({ url }).getVim()
@@ -31,21 +35,29 @@ import { MappedG3d } from './progressive/mappedG3d'
  * const element = vim.getElementFromIndex(301)
  * const all = vim.getAllElements()
  *
- * // BIM data
- * const doc = vim.bim
+ * // Modify visibility
+ * element.visible = false
+ * element.color = new THREE.Color(0xff0000)
+ *
+ * // BIM data (types from vim-format, accessible via VIM.BIM)
+ * const bimElement = await element.getBimElement()   // VIM.BIM.IElement
+ * const params = await element.getBimParameters()    // VIM.BIM.VimHelpers.ElementParameter[]
  *
  * // Progressive loading
- * const sub = vim.subset().filter('instance', indices)
+ * const sub = vim.subset().filter('instance', [0, 1, 2])
  * await vim.load(sub)
+ *
+ * // Cleanup
+ * viewer.unload(vim)  // Remove from viewer (do NOT call vim.dispose())
  * ```
  */
 export interface IWebglVim extends IVim<IElement3D> {
   readonly type: 'webgl'
   /** The URL this vim was loaded from, if applicable. */
   readonly source: string | undefined
-  /** The VIM file header. */
+  /** The VIM file header (from vim-format, accessible via `VIM.BIM.VimHeader`). */
   readonly header: VimHeader | undefined
-  /** BIM document for querying element properties, categories, levels, etc. */
+  /** BIM document for querying element properties, categories, levels, etc. (from vim-format, accessible via `VIM.BIM.VimDocument`). */
   readonly bim: VimDocument | undefined
   /** The scene containing this vim's geometry. */
   readonly scene: IScene
@@ -55,10 +67,11 @@ export interface IWebglVim extends IVim<IElement3D> {
   subset(): ISubset
   /**
    * Loads geometry for the given subset, or all geometry if no subset is provided.
+   * Caller is responsible for not loading the same subset twice.
    * @param subset - The subset to load. Omit to load everything.
    */
   load(subset?: ISubset): Promise<void>
-  /** Removes all loaded geometry from the renderer. */
+  /** Removes all loaded geometry from the renderer (does NOT unload the vim from the viewer). */
   clear(): void
 }
 

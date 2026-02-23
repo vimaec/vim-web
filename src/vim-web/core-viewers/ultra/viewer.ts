@@ -22,28 +22,54 @@ import { VimCollection } from '../shared/vimCollection'
 export const INVALID_HANDLE = 0xffffffff
 
 /**
- * Public interface for the Ultra viewer.
+ * Public interface for the Ultra viewer (server-side rendering via WebSocket).
  * Consumers should use this instead of the concrete class.
+ *
+ * **Lifecycle:** Call `connect()` first, then `load()` to stream VIM models
+ * (auto-populates `vims`). Use `unload(vim)` to remove one, `clear()` to
+ * remove all, `disconnect()` to close the server connection, and `dispose()`
+ * to tear down the viewer entirely.
+ *
+ * @example
+ * ```ts
+ * const viewer = Core.Ultra.createViewer(parentDiv)
+ * await viewer.connect({ url: 'wss://server:8080' })
+ * const vim = await viewer.load({ url: 'model.vim' }).getVim()
+ *
+ * viewer.unload(vim)               // Remove one vim
+ * viewer.disconnect()              // Close server connection
+ * viewer.dispose()                 // Tear down viewer
+ * ```
  */
 export interface IUltraViewer {
   readonly type: 'ultra'
   readonly camera: IUltraCamera
   readonly inputs: IInputHandler
+  /** All loaded VIM models. Auto-populated on load, auto-removed on unload. */
   readonly vims: IUltraVim[]
   readonly viewport: IUltraViewport
   readonly renderer: IUltraRenderer
   readonly decoder: IUltraDecoder
   readonly raycaster: IUltraRaycaster
   readonly selection: IUltraSelection
+  /** The server URL this viewer is connected to, or undefined if not connected. */
   readonly serverUrl: string | undefined
+  /** Fires when the connection state changes (connecting, connected, disconnected, error). */
   readonly onStateChanged: ISimpleEvent<ClientState>
+  /** The current connection state. */
   readonly connectionState: ClientState
   readonly sectionBox: IUltraSectionBox
+  /** Connects to the Ultra rendering server. Must be called before `load()`. */
   connect (settings?: ConnectionSettings): Promise<boolean>
+  /** Disconnects from the server. Loaded vims become inoperable. */
   disconnect (): void
+  /** Loads a VIM file via the server. The resulting vim is added to `vims` on success. */
   load (source: VimSource): IUltraLoadRequest
+  /** Removes a vim from the viewer and disposes its resources. */
   unload (vim: IUltraVim): void
+  /** Removes and disposes all loaded vims. */
   clear (): void
+  /** Tears down the viewer entirely — releases canvas, connection, and all resources. */
   dispose (): void
 }
 

@@ -11,28 +11,64 @@ export interface ISelectionAdapter<T extends IVimElement> {
 
 /**
  * Public interface for the selection manager.
+ *
+ * In the WebGL viewer, `T` is {@link ISelectable} — a union of `IElement3D` and `IMarker`.
+ * Use the `type` discriminant (`'Element3D'` or `'Marker'`) to narrow:
+ *
+ * @example
+ * ```ts
+ * const selected = viewer.core.selection.getAll()
+ * for (const item of selected) {
+ *   if (item.type === 'Element3D') {
+ *     // item is IElement3D — has .hasMesh, .getBimElement(), etc.
+ *   }
+ * }
+ *
+ * // Common operations
+ * viewer.core.selection.select(element)              // Replace selection
+ * viewer.core.selection.add(element)                 // Add to selection
+ * viewer.core.selection.clear()                      // Clear all
+ * viewer.core.selection.onSelectionChanged.sub(() => { ... })  // React to changes
+ * ```
  */
 export interface ISelection<T extends IVimElement> {
+  /** If true, selecting an already-selected single object toggles it off. */
   toggleOnRepeatSelect: boolean
+  /** If false, all selection operations are no-ops. */
   enabled: boolean
+  /** Returns true if the target is currently selected. */
   has(target: T): boolean
+  /** Returns the number of currently selected objects. */
   count(): number
+  /** Returns true if at least one object is selected. */
   any(): boolean
+  /** Signal that fires whenever the selection changes. */
   readonly onSelectionChanged: ISignal
   /** Replaces the entire selection with the given object. */
   select(object: T): void
   /** Replaces the entire selection with the given objects. */
   select(objects: T[]): void
+  /** Toggles the selection state of the given object. */
   toggle(object: T): void
+  /** Toggles the selection state of the given objects. */
   toggle(objects: T[]): void
+  /** Adds the given object to the selection. */
   add(object: T): void
+  /** Adds the given objects to the selection. */
   add(objects: T[]): void
+  /** Removes the given object from the selection. */
   remove(object: T): void
+  /** Removes the given objects from the selection. */
   remove(objects: T[]): void
+  /** Clears the entire selection. */
   clear(): void
+  /** Returns an array of all currently selected objects. */
   getAll(): T[]
+  /** Returns all selected objects belonging to a specific VIM model. */
   getFromVim(vim: IVim<T>): T[]
+  /** Removes all selected objects that belong to a specific VIM model. */
   removeFromVim(vim: IVim<T>): void
+  /** Computes the bounding box encompassing all selected objects. */
   getBoundingBox(): Promise<THREE.Box3 | undefined>
 }
 

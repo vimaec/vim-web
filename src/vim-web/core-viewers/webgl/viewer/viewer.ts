@@ -32,6 +32,22 @@ import { VimPartialSettings } from '../loader/vimSettings'
 /**
  * Public interface for the WebGL viewer.
  * Consumers should use this instead of the concrete class.
+ *
+ * **Lifecycle:** Call `load()` to add VIM models (auto-populates `vims`),
+ * `unload(vim)` to remove one, `clear()` to remove all, and `dispose()` to
+ * tear down the viewer entirely. Do not call `dispose()` on individual vims —
+ * always go through `unload()`.
+ *
+ * @example
+ * ```ts
+ * const viewer = Core.Webgl.createViewer()
+ * const vim = await viewer.load({ url: 'model.vim' }).getVim()
+ * console.log(viewer.vims.length)  // 1
+ *
+ * viewer.unload(vim)               // Remove one vim
+ * viewer.clear()                   // Remove all vims
+ * viewer.dispose()                 // Tear down viewer
+ * ```
  */
 export interface IWebglViewer {
   readonly type: 'webgl'
@@ -44,11 +60,17 @@ export interface IWebglViewer {
   readonly materials: IMaterials
   readonly camera: IWebglCamera
   readonly gizmos: IGizmos
+  /** Fires when a vim finishes loading and is added to the scene. */
   readonly onVimLoaded: ISignal
+  /** All loaded VIM models. Auto-populated on load, auto-removed on unload. */
   readonly vims: IWebglVim[]
+  /** Loads a VIM file. The resulting vim is added to `vims` on success. */
   load (source: RequestSource, settings?: VimPartialSettings): IWebglLoadRequest
+  /** Removes a vim from the viewer and disposes its resources. */
   unload (vim: IWebglVim): void
+  /** Removes and disposes all loaded vims. */
   clear (): void
+  /** Tears down the viewer entirely — releases WebGL context, DOM elements, and all resources. */
   dispose (): void
 }
 

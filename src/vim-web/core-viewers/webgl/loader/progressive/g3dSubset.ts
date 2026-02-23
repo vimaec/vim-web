@@ -9,7 +9,27 @@ import { MappedG3d } from './mappedG3d'
 /** Filter mode for subset operations. Only exports modes that are actually implemented. */
 export type SubsetFilter = 'instance' | 'mesh'
 
-/** Public-facing interface for geometry subsets. Used for progressive loading. */
+/**
+ * A filtered view of geometry instances for progressive loading.
+ * Obtained via `vim.subset()`, then refined with `filter()`, `except()`, and `chunks()`.
+ *
+ * @example
+ * ```ts
+ * // Load all geometry
+ * await vim.load()
+ *
+ * // Or load progressively in chunks
+ * const all = vim.subset()
+ * const chunks = all.chunks(500_000)        // Split into ~500K index chunks
+ * for (const chunk of chunks) {
+ *   await vim.load(chunk)
+ * }
+ *
+ * // Or load a filtered subset
+ * const sub = vim.subset().filter('instance', [0, 1, 2, 3])
+ * await vim.load(sub)
+ * ```
+ */
 export interface ISubset {
   /** Total instance count in this subset. */
   getInstanceCount(): number

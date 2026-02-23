@@ -6,18 +6,28 @@ import * as THREE from "three";
 
 /**
  * Public interface for an Ultra 3D element.
- * Provides access to per-instance state, color, and bounding box.
+ * Provides visual state control (visibility, outline, color) and bounding box queries.
+ *
+ * **WebGL vs Ultra parity:** Ultra elements do NOT expose BIM data methods
+ * (`getBimElement`, `getBimParameters`), geometry metadata (`hasMesh`, `isRoom`,
+ * `elementId`, `instances`), or `getCenter()`. The Ultra viewer renders server-side,
+ * so BIM data is not available on the client. For BIM queries, use the WebGL viewer.
  *
  * @example
- * element.visible = false           // Hide
- * element.outline = true            // Highlight
- * element.color = new THREE.Color(0xff0000)
- * element.state = VisibilityState.GHOSTED  // Advanced: ghosted appearance
+ * ```ts
+ * element.visible = false                          // Hide
+ * element.outline = true                           // Highlight
+ * element.color = new THREE.Color(0xff0000)        // Override color
+ * element.state = VisibilityState.GHOSTED          // Advanced: ghosted appearance
+ * const box = await element.getBoundingBox()       // Get bounding box
+ * ```
  */
 export interface IUltraElement3D extends IVimElement {
   /** The parent vim this element belongs to. */
   readonly vim: IUltraVim
+  /** The BIM element index. */
   readonly element: number
+  /** The handle of the parent vim on the server. */
   readonly vimHandle: number
   /** Low-level visibility state. For simple show/hide, use {@link visible} instead. */
   state: VisibilityState
@@ -25,7 +35,9 @@ export interface IUltraElement3D extends IVimElement {
   visible: boolean
   /** Whether the element has an outline highlight. Preserves visibility state. */
   outline: boolean
+  /** The display color override. Set to undefined to revert to default. */
   color: THREE.Color | undefined
+  /** Retrieves the bounding box, or undefined if the element is abstract. */
   getBoundingBox(): Promise<THREE.Box3 | undefined>
 }
 

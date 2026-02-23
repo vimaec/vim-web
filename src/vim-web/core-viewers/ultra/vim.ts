@@ -13,17 +13,46 @@ import { INVALID_HANDLE } from './viewer'
 import * as THREE from 'three'
 
 /**
- * Public interface for an Ultra Vim model.
- * Provides access to elements, visibility, and scene queries.
+ * Public interface for an Ultra Vim model (server-side rendered).
+ * Provides access to elements, visibility state, and scene queries.
+ *
+ * **Cleanup:** Do not call dispose directly — use `viewer.unload(vim)`.
+ *
+ * @example
+ * ```ts
+ * const vim = await viewer.load({ url: 'model.vim' }).getVim()
+ *
+ * // Query elements
+ * const element = vim.getElementFromIndex(301)
+ * element.visible = false
+ * element.outline = true
+ * element.color = new THREE.Color(0xff0000)
+ *
+ * // Bulk visibility via visibility manager
+ * vim.visibility.setStateForAll(VisibilityState.GHOSTED)
+ *
+ * // Scene queries
+ * const box = vim.scene.getBoundingBox()
+ *
+ * // Cleanup
+ * viewer.unload(vim)
+ * ```
  */
 export interface IUltraVim extends IVim<IUltraElement3D> {
   readonly type: 'ultra'
+  /** The source URL and headers this vim was loaded from. */
   readonly source: VimSource
+  /** Scene providing bounding box and spatial queries. */
   readonly scene: IUltraScene
+  /** Bulk visibility state manager for all elements. */
   readonly visibility: IVisibilitySynchronizer
+  /** The server-side handle for this vim. */
   readonly handle: number
+  /** Whether this vim is currently connected to the server. */
   readonly connected: boolean
+  /** Reconnects this vim to the server. */
   connect(): IUltraLoadRequest
+  /** Disconnects this vim from the server. */
   disconnect(): void
 }
 

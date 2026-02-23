@@ -23,8 +23,9 @@ export class MaterialSet {
   readonly transparent?: THREE.Material
   readonly hidden?: THREE.Material
 
-  // Cached [visible, hidden] arrays to avoid allocating per get() call
+  /** @internal */
   private _cachedOpaqueArray?: THREE.Material[]
+  /** @internal */
   private _cachedTransparentArray?: THREE.Material[]
 
   constructor(
