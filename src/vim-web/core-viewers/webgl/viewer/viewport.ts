@@ -2,7 +2,8 @@
  @module viw-webgl-viewer
 */
 
-import { ISignal, SignalDispatcher } from 'ste-signals'
+import type { ISignal } from '../../shared/events'
+import { SignalDispatcher } from 'ste-signals'
 import * as THREE from 'three'
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer'
 import { ViewerSettings } from './settings/viewerSettings'

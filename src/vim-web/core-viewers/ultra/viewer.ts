@@ -1,4 +1,4 @@
-import type { ISimpleEvent } from 'ste-simple-events'
+import type { ISimpleEvent } from '../shared/events'
 import {type IInputHandler} from '../shared'
 import {type InputHandler} from '../shared/input/inputHandler'
 import { Camera, IUltraCamera } from './camera'

@@ -8,5 +8,8 @@ export type { ILoadSuccess, ILoadError, IProgress, ProgressType, LoadResult } fr
 // Vim
 export type { IVimElement, IVim } from './vim'
 
+// Events
+export type { ISignal, ISimpleEvent } from './events'
+
 // Helpers
 export { authHeaders } from './loadSource'

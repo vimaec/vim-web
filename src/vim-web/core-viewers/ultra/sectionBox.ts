@@ -1,4 +1,5 @@
-import { SignalDispatcher, type ISignal } from "ste-signals"
+import type { ISignal } from '../shared/events'
+import { SignalDispatcher } from "ste-signals"
 import { RpcSafeClient } from "./rpcSafeClient"
 import { safeBox } from "../../utils/threeUtils"
 import * as THREE from "three"

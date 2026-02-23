@@ -1,6 +1,6 @@
 import { RefObject, useEffect, useRef } from "react";
 import { FuncRef, StateRef, useFuncRef, useStateRef } from "../helpers/reactUtils";
-import { ISignal } from "ste-signals";
+import type { ISignal } from '../../core-viewers/shared/events'
 
 export type VisibilityStatus = 'all' | 'allButSelection' |'onlySelection' | 'some' | 'none';  
 

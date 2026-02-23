@@ -1,4 +1,5 @@
-import { ISignal, SignalDispatcher } from "ste-signals";
+import type { ISignal } from '../shared/events';
+import { SignalDispatcher } from "ste-signals";
 import * as THREE from "three";
 import { Validation } from "../../utils";
 import { ILogger } from "../shared/logger";

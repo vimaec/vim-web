@@ -1,4 +1,4 @@
-import { ISignal } from 'ste-signals';
+import type { ISignal } from '../../../shared/events';
 import * as THREE from 'three';
 import type { IElement3D } from '../../loader/element3d';
 import type { IWebglVim } from '../../loader/vim';

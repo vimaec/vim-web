@@ -6,8 +6,10 @@ import { WebglViewer } from '../../viewer';
 import { Renderer } from '../../rendering/renderer';
 import * as THREE from 'three';
 import { BoxInputs } from './sectionBoxInputs';
-import { ISignal, SignalDispatcher } from 'ste-signals';
-import { ISimpleEvent, SimpleEventDispatcher } from 'ste-simple-events';
+import type { ISignal } from '../../../../shared/events';
+import { SignalDispatcher } from 'ste-signals';
+import type { ISimpleEvent } from '../../../../shared/events';
+import { SimpleEventDispatcher } from 'ste-simple-events';
 import { SectionBoxGizmo } from './sectionBoxGizmo';
 import { safeBox } from '../../../../../utils/threeUtils';
 

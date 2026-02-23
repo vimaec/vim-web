@@ -4,8 +4,10 @@
  * See INPUT.md for architecture, pointer modes, and customization patterns.
  */
 
-import { ISignal, SignalDispatcher } from 'ste-signals'
-import { ISimpleEvent, SimpleEventDispatcher } from 'ste-simple-events'
+import type { ISignal } from '../events'
+import { SignalDispatcher } from 'ste-signals'
+import type { ISimpleEvent } from '../events'
+import { SimpleEventDispatcher } from 'ste-simple-events'
 import * as THREE from 'three'
 import { KeyboardHandler, type IKeyboardInput } from './keyboardHandler'
 import { MouseHandler, type IMouseInput } from './mouseHandler'

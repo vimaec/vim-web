@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useLayoutEffect, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
 import { addBox } from '../../utils/threeUtils';
-import { ISignal } from 'ste-signals';
+import type { ISignal } from '../../core-viewers/shared/events'
 import { ActionRef, ArgActionRef, AsyncFuncRef, StateRef, useArgActionRef, useAsyncFuncRef, useFuncRef, useStateRef } from '../helpers/reactUtils';
 
 export type Offsets = {

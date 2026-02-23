@@ -1,4 +1,5 @@
-import { ISignal, SignalDispatcher } from 'ste-signals'
+import type { ISignal } from './events'
+import { SignalDispatcher } from 'ste-signals'
 import { IVim, IVimElement } from './vim'
 
 /**

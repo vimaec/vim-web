@@ -16,7 +16,8 @@ import { createViewerSettings, PartialViewerSettings, ViewerSettings } from './s
 import { IWebglViewport, Viewport } from './viewport'
 
 // loader
-import { ISignal, SignalDispatcher } from 'ste-signals'
+import type { ISignal } from '../../shared/events'
+import { SignalDispatcher } from 'ste-signals'
 import {type IInputHandler} from '../../shared'
 import {type InputHandler} from '../../shared/input/inputHandler'
 import { IMaterials, Materials } from '../loader/materials/materials'

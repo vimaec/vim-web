@@ -15,7 +15,8 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ISimpleEvent, SimpleEventDispatcher } from "ste-simple-events";
+import type { ISimpleEvent } from '../../core-viewers/shared/events'
+import { SimpleEventDispatcher } from 'ste-simple-events'
 
 /**
  * Interface for a state reference.

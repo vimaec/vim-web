@@ -4,7 +4,8 @@
 
 import * as THREE from 'three'
 
-import { ISignal, SignalDispatcher } from 'ste-signals'
+import type { ISignal } from '../../../shared/events'
+import { SignalDispatcher } from 'ste-signals'
 import { RenderScene } from '../rendering/renderScene'
 import { ViewerSettings } from '../settings/viewerSettings'
 import { Viewport } from '../viewport'

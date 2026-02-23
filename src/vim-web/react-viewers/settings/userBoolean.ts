@@ -1,6 +1,7 @@
 /**
- * Represents a boolean value that can also be locked to always true or false
- * @typedef {boolean | 'AlwaysTrue' | 'AlwaysFalse'} UserBoolean
+ * A boolean setting that can be locked by the host application.
+ * - `true` / `false` — user-toggleable default value, shown in settings UI.
+ * - `"AlwaysTrue"` / `"AlwaysFalse"` — locked value, hidden from settings UI.
  */
 export type UserBoolean = boolean | 'AlwaysTrue' | 'AlwaysFalse'
 

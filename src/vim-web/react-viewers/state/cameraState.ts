@@ -6,7 +6,7 @@ import { useEffect } from 'react'
 import * as THREE from 'three'
 import { SectionBoxApi } from './sectionBoxState'
 import { ActionRef, AsyncFuncRef, StateRef, useActionRef, useAsyncFuncRef, useStateRef } from '../helpers/reactUtils'
-import { ISignal } from 'ste-signals'
+import type { ISignal } from '../../core-viewers/shared/events'
 
 export interface CameraApi {
   autoCamera: StateRef<boolean>

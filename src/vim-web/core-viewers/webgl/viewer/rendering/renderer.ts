@@ -13,7 +13,8 @@ import { Camera } from '../camera/camera'
 import { IRenderingSection, RenderingSection } from './renderingSection'
 import { RenderingComposer } from './renderingComposer'
 import { ViewerSettings } from '../settings/viewerSettings'
-import { ISignal, SignalDispatcher } from 'ste-signals'
+import type { ISignal } from '../../../shared/events'
+import { SignalDispatcher } from 'ste-signals'
 
 /**
  * Public interface for the WebGL renderer.
