@@ -36,7 +36,7 @@ import { ComponentLoader } from './loading'
 import { Modal, ModalApi } from '../panels/modal'
 import { SectionBoxPanel } from '../panels/sectionBoxPanel'
 import { useWebglSectionBox } from './sectionBox'
-import { useWebglCamera } from './camera'
+import { useWebglFraming } from './camera'
 import { useViewerInput } from '../state/viewerInputs'
 import { IsolationPanel } from '../panels/isolationPanel'
 import { useWebglIsolation } from './isolation'
@@ -60,7 +60,7 @@ import { applyWebglSettings, getWebglSettingsContent } from './settingsPanel'
  * @example
  * const viewer = await React.Webgl.createViewer(document.getElementById('app'))
  * const vim = await viewer.load({ url: 'model.vim' }).getVim()
- * viewer.camera.frameScene.call()
+ * viewer.framing.frameScene.call()
  */
 export function createWebglViewer (
   container?: Container | HTMLElement,
@@ -124,10 +124,10 @@ export function WebglViewerComponent (props: {
   const isolationPanelHandle = useRef<GenericPanelApi>(null)
   const sectionBoxPanelHandle = useRef<GenericPanelApi>(null)
 
-  const camera = useWebglCamera(props.viewer, sectionBoxRef)
+  const framing = useWebglFraming(props.viewer, sectionBoxRef)
   const cursor = useMemo(() => new CursorManager(props.viewer), [])
   const loader = useRef(new ComponentLoader(props.viewer, modal, settings.value))
-  useViewerInput(props.viewer.inputs, camera)
+  useViewerInput(props.viewer.inputs, framing)
 
   const side = useSideState(
     isTrue(settings.value.ui.panelBimTree) ||
@@ -142,7 +142,7 @@ export function WebglViewerComponent (props: {
   const treeRef = useRef<TreeActionApi>()
   const performanceRef = useRef<HTMLDivElement>(null)
   const isolationRef = useWebglIsolation(props.viewer)
-  const controlBar = useControlBar(props.viewer, camera, modal.current, side, cursor, settings.value, sectionBoxRef, isolationRef, controlBarCustom)
+  const controlBar = useControlBar(props.viewer, framing, modal.current, side, cursor, settings.value, sectionBoxRef, isolationRef, controlBarCustom)
 
   useEffect(() => {
     side.setHasBim(viewerState.vim.get()?.bim !== undefined)
@@ -170,7 +170,7 @@ export function WebglViewerComponent (props: {
 
     // Setup custom input scheme
     props.viewer.viewport.canvas.tabIndex = 0
-    applyWebglBindings(props.viewer, camera, isolationRef, side)
+    applyWebglBindings(props.viewer, framing, isolationRef, side)
 
     // Register context menu
     const subContext =
@@ -184,7 +184,7 @@ export function WebglViewerComponent (props: {
       open: (source, loadSettings) => loader.current.open(source, loadSettings),
       unload: (vim) => props.viewer.unload(vim),
       isolation: isolationRef,
-      camera,
+      framing,
       settings: {
         update : settings.update,
         register : settings.register,
@@ -221,7 +221,7 @@ export function WebglViewerComponent (props: {
     <>
       {<OptionalBimPanel
         viewer={props.viewer}
-        camera={camera}
+        framing={framing}
         viewerState={viewerState}
         visible={side.getContent() === 'bim'}
         isolation={isolationRef}
@@ -258,7 +258,7 @@ export function WebglViewerComponent (props: {
         <IsolationPanel ref={isolationPanelHandle} state={isolationRef}/>
         <AxesPanelMemo
           viewer={props.viewer}
-          camera={camera}
+          framing={framing}
           settings={settings}
         />
       </>
@@ -266,7 +266,7 @@ export function WebglViewerComponent (props: {
 
       <VimContextMenuMemo
         viewer={props.viewer}
-        camera={camera}
+        framing={framing}
         modal={modal.current}
         isolation={isolationRef}
         selection={viewerState.selection.get()}

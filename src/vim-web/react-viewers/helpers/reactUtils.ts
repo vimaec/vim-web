@@ -7,11 +7,13 @@
  *
  * The provided hooks include:
  * - useStateRef: A state reference with event dispatching and validation.
- * - useActionRef: A reference for an action (a function with no arguments).
- * - useArgActionRef: A reference for an action that accepts an argument.
  * - useFuncRef: A reference for a function returning a value.
  * - useAsyncFuncRef: A reference for an asynchronous function.
  * - useArgFuncRef: A reference for a function that accepts an argument and returns a value.
+ *
+ * Type aliases:
+ * - ActionRef = FuncRef<void> — side-effect-only action.
+ * - ArgActionRef<T> = ArgFuncRef<T, void> — side-effect-only action with an argument.
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -198,148 +200,6 @@ export function useStateRef<T>(initialValue: T | (() => T), isLazy = false) {
       useEffect(() => {
         confirm.current = on;
       }, []);
-    },
-  };
-}
-
-/**
- * A callable action with middleware support.
- * Use `call()` to execute, `prepend()`/`append()` to add hooks.
- *
- * @example
- * action.call()                 // Execute the action
- * action.prepend(() => before()) // Add pre-hook
- * action.append(() => after())   // Add post-hook
- * action.set(() => custom())     // Replace the action
- */
-export interface ActionRef {
-  /**
-   * Invokes the stored action.
-   */
-  call(): void;
-  /**
-   * Retrieves the current action function.
-   * @returns The stored action function.
-   */
-  get(): () => void;
-  /**
-   * Sets the stored action function.
-   * @param fn - The new action function.
-   */
-  set(fn: () => void): void;
-  /**
-   * Prepends a function to be executed before the stored action.
-   * @param fn - The function to run before the original action.
-   */
-  prepend(fn: () => void): void;
-  /**
-   * Appends a function to be executed after the stored action.
-   * @param fn - The function to run after the original action.
-   */
-  append(fn: () => void): void;
-}
-
-/**
- * Custom hook to create an action reference.
- *
- * @param action - The initial action function.
- * @returns An object implementing ActionRef.
- */
-export function useActionRef(action: () => void): ActionRef {
-  const ref = useRef(action);
-  return {
-    call() {
-      ref?.current();
-    },
-    get() {
-      return ref.current;
-    },
-    set(fn: () => void) {
-      ref.current = fn;
-    },
-    prepend(fn: () => void) {
-      const oldFn = ref.current;
-      ref.current = () => {
-        fn();
-        oldFn();
-      };
-    },
-    append(fn: () => void) {
-      const oldFn = ref.current;
-      ref.current = () => {
-        oldFn();
-        fn();
-      };
-    },
-  };
-}
-
-/**
- * A callable action that accepts an argument, with middleware support.
- *
- * @example
- * action.call(box)              // Execute with argument
- * action.prepend((box) => ...)  // Add pre-hook
- */
-export interface ArgActionRef<T> {
-  /**
-   * Invokes the stored action with the provided argument.
-   * @param arg - The argument to pass to the action.
-   */
-  call(arg: T): void;
-  /**
-   * Retrieves the current action function.
-   * @returns The stored action function.
-   */
-  get(): (arg: T) => void;
-  /**
-   * Sets the stored action function.
-   * @param fn - The new action function.
-   */
-  set(fn: (arg: T) => void): void;
-  /**
-   * Prepends a function to be executed before the stored action.
-   * @param fn - The function to run before the original action.
-   */
-  prepend(fn: (arg: T) => void): void;
-  /**
-   * Appends a function to be executed after the stored action.
-   * @param fn - The function to run after the original action.
-   */
-  append(fn: (arg: T) => void): void;
-}
-
-/**
- * Custom hook to create an argument-based action reference.
- *
- * @param action - The initial action function that accepts an argument.
- * @returns An object implementing ArgActionRef.
- */
-export function useArgActionRef<T>(action: (arg: T) => void): ArgActionRef<T> {
-  const ref = useRef(action);
-  return {
-    call(arg: T) {
-      ref?.current(arg);
-    },
-    get() {
-      return ref.current;
-    },
-    set(fn: (arg: T) => void) {
-      ref.current = fn;
-    },
-    prepend(fn: (arg: T) => void) {
-      const oldFn = ref.current;
-      ref.current = (arg: T) => {
-        fn(arg);
-        oldFn(arg);
-      };
-    },
-    append(fn: (arg: T) => void) {
-      const oldFn = ref.current;
-      ref.current = (arg: T) => {
-        oldFn(arg);
-        fn(arg);
-      };
     },
   };
 }
@@ -559,3 +419,8 @@ export function useArgFuncRef<TArg, TResult>(
     },
   };
 }
+
+/** Alias for a FuncRef that returns void. Use for side-effect-only actions. */
+export type ActionRef = FuncRef<void>
+/** Alias for an ArgFuncRef that returns void. Use for side-effect-only actions with an argument. */
+export type ArgActionRef<T> = ArgFuncRef<T, void>

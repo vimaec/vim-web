@@ -1,3 +1,11 @@
+/**
+ * ## Coordinate System
+ * All camera operations use **Z-up**: X = right, Y = forward, Z = up.
+ * This differs from Three.js's default Y-up convention.
+ *
+ * @module camera
+ */
+
 import type { ISignal } from '../../../shared/events';
 import * as THREE from 'three';
 import type { IElement3D } from '../../loader/element3d';

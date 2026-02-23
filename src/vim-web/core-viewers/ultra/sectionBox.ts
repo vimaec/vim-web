@@ -7,12 +7,20 @@ import * as THREE from "three"
 /**
  * Public interface for the Ultra section box.
  * Controls clipping, visibility, and interactivity of the section box.
+ *
+ * @example
+ * ```ts
+ * const sb = viewer.sectionBox
+ * sb.active = true              // Enable clipping
+ * sb.visible = true             // Show gizmo
+ * sb.setBox(await vim.getBoundingBox())  // Fit to model
+ * ```
  */
 export interface IUltraSectionBox {
   readonly onUpdate: ISignal
   visible: boolean
   interactive: boolean
-  clip: boolean
+  active: boolean
   setBox(box: THREE.Box3): void
   getBox(): THREE.Box3 | undefined
 }
@@ -24,7 +32,7 @@ export class SectionBox implements IUltraSectionBox {
 
   private _visible: boolean = false
   private _interactible: boolean = false
-  private _clip: boolean = false
+  private _active: boolean = false
   private _box : THREE.Box3 | undefined
   private _rpc: RpcSafeClient
   
@@ -72,14 +80,14 @@ export class SectionBox implements IUltraSectionBox {
     let changed = false
     if(state.visible !== this._visible ||
       state.interactive !== this._interactible ||
-      state.clip !== this._clip ||
+      state.clip !== this._active ||
       state.box !== this._box){
         changed = true
       }
 
     this._visible = state.visible
     this._interactible = state.interactive
-    this._clip = state.clip
+    this._active = state.clip
     this._box = state.box
     if(changed){
       this._onUpdate.dispatch()
@@ -90,7 +98,7 @@ export class SectionBox implements IUltraSectionBox {
     await this._rpc.RPCSetSectionBox({
       visible: this._visible,
       interactive: this._interactible,
-      clip: this._clip,
+      clip: this._active,
       box: this._box
     })
   }
@@ -113,12 +121,12 @@ export class SectionBox implements IUltraSectionBox {
     this.scheduleUpdate()
   }
 
-  get clip(): boolean {
-    return this._clip
+  get active(): boolean {
+    return this._active
   }
 
-  set clip(value: boolean) {
-    this._clip = value
+  set active(value: boolean) {
+    this._active = value
     this.scheduleUpdate()
   }
 

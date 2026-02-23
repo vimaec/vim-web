@@ -4,7 +4,7 @@
 
 import * as FireMenu from '@firefox-devtools/react-contextmenu'
 import React, { useEffect, useState } from 'react'
-import { CameraApi } from '../state/cameraState'
+import { FramingApi } from '../state/cameraState'
 import { TreeActionApi } from '../bim/bimTree'
 import { ModalApi } from './modal'
 import { IsolationApi } from '../state/sharedIsolation'
@@ -82,7 +82,7 @@ export const VimContextMenuMemo = React.memo(ContextMenu)
  */
 export function ContextMenu (props: {
   viewer: Core.Webgl.Viewer
-  camera: CameraApi
+  framing: FramingApi
   modal: ModalApi
   isolation: IsolationApi
   selection: Core.Webgl.IElement3D[]
@@ -90,7 +90,7 @@ export function ContextMenu (props: {
   treeRef: React.MutableRefObject<TreeActionApi | undefined>
 }) {
   const viewer = props.viewer
-  const camera = props.camera
+  const framing = props.framing
   const [visibility, setVisibility] = useState(props.isolation.visibility.get())
 
   useEffect(() => {
@@ -106,12 +106,12 @@ export function ContextMenu (props: {
   }
 
   const onCameraResetBtn = (e: React.MouseEvent) => {
-    camera.reset.call()
+    framing.reset.call()
     e.stopPropagation()
   }
 
   const onCameraFrameBtn = (e: React.MouseEvent) => {
-    camera.frameSelection.call()
+    framing.frameSelection.call()
     e.stopPropagation()
   }
 

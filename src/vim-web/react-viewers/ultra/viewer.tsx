@@ -19,7 +19,7 @@ import { whenTrue } from '../helpers/utils'
 import { useSideState } from '../state/sideState'
 import { UltraViewerApi } from './viewerApi'
 import ReactTooltip from 'react-tooltip'
-import { useUltraCamera } from './camera'
+import { useUltraFraming } from './camera'
 import { useViewerInput } from '../state/viewerInputs'
 import { useUltraIsolation } from './isolation'
 import { IsolationPanel } from '../panels/isolationPanel'
@@ -98,7 +98,7 @@ export function UltraViewerComponent (props: {
 
   const settings = useSettings(props.settings ?? {}, getDefaultUltraSettings())
   const sectionBoxRef = useUltraSectionBox(props.core)
-  const camera = useUltraCamera(props.core, sectionBoxRef)
+  const framing = useUltraFraming(props.core, sectionBoxRef)
   const isolationPanelHandle = useRef<GenericPanelApi>(null)
   const sectionBoxPanelHandle = useRef<GenericPanelApi>(null)
   const modalHandle = useRef<ModalApi>(null)
@@ -111,14 +111,14 @@ export function UltraViewerComponent (props: {
     props.core,
     sectionBoxRef,
     isolationRef,
-    camera,
+    framing,
     settings.value,
     side,
     modalHandle.current,
     _ =>_
   )
   
-  useViewerInput(props.core.inputs, camera)
+  useViewerInput(props.core.inputs, framing)
 
   // On First render
   useEffect(() => {
@@ -145,7 +145,7 @@ export function UltraViewerComponent (props: {
       get modal() { return modalHandle.current },
       isolation: isolationRef,
       sectionBox: sectionBoxRef,
-      camera,
+      framing,
       settings: {
         update : settings.update,
         register : settings.register,

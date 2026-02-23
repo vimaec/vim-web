@@ -6,7 +6,7 @@ import React, { useMemo, useState } from 'react'
 import * as Core from '../../core-viewers'
 
 import { whenAllTrue, whenFalse, whenSomeTrue, whenTrue } from '../helpers/utils'
-import { CameraApi } from '../state/cameraState'
+import { FramingApi } from '../state/cameraState'
 import { IsolationApi } from '../state/sharedIsolation'
 import { ViewerState } from '../webgl/viewerState'
 import { BimInfoPanelApi } from './bimInfoData'
@@ -22,7 +22,7 @@ import { isFalse } from '../settings/userBoolean'
 // The error appears only in JSFiddle when the module is directly imported in a script tag.
 export function OptionalBimPanel (props: {
   viewer: Core.Webgl.Viewer
-  camera: CameraApi
+  framing: FramingApi
   viewerState: ViewerState
   isolation: IsolationApi
   visible: boolean
@@ -47,7 +47,7 @@ export function OptionalBimPanel (props: {
  */
 export function BimPanel (props: {
   viewer: Core.Webgl.Viewer
-  camera: CameraApi
+  framing: FramingApi
   viewerState: ViewerState
   isolation: IsolationApi
   visible: boolean
@@ -82,7 +82,7 @@ export function BimPanel (props: {
           <BimTree
             actionRef={props.treeRef}
             viewer={props.viewer}
-            camera={props.camera}
+            framing={props.framing}
             objects={props.viewerState.selection.get()}
             isolation={props.isolation}
             treeData={tree}

@@ -12,7 +12,7 @@ import 'react-complex-tree/lib/style.css'
 import ReactTooltip from 'react-tooltip'
 import * as Core from '../../core-viewers'
 import { showContextMenu } from '../panels/contextMenu'
-import { CameraApi } from '../state/cameraState'
+import { FramingApi } from '../state/cameraState'
 import { ArrayEquals } from '../helpers/data'
 import { BimTreeData, VimTreeNode } from './bimTreeData'
 import { IsolationApi } from '../state/sharedIsolation'
@@ -37,7 +37,7 @@ export type TreeActionApi = {
 export function BimTree (props: {
   actionRef: React.MutableRefObject<TreeActionApi>
   viewer: Viewer
-  camera: CameraApi
+  framing: FramingApi
   objects: IElement3D[]
   isolation: IsolationApi
   treeData: BimTreeData
@@ -194,7 +194,7 @@ export function BimTree (props: {
           ) => ({
             onKeyUp: (e) => {
               if (e.key === 'f') {
-                props.camera.frameSelection.call()
+                props.framing.frameSelection.call()
               }
               if (e.key === 'Escape') {
                 props.viewer.selection.clear()
@@ -238,7 +238,7 @@ export function BimTree (props: {
         // Implement double click
         onPrimaryAction={(item, _) => {
           if (doubleClick.isDoubleClick(item.index as number)) {
-            props.camera.frameSelection.call()
+            props.framing.frameSelection.call()
           }
         }}
         // Default behavior

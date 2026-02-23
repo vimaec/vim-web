@@ -15,9 +15,18 @@ import { safeBox } from '../../../../../utils/threeUtils';
 
 /**
  * Public interface for the section box gizmo.
+ *
+ * @example
+ * ```ts
+ * const sb = viewer.gizmos.sectionBox
+ * sb.active = true              // Enable clipping
+ * sb.visible = true             // Show gizmo
+ * sb.setBox(await vim.getBoundingBox())  // Fit to model
+ * sb.onBoxConfirm.sub((box) => console.log('Confirmed:', box))
+ * ```
  */
 export interface IWebglSectionBox {
-  /** Dispatches when clip, visible, or interactive change. */
+  /** Dispatches when active, visible, or interactive change. */
   readonly onStateChanged: ISignal
   /** Dispatches when the user finishes manipulating the box. */
   readonly onBoxConfirm: ISimpleEvent<THREE.Box3>
@@ -26,7 +35,7 @@ export interface IWebglSectionBox {
   /** Returns a copy of the current section box. */
   getBox(): THREE.Box3
   /** Whether clipping planes are applied to the model. */
-  clip: boolean
+  active: boolean
   /** Whether the gizmo responds to pointer events. */
   interactive: boolean
   /** Whether the section box gizmo is visible. */
@@ -55,7 +64,7 @@ export class SectionBox implements IWebglSectionBox {
   private _gizmos: SectionBoxGizmo;
   private _inputs: BoxInputs;
   
-  private _clip: boolean | undefined = undefined;
+  private _active: boolean | undefined = undefined;
   private _visible: boolean | undefined = undefined;
   private _interactive: boolean | undefined = undefined;
 
@@ -77,7 +86,7 @@ export class SectionBox implements IWebglSectionBox {
 
   /**
    * Dispatches when any of the following properties change:
-   * - {@link clip} (clipping planes active)
+   * - {@link active} (clipping planes active)
    * - {@link visible} (gizmo visibility)
    * - {@link interactive} (pointer inputs active)
    */
@@ -138,7 +147,7 @@ export class SectionBox implements IWebglSectionBox {
     this._inputs.onBoxConfirm = (box) => this._onBoxConfirm.dispatch(box);
 
     // Default states
-    this.clip = false;
+    this.active = false;
     this.visible = false;
     this.interactive = false;
     this.update();
@@ -158,16 +167,16 @@ export class SectionBox implements IWebglSectionBox {
 
   /**
    * Determines whether the section gizmo applies clipping planes to the model.
-   * 
+   *
    * When `true`, `renderer.section.active` is enabled.
    */
-  get clip(): boolean {
-    return this._clip ?? false;
+  get active(): boolean {
+    return this._active ?? false;
   }
 
-  set clip(value: boolean) {
-    if (value === this._clip) return;
-    this._clip = value;
+  set active(value: boolean) {
+    if (value === this._active) return;
+    this._active = value;
     this.renderer.section.active = value;
     this._onStateChanged.dispatch();
   }

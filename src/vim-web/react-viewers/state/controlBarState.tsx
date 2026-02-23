@@ -1,5 +1,5 @@
 import * as Core from "../../core-viewers";
-import { CameraApi } from './cameraState';
+import { FramingApi } from './cameraState';
 import { CursorManager } from '../helpers/cursor';
 
 import { SideState } from './sideState';
@@ -43,23 +43,23 @@ export function controlBarSectionBox(
 
   return {
     id: Ids.sectioningSpan,
-    style: section.enable.get()? Style.sectionNoPadStyle : Style.sectionDefaultStyle,
+    style: section.active.get()? Style.sectionNoPadStyle : Style.sectionDefaultStyle,
     //enable: () => section.getEnable(),
     buttons: [
       {
         id: Ids.sectioningEnable,
         enabled: () => isTrue(settings.sectioningEnable),
         tip: 'Enable Section Box',
-        isOn: () => section.enable.get(),
+        isOn: () => section.active.get(),
         style: Style.buttonExpandStyle,
-        action: () => section.enable.set(!section.enable.get()),
+        action: () => section.active.set(!section.active.get()),
         icon: Icons.sectionBox,
       },
       {
         id: Ids.sectioningFitSelection,
         
         tip: 'Fit Section',
-        enabled: () => section.enable.get() && isTrue(settings.sectioningFitToSelection),
+        enabled: () => section.active.get() && isTrue(settings.sectioningFitToSelection),
         isOn: () => hasSelection,
         style: Style.buttonDisableStyle,
         action: () => section.sectionSelection.call(), 
@@ -68,7 +68,7 @@ export function controlBarSectionBox(
       {
         id: Ids.sectioningFitScene,
         tip: 'Reset Section',
-        enabled: () => section.enable.get() && isTrue(settings.sectioningReset),
+        enabled: () => section.active.get() && isTrue(settings.sectioningReset),
         style: Style.buttonDefaultStyle,
         action: () => section.sectionScene.call(), 
         icon: Icons.sectionBoxReset,
@@ -76,7 +76,7 @@ export function controlBarSectionBox(
       {
         id: Ids.sectioningVisible,
         tip: 'Show Section Box',
-        enabled: () => section.enable.get() && isTrue(settings.sectioningShow),
+        enabled: () => section.active.get() && isTrue(settings.sectioningShow),
         isOn: () => section.visible.get(),
         style: Style.buttonDefaultStyle,
         action: () => section.visible.set(!section.visible.get()),
@@ -85,7 +85,7 @@ export function controlBarSectionBox(
       {
         id: Ids.sectioningAuto,
         tip: 'Auto Section',
-        enabled: () => section.enable.get() && isTrue(settings.sectioningAuto),
+        enabled: () => section.active.get() && isTrue(settings.sectioningAuto),
         isOn: () => section.auto.get(),
         style: Style.buttonDefaultStyle,
         action: () => section.auto.set(!section.auto.get()),
@@ -94,7 +94,7 @@ export function controlBarSectionBox(
       {
         id: Ids.sectioningSettings,
         tip: 'Section Settings',
-        enabled: () => section.enable.get() && isTrue(settings.sectioningSettings),
+        enabled: () => section.active.get() && isTrue(settings.sectioningSettings),
         isOn: () => section.showOffsetPanel.get(),
         style: Style.buttonDefaultStyle,
         action: () => section.showOffsetPanel.set(!section.showOffsetPanel.get()),
@@ -279,7 +279,7 @@ export type ControlBarCameraSettings ={
   cameraFrameScene: UserBoolean
 }
 
-export function controlBarCamera(camera: CameraApi, settings: ControlBarCameraSettings): IControlBarSection {
+export function controlBarCamera(camera: FramingApi, settings: ControlBarCameraSettings): IControlBarSection {
   return {
     id: Ids.cameraSpan,
     enable: () => true,
@@ -404,7 +404,7 @@ export function controlBarVisibility(isolation: IsolationApi, settings: ControlB
  */
 export function useControlBar(
   viewer: Core.Webgl.Viewer,
-  camera: CameraApi,
+  framing: FramingApi,
   modal: ModalApi,
   side: SideState,
   cursor: CursorManager,
@@ -418,7 +418,7 @@ export function useControlBar(
   // Apply user customization (note that pointerSection is added twice per original design)
   let controlBarSections = [
     controlBarPointer(viewer, settings.ui),
-    controlBarCamera(camera, settings.ui),
+    controlBarCamera(framing, settings.ui),
     controlBarVisibility(isolationRef, settings.ui),
     controlBarMeasure(measure, settings.ui),
     controlBarSectionBox(section, viewer.selection.any(), settings.ui),

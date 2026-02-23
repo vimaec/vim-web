@@ -1,6 +1,6 @@
 import * as Core from '../../core-viewers';
 import { ModalApi } from '../panels/modal';
-import { CameraApi } from '../state/cameraState';
+import { FramingApi } from '../state/cameraState';
 import { SectionBoxApi } from '../state/sectionBoxState';
 import { IsolationApi } from '../state/sharedIsolation';
 import { ControlBarApi } from '../controlbar/controlBar';
@@ -50,11 +50,11 @@ export type UltraViewerApi = {
   controlBar: ControlBarApi
 
   /**
-   * High-level camera API with semantic operations (frame selection, auto-camera).
+   * High-level framing API with semantic operations (frame selection, auto-camera).
    * For low-level camera control (snap/lerp, set position), use {@link core}.camera instead.
-   * @see {@link CameraApi}
+   * @see {@link FramingApi}
    */
-  camera: CameraApi
+  framing: FramingApi
 
   isolation: IsolationApi
 

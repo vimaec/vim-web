@@ -6,11 +6,22 @@ import * as THREE from "three";
 /**
  * Public interface for an Ultra 3D element.
  * Provides access to per-instance state, color, and bounding box.
+ *
+ * @example
+ * element.visible = false           // Hide
+ * element.outline = true            // Highlight
+ * element.color = new THREE.Color(0xff0000)
+ * element.state = VisibilityState.GHOSTED  // Advanced: ghosted appearance
  */
 export interface IUltraElement3D extends IVimElement {
   readonly element: number
   readonly vimHandle: number
+  /** Low-level visibility state. For simple show/hide, use {@link visible} instead. */
   state: VisibilityState
+  /** Whether the element is visible (not hidden). Preserves highlight state. */
+  visible: boolean
+  /** Whether the element has an outline highlight. Preserves visibility state. */
+  outline: boolean
   color: THREE.Color | undefined
   getBoundingBox(): Promise<THREE.Box3 | undefined>
 }
@@ -57,6 +68,34 @@ export class Element3D implements IUltraElement3D {
   }
   set state(state: VisibilityState) {
     this.vim.visibility.setStateForElement(this.element, state);
+  }
+
+  /**
+   * Whether the element is visible (not hidden). Preserves highlight state.
+   */
+  get visible(): boolean {
+    const s = this.state;
+    return s !== VisibilityState.HIDDEN && s !== VisibilityState.HIDDEN_HIGHLIGHTED;
+  }
+  set visible(value: boolean) {
+    const highlighted = this.state >= 16;
+    if (value) {
+      this.state = highlighted ? VisibilityState.HIGHLIGHTED : VisibilityState.VISIBLE;
+    } else {
+      this.state = highlighted ? VisibilityState.HIDDEN_HIGHLIGHTED : VisibilityState.HIDDEN;
+    }
+  }
+
+  /**
+   * Whether the element has an outline highlight. Preserves visibility state.
+   */
+  get outline(): boolean {
+    return this.state >= 16;
+  }
+  set outline(value: boolean) {
+    const s = this.state;
+    const baseState = s >= 16 ? s - 16 : s;
+    this.state = value ? baseState + 16 : baseState;
   }
 
   /**

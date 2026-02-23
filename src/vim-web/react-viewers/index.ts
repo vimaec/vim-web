@@ -15,8 +15,13 @@ export * as Errors from './errors'
 // Container
 export { type Container, createContainer } from './container'
 
+// Viewer API union
+import type { WebglViewerApi } from './webgl/viewerApi'
+import type { UltraViewerApi } from './ultra/viewerApi'
+export type ViewerApi = WebglViewerApi | UltraViewerApi
+
 // API interfaces
-export type { CameraApi } from './state/cameraState'
+export type { FramingApi } from './state/cameraState'
 export type { SectionBoxApi } from './state/sectionBoxState'
 export type { IsolationApi, VisibilityStatus } from './state/sharedIsolation'
 export type { SettingsApi } from './state/settingsApi'

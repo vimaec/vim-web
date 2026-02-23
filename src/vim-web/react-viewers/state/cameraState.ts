@@ -5,11 +5,11 @@
 import { useEffect } from 'react'
 import * as THREE from 'three'
 import { SectionBoxApi } from './sectionBoxState'
-import { ActionRef, AsyncFuncRef, StateRef, useActionRef, useAsyncFuncRef, useStateRef } from '../helpers/reactUtils'
+import { AsyncFuncRef, StateRef, FuncRef, useAsyncFuncRef, useFuncRef, useStateRef } from '../helpers/reactUtils'
 import type { ISignal } from '../../core-viewers/shared/events'
 
 /**
- * High-level camera controls for the React viewer.
+ * High-level framing controls for the React viewer.
  * Provides semantic operations like "frame selection" and "frame scene".
  *
  * For low-level camera movement (orbit, pan, zoom, snap/lerp), use
@@ -17,17 +17,17 @@ import type { ISignal } from '../../core-viewers/shared/events'
  *
  * @example
  * // Frame the current selection with animation
- * viewer.camera.frameSelection.call()
+ * viewer.framing.frameSelection.call()
  *
  * // For direct camera manipulation, use the core camera:
  * viewer.core.camera.lerp(1).frame('all')
  * viewer.core.camera.snap().set(position, target)
  */
-export interface CameraApi {
+export interface FramingApi {
   /** When true, automatically frames the camera on the selection whenever it changes. */
   autoCamera: StateRef<boolean>
   /** Resets the camera to its last saved position. */
-  reset: ActionRef
+  reset: FuncRef<void>
   /** Frames the camera on the current selection (or scene if nothing selected). */
   frameSelection: AsyncFuncRef<void>
   /** Frames the camera to show all loaded geometry. */
@@ -46,7 +46,7 @@ interface ICameraAdapter {
   getSceneBox: () => Promise<THREE.Box3 | undefined>
 }
 
-export function useCamera(adapter: ICameraAdapter, section: SectionBoxApi){
+export function useFraming(adapter: ICameraAdapter, section: SectionBoxApi){
 
   const autoCamera = useStateRef(false)
   autoCamera.useOnChange((v) => {
@@ -66,7 +66,7 @@ export function useCamera(adapter: ICameraAdapter, section: SectionBoxApi){
     adapter.onSelectionChanged.sub(refresh)
   },[])
 
-  const reset = useActionRef(() => adapter.resetCamera(1))
+  const reset = useFuncRef<void>(() => adapter.resetCamera(1))
   const getSelectionBox = useAsyncFuncRef(adapter.getSelectionBox)
   const getSceneBox = useAsyncFuncRef(adapter.getSceneBox)
 
@@ -87,14 +87,14 @@ export function useCamera(adapter: ICameraAdapter, section: SectionBoxApi){
     reset,
     frameSelection,
     frameScene
-  } as CameraApi
+  } as FramingApi
 }
 
 function frame(adapter: ICameraAdapter, section: SectionBoxApi, box: THREE.Box3) {
   if(!box) return
 
   // Take into account section box for framing.
-  if(section.enable.get()){
+  if(section.active.get()){
     const sectionBox = section.getBox();
     if (section) {
       box.intersect(sectionBox);

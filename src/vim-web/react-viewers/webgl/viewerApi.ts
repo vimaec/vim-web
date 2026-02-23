@@ -4,7 +4,7 @@
 
 import * as Core from '../../core-viewers'
 import { ContextMenuApi } from '../panels/contextMenu'
-import { CameraApi } from '../state/cameraState'
+import { FramingApi } from '../state/cameraState'
 import { Container } from '../container'
 import { BimInfoPanelApi } from '../bim/bimInfoData'
 import { ControlBarApi } from '../controlbar/controlBar'
@@ -102,11 +102,11 @@ export type WebglViewerApi = {
   modal: ModalApi
 
   /**
-   * High-level camera API with semantic operations (frame selection, auto-camera).
+   * High-level framing API with semantic operations (frame selection, auto-camera).
    * For low-level camera control (orbit, pan, zoom, snap/lerp), use {@link core}.camera instead.
-   * @see {@link CameraApi}
+   * @see {@link FramingApi}
    */
-  camera: CameraApi
+  framing: FramingApi
 
   /**
    * API To interact with the BIM info panel.

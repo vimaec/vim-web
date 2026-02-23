@@ -4,8 +4,8 @@ import {ISectionBoxAdapter, SectionBoxApi, useSectionBox } from '../state/sectio
 
 export function useWebglSectionBox(viewer: Core.Webgl.Viewer): SectionBoxApi {
   const vimAdapter: ISectionBoxAdapter = {
-    setClip: (b) => {
-      viewer.gizmos.sectionBox.clip = b;
+    setActive: (b) => {
+      viewer.gizmos.sectionBox.active = b;
     },
     setVisible: (b) => {
       viewer.gizmos.sectionBox.visible = b;

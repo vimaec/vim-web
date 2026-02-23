@@ -4,8 +4,8 @@ import { useSectionBox, ISectionBoxAdapter, SectionBoxApi } from '../state/secti
 
 export function useUltraSectionBox(viewer: Core.Ultra.Viewer): SectionBoxApi {
   const ultraAdapter: ISectionBoxAdapter = {
-    setClip: (b) => {
-      viewer.sectionBox.clip = b;
+    setActive: (b) => {
+      viewer.sectionBox.active = b;
     },
     setVisible: (b) => {
       viewer.sectionBox.visible = b;
