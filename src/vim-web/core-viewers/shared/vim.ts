@@ -36,10 +36,10 @@ export interface IVim<T extends IVimElement> {
 
     /**
      * Retrieves the element associated with the specified id.
-     * @param id - The element ID to retrieve objects for.
+     * @param id - The element ID to retrieve objects for (number or bigint).
      * @returns An array of element corresponding to the given id.
      */
-    getElementsFromId(id: number): T[]
+    getElementsFromId(id: number | bigint): T[]
 
     /**
      * Retrieves the element associated with the given index.

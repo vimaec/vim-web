@@ -14,12 +14,12 @@ import { PointerCapture } from "./pointerCapture";
 
 import * as THREE from 'three';
 
-type ClickHandler = (position: THREE.Vector2, ctrl: boolean) => void
-type DoubleClickHandler = (position: THREE.Vector2) => void
-type PointerButtonHandler = (pos: THREE.Vector2, button: number) => void
-type MoveHandler = (pos: THREE.Vector2) => void
-type WheelHandler = (value: number, ctrl: boolean, clientX: number, clientY: number) => void
-type ContextMenuHandler = (position: THREE.Vector2) => void
+export type ClickHandler = (position: THREE.Vector2, ctrl: boolean) => void
+export type DoubleClickHandler = (position: THREE.Vector2) => void
+export type PointerButtonHandler = (pos: THREE.Vector2, button: number) => void
+export type MoveHandler = (pos: THREE.Vector2) => void
+export type WheelHandler = (value: number, ctrl: boolean, clientX: number, clientY: number) => void
+export type ContextMenuHandler = (position: THREE.Vector2) => void
 
 /** @internal */
 export type MouseCallbacks = {

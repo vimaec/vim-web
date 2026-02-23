@@ -19,7 +19,9 @@ export interface ISelection<T extends IVimElement> {
   count(): number
   any(): boolean
   readonly onSelectionChanged: ISignal
+  /** Replaces the entire selection with the given object. */
   select(object: T): void
+  /** Replaces the entire selection with the given objects. */
   select(objects: T[]): void
   toggle(object: T): void
   toggle(objects: T[]): void

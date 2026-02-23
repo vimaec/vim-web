@@ -31,8 +31,11 @@ export interface IsolationApi {
   isolateSelection(): void
   hideSelection(): void
   showSelection(): void
+  /** Isolates elements by their instance indices (only these will be visible). */
   isolate(instances: number[]): void
+  /** Shows elements by their instance indices. */
   show(instances: number[]): void
+  /** Hides elements by their instance indices. */
   hide(instances: number[]): void
   hideAll(): void
   showAll(): void

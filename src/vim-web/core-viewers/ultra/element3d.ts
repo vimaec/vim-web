@@ -1,6 +1,7 @@
 import { IVimElement } from "../shared/vim";
 import { VisibilityState } from "./visibility";
 import { Vim } from "./vim";
+import type { IUltraVim } from "./vim";
 import * as THREE from "three";
 
 /**
@@ -14,6 +15,8 @@ import * as THREE from "three";
  * element.state = VisibilityState.GHOSTED  // Advanced: ghosted appearance
  */
 export interface IUltraElement3D extends IVimElement {
+  /** The parent vim this element belongs to. */
+  readonly vim: IUltraVim
   readonly element: number
   readonly vimHandle: number
   /** Low-level visibility state. For simple show/hide, use {@link visible} instead. */

@@ -18,7 +18,7 @@ export type ControlBarApi = {
 }
 
 /**
- * A map function that changes the context menu.
+ * A map function that customizes the control bar sections.
  */
 export type ControlBarCustomization = (
   e: IControlBarSection[]

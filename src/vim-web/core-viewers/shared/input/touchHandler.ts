@@ -9,10 +9,10 @@ import { BaseInputHandler } from './baseInputHandler';
 import { TAP_DURATION_MS, TAP_MOVEMENT_THRESHOLD, DOUBLE_CLICK_TIME_THRESHOLD } from './inputConstants';
 import { clientToCanvas } from './coordinates';
 
-type TapHandler = (position: THREE.Vector2) => void
-type DragHandler = (delta: THREE.Vector2) => void
-type PinchStartHandler = (screenCenter: THREE.Vector2) => void
-type PinchHandler = (totalRatio: number) => void
+export type TapHandler = (position: THREE.Vector2) => void
+export type DragHandler = (delta: THREE.Vector2) => void
+export type PinchStartHandler = (screenCenter: THREE.Vector2) => void
+export type PinchHandler = (totalRatio: number) => void
 
 /** @internal */
 export type TouchCallbacks = {

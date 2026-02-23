@@ -96,8 +96,10 @@ export class Vim implements IUltraVim {
     return object
   }
 
-  getElementsFromId(id: number): Element3D[] {
-    throw new Error('Method not implemented.')
+  getElementsFromId(_id: number | bigint): Element3D[] {
+    // Ultra viewer does not support element ID lookup.
+    // Use getElementFromIndex() or getAllElements() instead.
+    return []
   }
 
   getElementFromIndex(element: number): Element3D {

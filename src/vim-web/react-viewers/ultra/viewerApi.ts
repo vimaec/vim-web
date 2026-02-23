@@ -79,10 +79,10 @@ export type UltraViewerApi = {
    * Loads a VIM file via the Ultra server.
    * Wraps core.load() with connection management, progress UI (loading modal),
    * and error reporting. For headless loading, use core.load() directly.
-   * @param url The URL of the file to load
+   * @param source The VIM source (url and optional headers)
    * @returns LoadRequest to track progress and get result
    */
-  load(url: Core.Ultra.VimSource): Core.Ultra.IUltraLoadRequest;
+  load(source: Core.Ultra.VimSource): Core.Ultra.IUltraLoadRequest;
 
   /**
    * Unloads a vim from the viewer and disposes it.

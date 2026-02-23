@@ -45,10 +45,21 @@ export class LoadError implements ILoadError {
  * Interface for load requests that can be used as a type constraint.
  */
 export interface ILoadRequest<TVim, TError extends ILoadError = ILoadError> {
+  /** Whether the load has finished (successfully or with error). */
   readonly isCompleted: boolean
+  /** Yields progress updates as they arrive. Use with `for await`. */
   getProgress(): AsyncGenerator<IProgress>
+  /**
+   * Returns the final load result (success or error).
+   * Awaits completion if still loading. Use `result.isSuccess` to discriminate.
+   */
   getResult(): Promise<LoadResult<TVim, TError>>
+  /**
+   * Convenience method that awaits the result and returns the vim directly.
+   * @throws Error if the load failed.
+   */
   getVim(): Promise<TVim>
+  /** Cancels the load request. Pending getVim()/getResult() promises will reject/resolve with error. */
   abort(): void
 }
 

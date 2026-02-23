@@ -32,7 +32,7 @@ export interface IScene {
   getBoundingBox(target?: THREE.Box3): THREE.Box3 | undefined
   /** Bounding box using average mesh centers. More stable against outliers. */
   getAverageBoundingBox(): THREE.Box3
-  /** Material override for all meshes in this scene. Set undefined to remove. */
+  /** Material override for all meshes in this scene. */
   material: MaterialSet
 }
 

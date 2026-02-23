@@ -155,7 +155,7 @@ export class Vim implements IWebglVim {
    * @param {number} id - The element ID to retrieve objects for.
    * @returns {THREE.Object3D[]} An array of objects corresponding to the element ID, or an empty array if none are found.
    */
-  getElementsFromId (id: number) {
+  getElementsFromId (id: number | bigint) {
     const elements = this.map.getElementsFromElementId(id)
     return elements
       ?.map((e) => this.getElementFromIndex(e))
