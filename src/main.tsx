@@ -72,7 +72,7 @@ function App() {
       return
     }
 
-    viewerRef.current.camera.frameScene.call()
+    viewerRef.current.framing.frameScene.call()
   }
 
   return (
@@ -133,7 +133,7 @@ async function createWebgl (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDiv
   }
 
   
-  viewer.camera.frameScene.call()
+  viewer.framing.frameScene.call()
 }
 
 async function createUltra (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDivElement) {
@@ -156,7 +156,7 @@ async function createUltra (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDiv
     console.error('Load failed:', result.type, result.error)
     return
   }
-  viewer.camera.frameScene.call()
+  viewer.framing.frameScene.call()
 }
 
 

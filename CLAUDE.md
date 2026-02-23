@@ -12,10 +12,10 @@ React-based 3D viewers for VIM files with BIM (Building Information Modeling) su
 | **Load model** | `await viewer.load({ url }).getVim()` | `viewer.load({ url })` |
 | **Get element** | `vim.getElementFromIndex(index)` | `vim.getElementFromIndex(index)` |
 | **Select** | `viewer.core.selection.select(element)` | `viewer.core.selection.select(element)` |
-| **Frame camera** | `viewer.core.camera.lerp(1).frame(element)` | `viewer.camera.frame.call(element)` |
-| **Set visibility** | `element.visible = false` | `element.state = VisibilityState.HIDDEN` |
+| **Frame camera** | `viewer.core.camera.lerp(1).frame(element)` | `viewer.core.camera.frame(element)` |
+| **Set visibility** | `element.visible = false` | `element.visible = false` |
 | **Set color** | `element.color = new THREE.Color(0xff0000)` | `element.color = new RGBA32(0xff0000ff)` |
-| **Section box** | `viewer.sectionBox.enable.set(true)` | `viewer.sectionBox.enable.set(true)` |
+| **Section box** | `viewer.sectionBox.active.set(true)` | `viewer.sectionBox.active.set(true)` |
 
 ### Key File Locations
 
@@ -42,7 +42,6 @@ React-based 3D viewers for VIM files with BIM (Building Information Modeling) su
 | Mesh types (Submesh) | `src/vim-web/core-viewers/webgl/loader/mesh.ts` |
 | Scene | `src/vim-web/core-viewers/webgl/loader/scene.ts` |
 | Raycaster (CPU) | `src/vim-web/core-viewers/webgl/viewer/raycaster.ts` |
-| SubsetBuilder | `src/vim-web/core-viewers/webgl/loader/progressive/subsetBuilder.ts` |
 | InsertableMesh | `src/vim-web/core-viewers/webgl/loader/progressive/insertableMesh.ts` |
 | InstancedMesh | `src/vim-web/core-viewers/webgl/loader/progressive/instancedMesh.ts` |
 | InsertableMeshFactory | `src/vim-web/core-viewers/webgl/loader/progressive/insertableMeshFactory.ts` |
@@ -107,21 +106,27 @@ src/vim-web/
 
 ```typescript
 // WebGL ViewerApi
-type ViewerApi = {
+type WebglViewerApi = {
+  type: 'webgl'
+  container: Container       // HTML structure
   core: Core.Webgl.Viewer    // Direct core access
-  loader: ComponentLoader    // Load VIM files
-  camera: CameraApi          // Camera controls
+  load: (source, settings?) => IWebglLoadRequest  // Load with geometry + UI
+  open: (source, settings?) => IWebglLoadRequest  // Load without geometry
+  unload: (vim) => void      // Remove and dispose a vim
+  framing: FramingApi         // Framing controls (frame selection/scene)
   sectionBox: SectionBoxApi  // Section box
   isolation: IsolationApi    // Isolation mode
   controlBar: ControlBarApi  // Toolbar customization
   contextMenu: ContextMenuApi
   bimInfo: BimInfoPanelApi
-  modal: ModalHandle
+  modal: ModalApi
   settings: SettingsApi
+  isolationPanel: GenericPanelApi   // Isolation render settings
+  sectionBoxPanel: GenericPanelApi  // Section box offset settings
   dispose: () => void
 }
 
-// Ultra ViewerApi (similar but with RPC-based core)
+// Ultra ViewerApi (similar but with RPC-based core, no contextMenu/bimInfo)
 ```
 
 ---
@@ -149,7 +154,9 @@ element.focused = true       // Focus highlight
 element.color = new THREE.Color(0xff0000)  // Override color
 
 // Visual state (Ultra)
-element.state = VisibilityState.HIDDEN
+element.visible = false              // Hide (same as WebGL)
+element.outline = true               // Highlight (same as WebGL)
+element.state = VisibilityState.GHOSTED  // Advanced: ghosted appearance
 element.color = new RGBA32(0xff0000ff)
 
 // Geometry
@@ -223,7 +230,7 @@ viewer.core.inputs.pointerMode = VIM.Core.PointerMode.PAN
 
 ```typescript
 // Section Box
-viewer.gizmos.sectionBox.clip = true
+viewer.gizmos.sectionBox.active = true
 viewer.gizmos.sectionBox.visible = true
 viewer.gizmos.sectionBox.setBox(box)
 
@@ -250,11 +257,12 @@ state.get()                    // Read
 state.set(true)                // Write
 state.onChange.subscribe(v => ...)  // Subscribe
 
-// ActionRef - Callable action with middleware
-const action: ActionRef
+// FuncRef<TArg, TReturn> - Callable function reference
+const action: FuncRef<void, void>           // No-arg, sync
+const query: FuncRef<void, Promise<Box3>>   // No-arg, async
+const setter: FuncRef<Box3, void>           // With arg
 action.call()                  // Execute
-action.prepend(() => before()) // Add pre-hook
-action.append(() => after())   // Add post-hook
+action.update(prev => () => { prev(); doAfter() })  // Wrap with middleware
 
 // In React components
 state.useOnChange((v) => ...)  // Hook subscription
@@ -312,9 +320,9 @@ inputs.touch.onPinchOrSpread = (ratio) => { /* ... */ }
 
 **Plan View (Top-Down, Pan-Only)**:
 ```typescript
-viewer.camera.snap().orbitTowards(new VIM.THREE.Vector3(0, 0, -1))
-viewer.camera.lockRotation = new VIM.THREE.Vector2(0, 0)
-viewer.camera.orthographic = true
+viewer.core.camera.snap().orbitTowards(new VIM.THREE.Vector3(0, 0, -1))
+viewer.core.camera.lockRotation = new VIM.THREE.Vector2(0, 0)
+viewer.core.camera.orthographic = true
 viewer.core.inputs.pointerMode = VIM.Core.PointerMode.PAN
 ```
 
@@ -425,7 +433,7 @@ const viewer = await VIM.React.Webgl.createViewer(containerDiv, {
 })
 
 const vim = await viewer.load({ url: 'model.vim' }).getVim()
-viewer.camera.frameScene.call()
+viewer.framing.frameScene.call()
 
 // Cleanup
 viewer.dispose()
@@ -437,7 +445,7 @@ viewer.dispose()
 const file = inputElement.files[0]
 const buffer = await file.arrayBuffer()
 const vim = await viewer.load({ buffer }).getVim()
-viewer.camera.frameScene.call()
+viewer.framing.frameScene.call()
 ```
 
 ### Isolate Element
@@ -468,7 +476,7 @@ for (const e of vim.getAllElements()) {
 
 ```typescript
 const box = await viewer.core.selection.getBoundingBox()
-viewer.sectionBox.enable.set(true)
+viewer.sectionBox.active.set(true)
 viewer.sectionBox.sectionBox.call(box)
 ```
 
@@ -524,7 +532,7 @@ for (let row = 0; row < gridSize; row++) {
 | Pattern | Usage | Example |
 |---------|-------|---------|
 | `I` prefix | Interfaces | `IVim`, `ICamera`, `ISelectable` |
-| `Api` suffix | React API handles | `ViewerApi`, `CameraApi` |
+| `Api` suffix | React API handles | `ViewerApi`, `FramingApi` |
 | `Ref` suffix | Reactive primitives | `StateRef`, `ActionRef` |
 | `use` prefix | React hooks | `useStateRef` |
 | `vc-` prefix | Tailwind classes | `vc-flex` |
@@ -546,7 +554,7 @@ for (let row = 0; row < gridSize; row++) {
 
 ```bash
 npm run dev           # Dev server (localhost:5173)
-npm run build         # Production build
+npm run build         # Production build (vite + tsc declarations + rollup d.ts bundles)
 npm run eslint        # Lint
 npm run documentation # TypeDoc
 ```
@@ -626,8 +634,6 @@ Scene (MSAA) → Selection Mask (mask material) → Outline Pass (depth edge det
 - No intermediate builder or progress signals — `load()` is awaitable
 
 ### GPU Picking (WebGL)
-
-> **📖 Attribute Types**: See [.claude/ATTRIBUTE_TYPE_INVESTIGATION.md](./.claude/docs/ATTRIBUTE_TYPE_INVESTIGATION.md) for WebGL attribute type handling (Uint vs float in shaders)
 
 GPU-based object picking using a custom shader that renders element metadata to a Float32 render target.
 

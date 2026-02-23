@@ -52,27 +52,6 @@ The VIM Web input system uses a layered adapter pattern to decouple device handl
 
 ---
 
-## Recent Changes
-
-**Breaking Changes (v0.6.0):**
-- Standardized naming to `onPointer*` prefix:
-  - `onButtonDown` → `onPointerDown`
-  - `onButtonUp` → `onPointerUp`
-  - `onMouseMove` → `onPointerMove`
-  - `mouseDown` → `pointerDown` (IInputAdapter)
-  - `mouseUp` → `pointerUp` (IInputAdapter)
-  - `mouseMove` → `pointerMove` (IInputAdapter)
-
-**Improvements:**
-- Added `touchcancel` event handling to prevent stuck gestures
-- Added constructor validation for threshold parameters (throws on invalid values)
-- Fixed double-click race condition with triple-click prevention
-- Improved keyboard handling for Alt+Tab scenarios (window blur + visibility change listeners)
-- Optimized memory usage with vector reuse in InputHandler
-- Added comprehensive JSDoc to IInputAdapter interface
-
----
-
 ## Device Handlers
 
 ### MouseHandler
@@ -119,19 +98,27 @@ Handles keyboard input with:
 - **Arrow keys**: Alternative movement keys
 - **E/Q**: Up/down movement
 - **Shift**: 3x speed multiplier
-- **Custom handlers**: Register key down/up callbacks
+- **Custom handlers**: Override key down/up callbacks via `override()`
 
-**Callback Modes**:
-- `'replace'`: Replace existing handler
-- `'append'`: Run after existing handler
-- `'prepend'`: Run before existing handler
+**Override API**:
+
+The `override()` method registers a handler for a key code (or array of codes) on either `'down'` or `'up'` events. The handler receives the previous handler as `original`, enabling chaining. Returns a restore function.
 
 ```typescript
-viewer.core.inputs.keyboard.registerKeyDown('KeyR', 'replace', () => {
-  // Custom action on R key press
+// Override R key press
+const restore = viewer.core.inputs.keyboard.override('KeyR', 'down', () => {
+  console.log('R key pressed')
+})
+// Later: restore()
+
+// Chain with previous handler
+viewer.core.inputs.keyboard.override('KeyR', 'up', (original) => {
+  original?.()
+  console.log('This runs after the previous handler')
 })
 
-viewer.core.inputs.keyboard.registerKeyUp(['Equal', 'NumpadAdd'], 'replace', () => {
+// Override multiple keys at once
+viewer.core.inputs.keyboard.override(['Equal', 'NumpadAdd'], 'up', () => {
   viewer.core.inputs.moveSpeed++
 })
 ```
@@ -142,7 +129,7 @@ viewer.core.inputs.keyboard.registerKeyUp(['Equal', 'NumpadAdd'], 'replace', () 
 
 Two-tier mode management for flexible interaction:
 
-### 1. pointerActive (Primary Mode)
+### 1. pointerMode (Primary Mode)
 
 The user's preferred interaction style:
 - **ORBIT**: Rotate camera around target point (target stays fixed)
@@ -155,7 +142,7 @@ Set by: User preference or application default
 Used for: Left-click dragging
 
 ```typescript
-viewer.core.inputs.pointerActive = VIM.Core.PointerMode.LOOK
+viewer.core.inputs.pointerMode = VIM.Core.PointerMode.LOOK
 ```
 
 ### 2. pointerOverride (Temporary Mode)
@@ -165,15 +152,12 @@ Temporarily overrides the active mode during interaction:
 - Cleared on: Mouse up
 - Used for: Icon display, temporary mode switches
 
-**Priority**: `override > active`
+**Priority**: `override > pointerMode`
 
 ```typescript
-// Listen for mode changes
+// Listen for mode changes (fires for both pointerMode and pointerOverride changes)
 viewer.core.inputs.onPointerModeChanged.subscribe(() => {
-  console.log('Mode changed to:', viewer.core.inputs.pointerActive)
-})
-
-viewer.core.inputs.onPointerOverrideChanged.subscribe(() => {
+  console.log('Mode:', viewer.core.inputs.pointerMode)
   console.log('Override:', viewer.core.inputs.pointerOverride)
 })
 ```
@@ -192,9 +176,12 @@ Used internally for all input callbacks:
 - Used for: clicks, drags, raycasting
 
 ```typescript
-viewer.core.inputs.mouse.onClick = (pos, ctrl) => {
-  console.log(pos) // THREE.Vector2(0.5, 0.5) = center
-}
+const restore = viewer.core.inputs.mouse.override({
+  onClick: (original, pos, ctrl) => {
+    console.log(pos) // THREE.Vector2(0.5, 0.5) = center
+    original(pos, ctrl)
+  }
+})
 ```
 
 ### Client Pixels (Absolute)
@@ -254,8 +241,8 @@ class DragHandler {
   private _delta = new THREE.Vector2()            // Temp
 
   onPointerDown(pos: THREE.Vector2): void {
-    this._lastDragPosition.copy(pos) // ✅ Copy values
-    // this._lastDragPosition = pos  // ❌ Stores reference!
+    this._lastDragPosition.copy(pos) // Copy values
+    // this._lastDragPosition = pos  // WRONG: Stores reference!
   }
 
   onPointerMove(pos: THREE.Vector2): void {
@@ -263,7 +250,7 @@ class DragHandler {
       pos.x - this._lastDragPosition.x,
       pos.y - this._lastDragPosition.y
     )
-    this._lastDragPosition.copy(pos) // ✅ Copy values
+    this._lastDragPosition.copy(pos) // Copy values
     this._onDrag(this._delta)
   }
 }
@@ -272,7 +259,7 @@ class DragHandler {
 ### Common Pitfall
 
 ```typescript
-// ❌ WRONG: Stores reference to temp vector
+// WRONG: Stores reference to temp vector
 const pos = handler.relativePosition(event)
 this._lastPosition = pos
 
@@ -280,7 +267,7 @@ this._lastPosition = pos
 // this._lastPosition also sees new values (same object!)
 // Delta calculation: newPos - newPos = (0, 0)
 
-// ✅ CORRECT: Copy values
+// CORRECT: Copy values
 const pos = handler.relativePosition(event)
 this._lastPosition.copy(pos) // Creates independent copy of values
 ```
@@ -293,7 +280,7 @@ this._lastPosition.copy(pos) // Creates independent copy of values
 
 ## IInputAdapter Pattern
 
-The adapter interface decouples input handling from viewer implementation.
+The adapter interface decouples input handling from viewer implementation. It is `@internal` -- consumers interact through `IInputHandler` (the public API on `viewer.inputs`).
 
 ### Interface Definition
 
@@ -310,17 +297,16 @@ interface IInputAdapter {
 
   // Camera actions
   toggleOrthographic: () => void
-  toggleCameraOrbitMode: () => void
   resetCamera: () => void
-  frameCamera: () => void
+  frameCamera: () => void | Promise<void>
 
   // Interaction
-  selectAtPointer: (pos: THREE.Vector2, add: boolean) => Promise<void>
-  frameAtPointer: (pos: THREE.Vector2) => Promise<void>
-  zoom: (value: number, screenPos?: THREE.Vector2) => Promise<void>
+  selectAtPointer: (pos: THREE.Vector2, add: boolean) => void | Promise<void>
+  frameAtPointer: (pos: THREE.Vector2) => void | Promise<void>
+  zoom: (value: number, screenPos?: THREE.Vector2) => void | Promise<void>
 
   // Touch
-  pinchStart: (screenPos: THREE.Vector2) => Promise<void>
+  pinchStart: (screenPos: THREE.Vector2) => void | Promise<void>
   pinchZoom: (totalRatio: number) => void
 
   // Selection
@@ -432,9 +418,9 @@ viewer.core.inputs.moveSpeed = -5 // 1.25^-5 = 0.32x (slow)
 
 ```typescript
 viewer.core.inputs.scrollSpeed   // Wheel zoom multiplier (default: 1.75)
-viewer.core.inputs.rotateSpeed   // LOOK mode rotation speed (default: 1)
-viewer.core.inputs.orbitSpeed    // ORBIT mode rotation speed (default: 1)
 ```
+
+Note: `rotateSpeed` (LOOK mode) and `orbitSpeed` (ORBIT mode) are internal to `InputHandler` and not exposed on the public `IInputHandler` interface.
 
 ---
 
@@ -449,35 +435,36 @@ Lock to top-down orthographic view with pan-only interaction:
 viewer.camera.snap().orbitTowards(new VIM.THREE.Vector3(0, 0, -1))
 
 // Lock rotation
-viewer.camera.allowedRotation = new VIM.THREE.Vector2(0, 0)
+viewer.camera.lockRotation = new VIM.THREE.Vector2(0, 0)
 
 // Enable orthographic projection
 viewer.camera.orthographic = true
 
 // Switch to pan mode
-viewer.core.inputs.pointerActive = VIM.Core.PointerMode.PAN
+viewer.core.inputs.pointerMode = VIM.Core.PointerMode.PAN
 ```
 
 ### Custom Tool Mode
 
-Implement a custom rectangle selection tool:
+Implement a custom rectangle selection tool using the `override()` pattern:
 
 ```typescript
 const inputs = viewer.core.inputs
-const originalMode = inputs.pointerActive
-const originalOnClick = inputs.mouse.onClick
+const originalMode = inputs.pointerMode
 
 // Enter tool mode
-inputs.pointerActive = VIM.Core.PointerMode.RECT
-inputs.mouse.onClick = (pos, ctrl) => {
-  // Custom rectangle selection logic
-  startRectangle(pos)
-}
+inputs.pointerMode = VIM.Core.PointerMode.RECT
+const restoreMouse = inputs.mouse.override({
+  onClick: (original, pos, ctrl) => {
+    // Custom rectangle selection logic
+    startRectangle(pos)
+  }
+})
 
 // Exit tool mode
 const exitTool = () => {
-  inputs.pointerActive = originalMode
-  inputs.mouse.onClick = originalOnClick
+  inputs.pointerMode = originalMode
+  restoreMouse()
 }
 ```
 
@@ -487,15 +474,15 @@ Register the same action for multiple keys:
 
 ```typescript
 // Speed controls
-viewer.core.inputs.keyboard.registerKeyUp(
+const restoreSpeedUp = viewer.core.inputs.keyboard.override(
   ['Equal', 'NumpadAdd'],
-  'replace',
+  'up',
   () => viewer.core.inputs.moveSpeed++
 )
 
-viewer.core.inputs.keyboard.registerKeyUp(
+const restoreSpeedDown = viewer.core.inputs.keyboard.override(
   ['Minus', 'NumpadSubtract'],
-  'replace',
+  'up',
   () => viewer.core.inputs.moveSpeed--
 )
 ```
@@ -505,35 +492,36 @@ viewer.core.inputs.keyboard.registerKeyUp(
 Override default pinch behavior:
 
 ```typescript
-viewer.core.inputs.touch.onPinchOrSpread = (ratio) => {
-  // Custom zoom logic
-  const zoomAmount = Math.log2(ratio) * 0.5
-  viewer.camera.snap().zoom(1 + zoomAmount)
-}
-
-viewer.core.inputs.touch.onDoubleTap = async (pos) => {
-  const result = await viewer.core.raycaster.raycastFromScreen(pos)
-  if (result) {
+const restoreTouch = viewer.core.inputs.touch.override({
+  onPinchOrSpread: (original, ratio) => {
+    // Custom zoom logic
+    const zoomAmount = Math.log2(ratio) * 0.5
+    viewer.camera.snap().zoom(1 + zoomAmount)
+  },
+  onDoubleTap: (original, pos) => {
     // Custom double-tap action
-    viewer.camera.lerp(1).frame(result.object)
+    original(pos) // or replace entirely
   }
-}
+})
+// Later: restoreTouch()
 ```
 
 ### Disable Specific Inputs
 
 ```typescript
 // Disable keyboard
-viewer.core.inputs.keyboard.unregister()
+viewer.core.inputs.keyboard.active = false
 
 // Disable mouse
-viewer.core.inputs.mouse.unregister()
+viewer.core.inputs.mouse.active = false
 
 // Disable touch
-viewer.core.inputs.touch.unregister()
+viewer.core.inputs.touch.active = false
 
-// Re-enable all
-viewer.core.inputs.registerAll()
+// Re-enable
+viewer.core.inputs.keyboard.active = true
+viewer.core.inputs.mouse.active = true
+viewer.core.inputs.touch.active = true
 ```
 
 ---
@@ -543,79 +531,87 @@ viewer.core.inputs.registerAll()
 ### Custom Key Handlers
 
 ```typescript
-// Add handler with mode support
-viewer.core.inputs.keyboard.registerKeyDown('KeyR', 'replace', () => {
+// Override a key (returns restore function)
+const restore = viewer.core.inputs.keyboard.override('KeyR', 'down', () => {
   console.log('R key pressed')
 })
 
-// Chain handlers
-viewer.core.inputs.keyboard.registerKeyDown('KeyR', 'append', () => {
-  console.log('This runs after existing handler')
+// Chain with the previous handler
+viewer.core.inputs.keyboard.override('KeyR', 'down', (original) => {
+  original?.()
+  console.log('This runs after the previous handler')
 })
 
-viewer.core.inputs.keyboard.registerKeyDown('KeyR', 'prepend', () => {
-  console.log('This runs before existing handler')
+// Run before the previous handler
+viewer.core.inputs.keyboard.override('KeyR', 'down', (original) => {
+  console.log('This runs before the previous handler')
+  original?.()
 })
 ```
 
 ### Custom Mouse Callbacks
 
-All callbacks receive canvas-relative positions [0-1]:
+All callbacks receive canvas-relative positions [0-1]. Use `override()` which returns a restore function:
 
 ```typescript
-const inputs = viewer.core.inputs
+const restore = viewer.core.inputs.mouse.override({
+  // Override click behavior
+  onClick: (original, pos, ctrl) => {
+    if (ctrl) {
+      // Custom Ctrl+Click action
+    } else {
+      original(pos, ctrl) // Fall through to default
+    }
+  },
 
-// Override click behavior
-inputs.mouse.onClick = (pos, ctrl) => {
-  if (ctrl) {
-    // Custom Ctrl+Click action
-  } else {
-    // Custom click action
+  // Override drag behavior
+  onDrag: (original, delta, button) => {
+    if (button === 0) {
+      console.log('Drag delta:', delta)
+    }
+    original(delta, button)
+  },
+
+  // Override pointer down/up
+  onPointerDown: (original, pos, button) => {
+    console.log('Pointer down:', button, 'at', pos)
+    original(pos, button)
+  },
+
+  onPointerUp: (original, pos, button) => {
+    console.log('Pointer up:', button, 'at', pos)
+    original(pos, button)
   }
-}
+})
 
-// Add drag behavior
-inputs.mouse.onDrag = (delta, button) => {
-  if (button === 0) { // Left button
-    // Custom drag action
-    console.log('Drag delta:', delta)
-  }
-}
-
-// Add pointer down/up handlers
-inputs.mouse.onPointerDown = (pos, button) => {
-  console.log('Pointer down:', button, 'at', pos)
-}
-
-inputs.mouse.onPointerUp = (pos, button) => {
-  console.log('Pointer up:', button, 'at', pos)
-}
+// Later: restore()
 ```
 
 ### Custom Pointer Modes
 
-Create your own pointer modes for custom tools:
+Use pointer modes with mouse override for custom tools:
 
 ```typescript
 // Save current mode
-const originalMode = viewer.core.inputs.pointerActive
+const originalMode = viewer.core.inputs.pointerMode
 
 // Enter custom mode
-viewer.core.inputs.pointerActive = VIM.Core.PointerMode.RECT
+viewer.core.inputs.pointerMode = VIM.Core.PointerMode.RECT
 
 // Override drag behavior for this mode
-const originalDrag = viewer.core.inputs.mouse.onDrag
-viewer.core.inputs.mouse.onDrag = (delta, button) => {
-  if (viewer.core.inputs.pointerActive === VIM.Core.PointerMode.RECT) {
-    // Custom rectangle drawing logic
-    updateRectangle(delta)
-  } else {
-    originalDrag(delta, button)
+const restoreDrag = viewer.core.inputs.mouse.override({
+  onDrag: (original, delta, button) => {
+    if (viewer.core.inputs.pointerMode === VIM.Core.PointerMode.RECT) {
+      updateRectangle(delta)
+    } else {
+      original(delta, button)
+    }
   }
-}
+})
 
 // Exit custom mode
-viewer.core.inputs.pointerActive = originalMode
+viewer.core.inputs.pointerMode = originalMode
+restoreDrag()
 ```
 
 ---
@@ -628,15 +624,12 @@ viewer.core.inputs.pointerActive = originalMode
 const inputs = viewer.core.inputs
 
 // Check current mode
-console.log('Active mode:', inputs.pointerActive)
+console.log('Active mode:', inputs.pointerMode)
 console.log('Override:', inputs.pointerOverride)
 
 // Check speeds
 console.log('Move speed:', inputs.moveSpeed)
 console.log('Scroll speed:', inputs.scrollSpeed)
-
-// Check key state
-console.log('W pressed:', inputs.keyboard.isKeyPressed('KeyW'))
 ```
 
 ### Event Logging
@@ -644,15 +637,16 @@ console.log('W pressed:', inputs.keyboard.isKeyPressed('KeyW'))
 ```typescript
 // Log all pointer mode changes
 viewer.core.inputs.onPointerModeChanged.subscribe(() => {
-  console.log('Mode changed:', viewer.core.inputs.pointerActive)
+  console.log('Mode changed:', viewer.core.inputs.pointerMode)
 })
 
-// Log all clicks
-viewer.core.inputs.mouse.onClick = (pos, ctrl) => {
-  console.log('Click at:', pos, 'Ctrl:', ctrl)
-  // Call default handler
-  viewer.core.inputs.mouse.onClick?.(pos, ctrl)
-}
+// Log all clicks via override
+const restore = viewer.core.inputs.mouse.override({
+  onClick: (original, pos, ctrl) => {
+    console.log('Click at:', pos, 'Ctrl:', ctrl)
+    original(pos, ctrl)
+  }
+})
 ```
 
 ---
@@ -663,10 +657,10 @@ From `inputConstants.ts`:
 
 ```typescript
 // Click detection
-CLICK_MOVEMENT_THRESHOLD = 0.003        // Canvas-relative units
+CLICK_MOVEMENT_THRESHOLD = 0.003        // Canvas-relative units [0-1]
 
 // Double-click detection
-DOUBLE_CLICK_DISTANCE_THRESHOLD = 5     // Pixels
+DOUBLE_CLICK_DISTANCE_THRESHOLD = 0.005 // Canvas-relative units [0-1] (~5px on 1000px canvas)
 DOUBLE_CLICK_TIME_THRESHOLD = 300       // Milliseconds
 
 // Touch detection
@@ -684,15 +678,16 @@ MAX_MOVE_SPEED = 10                     // 1.25^10 = 9.31x
 
 1. **Always use `.copy()` when storing from temp vectors**
    ```typescript
-   this._lastPosition.copy(pos)  // ✅ Correct
-   this._lastPosition = pos      // ❌ Stores reference
+   this._lastPosition.copy(pos)  // Correct
+   this._lastPosition = pos      // WRONG: Stores reference
    ```
 
 2. **Never store references to callback vectors**
    ```typescript
-   onClick: (pos) => {
-     this.clickPos = pos.clone()  // ✅ Clone if storing
-     this.clickPos = pos          // ❌ Reference to temp vector
+   // In an override handler:
+   onClick: (original, pos) => {
+     this.clickPos = pos.clone()  // Clone if storing
+     this.clickPos = pos          // WRONG: Reference to temp vector
    }
    ```
 
@@ -704,23 +699,22 @@ MAX_MOVE_SPEED = 10                     // 1.25^10 = 9.31x
 4. **Handle mode changes properly**
    ```typescript
    // Save original state
-   const original = viewer.core.inputs.pointerActive
+   const original = viewer.core.inputs.pointerMode
 
    // Change mode
-   viewer.core.inputs.pointerActive = VIM.Core.PointerMode.PAN
+   viewer.core.inputs.pointerMode = VIM.Core.PointerMode.PAN
 
    // Restore on exit
-   viewer.core.inputs.pointerActive = original
+   viewer.core.inputs.pointerMode = original
    ```
 
-5. **Clean up custom handlers**
+5. **Always restore overrides**
    ```typescript
-   // Save originals
-   const originalClick = viewer.core.inputs.mouse.onClick
-
-   // Override
-   viewer.core.inputs.mouse.onClick = customHandler
+   // Override returns a restore function
+   const restore = viewer.core.inputs.mouse.override({
+     onClick: (original, pos, ctrl) => { /* custom */ }
+   })
 
    // Restore on dispose
-   viewer.core.inputs.mouse.onClick = originalClick
+   restore()
    ```

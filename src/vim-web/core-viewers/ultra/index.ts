@@ -25,6 +25,8 @@ export { Segment } from './rpcTypes'
 
 // Enums (runtime values)
 export { InputMode, VimLoadingStatus } from './rpcSafeClient'
+export { VisibilityState } from './visibility'
+export type { IVisibilitySynchronizer } from './visibility'
 
 // Settings
 export type { RenderSettings } from './renderer'
