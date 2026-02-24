@@ -1,109 +1,69 @@
 /**
  * @module vim-loader/materials
  *
- * Color palette optimization for submesh colors.
- * Builds a unique color palette from all submeshes to minimize GPU memory usage.
- * If the model has too many unique colors, applies quantization to fit within limits.
+ * Fixed quantized color palette for all scene coloring.
+ *
+ * Every color (model materials AND user overrides) maps to a palette index via colorToIndex().
+ * The palette is deterministic: 25 levels per RGB channel = 25³ = 15,625 entries,
+ * stored in a 128×128 RGBA texture (16,384 slots, 15,625 used).
+ *
+ * Max color error: ~4% per channel (10.6 steps out of 255) — negligible for BIM.
  */
 
 import { MappedG3d } from '../progressive/mappedG3d'
 
-const MAX_COLORS = 16384 // 128×128 texture (RGBA)
-const QUANTIZATION_LEVELS = 25 // 25³ = 15,625 max colors
+const LEVELS = 24 // 0..24 inclusive = 25 values per channel
+const PALETTE_SIZE = 128 // 128×128 texture
 
-/** @internal */
-export type ColorPaletteResult = {
-  palette: Float32Array | undefined
-  submeshColor: Uint16Array
-  uniqueColorCount: number
+/**
+ * Maps an RGB color (0-1 per channel) to a palette index.
+ * The index is deterministic: same color always maps to same index.
+ */
+export function colorToIndex (r: number, g: number, b: number): number {
+  const ri = Math.round(r * LEVELS)
+  const gi = Math.round(g * LEVELS)
+  const bi = Math.round(b * LEVELS)
+  return ri * 625 + gi * 25 + bi // 25² = 625
 }
 
 /**
- * @internal
- * Builds a unique color palette from submesh colors.
- * If uniqueColorCount > MAX_COLORS, quantizes colors in-place in mappedG3d.materialColors.
- *
- * @param mappedG3d - The mapped G3d geometry with material colors
- * @param submeshColorCount - Total number of submeshes
- * @returns Color palette (undefined if too many colors), submesh→colorIndex mapping, and unique color count
+ * Builds the fixed 128×128 RGBA palette texture data.
+ * Always the same — 15,625 quantized colors.
  */
-export function buildColorPalette(
-  mappedG3d: MappedG3d,
-  submeshColorCount: number
-): ColorPaletteResult {
-  // Build unique color palette for shader lookup
-  // Numeric keys avoid string allocation per submesh (Map<number> is faster than Map<string>)
-  const uniqueColorsMap = new Map<number, number>()
-  const colorPaletteArray: number[] = []
-  const submeshColor = new Uint16Array(submeshColorCount)
+export function buildPaletteTexture (): Uint8Array {
+  const data = new Uint8Array(PALETTE_SIZE * PALETTE_SIZE * 4)
+  const total = (LEVELS + 1) * (LEVELS + 1) * (LEVELS + 1) // 15,625
 
-  // First pass: build initial palette
-  for (let i = 0; i < submeshColorCount; i++) {
-    const color = mappedG3d.getSubmeshColor(i)
-    const key = packColorKey(color[0], color[1], color[2])
+  for (let i = 0; i < total; i++) {
+    const ri = Math.floor(i / 625)
+    const gi = Math.floor((i % 625) / 25)
+    const bi = i % 25
 
-    let colorIndex = uniqueColorsMap.get(key)
-    if (colorIndex === undefined) {
-      colorIndex = colorPaletteArray.length / 3
-      uniqueColorsMap.set(key, colorIndex)
-      colorPaletteArray.push(color[0], color[1], color[2])
-    }
-
-    submeshColor[i] = colorIndex
+    const offset = i * 4
+    data[offset] = Math.round((ri / LEVELS) * 255)
+    data[offset + 1] = Math.round((gi / LEVELS) * 255)
+    data[offset + 2] = Math.round((bi / LEVELS) * 255)
+    data[offset + 3] = 255
   }
 
-  let uniqueColorCount = uniqueColorsMap.size
-
-  // If too many unique colors, quantize them in-place
-  if (uniqueColorCount > MAX_COLORS) {
-    quantizeColors(mappedG3d.materialColors, QUANTIZATION_LEVELS)
-
-    // Rebuild palette with quantized colors
-    uniqueColorsMap.clear()
-    colorPaletteArray.length = 0
-
-    for (let i = 0; i < submeshColorCount; i++) {
-      const color = mappedG3d.getSubmeshColor(i)
-      const key = packColorKey(color[0], color[1], color[2])
-
-      let colorIndex = uniqueColorsMap.get(key)
-      if (colorIndex === undefined) {
-        colorIndex = colorPaletteArray.length / 3
-        uniqueColorsMap.set(key, colorIndex)
-        colorPaletteArray.push(color[0], color[1], color[2])
-      }
-
-      submeshColor[i] = colorIndex
-    }
-
-    uniqueColorCount = uniqueColorsMap.size
-  }
-
-  // Return palette if within limits, otherwise undefined (disable optimization)
-  if (uniqueColorCount <= MAX_COLORS) {
-    const palette = new Float32Array(colorPaletteArray)
-    return { palette, submeshColor, uniqueColorCount }
-  } else {
-    return { palette: undefined, submeshColor, uniqueColorCount }
-  }
+  return data
 }
 
 /**
- * Quantizes colors in-place using uniform quantization.
- * Modifies the input array directly to avoid allocations.
+ * Maps each submesh to its nearest palette index.
  *
- * @param colors - Float32Array of RGB colors to quantize in-place
- * @param levels - Number of quantization levels per channel (e.g., 25 = 15,625 max colors)
+ * @param g3d - The mapped G3d geometry with material colors
+ * @param submeshCount - Total number of submeshes
+ * @returns Uint16Array mapping submesh index → palette color index
  */
-/** Packs RGB floats [0,1] into a single number key (16 bits per channel, 48 bits total). */
-function packColorKey(r: number, g: number, b: number): number {
-  return (Math.round(r * 65535) * 65536 + Math.round(g * 65535)) * 65536 + Math.round(b * 65535)
-}
-
-function quantizeColors(colors: Float32Array, levels: number): void {
-  const quantize = (value: number) => Math.round(value * levels) / levels
-
-  for (let i = 0; i < colors.length; i++) {
-    colors[i] = quantize(colors[i])
+export function buildColorIndices (
+  g3d: MappedG3d,
+  submeshCount: number
+): Uint16Array {
+  const indices = new Uint16Array(submeshCount)
+  for (let i = 0; i < submeshCount; i++) {
+    const color = g3d.getSubmeshColor(i)
+    indices[i] = colorToIndex(color[0], color[1], color[2])
   }
+  return indices
 }

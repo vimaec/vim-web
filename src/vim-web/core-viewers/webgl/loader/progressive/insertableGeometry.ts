@@ -8,7 +8,7 @@
  * Buffer layout (all pre-allocated via G3dMeshOffsets):
  * - index: Uint32 — triangle indices
  * - position: Float32x3 — world-space vertices (transforms baked in)
- * - submeshIndex: Uint16 — per-vertex color palette index for texture-based color lookup
+ * - colorIndex: Uint16 — per-vertex color palette index for texture-based color lookup
  * - packedId: Uint32 — per-vertex (vimIndex << 24 | elementIndex) for GPU picking
  *
  * Geometry is inserted incrementally via insertFromG3d(), which iterates over
@@ -52,7 +52,7 @@ export class InsertableGeometry {
   private _computeBoundingBox = false
   private _indexAttribute: THREE.Uint32BufferAttribute
   private _vertexAttribute: THREE.BufferAttribute
-  private _submeshIndexAttribute: THREE.Uint16BufferAttribute // Color palette index for texture-based color lookup
+  private _colorIndexAttribute: THREE.Uint16BufferAttribute
   private _packedIdAttribute: THREE.Uint32BufferAttribute
   private _mapping: ElementMapping
   private _vimIndex: number
@@ -83,10 +83,8 @@ export class InsertableGeometry {
       G3d.POSITION_SIZE
     )
 
-    // No color attribute - all colors from texture lookup via color palette index
-
-    // Color palette index for texture-based color lookup (uint16 supports 65k unique colors)
-    this._submeshIndexAttribute = new THREE.Uint16BufferAttribute(
+    // Per-vertex color palette index (uint16 → 128×128 texture lookup)
+    this._colorIndexAttribute = new THREE.Uint16BufferAttribute(
       offsets.counts.vertices,
       1
     )
@@ -100,7 +98,7 @@ export class InsertableGeometry {
     this.geometry = new THREE.BufferGeometry()
     this.geometry.setIndex(this._indexAttribute)
     this.geometry.setAttribute('position', this._vertexAttribute)
-    this.geometry.setAttribute('submeshIndex', this._submeshIndexAttribute)
+    this.geometry.setAttribute('colorIndex', this._colorIndexAttribute)
     this.geometry.setAttribute('packedId', this._packedIdAttribute)
 
     // Initialize with inverted bounds (min = +∞, max = -∞) so any point naturally expands it
@@ -170,15 +168,14 @@ export class InsertableGeometry {
 
       // Direct array access for performance (avoid function call overhead)
       const indices = this._indexAttribute.array as Uint32Array
-      const submeshIndices = this._submeshIndexAttribute.array as Uint16Array
+      const colorIndices = this._colorIndexAttribute.array as Uint16Array
 
       const mergeOffset = instance * vertexCount
       for (let sub = subStart; sub < subEnd; sub++) {
         const indexStart = g3d.getSubmeshIndexStart(sub)
         const indexEnd = g3d.getSubmeshIndexEnd(sub)
 
-        // Hoist color index lookup out of inner loop - computed once per submesh instead of per index
-        const colorIndex = g3d.submeshColor[sub]
+        const colorIndex = g3d.colorIndices[sub]
 
         // Merge all indices for this instance
         for (let index = indexStart; index < indexEnd; index++) {
@@ -186,7 +183,7 @@ export class InsertableGeometry {
 
           // Direct array writes (no function calls, no bounds checking)
           indices[indexOffset + indexOut] = v
-          submeshIndices[v] = colorIndex
+          colorIndices[v] = colorIndex
           indexOut++
         }
       }
@@ -288,11 +285,9 @@ export class InsertableGeometry {
     // this._vertexAttribute.count = vertexEnd
     this._vertexAttribute.needsUpdate = true
 
-    // Colors come from texture lookup via color palette index
-
     // update color palette indices (itemSize is 1)
-    this._submeshIndexAttribute.addUpdateRange(vertexStart, vertexEnd - vertexStart)
-    this._submeshIndexAttribute.needsUpdate = true
+    this._colorIndexAttribute.addUpdateRange(vertexStart, vertexEnd - vertexStart)
+    this._colorIndexAttribute.needsUpdate = true
 
     // update packed IDs (itemSize is 1)
     this._packedIdAttribute.addUpdateRange(vertexStart, vertexEnd - vertexStart)

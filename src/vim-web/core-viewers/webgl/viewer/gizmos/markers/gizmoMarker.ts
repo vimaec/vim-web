@@ -103,7 +103,7 @@ export class Marker implements IMarker {
     this._visibleAttribute = new WebglAttribute(true, 'ignore', 'ignore', array, (v) => (v ? 0 : 1))
     this._focusedAttribute = new WebglAttribute(false, 'focused', 'focused', array, (v) => (v ? 1 : 0))
     this._coloredAttribute = new WebglAttribute(false, 'colored', 'colored', array, (v) => (v ? 1 : 0))
-    this._colorAttribute = new WebglColorAttribute(array, undefined, undefined)
+    this._colorAttribute = new WebglColorAttribute(array, undefined)
 
     this.color = new THREE.Color(0xff1a1a)
   }

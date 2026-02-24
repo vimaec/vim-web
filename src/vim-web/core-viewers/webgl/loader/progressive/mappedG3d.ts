@@ -3,16 +3,16 @@
  */
 
 import { G3d } from 'vim-format'
-import { buildColorPalette } from '../materials/colorPalette'
+import { buildColorIndices } from '../materials/colorPalette'
 
 /**
  * @internal
- * G3d augmented with a pre-computed mesh→instances map and color palette optimization.
+ * G3d augmented with a pre-computed mesh→instances map and color palette indices.
  * The map is computed once during loading and shared by all G3dSubsets,
  * eliminating O(N) iterations on every subset construction.
  *
- * Color palette: Unique colors extracted from all submeshes, enabling texture-based
- * color lookup instead of per-vertex color attributes (saves 60-80% geometry memory).
+ * Color indices: Each submesh maps to a palette index via colorToIndex(),
+ * enabling texture-based color lookup instead of per-vertex color attributes.
  */
 export interface MappedG3d extends G3d {
   /** Source-based mesh indices (parallel with _meshInstanceArrays) */
@@ -22,14 +22,12 @@ export interface MappedG3d extends G3d {
   /** Pre-computed total instance count across all meshes */
   _totalInstanceCount: number
 
-  // Color palette optimization (palette undefined if too many unique colors, but submeshColor always present)
-  colorPalette: Float32Array | undefined
-  submeshColor: Uint16Array
-  uniqueColorCount: number
+  /** Per-submesh palette color index */
+  colorIndices: Uint16Array
 }
 
 /**
- * Augments a G3d instance with pre-computed mesh→instances map and color palette.
+ * Augments a G3d instance with pre-computed mesh→instances map and color indices.
  * This should be called once during the loading pipeline, right after
  * G3d.createFromBfast().
  *
@@ -63,13 +61,8 @@ export function createMappedG3d(g3d: G3d): MappedG3d {
   mapped._meshValues = meshValues
   mapped._totalInstanceCount = totalCount
 
-  // Build color palette optimization
-  const submeshColorCount = mapped.submeshMaterial.length
-  const { palette, submeshColor, uniqueColorCount } = buildColorPalette(mapped, submeshColorCount)
-
-  mapped.colorPalette = palette
-  mapped.submeshColor = submeshColor
-  mapped.uniqueColorCount = uniqueColorCount
+  // Build per-submesh color palette indices
+  mapped.colorIndices = buildColorIndices(mapped, mapped.submeshMaterial.length)
 
   return mapped
 }

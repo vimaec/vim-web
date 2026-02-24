@@ -31,6 +31,7 @@ export type {
   StateRef,
   FuncRef,
 } from './helpers/reactUtils'
+export { createState } from './helpers/reactUtils'
 
 // BIM data types
 export type {

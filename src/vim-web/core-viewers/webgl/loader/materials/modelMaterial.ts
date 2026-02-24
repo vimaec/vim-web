@@ -14,8 +14,8 @@ export class ModelMaterial {
   three: THREE.ShaderMaterial
   private _onUpdate?: () => void
 
-  // Submesh color palette texture (shared, owned by Materials singleton)
-  _submeshColorTexture: THREE.DataTexture | undefined
+  // Color palette texture (shared, owned by Materials singleton)
+  _colorPaletteTexture: THREE.DataTexture | undefined
 
   constructor (material?: THREE.ShaderMaterial, onUpdate?: () => void) {
     this.three = material ?? createModelMaterialShader()
@@ -23,15 +23,13 @@ export class ModelMaterial {
   }
 
   /**
-   * Sets the submesh color texture for indexed color lookup.
+   * Sets the color palette texture for indexed color lookup.
    * The texture is shared between materials (created in Materials singleton).
    */
-  setSubmeshColorTexture(texture: THREE.DataTexture | undefined) {
-    // Don't dispose - texture is owned by Materials singleton
-    this._submeshColorTexture = texture
-
+  setColorPaletteTexture(texture: THREE.DataTexture | undefined) {
+    this._colorPaletteTexture = texture
     if (this.three.uniforms) {
-      this.three.uniforms.submeshColorTexture.value = texture ?? null
+      this.three.uniforms.colorPaletteTexture.value = texture ?? null
     }
     this._onUpdate?.()
   }
@@ -46,7 +44,6 @@ export class ModelMaterial {
   }
 
   dispose () {
-    // Don't dispose texture - it's owned by Materials singleton
     this.three.dispose()
   }
 }
@@ -70,59 +67,38 @@ export function createModelTransparent(onUpdate?: () => void): ModelMaterial {
 /**
  * Creates the shader material for isolation/fast mode.
  *
- * - **Non-visible items**: Completely excluded from rendering by pushing them out of view.
- * - **Visible items**: Rendered with screen-space derivative normals for per-pixel lighting.
- * - **Object coloring**: Supports both instance-based and vertex-based coloring for visible objects.
- *
- * This material is optimized for both instanced and merged meshes, with support for clipping planes.
- *
- * @returns {THREE.ShaderMaterial} A custom shader material for isolation mode.
+ * Uses screen-space derivative normals for per-pixel lighting.
+ * Color lookup is palette-based: per-vertex colorIndex for default,
+ * per-instance instanceColorIndex for overrides (instanced meshes).
  */
 function createModelMaterialShader (transparent: boolean = false) {
 
   return new THREE.ShaderMaterial({
     side: THREE.DoubleSide,
-    // Use GLSL ES 3.0 for WebGL 2
     glslVersion: THREE.GLSL3,
-    // Uniforms for texture-based color palette
     uniforms: {
-      submeshColorTexture: { value: null },
+      colorPaletteTexture: { value: null },
     },
-    // Enable support for clipping planes.
     clipping: true,
-    // Transparency settings
     transparent: transparent,
     opacity: transparent ? 0.25 : 1.0,
-    depthWrite: !transparent, // Disable depth write for transparent materials
+    depthWrite: !transparent,
     vertexShader: /* glsl */ `
       #include <common>
       #include <logdepthbuf_pars_vertex>
       #include <clipping_planes_pars_vertex>
 
       // VISIBILITY
-      // Determines if an object or vertex should be visible.
-      // Used as an instance attribute for instanced meshes or as a vertex attribute for merged meshes.
       in float ignore;
 
       // COLORING
-      // Passes the color of the vertex or instance to the fragment shader.
       out vec3 vColor;
       out vec3 vViewPosition;
 
-      // Determines whether to use instance color (1 = instance, 0 = submesh).
-      // For merged meshes, this is used as a vertex attribute.
-      // For instanced meshes, this is used as an instance attribute.
+      in float colorIndex;
+      in float instanceColorIndex;
       in float colored;
-
-      // Submesh index for color palette lookup
-      in float submeshIndex;
-      uniform sampler2D submeshColorTexture;
-
-      // Fix for a known issue where setting mesh.instanceColor does not properly enable USE_INSTANCING_COLOR.
-      // This ensures that instance colors are always used when required.
-      #ifndef USE_INSTANCING_COLOR
-        in vec3 instanceColor;
-      #endif
+      uniform sampler2D colorPaletteTexture;
 
       void main() {
         #include <begin_vertex>
@@ -130,28 +106,20 @@ function createModelMaterialShader (transparent: boolean = false) {
         #include <clipping_planes_vertex>
         #include <logdepthbuf_vertex>
 
-        // Place ignored vertices behind near plane to clip them.
         if (ignore > 0.5) {
           gl_Position = vec4(0.0, 0.0, -2.0, 1.0);
           return;
         }
 
-        // COLORING
-        // Get color from texture palette using texelFetch (WebGL 2, faster for indexed access)
-        int texSize = 128;
-        int colorIndex = int(submeshIndex);
-        int x = colorIndex % texSize;
-        int y = colorIndex / texSize;
-        vColor = texelFetch(submeshColorTexture, ivec2(x, y), 0).rgb;
-
-        // Blend instance and submesh colors based on the colored attribute.
-        // colored == 1 -> use instance color.
-        // colored == 0 -> use submesh color from texture.
+        // COLORING — unified palette lookup
+        int palIdx = int(colorIndex);
         #ifdef USE_INSTANCING
-          vColor.xyz = colored * instanceColor.xyz + (1.0 - colored) * vColor.xyz;
+          if (colored > 0.5) palIdx = int(instanceColorIndex);
         #endif
+        int x = palIdx % 128;
+        int y = palIdx / 128;
+        vColor = texelFetch(colorPaletteTexture, ivec2(x, y), 0).rgb;
 
-        // Pass view position to fragment for screen-space derivatives
         vViewPosition = -mvPosition.xyz;
       }
       `,
@@ -160,7 +128,6 @@ function createModelMaterialShader (transparent: boolean = false) {
       #include <logdepthbuf_pars_fragment>
       #include <clipping_planes_pars_fragment>
 
-      // Color and position for screen-space derivative lighting
       in vec3 vColor;
       in vec3 vViewPosition;
 
@@ -174,13 +141,11 @@ function createModelMaterialShader (transparent: boolean = false) {
         vec3 fdx = dFdx(vViewPosition);
         vec3 fdy = dFdy(vViewPosition);
         vec3 normal = normalize(cross(fdx, fdy));
-        // Pre-normalized light direction (sqrt(2), sqrt(3), sqrt(5)) / sqrt(10)
         const vec3 LIGHT_DIR = vec3(0.447214, 0.547723, 0.707107);
         float light = dot(normal, LIGHT_DIR);
-        light = 0.5 + (light * 0.5); // Remap to [0.5, 1.0]
+        light = 0.5 + (light * 0.5);
         vec3 finalColor = vColor * light;
 
-        // Output final color
         fragColor = vec4(finalColor, ${transparent ? '0.25' : '1.0'});
       }
       `

@@ -58,8 +58,8 @@ export class StandardMaterial {
   _sectionStrokeFalloff: number = 0.75
   _sectionStrokeColor: THREE.Color = new THREE.Color(0xf6f6f6)
 
-  // Submesh color palette texture (shared, owned by Materials singleton)
-  _submeshColorTexture: THREE.DataTexture | undefined
+  // Color palette texture (shared, owned by Materials singleton)
+  _colorPaletteTexture: THREE.DataTexture | undefined
 
   constructor (material: THREE.Material) {
     this.three = material
@@ -67,15 +67,13 @@ export class StandardMaterial {
   }
 
   /**
-   * Sets the submesh color texture for indexed color lookup.
+   * Sets the color palette texture for indexed color lookup.
    * The texture is shared between opaque and transparent materials (created in Materials singleton).
    */
-  setSubmeshColorTexture(texture: THREE.DataTexture | undefined) {
-    // Don't dispose - texture is owned by Materials singleton
-    this._submeshColorTexture = texture
-
+  setColorPaletteTexture(texture: THREE.DataTexture | undefined) {
+    this._colorPaletteTexture = texture
     if (this.uniforms) {
-      this.uniforms.submeshColorTexture.value = texture ?? null
+      this.uniforms.colorPaletteTexture.value = texture ?? null
     }
   }
 
@@ -150,8 +148,7 @@ export class StandardMaterial {
       this.uniforms.sectionStrokeWidth = { value: this._sectionStrokeWidth }
       this.uniforms.sectionStrokeFalloff = { value: this._sectionStrokeFalloff }
       this.uniforms.sectionStrokeColor = { value: this._sectionStrokeColor }
-      // Submesh color palette texture (128×128 RGB = 16384 colors max)
-      this.uniforms.submeshColorTexture = { value: this._submeshColorTexture ?? null }
+      this.uniforms.colorPaletteTexture = { value: this._colorPaletteTexture ?? null }
 
       shader.vertexShader = shader.vertexShader
         // VERTEX DECLARATIONS
@@ -162,23 +159,16 @@ export class StandardMaterial {
 
         // COLORING
 
-        // attribute for color override
-        // merged meshes use it as vertex attribute
-        // instanced meshes use it as an instance attribute
+        // Per-vertex color palette index
+        attribute float colorIndex;
+        // Per-instance palette override index (instanced meshes only)
+        attribute float instanceColorIndex;
+        // 1 = use instanceColorIndex, 0 = use per-vertex colorIndex
         attribute float colored;
+        // 128×128 quantized color palette (25³ = 15,625 entries)
+        uniform sampler2D colorPaletteTexture;
 
-        // There seems to be an issue where setting mehs.instanceColor
-        // doesn't properly set USE_INSTANCING_COLOR
-        // so we always use it as a fix
-        #ifndef USE_INSTANCING_COLOR
-        attribute vec3 instanceColor;
-        #endif
-
-        // Submesh index for color palette lookup
-        attribute float submeshIndex;
-        uniform sampler2D submeshColorTexture; // 128×128 RGB texture (16384 colors max)
-
-        // Passed to fragment to ignore phong model
+        // Passed to fragment to control lighting model
         varying float vColored;
 
         // VISIBILITY
@@ -198,18 +188,13 @@ export class StandardMaterial {
           `
           // COLORING
           vColored = colored;
-
-          // Get color from texture palette using texelFetch (WebGL 2, faster)
-          int texSize = 128;
-          int x = int(submeshIndex) % texSize;
-          int y = int(submeshIndex) / texSize;
-          vColor.xyz = texelFetch(submeshColorTexture, ivec2(x, y), 0).rgb;
-
-          // colored == 1 -> instance color
-          // colored == 0 -> submesh palette color
+          int palIdx = int(colorIndex);
           #ifdef USE_INSTANCING
-            vColor.xyz = colored * instanceColor.xyz + (1.0f - colored) * vColor.xyz;
+            if (colored > 0.5) palIdx = int(instanceColorIndex);
           #endif
+          int x = palIdx % 128;
+          int y = palIdx / 128;
+          vColor.xyz = texelFetch(colorPaletteTexture, ivec2(x, y), 0).rgb;
 
           // VISIBILITY
           vIgnore = ignore;

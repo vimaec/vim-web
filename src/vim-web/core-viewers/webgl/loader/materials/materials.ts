@@ -9,6 +9,7 @@ import { GhostMaterial } from './ghostMaterial'
 import { OutlineMaterial } from './outlineMaterial'
 import { MergeMaterial } from './mergeMaterial'
 import { ModelMaterial, createModelOpaque, createModelTransparent } from './modelMaterial'
+import { buildPaletteTexture } from './colorPalette'
 
 import { SignalDispatcher } from 'ste-signals'
 import { MaterialSettings } from '../../viewer/settings/viewerSettings'
@@ -130,8 +131,8 @@ export class Materials implements IMaterials {
   private _sectionStrokeColor: THREE.Color = new THREE.Color(0xf6f6f6)
   private _onUpdate = new SignalDispatcher()
 
-  // Shared color palette texture for both opaque and transparent materials
-  private _submeshColorTexture: THREE.DataTexture | undefined
+  // Shared color palette texture for all scene materials
+  private _colorPaletteTexture: THREE.DataTexture | undefined
 
   constructor (
     opaque?: StandardMaterial,
@@ -277,65 +278,38 @@ export class Materials implements IMaterials {
   }
 
   /**
-   * Sets the submesh color palette for both opaque and transparent materials.
-   * Creates a single shared DataTexture from the palette (128×128 RGBA, 16384 colors max).
-   * If palette is undefined, creates a white fallback texture.
+   * Creates the fixed quantized color palette texture if it doesn't exist.
+   * The palette is deterministic (25³ = 15,625 quantized colors in 128×128 texture)
+   * and shared across all scene materials.
    */
-  setColorPalette (palette: Float32Array | undefined) {
-    // Dispose old texture if exists
-    if (this._submeshColorTexture) {
-      this._submeshColorTexture.dispose()
-      this._submeshColorTexture = undefined
-    }
+  ensureColorPalette () {
+    if (this._colorPaletteTexture) return
 
-    const textureSize = 128
-    const textureData = new Uint8Array(textureSize * textureSize * 4)
-
-    if (palette && palette.length > 0) {
-      // Convert float colors (0-1) to uint8 (0-255) with alpha = 255
-      const colorCount = Math.min(palette.length / 3, textureSize * textureSize)
-      for (let i = 0; i < colorCount; i++) {
-        textureData[i * 4] = Math.round(palette[i * 3] * 255)
-        textureData[i * 4 + 1] = Math.round(palette[i * 3 + 1] * 255)
-        textureData[i * 4 + 2] = Math.round(palette[i * 3 + 2] * 255)
-        textureData[i * 4 + 3] = 255 // Alpha
-      }
-    } else {
-      // Fallback: create white texture (all pixels white)
-      console.warn('[Color Optimization] Palette undefined, using white fallback texture')
-      for (let i = 0; i < textureSize * textureSize * 4; i += 4) {
-        textureData[i] = 255     // R
-        textureData[i + 1] = 255 // G
-        textureData[i + 2] = 255 // B
-        textureData[i + 3] = 255 // A
-      }
-    }
-
-    this._submeshColorTexture = new THREE.DataTexture(
+    const textureData = buildPaletteTexture()
+    this._colorPaletteTexture = new THREE.DataTexture(
       textureData,
-      textureSize,
-      textureSize,
+      128,
+      128,
       THREE.RGBAFormat,
       THREE.UnsignedByteType
     )
-    this._submeshColorTexture.needsUpdate = true
-    this._submeshColorTexture.minFilter = THREE.NearestFilter
-    this._submeshColorTexture.magFilter = THREE.NearestFilter
+    this._colorPaletteTexture.needsUpdate = true
+    this._colorPaletteTexture.minFilter = THREE.NearestFilter
+    this._colorPaletteTexture.magFilter = THREE.NearestFilter
 
-    // Set the same texture on all materials
-    this._opaque.setSubmeshColorTexture(this._submeshColorTexture)
-    this._transparent.setSubmeshColorTexture(this._submeshColorTexture)
-    this._modelOpaque.setSubmeshColorTexture(this._submeshColorTexture)
-    this._modelTransparent.setSubmeshColorTexture(this._submeshColorTexture)
+    this._opaque.setColorPaletteTexture(this._colorPaletteTexture)
+    this._transparent.setColorPaletteTexture(this._colorPaletteTexture)
+    this._modelOpaque.setColorPaletteTexture(this._colorPaletteTexture)
+    this._modelTransparent.setColorPaletteTexture(this._colorPaletteTexture)
 
     this._onUpdate.dispatch()
   }
 
   /** dispose all materials. */
   dispose () {
-    if (this._submeshColorTexture) {
-      this._submeshColorTexture.dispose()
-      this._submeshColorTexture = undefined
+    if (this._colorPaletteTexture) {
+      this._colorPaletteTexture.dispose()
+      this._colorPaletteTexture = undefined
     }
 
     this._opaque.dispose()
