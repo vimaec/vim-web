@@ -32,8 +32,7 @@ export function createGeometryFromMesh (
   mesh: number,
   section: MeshSection
 ): THREE.BufferGeometry {
-  // Colors come from texture lookup via color palette indices
-  const colorPaletteIndex = createColorPaletteIndices(g3d, mesh, section)
+  const colorIndices = createColorIndices(g3d, mesh, section)
   const positions = g3d.positions.subarray(
     g3d.getMeshVertexStart(mesh) * 3,
     g3d.getMeshVertexEnd(mesh) * 3
@@ -46,13 +45,14 @@ export function createGeometryFromMesh (
   return createGeometryFromArrays(
     positions,
     indices,
-    colorPaletteIndex
+    colorIndices
   )
 }
+
 /**
- * Creates color palette indices for each vertex (for texture-based color lookup)
+ * Creates color palette indices for each vertex
  */
-function createColorPaletteIndices (
+function createColorIndices (
   g3d: MappedG3d,
   mesh: number,
   section: MeshSection
@@ -67,7 +67,7 @@ function createColorPaletteIndices (
     const start = g3d.getSubmeshIndexStart(submesh)
     const end = g3d.getSubmeshIndexEnd(submesh)
 
-    const index = g3d.submeshColor[submesh]
+    const index = g3d.colorIndices[submesh]
 
     for (let i = start; i < end; i++) {
       const vertexIndex = g3d.indices[i]
@@ -83,13 +83,13 @@ function createColorPaletteIndices (
  * Creates a BufferGeometry from given geometry data arrays
  * @param vertices vertex data with 3 number per vertex (XYZ)
  * @param indices index data with 3 indices per face
- * @param colorPaletteIndex color palette index per vertex for texture-based color lookup
+ * @param colorIndices color palette index per vertex for texture-based color lookup
  * @returns a BufferGeometry
  */
 export function createGeometryFromArrays (
   vertices: Float32Array,
   indices: Uint32Array,
-  colorPaletteIndex: Uint16Array | undefined = undefined
+  colorIndices: Uint16Array | undefined = undefined
 ): THREE.BufferGeometry {
   const geometry = new THREE.BufferGeometry()
 
@@ -99,11 +99,11 @@ export function createGeometryFromArrays (
   // Indices
   geometry.setIndex(new THREE.Uint32BufferAttribute(indices, 1))
 
-  // Color palette indices for texture-based color lookup
-  if (colorPaletteIndex) {
+  // Color palette indices
+  if (colorIndices) {
     geometry.setAttribute(
-      'submeshIndex',
-      new THREE.Uint16BufferAttribute(colorPaletteIndex, 1)
+      'colorIndex',
+      new THREE.Uint16BufferAttribute(colorIndices, 1)
     )
   }
 

@@ -41,9 +41,15 @@ export interface StateRef<T> {
 }
 
 /**
- * A basic implementation of StateRef<T> without React.
+ * Creates a standalone StateRef<T> without React hooks.
+ * Use this when you need observable state outside of React components.
  */
-export class MutableState<T> implements StateRef<T> {
+export function createState<T>(initial: T): StateRef<T> {
+  return new MutableState(initial)
+}
+
+/** @internal */
+class MutableState<T> implements StateRef<T> {
   private _value: T;
   private _onChange = new SimpleEventDispatcher<T>();
 

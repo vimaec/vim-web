@@ -90,7 +90,7 @@ export class LoadRequest extends BaseLoadRequest<Vim> {
 
     const scene = new Scene(fullSettings.matrix)
     const factory = new VimMeshFactory(mappedG3d, materials, scene, mapping, vimIndex)
-    Materials.getInstance().setColorPalette(mappedG3d.colorPalette)
+    Materials.getInstance().ensureColorPalette()
 
     const header = await requestHeader(bfast)
 

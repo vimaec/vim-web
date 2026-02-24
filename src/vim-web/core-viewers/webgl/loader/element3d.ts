@@ -240,7 +240,7 @@ export class Element3D implements IElement3D {
       (v) => (v ? 1 : 0)
     )
 
-    this._colorAttribute = new WebglColorAttribute(meshes, undefined, vim)
+    this._colorAttribute = new WebglColorAttribute(meshes, undefined)
   }
 
   /**

@@ -3,5 +3,6 @@ export type {
   StateRef,
   FuncRef,
 } from './reactUtils'
+export { createState } from './reactUtils'
 
 export type { AugmentedElement } from './element'
