@@ -51,7 +51,6 @@ import { VimPartialSettings } from '../loader/vimSettings'
  */
 export interface IWebglViewer {
   readonly type: 'webgl'
-  readonly settings: ViewerSettings
   readonly renderer: IWebglRenderer
   readonly viewport: IWebglViewport
   readonly selection: IWebglSelection
@@ -83,10 +82,6 @@ export class WebglViewer implements IWebglViewer {
    * Useful for distinguishing between different viewer types in a multi-viewer application.
    */
   public readonly type = 'webgl'
-  /**
-   * The settings configuration used by the viewer.
-   */
-  readonly settings: ViewerSettings
 
   /**
    * The renderer used by the viewer for rendering scenes.
@@ -150,26 +145,26 @@ export class WebglViewer implements IWebglViewer {
   private _onVimLoaded = new SignalDispatcher()
   private _updateId: number
 
-  constructor (settings?: PartialViewerSettings) {
-    this.settings = createViewerSettings(settings)
+  constructor (options?: PartialViewerSettings) {
+    const settings = createViewerSettings(options)
 
     this._materials = Materials.getInstance()
 
     const scene = new RenderScene()
-    this._viewport = new Viewport(this.settings)
-    this._camera = new Camera(scene, this._viewport, this.settings)
+    this._viewport = new Viewport(settings)
+    this._camera = new Camera(scene, this._viewport, settings)
     this._renderer = new Renderer(
       scene,
       this._viewport,
       this._materials,
       this._camera,
-      this.settings
+      settings
     )
 
     this.selection = createSelection()
-    this._inputs = createInputHandler(this)
-    this._gizmos = new Gizmos(this._renderer, this._viewport, this, this._camera)
-    this.materials.applySettings(this.settings.materials)
+    this._inputs = createInputHandler(this, settings.camera.controls)
+    this._gizmos = new Gizmos(this._renderer, this._viewport, this, this._camera, settings)
+    this.materials.applySettings(settings.materials)
 
     // GPU-based raycaster for element picking and world position queries
     const size = this._renderer.three.getSize(new THREE.Vector2())

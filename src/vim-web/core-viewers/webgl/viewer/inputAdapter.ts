@@ -1,15 +1,16 @@
 import {type IInputAdapter} from "../../shared/input/inputAdapter"
 import {InputHandler} from "../../shared/input/inputHandler"
 import { WebglViewer } from "./viewer"
+import { ViewerSettings } from './settings/viewerSettings'
 import { Element3D } from '../loader/element3d'
 import * as THREE from 'three'
 
 /** @internal */
-export function createInputHandler(viewer: WebglViewer) {
+export function createInputHandler(viewer: WebglViewer, controls: ViewerSettings['camera']['controls']) {
   return new InputHandler(
     viewer.viewport.canvas,
     createAdapter(viewer),
-    viewer.settings.camera.controls
+    controls
   )
 }
 

@@ -7,6 +7,7 @@ import { GizmoMarkers, type IGizmoMarkers } from './markers/gizmoMarkers'
 import { Camera } from '../camera/camera'
 import { Renderer } from '../rendering/renderer'
 import { Viewport } from '../viewport'
+import { ViewerSettings } from '../settings/viewerSettings'
 
 /**
  * Public interface for the gizmo collection.
@@ -61,7 +62,7 @@ export class Gizmos implements IGizmos {
    */
   readonly markers: GizmoMarkers
 
-  constructor (renderer: Renderer, viewport: Viewport, viewer: WebglViewer, camera : Camera) {
+  constructor (renderer: Renderer, viewport: Viewport, viewer: WebglViewer, camera : Camera, settings: ViewerSettings) {
     this._viewport = viewport
     this._measure = new Measure(viewer, renderer)
     this.sectionBox = new SectionBox(renderer, viewer)
@@ -69,9 +70,9 @@ export class Gizmos implements IGizmos {
       renderer,
       camera,
       viewer.inputs,
-      viewer.settings
+      settings
     )
-    this.axes = new GizmoAxes(camera, viewport, viewer.settings.axes)
+    this.axes = new GizmoAxes(camera, viewport, settings.axes)
     this.markers = new GizmoMarkers(renderer, viewer.selection)
     viewport.canvas.parentElement?.prepend(this.axes.canvas)
   }
