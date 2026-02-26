@@ -40,18 +40,9 @@ export function getDefaultViewerSettings(): ViewerSettings {
     },
     background: { color: new THREE.Color(0xffffff) },
     materials: {
-      useFastMaterials: false,
-      standard: {
-        color: new THREE.Color(0xcccccc)
-      },
       ghost: {
         color: new THREE.Color(0x0E0E0E),
         opacity: 7 / 255
-      },
-      section: {
-        strokeWidth: 0.01,
-        strokeFalloff: 0.75,
-        strokeColor: new THREE.Color(0xf6f6f6)
       },
       outline: {
         opacity: 0.85,

@@ -58,17 +58,9 @@ function parseSettingsFromUrl (url: string) {
       color: get('background.color', strToColor)
     },
     materials: {
-      standard: {
-        color: get('materials.standard.color', strToColor)
-      },
       ghost: {
         color: get('materials.ghost.color', strToColor),
         opacity: get('materials.ghost.opacity', Number.parseFloat)
-      },
-      section: {
-        strokeWidth: get('materials.section.strokeWidth', Number.parseFloat),
-        strokeFalloff: get('materials.section.strokeFalloff', Number.parseFloat),
-        strokeColor: get('materials.section.strokeColor', strToColor)
       },
       outline: {
         opacity: get('materials.outline.opacity', Number.parseFloat),

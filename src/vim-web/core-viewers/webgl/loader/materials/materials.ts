@@ -3,7 +3,6 @@
  */
 
 import * as THREE from 'three'
-import { StandardMaterial, createOpaque, createTransparent } from './standardMaterial'
 import { createMaskMaterial } from './maskMaterial'
 import { GhostMaterial } from './ghostMaterial'
 import { OutlineMaterial } from './outlineMaterial'
@@ -32,8 +31,6 @@ export interface IMaterials {
   /** The ghost material used to render hidden/ghosted elements. */
   readonly ghostMaterial: THREE.Material
 
-  /** Base color tint applied to opaque and transparent model materials. */
-  modelColor: THREE.Color
   /** Opacity of the ghost material (0 = invisible, 1 = fully opaque). */
   ghostOpacity: number
   /** Color of the ghost material. */
@@ -44,12 +41,6 @@ export interface IMaterials {
   outlineThickness: number
   /** Color of the selection outline post-process effect. */
   outlineColor: THREE.Color
-  /** Width of the stroke rendered where the section box intersects the model. */
-  sectionStrokeWidth: number
-  /** Gradient falloff of the section box intersection stroke. */
-  sectionStrokeFalloff: number
-  /** Color of the section box intersection stroke. */
-  sectionStrokeColor: THREE.Color
   /** Clipping planes applied to all materials. Set to undefined to disable clipping. */
   clippingPlanes: THREE.Plane[] | undefined
 
@@ -111,8 +102,6 @@ export class Materials implements IMaterials {
     return this.instance
   }
 
-  private readonly _opaque: StandardMaterial
-  private readonly _transparent: StandardMaterial
   private readonly _modelOpaque: ModelMaterial
   private readonly _modelTransparent: ModelMaterial
   private readonly _ghost: GhostMaterial
@@ -128,17 +117,12 @@ export class Materials implements IMaterials {
   }
 
   private _clippingPlanes: THREE.Plane[] | undefined
-  private _sectionStrokeWidth: number = 0.01
-  private _sectionStrokeFalloff: number = 0.75
-  private _sectionStrokeColor: THREE.Color = new THREE.Color(0xf6f6f6)
   private _onUpdate = new SignalDispatcher()
 
   // Shared color palette texture for all scene materials
   private _colorPaletteTexture: THREE.DataTexture | undefined
 
   constructor (
-    opaque?: StandardMaterial,
-    transparent?: StandardMaterial,
     modelOpaque?: ModelMaterial,
     modelTransparent?: ModelMaterial,
     ghost?: GhostMaterial,
@@ -146,8 +130,6 @@ export class Materials implements IMaterials {
     outline?: OutlineMaterial,
     merge?: MergeMaterial,
   ) {
-    this._opaque = opaque ?? createOpaque()
-    this._transparent = transparent ?? createTransparent()
     const onUpdate = () => this._onUpdate.dispatch()
     this._modelOpaque = modelOpaque ?? createModelOpaque(onUpdate)
     this._modelTransparent = modelTransparent ?? createModelTransparent(onUpdate)
@@ -176,14 +158,8 @@ export class Materials implements IMaterials {
    * Updates material settings based on the provided configuration.
    */
   applySettings (settings: MaterialSettings) {
-    this.modelColor = settings.standard.color
-
     this._ghost.opacity = settings.ghost.opacity
     this._ghost.color = settings.ghost.color
-
-    this.sectionStrokeWidth = settings.section.strokeWidth
-    this.sectionStrokeFalloff = settings.section.strokeFalloff
-    this.sectionStrokeColor = settings.section.strokeColor
 
     this.outlineOpacity = settings.outline.opacity
     this.outlineColor = settings.outline.color
@@ -193,17 +169,6 @@ export class Materials implements IMaterials {
   /** @internal Signal dispatched whenever a material is modified. */
   get onUpdate () {
     return this._onUpdate.asEvent()
-  }
-
-  /** Base color tint applied to opaque and transparent model materials. */
-  get modelColor () {
-    return this._opaque.color
-  }
-
-  set modelColor (color: THREE.Color) {
-    this._opaque.color = color
-    this._transparent.color = color
-    this._onUpdate.dispatch()
   }
 
   /** Opacity of the selection outline (0 = invisible, 1 = fully opaque). */
@@ -243,49 +208,8 @@ export class Materials implements IMaterials {
     this._clippingPlanes = value
     this._modelOpaque.clippingPlanes = value ?? null
     this._modelTransparent.clippingPlanes = value ?? null
-    this._opaque.clippingPlanes = value ?? null
-    this._transparent.clippingPlanes = value ?? null
     this._ghost.clippingPlanes = value ?? null
     this._mask.clippingPlanes = value ?? null
-    this._onUpdate.dispatch()
-  }
-
-  /** Width of the stroke rendered where the section box intersects the model. */
-  get sectionStrokeWidth () {
-    return this._sectionStrokeWidth
-  }
-
-  set sectionStrokeWidth (value: number) {
-    if (this._sectionStrokeWidth === value) return
-    this._sectionStrokeWidth = value
-    this._opaque.sectionStrokeWidth = value
-    this._transparent.sectionStrokeWidth = value
-    this._onUpdate.dispatch()
-  }
-
-  /** Gradient falloff of the section box intersection stroke. */
-  get sectionStrokeFalloff () {
-    return this._sectionStrokeFalloff
-  }
-
-  set sectionStrokeFalloff (value: number) {
-    if (this._sectionStrokeFalloff === value) return
-    this._sectionStrokeFalloff = value
-    this._opaque.sectionStrokeFalloff = value
-    this._transparent.sectionStrokeFalloff = value
-    this._onUpdate.dispatch()
-  }
-
-  /** Color of the section box intersection stroke. */
-  get sectionStrokeColor () {
-    return this._sectionStrokeColor
-  }
-
-  set sectionStrokeColor (value: THREE.Color) {
-    if (this._sectionStrokeColor === value) return
-    this._sectionStrokeColor = value
-    this._opaque.sectionStrokeColor = value
-    this._transparent.sectionStrokeColor = value
     this._onUpdate.dispatch()
   }
 
@@ -311,8 +235,6 @@ export class Materials implements IMaterials {
     this._colorPaletteTexture.minFilter = THREE.NearestFilter
     this._colorPaletteTexture.magFilter = THREE.NearestFilter
 
-    this._opaque.setColorPaletteTexture(this._colorPaletteTexture)
-    this._transparent.setColorPaletteTexture(this._colorPaletteTexture)
     this._modelOpaque.setColorPaletteTexture(this._colorPaletteTexture)
     this._modelTransparent.setColorPaletteTexture(this._colorPaletteTexture)
 
@@ -326,8 +248,6 @@ export class Materials implements IMaterials {
       this._colorPaletteTexture = undefined
     }
 
-    this._opaque.dispose()
-    this._transparent.dispose()
     this._modelOpaque.dispose()
     this._modelTransparent.dispose()
     this._ghost.dispose()

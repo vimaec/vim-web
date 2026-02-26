@@ -13,20 +13,6 @@ export type TextureEncoding = 'url' | 'base64' | undefined
 
 export type MaterialSettings = {
   /**
-   * Use fast simple materials instead of standard Lambert materials
-   * - Enables: Significantly faster rendering (no Lambert lighting calculations)
-   * - Trade-off: Simpler pseudo-lighting using screen-space derivatives
-   * - Useful for: Performance-critical scenarios, large models, lower-end hardware
-   * Default: false
-   */
-  useFastMaterials: boolean
-  /**
-  * Default color of standard material
-  */
-  standard: {
-    color: THREE.Color
-  }
-  /**
   * Ghost material options
   */
   ghost: {
@@ -40,26 +26,6 @@ export type MaterialSettings = {
     * Default: 0.08
     */
     opacity: number
-  }
-  /**
-  * Section box intersection highlight options
-  */
-  section: {
-    /**
-    * Intersection highlight stroke width.
-    * Default: 0.01
-    */
-    strokeWidth: number;
-    /**
-    * Intersection highlight stroke falloff.
-    * Default: 0.75
-    */
-    strokeFalloff: number;
-    /**
-    * Intersection highlight stroke color.
-    * Default: rgb(246, 246, 246)
-    */
-    strokeColor: THREE.Color;
   }
   /**
   * Selection outline options
@@ -98,7 +64,6 @@ export type MaterialSettings = {
  * @example
  * const viewer = Core.Webgl.createViewer({
  *   camera: { orthographic: true, fov: 50 },
- *   materials: { useFastMaterials: true }
  * })
  */
 export type ViewerSettings = {
