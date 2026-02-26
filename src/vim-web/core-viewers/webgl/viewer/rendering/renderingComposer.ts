@@ -143,6 +143,10 @@ export class RenderingComposer {
       this._camera,
       this._materials.system.mask
     )
+    // RenderPass renders to readBuffer and has needsSwap = false by default.
+    // This means the selection mask stays in readBuffer for the outline pass.
+    this._selectionRenderPass.clearColor = new THREE.Color(0x000000)
+    this._selectionRenderPass.clearAlpha = 0
     this._composer.addPass(this._selectionRenderPass)
 
     // Setup outline pass using the selection render result
@@ -260,8 +264,16 @@ export class RenderingComposer {
       false
     )
 
+    // Null scene background so it doesn't render into the selection mask buffer.
+    // Three.js renders scene.background independently of overrideMaterial,
+    // which would fill the mask with non-zero values and break edge detection.
+    const bg = this._scene.threeScene.background
+    this._scene.threeScene.background = null
+
     // Process outline pipeline and final composition
     this._composer.render(delta)
+
+    this._scene.threeScene.background = bg
   }
 
   /**

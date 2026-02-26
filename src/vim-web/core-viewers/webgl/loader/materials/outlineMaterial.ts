@@ -181,51 +181,38 @@ export function createOutlineMaterial () {
       }
       `,
     fragmentShader: `
-      #include <packing>
-
-      uniform sampler2D depthBuffer;
-      uniform float cameraNear;
-      uniform float cameraFar;
+      uniform sampler2D sceneBuffer;
       uniform vec4 screenSize;
-      uniform vec3 outlineColor;
       uniform float intensity;
 
       in vec2 vUv;
       out vec4 fragColor;
 
-      // Use texelFetch for faster indexed access (WebGL 2)
-      float getPixelDepth(int x, int y) {
+      // Read binary selection mask: 1.0 = selected, 0.0 = background.
+      // Clamp to texture bounds so edge pixels don't read out-of-bounds
+      // (which returns 0 and creates false outlines at the screen border).
+      float getMask(int x, int y) {
         ivec2 pixelCoord = ivec2(vUv * screenSize.xy) + ivec2(x, y);
-        float fragCoordZ = texelFetch(depthBuffer, pixelCoord, 0).x;
-        float viewZ = perspectiveDepthToViewZ(fragCoordZ, cameraNear, cameraFar);
-        return viewZToOrthographicDepth(viewZ, cameraNear, cameraFar);
+        pixelCoord = clamp(pixelCoord, ivec2(0), ivec2(screenSize.xy) - 1);
+        return texelFetch(sceneBuffer, pixelCoord, 0).x;
       }
-  
-      float saturate(float num) {
-        return clamp(num, 0.0, 1.0);
-      }
-  
-      void main() {
-        float depth = getPixelDepth(0, 0);
 
-        // Early-out: skip for background pixels (no geometry)
-        if (depth >= 0.99) {
-          fragColor = vec4(0.0, 0.0, 0.0, 0.0);
+      void main() {
+        // Skip non-selected pixels
+        if (getMask(0, 0) < 0.5) {
+          fragColor = vec4(0.0);
           return;
         }
 
-        // Cross edge detection: 4 neighbors at distance 1.
-        // step() converts depth diff to binary (edge or not).
+        // Silhouette edge detection: outline where selected borders non-selected.
         // Thickness is controlled by outlineScale (render target resolution).
         float outline = 0.0;
-        outline += step(0.001, abs(depth - getPixelDepth( 0, -1)));
-        outline += step(0.001, abs(depth - getPixelDepth( 0,  1)));
-        outline += step(0.001, abs(depth - getPixelDepth(-1,  0)));
-        outline += step(0.001, abs(depth - getPixelDepth( 1,  0)));
-        outline = saturate(outline * 0.25 * intensity);
+        outline += step(0.5, 1.0 - getMask( 0, -1));
+        outline += step(0.5, 1.0 - getMask( 0,  1));
+        outline += step(0.5, 1.0 - getMask(-1,  0));
+        outline += step(0.5, 1.0 - getMask( 1,  0));
+        outline = clamp(outline * 0.25 * intensity, 0.0, 1.0);
 
-        // Output outline intensity to R channel only (RedFormat texture)
-        // Merge pass will use this to blend outline color with scene
         fragColor = vec4(outline, 0.0, 0.0, 0.0);
       }
       `

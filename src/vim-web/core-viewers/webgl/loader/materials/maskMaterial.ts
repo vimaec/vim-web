@@ -14,8 +14,8 @@ export function createMaskMaterial () {
     clipping: true,
     // Use GLSL ES 3.0 for WebGL 2
     glslVersion: THREE.GLSL3,
-    // Only write depth, not color (outline shader only reads depth)
-    colorWrite: false,
+    // Writes 1.0 to color for selected, 0.0 for background (after clear).
+    // Outline shader does edge detection on this binary mask.
     vertexShader: /* glsl */ `
       #include <common>
       #include <clipping_planes_pars_vertex>

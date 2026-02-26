@@ -79,9 +79,9 @@ export function getDefaultViewerSettings(): ViewerSettings {
         strokeColor: new THREE.Color(0xf6f6f6)
       },
       outline: {
-        intensity: 2,
+        intensity: 3,
         color: new THREE.Color(0x00ffff),
-        scale: 0.75
+        scale: .75
       }
     },
     axes: getDefaultAxesSettings(),
