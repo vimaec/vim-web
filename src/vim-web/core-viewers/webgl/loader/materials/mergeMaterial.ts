@@ -24,6 +24,16 @@ export class MergeMaterial {
     this._onUpdate?.()
   }
 
+  get opacity () {
+    return this.three.uniforms.opacity.value
+  }
+
+  set opacity (value: number) {
+    this.three.uniforms.opacity.value = Math.max(0, Math.min(1, value))
+    this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
+  }
+
   get sourceA () {
     return this.three.uniforms.sourceA.value
   }
@@ -55,7 +65,8 @@ export function createMergeMaterial () {
     uniforms: {
       sourceA: { value: null },
       sourceB: { value: null },
-      color: { value: new THREE.Color(0xffffff) }
+      color: { value: new THREE.Color(0xffffff) },
+      opacity: { value: 1.0 }
     },
     vertexShader: /* glsl */ `
        out vec2 vUv;
@@ -66,25 +77,26 @@ export function createMergeMaterial () {
        `,
     fragmentShader: /* glsl */ `
        uniform vec3 color;
+       uniform float opacity;
        uniform sampler2D sourceA;
        uniform sampler2D sourceB;
        in vec2 vUv;
        out vec4 fragColor;
 
        void main() {
-        // Fetch outline intensity first (cheaper to check)
+        // Fetch outline mask first (cheaper to check)
         // Use texture() for proper handling of different resolutions
-        vec4 B = texture(sourceB, vUv);
+        float edge = texture(sourceB, vUv).x;
 
         // Early-out: if no outline, just copy scene directly
-        if (B.x < 0.01) {
+        if (edge < 0.01) {
           fragColor = texture(sourceA, vUv);
           return;
         }
 
-        // Fetch scene and blend with outline color
+        // Fetch scene and blend with outline color using opacity
         vec4 A = texture(sourceA, vUv);
-        fragColor = vec4(mix(A.xyz, color, B.x), 1.0);
+        fragColor = vec4(mix(A.xyz, color, edge * opacity), 1.0);
        }
        `
   })

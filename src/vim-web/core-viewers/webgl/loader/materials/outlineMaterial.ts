@@ -90,14 +90,14 @@ export class OutlineMaterial {
   }
 
   /**
-   * Intensity of the outline. Controls the strength of the edge detection.
+   * Thickness of the outline in pixels (of the outline render target).
    */
-  get intensity () {
-    return this.three.uniforms.intensity.value
+  get thickness () {
+    return this.three.uniforms.thickness.value
   }
 
-  set intensity (value: number) {
-    this.three.uniforms.intensity.value = value
+  set thickness (value: number) {
+    this.three.uniforms.thickness.value = Math.max(1, Math.round(value))
     this.three.uniformsNeedUpdate = true
     this._onUpdate?.()
   }
@@ -150,7 +150,8 @@ export class OutlineMaterial {
 }
 
 /**
- * Creates outline material using depth-based edge detection.
+ * Creates outline material using mask-based silhouette edge detection.
+ * The fragment shader is manually unrolled for up to 5 pixel thickness.
  */
 export function createOutlineMaterial () {
   return new THREE.ShaderMaterial({
@@ -171,7 +172,7 @@ export function createOutlineMaterial () {
 
       // Options
       outlineColor: { value: new THREE.Color(0xffffff) },
-      intensity: { value: 2 }
+      thickness: { value: 2 }
     },
     vertexShader: `
       out vec2 vUv;
@@ -183,18 +184,33 @@ export function createOutlineMaterial () {
     fragmentShader: `
       uniform sampler2D sceneBuffer;
       uniform vec4 screenSize;
-      uniform float intensity;
+      uniform float thickness;
 
       in vec2 vUv;
       out vec4 fragColor;
 
-      // Read binary selection mask: 1.0 = selected, 0.0 = background.
-      // Clamp to texture bounds so edge pixels don't read out-of-bounds
-      // (which returns 0 and creates false outlines at the screen border).
+      // Read binary selection mask (1.0 = selected, 0.0 = background).
+      // Clamped to texture bounds to avoid false outlines at screen edges.
       float getMask(int x, int y) {
         ivec2 pixelCoord = ivec2(vUv * screenSize.xy) + ivec2(x, y);
         pixelCoord = clamp(pixelCoord, ivec2(0), ivec2(screenSize.xy) - 1);
         return texelFetch(sceneBuffer, pixelCoord, 0).x;
+      }
+
+      // Check the full grid ring at Chebyshev distance d.
+      // Called with literal constants so the compiler inlines and unrolls.
+      bool checkRing(int d) {
+        // Top and bottom rows (full width)
+        for (int x = -d; x <= d; x++) {
+          if (getMask(x, -d) < 0.5) return true;
+          if (getMask(x,  d) < 0.5) return true;
+        }
+        // Left and right columns (excluding corners)
+        for (int y = -d + 1; y < d; y++) {
+          if (getMask(-d, y) < 0.5) return true;
+          if (getMask( d, y) < 0.5) return true;
+        }
+        return false;
       }
 
       void main() {
@@ -204,16 +220,17 @@ export function createOutlineMaterial () {
           return;
         }
 
-        // Silhouette edge detection: outline where selected borders non-selected.
-        // Thickness is controlled by outlineScale (render target resolution).
-        float outline = 0.0;
-        outline += step(0.5, 1.0 - getMask( 0, -1));
-        outline += step(0.5, 1.0 - getMask( 0,  1));
-        outline += step(0.5, 1.0 - getMask(-1,  0));
-        outline += step(0.5, 1.0 - getMask( 1,  0));
-        outline = clamp(outline * 0.25 * intensity, 0.0, 1.0);
+        // Full grid search ring by ring (3x3, 5x5, 7x7 ... up to 11x11).
+        // Each ring checks all pixels at that Chebyshev distance.
+        // Early-exit between rings once an edge is found.
+        bool edge = checkRing(1);
 
-        fragColor = vec4(outline, 0.0, 0.0, 0.0);
+        if (!edge && thickness >= 2.0) edge = checkRing(2);
+        if (!edge && thickness >= 3.0) edge = checkRing(3);
+        if (!edge && thickness >= 4.0) edge = checkRing(4);
+        if (!edge && thickness >= 5.0) edge = checkRing(5);
+
+        fragColor = vec4(edge ? 1.0 : 0.0, 0.0, 0.0, 0.0);
       }
       `
   })

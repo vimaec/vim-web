@@ -38,8 +38,10 @@ export interface IMaterials {
   ghostOpacity: number
   /** Color of the ghost material. */
   ghostColor: THREE.Color
-  /** Intensity of the selection outline post-process effect. */
-  outlineIntensity: number
+  /** Opacity of the selection outline (0 = invisible, 1 = fully opaque). */
+  outlineOpacity: number
+  /** Thickness of the selection outline in pixels (of the outline render target). Range: 1-5. */
+  outlineThickness: number
   /** Color of the selection outline post-process effect. */
   outlineColor: THREE.Color
   /** Width of the stroke rendered where the section box intersects the model. */
@@ -183,8 +185,9 @@ export class Materials implements IMaterials {
     this.sectionStrokeFalloff = settings.section.strokeFalloff
     this.sectionStrokeColor = settings.section.strokeColor
 
-    this.outlineIntensity = settings.outline.intensity
+    this.outlineOpacity = settings.outline.opacity
     this.outlineColor = settings.outline.color
+    this.outlineThickness = settings.outline.thickness
   }
 
   /** @internal Signal dispatched whenever a material is modified. */
@@ -203,13 +206,22 @@ export class Materials implements IMaterials {
     this._onUpdate.dispatch()
   }
 
-  /** Intensity of the selection outline post-process effect. */
-  get outlineIntensity () {
-    return this._outline.intensity
+  /** Opacity of the selection outline (0 = invisible, 1 = fully opaque). */
+  get outlineOpacity () {
+    return this._merge.opacity
   }
 
-  set outlineIntensity (value: number) {
-    this._outline.intensity = value
+  set outlineOpacity (value: number) {
+    this._merge.opacity = value
+  }
+
+  /** Thickness of the selection outline in pixels (of the outline render target). */
+  get outlineThickness () {
+    return this._outline.thickness
+  }
+
+  set outlineThickness (value: number) {
+    this._outline.thickness = value
   }
 
   /** Color of the selection outline post-process effect. */

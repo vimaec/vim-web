@@ -66,10 +66,10 @@ export type MaterialSettings = {
   */
   outline: {
     /**
-    * Selection outline intensity (brightness multiplier).
-    * Default: 2
+    * Selection outline opacity (0 = invisible, 1 = fully opaque).
+    * Default: 1
     */
-    intensity: number;
+    opacity: number;
     /**
     * Selection outline color.
     * Default: rgb(0, 255, 255)
@@ -81,6 +81,12 @@ export type MaterialSettings = {
     * Default: 0.75
     */
     scale: number;
+    /**
+    * Outline thickness in pixels (of the outline render target).
+    * Higher values sample more pixels per fragment (4 fetches per level).
+    * Range: 1-5. Default: 2
+    */
+    thickness: number;
   }
 }
 

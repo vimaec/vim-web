@@ -95,9 +95,10 @@ function parseSettingsFromUrl (url: string) {
         strokeColor: get('materials.section.strokeColor', strToColor)
       },
       outline: {
-        intensity: get('materials.outline.intensity', Number.parseFloat),
+        opacity: get('materials.outline.opacity', Number.parseFloat),
         color: get('materials.outline.color', strToColor),
-        scale: get('materials.outline.scale', Number.parseFloat)
+        scale: get('materials.outline.scale', Number.parseFloat),
+        thickness: get('materials.outline.thickness', Number.parseInt)
       }
     },
     axes: undefined,
