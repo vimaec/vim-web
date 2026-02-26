@@ -298,6 +298,7 @@ export class SocketClient {
     const issues = await this._validateConnection()
     if (issues !== undefined) {
       this._disconnect(issues)
+      this._connectPromise.resolve(false)
       return
     }
 
