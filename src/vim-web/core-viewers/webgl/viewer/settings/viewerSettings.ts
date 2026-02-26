@@ -259,30 +259,6 @@ export type ViewerSettings = {
      */
     color: THREE.Color
   },
-  /**
-   * Skybox options
-   */
-  skybox:{
-    /**
-     * Enables/Disables skybox.
-     */
-    enable: boolean
-
-    /**
-     * Color for the lower part of the skybox.
-     */
-    groundColor: THREE.Color
-    /**
-     * Color for the upper part of the skybox.
-     */
-    skyColor: THREE.Color
-
-    /**
-     * Controls the gradient transition between the sky and the ground.
-     */
-    sharpness: number
-  },
-
 /**
 * Material options
 */
@@ -292,42 +268,6 @@ materials: MaterialSettings
    * Axes gizmo options
    */
   axes: Partial<AxesSettings>
-
-  /**
-   * Skylight (hemisphere light) options
-   */
-  skylight: {
-    /**
-    * Skylight sky Color.
-    * Default: THREE.Color(153, 204, 255)
-    */
-    skyColor: THREE.Color
-
-    /**
-    * Skylight ground color.
-    * Default: THREE.Color(242, 213, 181)
-    */
-    groundColor: THREE.Color
-
-    /**
-    * Skylight intensity.
-    * Default: 0.8
-    */
-    intensity: number
-  }
-  /**
-   * Sunlight (directional light) options
-   * Two Blue-Green lights at odd angles. See defaultViewerSettings.
-   */
-  sunlights: {
-    followCamera: boolean;
-    /** Light position. */
-    position: THREE.Vector3;
-    /** Light color. */
-    color: THREE.Color;
-    /** Light intensity. */
-    intensity: number;
-  }[]
 
   rendering: {
     /**

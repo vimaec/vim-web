@@ -130,7 +130,6 @@ export class RenderingComposer {
       {
         format: THREE.RedFormat,
         type: THREE.UnsignedByteType,
-        depthTexture: new THREE.DepthTexture(outlineWidth, outlineHeight),
       }
     )
 
@@ -151,7 +150,6 @@ export class RenderingComposer {
 
     // Setup outline pass using the selection render result
     this._outlinePass = new OutlinePass(
-      this._camera,
       this._materials.system.outline
     )
     this._composer.addPass(this._outlinePass)
@@ -214,7 +212,6 @@ export class RenderingComposer {
   set camera (value: THREE.PerspectiveCamera | THREE.OrthographicCamera) {
     this._renderPass.camera = value
     this._selectionRenderPass.camera = value
-    this._outlinePass.material.camera = value
     this._camera = value
   }
 

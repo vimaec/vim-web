@@ -57,30 +57,6 @@ function parseSettingsFromUrl (url: string) {
     background: {
       color: get('background.color', strToColor)
     },
-    skybox: {
-      skyColor: get('skybox.skyColor', strToColor),
-      groundColor: get('skybox.groundColor', strToColor),
-      sharpness: get('skybox.sharpness', Number.parseFloat)
-    },
-    skylight: {
-      skyColor: get('skylight.skyColor', strToColor),
-      groundColor: get('skylight.groundColor', strToColor),
-      intensity: get('skylight.intensity', Number.parseFloat)
-    },
-    sunlights: [
-      {
-        followCamera: get('sunlights.0.followCamera', strToBool),
-        color: get('sunlights.0.color', strToColor),
-        intensity: get('sunlights.0.intensity', Number.parseFloat),
-        position: get('sunlights.0.position', strToVector3)
-      },
-      {
-        followCamera: get('sunlights.1.followCamera', strToBool),
-        color: get('sunlights.1.color', strToColor),
-        intensity: get('sunlights.1.intensity', Number.parseFloat),
-        position: get('sunlights.1.position', strToVector3)
-      }
-    ],
     materials: {
       standard: {
         color: get('materials.standard.color', strToColor)

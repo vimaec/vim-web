@@ -17,28 +17,16 @@ export class OutlinePass extends Pass {
   private _fsQuad: FullScreenQuad
   material: OutlineMaterial
 
-  constructor (
-    camera: THREE.PerspectiveCamera | THREE.OrthographicCamera,
-    material?: OutlineMaterial
-  ) {
+  constructor (material: OutlineMaterial) {
     super()
 
-    this.material = material ?? new OutlineMaterial()
-    this.material.camera = camera
+    this.material = material
     this._fsQuad = new FullScreenQuad(this.material.three)
     this.needsSwap = true
   }
 
   setSize (width: number, height: number) {
     this.material.resolution = new THREE.Vector2(width, height)
-  }
-
-  get camera () {
-    return this.material.camera
-  }
-
-  set camera (value: THREE.PerspectiveCamera | THREE.OrthographicCamera) {
-    this.material.camera = value
   }
 
   dispose () {
@@ -51,11 +39,8 @@ export class OutlinePass extends Pass {
     writeBuffer: THREE.WebGLRenderTarget,
     readBuffer: THREE.WebGLRenderTarget
   ) {
-    // Turn off writing to the depth buffer
-    // because we need to read from it in the subsequent passes.
     const depthBufferValue = writeBuffer.depthBuffer
     writeBuffer.depthBuffer = false
-    this.material.depthBuffer = readBuffer.depthTexture
     this.material.sceneBuffer = readBuffer.texture
 
     if (this.renderToScreen) {
@@ -66,7 +51,6 @@ export class OutlinePass extends Pass {
       this._fsQuad.render(renderer)
     }
 
-    // Reset the depthBuffer value so we continue writing to it in the next render.
     writeBuffer.depthBuffer = depthBufferValue
   }
 }

@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { createAxesSettings, getDefaultAxesSettings } from '../gizmos/axes/axesSettings'
+import { getDefaultAxesSettings } from '../gizmos/axes/axesSettings'
 import { ViewerSettings } from './viewerSettings'
 
 /**
@@ -39,31 +39,6 @@ export function getDefaultViewerSettings(): ViewerSettings {
       }
     },
     background: { color: new THREE.Color(0xffffff) },
-    skybox: {
-      enable: true,
-      skyColor: new THREE.Color(0xffffff), // white
-      groundColor: new THREE.Color(0xf6f6f6), // less white
-      sharpness: 2
-    },
-    skylight: {
-      skyColor: new THREE.Color(0xffffff),
-      groundColor: new THREE.Color(0xffffff),
-      intensity: 0.8
-    },
-    sunlights: [
-      {
-        followCamera: true,
-        position: new THREE.Vector3(1000, 1000, 1000),
-        color: new THREE.Color(0xffffff),
-        intensity: 0.8
-      },
-      {
-        followCamera: true,
-        position: new THREE.Vector3(-1000, -1000, -1000),
-        color: new THREE.Color(0xffffff),
-        intensity: 0.2
-      }
-    ],
     materials: {
       useFastMaterials: false,
       standard: {
@@ -79,7 +54,7 @@ export function getDefaultViewerSettings(): ViewerSettings {
         strokeColor: new THREE.Color(0xf6f6f6)
       },
       outline: {
-        opacity: 1,
+        opacity: 0.85,
         color: new THREE.Color(0x00ffff),
         scale: .75,
         thickness: 2

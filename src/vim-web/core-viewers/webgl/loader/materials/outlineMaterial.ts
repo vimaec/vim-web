@@ -10,46 +10,13 @@ import * as THREE from 'three'
  */
 export class OutlineMaterial {
   three: THREE.ShaderMaterial
-  private _camera:
-    | THREE.PerspectiveCamera
-    | THREE.OrthographicCamera
-    | undefined
-
   private _resolution: THREE.Vector2
-  private _precision: number = 1
   private _onUpdate?: () => void
 
-  constructor (
-    options?: Partial<{
-      sceneBuffer: THREE.Texture
-      resolution: THREE.Vector2
-      precision: number
-      camera: THREE.PerspectiveCamera | THREE.OrthographicCamera
-    }>,
-    onUpdate?: () => void
-  ) {
+  constructor (onUpdate?: () => void) {
     this.three = createOutlineMaterial()
     this._onUpdate = onUpdate
-    this._precision = options?.precision ?? 1
-    this._resolution = options?.resolution ?? new THREE.Vector2(1, 1)
-    this.resolution = this._resolution
-    if (options?.sceneBuffer) {
-      this.sceneBuffer = options.sceneBuffer
-    }
-    this.camera = options?.camera
-  }
-
-  /**
-   * Precision of the outline. This is used to scale the resolution of the outline.
-   */
-  get precision () {
-    return this._precision
-  }
-
-  set precision (value: number) {
-    this._precision = value
-    this.resolution = this._resolution
-    this._onUpdate?.()
+    this._resolution = new THREE.Vector2(1, 1)
   }
 
   /**
@@ -61,30 +28,13 @@ export class OutlineMaterial {
 
   set resolution (value: THREE.Vector2) {
     this.three.uniforms.screenSize.value.set(
-      value.x * this._precision,
-      value.y * this._precision,
-      1 / (value.x * this._precision),
-      1 / (value.y * this._precision)
+      value.x,
+      value.y,
+      1 / value.x,
+      1 / value.y
     )
 
     this._resolution = value
-    this.three.uniformsNeedUpdate = true
-    this._onUpdate?.()
-  }
-
-  /**
-   * Camera used to render the outline.
-   */
-  get camera () {
-    return this._camera
-  }
-
-  set camera (
-    value: THREE.PerspectiveCamera | THREE.OrthographicCamera | undefined
-  ) {
-    this._camera = value
-    this.three.uniforms.cameraNear.value = value?.near ?? 1
-    this.three.uniforms.cameraFar.value = value?.far ?? 1000
     this.three.uniformsNeedUpdate = true
     this._onUpdate?.()
   }
@@ -103,19 +53,6 @@ export class OutlineMaterial {
   }
 
   /**
-   * Color of the outline.
-   */
-  get color () {
-    return this.three.uniforms.outlineColor.value
-  }
-
-  set color (value: THREE.Color) {
-    this.three.uniforms.outlineColor.value.set(value)
-    this.three.uniformsNeedUpdate = true
-    this._onUpdate?.()
-  }
-
-  /**
    * Scene buffer used to render the outline.
    */
   get sceneBuffer () {
@@ -124,19 +61,6 @@ export class OutlineMaterial {
 
   set sceneBuffer (value: THREE.Texture) {
     this.three.uniforms.sceneBuffer.value = value
-    this.three.uniformsNeedUpdate = true
-    this._onUpdate?.()
-  }
-
-  /**
-   * Depth buffer used to render the outline.
-   */
-  get depthBuffer () {
-    return this.three.uniforms.depthBuffer.value
-  }
-
-  set depthBuffer (value: THREE.Texture) {
-    this.three.uniforms.depthBuffer.value = value
     this.three.uniformsNeedUpdate = true
     this._onUpdate?.()
   }
@@ -159,19 +83,8 @@ export function createOutlineMaterial () {
     glslVersion: THREE.GLSL3,
     depthWrite: false,
     uniforms: {
-      // Input buffers
       sceneBuffer: { value: null },
-      depthBuffer: { value: null },
-
-      // Input parameters
-      cameraNear: { value: 1 },
-      cameraFar: { value: 1000 },
-      screenSize: {
-        value: new THREE.Vector4(1, 1, 1, 1)
-      },
-
-      // Options
-      outlineColor: { value: new THREE.Color(0xffffff) },
+      screenSize: { value: new THREE.Vector4(1, 1, 1, 1) },
       thickness: { value: 2 }
     },
     vertexShader: `

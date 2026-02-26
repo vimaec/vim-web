@@ -153,7 +153,7 @@ export class Materials implements IMaterials {
     this._modelTransparent = modelTransparent ?? createModelTransparent(onUpdate)
     this._ghost = ghost ?? new GhostMaterial(undefined, onUpdate)
     this._mask = mask ?? createMaskMaterial()
-    this._outline = outline ?? new OutlineMaterial(undefined, onUpdate)
+    this._outline = outline ?? new OutlineMaterial(onUpdate)
     this._merge = merge ?? new MergeMaterial(onUpdate)
   }
 
