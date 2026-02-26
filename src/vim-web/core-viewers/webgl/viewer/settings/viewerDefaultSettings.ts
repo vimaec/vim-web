@@ -38,7 +38,7 @@ export function getDefaultViewerSettings(): ViewerSettings {
         opacityAlways: 0.1
       }
     },
-    background: { color: new THREE.Color(0xc1c2c6) },
+    background: { color: new THREE.Color(0xffffff) },
     skybox: {
       enable: true,
       skyColor: new THREE.Color(0xffffff), // white
