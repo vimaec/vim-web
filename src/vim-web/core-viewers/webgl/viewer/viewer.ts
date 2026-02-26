@@ -166,12 +166,10 @@ export class WebglViewer implements IWebglViewer {
       this.settings
     )
 
+    this.selection = createSelection()
     this._inputs = createInputHandler(this)
     this._gizmos = new Gizmos(this._renderer, this._viewport, this, this._camera)
     this.materials.applySettings(this.settings.materials)
-
-    // Input and Selection
-    this.selection = createSelection()
 
     // GPU-based raycaster for element picking and world position queries
     const size = this._renderer.three.getSize(new THREE.Vector2())
