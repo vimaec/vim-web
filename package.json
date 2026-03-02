@@ -1,6 +1,6 @@
 {
   "name": "vim-web",
-  "version": "0.6.0-dev.6",
+  "version": "1.0.0-alpha.0",
   "description": "A demonstration app built on top of the vim-webgl-viewer",
   "type": "module",
   "files": [
@@ -30,6 +30,7 @@
     "bundle-bim-dts": "rollup -c rollup.bim-dts.config.mjs",
     "build": "vite build && npm run declarations && npm run bundle-dts && npm run bundle-bim-dts",
     "publish:package": "npm run build && npm publish",
+    "publish:package:alpha": "npm run build && npm publish --tag alpha",
     "publish:documentation": "npm run documentation && gh-pages -d docs2",
     "publish:both": "npm run publish:package && npm run publish:documentation"
   },
