@@ -12,7 +12,7 @@ import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer'
 import { Camera } from '../camera/camera'
 import { IRenderingSection, RenderingSection } from './renderingSection'
 import { RenderingComposer } from './renderingComposer'
-import { ViewerSettings } from '../settings/viewerSettings'
+import { ViewerSettings, SelectionFillMode } from '../settings/viewerSettings'
 import type { ISignal } from '../../../shared/events'
 import { SignalDispatcher } from 'ste-signals'
 
@@ -58,6 +58,10 @@ export interface IWebglRenderer {
   getBoundingBox(target?: THREE.Box3): THREE.Box3 | undefined
   /** When true (default), only renders when dirty (`requestRender()` was called). When false, renders every frame. */
   autoRender: boolean
+  /** Whether selection outlines are enabled. */
+  outlineEnabled: boolean
+  /** Selection fill mode for the rendering pipeline. */
+  selectionFillMode: SelectionFillMode
 }
 
 /**
@@ -94,6 +98,7 @@ export class Renderer implements ISceneRenderer {
   private _sceneUpdated = false
 
   private _outlineCount = 0
+  private _outlineEnabled = true
 
   /**
    * When true, the renderer only renders when a render has been requested.
@@ -165,6 +170,7 @@ export class Renderer implements ISceneRenderer {
     )
 
     this.outlineScale = settings.materials.outline.scale
+    this.selectionFillMode = settings.materials.selection.fillMode
     this.section = new RenderingSection(this, this._materials)
 
     this.fitViewport()
@@ -290,6 +296,22 @@ export class Renderer implements ISceneRenderer {
     this._needsUpdate = true
   }
 
+  /** Whether selection outlines are enabled. When false, outlines are suppressed even if elements have outline=true. */
+  get outlineEnabled () {
+    return this._outlineEnabled
+  }
+
+  set outlineEnabled (value: boolean) {
+    this._outlineEnabled = value
+    this._needsUpdate = true
+  }
+
+  /** Sets the selection fill mode on the rendering composer. */
+  set selectionFillMode (value: SelectionFillMode) {
+    this._composer.selectionFillMode = value
+    this._needsUpdate = true
+  }
+
   /**
    * Renders what is in the camera's view.
    */
@@ -304,7 +326,7 @@ export class Renderer implements ISceneRenderer {
       this._sceneUpdated = false
     }
 
-    this._composer.outlines = this._outlineCount > 0
+    this._composer.outlines = this._outlineEnabled && this._outlineCount > 0
     if(this._needsUpdate || !this.autoRender) {
       this._composer.render()
     }

@@ -35,7 +35,18 @@ export interface GenericBoolEntry {
   state: StateRef<boolean>;
 }
 
-export type GenericEntryType = GenericTextEntry | GenericBoolEntry | GenericNumberEntry;
+// A select/dropdown field.
+export interface GenericSelectEntry {
+  type: "select";
+  id: string;
+  label: string;
+  enabled?: () => boolean;
+  visible?: () => boolean;
+  options: { label: string; value: string }[];
+  state: StateRef<string>;
+}
+
+export type GenericEntryType = GenericTextEntry | GenericBoolEntry | GenericNumberEntry | GenericSelectEntry;
 
 /**
  * Renders a panel field based on its type.
@@ -71,6 +82,8 @@ function GenericField(props:{field: GenericEntryType, disabled?: boolean}): Reac
       return <GenericTextField state={props.field.state} disabled={props.field.enabled?.() === false} />;
     case "bool":
       return <GenericBoolField state={props.field.state} disabled={props.field.enabled?.() === false} />;
+    case "select":
+      return <GenericSelectField field={props.field} disabled={props.field.enabled?.() === false} />;
     default:
       return null;
   }
@@ -116,5 +129,24 @@ function GenericBoolField(props:{state: StateRef<boolean>, disabled?: boolean })
       }
       className="vc-border vc-inline vc-border-gray-300 vc-py-1 vc-w-full vc-px-1"
     />
+  );
+}
+
+function GenericSelectField(props:{field: GenericSelectEntry, disabled?: boolean}): React.ReactNode {
+  const refresher = useRefresher()
+  return (
+    <select
+      disabled={props.disabled ?? false}
+      value={props.field.state.get()}
+      onChange={(e) => {
+        refresher.refresh()
+        props.field.state.set(e.target.value)
+      }}
+      className="vc-border vc-inline vc-border-gray-300 vc-py-1 vc-w-full vc-px-1"
+    >
+      {props.field.options.map(opt => (
+        <option key={opt.value} value={opt.value}>{opt.label}</option>
+      ))}
+    </select>
   );
 }

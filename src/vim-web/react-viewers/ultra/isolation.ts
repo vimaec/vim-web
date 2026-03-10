@@ -121,6 +121,10 @@ function createAdapter(viewer: Viewer): IIsolationAdapter {
 
     setTransparency: (enabled: boolean) => {console.log("setTransparency not implemented")},
 
+    setOutlineEnabled: (_enabled: boolean) => {},
+    setSelectionFillMode: (_mode: string) => {},
+    setSelectionOverlayOpacity: (_opacity: number) => {},
+
     getShowRooms: () => true,
     setShowRooms: (show: boolean) => {console.log("setShowRooms not implemented")},
 

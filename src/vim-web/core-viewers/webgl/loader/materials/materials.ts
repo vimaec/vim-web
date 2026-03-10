@@ -8,10 +8,11 @@ import { GhostMaterial } from './ghostMaterial'
 import { OutlineMaterial } from './outlineMaterial'
 import { MergeMaterial } from './mergeMaterial'
 import { ModelMaterial, createModelOpaque, createModelTransparent } from './modelMaterial'
+import { SelectionOverlayMaterial } from './selectionOverlayMaterial'
 import { buildPaletteTexture } from './colorPalette'
 
 import { SignalDispatcher } from 'ste-signals'
-import { MaterialSettings } from '../../viewer/settings/viewerSettings'
+import { MaterialSettings, SelectionFillMode } from '../../viewer/settings/viewerSettings'
 import { MaterialSet } from './materialSet'
 
 export type { MaterialSet }
@@ -43,6 +44,15 @@ export interface IMaterials {
   outlineColor: THREE.Color
   /** Clipping planes applied to all materials. Set to undefined to disable clipping. */
   clippingPlanes: THREE.Plane[] | undefined
+
+  /** Selection fill mode: 'none' | 'default' | 'xray' | 'seethrough'. */
+  selectionFillMode: SelectionFillMode
+  /** Color used to tint selected elements. */
+  selectionColor: THREE.Color
+  /** Blend strength for selection tint (0 = off, 1 = solid). */
+  selectionOpacity: number
+  /** Opacity of the overlay pass in 'xray' and 'seethrough' modes. */
+  selectionOverlayOpacity: number
 
   /** Applies a full set of material settings from the viewer configuration. */
   applySettings (settings: MaterialSettings): void
@@ -110,10 +120,18 @@ export class Materials implements IMaterials {
   private readonly _mask: THREE.ShaderMaterial
   private readonly _outline: OutlineMaterial
   private readonly _merge: MergeMaterial
+  private readonly _selectionOverlay: SelectionOverlayMaterial
+
+  private _selectionFillMode: SelectionFillMode = 'none'
 
   /** @internal Rendering pipeline access to system materials */
   get system () {
-    return { mask: this._mask, outline: this._outline, merge: this._merge }
+    return {
+      mask: this._mask,
+      outline: this._outline,
+      merge: this._merge,
+      selectionOverlay: this._selectionOverlay,
+    }
   }
 
   private _clippingPlanes: THREE.Plane[] | undefined
@@ -129,6 +147,7 @@ export class Materials implements IMaterials {
     mask?: THREE.ShaderMaterial,
     outline?: OutlineMaterial,
     merge?: MergeMaterial,
+    selectionOverlay?: SelectionOverlayMaterial,
   ) {
     const onUpdate = () => this._onUpdate.dispatch()
     this._modelOpaque = modelOpaque ?? createModelOpaque(onUpdate)
@@ -137,6 +156,7 @@ export class Materials implements IMaterials {
     this._mask = mask ?? createMaskMaterial()
     this._outline = outline ?? new OutlineMaterial(onUpdate)
     this._merge = merge ?? new MergeMaterial(onUpdate)
+    this._selectionOverlay = selectionOverlay ?? new SelectionOverlayMaterial(onUpdate)
   }
 
   /** The opaque model material. */
@@ -164,6 +184,11 @@ export class Materials implements IMaterials {
     this.outlineOpacity = settings.outline.opacity
     this.outlineColor = settings.outline.color
     this.outlineThickness = settings.outline.thickness
+
+    this.selectionFillMode = settings.selection.fillMode
+    this.selectionColor = settings.selection.color
+    this.selectionOpacity = settings.selection.opacity
+    this.selectionOverlayOpacity = settings.selection.overlayOpacity
   }
 
   /** @internal Signal dispatched whenever a material is modified. */
@@ -198,6 +223,60 @@ export class Materials implements IMaterials {
     this._merge.color = value
   }
 
+  /** Selection fill mode. */
+  get selectionFillMode (): SelectionFillMode {
+    return this._selectionFillMode
+  }
+
+  set selectionFillMode (value: SelectionFillMode) {
+    this._selectionFillMode = value
+    // Update tint on model materials: active for any fill mode except 'none'
+    const tintOpacity = value === 'none' ? 0 : this._selectionOpacity
+    this._modelOpaque.selectionTintOpacity = tintOpacity
+    this._modelTransparent.selectionTintOpacity = tintOpacity
+    this._onUpdate.dispatch()
+  }
+
+  private _selectionOpacity = 0.3
+
+  /** Color used to tint selected elements. */
+  get selectionColor (): THREE.Color {
+    return this._modelOpaque.selectionTintColor
+  }
+
+  set selectionColor (value: THREE.Color) {
+    this._modelOpaque.selectionTintColor = value
+    this._modelTransparent.selectionTintColor = value
+    this._selectionOverlay.selectionTintColor = value
+  }
+
+  /** Blend strength for selection tint (0 = off, 1 = solid). */
+  get selectionOpacity (): number {
+    return this._selectionOpacity
+  }
+
+  set selectionOpacity (value: number) {
+    this._selectionOpacity = value
+    // Only apply to model materials if fill mode is active
+    const tintOpacity = this._selectionFillMode === 'none' ? 0 : value
+    this._modelOpaque.selectionTintOpacity = tintOpacity
+    this._modelTransparent.selectionTintOpacity = tintOpacity
+    this._selectionOverlay.selectionTintOpacity = value
+  }
+
+  private _selectionOverlayOpacity = 0.25
+
+  /** Opacity of the behind-geometry ghost in 'seethrough' mode. */
+  get selectionOverlayOpacity (): number {
+    return this._selectionOverlayOpacity
+  }
+
+  set selectionOverlayOpacity (value: number) {
+    this._selectionOverlayOpacity = value
+    this._selectionOverlay.overlayAlpha = value
+    this._onUpdate.dispatch()
+  }
+
   /** Clipping planes applied to all materials. Set to undefined to disable clipping. */
   get clippingPlanes () {
     return this._clippingPlanes
@@ -210,6 +289,7 @@ export class Materials implements IMaterials {
     this._modelTransparent.clippingPlanes = value ?? null
     this._ghost.clippingPlanes = value ?? null
     this._mask.clippingPlanes = value ?? null
+    this._selectionOverlay.clippingPlanes = value ?? null
     this._onUpdate.dispatch()
   }
 
@@ -237,6 +317,7 @@ export class Materials implements IMaterials {
 
     this._modelOpaque.setColorPaletteTexture(this._colorPaletteTexture)
     this._modelTransparent.setColorPaletteTexture(this._colorPaletteTexture)
+    this._selectionOverlay.setColorPaletteTexture(this._colorPaletteTexture)
 
     this._onUpdate.dispatch()
   }
@@ -254,5 +335,6 @@ export class Materials implements IMaterials {
     this._mask.dispose()
     this._outline.dispose()
     this._merge.three.dispose()
+    this._selectionOverlay.dispose()
   }
 }

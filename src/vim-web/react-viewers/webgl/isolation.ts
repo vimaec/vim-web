@@ -99,6 +99,17 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IIsolationAdapt
       updateMaterials();
     },
 
+    setOutlineEnabled: (enabled: boolean) => {
+      viewer.renderer.outlineEnabled = enabled
+    },
+    setSelectionFillMode: (mode: string) => {
+      viewer.materials.selectionFillMode = mode as Core.Webgl.SelectionFillMode
+      viewer.renderer.selectionFillMode = mode as Core.Webgl.SelectionFillMode
+    },
+    setSelectionOverlayOpacity: (opacity: number) => {
+      viewer.materials.selectionOverlayOpacity = opacity
+    },
+
     getShowRooms: () => rooms,
     setShowRooms: (show: boolean) => {
       if(rooms !== show){

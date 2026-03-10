@@ -1,58 +1,32 @@
 /**
  * @module vim-loader/materials
- * This module provides custom materials for visualizing and isolating objects in VIM.
+ * Material for rendering selected geometry as an overlay (X-Ray / See-Through modes).
+ * Variant of ModelMaterial that clips non-selected vertices and outputs with alpha.
  */
 
 import * as THREE from 'three'
 
 /**
  * @internal
- * Material wrapper for fast rendering mode (ModelMaterial).
- * Uses screen-space derivative normals instead of vertex normals for faster performance.
+ * Wrapper for the selection overlay shader material.
+ * Used by the rendering composer for X-Ray and See-Through passes.
  */
-export class ModelMaterial {
+export class SelectionOverlayMaterial {
   three: THREE.ShaderMaterial
   private _onUpdate?: () => void
 
   // Color palette texture (shared, owned by Materials singleton)
   _colorPaletteTexture: THREE.DataTexture | undefined
 
-  constructor (material?: THREE.ShaderMaterial, onUpdate?: () => void) {
-    this.three = material ?? createModelMaterialShader()
+  constructor (onUpdate?: () => void) {
+    this.three = createSelectionOverlayShader()
     this._onUpdate = onUpdate
   }
 
-  /** Color used to tint selected elements. */
-  get selectionTintColor (): THREE.Color {
-    return this.three.uniforms.selectionTintColor.value
-  }
-
-  set selectionTintColor (value: THREE.Color) {
-    this.three.uniforms.selectionTintColor.value.copy(value)
-    this.three.uniformsNeedUpdate = true
-    this._onUpdate?.()
-  }
-
-  /** Blend strength for selection tint (0 = off, 1 = solid). */
-  get selectionTintOpacity (): number {
-    return this.three.uniforms.selectionTintOpacity.value
-  }
-
-  set selectionTintOpacity (value: number) {
-    this.three.uniforms.selectionTintOpacity.value = value
-    this.three.uniformsNeedUpdate = true
-    this._onUpdate?.()
-  }
-
-  /**
-   * Sets the color palette texture for indexed color lookup.
-   * The texture is shared between materials (created in Materials singleton).
-   */
-  setColorPaletteTexture(texture: THREE.DataTexture | undefined) {
+  /** Sets the shared color palette texture. */
+  setColorPaletteTexture (texture: THREE.DataTexture | undefined) {
     this._colorPaletteTexture = texture
-    if (this.three.uniforms) {
-      this.three.uniforms.colorPaletteTexture.value = texture ?? null
-    }
+    this.three.uniforms.colorPaletteTexture.value = texture ?? null
     this._onUpdate?.()
   }
 
@@ -65,48 +39,61 @@ export class ModelMaterial {
     this._onUpdate?.()
   }
 
+  /** Selection tint color. */
+  set selectionTintColor (value: THREE.Color) {
+    this.three.uniforms.selectionTintColor.value.copy(value)
+    this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
+  }
+
+  /** Selection tint blend strength (0-1). */
+  set selectionTintOpacity (value: number) {
+    this.three.uniforms.selectionTintOpacity.value = value
+    this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
+  }
+
+  /** Output alpha for the overlay pass (0 = invisible, 1 = fully opaque). */
+  set overlayAlpha (value: number) {
+    this.three.uniforms.overlayAlpha.value = value
+    this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
+  }
+
+  /**
+   * Configures depth testing for the desired overlay mode.
+   * - xray: depthTest off — renders on top of everything.
+   * - seethrough: depthTest on, GreaterDepth — renders only behind other geometry.
+   */
+  setMode (mode: 'xray' | 'seethrough') {
+    if (mode === 'xray') {
+      this.three.depthTest = false
+      this.three.depthFunc = THREE.LessEqualDepth
+    } else {
+      this.three.depthTest = true
+      this.three.depthFunc = THREE.GreaterDepth
+    }
+    this._onUpdate?.()
+  }
+
   dispose () {
     this.three.dispose()
   }
 }
 
-/**
- * @internal
- * Creates an opaque ModelMaterial for fast rendering mode.
- */
-export function createModelOpaque(onUpdate?: () => void): ModelMaterial {
-  return new ModelMaterial(createModelMaterialShader(false), onUpdate)
-}
-
-/**
- * @internal
- * Creates a transparent ModelMaterial for fast rendering mode.
- */
-export function createModelTransparent(onUpdate?: () => void): ModelMaterial {
-  return new ModelMaterial(createModelMaterialShader(true), onUpdate)
-}
-
-/**
- * Creates the shader material for isolation/fast mode.
- *
- * Uses screen-space derivative normals for per-pixel lighting.
- * Color lookup is palette-based: per-vertex colorIndex for default,
- * per-instance instanceColorIndex for overrides (instanced meshes).
- */
-function createModelMaterialShader (transparent: boolean = false) {
-
+function createSelectionOverlayShader () {
   return new THREE.ShaderMaterial({
     side: THREE.DoubleSide,
     glslVersion: THREE.GLSL3,
+    transparent: true,
+    depthWrite: false,
     uniforms: {
       colorPaletteTexture: { value: null },
       selectionTintColor: { value: new THREE.Color(0x0064ff) },
-      selectionTintOpacity: { value: 0.0 },
+      selectionTintOpacity: { value: 0.3 },
+      overlayAlpha: { value: 0.25 },
     },
     clipping: true,
-    transparent: transparent,
-    opacity: transparent ? 0.25 : 1.0,
-    depthWrite: !transparent,
     vertexShader: /* glsl */ `
       #include <common>
       #include <logdepthbuf_pars_vertex>
@@ -115,9 +102,8 @@ function createModelMaterialShader (transparent: boolean = false) {
       // VISIBILITY
       in float ignore;
 
-      // SELECTION
+      // SELECTION — clip non-selected vertices
       in float selected;
-      out float vSelected;
 
       // COLORING
       out vec3 vColor;
@@ -134,12 +120,11 @@ function createModelMaterialShader (transparent: boolean = false) {
         #include <clipping_planes_vertex>
         #include <logdepthbuf_vertex>
 
-        if (ignore > 0.5) {
+        // Clip non-selected and invisible vertices
+        if (ignore > 0.5 || selected < 0.5) {
           gl_Position = vec4(0.0, 0.0, -2.0, 1.0);
           return;
         }
-
-        vSelected = selected;
 
         // COLORING — unified palette lookup
         int palIdx = int(colorIndex);
@@ -152,7 +137,7 @@ function createModelMaterialShader (transparent: boolean = false) {
 
         vViewPosition = -mvPosition.xyz;
       }
-      `,
+    `,
     fragmentShader: /* glsl */ `
       #include <common>
       #include <logdepthbuf_pars_fragment>
@@ -160,10 +145,10 @@ function createModelMaterialShader (transparent: boolean = false) {
 
       in vec3 vColor;
       in vec3 vViewPosition;
-      in float vSelected;
 
       uniform vec3 selectionTintColor;
       uniform float selectionTintOpacity;
+      uniform float overlayAlpha;
 
       out vec4 fragColor;
 
@@ -180,13 +165,13 @@ function createModelMaterialShader (transparent: boolean = false) {
         light = 0.5 + (light * 0.5);
         vec3 finalColor = vColor * light;
 
-        // SELECTION TINT
-        if (vSelected > 0.5 && selectionTintOpacity > 0.0) {
+        // Apply selection tint
+        if (selectionTintOpacity > 0.0) {
           finalColor = mix(finalColor, selectionTintColor, selectionTintOpacity);
         }
 
-        fragColor = vec4(finalColor, ${transparent ? '0.25' : '1.0'});
+        fragColor = vec4(finalColor, overlayAlpha);
       }
-      `
+    `
   })
 }

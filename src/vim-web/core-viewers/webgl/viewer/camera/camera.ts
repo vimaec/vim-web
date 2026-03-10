@@ -86,8 +86,11 @@ export class Camera implements IWebglCamera {
 
   private _onMoved = new SignalDispatcher()
 
-  /** Ignore movement permissions when true */
-  private _force: boolean = false
+  /**
+   * When true, lockMovement and lockRotation are bypassed.
+   * Set temporarily to position the camera while ignoring user-configured constraints.
+   */
+  ignoreConstraints: boolean = false
 
   /**
    * Allowed movement axes in Z-up space (X = right, Y = forward, Z = up).
@@ -95,7 +98,7 @@ export class Camera implements IWebglCamera {
    */
   private _lockMovement = new THREE.Vector3(1, 1, 1)
   get lockMovement () {
-    return this._force ? Camera._ALL_MOVEMENT : this._lockMovement
+    return this.ignoreConstraints ? Camera._ALL_MOVEMENT : this._lockMovement
   }
 
   set lockMovement (axes: THREE.Vector3) {
@@ -110,7 +113,7 @@ export class Camera implements IWebglCamera {
    * Each component should be 0 (locked) or 1 (free).
    */
   get lockRotation () {
-    return this._force ? Camera._ALL_ROTATION : this._lockRotation
+    return this.ignoreConstraints ? Camera._ALL_ROTATION : this._lockRotation
   }
 
   set lockRotation (axes: THREE.Vector2) {
@@ -167,19 +170,19 @@ export class Camera implements IWebglCamera {
     this._onValueChanged.dispatch()
 
     // Place camera far from target before orienting it
+    this.ignoreConstraints = true
     const initPos = this._target.clone().add(this.forward.multiplyScalar(1000))
-    this.snap(true).set(initPos, this._target)
-    this.snap(true).orbitTowards(this._defaultForward)
+    this.snap().set(initPos, this._target)
+    this.snap().orbitTowards(this._defaultForward)
+    this.ignoreConstraints = false
     this.updateProjection()
   }
 
   /**
    * Interface for instantaneously moving the camera.
-   * @param {boolean} [force=false] - Set to true to ignore locked axis and rotation.
    * @returns {CameraMovement} The camera movement api.
    */
-  snap (force: boolean = false) : CameraMovement {
-    this._force = force
+  snap () : CameraMovement {
     this._lerp.cancel()
     return this._movement as CameraMovement
   }
@@ -187,14 +190,12 @@ export class Camera implements IWebglCamera {
   /**
    * Interface for smoothly moving the camera over time.
    * @param {number} [duration=1] - The duration of the camera movement in seconds.
-   * @param {boolean} [force=false] - Set to true to ignore locked axis and rotation.
    * @returns {CameraMovement} The camera movement api.
    */
-  lerp (duration: number = 1, force: boolean = false) {
-    if(duration <= 0) return this.snap(force)
-      
+  lerp (duration: number = 1) {
+    if(duration <= 0) return this.snap()
+
     this.stop()
-    this._force = force
     this._lerp.init(duration)
     return this._lerp as CameraMovement
   }

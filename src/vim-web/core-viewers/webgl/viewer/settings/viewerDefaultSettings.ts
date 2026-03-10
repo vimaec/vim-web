@@ -47,8 +47,14 @@ export function getDefaultViewerSettings(): ViewerSettings {
       outline: {
         opacity: 0.85,
         color: new THREE.Color(0x00ffff),
-        scale: .75,
+        scale: 1,
         thickness: 2
+      },
+      selection: {
+        fillMode: 'none',
+        color: new THREE.Color(0x0064ff),
+        opacity: 0.3,
+        overlayOpacity: 0.25
       }
     },
     axes: getDefaultAxesSettings(),

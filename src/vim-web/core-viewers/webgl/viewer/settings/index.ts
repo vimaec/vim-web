@@ -1,1 +1,1 @@
-export type { ViewerSettings, PartialViewerSettings, MaterialSettings } from './viewerSettings'
+export type { ViewerSettings, PartialViewerSettings, MaterialSettings, SelectionFillMode } from './viewerSettings'

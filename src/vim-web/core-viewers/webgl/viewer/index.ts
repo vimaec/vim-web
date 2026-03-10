@@ -3,7 +3,7 @@ export type { IWebglViewer } from './viewer'
 export { createCoreWebglViewer } from './viewer'
 
 // Settings
-export type { ViewerSettings, PartialViewerSettings, MaterialSettings } from './settings'
+export type { ViewerSettings, PartialViewerSettings, MaterialSettings, SelectionFillMode } from './settings'
 
 // Camera
 export type { IWebglCamera, ICameraMovement } from './camera'

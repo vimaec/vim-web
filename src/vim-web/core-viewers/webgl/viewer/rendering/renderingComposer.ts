@@ -13,11 +13,18 @@ import { OutlinePass } from './outlinePass'
 import { MergePass } from './mergePass'
 import { TransferPass } from './transferPass'
 import { Camera } from '../camera/camera'
+import { SelectionOverlayMaterial } from '../../loader/materials/selectionOverlayMaterial'
+import type { SelectionFillMode } from '../settings/viewerSettings'
 
 /*
   * Rendering Pipeline Flow:
   *---------------------*
   | Regular/MSAA Render | ------------------------------------
+  *---------------------*                                     |
+                                                              |
+  *---------------------*                                     |
+  | Selection Overlay   | (optional: X-Ray / See-Through)     |
+  | (into scene target) |                                     |
   *---------------------*                                     |
                                                               |
   *-----------------*     *----------*     *----------------*     *--------*
@@ -53,6 +60,10 @@ export class RenderingComposer {
   private _outlineTarget: THREE.WebGLRenderTarget
   private _sceneTarget: THREE.WebGLRenderTarget
 
+  // Selection overlay (X-Ray / See-Through)
+  private _selectionOverlayMaterial: SelectionOverlayMaterial
+  private _selectionFillMode: SelectionFillMode = 'none'
+
   // Scale factor for outline/selection render target (0.5 = 50% resolution = 4x faster)
   // Lower values = better performance, higher values = better quality
   private _outlineScale = 0.75
@@ -82,6 +93,7 @@ export class RenderingComposer {
 
     this.initSceneRenderingPipeline()
     this.initOutlinePipeline()
+    this.initSelectionOverlay()
   }
 
   /**
@@ -163,6 +175,25 @@ export class RenderingComposer {
     this._transferPass = new TransferPass(this._sceneTarget.texture)
     this._transferPass.enabled = true
     this._composer.addPass(this._transferPass)
+  }
+
+  /**
+   * Initializes the selection overlay render target and material.
+   * Used for X-Ray and See-Through modes.
+   */
+  private initSelectionOverlay () {
+    this._selectionOverlayMaterial = this._materials.system.selectionOverlay
+  }
+
+  /**
+   * Sets the selection fill mode.
+   * Controls whether the selection overlay pass runs and how it composites.
+   */
+  set selectionFillMode (value: SelectionFillMode) {
+    this._selectionFillMode = value
+    if (value === 'xray' || value === 'seethrough') {
+      this._selectionOverlayMaterial.setMode(value)
+    }
   }
 
   /**
@@ -261,16 +292,44 @@ export class RenderingComposer {
       false
     )
 
-    // Null scene background so it doesn't render into the selection mask buffer.
+    // Null scene background so it doesn't render into selection buffers.
     // Three.js renders scene.background independently of overrideMaterial,
     // which would fill the mask with non-zero values and break edge detection.
     const bg = this._scene.threeScene.background
     this._scene.threeScene.background = null
 
+    // Selection overlay pass (X-Ray / See-Through)
+    // Renders directly into sceneTarget — independent of outline pipeline.
+    const needsOverlay = this._selectionFillMode === 'xray' || this._selectionFillMode === 'seethrough'
+    if (needsOverlay) {
+      this.renderSelectionOverlay()
+    }
+
     // Process outline pipeline and final composition
     this._composer.render(delta)
 
     this._scene.threeScene.background = bg
+  }
+
+  /**
+   * Renders selected geometry directly into the scene target.
+   * The scene target already has the correct depth buffer from the main render pass.
+   * - X-Ray: depthTest off — renders on top of everything.
+   * - See-Through: depthFunc GreaterDepth — renders only where behind other geometry.
+   * Both modes use alpha blending + depthWrite off, so the existing scene is preserved.
+   */
+  private renderSelectionOverlay () {
+    const scene = this._scene.threeScene
+    const prevOverride = scene.overrideMaterial
+
+    scene.overrideMaterial = this._selectionOverlayMaterial.three
+    this._renderer.setRenderTarget(this._sceneTarget)
+    // Don't clear — render on top of existing scene
+    const prevAutoClear = this._renderer.autoClear
+    this._renderer.autoClear = false
+    this._renderer.render(scene, this._camera)
+    this._renderer.autoClear = prevAutoClear
+    scene.overrideMaterial = prevOverride
   }
 
   /**

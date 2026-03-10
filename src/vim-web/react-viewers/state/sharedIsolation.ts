@@ -26,6 +26,12 @@ export interface IsolationApi {
   ghostOpacity: StateRef<number>;
   /** Whether transparent materials are rendered (observable). */
   transparency: StateRef<boolean>;
+  /** Whether selection outlines are enabled (observable). */
+  outlineEnabled: StateRef<boolean>;
+  /** Selection fill mode: 'none' | 'default' | 'xray' | 'seethrough' (observable). */
+  selectionFillMode: StateRef<string>;
+  /** Opacity of the overlay pass in 'xray' and 'seethrough' modes (0-1). */
+  selectionOverlayOpacity: StateRef<number>;
   /** Whether room elements are shown (observable). */
   showRooms: StateRef<boolean>;
   /** Hook called when auto-isolate triggers. Use `update()` to add middleware. */
@@ -93,6 +99,10 @@ export interface IIsolationAdapter{
 
   setTransparency(enabled: boolean): void;
 
+  setOutlineEnabled(enabled: boolean): void;
+  setSelectionFillMode(mode: string): void;
+  setSelectionOverlayOpacity(opacity: number): void;
+
   getShowRooms(): boolean;
   setShowRooms(show: boolean): void;
 }
@@ -105,6 +115,9 @@ export function useSharedIsolation(adapter : IIsolationAdapter){
   const showRooms = useStateRef<boolean>(false);
   const showGhost = useStateRef<boolean>(false);
   const transparency = useStateRef<boolean>(true);
+  const outlineEnabled = useStateRef<boolean>(true);
+  const selectionFillMode = useStateRef<string>('none');
+  const selectionOverlayOpacity = useStateRef<number>(0.25);
   const ghostOpacity = useStateRef<number>(() => adapter.getGhostOpacity(), true);
   const onAutoIsolate = useFuncRef(() => {
     if(adapter.hasSelection()){
@@ -135,6 +148,9 @@ export function useSharedIsolation(adapter : IIsolationAdapter){
 
   showGhost.useOnChange((v) => adapter.showGhost(v));
   transparency.useOnChange((v) => adapter.setTransparency(v));
+  outlineEnabled.useOnChange((v) => adapter.setOutlineEnabled(v));
+  selectionFillMode.useOnChange((v) => adapter.setSelectionFillMode(v));
+  selectionOverlayOpacity.useOnChange((v) => adapter.setSelectionOverlayOpacity(v));
   showRooms.useOnChange((v) => adapter.setShowRooms(v));
 
   ghostOpacity.useValidate((next, current) => {
@@ -149,6 +165,9 @@ export function useSharedIsolation(adapter : IIsolationAdapter){
     showPanel,
     showGhost,
     transparency,
+    outlineEnabled,
+    selectionFillMode,
+    selectionOverlayOpacity,
     showRooms,
     ghostOpacity,
     onAutoIsolate,

@@ -11,6 +11,15 @@ import { RecursivePartial } from '../../../../utils/partial'
 
 export type TextureEncoding = 'url' | 'base64' | undefined
 
+/**
+ * How selected elements are filled (beyond the outline).
+ * - 'none': Outline only, no fill.
+ * - 'default': Tint selected meshes in the main render pass (zero cost).
+ * - 'xray': Tint + render selected on top of everything (1 extra pass).
+ * - 'seethrough': Tint + render a semi-transparent ghost where behind geometry (1 extra pass).
+ */
+export type SelectionFillMode = 'none' | 'default' | 'xray' | 'seethrough'
+
 export type MaterialSettings = {
   /**
   * Ghost material options
@@ -53,6 +62,33 @@ export type MaterialSettings = {
     * Range: 1-5. Default: 2
     */
     thickness: number;
+  }
+  /**
+  * Selection fill options (beyond outlines).
+  */
+  selection: {
+    /**
+    * How selected elements are filled.
+    * Default: 'none'
+    */
+    fillMode: SelectionFillMode
+    /**
+    * Tint color applied to selected elements.
+    * Default: rgb(0, 100, 255) — blue
+    */
+    color: THREE.Color
+    /**
+    * Tint blend strength (0 = no tint, 1 = solid color).
+    * Default: 0.3
+    */
+    opacity: number
+    /**
+    * Opacity of the overlay pass in 'xray' and 'seethrough' modes.
+    * In xray: applies to all selected geometry rendered on top.
+    * In seethrough: applies to selected geometry rendered behind other objects.
+    * Default: 0.25
+    */
+    overlayOpacity: number
   }
 }
 

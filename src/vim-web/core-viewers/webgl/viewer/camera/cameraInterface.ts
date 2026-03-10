@@ -151,19 +151,23 @@ export interface IWebglCamera {
   defaultForward: THREE.Vector3;
 
   /**
+   * When true, lockMovement and lockRotation are bypassed.
+   * Set temporarily to position the camera while ignoring user-configured constraints.
+   */
+  ignoreConstraints: boolean;
+
+  /**
    * Interface for instantaneously moving the camera.
-   * @param {boolean} [force=false] - Set to true to ignore locked axis and rotation.
    * @returns {ICameraMovement} The camera movement api.
    */
-  snap(force?: boolean): ICameraMovement;
+  snap(): ICameraMovement;
 
   /**
    * Interface for smoothly moving the camera over time.
    * @param {number} [duration=1] - The duration of the camera movement animation.
-   * @param {boolean} [force=false] - Set to true to ignore locked axis and rotation.
    * @returns {ICameraMovement} The camera movement api.
    */
-  lerp(duration: number, force?: boolean): ICameraMovement;
+  lerp(duration: number): ICameraMovement;
 
   /**
    * Calculates the frustum size at a given point in the scene.
