@@ -81,7 +81,7 @@ export function UltraSuggestion() {
         Check out {' '}
         <a
           className='vc-text-primary vc-underline vc-font-bold'
-          href='https://docs.vimaec.com/docs/vim-for-windows/configuring-vim-ultra'
+          href='https://docs.vimaec.com/docs/vim-flex/vim-ultra'
           target="_blank"
           rel="noopener noreferrer"
         >
