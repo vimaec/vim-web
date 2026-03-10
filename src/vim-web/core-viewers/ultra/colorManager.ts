@@ -1,16 +1,27 @@
 import { MaterialHandles } from './rpcClient'
 import { RpcSafeClient } from './rpcSafeClient'
-import { RemoteColor } from './remoteColor'
+import { RemoteColor, type IRemoteColor } from './remoteColor'
 import * as RpcUtils from './rpcUtils'
 import * as THREE from 'three'
 
 const MAX_BATCH_SIZE = 3000
 
 /**
- * Manages the creation, caching, and deletion of color instances.
- * Handles batched deletion of colors to optimize RPC calls.
+ * Public interface for the Ultra color manager.
+ * Creates, caches, and destroys remote color instances.
  */
-export class ColorManager {
+export interface IColorManager {
+  getColor(color: THREE.Color): Promise<IRemoteColor | undefined>
+  getColors(colors: (THREE.Color | undefined)[]): Promise<IRemoteColor[] | undefined>
+  getFromId(id: number): IRemoteColor | undefined
+  destroy(color: IRemoteColor): void
+  clear(): void
+}
+
+/**
+ * @internal
+ */
+export class ColorManager implements IColorManager {
   private _rpc: RpcSafeClient
   private _hexToColor = new Map<number, RemoteColor>()
   private _idToColor = new Map<number, RemoteColor>()

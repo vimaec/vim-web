@@ -6,6 +6,7 @@ import * as THREE from 'three'
 import { ViewerSettings } from '../settings/viewerSettings'
 import { Layers } from '../raycaster'
 
+/** @internal */
 export class OrthographicCamera {
   camera: THREE.OrthographicCamera
 
@@ -19,7 +20,7 @@ export class OrthographicCamera {
     this.camera.updateProjectionMatrix()
   }
 
-  frustrumSizeAt (point: THREE.Vector3) {
+  frustumSizeAt (point: THREE.Vector3) {
     return new THREE.Vector2(
       this.camera.right - this.camera.left,
       this.camera.top - this.camera.bottom

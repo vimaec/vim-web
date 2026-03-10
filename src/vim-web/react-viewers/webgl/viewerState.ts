@@ -8,8 +8,8 @@ import { AugmentedElement, getElements } from '../helpers/element'
 import { StateRef, useStateRef } from '../helpers/reactUtils'
 
 export type ViewerState = {
-  vim: StateRef<Core.Webgl.Vim>
-  selection: StateRef<Core.Webgl.Element3D[]>
+  vim: StateRef<Core.Webgl.IWebglVim>
+  selection: StateRef<Core.Webgl.IElement3D[]>
   elements: StateRef<AugmentedElement[]>
   filter: StateRef<string>
 }
@@ -21,11 +21,11 @@ export function useViewerState (viewer: Core.Webgl.Viewer) : ViewerState {
   }
 
   const getSelection = () => {
-    return [...viewer.selection.getAll()].filter(o => o.type === 'Element3D')
+    return [...viewer.selection.getAll()].filter((o): o is Core.Webgl.IElement3D => o.type === 'Element3D')
   }
 
-  const vim = useStateRef<Core.Webgl.Vim>(getVim())
-  const selection = useStateRef<Core.Webgl.Element3D[]>(getSelection())
+  const vim = useStateRef<Core.Webgl.IWebglVim>(getVim())
+  const selection = useStateRef<Core.Webgl.IElement3D[]>(getSelection())
   const allElements = useStateRef<AugmentedElement[] | undefined>([])
   const filteredElements = useStateRef<AugmentedElement[]>([])
   const filter = useStateRef<string>('')

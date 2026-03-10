@@ -12,19 +12,19 @@ import 'react-complex-tree/lib/style.css'
 import ReactTooltip from 'react-tooltip'
 import * as Core from '../../core-viewers'
 import { showContextMenu } from '../panels/contextMenu'
-import { CameraRef } from '../state/cameraState'
+import { FramingApi } from '../state/cameraState'
 import { ArrayEquals } from '../helpers/data'
 import { BimTreeData, VimTreeNode } from './bimTreeData'
-import { IsolationRef } from '../state/sharedIsolation'
+import { IsolationApi } from '../state/sharedIsolation'
 
-import Element3D = Core.Webgl.Element3D
-import Viewer = Core.Webgl.Viewer
+type IElement3D = Core.Webgl.IElement3D
+type Viewer = Core.Webgl.Viewer
 
-export type TreeActionRef = {
+export type TreeActionApi = {
   showAll: () => void
   hideAll: () => void
   collapseAll: () => void
-  selectSiblings: (element: Element3D) => void
+  selectSiblings: (element: IElement3D) => void
 }
 
 /**
@@ -35,15 +35,15 @@ export type TreeActionRef = {
  * @param isolation current isolation state.
  */
 export function BimTree (props: {
-  actionRef: React.MutableRefObject<TreeActionRef>
+  actionRef: React.MutableRefObject<TreeActionApi>
   viewer: Viewer
-  camera: CameraRef
-  objects: Element3D[]
-  isolation: IsolationRef
+  framing: FramingApi
+  objects: IElement3D[]
+  isolation: IsolationApi
   treeData: BimTreeData
 }) {
   // Data state
-  const [objects, setObjects] = useState<Element3D[]>([])
+  const [objects, setObjects] = useState<IElement3D[]>([])
 
   // Tree state
   const [expandedItems, setExpandedItems] = useState<number[]>([])
@@ -57,15 +57,15 @@ export function BimTree (props: {
   props.actionRef.current = useMemo(
     () => ({
       showAll: () => {
-        props.isolation.adapter.current.showAll()
+        props.isolation.showAll()
       },
       hideAll: () => {
-        props.isolation.adapter.current.hideAll()
+        props.isolation.hideAll()
       },
       collapseAll: () => {
         setExpandedItems([])
       },
-      selectSiblings: (object: Element3D) => {
+      selectSiblings: (object: IElement3D) => {
         const element = object.element
         const node = props.treeData.getNodeFromElement(element)
         const siblings = props.treeData.getSiblings(node)
@@ -142,8 +142,8 @@ export function BimTree (props: {
       className="vim-bim-tree vc-mt-2  vc-flex-1 vc-flex vc-w-full vc-min-h-0"
       ref={div}
       tabIndex={0}
-      onFocus={() => (props.viewer.inputs.keyboard.unregister())}
-      onBlur={() => (props.viewer.inputs.keyboard.register())}
+      onFocus={() => (props.viewer.inputs.keyboard.active = false)}
+      onBlur={() => (props.viewer.inputs.keyboard.active = true)}
     >
       <ControlledTreeEnvironment
         renderDepthOffset={div.current ? Math.min(div.current.clientWidth * 0.04, 10) : 10 }
@@ -194,7 +194,7 @@ export function BimTree (props: {
           ) => ({
             onKeyUp: (e) => {
               if (e.key === 'f') {
-                props.camera.frameSelection.call()
+                props.framing.frameSelection.call()
               }
               if (e.key === 'Escape') {
                 props.viewer.selection.clear()
@@ -238,7 +238,7 @@ export function BimTree (props: {
         // Implement double click
         onPrimaryAction={(item, _) => {
           if (doubleClick.isDoubleClick(item.index as number)) {
-            props.camera.frameSelection.call()
+            props.framing.frameSelection.call()
           }
         }}
         // Default behavior
@@ -262,7 +262,7 @@ export function BimTree (props: {
 
 function toggleVisibility (
   viewer: Viewer,
-  isolation: IsolationRef,
+  isolation: IsolationApi,
   tree: BimTreeData,
   index: number
 ) {
@@ -274,9 +274,9 @@ function toggleVisibility (
 
   const visibility = tree.nodes[index].visible
   if (visibility !== 'vim-visible') {
-    isolation.adapter.current.show(objs.flatMap(o => o?.instances ?? []))
+    isolation.show(objs.flatMap(o => o?.instances ?? []))
   } else {
-    isolation.adapter.current.hide(objs.flatMap(o => o?.instances ?? []))
+    isolation.hide(objs.flatMap(o => o?.instances ?? []))
   }
 }
 
@@ -286,7 +286,7 @@ function updateViewerSelection (
   nodes: number[],
   operation: 'add' | 'remove' | 'set'
 ) {
-  const objects: Element3D[] = []
+  const objects: IElement3D[] = []
   nodes.forEach((n) => {
     const item = tree.nodes[n]
     const element = item.data.index

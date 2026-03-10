@@ -2,33 +2,69 @@
  * @module viw-webgl-viewer/gizmos/sectionBox
  */
 
-import { Viewer } from '../../viewer';
+import { WebglViewer } from '../../viewer';
+import { Renderer } from '../../rendering/renderer';
 import * as THREE from 'three';
 import { BoxInputs } from './sectionBoxInputs';
+import type { ISignal } from '../../../../shared/events';
 import { SignalDispatcher } from 'ste-signals';
+import type { ISimpleEvent } from '../../../../shared/events';
 import { SimpleEventDispatcher } from 'ste-simple-events';
 import { SectionBoxGizmo } from './sectionBoxGizmo';
 import { safeBox } from '../../../../../utils/threeUtils';
 
 /**
+ * Public interface for the section box gizmo.
+ *
+ * @example
+ * ```ts
+ * const sb = viewer.gizmos.sectionBox
+ * sb.active = true              // Enable clipping
+ * sb.visible = true             // Show gizmo
+ * sb.setBox(await vim.getBoundingBox())  // Fit to model
+ * sb.onBoxConfirm.sub((box) => console.log('Confirmed:', box))
+ * ```
+ */
+export interface IWebglSectionBox {
+  /** Dispatches when active, visible, or interactive change. */
+  readonly onStateChanged: ISignal
+  /** Dispatches when the user finishes manipulating the box. */
+  readonly onBoxConfirm: ISimpleEvent<THREE.Box3>
+  /** Dispatches boolean indicating pointer hover state on box handles. */
+  readonly onHover: ISimpleEvent<boolean>
+  /** Returns a copy of the current section box. */
+  getBox(): THREE.Box3
+  /** Whether clipping planes are applied to the model. */
+  active: boolean
+  /** Whether the gizmo responds to pointer events. */
+  interactive: boolean
+  /** Whether the section box gizmo is visible. */
+  visible: boolean
+  /** Resizes the section gizmo to match the given box. */
+  setBox(box: THREE.Box3): void
+}
+
+/**
+ * @internal
  * Manages a section box gizmo, serving as a proxy between the renderer and the user.
- * 
+ *
  * This class:
  *  - Maintains a Three.js `Box3` that defines the clipping region.
  *  - Handles user interaction via {@link BoxInputs}.
  *  - Updates a {@link SectionBoxGizmo} to visualize the clipping box.
  *  - Dispatches signals when the box is resized or interaction state changes.
  */
-export class SectionBox {
+export class SectionBox implements IWebglSectionBox {
   // -------------------------------------------------------------------------
   // Private fields
   // -------------------------------------------------------------------------
 
-  private _viewer: Viewer;
+  private _renderer: Renderer;
+  private _viewer: WebglViewer;
   private _gizmos: SectionBoxGizmo;
   private _inputs: BoxInputs;
   
-  private _clip: boolean | undefined = undefined;
+  private _active: boolean | undefined = undefined;
   private _visible: boolean | undefined = undefined;
   private _interactive: boolean | undefined = undefined;
 
@@ -36,20 +72,12 @@ export class SectionBox {
   private _onBoxConfirm = new SimpleEventDispatcher<THREE.Box3>();
   private _onHover = new SimpleEventDispatcher<boolean>();
 
-  /**
-   * @internal
-   * A convenience getter to the viewer's renderer.
-   */
   private get renderer() {
-    return this._viewer.renderer;
+    return this._renderer;
   }
 
-  /**
-   * @internal
-   * A convenience getter to the `Section` module in the renderer.
-   */
   private get section() {
-    return this._viewer.renderer.section;
+    return this._renderer.section;
   }
 
   // -------------------------------------------------------------------------
@@ -58,7 +86,7 @@ export class SectionBox {
 
   /**
    * Dispatches when any of the following properties change:
-   * - {@link clip} (clipping planes active)
+   * - {@link active} (clipping planes active)
    * - {@link visible} (gizmo visibility)
    * - {@link interactive} (pointer inputs active)
    */
@@ -90,22 +118,23 @@ export class SectionBox {
   /**
    * Creates a new SectionBox gizmo controller.
    * 
-   * @param viewer - The parent {@link Viewer} in which the section box is rendered.
+   * @param viewer - The parent {@link WebglViewer} in which the section box is rendered.
    */
-  constructor(viewer: Viewer) {
+  constructor(renderer: Renderer, viewer: WebglViewer) {
+    this._renderer = renderer;
     this._viewer = viewer;
 
-    this._gizmos = new SectionBoxGizmo(viewer.renderer, viewer.camera);
+    this._gizmos = new SectionBoxGizmo(renderer, viewer.camera);
     this._inputs = new BoxInputs(
       viewer,
       this._gizmos.handles,
-      this._viewer.renderer.section.box
+      this._renderer.section.box
     );
 
     // When the pointer enters/leaves a face, dispatch hover state.
     this._inputs.onFaceEnter = (normal) => {
       this._onHover.dispatch(normal.x !== 0 || normal.y !== 0 || normal.z !== 0);
-      this.renderer.needsUpdate = true;
+      this.renderer.requestRender();
     };
 
     // When user drags the box, resize and update.
@@ -118,7 +147,7 @@ export class SectionBox {
     this._inputs.onBoxConfirm = (box) => this._onBoxConfirm.dispatch(box);
 
     // Default states
-    this.clip = false;
+    this.active = false;
     this.visible = false;
     this.interactive = false;
     this.update();
@@ -138,16 +167,16 @@ export class SectionBox {
 
   /**
    * Determines whether the section gizmo applies clipping planes to the model.
-   * 
+   *
    * When `true`, `renderer.section.active` is enabled.
    */
-  get clip(): boolean {
-    return this._clip ?? false;
+  get active(): boolean {
+    return this._active ?? false;
   }
 
-  set clip(value: boolean) {
-    if (value === this._clip) return;
-    this._clip = value;
+  set active(value: boolean) {
+    if (value === this._active) return;
+    this._active = value;
     this.renderer.section.active = value;
     this._onStateChanged.dispatch();
   }
@@ -172,7 +201,7 @@ export class SectionBox {
     }
 
     this._interactive = value;
-    this.renderer.needsUpdate = true;
+    this.renderer.requestRender();
     this._onStateChanged.dispatch();
   }
 
@@ -190,7 +219,7 @@ export class SectionBox {
     if (value) {
       this.update();
     }
-    this.renderer.needsUpdate = true;
+    this.renderer.requestRender();
     this._onStateChanged.dispatch();
   }
 
@@ -212,7 +241,7 @@ export class SectionBox {
     this._gizmos.fitBox(box);
     this.renderer.section.fitBox(box);
     this._onBoxConfirm.dispatch(box);
-    this.renderer.needsUpdate = true;
+    this.renderer.requestRender();
   }
 
   /**
@@ -222,7 +251,7 @@ export class SectionBox {
    */
   public update(): void {
     this.setBox(this.section.box);
-    this.renderer.needsUpdate = true;
+    this.renderer.requestRender();
   }
 
   /**

@@ -3,13 +3,17 @@
  */
 
 import * as THREE from 'three'
-import { G3d, G3dMesh, G3dMaterial } from 'vim-format'
+import { G3dMaterial } from 'vim-format'
 import { InsertableGeometry } from './insertableGeometry'
 import { InsertableSubmesh } from './insertableSubmesh'
 import { G3dMeshOffsets } from './g3dOffsets'
 import { Vim } from '../vim'
-import { ModelMaterial, Materials } from '../materials/materials'
+import { Scene } from '../scene'
+import { MaterialSet, Materials, applyMaterial } from '../materials/materials'
+import { ElementMapping } from '../elementMapping'
+import { MappedG3d } from './mappedG3d'
 
+/** @internal */
 export class InsertableMesh {
   offsets: G3dMeshOffsets
   mesh: THREE.Mesh
@@ -35,33 +39,30 @@ export class InsertableMesh {
   }
 
   /**
-   * Set to true to ignore SetMaterial calls.
-   */
-  ignoreSceneMaterial: boolean
-
-  /**
    * initial material.
    */
-  private _material: ModelMaterial
+  private _material: THREE.Material
 
   geometry: InsertableGeometry
 
   constructor (
     offsets: G3dMeshOffsets,
     materials: G3dMaterial,
-    transparent: boolean
+    transparent: boolean,
+    mapping: ElementMapping,
+    vimIndex: number = 0
   ) {
     this.offsets = offsets
     this.transparent = transparent
 
-    this.geometry = new InsertableGeometry(offsets, materials, transparent)
+    this.geometry = new InsertableGeometry(offsets, materials, transparent, mapping, vimIndex)
 
-    this._material = transparent
-      ? Materials.getInstance().transparent.material
-      : Materials.getInstance().opaque.material
+    const m = Materials.getInstance()
+    this._material = transparent ? m.modelTransparentMaterial : m.modelOpaqueMaterial
 
     this.mesh = new THREE.Mesh(this.geometry.geometry, this._material)
     this.mesh.userData.vim = this
+    this.mesh.userData.transparent = transparent
     // this.mesh.frustumCulled = false
   }
 
@@ -69,23 +70,15 @@ export class InsertableMesh {
     return this.geometry.progress
   }
 
-  insert (g3d: G3dMesh, mesh: number) {
-    const added = this.geometry.insert(g3d, mesh)
-    if (!this.vim) {
-      return
-    }
-
-    for (const i of added) {
-      this.vim.scene.addSubmesh(new InsertableSubmesh(this, i))
-    }
-  }
-
-  insertFromVim (g3d: G3d, mesh: number) {
+  insertFromVim (g3d: MappedG3d, mesh: number) {
     this.geometry.insertFromG3d(g3d, mesh)
   }
 
   update () {
     this.geometry.update()
+    if (this.vim) {
+      (this.vim.scene as Scene).updateBox(this.geometry.boundingBox)
+    }
   }
 
   clearUpdate () {
@@ -106,7 +99,6 @@ export class InsertableMesh {
   }
 
   /**
-   *
    * @returns Returns all submeshes
    */
   getSubmeshes () {
@@ -119,6 +111,12 @@ export class InsertableMesh {
     return submeshes
   }
 
+  forEachSubmesh (callback: (submesh: InsertableSubmesh) => void) {
+    for (let i = 0; i < this.geometry.submeshes.length; i++) {
+      callback(new InsertableSubmesh(this, i))
+    }
+  }
+
   /**
    *
    * @returns Returns submesh for given index.
@@ -129,49 +127,8 @@ export class InsertableMesh {
     // }
   }
 
- /**
-    * Sets the material for this mesh. 
-    * Set to undefined to reset to original materials.
-    */
-   setMaterial(value: ModelMaterial) {
-     if (this.ignoreSceneMaterial) return;
- 
-     const base = this._material; // always defined
-     let mat: ModelMaterial;
- 
-     if (Array.isArray(value)) {
-       mat = this._mergeMaterials(value, base);
-     } else {
-       mat = value ?? base;
-     }
- 
-     // Apply it
-     this.mesh.material = mat;
- 
-     // Update groups
-     this.mesh.geometry.clearGroups();
-     if (Array.isArray(mat)) {
-       mat.forEach((_m, i) => {
-         this.mesh.geometry.addGroup(0, Infinity, i);
-       });
-     }
-   }
- 
-   private _mergeMaterials(
-     value: THREE.Material[],
-     base: ModelMaterial
-   ): THREE.Material[] {
-     const baseArr = Array.isArray(base) ? base : [base];
-     const result: THREE.Material[] = [];
- 
-     for (const v of value) {
-       if (v === undefined) {
-         result.push(...baseArr);
-       } else {
-         result.push(v);
-       }
-     }
- 
-     return result;
-   }
+  setMaterial(value: MaterialSet) {
+    applyMaterial(this.mesh, value)
+  }
+
 }

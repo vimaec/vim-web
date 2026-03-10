@@ -5,13 +5,14 @@
 import * as THREE from 'three'
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer'
 import { MeshLine, MeshLineMaterial } from '../../../utils/meshLine'
-import { Viewer } from '../../viewer'
 import {
   createMeasureElement,
   MeasureStyle,
   MeasureElement
 } from './measureHtml'
-import { ICamera } from '../../camera/cameraInterface'
+import { IWebglCamera } from '../../camera/cameraInterface'
+import { Renderer } from '../../rendering/renderer'
+import { IWebglViewport } from '../../viewport'
 import { Layers } from '../../raycaster'
 
 /**
@@ -96,10 +97,10 @@ class MeasureMarker {
   mesh: THREE.Mesh
   private _material: THREE.Material
   private _materialAlways: THREE.Material
-  private _camera: ICamera
+  private _camera: IWebglCamera
   private disconnect: () => void
 
-  constructor (color: THREE.Color, camera: ICamera) {
+  constructor (color: THREE.Color, camera: IWebglCamera) {
     this._material = new THREE.MeshBasicMaterial({
       color
     })
@@ -124,7 +125,7 @@ class MeasureMarker {
 
   updateScale () {
     const scale =
-      this._camera.frustrumSizeAt(this.mesh.position).y / 2 * this.MARKER_SIZE
+      this._camera.frustumSizeAt(this.mesh.position).y / 2 * this.MARKER_SIZE
     this.mesh.scale.set(scale, scale, scale)
     this.mesh.updateMatrix()
   }
@@ -143,9 +144,11 @@ class MeasureMarker {
 
 /**
  * Reprents all graphical elements associated with a measure.
+ * @internal
  */
 export class MeasureGizmo {
-  private _viewer: Viewer
+  private _renderer: Renderer
+  private _camera: IWebglCamera
   private _startMarker: MeasureMarker
   private _endMarker: MeasureMarker
   private _line: MeasureLine
@@ -157,17 +160,18 @@ export class MeasureGizmo {
   private _html: MeasureElement
   private _animId: number | undefined
 
-  constructor (viewer: Viewer) {
-    this._viewer = viewer
-    const canvasSize = this._viewer.viewport.getSize()
+  constructor (renderer: Renderer, viewport: IWebglViewport, camera: IWebglCamera) {
+    this._renderer = renderer
+    this._camera = camera
+    const canvasSize = viewport.getSize()
 
     this._startMarker = new MeasureMarker(
       new THREE.Color(0xffb700),
-      viewer.camera
+      camera
     )
     this._endMarker = new MeasureMarker(
       new THREE.Color(0x0590cc),
-      viewer.camera
+      camera
     )
 
     this._line = new MeasureLine(canvasSize, new THREE.Color(0x000000), 'Dist')
@@ -195,7 +199,7 @@ export class MeasureGizmo {
       this._label
     )
 
-    this._viewer.renderer.add(this._group)
+    this._renderer.add(this._group)
   }
 
   private _animate () {
@@ -230,7 +234,7 @@ export class MeasureGizmo {
   ) {
     if (!first || !second) return
     const length = first.distanceTo(second)
-    const ratio = length / (this._viewer.camera.frustrumSizeAt(first).y / 2)
+    const ratio = length / (this._camera.frustumSizeAt(first).y / 2)
     return ratio
   }
 
@@ -241,7 +245,7 @@ export class MeasureGizmo {
     // Set start marker
     this._startMarker.setPosition(start)
     this._startMarker.mesh.visible = true
-    this._viewer.renderer.needsUpdate = true
+    this._renderer.requestRender()
   }
 
   /**
@@ -253,7 +257,7 @@ export class MeasureGizmo {
       this._line.label.visible = false
     }
     this._label.visible = false
-    this._viewer.renderer.needsUpdate = true
+    this._renderer.requestRender()
   }
 
   /**
@@ -264,7 +268,7 @@ export class MeasureGizmo {
       this._line.setPoints(start, pos)
       this._line.mesh.visible = true
     }
-    this._viewer.renderer.needsUpdate = true
+    this._renderer.requestRender()
   }
 
   /**
@@ -308,7 +312,7 @@ export class MeasureGizmo {
 
     // Start update of collapse.
     this._animate()
-    this._viewer.renderer.needsUpdate = true
+    this._renderer.requestRender()
     return true
   }
 
@@ -319,7 +323,7 @@ export class MeasureGizmo {
     if (this._animId !== undefined) cancelAnimationFrame(this._animId)
 
     this._html.div.remove()
-    this._viewer.renderer.remove(this._group)
+    this._renderer.remove(this._group)
 
     this._startMarker.dispose()
     this._endMarker.dispose()

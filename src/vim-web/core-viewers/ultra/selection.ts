@@ -1,9 +1,10 @@
-import {Selection, ISelectionAdapter} from "../shared/selection";
-import { Element3D } from "./element3d";
+import {Selection, type ISelection, ISelectionAdapter} from "../shared/selection";
+import { Element3D, type IUltraElement3D } from "./element3d";
 import { VisibilityState } from "./visibility";
 
-export type ISelection = Selection<Element3D>
-export function createSelection(): ISelection {
+export type IUltraSelection = ISelection<IUltraElement3D>
+/** @internal */
+export function createSelection(): IUltraSelection {
   return new Selection<Element3D>(new SelectionAdapter());
 }
 

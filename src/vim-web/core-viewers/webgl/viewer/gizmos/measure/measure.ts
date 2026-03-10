@@ -3,8 +3,9 @@
  */
 
 import * as THREE from 'three'
-import { IRaycastResult, RaycastResult } from '../../raycaster'
-import { Viewer } from '../../viewer'
+import { IWebglRaycastResult } from '../../raycaster'
+import { WebglViewer } from '../../viewer'
+import { Renderer } from '../../rendering/renderer'
 import { MeasureGizmo } from './measureGizmo'
 import { ControllablePromise } from '../../../../../utils/promise'
 
@@ -54,11 +55,13 @@ export interface IMeasure {
 
 export type MeasureStage = 'ready' | 'active' | 'done' | 'failed'
 /**
+ * @internal
  * Manages measure flow and gizmos
  */
 export class Measure implements IMeasure {
   // dependencies
-  private _viewer: Viewer
+  private _viewer: WebglViewer
+  private _renderer: Renderer
 
   // resources
   private _meshes: MeasureGizmo | undefined
@@ -68,7 +71,6 @@ export class Measure implements IMeasure {
 
   private _endPos: THREE.Vector3 | undefined
   private _measurement: THREE.Vector3 | undefined
-  private _previousOnClick: (pos: THREE.Vector2, ctrl: boolean ) => void
   private _promise : ControllablePromise<void> | undefined
   private _stage : MeasureStage = 'ready'
 
@@ -100,8 +102,9 @@ export class Measure implements IMeasure {
     return this._stage
   }
 
-  constructor (viewer: Viewer) {
+  constructor (viewer: WebglViewer, renderer: Renderer) {
     this._viewer = viewer
+    this._renderer = renderer
   }
 
   /**
@@ -115,14 +118,10 @@ export class Measure implements IMeasure {
 
     this._promise = new ControllablePromise<void>()
     this._stage = 'ready'
-    this._previousOnClick = this._viewer.inputs.mouse.onClick
-    this._viewer.inputs.mouse.onClick = async (pos: THREE.Vector2) => this.onClick(pos)
-    return this._promise.promise.finally(() => {
-      if (this._previousOnClick) {
-        this._viewer.inputs.mouse.onClick = this._previousOnClick
-        this._previousOnClick = undefined
-      }
+    const restore = this._viewer.inputs.mouse.override({
+      onClick: async (_original, pos: THREE.Vector2, _ctrl) => this.onClick(pos)
     })
+    return this._promise.promise.finally(restore)
   }
 
   private async onClick (pos: THREE.Vector2) {
@@ -142,57 +141,17 @@ export class Measure implements IMeasure {
     }
   }
 
-  /**
-   * Should be private.
-   */
-  onFirstClick (hit: IRaycastResult) {
+  private onFirstClick (hit: IWebglRaycastResult) {
     this.clear()
-    this._meshes = new MeasureGizmo(this._viewer)
+    this._meshes = new MeasureGizmo(this._renderer, this._viewer.viewport, this._viewer.camera)
     this._startPos = hit.worldPosition
     this._meshes.start(this._startPos)
   }
 
-  // onMouseMove () {
-  //   this._meshes?.hide()
-  // }
-
-  // onMouseIdle (hit: RaycastResult) {
-  //   // Show markers and line on hit
-  //   if (!hit.isHit) {
-  //     this._meshes?.hide()
-  //     return
-  //   }
-  //   if (hit.position && this._startPos) {
-  //     this._measurement = hit.object
-  //       ? hit.position.clone().sub(this._startPos)
-  //       : undefined
-  //   }
-
-  //   if (hit.object && hit.position && this._startPos) {
-  //     this._meshes?.update(this._startPos, hit.position)
-  //   } else {
-  //     this._meshes?.hide()
-  //   }
-  // }
-
-  /**
-   * Should be private.
-   */
-  onSecondClick (hit : IRaycastResult) {
-    // Compute measurement vector component
+  private onSecondClick (hit : IWebglRaycastResult) {
     this._endPos = hit.worldPosition
-
     this._measurement = this._endPos.clone().sub(this._startPos)
-    console.log(`Distance: ${this._measurement.length()}`)
-    console.log(
-      `
-      X: ${this._measurement.x},
-      Y: ${this._measurement.y},
-      Z: ${this._measurement.z} 
-      `
-    )
     this._meshes?.finish(this._startPos, this._endPos)
-
     return true
   }
 

@@ -7,14 +7,14 @@ import { BimHeader } from './bimInfoHeader'
 import { getObjectData } from './bimInfoObject'
 import { getVimData } from './bimInfoVim'
 import { AugmentedElement } from '../helpers/element'
-import { Data, BimInfoPanelRef } from './bimInfoData'
+import { Data, BimInfoPanelApi } from './bimInfoData'
 
 export function BimInfoPanel (props : {
-    object: Core.Webgl.Element3D,
-    vim: Core.Webgl.Vim,
+    object: Core.Webgl.IElement3D,
+    vim: Core.Webgl.IWebglVim,
     elements: AugmentedElement[],
     full : boolean
-    bimInfoRef: BimInfoPanelRef
+    bimInfoRef: BimInfoPanelApi
   }
 ) {
   const target = props.object?.type === 'Element3D' ? props.object : undefined

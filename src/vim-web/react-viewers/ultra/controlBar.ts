@@ -1,26 +1,26 @@
 
-import * as Core from '../../core-viewers/ultra'
+import * as Core from '../../core-viewers'
 import { ControlBarCustomization } from '../controlbar/controlBar'
-import { ModalHandle } from '../panels'
-import { CameraRef } from '../state/cameraState'
+import { ModalApi } from '../panels/modal'
+import { FramingApi } from '../state/cameraState'
 import { controlBarCamera, controlBarSectionBox, controlBarMiscUltra, controlBarVisibility } from '../state/controlBarState'
-import { SectionBoxRef } from '../state/sectionBoxState'
-import { IsolationRef } from '../state/sharedIsolation'
+import { SectionBoxApi } from '../state/sectionBoxState'
+import { IsolationApi } from '../state/sharedIsolation'
 import { SideState } from '../state/sideState'
 import { UltraSettings } from './settings'
 
 export function useUltraControlBar (
-  viewer: Core.Viewer,
-  section: SectionBoxRef,
-  isolation: IsolationRef,
-  camera: CameraRef,
+  viewer: Core.Ultra.Viewer,
+  section: SectionBoxApi,
+  isolation: IsolationApi,
+  framing: FramingApi,
   settings: UltraSettings,
   side: SideState,
-  modal: ModalHandle,
+  modal: ModalApi,
   customization: ControlBarCustomization | undefined
 ) {
   let bar = [
-    controlBarCamera(camera, settings.ui),
+    controlBarCamera(framing, settings.ui),
     controlBarVisibility(isolation, settings.ui),
     controlBarSectionBox(section, viewer.selection.any(), settings.ui),
     controlBarMiscUltra(modal, side, settings)

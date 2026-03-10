@@ -90,7 +90,7 @@ export type Data = {
  * @param source - The VIM.Object or VIM.Vim instance from which the data was originally extracted.
  * @returns A promise that resolves to the modified Data object.
  */
-export type DataCustomization = (data: Data, source: Core.Webgl.Vim | Core.Webgl.Element3D) => Promise<Data>
+export type DataCustomization = (data: Data, source: Core.Webgl.IWebglVim | Core.Webgl.IElement3D) => Promise<Data>
 
 /**
  * A rendering customization function that takes props containing data and a standard
@@ -109,7 +109,7 @@ export type DataRender<T> = ((props: { data: T; standard: () => JSX.Element }) =
  * different parts of the BIM info panel. These callbacks can be updated at runtime and will be used
  * the next time the panel re-renders.
  */
-export type BimInfoPanelRef = {
+export type BimInfoPanelApi = {
   /**
    * A function that customizes the data before it is rendered in the BIM info panel.
    */
@@ -161,9 +161,9 @@ export type BimInfoPanelRef = {
  * of a BIM info panel. This hook maintains internal state for each customization callback,
  * allowing dynamic updates at runtime.
  *
- * @returns A {@link BimInfoPanelRef} object containing getters and setters for each customization callback.
+ * @returns A {@link BimInfoPanelApi} object containing getters and setters for each customization callback.
  */
-export function useBimInfo(): BimInfoPanelRef {
+export function useBimInfo(): BimInfoPanelApi {
   const [onData, setOnData] = useState<DataCustomization>(() => async (data, _) => data)
   const [renderHeader, setRenderHeader] = useState<DataRender<Entry[]>>(undefined)
   const [renderHeaderEntry, setRenderHeaderEntry] = useState<DataRender<Entry>>(undefined)

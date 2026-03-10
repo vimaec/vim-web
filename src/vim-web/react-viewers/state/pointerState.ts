@@ -2,19 +2,18 @@ import { useEffect, useState } from 'react'
 import * as Core from '../../core-viewers'
 
 export function getPointerState (viewer: Core.Webgl.Viewer) {
-  const [mode, setMode] = useState<Core.PointerMode>(viewer.inputs.pointerActive)
+  const [mode, setMode] = useState<Core.PointerMode>(viewer.inputs.pointerMode)
 
   useEffect(() => {
     const sub = viewer.inputs.onPointerModeChanged.subscribe(() => {
-      setMode(viewer.inputs.pointerActive)
+      setMode(viewer.inputs.pointerMode)
     })
     return () => sub()
   }, [])
 
   const onModeBtn = (target: Core.PointerMode) => {
-    const next = mode === target ? viewer.inputs.pointerFallback : target
-    viewer.inputs.pointerActive = next
-    setMode(next)
+    viewer.inputs.pointerMode = target
+    setMode(target)
   }
 
   return {

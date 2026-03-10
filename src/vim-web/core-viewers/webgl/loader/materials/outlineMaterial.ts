@@ -4,61 +4,19 @@
 
 import * as THREE from 'three'
 
-/** Outline Material based on edge detection. */
+/**
+ * @internal
+ * Outline Material based on edge detection.
+ */
 export class OutlineMaterial {
-  material: THREE.ShaderMaterial
-  private _camera:
-    | THREE.PerspectiveCamera
-    | THREE.OrthographicCamera
-    | undefined
-
+  three: THREE.ShaderMaterial
   private _resolution: THREE.Vector2
-  private _precision: number = 1
-  private _antialias: boolean = false
+  private _onUpdate?: () => void
 
-  constructor (
-    options?: Partial<{
-      sceneBuffer: THREE.Texture
-      resolution: THREE.Vector2
-      precision: number
-      antialias: boolean
-      camera: THREE.PerspectiveCamera | THREE.OrthographicCamera
-    }>
-  ) {
-    this.material = createOutlineMaterial()
-    this._antialias = options?.antialias ?? false
-    this._precision = options?.precision ?? 1
-    this._resolution = options?.resolution ?? new THREE.Vector2(1, 1)
-    this.resolution = this._resolution
-    if (options?.sceneBuffer) {
-      this.sceneBuffer = options.sceneBuffer
-    }
-    this.camera = options?.camera
-  }
-
-  /**
-   * Enable antialiasing for the outline.
-   * This is actually applied in the rendering composer.
-   */
-  get antialias () {
-    return this._antialias
-  }
-
-  set antialias (value: boolean) {
-    this._antialias = value
-    this.material.uniformsNeedUpdate = true
-  }
-
-  /**
-   * Precision of the outline. This is used to scale the resolution of the outline.
-   */
-  get precision () {
-    return this._precision
-  }
-
-  set precision (value: number) {
-    this._precision = value
-    this.resolution = this._resolution
+  constructor (onUpdate?: () => void) {
+    this.three = createOutlineMaterial()
+    this._onUpdate = onUpdate
+    this._resolution = new THREE.Vector2(1, 1)
   }
 
   /**
@@ -69,207 +27,143 @@ export class OutlineMaterial {
   }
 
   set resolution (value: THREE.Vector2) {
-    this.material.uniforms.screenSize.value.set(
-      value.x * this._precision,
-      value.y * this._precision,
-      1 / (value.x * this._precision),
-      1 / (value.y * this._precision)
+    this.three.uniforms.screenSize.value.set(
+      value.x,
+      value.y,
+      1 / value.x,
+      1 / value.y
     )
 
     this._resolution = value
-    this.material.uniformsNeedUpdate = true
+    this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
   }
 
   /**
-   * Camera used to render the outline.
+   * Thickness of the outline in screen pixels.
    */
-  get camera () {
-    return this._camera
+  get thickness () {
+    return this.three.uniforms.thickness.value
   }
 
-  set camera (
-    value: THREE.PerspectiveCamera | THREE.OrthographicCamera | undefined
-  ) {
-    this._camera = value
-    this.material.uniforms.cameraNear.value = value?.near ?? 1
-    this.material.uniforms.cameraFar.value = value?.far ?? 1000
-    this.material.uniformsNeedUpdate = true
+  set thickness (value: number) {
+    this.three.uniforms.thickness.value = Math.max(1, Math.round(value))
+    this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
   }
 
   /**
-   * Blur of the outline. This is used to smooth the outline.
+   * Render target scale relative to screen resolution.
+   * Sobel offsets are multiplied by this to keep thickness in screen pixels.
    */
-  get strokeBlur () {
-    return this.material.uniforms.strokeBlur.value
+  get scale () {
+    return this.three.uniforms.scale.value
   }
 
-  set strokeBlur (value: number) {
-    this.material.uniforms.strokeBlur.value = value
-    this.material.uniformsNeedUpdate = true
-  }
-
-  /**
-   * Bias of the outline. This is used to control the strength of the outline.
-   */
-  get strokeBias () {
-    return this.material.uniforms.strokeBias.value
-  }
-
-  set strokeBias (value: number) {
-    this.material.uniforms.strokeBias.value = value
-    this.material.uniformsNeedUpdate = true
-  }
-
-  /**
-   * Multiplier of the outline. This is used to control the strength of the outline.
-   */
-  get strokeMultiplier () {
-    return this.material.uniforms.strokeMultiplier.value
-  }
-
-  set strokeMultiplier (value: number) {
-    this.material.uniforms.strokeMultiplier.value = value
-    this.material.uniformsNeedUpdate = true
-  }
-
-  /**
-   * Color of the outline.
-   */
-  get color () {
-    return this.material.uniforms.outlineColor.value
-  }
-
-  set color (value: THREE.Color) {
-    this.material.uniforms.outlineColor.value.set(value)
-    this.material.uniformsNeedUpdate = true
+  set scale (value: number) {
+    this.three.uniforms.scale.value = value
+    this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
   }
 
   /**
    * Scene buffer used to render the outline.
    */
   get sceneBuffer () {
-    return this.material.uniforms.sceneBuffer.value
+    return this.three.uniforms.sceneBuffer.value
   }
 
   set sceneBuffer (value: THREE.Texture) {
-    this.material.uniforms.sceneBuffer.value = value
-    this.material.uniformsNeedUpdate = true
-  }
-
-  /**
-   * Depth buffer used to render the outline.
-   */
-  get depthBuffer () {
-    return this.material.uniforms.depthBuffer.value
-  }
-
-  set depthBuffer (value: THREE.Texture) {
-    this.material.uniforms.depthBuffer.value = value
-    this.material.uniformsNeedUpdate = true
+    this.three.uniforms.sceneBuffer.value = value
+    this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
   }
 
   /**
    * Dispose of the outline material.
    */
   dispose () {
-    this.material.dispose()
+    this.three.dispose()
   }
 }
 
 /**
- * This material =computes outline using the depth buffer and combines it with the scene buffer to create a final scene.
+ * Creates outline material using Sobel convolution edge detection.
+ * Multi-scale Sobel for thickness control, bilinear sampling for smooth edges.
  */
 export function createOutlineMaterial () {
   return new THREE.ShaderMaterial({
     lights: false,
+    glslVersion: THREE.GLSL3,
+    depthWrite: false,
     uniforms: {
-      // Input buffers
       sceneBuffer: { value: null },
-      depthBuffer: { value: null },
-
-      // Input parameters
-      cameraNear: { value: 1 },
-      cameraFar: { value: 1000 },
-      screenSize: {
-        value: new THREE.Vector4(1, 1, 1, 1)
-      },
-
-      // Options
-      outlineColor: { value: new THREE.Color(0xffffff) },
-      strokeMultiplier: { value: 2 },
-      strokeBias: { value: 2 },
-      strokeBlur: { value: 3 }
+      screenSize: { value: new THREE.Vector4(1, 1, 1, 1) },
+      thickness: { value: 2 },
+      scale: { value: 1.0 }
     },
     vertexShader: `
-      varying vec2 vUv;
+      out vec2 vUv;
       void main() {
         vUv = uv;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
       `,
     fragmentShader: `
-      #include <packing>
-      // The above include imports "perspectiveDepthToViewZ"
-      // and other GLSL functions from ThreeJS we need for reading depth.
-      uniform sampler2D depthBuffer;
-      uniform float cameraNear;
-      uniform float cameraFar;
+      uniform sampler2D sceneBuffer;
       uniform vec4 screenSize;
-      uniform vec3 outlineColor;
-      uniform float strokeMultiplier;
-      uniform float strokeBias;
-      uniform int strokeBlur;
-  
-      varying vec2 vUv;
-  
-      // Helper functions for reading from depth buffer.
-      float readDepth (sampler2D depthSampler, vec2 coord) {
-        float fragCoordZ = texture2D(depthSampler, coord).x;
-        float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );
-        return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );
+      uniform float thickness;
+      uniform float scale;
+
+      in vec2 vUv;
+      out vec4 fragColor;
+
+      // Bilinear-filtered mask sample at float pixel offset (in render-target pixels).
+      float getMask(float x, float y) {
+        vec2 offset = vec2(x, y) * screenSize.zw;
+        vec2 uv = clamp(vUv + offset, screenSize.zw * 0.5, 1.0 - screenSize.zw * 0.5);
+        return texture(sceneBuffer, uv).x;
       }
-      float getLinearDepth(vec3 pos) {
-        return -(viewMatrix * vec4(pos, 1.0)).z;
+
+      // Sobel edge detection at a given screen-pixel distance.
+      // Multiplies by scale to convert screen pixels → render-target pixels.
+      float sobel(float s) {
+        float d = s * scale;
+        float tl = getMask(-d, -d);
+        float t  = getMask( 0.0, -d);
+        float tr = getMask( d, -d);
+        float l  = getMask(-d,  0.0);
+        float r  = getMask( d,  0.0);
+        float bl = getMask(-d,  d);
+        float b  = getMask( 0.0,  d);
+        float br = getMask( d,  d);
+
+        float gx = (tr + 2.0 * r + br) - (tl + 2.0 * l + bl);
+        float gy = (bl + 2.0 * b + br) - (tl + 2.0 * t + tr);
+        return length(vec2(gx, gy));
       }
-  
-      float getLinearScreenDepth(sampler2D map) {
-          vec2 uv = gl_FragCoord.xy * screenSize.zw;
-          return readDepth(map,uv);
-      }
-      // Helper functions for reading normals and depth of neighboring pixels.
-      float getPixelDepth(int x, int y) {
-        // screenSize.zw is pixel size 
-        // vUv is current position
-        return readDepth(depthBuffer, vUv + screenSize.zw * vec2(x, y));
-      }
-  
-      float saturate(float num) {
-        return clamp(num, 0.0, 1.0);
-      }
-  
+
       void main() {
-        float depth = getPixelDepth(0, 0);
-  
-        // Get the difference between depth of neighboring pixels and current.
-        float depthDiff = 0.0;
-        int start = -strokeBlur / 2;
-        for(int i=0; i < strokeBlur; i ++){
-          for(int j=0; j < strokeBlur; j ++){
-            depthDiff += abs(depth - getPixelDepth(start +i, start + j));
-          }
+        float center = getMask(0.0, 0.0);
+        if (center < 0.01) {
+          fragColor = vec4(0.0);
+          return;
         }
-  
-        depthDiff = depthDiff / (float(strokeBlur*strokeBlur) -1.0); 
-        
-        depthDiff = depthDiff * strokeMultiplier;
-        depthDiff = saturate(depthDiff);
-        depthDiff = pow(depthDiff, strokeBias);
-  
-        float outline = depthDiff;
-  
-        // Combine outline with scene color.
-        vec4 outlineColor = vec4(outlineColor, 1.0f);
-        gl_FragColor = vec4(mix(vec4(0.0,0.0,0.0,0.0), outlineColor, outline));
+
+        // Multi-scale Sobel: each scale detects edges at that screen-pixel distance.
+        // Inner scales get full weight, outer scales fade for natural falloff.
+        float edge = 0.0;
+        edge = max(edge, sobel(1.0));
+        if (thickness >= 2.0) edge = max(edge, sobel(2.0) * 0.75);
+        if (thickness >= 3.0) edge = max(edge, sobel(3.0) * 0.5);
+        if (thickness >= 4.0) edge = max(edge, sobel(4.0) * 0.35);
+        if (thickness >= 5.0) edge = max(edge, sobel(5.0) * 0.25);
+
+        // Normalize: Sobel max on binary mask is ~4.0, scale to 0-1.
+        // Use smoothstep for a soft natural ramp instead of hard clamp.
+        edge = smoothstep(0.0, 2.0, edge);
+
+        fragColor = vec4(edge, 0.0, 0.0, 0.0);
       }
       `
   })

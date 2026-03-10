@@ -1,12 +1,12 @@
 
 
 import * as Core from '../../core-viewers'
-import { useSettings } from '../../react-viewers/settings/settingsState'
+import { useSettings } from '../settings/settingsState'
 import {useRef, RefObject, useEffect, useState } from 'react'
 import { Container, createContainer } from '../container'
 import { createRoot } from 'react-dom/client'
 import { Overlay } from '../panels/overlay'
-import { Modal, ModalHandle } from '../panels/modal'
+import { Modal, ModalApi } from '../panels/modal'
 import { getRequestErrorMessage } from './errors/ultraErrors'
 import { updateModal, updateProgress as modalProgress } from './modal'
 import { ControlBar, ControlBarCustomization } from '../controlbar/controlBar'
@@ -17,45 +17,53 @@ import { RestOfScreen } from '../panels/restOfScreen'
 import { LogoMemo } from '../panels/logo'
 import { whenTrue } from '../helpers/utils'
 import { useSideState } from '../state/sideState'
-import { ViewerRef } from './viewerRef'
+import { UltraViewerApi } from './viewerApi'
 import ReactTooltip from 'react-tooltip'
-import { useUltraCamera } from './camera'
+import { useUltraFraming } from './camera'
 import { useViewerInput } from '../state/viewerInputs'
 import { useUltraIsolation } from './isolation'
 import { IsolationPanel } from '../panels/isolationPanel'
-import { GenericPanelHandle } from '../generic/genericPanel'
+import { GenericPanelApi } from '../generic/genericPanel'
 import { ControllablePromise } from '../../utils'
 import { SettingsPanel } from '../settings/settingsPanel'
 import { SidePanelMemo } from '../panels/sidePanel'
 import { getDefaultUltraSettings, PartialUltraSettings, UltraSettings } from './settings'
 import { getUltraSettingsContent } from './settingsPanel'
-import { SettingsCustomizer } from '../settings/settingsItem'
+import { SettingsCustomization } from '../settings/settingsItem'
 import { isTrue } from '../settings/userBoolean'
 
 
 /**
- * Creates a UI container along with a VIM.Viewer and its associated React viewer.
- * @param container An optional container object. If none is provided, a container will be created.
- * @returns An object containing the resulting container, reactRoot, and viewer.
+ * Creates an Ultra viewer with React UI for server-side rendered models.
+ * Returns an {@link UltraViewerApi} for programmatic interaction.
+ *
+ * @param container An optional container or DOM element. If none is provided, one will be created.
+ * @param settings React UI feature toggles (panels, buttons). See {@link UltraSettings}.
+ * @returns A promise resolving to the viewer API.
+ *
+ * @example
+ * const viewer = await React.Ultra.createViewer(document.getElementById('app'))
+ * await viewer.core.connect({ url: 'wss://server:8080' })
+ * viewer.load({ url: 'model.vim' })
  */
-export function createViewer (
+export function createUltraViewer (
   container?: Container | HTMLElement,
   settings?: PartialUltraSettings 
-) : Promise<ViewerRef> {
+) : Promise<UltraViewerApi> {
   
-  const controllablePromise = new ControllablePromise<ViewerRef>()
+  const controllablePromise = new ControllablePromise<UltraViewerApi>()
   const cmpContainer = container instanceof HTMLElement
     ? createContainer(container)
     : container ?? createContainer()
 
   // Create the viewer and container
-  const core = Core.Ultra.Viewer.createWithCanvas(cmpContainer.gfx)
+  const core = Core.Ultra.createViewer(cmpContainer.gfx)
 
   // Create the React root
   const reactRoot = createRoot(cmpContainer.ui)
 
   // Patch the viewer to clean up after itself
-  const attachDispose = (cmp : ViewerRef) => {
+  const attachDispose = (cmp : UltraViewerApi) => {
     cmp.dispose = () => {
       core.dispose()
       cmpContainer.dispose()
@@ -65,11 +73,11 @@ export function createViewer (
   }
 
   reactRoot.render(
-    <Viewer
+    <UltraViewerComponent
       container={cmpContainer}
       core={core}
       settings={settings}
-      onMount = {(cmp : ViewerRef) => controllablePromise.resolve(attachDispose(cmp))}
+      onMount = {(cmp : UltraViewerApi) => controllablePromise.resolve(attachDispose(cmp))}
     />
   )
   return controllablePromise.promise
@@ -82,18 +90,18 @@ export function createViewer (
  * @param onMount A callback function triggered when the viewer is mounted. Receives a reference to the Vim viewer.
  * @param settings Optional settings for configuring the Vim viewer's behavior.
  */
-export function Viewer (props: {
+export function UltraViewerComponent (props: {
   container: Container
   core: Core.Ultra.Viewer
   settings?: PartialUltraSettings
-  onMount: (viewer: ViewerRef) => void}) {
+  onMount: (viewer: UltraViewerApi) => void}) {
 
   const settings = useSettings(props.settings ?? {}, getDefaultUltraSettings())
   const sectionBoxRef = useUltraSectionBox(props.core)
-  const camera = useUltraCamera(props.core, sectionBoxRef)
-  const isolationPanelHandle = useRef<GenericPanelHandle>(null)
-  const sectionBoxPanelHandle = useRef<GenericPanelHandle>(null)
-  const modalHandle = useRef<ModalHandle>(null)
+  const framing = useUltraFraming(props.core, sectionBoxRef)
+  const isolationPanelHandle = useRef<GenericPanelApi>(null)
+  const sectionBoxPanelHandle = useRef<GenericPanelApi>(null)
+  const modalHandle = useRef<ModalApi>(null)
 
   const side = useSideState(true, 400)
   const [_, setSelectState] = useState(0)
@@ -103,14 +111,14 @@ export function Viewer (props: {
     props.core,
     sectionBoxRef,
     isolationRef,
-    camera,
+    framing,
     settings.value,
     side,
     modalHandle.current,
     _ =>_
   )
   
-  useViewerInput(props.core.inputs, camera)
+  useViewerInput(props.core.inputs, framing)
 
   // On First render
   useEffect(() => {
@@ -131,15 +139,17 @@ export function Viewer (props: {
       setSelectState(i => (i+1)%2)
     } )
     props.onMount({
+      type: 'ultra',
+      container: props.container,
       core: props.core,
       get modal() { return modalHandle.current },
       isolation: isolationRef,
       sectionBox: sectionBoxRef,
-      camera,
+      framing,
       settings: {
         update : settings.update,
         register : settings.register,
-        customize : (c: SettingsCustomizer<UltraSettings>) => settings.customizer.set(c)
+        customize : (c: SettingsCustomization<UltraSettings>) => settings.customizer.set(c)
       },
       get isolationPanel(){
         return isolationPanelHandle.current
@@ -151,7 +161,8 @@ export function Viewer (props: {
       controlBar: {
         customize: (v) => setControlBarCustom(() => v)
       },
-      load: patchLoad(props.core, modalHandle)
+      load: patchLoad(props.core, modalHandle),
+      unload: (vim) => props.core.unload(vim)
     })
   }, [])
 
@@ -181,7 +192,7 @@ export function Viewer (props: {
       show={isTrue(settings.value.ui.panelControlBar)}
     />
     <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBoxRef}/>
-    <IsolationPanel ref={isolationPanelHandle} state={isolationRef} transparency={false}/>
+    <IsolationPanel ref={isolationPanelHandle} state={isolationRef}/>
   </>
   }}/>
   
@@ -196,9 +207,9 @@ export function Viewer (props: {
   </>
 }
 
-function patchLoad(viewer: Core.Ultra.Viewer, modal: RefObject<ModalHandle>) {
-  return function load (source: Core.Ultra.VimSource): Core.Ultra.ILoadRequest {
-    const request = viewer.loadVim(source)
+function patchLoad(viewer: Core.Ultra.Viewer, modal: RefObject<ModalApi>) {
+  return function load (source: Core.Ultra.VimSource): Core.Ultra.IUltraLoadRequest {
+    const request = viewer.load(source)
 
     // We don't want to block the main thread to get progress updates
     void modalProgress(request, modal.current)
@@ -207,7 +218,7 @@ function patchLoad(viewer: Core.Ultra.Viewer, modal: RefObject<ModalHandle>) {
     void request.getResult().then(
       result => {
         if (result.isError) {
-          modal.current?.message(getRequestErrorMessage(viewer.serverUrl, source, result.error))
+          modal.current?.message(getRequestErrorMessage(viewer.serverUrl, source, result.type))
           return
         }
         if (result.isSuccess) {

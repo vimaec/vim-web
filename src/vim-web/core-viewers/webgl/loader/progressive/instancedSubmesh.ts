@@ -5,6 +5,7 @@
 import { Submesh } from '../mesh'
 import { InstancedMesh } from './instancedMesh'
 
+/** @internal */
 export class InstancedSubmesh {
   mesh: InstancedMesh
   index: number
@@ -36,7 +37,7 @@ export class InstancedSubmesh {
    * Returns vim instance associated with this submesh.
    */
   get instance () {
-    return this.mesh.bimInstances[this.index]
+    return this.mesh.instances[this.index]
   }
 
   /**

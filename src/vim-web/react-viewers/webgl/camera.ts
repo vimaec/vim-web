@@ -1,9 +1,9 @@
 import * as Core from "../../core-viewers";
-import { useCamera } from "../state/cameraState";
-import { SectionBoxRef } from "../state/sectionBoxState";
+import { useFraming } from "../state/cameraState";
+import { SectionBoxApi } from "../state/sectionBoxState";
 
-export function useWebglCamera(viewer: Core.Webgl.Viewer, section: SectionBoxRef) {
-  return useCamera({
+export function useWebglFraming(viewer: Core.Webgl.Viewer, section: SectionBoxApi) {
+  return useFraming({
     onSelectionChanged: viewer.selection.onSelectionChanged,
     frameCamera: (box, duration) => viewer.camera.lerp(duration).frame(box),
     resetCamera: (duration) => viewer.camera.lerp(duration).reset(),

@@ -1,86 +1,81 @@
 import * as Core from '../../core-viewers'
+import { AsyncQueue } from '../../utils/asyncQueue'
 import { LoadingError } from '../webgl/loading'
-import { ControllablePromise } from '../../utils'
 
 type RequestCallbacks = {
-  onProgress: (p: Core.Webgl.IProgressLogs) => void
+  onProgress: (p: Core.IProgress) => void
   onError: (e: LoadingError) => void
   onDone: () => void
 }
 
 /**
  * Class to handle loading a request.
+ * Implements ILoadRequest for compatibility with Ultra viewer's load request interface.
+ * @internal
  */
-export class LoadRequest {
-  readonly source
-  private _callbacks : RequestCallbacks
-  private _request: Core.Webgl.VimRequest
+export class LoadRequest implements Core.Webgl.IWebglLoadRequest {
+  private _sourceUrl: string | undefined
+  private _request: Core.Webgl.IWebglLoadRequest
+  private _callbacks: RequestCallbacks
+  private _onLoaded?: (vim: Core.Webgl.IWebglVim) => Promise<void> | void
+  private _progressQueue = new AsyncQueue<Core.IProgress>()
+  private _resultPromise: Promise<Core.LoadResult<Core.Webgl.IWebglVim>>
 
-  private _progress: Core.Webgl.IProgressLogs = { loaded: 0, total: 0, all: new Map() }
-  private _progressPromise = new ControllablePromise<void>()
-
-  private _isDone: boolean = false
-  private _completionPromise = new ControllablePromise<void>()
-
-  constructor (callbacks: RequestCallbacks, source: Core.Webgl.RequestSource, settings?: Core.Webgl.VimPartialSettings) {
-    this.source = source
+  constructor (
+    callbacks: RequestCallbacks,
+    request: Core.Webgl.IWebglLoadRequest,
+    sourceUrl: string | undefined,
+    onLoaded?: (vim: Core.Webgl.IWebglVim) => Promise<void> | void
+  ) {
+    this._sourceUrl = sourceUrl
     this._callbacks = callbacks
-    this.startRequest(source, settings)
+    this._onLoaded = onLoaded
+    this._request = request
+    this._resultPromise = this.trackAndGetResult()
   }
 
-  private async startRequest (source: Core.Webgl.RequestSource, settings?: Core.Webgl.VimPartialSettings) {
-    this._request = await Core.Webgl.request(source, settings)
-    for await (const progress of this._request.getProgress()) {
-      this.onProgress(progress)
-    }
-    const result = await this._request.getResult()
-    if (result.isError()) {
-      this.onError(result.error)
-    } else {
-      this.onSuccess()
-    }
-  }
+  private async trackAndGetResult (): Promise<Core.LoadResult<Core.Webgl.IWebglVim>> {
+    try {
+      for await (const progress of this._request.getProgress()) {
+        this._callbacks.onProgress(progress)
+        this._progressQueue.push(progress)
+      }
 
-  private onProgress (progress: Core.Webgl.IProgressLogs) {
-    this._callbacks.onProgress(progress)
-    this._progress = progress
-    this._progressPromise.resolve()
-    this._progressPromise = new ControllablePromise<void>()
-  }
-
-  private onSuccess () {
-    this._callbacks.onDone()
-    this.end()
-  }
-
-  private onError (error: string) {
-    this._callbacks.onError({
-      url: this.source.url,
-      error
-    })
-    this.end()
-  }
-
-  private end () {
-    this._isDone = true
-    this._progressPromise.resolve()
-    this._completionPromise.resolve()
-  }
-
-  async * getProgress () : AsyncGenerator<Core.Webgl.IProgressLogs, void, void> {
-    while (!this._isDone) {
-      await this._progressPromise.promise
-      yield this._progress
+      const result = await this._request.getResult()
+      if (result.isSuccess === false) {
+        this._callbacks.onError({ url: this._sourceUrl, error: result.error })
+      } else {
+        await this._onLoaded?.(result.vim)
+        this._callbacks.onDone()
+      }
+      this._progressQueue.close()
+      return result
+    } catch (err) {
+      this._callbacks.onError({ url: this._sourceUrl, error: String(err) })
+      this._progressQueue.close()
+      throw err
     }
   }
 
-  async getResult () {
-    await this._completionPromise
-    return this._request.getResult()
+  get isCompleted () {
+    return this._request.isCompleted
+  }
+
+  async * getProgress (): AsyncGenerator<Core.IProgress> {
+    yield * this._progressQueue
+  }
+
+  getResult () {
+    return this._resultPromise
+  }
+
+  async getVim () {
+    const result = await this.getResult()
+    if (result.isSuccess === false) throw new Error(result.error)
+    return result.vim
   }
 
   abort () {
     this._request.abort()
-    this.onError('Request aborted')
   }
 }

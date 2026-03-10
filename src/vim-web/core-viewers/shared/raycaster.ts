@@ -4,9 +4,9 @@ export interface IRaycastResult<T>{
   /** The model Object hit */
   object: T | undefined;
 
-  /** The 3D world position of the hit point */
+  /** The 3D world position of the hit point, in Z-up space (X = right, Y = forward, Z = up). */
   worldPosition: THREE.Vector3;
-  /** The surface normal at the hit point */
+  /** The surface normal at the hit point, in Z-up space. */
   worldNormal: THREE.Vector3;
 }
 
@@ -18,16 +18,16 @@ export interface IRaycaster<T> {
   /**
    * Raycasts from camera to the screen position to find the first object hit.
    * @param position - The screen position to raycast from.
-   * @returns A promise that resolves to the raycast result.
+   * @returns A promise that resolves to the raycast result, or undefined if no hit.
    */
-  raycastFromScreen(position: THREE.Vector2): Promise<IRaycastResult<T>>;
+  raycastFromScreen(position: THREE.Vector2): Promise<IRaycastResult<T> | undefined>;
 
   /**
    * Raycasts from camera to world position to find the first object hit.
-   * @param position - The world position to raycast from.
-   * @returns A promise that resolves to the raycast result.
+   * @param position - The world position to raycast through (Z-up).
+   * @returns A promise that resolves to the raycast result, or undefined if no hit.
    */
-  raycastFromWorld(position: THREE.Vector3): Promise<IRaycastResult<T>>;
+  raycastFromWorld(position: THREE.Vector3): Promise<IRaycastResult<T> | undefined>;
 }
 
 

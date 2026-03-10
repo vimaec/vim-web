@@ -1,15 +1,16 @@
 import * as THREE from "three";
 import { Validation } from "../../utils";
 import type {IRaycastResult, IRaycaster} from "../shared/raycaster";
-import { Element3D } from "./element3d";
+import { Element3D, type IUltraElement3D } from "./element3d";
 import { RpcSafeClient } from "./rpcSafeClient";
-import { IReadonlyVimCollection } from "./vimCollection";
+import type { IReadonlyVimCollection } from "../shared/vimCollection";
+import type { Vim } from "./vim";
 
-export type IUltraRaycastResult = IRaycastResult<Element3D>;
-export type IUltraRaycaster = IRaycaster<Element3D>;
+export type IUltraRaycastResult = IRaycastResult<IUltraElement3D>;
+export type IUltraRaycaster = IRaycaster<IUltraElement3D>;
 
 /**
- * Represents the result of a hit test operation.
+ * @internal
  */
 export class UltraRaycastResult implements IUltraRaycastResult {
 
@@ -34,22 +35,15 @@ export class UltraRaycastResult implements IUltraRaycastResult {
  */
 
 /**
- * Handles raycasting operations in the Ultra system, enabling picking and
- * interaction with 3D objects in the scene.
+ * @internal
  */
 export class Raycaster implements IUltraRaycaster {
   private _rpc: RpcSafeClient;
-  private _vims: IReadonlyVimCollection;
+  private _vims: IReadonlyVimCollection<Vim>;
 
-  /**
-   * Creates a new UltraCoreRaycaster instance.
-   * 
-   * @param {RpcSafeClient} rpc - RPC client for communication with the viewer.
-   * @param {IReadonlyVimCollection} vims - Collection of VIM instances to manage.
-   */
   constructor(
     rpc: RpcSafeClient,
-    vims: IReadonlyVimCollection
+    vims: IReadonlyVimCollection<Vim>
   ) {
     this._rpc = rpc;
     this._vims = vims;
@@ -68,7 +62,8 @@ export class Raycaster implements IUltraRaycaster {
     const test = await this._rpc.RPCPerformHitTest(position);
     if (!test) return undefined;
 
-    const vim = this._vims.getFromHandle(test.vimIndex);
+    // test.vimIndex is the server handle, find vim by handle
+    const vim = this._vims.getAll().find(v => v.handle === test.vimIndex);
     if (!vim) return undefined;
 
     const object = vim.getElement(test.vimElementIndex);

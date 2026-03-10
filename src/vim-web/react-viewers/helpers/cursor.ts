@@ -4,7 +4,7 @@
 
 import * as Core from '../../core-viewers'
 import PointerMode = Core.PointerMode
-import Viewer = Core.Webgl.Viewer
+type Viewer = Core.Webgl.Viewer
 
 /**
  * Css classes for custom cursors.
@@ -56,12 +56,9 @@ export class CursorManager {
    */
   register () {
     // Update and Register cursor for pointers
-    this.setCursor(pointerToCursor(this._viewer.inputs.pointerActive))
+    this.setCursor(pointerToCursor(this._viewer.inputs.pointerMode))
 
     const sub1 = this._viewer.inputs.onPointerModeChanged.subscribe(() =>
-      this._updateCursor()
-    )
-    const sub2 = this._viewer.inputs.onPointerOverrideChanged.subscribe(() =>
       this._updateCursor()
     )
     const sub3 = this._viewer.gizmos.sectionBox.onStateChanged.subscribe(() => {
@@ -74,7 +71,7 @@ export class CursorManager {
       this._boxHover = hover
       this._updateCursor()
     })
-    this._subscriptions = [sub1, sub2, sub3, sub4]
+    this._subscriptions = [sub1, sub3, sub4]
   }
 
   /**
@@ -103,7 +100,7 @@ export class CursorManager {
       ? pointerToCursor(this._viewer.inputs.pointerOverride)
       : this._boxHover
         ? 'cursor-section-box'
-        : pointerToCursor(this._viewer.inputs.pointerActive)
+        : pointerToCursor(this._viewer.inputs.pointerMode)
     this.setCursor(cursor)
   }
 }

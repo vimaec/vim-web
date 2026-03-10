@@ -1,75 +1,104 @@
 # VIM Web
 
-## Live Demo
-
-Visit our [Demo page](https://vimaec.github.io/vim-web-demo)
-
-### Documentation
-
-Explore the full [API Documentation](https://vimaec.github.io/vim-web).
-
-### Package
-https://www.npmjs.com/package/vim-web
-
-
-## Overview
-
-The **VIM-Web** repository consists of four primary components, divided into two layers:
-
-### Core Viewers
-- **WebGL Core Viewer:** A WebGL-based viewer for the VIM format. Includes features like outlines, ghosting, and sectioning, but without UI components.
-- **Ultra Core Viewer:** A high-performance viewer for the VIM Ultra Render Server, optimized for scale and speed.
-
-### React Viewers
-- **WebGL Viewer:** A React-based wrapper for the WebGL viewer, providing interactive UI elements and a BIM explorer.
-- **Ultra Viewer:** A React-based wrapper for the Ultra viewer, featuring a UI for real-time interactions.
-
-## VIM Format
-
-The **VIM** file format is a high-performance 3D scene format that supports rich BIM data. It can also be extended to accommodate other relational and non-relational datasets. Unlike **IFC**, the VIM format is pre-tessellated, allowing for rapid loading and rendering.
-
-Learn more about the VIM format here: [VIM Format Repository](https://github.com/vimaec/vim-format)
-).
-
-### Built With
-- [VIM WebGL Viewer](https://github.com/vimaec/vim-webgl-viewer)
-- [React.js](https://reactjs.org/)
+React-based 3D viewers for VIM files with BIM (Building Information Modeling) support. VIM files are optimized 3D building models that contain both geometry and rich BIM metadata (elements, properties, categories, etc.).
 
 ## Getting Started
 
-Follow these steps to get started with the project:
+```bash
+npm install
+npm run dev           # Dev server at localhost:5173
+npm run build         # Production build (vite + tsc declarations + rollup d.ts bundles)
+npm run eslint        # Lint
+npm run documentation # TypeDoc generation
+```
 
-1. Clone the repository.
-2. Open the project in **VS Code**.
-3. Install the dependencies: `npm install`.
-4. Start the development server: `npm run dev`.
+### Build Pipeline
 
-> **Note:** Ensure you have a recent version of **Node.js** installed, as required by Vite.
+`npm run build` runs three steps in sequence:
 
-## Repository Organization
+1. **Vite build** — bundles `vim-web.js` (ESM) and `vim-web.iife.js` (IIFE) into `dist/`
+2. **TypeScript declarations** (`tsc -p tsconfig.types.json`) — emits individual `.d.ts` files to `dist/types/`
+3. **Rollup d.ts bundling** — produces two self-contained type bundles:
+   - `dist/vim-web.d.ts` — full library API (3,300+ lines), referenced by `"types"` in package.json
+   - `dist/vim-bim.d.ts` — standalone BIM data types from `vim-format` (1,900+ lines)
 
-- **`./docs`:** Root folder for GitHub Pages, built using the `build:website` script.
-- **`./dist`:** Contains the built package for npm, created with the `build:libs` script.
-- **`./src/pages`:** Source code for the demo pages published on GitHub Pages.
-- **`./src/vim-web`:** Source code for building and publishing the vim-web npm package.
-- **`./src/core-viewers/webgl`:** Source code for the WebGL core viewer. Based on [vim-webgl-viewer](https://github.com/vimaec/vim-webgl-viewer).
-- **`./src/core-viewers/ultra`:** Source code for the Ultra core viewer.
-- **`./src/react-viewers/webgl`:** Source code for the WebGL React component. Based on [vim-webgl-component](https://github.com/vimaec/vim-webgl-component).
-- **`./src/react-viewers/ultra`:** Source code for the Ultra React component.
+### Type Bundles & AI Tooling
 
-## License
+The bundled `.d.ts` files serve a dual purpose:
 
-Distributed under the **MIT License**. See `LICENSE.txt` for more details.
+**`vim-web.d.ts`** is the package's type entry point. It inlines types from `ste-signals`, `ste-events`, and `ste-core` so consumers get full type information without needing those packages. Types from `three`, `react`, `deepmerge`, and `vim-format` remain external imports.
 
-## Contact
+**`vim-bim.d.ts`** bundles all BIM data interfaces (`IElement`, `ICategory`, `IRoom`, `VimDocument`, etc.) from `vim-format` into a single self-contained file. This is designed as an **AI-readable reference** — an LLM can read this one file to understand the complete BIM data model without needing access to the `vim-format` package source. It is not imported by the library itself.
 
-- **Simon Roberge** - [simon.roberge@vimaec.com](mailto:simon.roberge@vimaec.com)
-- **Martin Ashton** - [martin.ashton@vimaec.com](mailto:martin.ashton@vimaec.com)
+Both files have semantic namespace names (e.g., `Core_Webgl`, `React_Ultra`) instead of the opaque `index_d$1` names that `rollup-plugin-dts` generates by default. This makes them readable by both humans and AI tools. The rollup configs (`rollup.dts.config.mjs`, `rollup.bim-dts.config.mjs`) handle the namespace renaming and various fixups.
 
-## Acknowledgments
+## Architecture Overview
 
-Special thanks to these packages and more:
-- [react-complex-tree](https://github.com/lukasbach/react-complex-tree)
-- [re-resizable](https://github.com/bokuweb/re-resizable)
-- [react-tooltip](https://github.com/ReactTooltip/react-tooltip)
-- [Strongly Typed Events](https://github.com/KeesCBakker/Strongly-Typed-Events-for-TypeScript#readme)
+### Dual Viewer System
+
+| Viewer | Use Case | Rendering |
+|--------|----------|-----------|
+| **WebGL** | Small-medium models | Local Three.js rendering |
+| **Ultra** | Large models | Server-side streaming via WebSocket RPC |
+
+### Layer Separation
+
+```
+src/vim-web/
+├── core-viewers/           # Framework-agnostic (no React)
+│   ├── webgl/              # Local Three.js rendering
+│   │   ├── loader/         # VIM parsing, mesh building, scene, data model
+│   │   │   ├── progressive/  # Geometry loading & mesh construction
+│   │   │   └── materials/    # Shader materials
+│   │   └── viewer/         # Camera, raycaster, rendering, gizmos
+│   ├── ultra/              # RPC client for streaming server
+│   └── shared/             # Common interfaces (IVim, Selection, Input)
+└── react-viewers/          # React UI layer
+    ├── webgl/              # Full UI (BIM tree, context menu, gizmos)
+    ├── ultra/              # Minimal UI
+    └── helpers/            # StateRef, hooks, utilities
+```
+
+### Import Discipline
+
+- **Core files** (`core-viewers/`): Import directly from source files, never through barrel files
+- **React layer** (`react-viewers/`): Import through barrel files (`import * as Core from '../../core-viewers'`)
+
+## Key Concepts
+
+- **Element3D**: Primary object representing a BIM element. Controls visibility, color, outline, and provides access to BIM metadata.
+- **Selection**: Observable selection state with multi-select, events, and bounding box queries.
+- **Camera**: Fluent API with `snap()` (instant) and `lerp(duration)` (animated) for framing, orbiting, and zooming.
+- **Gizmos**: Section box, measurement tool, and markers.
+- **StateRef/FuncRef**: Observable state and callable function references used in the React layer for customization.
+- **ViewerApi**: The root API handle returned by `createViewer()`. Provides `load()`, `open()`, `unload()`, and access to all subsystems (isolation, sectionBox, controlBar, etc.).
+
+## Customization
+
+The React viewer exposes customization points for:
+- **Control bar**: Add/replace toolbar buttons via `viewer.controlBar.customize()`
+- **Context menu**: Add custom menu items via `viewer.contextMenu.customize()`
+- **BIM info panel**: Modify displayed data or override rendering at any level
+- **Settings panel**: Add/remove settings items via `viewer.settings.customize()`
+- **Floating panels**: Modify section box offset and isolation render settings fields
+
+## Documentation
+
+- **[CLAUDE.md](./CLAUDE.md)** — Detailed API reference, code examples, architecture details, and patterns. This is the primary reference for both developers and AI tools.
+- **[.claude/docs/INPUT.md](./.claude/docs/INPUT.md)** — Input system architecture, coordinate systems, override patterns
+- **[.claude/docs/optimization.md](./.claude/docs/optimization.md)** — Loading pipeline performance and profiling
+- **[.claude/docs/RENDERING_OPTIMIZATIONS.md](./.claude/docs/RENDERING_OPTIMIZATIONS.md)** — Shader material architecture and rendering patterns
+
+## Tech Stack
+
+- **TypeScript 5.7**, **React 18.3**, **Vite 6**
+- **Three.js 0.171**, **Tailwind CSS 3.4** (`vc-` prefix)
+- **ste-events/ste-signals** for typed events, **vim-format** for BIM data
+- **Rollup** + **rollup-plugin-dts** for type bundle generation
+
+## Code Style
+
+- Prettier: no semicolons, trailing commas, single quotes
+- Index files control module exports
+- No test framework — build pass is the verification
+- No deprecated code or backwards-compatibility shims

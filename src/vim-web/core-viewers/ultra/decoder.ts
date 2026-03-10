@@ -1,6 +1,6 @@
 import { WebGLRenderer } from './streamRenderer'
 import type { VideoFrameMessage } from './protocol'
-import { ILogger } from './logger'
+import { ILogger } from '../shared/logger'
 
 /**
  * Configuration for the video decoder.
@@ -28,7 +28,7 @@ const RenderDelayMs = 500
 /**
  * Interface defining the basic decoder operations
  */
-export interface IDecoder {
+export interface IUltraDecoder {
   /** Indicates if the decoder is ready to process frames */
   ready: boolean;
   /** Indicates if the decoder is currently paused */
@@ -40,10 +40,9 @@ export interface IDecoder {
 }
 
 /**
- * Decoder class responsible for decoding video frames and rendering them using WebGL.
- * Handles frame queueing, decoding, and rendering through WebGL.
+ * @internal
  */
-export class Decoder implements IDecoder {
+export class Decoder implements IUltraDecoder {
   private _decoder: globalThis.VideoDecoder | undefined
   private readonly _canvas: OffscreenCanvas
   private readonly _renderer: WebGLRenderer

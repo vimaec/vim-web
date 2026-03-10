@@ -3,15 +3,26 @@
  */
 
 import * as THREE from 'three'
-import { Camera } from '../../camera'
-import { Viewport } from '../../viewport'
+import { Camera } from '../../camera/camera'
+import { IWebglViewport } from '../../viewport'
 import { AxesSettings, createAxesSettings } from './axesSettings'
 import { Axis, createAxes } from './axes'
 
 /**
+ * Public interface for the axis gizmo.
+ */
+export interface IGizmoAxes {
+  /** The canvas on which the axes are drawn. */
+  readonly canvas: HTMLCanvasElement
+  /** Resizes the gizmo to the given pixel size. */
+  resize(size: number): void
+}
+
+/**
+ * @internal
  * The axis gizmos of the viewer.
  */
-export class GizmoAxes {
+export class GizmoAxes implements IGizmoAxes {
   // settings
   private _initialOptions: AxesSettings
   private _options: AxesSettings
@@ -46,7 +57,7 @@ export class GizmoAxes {
     return this._canvas
   }
 
-  constructor (camera: Camera, viewport: Viewport, options?: Partial<AxesSettings>) {
+  constructor (camera: Camera, viewport: IWebglViewport, options?: Partial<AxesSettings>) {
     this._initialOptions = createAxesSettings(options)
     this._options = createAxesSettings(options)
     this._camera = camera
@@ -199,7 +210,7 @@ export class GizmoAxes {
     this._selectedAxis = null
   }
 
-  public update = () => {
+  public update () {
     if (!this._camera.hasMoved && !this._pointerInside && !this._isDragging && !this._resized) {
       return
     }
@@ -329,4 +340,3 @@ export class GizmoAxes {
   }
 }
 
-export { GizmoAxes as OrbitControlsGizmo }

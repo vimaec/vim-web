@@ -6,6 +6,7 @@ import React from 'react'
 import { SettingsState } from './settingsState'
 import { renderSettingsInputBox } from './settingsInputBox'
 import { renderSettingsToggle } from './settingsToggle'
+import { renderSettingsSelect } from './settingsSelect'
 import { SettingsItem } from './settingsItem'
 import { renderSettingsSubtitle } from './settingsSubtitle'
 import { AnySettings } from './anySettings'
@@ -35,6 +36,7 @@ export function SettingsPanel<T extends AnySettings>(props: {
             case 'subtitle': return renderSettingsSubtitle(item)
             case 'toggle':   return renderSettingsToggle(settings, item)
             case 'box':      return renderSettingsInputBox(settings, item)
+            case 'select':   return renderSettingsSelect(settings, item)
             case 'element':  return item.element
             default: return null
           }

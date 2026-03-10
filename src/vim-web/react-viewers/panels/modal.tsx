@@ -9,14 +9,14 @@ export type ModalProps = (MessageBoxPropsTyped | LoadingBoxPropsTyped | HelpProp
   onClose?: () => void
 }
 
-export type ModalHandle = {
+export type ModalApi = {
   getActiveState(): ModalProps | undefined
   loading (content: LoadingBoxProps | undefined): void
   message (content: MessageBoxProps | undefined): void
   help (show: boolean): void
 }
 
-export const Modal = forwardRef<ModalHandle, {canFollowLinks: boolean}>((props, ref) =>{
+export const Modal = forwardRef<ModalApi, {canFollowLinks: boolean}>((props, ref) =>{
   const [state, setState ] = useState<(ModalProps)[]>()
 
   const update = (value: ModalProps | undefined, index: number) => {
@@ -76,7 +76,7 @@ function closeButton (onButton: () => void) {
       className="vim-help-close vc-absolute vc-top-[20px] vc-right-[20px] vc-text-white"
       onClick={onButton}
     >
-      {Icons.close({
+      {Icons.closeIcon({
         height: '20px',
         width: '20px',
         fill: 'currentColor'

@@ -4,19 +4,18 @@
 
 import * as FireMenu from '@firefox-devtools/react-contextmenu'
 import React, { useEffect, useState } from 'react'
-import { CameraRef } from '../state/cameraState'
-import { TreeActionRef } from '../bim/bimTree'
-import { ModalHandle } from './modal'
-import { IsolationRef } from '../state/sharedIsolation'
+import { FramingApi } from '../state/cameraState'
+import { TreeActionApi } from '../bim/bimTree'
+import { ModalApi } from './modal'
+import { IsolationApi } from '../state/sharedIsolation'
 import * as Core from '../../core-viewers'
 
 const VIM_CONTEXT_MENU_ID = 'vim-context-menu-id'
-type ClickCallback = React.MouseEvent<HTMLDivElement, MouseEvent>
 
 /**
  * Reference to manage context menu functionality in the viewer.
  */
-export type ContextMenuRef = {
+export type ContextMenuApi = {
   /**
    * Defines a callback function to dynamically customize the context menu.
    * @param customization The configuration object specifying the customization options for the context menu.
@@ -41,35 +40,17 @@ export function showContextMenu (
   FireMenu.showMenu(showMenuConfig)
 }
 
-/**
- * Current list of context menu item ids. Used to find and replace items when customizing the context menu.
- */
-export const contextMenuElementIds = {
-  showControls: 'showControls',
-  dividerCamera: 'dividerCamera',
-  resetCamera: 'resetCamera',
-  zoomToFit: 'zoomToFit',
-  dividerSelection: 'dividerSelection',
-  isolateSelection: 'isolateObject',
-  selectSimilar: 'selectSimilar',
-  hideObject: 'hideObject',
-  showObject: 'showObject',
-  clearSelection: 'clearSelection',
-  showAll: 'showAll',
-  dividerSection: 'dividerSection',
-  ignoreSection: 'ignoreSection',
-  resetSection: 'resetSection',
-  fitSectionToSelection: 'fitSectionToSelection'
-}
+import { contextMenuIds as Ids } from '../contextMenu/contextMenuIds'
 
 /**
  * Represents a button in the context menu. It can't be clicked triggering given action.
  */
 export interface IContextMenuButton {
+  type: 'button'
   id: string
   label: string
-  keyboard: string
-  action: (e: ClickCallback) => void
+  keyboard?: string
+  action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   enabled: boolean
 }
 
@@ -77,6 +58,7 @@ export interface IContextMenuButton {
  * Represents a divider in the context menu. It can't be clicked.
  */
 export interface IContextMenuDivider {
+  type: 'divider'
   id: string
   enabled: boolean
 }
@@ -100,61 +82,61 @@ export const VimContextMenuMemo = React.memo(ContextMenu)
  */
 export function ContextMenu (props: {
   viewer: Core.Webgl.Viewer
-  camera: CameraRef
-  modal: ModalHandle
-  isolation: IsolationRef
-  selection: Core.Webgl.Element3D[]
+  framing: FramingApi
+  modal: ModalApi
+  isolation: IsolationApi
+  selection: Core.Webgl.IElement3D[]
   customization?: (e: ContextMenuElement[]) => ContextMenuElement[]
-  treeRef: React.MutableRefObject<TreeActionRef | undefined>
+  treeRef: React.MutableRefObject<TreeActionApi | undefined>
 }) {
   const viewer = props.viewer
-  const camera = props.camera
+  const framing = props.framing
   const [visibility, setVisibility] = useState(props.isolation.visibility.get())
 
   useEffect(() => {
     // force re-render and reevalution of isolation.
-    props.isolation.adapter.current.onVisibilityChange.subscribe(() => {
-      setVisibility(props.isolation.visibility.get())
+    return props.isolation.visibility.onChange.subscribe((v) => {
+      setVisibility(v)
     })
   }, [])
 
-  const onShowControlsBtn = (e: ClickCallback) => {
+  const onShowControlsBtn = (e: React.MouseEvent) => {
     props.modal.help(true)
     e.stopPropagation()
   }
 
-  const onCameraResetBtn = (e: ClickCallback) => {
-    camera.reset.call()
+  const onCameraResetBtn = (e: React.MouseEvent) => {
+    framing.reset.call()
     e.stopPropagation()
   }
 
-  const onCameraFrameBtn = (e: ClickCallback) => {
-    camera.frameSelection.call()
+  const onCameraFrameBtn = (e: React.MouseEvent) => {
+    framing.frameSelection.call()
     e.stopPropagation()
   }
 
-  const onSelectionIsolateBtn = (e: ClickCallback) => {
-    props.isolation.adapter.current.isolateSelection()
+  const onSelectionIsolateBtn = (e: React.MouseEvent) => {
+    props.isolation.isolateSelection()
     e.stopPropagation()
   }
 
-  const onSelectionHideBtn = (e: ClickCallback) => {
-    props.isolation.adapter.current.hideSelection()
+  const onSelectionHideBtn = (e: React.MouseEvent) => {
+    props.isolation.hideSelection()
     e.stopPropagation()
   }
 
-  const onSelectionShowBtn = (e: ClickCallback) => {
-    props.isolation.adapter.current.showSelection()
+  const onSelectionShowBtn = (e: React.MouseEvent) => {
+    props.isolation.showSelection()
     e.stopPropagation()
   }
 
-  const onShowAllBtn = (e: ClickCallback) => {
-    props.isolation.adapter.current.showAll()
+  const onShowAllBtn = (e: React.MouseEvent) => {
+    props.isolation.showAll()
     e.stopPropagation()
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onMeasureDeleteBtn = (e: ClickCallback) => {
+  const onMeasureDeleteBtn = (e: React.MouseEvent) => {
     viewer.gizmos.measure.abort()
   }
 
@@ -183,58 +165,66 @@ export function ContextMenu (props: {
       : null
   }
 
-  const hasSelection = props.isolation.adapter.current.hasSelection()
+  const hasSelection = props.isolation.hasSelection()
   const measuring = !!viewer.gizmos.measure.stage
 
   let elements: ContextMenuElement[] = [
     {
-      id: contextMenuElementIds.showControls,
+      type: 'button',
+      id: Ids.showControls,
       label: 'Show Controls',
       action: onShowControlsBtn,
       enabled: true
     },
-    { id: contextMenuElementIds.dividerCamera, enabled: true },
+    { type: 'divider', id: Ids.dividerCamera, enabled: true },
     {
-      id: contextMenuElementIds.resetCamera,
+      type: 'button',
+      id: Ids.resetCamera,
       label: 'Reset Camera',
       keyboard: 'HOME',
       action: onCameraResetBtn,
       enabled: true
     },
     {
-      id: contextMenuElementIds.zoomToFit,
+      type: 'button',
+      id: Ids.zoomToFit,
       label: 'Frame Camera',
       keyboard: 'F',
       action: onCameraFrameBtn,
       enabled: hasSelection
     },
     {
-      id: contextMenuElementIds.dividerSelection,
+      type: 'divider',
+      id: Ids.dividerSelection,
       enabled: hasSelection || visibility !== 'all'
     },
     {
-      id: contextMenuElementIds.isolateSelection,
+      type: 'button',
+      id: Ids.isolateSelection,
       label: 'Isolate Object',
       keyboard: 'I',
       action: onSelectionIsolateBtn,
       enabled: hasSelection && visibility === 'onlySelection'
     },
     {
-      id: contextMenuElementIds.hideObject,
+      type: 'button',
+      id: Ids.hideObject,
       label: 'Hide Object',
       keyboard: 'V',
       action: onSelectionHideBtn,
-      enabled: hasSelection && !props.isolation.adapter.current.hasHiddenSelection()
+      enabled: hasSelection && !props.isolation.hasHiddenSelection()
     },
     {
-      id: contextMenuElementIds.showObject,
+      type: 'button',
+      id: Ids.showObject,
       label: 'Show Object',
       keyboard: 'V',
       action: onSelectionShowBtn,
-      enabled: hasSelection && props.isolation.adapter.current.hasHiddenSelection()
+      enabled: hasSelection && props.isolation.hasHiddenSelection()
     },
     {
-      id: contextMenuElementIds.showAll,
+      type: 'button',
+      id: Ids.showAll,
       label: 'Show All',
       keyboard: 'Esc',
       action: onShowAllBtn,
@@ -257,7 +247,7 @@ export function ContextMenu (props: {
         id={VIM_CONTEXT_MENU_ID}
       >
         {elements.map((e) => {
-          return 'label' in e ? createButton(e) : createDivider(e)
+          return e.type === 'button' ? createButton(e) : createDivider(e)
         })}
       </FireMenu.ContextMenu>
     </div>

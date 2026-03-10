@@ -5,8 +5,15 @@ import { ControlBarCameraSettings, ControlBarCursorSettings, ControlBarMeasureSe
 export type PartialWebglSettings = RecursivePartial<WebglSettings>
   
 /**
- * Complete settings configuration for the Vim viewer
- * @interface Settings
+ * React UI feature toggles, passed to `React.Webgl.createViewer(container, settings)`.
+ * Controls which UI panels and toolbar buttons are shown.
+ * Access at runtime via `viewer.settings.update(s => { s.ui.panelBimTree = false })`.
+ * Not to be confused with {@link ViewerSettings} (renderer config) or {@link VimSettings} (per-model transform).
+ *
+ * @example
+ * const viewer = await React.Webgl.createViewer(div, {
+ *   ui: { panelBimTree: false, miscHelp: false }
+ * })
  */
 export type WebglSettings = {
   capacity: {

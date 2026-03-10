@@ -2,9 +2,17 @@
  * @module vim-loader
  */
 
+/**
+ * Cumulative offset arrays enabling O(1) lookup of where each mesh starts
+ * in the unified index and vertex buffers. Computed once from a G3dSubset
+ * and used by InsertableGeometry to pre-allocate buffers and place each
+ * mesh's data at the correct position.
+ */
+
 import { MeshSection } from 'vim-format'
 import { G3dSubset } from './g3dSubset'
 
+/** @internal */
 export class G3dMeshCounts {
   instances: number = 0
   meshes: number = 0
@@ -13,6 +21,7 @@ export class G3dMeshCounts {
 }
 
 /**
+ * @internal
  * Holds the offsets needed to preallocate geometry for a given meshIndexSubset
  */
 export class G3dMeshOffsets {
@@ -26,7 +35,7 @@ export class G3dMeshOffsets {
   private readonly _vertexOffsets: Int32Array
 
   /**
-   * Computes geometry offsets for given subset and section
+   * Computes geometry offsets for given subset and section in a single pass.
    * @param subset subset for which to compute offsets
    * @param section 'opaque' | 'transparent' | 'all'
    */
@@ -34,23 +43,33 @@ export class G3dMeshOffsets {
     this.subset = subset
     this.section = section
 
-    this.counts = subset.getAttributeCounts(section)
-    this._indexOffsets = this.computeOffsets(subset, (m) =>
-      subset.getMeshIndexCount(m, section)
-    )
-    this._vertexOffsets = this.computeOffsets(subset, (m) =>
-      subset.getMeshVertexCount(m, section)
-    )
-  }
-
-  private computeOffsets (subset: G3dSubset, getter: (mesh: number) => number) {
     const meshCount = subset.getMeshCount()
-    const offsets = new Int32Array(meshCount)
+    const indexOffsets = new Int32Array(meshCount)
+    const vertexOffsets = new Int32Array(meshCount)
+    const counts = new G3dMeshCounts()
 
-    for (let i = 1; i < meshCount; i++) {
-      offsets[i] = offsets[i - 1] + getter(i - 1)
+    let indexOffset = 0
+    let vertexOffset = 0
+
+    for (let i = 0; i < meshCount; i++) {
+      indexOffsets[i] = indexOffset
+      vertexOffsets[i] = vertexOffset
+
+      const indices = subset.getMeshIndexCount(i, section)
+      const vertices = subset.getMeshVertexCount(i, section)
+
+      indexOffset += indices
+      vertexOffset += vertices
+      counts.instances += subset.getMeshInstanceCount(i)
     }
-    return offsets
+
+    counts.indices = indexOffset
+    counts.vertices = vertexOffset
+    counts.meshes = meshCount
+
+    this.counts = counts
+    this._indexOffsets = indexOffsets
+    this._vertexOffsets = vertexOffsets
   }
 
   /**
@@ -74,26 +93,10 @@ export class G3dMeshOffsets {
   }
 
   /**
-   * Returns instance counts of given mesh.
-   * @param mesh subset-based mesh index
+   * Returns true if this offset has any geometry (indices > 0).
    */
-  getMeshInstanceCount (mesh: number) {
-    return this.subset.getMeshInstanceCount(mesh)
+  any () {
+    return this.counts.indices > 0
   }
 
-  /**
-   * Returns source-based instance for given mesh and index.
-   * @mesh subset-based mesh index
-   * @index mesh-based instance index
-   */
-  getMeshInstance (mesh: number, index: number) {
-    return this.subset.getMeshInstance(mesh, index)
-  }
-
-  /**
-   * Returns the source-based mesh index at given index
-   */
-  getSourceMesh (index: number) {
-    return this.subset.getSourceMesh(index)
-  }
 }

@@ -1,27 +1,29 @@
 import * as Core from "../../core-viewers";
-import { Element3D, Selectable } from "../../core-viewers/webgl";
-import { IsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
+import { ISelectable } from "../../core-viewers/webgl";
+import { IIsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
 
 export function useWebglIsolation(viewer: Core.Webgl.Viewer){
   const adapter = createWebglIsolationAdapter(viewer)
   return useSharedIsolation(adapter)
 }
 
-function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapter {
-  var transparency: boolean = true;
+function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IIsolationAdapter {
   var ghost: boolean = false;
+  var transparency: boolean = true;
   var rooms: boolean = false;
 
   function updateMaterials(){
-    viewer.renderer.modelMaterial =
-      !ghost && transparency ? undefined 
-      : ghost && transparency ? [undefined, viewer.materials.ghost]
-      : !ghost && !transparency ? viewer.materials.simple
-      : ghost && !transparency ? [viewer.materials.simple, viewer.materials.ghost]
-      : (() => { throw new Error("Unreachable state in isolation materials") })();
+    const m = viewer.materials
+    viewer.renderer.modelMaterial = new Core.Webgl.MaterialSet(
+      m.modelOpaqueMaterial,
+      transparency ? m.modelTransparentMaterial : m.modelOpaqueMaterial,
+      ghost ? m.ghostMaterial : undefined
+    )
   }
 
-  function updateVisibility(elements: 'all' | Selectable[], predicate: (object: Selectable) => boolean){
+  // Don't call updateMaterials() immediately - let RenderScene default handle initial state
+
+  function updateVisibility(elements: 'all' | ISelectable[], predicate: (object: ISelectable) => boolean){
     if(elements === 'all'){
       for(let v of viewer.vims){
         for(let o of v.getAllElements()){
@@ -84,13 +86,6 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
       }
     },
     
-    enableTransparency: (enable: boolean) => {
-      if(transparency !== enable){
-        transparency = enable;
-        updateMaterials();
-      };
-    },
-
     showGhost: (show: boolean) => {
       ghost = show;
       updateMaterials();
@@ -98,6 +93,29 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IsolationAdapte
 
     getGhostOpacity: () => viewer.materials.ghostOpacity,
     setGhostOpacity: (opacity: number) => viewer.materials.ghostOpacity = opacity,
+
+    setTransparency: (enabled: boolean) => {
+      transparency = enabled;
+      updateMaterials();
+    },
+
+    setOutlineEnabled: (enabled: boolean) => {
+      viewer.renderer.outlineEnabled = enabled
+    },
+    setOutlineQuality: (quality: string) => {
+      const scaleMap: Record<string, number> = { low: 0.5, medium: 1, high: 2 }
+      viewer.renderer.outlineScale = scaleMap[quality] ?? 1
+    },
+    setOutlineThickness: (thickness: number) => {
+      viewer.materials.outlineThickness = thickness
+    },
+    setSelectionFillMode: (mode: string) => {
+      viewer.materials.selectionFillMode = mode as Core.Webgl.SelectionFillMode
+      viewer.renderer.selectionFillMode = mode as Core.Webgl.SelectionFillMode
+    },
+    setSelectionOverlayOpacity: (opacity: number) => {
+      viewer.materials.selectionOverlayOpacity = opacity
+    },
 
     getShowRooms: () => rooms,
     setShowRooms: (show: boolean) => {

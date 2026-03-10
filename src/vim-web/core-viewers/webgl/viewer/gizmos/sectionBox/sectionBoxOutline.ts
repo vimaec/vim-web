@@ -5,6 +5,7 @@ import { Layers } from '../../raycaster';
  * Defines the thin outline on the edges of the section box.
  */
 
+/** @internal */
 export class SectionBoxOutline extends THREE.LineSegments {
   constructor(color : THREE.Color) {
     // prettier-ignore

@@ -1,11 +1,11 @@
 // useVimSectionBox.ts
 import * as Core from '../../core-viewers';
-import {SectionBoxAdapter, SectionBoxRef, useSectionBox } from '../state/sectionBoxState';
+import {ISectionBoxAdapter, SectionBoxApi, useSectionBox } from '../state/sectionBoxState';
 
-export function useWebglSectionBox(viewer: Core.Webgl.Viewer): SectionBoxRef {
-  const vimAdapter: SectionBoxAdapter = {
-    setClip: (b) => {
-      viewer.gizmos.sectionBox.clip = b;
+export function useWebglSectionBox(viewer: Core.Webgl.Viewer): SectionBoxApi {
+  const vimAdapter: ISectionBoxAdapter = {
+    setActive: (b) => {
+      viewer.gizmos.sectionBox.active = b;
     },
     setVisible: (b) => {
       viewer.gizmos.sectionBox.visible = b;

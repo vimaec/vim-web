@@ -1,30 +1,89 @@
-import type { ISimpleEvent } from 'ste-simple-events'
-import type {InputHandler} from '../shared'
-import { Camera, ICamera } from './camera'
+import type { ISimpleEvent } from '../shared/events'
+import {type IInputHandler} from '../shared'
+import {type InputHandler} from '../shared/input/inputHandler'
+import { Camera, IUltraCamera } from './camera'
 import { ColorManager } from './colorManager'
-import { Decoder, IDecoder } from './decoder'
+import { Decoder, IUltraDecoder } from './decoder'
 import { DecoderWithWorker } from './decoderWithWorker'
 import { ultraInputAdapter } from './inputAdapter'
-import { ILoadRequest, LoadRequest } from './loadRequest'
-import { defaultLogger, ILogger } from './logger'
+import { type IUltraLoadRequest, LoadRequest } from './loadRequest'
+import { defaultLogger, ILogger } from '../shared/logger'
 import { IUltraRaycaster, Raycaster } from './raycaster'
-import { IRenderer, Renderer } from './renderer'
+import { IUltraRenderer, Renderer } from './renderer'
 import { RpcClient } from './rpcClient'
 import { RpcSafeClient, VimSource } from './rpcSafeClient'
-import { SectionBox } from './sectionBox'
-import { createSelection, ISelection } from './selection'
+import { SectionBox, type IUltraSectionBox } from './sectionBox'
+import { createSelection, IUltraSelection } from './selection'
 import { ClientError, ClientState, ConnectionSettings, SocketClient } from './socketClient'
-import { IViewport, Viewport } from './viewport'
-import { Vim } from './vim'
-import { IReadonlyVimCollection, VimCollection } from './vimCollection'
+import { IUltraViewport, Viewport } from './viewport'
+import { Vim, type IUltraVim } from './vim'
+import { VimCollection } from '../shared/vimCollection'
 
 export const INVALID_HANDLE = 0xffffffff
 
 /**
- * The main Viewer class responsible for managing VIM files,
+ * Public interface for the Ultra viewer (server-side rendering via WebSocket).
+ * Consumers should use this instead of the concrete class.
+ *
+ * **Lifecycle:** Call `connect()` first, then `load()` to stream VIM models
+ * (auto-populates `vims`). Use `unload(vim)` to remove one, `clear()` to
+ * remove all, `disconnect()` to close the server connection, and `dispose()`
+ * to tear down the viewer entirely.
+ *
+ * @example
+ * ```ts
+ * const viewer = Core.Ultra.createViewer(parentDiv)
+ * await viewer.connect({ url: 'wss://server:8080' })
+ * const vim = await viewer.load({ url: 'model.vim' }).getVim()
+ *
+ * viewer.unload(vim)               // Remove one vim
+ * viewer.disconnect()              // Close server connection
+ * viewer.dispose()                 // Tear down viewer
+ * ```
+ */
+export interface IUltraViewer {
+  readonly type: 'ultra'
+  readonly camera: IUltraCamera
+  readonly inputs: IInputHandler
+  /** All loaded VIM models. Auto-populated on load, auto-removed on unload. */
+  readonly vims: IUltraVim[]
+  readonly viewport: IUltraViewport
+  readonly renderer: IUltraRenderer
+  readonly decoder: IUltraDecoder
+  readonly raycaster: IUltraRaycaster
+  readonly selection: IUltraSelection
+  /** The server URL this viewer is connected to, or undefined if not connected. */
+  readonly serverUrl: string | undefined
+  /** Fires when the connection state changes (connecting, connected, disconnected, error). */
+  readonly onStateChanged: ISimpleEvent<ClientState>
+  /** The current connection state. */
+  readonly connectionState: ClientState
+  readonly sectionBox: IUltraSectionBox
+  /**
+   * Connects to the Ultra rendering server. Must be awaited before calling `load()`.
+   * Returns true on success, false on failure. Subscribe to `onStateChanged` for progress.
+   */
+  connect (settings?: ConnectionSettings): Promise<boolean>
+  /** Disconnects from the server. Loaded vims become inoperable. */
+  disconnect (): void
+  /**
+   * Loads a VIM file via the server. Requires a successful `connect()` first.
+   * The resulting vim is added to `vims` on success.
+   */
+  load (source: VimSource): IUltraLoadRequest
+  /** Removes a vim from the viewer and disposes its resources. */
+  unload (vim: IUltraVim): void
+  /** Removes and disposes all loaded vims. */
+  clear (): void
+  /** Tears down the viewer entirely — releases canvas, connection, and all resources. */
+  dispose (): void
+}
+
+/**
+ * The main UltraViewer class responsible for managing VIM files,
  * handling connections, and coordinating various components like the camera, decoder, and inputs.
  */
-export class Viewer {
+export class UltraViewer implements IUltraViewer {
   /**
    * The type of the viewer, indicating it is a WebGL viewer.
    * Useful for distinguishing between different viewer types in a multi-viewer application.
@@ -39,47 +98,48 @@ export class Viewer {
   private readonly _renderer : Renderer
   private readonly _viewport: Viewport
   private readonly _camera: Camera
-  private readonly _selection: ISelection
+  private readonly _selection: IUltraSelection
   private readonly _raycaster: Raycaster
-  private readonly _vims : VimCollection
+  private readonly _vims : VimCollection<Vim>
   private _disposed = false
 
   // API components
   /**
    * The camera API for controlling camera movements and settings.
    */
-  get camera (): ICamera {
+  get camera (): IUltraCamera {
     return this._camera
   }
 
   /**
    * The RPC client for making remote procedure calls.
+   * @internal
    */
   readonly rpc: RpcSafeClient
 
   /**
    * The input API for handling user input events.
    */
-  get inputs () {
+  get inputs (): IInputHandler {
     return this._input
   }
 
-  get vims (): IReadonlyVimCollection {
-    return this._vims
+  get vims (): IUltraVim[] {
+    return this._vims.getAll()
   }
 
   /**
    * The viewport API for managing the rendering viewport.
    */
-  get viewport (): IViewport {
+  get viewport (): IUltraViewport {
     return this._viewport
   }
 
-  get renderer (): IRenderer {
+  get renderer (): IUltraRenderer {
     return this._renderer
   }
 
-  get decoder (): IDecoder {
+  get decoder (): IUltraDecoder {
     return this._decoder
   }
 
@@ -87,14 +147,11 @@ export class Viewer {
     return this._raycaster
   }
 
-  get selection (): ISelection {
+  get selection (): IUltraSelection {
     return this._selection
   }
 
-  /**
-   * API to create, manage, and destroy colors.
-   */
-  readonly colors: ColorManager
+  private readonly _colors: ColorManager
 
   /**
    * Gets the current URL to which the viewer is connected.
@@ -120,28 +177,32 @@ export class Viewer {
     return this._socketClient.state
   }
 
+  private readonly _sectionBox: SectionBox
+
   /**
    * The section box API for controlling the section box.
    */
-  readonly sectionBox : SectionBox
+  get sectionBox (): IUltraSectionBox {
+    return this._sectionBox
+  }
 
   /**
-   * Creates a Viewer instance with a new canvas element appended to the given parent element.
+   * Creates an UltraViewer instance with a new canvas element appended to the given parent element.
    * @param parent - The parent HTML element to which the canvas will be appended.
    * @param logger - Optional logger for logging messages.
-   * @returns A new instance of the Viewer class.
+   * @returns A new instance of the UltraViewer class.
    */
-  static createWithCanvas (parent: HTMLElement, logger?: ILogger): Viewer {
+  static createWithCanvas (parent: HTMLElement, logger?: ILogger): UltraViewer {
     const canvas = document.createElement('canvas')
     parent.appendChild(canvas)
     canvas.style.width = '100%'
     canvas.style.height = '100%'
-    const uv = new Viewer(canvas, logger)
+    const uv = new UltraViewer(canvas, logger)
     return uv
   }
 
   /**
-   * Constructs a new Viewer instance.
+   * Constructs a new UltraViewer instance.
    * @param canvas - The HTML canvas element for rendering.
    * @param logger - Optional logger for logging messages.
    */
@@ -152,18 +213,18 @@ export class Viewer {
     this.rpc = new RpcSafeClient(new RpcClient(this._socketClient))
 
     this._canvas = canvas
-    this._vims = new VimCollection()
+    this._vims = new VimCollection<Vim>()
     
     this._viewport = new Viewport(canvas, this.rpc, this._logger)
     this._decoder = new Decoder(canvas, this._logger)
     this._selection = createSelection()
     this._renderer = new Renderer(this.rpc, this._logger)
-    this.colors = new ColorManager(this.rpc)
+    this._colors = new ColorManager(this.rpc)
     this._camera = new Camera(this.rpc)
-    this._raycaster = new Raycaster(this.rpc, this.vims)
+    this._raycaster = new Raycaster(this.rpc, this._vims)
     this._input = ultraInputAdapter(this)
 
-    this.sectionBox = new SectionBox(this.rpc)
+    this._sectionBox = new SectionBox(this.rpc)
 
     // Set up the video frame handler
     this._socketClient.onVideoFrame = (msg) => this._decoder.enqueue(msg)
@@ -193,7 +254,7 @@ export class Viewer {
     this._camera.onConnect()
     
     this._vims.getAll().forEach((vim) => vim.connect())
-    this.sectionBox.onConnect() //needs to be called after vims are connected
+    this._sectionBox.onConnect() //needs to be called after vims are connected
 
     this._viewport.update()
     this._decoder.start()
@@ -243,7 +304,7 @@ export class Viewer {
   private onDisconnect (): void {
     this._decoder.stop()
     this._decoder.clear()
-    this.colors.clear()
+    this._colors.clear()
     this._vims.getAll().forEach((vim) => vim.disconnect())
   }
 
@@ -268,14 +329,21 @@ export class Viewer {
    * @param source - The path or URL to the VIM file.
    * @returns A load request object that can be used to wait for the load to complete.
    */
-  loadVim (source: VimSource): ILoadRequest {
+  load (source: VimSource): IUltraLoadRequest {
     if (typeof source.url !== 'string' || source.url.trim() === '') {
       const request = new LoadRequest()
       request.error('loadingError', 'Invalid path')
       return request
     }
 
-    const vim = new Vim(this.rpc, this.colors, this._renderer, source, this._logger)
+    const vimIndex = this._vims.allocateId()
+    if (vimIndex === undefined) {
+      const request = new LoadRequest()
+      request.error('loadingError', 'Maximum vim capacity reached')
+      return request
+    }
+
+    const vim = new Vim(vimIndex, this.rpc, this._colors, this._renderer, source, this._logger)
     this._vims.add(vim)
     const request = vim.connect()
     request.getResult().then((result) => {
@@ -290,21 +358,17 @@ export class Viewer {
    * Unloads the given VIM from the viewer.
    * @param vim - The VIM instance to unload.
    */
-  unloadVim (vim: Vim): void {
-    this._vims.remove(vim)
+  unload (vim: IUltraVim): void {
+    this._vims.remove(vim as Vim)
     vim.disconnect()
   }
 
   /**
    * Clears all loaded VIMs from the viewer.
    */
-  clearVims (): void {
+  clear (): void {
     this._vims.getAll().forEach((vim) => vim.disconnect())
     this._vims.clear()
-  }
-
-  getElement3Ds() : Promise<number> {
-    return this.rpc.RPCGetElementCountForScene()  
   }
 
   /**
@@ -318,8 +382,26 @@ export class Viewer {
     this._viewport.dispose()
     this._decoder.dispose()
     this._input.dispose()
-    this.sectionBox.dispose()
+    this._sectionBox.dispose()
     this._canvas.remove()
     window.onbeforeunload = null
   }
+}
+
+/**
+ * Creates a headless Ultra viewer without React UI.
+ * Use this for programmatic-only usage or custom UI frameworks.
+ * For a full React UI viewer, use `React.Ultra.createViewer()` instead.
+ *
+ * @param parent - The parent HTML element to which the canvas will be appended.
+ * @param logger - Optional logger for logging messages.
+ * @returns A new Ultra viewer.
+ *
+ * @example
+ * const viewer = Core.Ultra.createViewer(document.getElementById('app'))
+ * await viewer.connect({ url: 'wss://server:8080' })
+ * viewer.load({ url: 'model.vim' })
+ */
+export function createCoreUltraViewer (parent: HTMLElement, logger?: ILogger): IUltraViewer {
+  return UltraViewer.createWithCanvas(parent, logger)
 }

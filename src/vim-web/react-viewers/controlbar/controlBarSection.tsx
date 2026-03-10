@@ -1,10 +1,10 @@
-import { createButton, IControlBarButtonItem } from './controlBarButton'
+import { createButton, IControlBarButton } from './controlBarButton'
 import * as Style from './style'
 
 export interface IControlBarSection {
   id: string,
   enable? : (() => boolean) | undefined
-  buttons: (IControlBarButtonItem)[]
+  buttons: (IControlBarButton)[]
   style?: string
 }
 

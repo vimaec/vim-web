@@ -3,38 +3,91 @@
  */
 
 import * as THREE from 'three'
-import { VimDocument, G3d, VimHeader, FilterMode } from 'vim-format'
-import { Scene } from './scene'
+import { VimDocument, VimHeader } from 'vim-format'
+import { Scene, IScene } from './scene'
 import { VimSettings } from './vimSettings'
-import { Element3D } from './element3d'
+import { Element3D, type IElement3D } from './element3d'
 import {
+  IElementMapping,
   ElementMapping,
-  ElementMapping2,
   ElementNoMapping
 } from './elementMapping'
-import { ISignal, SignalDispatcher } from 'ste-signals'
-import { G3dSubset } from './progressive/g3dSubset'
-import { SubsetBuilder } from './progressive/subsetBuilder'
-import { LoadPartialSettings } from './progressive/subsetRequest'
+import { G3dSubset, ISubset } from './progressive/g3dSubset'
+import { VimMeshFactory } from './progressive/vimMeshFactory'
 import { IVim } from '../../shared/vim'
-
-type VimFormat = 'vim' | 'vimx'
+import { MappedG3d } from './progressive/mappedG3d'
 
 /**
- * Represents a container for the built three.js meshes and the vim data from which they were constructed.
- * Facilitates high-level scene manipulation by providing access to objects.
+ * Public API for a loaded VIM model, accessed via `viewer.vims`.
+ *
+ * Provides element queries, BIM data access, scene/material control,
+ * and progressive geometry loading.
+ *
+ * **Cleanup:** Do not call dispose directly — use `viewer.unload(vim)` to remove
+ * a vim from the viewer. Use `vim.clear()` only to remove loaded geometry
+ * while keeping the vim (e.g., before reloading a different subset).
+ *
+ * @example
+ * ```ts
+ * const vim = await viewer.load({ url }).getVim()
+ *
+ * // Query elements
+ * const element = vim.getElementFromIndex(301)
+ * const all = vim.getAllElements()
+ *
+ * // Modify visibility
+ * element.visible = false
+ * element.color = new THREE.Color(0xff0000)
+ *
+ * // BIM data (types from vim-format, accessible via VIM.BIM)
+ * const bimElement = await element.getBimElement()   // VIM.BIM.IElement
+ * const params = await element.getBimParameters()    // VIM.BIM.VimHelpers.ElementParameter[]
+ *
+ * // Progressive loading
+ * const sub = vim.subset().filter('instance', [0, 1, 2])
+ * await vim.load(sub)
+ *
+ * // Cleanup
+ * viewer.unload(vim)  // Remove from viewer (do NOT call vim.dispose())
+ * ```
  */
-export class Vim implements IVim<Element3D> {
+export interface IWebglVim extends IVim<IElement3D> {
+  readonly type: 'webgl'
+  /** The URL this vim was loaded from, if applicable. */
+  readonly source: string | undefined
+  /** The VIM file header (from vim-format, accessible via `VIM.BIM.VimHeader`). */
+  readonly header: VimHeader | undefined
+  /** BIM document for querying element properties, categories, levels, etc. (from vim-format, accessible via `VIM.BIM.VimDocument`). */
+  readonly bim: VimDocument | undefined
+  /** The scene containing this vim's geometry. */
+  readonly scene: IScene
+  /** The bounding box of all loaded geometry in Z-up world space (X = right, Y = forward, Z = up), or undefined if nothing loaded. */
+  getBoundingBox(): Promise<THREE.Box3 | undefined>
+  /** Returns a subset representing all instances, for use with {@link load} and filtering. */
+  subset(): ISubset
+  /**
+   * Loads geometry for the given subset, or all geometry if no subset is provided.
+   * Caller is responsible for not loading the same subset twice.
+   * @param subset - The subset to load. Omit to load everything.
+   */
+  load(subset?: ISubset): Promise<void>
+  /** Removes all loaded geometry from the renderer (does NOT unload the vim from the viewer). */
+  clear(): void
+}
+
+/** @internal */
+export class Vim implements IWebglVim {
   /**
    * The type of the viewer, indicating it is a WebGL viewer.
    * Useful for distinguishing between different viewer types in a multi-viewer application.
    */
-  readonly type = 'webgl';  
+  readonly type = 'webgl';
 
   /**
-   * Indicates whether the vim was opened from a vim or vimx file.
+   * The stable ID of this vim in the scene's vim collection (0-255).
+   * Used for GPU picking to identify which vim an element belongs to.
    */
-  readonly format: VimFormat
+  readonly vimIndex: number
 
   /**
    * Indicates the url this vim came from if applicable.
@@ -51,103 +104,52 @@ export class Vim implements IVim<Element3D> {
    */
   readonly bim: VimDocument | undefined
 
-  /**
-   * The raw g3d geometry scene definition.
-   */
-  readonly g3d: G3d | undefined
+  private readonly _g3d: MappedG3d | undefined
 
   /**
    * The settings used when this vim was opened.
    */
   readonly settings: VimSettings
 
-  /**
-   * Mostly Internal - The scene in which the vim geometry is added.
-   */
-  readonly scene: Scene
+  private readonly _scene: Scene
 
   /**
-   * The mapping from Bim to Geometry for this vim.
+   * The scene in which the vim geometry is added.
    */
-  readonly map: ElementMapping | ElementNoMapping | ElementMapping2
+  get scene (): IScene { return this._scene }
 
-  private readonly _builder: SubsetBuilder
-  private readonly _loadedInstances = new Set<number>()
+  /** @internal */
+  readonly map: IElementMapping
+
+  private readonly _factory: VimMeshFactory
   private readonly _elementToObject = new Map<number, Element3D>()
 
-  /**
-   * Getter for accessing the event dispatched whenever a subset begins or finishes loading.
-   * @returns {ISignal} The event dispatcher for loading updates.
-   */
-  get onLoadingUpdate () {
-    return this._builder.onUpdate
-  }
-
-  /**
-   * Indicates whether there are subsets currently being loaded.
-   * @returns {boolean} True if subsets are being loaded; otherwise, false.
-   */
-  get isLoading () {
-    return this._builder.isLoading
-  }
-
-  /**
-   * Getter for accessing the signal dispatched when the object is disposed.
-   * @returns {ISignal} The signal for disposal events.
-   */
-  get onDispose () {
-    return this._onDispose as ISignal
-  }
-
-  private _onDispose = new SignalDispatcher()
-
-  /**
- * Constructs a new instance of a Vim object with the provided parameters.
- * @param {VimHeader | undefined} header - The Vim header, if available.
- * @param {VimDocument} document - The Vim document.
- * @param {G3d | undefined} g3d - The G3d object, if available.
- * @param {Scene} scene - The scene containing the vim's geometry.
- * @param {VimSettings} settings - The settings used to open this vim.
- * @param {ElementMapping | ElementNoMapping | ElementMapping2} map - The element mapping.
- * @param {SubsetBuilder} builder - The subset builder for constructing subsets of the Vim object.
- * @param {string} source - The source of the Vim object.
- * @param {VimFormat} format - The format of the Vim object.
- * @param {boolean} isLegacy - Indicates whether the Vim object uses a legacy loading pipeline.
- */
   constructor (
     header: VimHeader | undefined,
     document: VimDocument,
-    g3d: G3d | undefined,
+    g3d: MappedG3d | undefined,
     scene: Scene,
     settings: VimSettings,
-    map: ElementMapping | ElementNoMapping | ElementMapping2,
-    builder: SubsetBuilder,
-    source: string,
-    format: VimFormat) {
+    vimIndex: number,
+    map: ElementMapping | ElementNoMapping,
+    factory: VimMeshFactory,
+    source: string) {
     this.header = header
     this.bim = document
-    this.g3d = g3d
+    this._g3d = g3d
     scene.vim = this
-    this.scene = scene
+    this._scene = scene
     this.settings = settings
+    this.vimIndex = vimIndex
 
     this.map = map ?? new ElementNoMapping()
-    this._builder = builder
+    this._factory = factory
     this.source = source
-    this.format = format
   }
 
-  getBoundingBox(): Promise<THREE.Box3> {
-    const box = this.scene.getBoundingBox()
+  getBoundingBox(): Promise<THREE.Box3 | undefined> {
+    const box = this._scene.getBoundingBox()
     return Promise.resolve(box)
-  }
-
-  /**
-   * Retrieves the matrix representation of the Vim object's position, rotation, and scale.
-   * @returns {THREE.Matrix4} The matrix representing the Vim object's transformation.
-   */
-  getMatrix () {
-    return this.settings.matrix
   }
 
   /**
@@ -166,7 +168,7 @@ export class Vim implements IVim<Element3D> {
    * @param {number} id - The element ID to retrieve objects for.
    * @returns {THREE.Object3D[]} An array of objects corresponding to the element ID, or an empty array if none are found.
    */
-  getElementsFromId (id: number) {
+  getElementsFromId (id: number | bigint) {
     const elements = this.map.getElementsFromElementId(id)
     return elements
       ?.map((e) => this.getElementFromIndex(e))
@@ -186,9 +188,9 @@ export class Vim implements IVim<Element3D> {
     }
 
     const instances = this.map.getInstancesFromElement(element)
-    const meshes = this.scene.getMeshesFromInstances(instances)
+    const meshes = this._scene.getMeshesFromInstances(instances)
 
-    const result = new Element3D(this, element, instances, meshes)
+    const result = new Element3D(this, element, instances, meshes, this._g3d)
     this._elementToObject.set(element, result)
     return result
   }
@@ -207,78 +209,22 @@ export class Vim implements IVim<Element3D> {
   }
 
   /**
-   * Retrieves an array containing all objects within the specified subset.
-   * @param {G3dSubset} subset - The subset to retrieve objects from.
-   * @returns {WebglElement3D[]} An array of objects within the specified subset.
-   */
-  getObjectsInSubset (subset: G3dSubset) {
-    const set = new Set<Element3D>()
-    const result: Element3D[] = []
-    const count = subset.getInstanceCount()
-    for (let i = 0; i < count; i++) {
-      const instance = subset.getVimInstance(i)
-      const obj = this.getElement(instance)
-      if (!set.has(obj)) {
-        result.push(obj)
-        set.add(obj)
-      }
-    }
-    return result
-  }
-
-  /**
    * Retrieves all instances as a subset.
-   * @returns {G3dSubset} A subset containing all instances.
+   * @returns {ISubset} A subset containing all instances.
    */
-  getFullSet (): G3dSubset {
-    return this._builder.getFullSet()
+  subset (): ISubset {
+    return new G3dSubset(this._factory.g3d)
   }
 
   /**
-   * Asynchronously loads all geometry according to the provided settings.
-   * @param {LoadPartialSettings} [settings] - Optional settings for the loading process.
+   * Loads geometry for the given subset, or all geometry if no subset is provided.
+   * Caller is responsible for not loading the same subset twice.
+   * @param subset - The subset to load. Omit to load everything.
    */
-  async loadAll (settings?: LoadPartialSettings) {
-    return this.loadSubset(this.getFullSet(), settings)
-  }
-
-  /**
-   * Asynchronously loads geometry for the specified subset according to the provided settings.
-   * @param {G3dSubset} subset - The subset to load resources for.
-   * @param {LoadPartialSettings} [settings] - Optional settings for the loading process.
-   */
-  async loadSubset (subset: G3dSubset, settings?: LoadPartialSettings) {
-    subset = subset.except('instance', this._loadedInstances)
-    const count = subset.getInstanceCount()
-    for (let i = 0; i < count; i++) {
-      this._loadedInstances.add(subset.getVimInstance(i))
-    }
-
-    // Add box to rendering.
-    const box = subset.getBoundingBox()
-    this.scene.updateBox(box)
-
-    if (subset.getInstanceCount() === 0) {
-      console.log('Empty subset. Ignoring')
-      return
-    }
-    // Launch loading
-    await this._builder.loadSubset(subset, settings)
-  }
-
-  /**
-   * Asynchronously loads geometry based on a specified filter mode and criteria.
-   * @param {FilterMode} filterMode - The mode of filtering to apply.
-   * @param {number[]} filter - The filter criteria.
-   * @param {LoadPartialSettings} [settings] - Optional settings for the loading process.
-   */
-  async loadFilter (
-    filterMode: FilterMode,
-    filter: number[],
-    settings?: LoadPartialSettings
-  ) {
-    const subset = this.getFullSet().filter(filterMode, filter)
-    await this.loadSubset(subset, settings)
+  async load (subset?: ISubset) {
+    subset ??= this.subset()
+    if (subset.getInstanceCount() === 0) return
+    this._factory.add(subset as G3dSubset)
   }
 
   /**
@@ -286,19 +232,11 @@ export class Vim implements IVim<Element3D> {
    */
   clear () {
     this._elementToObject.clear()
-    this._loadedInstances.clear()
-    this.scene.clear()
-    // Clearing this one last because it dispatches the signal
-    this._builder.clear()
+    this._scene.clear()
   }
 
-  /**
-   * Cleans up and releases resources associated with the vim.
-   */
+  /** @internal Called by Viewer.remove() — do not call directly. */
   dispose () {
-    this._builder.dispose()
-    this._onDispose.dispatch()
-    this._onDispose.clear()
-    this.scene.dispose()
+    this._scene.dispose()
   }
 }

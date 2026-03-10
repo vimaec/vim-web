@@ -2,7 +2,7 @@ import * as Core from '../../core-viewers'
 import * as BIM from './bimInfoData'
 import { compare } from './bimUtils'
 
-export async function getVimData (vim: Core.Webgl.Vim): Promise<BIM.Data> {
+export async function getVimData (vim: Core.Webgl.IWebglVim): Promise<BIM.Data> {
   const [header, body] = await Promise.all([
     getHeader(vim),
     getBody(vim)
@@ -10,7 +10,7 @@ export async function getVimData (vim: Core.Webgl.Vim): Promise<BIM.Data> {
   return { header, body }
 }
 
-export async function getHeader (vim: Core.Webgl.Vim): Promise<BIM.Entry[]> {
+export async function getHeader (vim: Core.Webgl.IWebglVim): Promise<BIM.Entry[]> {
   const documents = await vim?.bim?.bimDocument?.getAll()
   const main = documents
     ? documents.find((d) => !d.isLinked) ?? documents[0]
@@ -55,7 +55,7 @@ function formatDate (source: string | undefined) {
   return source?.replace(/(..:..):../, '$1') ?? ''
 }
 
-export async function getBody (vim: Core.Webgl.Vim): Promise<BIM.Section[] | undefined> {
+export async function getBody (vim: Core.Webgl.IWebglVim): Promise<BIM.Section[] | undefined> {
   let documents = await vim?.bim?.bimDocument?.getAll()
   if (!documents) return undefined
 

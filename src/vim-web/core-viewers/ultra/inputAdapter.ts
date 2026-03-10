@@ -1,6 +1,6 @@
-import { IInputAdapter } from "../shared/inputAdapter";
-import { InputHandler } from "../shared/inputHandler";
-import { Viewer } from "./viewer";
+import { IInputAdapter } from "../shared/input/inputAdapter";
+import { InputHandler } from "../shared/input/inputHandler";
+import { UltraViewer } from "./viewer";
 import * as THREE from 'three';
 
 /**
@@ -25,7 +25,7 @@ const CODE_TO_KEYCODE: Record<string, number> = {
  * @param viewer - The target viewer.
  * @returns An `InputHandler` instance wired to the viewer.
  */
-export function ultraInputAdapter(viewer: Viewer) {
+export function ultraInputAdapter(viewer: UltraViewer) {
   return new InputHandler(
     viewer.viewport.canvas,
     createAdapter(viewer),
@@ -37,10 +37,10 @@ export function ultraInputAdapter(viewer: Viewer) {
  * @param viewer - The viewer instance.
  * @returns A configured `IInputAdapter`.
  */
-function createAdapter(viewer: Viewer): IInputAdapter {
+function createAdapter(viewer: UltraViewer): IInputAdapter {
   return {
     init: () => {
-      viewer.rpc.RPCSetCameraSpeed(10);
+      // No initialization needed
     },
     orbitCamera: (value: THREE.Vector2) => {
       // handled server side
@@ -57,12 +57,8 @@ function createAdapter(viewer: Viewer): IInputAdapter {
     toggleOrthographic: () => {
       console.log('toggleOrthographic. Not supported yet');
     },
-    toggleCameraOrbitMode: () => {
-      // A bit hacky, but we send a space key event to toggle orbit mode
-      viewer.rpc.RPCKeyEvent(CODE_TO_KEYCODE['Space'], true);
-    },
     resetCamera: () => {
-      viewer.camera.restoreSavedPosition();
+      viewer.camera.lerp().reset();
     },
     clearSelection: () => {
       viewer.selection.clear();
@@ -71,7 +67,7 @@ function createAdapter(viewer: Viewer): IInputAdapter {
       if (viewer.selection.any()) {
         frameSelection(viewer);
       } else {
-        viewer.camera.frameAll();
+        viewer.camera.lerp().frame('all');
       }
     },
     selectAtPointer: async (pos: THREE.Vector2, add: boolean) => {
@@ -89,16 +85,37 @@ function createAdapter(viewer: Viewer): IInputAdapter {
     frameAtPointer: async (pos: THREE.Vector2) => {
       const hit = await viewer.raycaster.raycastFromScreen(pos);
       if (hit) {
-        viewer.camera.frameObject(hit.object);
+        viewer.camera.lerp().frame(hit.object);
       } else {
-        viewer.camera.frameAll(1);
+        viewer.camera.lerp(1).frame('all');
       }
     },
-    zoom: (value: number) => {
-      viewer.rpc.RPCMouseScrollEvent(value >= 1 ? 1 : -1);
+    zoom: (value: number, screenPos?: THREE.Vector2) => {
+      // Ultra handles zoom server-side, screenPos not used
+      viewer.rpc.RPCMouseScrollEvent(value >= 1 ? -1 : 1);
     },
     moveCamera: (value: THREE.Vector3) => {
       // handled server side
+    },
+    pinchStart: () => {},
+    pinchZoom: (totalRatio: number) => {
+      // Convert ratio to scroll steps with better granularity
+      // log2(ratio) gives us: 2x zoom = +1, 0.5x zoom = -1
+      const logRatio = Math.log2(totalRatio);
+      // Quantize to ±1/2/3 steps based on magnitude
+      let steps: number;
+      if (Math.abs(logRatio) < 0.3) {
+        steps = 0; // Too small, ignore
+      } else if (Math.abs(logRatio) < 0.7) {
+        steps = Math.sign(logRatio) * 1;
+      } else if (Math.abs(logRatio) < 1.2) {
+        steps = Math.sign(logRatio) * 2;
+      } else {
+        steps = Math.sign(logRatio) * 3;
+      }
+      if (steps !== 0) {
+        viewer.rpc.RPCMouseScrollEvent(-steps); // Negative because scroll up = zoom in
+      }
     },
     keyDown: (code: string) => {
       return sendKey(viewer, code, true);
@@ -106,13 +123,13 @@ function createAdapter(viewer: Viewer): IInputAdapter {
     keyUp: (code: string) => {
       return sendKey(viewer, code, false);
     },
-    mouseDown: (pos: THREE.Vector2, button: number) => {
+    pointerDown: (pos: THREE.Vector2, button: number) => {
       viewer.rpc.RPCMouseButtonEvent(pos, button, true);
     },
-    mouseUp: (pos: THREE.Vector2, button: number) => {
+    pointerUp: (pos: THREE.Vector2, button: number) => {
       viewer.rpc.RPCMouseButtonEvent(pos, button, false);
     },
-    mouseMove: (pos: THREE.Vector2) => {
+    pointerMove: (pos: THREE.Vector2) => {
       viewer.rpc.RPCMouseMoveEvent(pos);
     },
   };
@@ -121,16 +138,16 @@ function createAdapter(viewer: Viewer): IInputAdapter {
 /**
  * Frames the camera around the current selection.
  */
-async function frameSelection(viewer: Viewer) {
+async function frameSelection(viewer: UltraViewer) {
   const box = await viewer.selection.getBoundingBox();
   if (!box) return;
-  viewer.camera.frameBox(box);
+  viewer.camera.lerp().frame(box);
 }
 
 /**
  * Sends a key event to the viewer RPC system.
  */
-function sendKey(viewer: Viewer, code: string, pressed: boolean): boolean {
+function sendKey(viewer: UltraViewer, code: string, pressed: boolean): boolean {
   const key = CODE_TO_KEYCODE[code];
   if (!key) return false;
   viewer.rpc.RPCKeyEvent(key, pressed);

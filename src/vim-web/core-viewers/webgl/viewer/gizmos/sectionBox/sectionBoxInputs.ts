@@ -2,7 +2,7 @@
  * @module viw-webgl-viewer/gizmos/sectionBox
  */
 
-import { Viewer } from '../../viewer';
+import { WebglViewer } from '../../viewer';
 import * as THREE from 'three';
 import { SectionBoxHandles } from './sectionBoxHandles';
 import { AxisName, SectionBoxHandle } from './sectionBoxHandle';
@@ -14,14 +14,15 @@ const MIN_BOX_SIZE = 3;
  * Manages pointer interactions (mouse, touch, etc.) on a {@link SectionBoxHandles} to
  * reshape a Three.js `Box3`. This includes detecting which handle is hovered or dragged,
  * capturing the pointer for smooth dragging, and enforcing a minimum box size.
+ * @internal
  */
 export class BoxInputs {
   // -------------------------------------------------------------------------
   // Dependencies and shared resources
   // -------------------------------------------------------------------------
 
-  /** The parent Viewer controlling the scene. */
-  private _viewer: Viewer;
+  /** The parent WebglViewer controlling the scene. */
+  private _viewer: WebglViewer;
 
   /** The handles mesh group containing the draggable cones/faces. */
   private _handles: SectionBoxHandles;
@@ -51,8 +52,8 @@ export class BoxInputs {
   /** The box state before the current drag. */
   private _lastBox: THREE.Box3 = new THREE.Box3();
 
-  /** A callback to restore the original input listeners after unregistering. */
-  private _restoreOriginalInputs: () => void;
+  /** Restores mouse overrides when unregistering. */
+  private _restore: (() => void) | undefined;
 
   // -------------------------------------------------------------------------
   // Callbacks
@@ -83,11 +84,11 @@ export class BoxInputs {
   /**
    * Creates a new BoxInputs instance for pointer-driven box resizing.
    * 
-   * @param viewer - The parent {@link Viewer} that renders the scene.
+   * @param viewer - The parent {@link WebglViewer} that renders the scene.
    * @param handles - A {@link SectionBoxHandles} instance containing the draggable mesh handles.
    * @param box - The shared bounding box (`Box3`) that will be updated by dragging.
    */
-  constructor(viewer: Viewer, handles: SectionBoxHandles, box: THREE.Box3) {
+  constructor(viewer: WebglViewer, handles: SectionBoxHandles, box: THREE.Box3) {
     this._viewer = viewer;
     this._handles = handles;
     this._sharedBox = box;
@@ -102,40 +103,14 @@ export class BoxInputs {
    * If already registered, it does nothing.
    */
   public register(): void {
-    if(this._restoreOriginalInputs) return; // Don't register twice
+    if(this._restore) return; // Don't register twice
 
-    const mouse = this._viewer.inputs.mouse;
-
-    const up = mouse.onButtonUp
-    const down = mouse.onButtonDown
-    const move = mouse.onMouseMove
-    const drag = mouse.onDrag
-
-    this._restoreOriginalInputs = () => {
-      mouse.onButtonUp = up
-      mouse.onButtonDown = down
-      mouse.onMouseMove = move
-      mouse.onDrag = drag
-    }
-
-    mouse.onButtonUp = (pos, btn) => {
-      up(pos, btn)
-      this.onMouseUp(pos)
-    }
-    mouse.onButtonDown = (pos, btn) => {
-      down(pos, btn)
-      this.onMouseDown(pos)
-    }
-
-    mouse.onMouseMove = (pos) => {
-      move(pos)
-      this.onMouseMove(pos)
-    }
-
-    mouse.onDrag = (pos, btn) => {
-      if(this._handle) return
-      drag(pos, btn)
-    }
+    this._restore = this._viewer.inputs.mouse.override({
+      onPointerUp: (original, pos, btn) => { original(pos, btn); this.onMouseUp(pos) },
+      onPointerDown: (original, pos, btn) => { original(pos, btn); this.onMouseDown(pos) },
+      onPointerMove: (original, pos) => { original(pos); this.onMouseMove(pos) },
+      onDrag: (original, delta, btn) => { if(this._handle) return; original(delta, btn) },
+    })
   }
 
   /**
@@ -147,8 +122,8 @@ export class BoxInputs {
     this._handle?.highlight(false);
     this._handle = undefined;
 
-    this._restoreOriginalInputs?.();
-    this._restoreOriginalInputs = undefined
+    this._restore?.()
+    this._restore = undefined
   }
 
   // -------------------------------------------------------------------------

@@ -1,9 +1,9 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
-import { Icons } from "..";
+import * as Icons from '../icons';
 import { StateRef } from "../helpers/reactUtils";
 import { useFloatingPanelPosition } from "../helpers/layout";
 import { GenericEntryType, GenericEntry } from "./genericField";
-import { Customizer, useCustomizer } from "../helpers/customizer";
+import { useCustomizer } from "../helpers/customizer";
 
 // Generic props for the panel.
 export interface GenericPanelProps {
@@ -14,9 +14,11 @@ export interface GenericPanelProps {
   anchorElement: HTMLElement | null;
 }
 
-export type GenericPanelHandle = Customizer<GenericEntryType[]>;
+export type GenericPanelApi = {
+  customize(fn: (entries: GenericEntryType[]) => GenericEntryType[]): void;
+};
 
-export const GenericPanel = forwardRef<GenericPanelHandle, GenericPanelProps>((props, ref) => {
+export const GenericPanel = forwardRef<GenericPanelApi, GenericPanelProps>((props, ref) => {
   const panelRef = useRef<HTMLDivElement>(null);
 
   const panelPosition = useFloatingPanelPosition(
@@ -50,7 +52,7 @@ export const GenericPanel = forwardRef<GenericPanelHandle, GenericPanelProps>((p
             className="vc-flex vc-border-none vc-bg-transparent vc-text-sm vc-cursor-pointer"
             onClick={props.onClose ?? (() => props.showPanel.set(false))}
           >
-            {Icons.close({ height: 12, width: 12, fill: "currentColor" })}
+            {Icons.closeIcon({ height: 12, width: 12, fill: "currentColor" })}
           </button>
         </div>
         <dl className="vc-text-xl vc-text-gray-darker vc-mb-2 vc-mx-2">

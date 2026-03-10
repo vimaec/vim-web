@@ -6,6 +6,7 @@ import * as THREE from 'three'
 import { ViewerSettings } from '../settings/viewerSettings'
 import { Layers } from '../raycaster'
 
+/** @internal */
 export class PerspectiveCamera {
   camera: THREE.PerspectiveCamera
 
@@ -25,7 +26,7 @@ export class PerspectiveCamera {
     this.camera.updateProjectionMatrix()
   }
 
-  frustrumSizeAt (point: THREE.Vector3) {
+  frustumSizeAt (point: THREE.Vector3) {
     const dist = this.camera.position.distanceTo(point)
     const size = 2 * dist * Math.tan((this.camera.fov / 2) * (Math.PI / 180))
     return new THREE.Vector2(size * this.camera.aspect, size)

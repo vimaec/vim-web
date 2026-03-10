@@ -1,9 +1,10 @@
-import { ISignal, SignalDispatcher } from "ste-signals";
+import type { ISignal } from '../shared/events';
+import { SignalDispatcher } from "ste-signals";
 import * as THREE from "three";
 import { Validation } from "../../utils";
-import { ILogger } from "./logger";
+import { ILogger } from "../shared/logger";
 import { defaultSceneSettings, RpcSafeClient, SceneSettings } from "./rpcSafeClient";
-import { ClientStreamError } from "./socketClient";
+import { ClientStateStreamError } from "./socketClient";
 
 import * as RpcUtils from "./rpcUtils";
 
@@ -28,7 +29,7 @@ export const defaultRenderSettings: RenderSettings = {
 /**
  * Interface defining the basic renderer capabilities
  */
-export interface IRenderer {
+export interface IUltraRenderer {
   onSceneUpdated: ISignal
   ghostColor: THREE.Color
   ghostOpacity: number
@@ -43,8 +44,9 @@ export interface IRenderer {
 
 /**
  * Renderer class that handles 3D scene rendering and settings management
+ * @internal
  */
-export class Renderer implements IRenderer {
+export class Renderer implements IUltraRenderer {
 
   private _rpc: RpcSafeClient
   private _logger : ILogger
@@ -72,9 +74,9 @@ export class Renderer implements IRenderer {
 
   /**
    * Validates the connection to the server by attempting to start a scene.
-   * @returns A promise that resolves to a ClientStreamError if the connection fails, or undefined if successful.
+   * @returns A promise that resolves to a ClientStateStreamError if the connection fails, or undefined if successful.
    */
-  async validateConnection() : Promise<ClientStreamError | undefined>{
+  async validateConnection() : Promise<ClientStateStreamError | undefined>{
     const success = await this._rpc.RPCStartScene(this._settings)
     if(success) {
       this._logger.log('Scene stream started successfully')
@@ -163,7 +165,7 @@ export class Renderer implements IRenderer {
    * @returns Current background color as RGBA
    */
   get backgroundColor(): THREE.Color {
-    return this._settings.backgroundColor.toThree();
+    return this._settings.backgroundColor;
   }
 
   // Setters
@@ -252,9 +254,8 @@ export class Renderer implements IRenderer {
    * @param value - New background color as THREE.Color
    */
   set backgroundColor(value: THREE.Color) {
-    const color = RpcUtils.RGBAfromThree(value, 1);
-    if (this._settings.backgroundColor.equals(color)) return;
-    this._settings.backgroundColor = color;
+    if (this._settings.backgroundColor.equals(value)) return;
+    this._settings.backgroundColor = value.clone();
     this._updateLighting = true
     this.requestSettingsUpdate();
   }

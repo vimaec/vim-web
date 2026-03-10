@@ -6,21 +6,72 @@
 import * as THREE from 'three'
 
 // Vim
-import { Vim } from './vim'
+import { Vim, type IWebglVim } from './vim'
+import { Scene } from './scene'
 import { IElement, VimHelpers } from 'vim-format'
 import { WebglAttribute } from './webglAttribute'
 import { WebglColorAttribute } from './colorAttribute'
 import { Submesh } from './mesh'
-import { IVimElement } from '../../shared/vim'
+import { MappedG3d } from './progressive/mappedG3d'
+import { ISelectable } from '../viewer/selection'
 
 /**
- * High level api to interact with the loaded vim   ometry and data.
+ * Public interface for a loaded BIM element with geometry and visual state.
+ *
+ * Obtained via `vim.getElementFromIndex(index)` or `vim.getAllElements()`.
+ *
+ * @example
+ * ```ts
+ * const element = vim.getElementFromIndex(301)
+ * element.color = new THREE.Color(0xff0000)
+ * element.visible = false
+ * const params = await element.getBimParameters()
+ * ```
  */
-export class Element3D implements IVimElement {
+export interface IElement3D extends ISelectable {
+  readonly type: 'Element3D'
+  /** The vim from which this element came. */
+  readonly vim: IWebglVim
+  /** The BIM element index. */
+  readonly element: number
+  /** The unique element ID. */
+  readonly elementId: bigint
+  /** The geometry instances associated with this element. */
+  readonly instances: number[] | undefined
+  /** True if this element has associated geometry. */
+  readonly hasMesh: boolean
+  /** True if this element is a room. */
+  readonly isRoom: boolean
+  /** Whether to render selection outline for this element. */
+  outline: boolean
+  /** Whether to render focus highlight for this element. */
+  focused: boolean
+  /** Whether to render this element. */
+  visible: boolean
+  /** The display color override. Set to undefined to revert to default. */
+  color: THREE.Color | undefined
+  /** Retrieves BIM data for this element. */
+  getBimElement(): Promise<IElement>
+  /**
+   * Retrieves all BIM parameters for this element.
+   * @returns Array of `{ name: string, value: string, group: string }` objects.
+   * Type is `VimHelpers.ElementParameter` from vim-format (accessible via `VIM.BIM.VimHelpers`).
+   */
+  getBimParameters(): Promise<VimHelpers.ElementParameter[]>
+  /** Retrieves the bounding box in Z-up world space (X = right, Y = forward, Z = up), or undefined if the element has no geometry. */
+  getBoundingBox(): Promise<THREE.Box3 | undefined>
+  /** Retrieves the center position in Z-up world space, or undefined if the element has no geometry. */
+  getCenter(target?: THREE.Vector3): Promise<THREE.Vector3 | undefined>
+}
+
+/**
+ * High level api to interact with the loaded vim geometry and data.
+ */
+export class Element3D implements IElement3D {
   private _color: THREE.Color | undefined
   private _boundingBox: THREE.Box3 | undefined
   private _meshes: Submesh[] | undefined
-  
+  private readonly _g3d: MappedG3d | undefined
 
   private readonly _outlineAttribute: WebglAttribute<boolean>
   private readonly _visibleAttribute: WebglAttribute<boolean>
@@ -36,7 +87,12 @@ export class Element3D implements IVimElement {
   /**
    * The vim object from which this object came from.
    */
-  readonly vim: Vim
+  readonly vim: IWebglVim
+
+  /** @internal */
+  private get _vim (): Vim {
+    return this.vim as Vim
+  }
 
   /**
    * The bim element index associated with this object.
@@ -47,7 +103,7 @@ export class Element3D implements IVimElement {
    * The ID of the element associated with this object.
    */
   get elementId () : bigint {
-    return this.vim.map.getElementId(this.element)
+    return this._vim.map.getElementId(this.element)!
   }
 
   /**
@@ -65,7 +121,7 @@ export class Element3D implements IVimElement {
 
   get isRoom(){
     const instance = this.instances[0] ?? -1
-    return this.vim.g3d.getInstanceHasFlag(instance, 1)
+    return this._g3d?.getInstanceHasFlag(instance, 1) ?? false
   }
 
   /**
@@ -79,7 +135,7 @@ export class Element3D implements IVimElement {
     if (this._outlineAttribute.apply(value)) {
       this.renderer.notifySceneUpdate()
       if (value) this.renderer.addOutline()
-      else this.renderer.removeOutline
+      else this.renderer.removeOutline()
     }
   }
 
@@ -106,13 +162,13 @@ export class Element3D implements IVimElement {
   set visible (value: boolean) {
     if (this._visibleAttribute.apply(value)) {
       this.renderer.notifySceneUpdate()
-    }
 
-    // Show all involved meshes
-    if(value){
-      this._meshes?.forEach((m) => {
-        m.mesh.mesh.visible = true
-      })
+      // Show all involved meshes
+      if(value){
+        this._meshes?.forEach((m) => {
+          m.mesh.mesh.visible = true
+        })
+      }
     }
   }
 
@@ -133,26 +189,24 @@ export class Element3D implements IVimElement {
   }
 
   private get renderer(){
-    return this.vim.scene.renderer
+    return (this._vim.scene as Scene).renderer
   }
 
   /**
-   * Constructs a new instance of Object.
-   * @param {Vim} vim The Vim instance.
-   * @param {number} element The element index.
-   * @param {number[] | undefined} instances An optional array of instance numbers.
-   * @param {Submesh[] | undefined} meshes An optional array of submeshes.
+   * @internal
    */
   constructor (
     vim: Vim,
     element: number,
     instances: number[] | undefined,
-    meshes: Submesh[] | undefined
+    meshes: Submesh[] | undefined,
+    g3d: MappedG3d | undefined
   ) {
     this.vim = vim
     this.element = element
     this.instances = instances
     this._meshes = meshes
+    this._g3d = g3d
 
     this._outlineAttribute = new WebglAttribute(
       false,
@@ -186,7 +240,7 @@ export class Element3D implements IVimElement {
       (v) => (v ? 1 : 0)
     )
 
-    this._colorAttribute = new WebglColorAttribute(meshes, undefined, vim)
+    this._colorAttribute = new WebglColorAttribute(meshes, undefined)
   }
 
   /**
@@ -194,7 +248,7 @@ export class Element3D implements IVimElement {
    * @returns {IElement} An object containing the bim data for this element.
    */
   async getBimElement (): Promise<IElement> {
-    return this.vim.bim.element.get(this.element)
+    return this._vim.bim.element.get(this.element)
   }
 
   /**
@@ -202,7 +256,7 @@ export class Element3D implements IVimElement {
    * @returns {VimHelpers.ElementParameter[]} An array of all bim parameters for this elements.
    */
   async getBimParameters (): Promise<VimHelpers.ElementParameter[]> {
-    return VimHelpers.getElementParameters(this.vim.bim, this.element)
+    return VimHelpers.getElementParameters(this._vim.bim, this.element)
   }
 
   /**
@@ -221,7 +275,7 @@ export class Element3D implements IVimElement {
       box = box ? box.union(b) : b.clone()
     })
     if (box) {
-      box.applyMatrix4(this.vim.getMatrix())
+      box.applyMatrix4(this.vim.scene.matrix)
       this._boundingBox = box
     }
 
@@ -240,11 +294,12 @@ export class Element3D implements IVimElement {
   }
 
   /**
-   * Internal method used to replace this object's meshes and apply color as needed.
+   * @internal
+   * Replaces this object's meshes and apply color as needed.
    * @param {Submesh} mesh The new mesh to be added.
    * @throws {Error} Throws an error if the provided mesh instance does not match any existing instances.
    */
-  _addMesh (mesh: Submesh) {
+  addMesh (mesh: Submesh) {
     if (this.instances.findIndex((i) => i === mesh.instance) < 0) {
       throw new Error('Cannot update mismatched instance')
     }
@@ -262,7 +317,7 @@ export class Element3D implements IVimElement {
 
   private updateMeshes (meshes: Submesh[] | undefined) {
     this._meshes = meshes
-    this.renderer.needsUpdate = true
+    this.renderer.requestRender()
 
     this._outlineAttribute.updateMeshes(meshes)
     this._visibleAttribute.updateMeshes(meshes)

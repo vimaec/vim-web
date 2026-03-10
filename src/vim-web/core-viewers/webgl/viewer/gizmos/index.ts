@@ -1,9 +1,6 @@
-export * from './gizmos';   
-export * from './gizmoLoading';
-
-// Type exports
-export type * from './gizmoOrbit';
-export type * from './axes';
-export type * from './markers';
-export type * from './measure';
-export type * from './sectionBox';
+export type { IGizmos } from './gizmos'
+export type { IGizmoOrbit } from './gizmoOrbit'
+export type { AxesSettings, IGizmoAxes } from './axes'
+export type { IMarker, IGizmoMarkers } from './markers'
+export type { IMeasure, MeasureStage } from './measure'
+export type { IWebglSectionBox } from './sectionBox'

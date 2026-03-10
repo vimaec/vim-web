@@ -2,9 +2,26 @@
  * @module vim-loader
  */
 
-import { G3d, G3dScene, VimDocument } from 'vim-format'
+import { VimDocument } from 'vim-format'
 
-export class ElementNoMapping {
+/** Public-facing interface for BIM-to-geometry mapping. */
+export interface IElementMapping {
+  /** Returns element indices associated with element ID. */
+  getElementsFromElementId(id: number | bigint): number[] | undefined
+  /** Returns true if element exists in the vim. */
+  hasElement(element: number): boolean
+  /** Returns all element indices. */
+  getElements(): Iterable<number>
+  /** Returns instance indices for a given element. */
+  getInstancesFromElement(element: number): number[] | undefined
+  /** Returns the element index for a given instance. */
+  getElementFromInstance(instance: number): number | undefined
+  /** Returns the element ID for a given element index. */
+  getElementId(element: number): bigint | undefined
+}
+
+/** @internal */
+export class ElementNoMapping implements IElementMapping {
   getElementsFromElementId (id: number) {
     return undefined
   }
@@ -30,40 +47,36 @@ export class ElementNoMapping {
   }
 }
 
-export class ElementMapping {
-  private _instanceToElement: Map<number, number>
-  private _instanceMeshes: Int32Array
-  private _elementToInstances: Map<number, number[]>
+/** @internal */
+export class ElementMapping implements IElementMapping {
+  private _instanceToElement: number[] | Int32Array
+  private _elementToInstances: (number[] | undefined)[]
   private _elementIds: BigInt64Array
-  private _elementIdToElements: Map<bigint, number[]>
+  private _elementIdToElements: Map<bigint, number[]> | null = null
 
   constructor (
-    instances: number[],
-    instanceToElement: number[],
-    elementIds: BigInt64Array,
-    instanceMeshes?: Int32Array
+    instanceToElement: number[] | Int32Array,
+    elementIds: BigInt64Array
   ) {
-    this._instanceToElement = new Map<number, number>()
-    instances.forEach((i) =>
-      this._instanceToElement.set(i, instanceToElement[i])
+    // Direct reference - no copy needed (read-only)
+    this._instanceToElement = instanceToElement
+
+    // Build element→instances array (inverted mapping)
+    this._elementToInstances = ElementMapping.invertToArray(
+      instanceToElement,
+      elementIds.length
     )
-    this._elementToInstances = ElementMapping.invertMap(
-      this._instanceToElement
-    )
+
     this._elementIds = elementIds
-    this._elementIdToElements = ElementMapping.invertArray(elementIds)
-    this._instanceMeshes = instanceMeshes
   }
 
-  static async fromG3d (g3d: G3d, bim: VimDocument) {
+  static async fromG3d (bim: VimDocument) {
     const instanceToElement = await bim.node.getAllElementIndex()
     const elementIds = await bim.element.getAllId()
 
     return new ElementMapping(
-      Array.from(g3d.instanceNodes),
-      instanceToElement,
-      elementIds,
-      g3d.instanceMeshes
+      instanceToElement, // No conversion - use directly to avoid memory duplication
+      elementIds
     )
   }
 
@@ -72,6 +85,9 @@ export class ElementMapping {
    * @param id element id
    */
   getElementsFromElementId (id: number | bigint) {
+    if (!this._elementIdToElements) {
+      this._elementIdToElements = ElementMapping.invertToMap(this._elementIds)
+    }
     return this._elementIdToElements.get(BigInt(id))
   }
 
@@ -80,17 +96,6 @@ export class ElementMapping {
    */
   hasElement (element: number) {
     return element >= 0 && element < this._elementIds.length
-  }
-
-  hasMesh (element: number) {
-    if (!this._instanceMeshes) return true
-    const instances = this._elementToInstances.get(element)
-    for (const i of instances) {
-      if (this._instanceMeshes[i] >= 0) {
-        return true
-      }
-    }
-    return false
   }
 
   /**
@@ -106,7 +111,7 @@ export class ElementMapping {
    */
   getInstancesFromElement (element: number): number[] | undefined {
     if (!this.hasElement(element)) return
-    return this._elementToInstances.get(element) ?? []
+    return this._elementToInstances[element] ?? []
   }
 
   /**
@@ -115,7 +120,7 @@ export class ElementMapping {
    * @returns element index or undefined if not found
    */
   getElementFromInstance (instance: number) {
-    return this._instanceToElement.get(instance)
+    return this._instanceToElement[instance]
   }
 
   /**
@@ -128,9 +133,29 @@ export class ElementMapping {
   }
 
   /**
+   * Builds element→instances array by inverting the instance→element mapping
+   */
+  private static invertToArray (
+    instanceToElement: number[] | Int32Array,
+    elementCount: number
+  ): (number[] | undefined)[] {
+    const result: (number[] | undefined)[] = new Array(elementCount)
+    for (let instance = 0; instance < instanceToElement.length; instance++) {
+      const element = instanceToElement[instance]
+      if (element >= 0) {
+        if (!result[element]) {
+          result[element] = []
+        }
+        result[element]!.push(instance)
+      }
+    }
+    return result
+  }
+
+  /**
    * Returns a map where data[i] -> i
    */
-  private static invertArray (data: BigInt64Array) {
+  private static invertToMap (data: BigInt64Array) {
     const result = new Map<bigint, number[]>()
     for (let i = 0; i < data.length; i++) {
       const value = data[i]
@@ -139,130 +164,6 @@ export class ElementMapping {
         list.push(i)
       } else {
         result.set(value, [i])
-      }
-    }
-    return result
-  }
-
-  /**
-   * Returns a map where data[i] -> i
-   */
-  private static invertMap (data: Map<number, number>) {
-    const result = new Map<number, number[]>()
-    for (const [key, value] of data.entries()) {
-      const list = result.get(value)
-      if (list) {
-        list.push(key)
-      } else {
-        result.set(value, [key])
-      }
-    }
-    return result
-  }
-}
-
-export class ElementMapping2 {
-  private _instanceToElement: Map<number, number>
-  private _elementToInstances: Map<number, number[]>
-  private _instanceToElementId: Map<number, bigint>
-
-  constructor (scene: G3dScene) {
-    this._instanceToElement = new Map<number, number>()
-    this._instanceToElementId = new Map<number, bigint>()
-
-    for (let i = 0; i < scene.instanceNodes.length; i++) {
-      this._instanceToElement.set(
-        scene.instanceNodes[i],
-        scene.instanceGroups[i]
-      )
-      this._instanceToElementId.set(
-        scene.instanceNodes[i],
-        scene.instanceTags[i]
-      )
-    }
-    this._elementToInstances = ElementMapping2.invertMap(
-      this._instanceToElement
-    )
-  }
-
-  /**
-   * Retrieves element indices associated with the given element ID.
-   * @param {number | bigint} id The element ID.
-   * @returns {number[] | undefined} An array of element indices associated with the element ID,
-   * or undefined if no elements are associated with the ID.
-   */
-  getElementsFromElementId (id: number | bigint) {
-    return undefined
-  }
-
-  /**
-   * Checks if the element exists in the vim.
-   * @param {number} element The element to check for existence.
-   * @returns {boolean} True if the element exists in the vim, otherwise false.
-   */
-  hasElement (element: number) {
-    return this._elementToInstances.has(element)
-  }
-
-  /**
-   * Checks if the element has a mesh in the vim.
-   * @param {number} element The element to check for mesh existence.
-   * @returns {boolean} True if the element has a mesh in the vim, otherwise false.
-   */
-  hasMesh (element: number) {
-    // All elements have meshes in vimx
-    return this.hasElement(element)
-  }
-
-  /**
-   * Retrieves all element indices of the vim.
-   * @returns {IterableIterator<number>} An iterator of all element indices in the vim.
-   */
-  getElements () {
-    return this._elementToInstances.keys()
-  }
-
-  /**
-   * Retrieves instance indices associated with the specified vim element index.
-   * @param {number} element The vim element index.
-   * @returns {number[] | undefined} An array of instance indices associated with the vim element index,
-   * or undefined if the element does not exist in the vim.
-   */
-  getInstancesFromElement (element: number): number[] | undefined {
-    if (!this.hasElement(element)) return
-    return this._elementToInstances.get(element) ?? []
-  }
-
-  /**
-   * Retrieves the element index associated with the g3d instance index.
-   * @param {number} instance The g3d instance index.
-   * @returns {number | undefined} The element index associated with the instance, or undefined if not found.
-   */
-  getElementFromInstance (instance: number) {
-    return this._instanceToElement.get(instance)
-  }
-
-  /**
-   * Retrieves the element ID associated with the specified element index.
-   * @param {number} element The element index.
-   * @returns {bigint | undefined} The element ID associated with the element index, or undefined if not found.
-   */
-  getElementId (element: number) {
-    const instance = this.getInstancesFromElement(element)?.[0]
-    return this._instanceToElementId.get(instance)
-  }
-
-  /**
-   * Returns a map where data[i] -> i
-   */
-  private static invertMap<T1, T2> (data: Map<T1, T2>) {
-    const result = new Map<T2, T1[]>()
-    for (const [key, value] of data.entries()) {
-      const list = result.get(value)
-      if (list) {
-        list.push(key)
-      } else {
-        result.set(value, [key])
       }
     }
     return result

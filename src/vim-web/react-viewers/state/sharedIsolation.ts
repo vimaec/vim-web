@@ -1,23 +1,81 @@
 import { RefObject, useEffect, useRef } from "react";
 import { FuncRef, StateRef, useFuncRef, useStateRef } from "../helpers/reactUtils";
-import { ISignal } from "ste-signals";
+import type { ISignal } from '../../core-viewers/shared/events'
 
 export type VisibilityStatus = 'all' | 'allButSelection' |'onlySelection' | 'some' | 'none';  
 
-export interface IsolationRef {
-  adapter: RefObject<IsolationAdapter>;
+/**
+ * Controls element visibility and isolation in the viewer.
+ * Shared between WebGL and Ultra viewers.
+ *
+ * @example
+ * viewer.isolation.isolateSelection()  // Show only selected elements
+ * viewer.isolation.showAll()           // Reset visibility
+ * viewer.isolation.showGhost.set(true) // Show hidden elements as ghosts
+ */
+export interface IsolationApi {
+  /** Current visibility status (observable). */
   visibility: StateRef<VisibilityStatus>
+  /** Whether auto-isolate is enabled (observable). When true, selecting an element auto-isolates it. */
   autoIsolate: StateRef<boolean>;
+  /** Whether the isolation settings panel is shown (observable). */
   showPanel: StateRef<boolean>;
+  /** Whether hidden elements are rendered as ghosts (observable). */
   showGhost: StateRef<boolean>;
+  /** Ghost material opacity 0-1 (observable). */
   ghostOpacity: StateRef<number>;
+  /** Whether transparent materials are rendered (observable). */
   transparency: StateRef<boolean>;
+  /** Whether selection outlines are enabled (observable). */
+  outlineEnabled: StateRef<boolean>;
+  /** Outline quality: 'low' (0.5x) | 'medium' (1x) | 'high' (2x) render target scale. */
+  outlineQuality: StateRef<string>;
+  /** Outline thickness in screen pixels (1-5). */
+  outlineThickness: StateRef<number>;
+  /** Selection fill mode: 'none' | 'default' | 'xray' | 'seethrough' (observable). */
+  selectionFillMode: StateRef<string>;
+  /** Opacity of the overlay pass in 'xray' and 'seethrough' modes (0-1). */
+  selectionOverlayOpacity: StateRef<number>;
+  /** Whether room elements are shown (observable). */
   showRooms: StateRef<boolean>;
-  onAutoIsolate: FuncRef<void>;
-  onVisibilityChange: FuncRef<void>;
+  /** Hook called when auto-isolate triggers. Use `update()` to add middleware. */
+  onAutoIsolate: FuncRef<void, void>;
+  /** Hook called when visibility changes. Use `update()` to add middleware. */
+  onVisibilityChange: FuncRef<void, void>;
+
+  /** Returns true if any elements are selected. */
+  hasSelection(): boolean
+  /** Returns true if any selected elements are currently visible. */
+  hasVisibleSelection(): boolean
+  /** Returns true if any selected elements are currently hidden. */
+  hasHiddenSelection(): boolean
+  /** Clears the current selection. */
+  clearSelection(): void
+  /** Shows only selected elements, hiding everything else. */
+  isolateSelection(): void
+  /** Hides the currently selected elements. */
+  hideSelection(): void
+  /** Makes the currently selected elements visible. */
+  showSelection(): void
+  /** Isolates elements by their instance indices (only these will be visible). */
+  isolate(instances: number[]): void
+  /** Shows elements by their instance indices. */
+  show(instances: number[]): void
+  /** Hides elements by their instance indices. */
+  hide(instances: number[]): void
+  /** Hides all elements. */
+  hideAll(): void
+  /** Resets visibility — makes all elements visible. */
+  showAll(): void
 }
 
-export interface IsolationAdapter{
+/** @internal */
+export type IsolationApiInternal = IsolationApi & {
+  /** @internal */
+  adapter: RefObject<IIsolationAdapter>
+}
+
+export interface IIsolationAdapter{
   onSelectionChanged: ISignal,
   onVisibilityChange: ISignal,
   computeVisibility: () => VisibilityStatus,
@@ -43,22 +101,32 @@ export interface IsolationAdapter{
   getGhostOpacity(): number;
   setGhostOpacity(opacity: number): void;
 
-  enableTransparency(enable: boolean): void;
+  setTransparency(enabled: boolean): void;
+
+  setOutlineEnabled(enabled: boolean): void;
+  setOutlineQuality(quality: string): void;
+  setOutlineThickness(thickness: number): void;
+  setSelectionFillMode(mode: string): void;
+  setSelectionOverlayOpacity(opacity: number): void;
 
   getShowRooms(): boolean;
   setShowRooms(show: boolean): void;
 }
 
-export function useSharedIsolation(adapter : IsolationAdapter){
+export function useSharedIsolation(adapter : IIsolationAdapter){
   const _adapter = useRef(adapter);
   const visibility = useStateRef<VisibilityStatus>(() => adapter.computeVisibility(), true);
   const autoIsolate = useStateRef<boolean>(false);
   const showPanel = useStateRef<boolean>(false);
   const showRooms = useStateRef<boolean>(false);
   const showGhost = useStateRef<boolean>(false);
-  const ghostOpacity = useStateRef<number>(() => adapter.getGhostOpacity(), true);
   const transparency = useStateRef<boolean>(true);
-  
+  const outlineEnabled = useStateRef<boolean>(true);
+  const outlineQuality = useStateRef<string>('high');
+  const outlineThickness = useStateRef<number>(3);
+  const selectionFillMode = useStateRef<string>('none');
+  const selectionOverlayOpacity = useStateRef<number>(0.25);
+  const ghostOpacity = useStateRef<number>(() => adapter.getGhostOpacity(), true);
   const onAutoIsolate = useFuncRef(() => {
     if(adapter.hasSelection()){
       adapter.isolateSelection();
@@ -87,9 +155,13 @@ export function useSharedIsolation(adapter : IsolationAdapter){
   });
 
   showGhost.useOnChange((v) => adapter.showGhost(v));
+  transparency.useOnChange((v) => adapter.setTransparency(v));
+  outlineEnabled.useOnChange((v) => adapter.setOutlineEnabled(v));
+  outlineQuality.useOnChange((v) => adapter.setOutlineQuality(v));
+  outlineThickness.useOnChange((v) => adapter.setOutlineThickness(v));
+  selectionFillMode.useOnChange((v) => adapter.setSelectionFillMode(v));
+  selectionOverlayOpacity.useOnChange((v) => adapter.setSelectionOverlayOpacity(v));
   showRooms.useOnChange((v) => adapter.setShowRooms(v));
-
-  transparency.useOnChange((v) => adapter.enableTransparency(v));
 
   ghostOpacity.useValidate((next, current) => {
     return next <= 0 ? current : next
@@ -102,10 +174,28 @@ export function useSharedIsolation(adapter : IsolationAdapter){
     autoIsolate,
     showPanel,
     showGhost,
+    transparency,
+    outlineEnabled,
+    outlineQuality,
+    outlineThickness,
+    selectionFillMode,
+    selectionOverlayOpacity,
     showRooms,
     ghostOpacity,
     onAutoIsolate,
     onVisibilityChange,
-    transparency,
-  } as IsolationRef
+
+    hasSelection: () => _adapter.current.hasSelection(),
+    hasVisibleSelection: () => _adapter.current.hasVisibleSelection(),
+    hasHiddenSelection: () => _adapter.current.hasHiddenSelection(),
+    clearSelection: () => _adapter.current.clearSelection(),
+    isolateSelection: () => _adapter.current.isolateSelection(),
+    hideSelection: () => _adapter.current.hideSelection(),
+    showSelection: () => _adapter.current.showSelection(),
+    isolate: (instances: number[]) => _adapter.current.isolate(instances),
+    show: (instances: number[]) => _adapter.current.show(instances),
+    hide: (instances: number[]) => _adapter.current.hide(instances),
+    hideAll: () => _adapter.current.hideAll(),
+    showAll: () => _adapter.current.showAll(),
+  } as IsolationApiInternal
 }

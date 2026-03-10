@@ -1,26 +1,32 @@
 /**
  * @module vim-loader
+ *
+ * Applies color overrides via the quantized color palette.
+ *
+ * - Merged meshes: changes per-vertex `colorIndex` directly (saves/restores originals)
+ * - Instanced meshes: sets per-instance `instanceColorIndex` palette index
+ *
+ * Both paths use the same palette texture — colorToIndex() maps any RGB to a palette slot.
  */
 
 import * as THREE from 'three'
 import { MergedSubmesh } from './mesh'
-import { Vim } from './vim'
-import { InsertableSubmesh } from './progressive/insertableSubmesh'
 import { WebglAttributeTarget } from './webglAttribute'
+import { colorToIndex } from './materials/colorPalette'
 
+/** @internal */
 export class WebglColorAttribute {
-  readonly vim: Vim
   private _meshes: WebglAttributeTarget[] | undefined
   private _value: THREE.Color | undefined
+  /** Saved original colorIndex values per merged submesh (keyed by submesh identity) */
+  private _savedIndices = new Map<MergedSubmesh, Uint16Array>()
 
   constructor (
     meshes: WebglAttributeTarget[] | undefined,
-    value: THREE.Color | undefined,
-    vim: Vim | undefined
+    value: THREE.Color | undefined
   ) {
     this._meshes = meshes
     this._value = value
-    this.vim = vim
   }
 
   updateMeshes (meshes: WebglAttributeTarget[] | undefined) {
@@ -49,135 +55,74 @@ export class WebglColorAttribute {
   }
 
   /**
-   * Writes new color to the appropriate section of merged mesh color buffer.
-   * @param index index of the merged mesh instance
-   * @param color rgb representation of the color to apply
+   * Merged meshes: change the per-vertex colorIndex to the override palette entry.
+   * Saves original values on first override, restores on clear.
    */
   private applyMergedColor (sub: MergedSubmesh, color: THREE.Color | undefined) {
-    if (!color) {
-      this.resetMergedColor(sub)
-      return
-    }
+    const geometry = sub.three.geometry
+    const attribute = geometry.getAttribute('colorIndex') as THREE.BufferAttribute
+    if (!attribute) return
 
     const start = sub.meshStart
     const end = sub.meshEnd
+    const indices = geometry.index
 
-    const colors = sub.three.geometry.getAttribute(
-      'color'
-    ) as THREE.BufferAttribute
+    if (color) {
+      // Save originals if not already saved
+      if (!this._savedIndices.has(sub)) {
+        const saved = new Uint16Array(end - start)
+        for (let i = start; i < end; i++) {
+          const v = indices.getX(i)
+          saved[i - start] = attribute.getX(v)
+        }
+        this._savedIndices.set(sub, saved)
+      }
 
-    const indices = sub.three.geometry.index
-
-    // Save colors to be able to reset.
-    if (sub instanceof InsertableSubmesh) {
-      let c = 0
-      const previous = new Float32Array((end - start) * 3)
+      // Write override palette index
+      const palIdx = colorToIndex(color.r, color.g, color.b)
       for (let i = start; i < end; i++) {
         const v = indices.getX(i)
-        previous[c++] = colors.getX(v)
-        previous[c++] = colors.getY(v)
-        previous[c++] = colors.getZ(v)
+        attribute.setX(v, palIdx)
       }
-      sub.saveColors(previous)
+    } else {
+      // Restore originals
+      const saved = this._savedIndices.get(sub)
+      if (saved) {
+        for (let i = start; i < end; i++) {
+          const v = indices.getX(i)
+          attribute.setX(v, saved[i - start])
+        }
+        this._savedIndices.delete(sub)
+      }
     }
 
-    for (let i = start; i < end; i++) {
-      const v = indices.getX(i)
-      // alpha is left to its current value
-      colors.setXYZ(v, color.r, color.g, color.b)
-    }
-    colors.needsUpdate = true
-    colors.clearUpdateRanges()  
+    attribute.needsUpdate = true
+    attribute.clearUpdateRanges()
   }
 
   /**
-   * Repopulates the color buffer of the merged mesh from original g3d data.
-   * @param index index of the merged mesh instance
-   */
-  private resetMergedColor (sub: MergedSubmesh) {
-    if (!this.vim) return
-    if (sub instanceof InsertableSubmesh) {
-      this.resetMergedInsertableColor(sub)
-      return
-    }
-
-    const colors = sub.three.geometry.getAttribute(
-      'color'
-    ) as THREE.BufferAttribute
-
-    const indices = sub.three.geometry.index
-    let mergedIndex = sub.meshStart
-
-    const g3d = this.vim.g3d
-    const g3dMesh = g3d.instanceMeshes[sub.instance]
-    const subStart = g3d.getMeshSubmeshStart(g3dMesh)
-    const subEnd = g3d.getMeshSubmeshEnd(g3dMesh)
-
-    for (let sub = subStart; sub < subEnd; sub++) {
-      const start = g3d.getSubmeshIndexStart(sub)
-      const end = g3d.getSubmeshIndexEnd(sub)
-      const color = g3d.getSubmeshColor(sub)
-      for (let i = start; i < end; i++) {
-        const v = indices.getX(mergedIndex)
-        colors.setXYZ(v, color[0], color[1], color[2])
-        mergedIndex++
-      }
-    }
-    colors.needsUpdate = true
-    colors.clearUpdateRanges()
-  }
-
-  private resetMergedInsertableColor (sub: InsertableSubmesh) {
-    const previous = sub.popColors()
-    if (previous === undefined) return
-
-    const indices = sub.three.geometry.index
-    const colors = sub.three.geometry.getAttribute(
-      'color'
-    ) as THREE.BufferAttribute
-
-    let c = 0
-    for (let i = sub.meshStart; i < sub.meshEnd; i++) {
-      const v = indices.getX(i)
-      colors.setXYZ(v, previous[c], previous[c + 1], previous[c + 2])
-      c += 3
-    }
-
-    colors.needsUpdate = true
-    colors.clearUpdateRanges()
-  }
-
-  /**
-   * Adds an instanceColor buffer to the instanced mesh and sets new color for given instance
-   * @param index index of the instanced instance
-   * @param color rgb representation of the color to apply
+   * Instanced meshes: set per-instance palette index via instanceColorIndex attribute.
+   * The `colored` flag (set separately) tells the shader to use this instead of per-vertex colorIndex.
    */
   private applyInstancedColor (sub: WebglAttributeTarget, color: THREE.Color | undefined) {
-    const colors = this.getOrAddInstanceColorAttribute(
-      sub.three as THREE.InstancedMesh
-    )
+    const mesh = sub.three as THREE.InstancedMesh
+    const geometry = mesh.geometry
+
+    let attribute = geometry.getAttribute('instanceColorIndex') as THREE.BufferAttribute
+    if (!attribute || attribute.count < mesh.instanceMatrix.count) {
+      const count = mesh.instanceMatrix.count
+      const array = new Float32Array(count)
+      attribute = new THREE.InstancedBufferAttribute(array, 1)
+      geometry.setAttribute('instanceColorIndex', attribute)
+    }
+
     if (color) {
-      // Set instance to use instance color provided
-      colors.setXYZ(sub.index, color.r, color.g, color.b)
-      // Set attributes dirty
-      colors.needsUpdate = true
-      colors.clearUpdateRanges()
+      const palIdx = colorToIndex(color.r, color.g, color.b)
+      attribute.setX(sub.index, palIdx)
+    } else {
+      attribute.setX(sub.index, 0)
     }
-  }
-
-  private getOrAddInstanceColorAttribute (mesh: THREE.InstancedMesh) {
-    if (mesh.instanceColor &&
-      mesh.instanceColor.count <= mesh.instanceMatrix.count
-    ) {
-      return mesh.instanceColor
-    }
-
-    // mesh.count is not always === to capacity so we use instanceMatrix.count
-    const count = mesh.instanceMatrix.count
-    // Add color instance attribute
-    const colors = new Float32Array(count * 3)
-    const attribute = new THREE.InstancedBufferAttribute(colors, 3)
-    mesh.instanceColor = attribute
-    return attribute
+    attribute.needsUpdate = true
+    attribute.clearUpdateRanges()
   }
 }

@@ -5,10 +5,10 @@
 import { Submesh } from '../mesh'
 import { InsertableMesh } from './insertableMesh'
 
+/** @internal */
 export class InsertableSubmesh {
   mesh: InsertableMesh
   index: number
-  private _colors: Float32Array
 
   constructor (mesh: InsertableMesh, index: number) {
     this.mesh = mesh
@@ -72,14 +72,4 @@ export class InsertableSubmesh {
     return this.mesh.vim.getElement(this.instance)
   }
 
-  saveColors (colors: Float32Array) {
-    if (this._colors) return
-    this._colors = colors
-  }
-
-  popColors () {
-    const result = this._colors
-    this._colors = undefined
-    return result
-  }
 }

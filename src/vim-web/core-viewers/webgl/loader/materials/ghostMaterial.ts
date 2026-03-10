@@ -6,39 +6,86 @@
 import * as THREE from 'three'
 
 /**
- * Creates a material for the ghost effect in isolation mode.
- * 
+ * @internal
+ * Material wrapper for the ghost effect in isolation mode.
+ * Non-visible items are rendered as transparent objects using a customizable fill color.
+ * Visible items are completely excluded from rendering.
+ */
+export class GhostMaterial {
+  three: THREE.ShaderMaterial
+  private _onUpdate?: () => void
+
+  constructor (material?: THREE.ShaderMaterial, onUpdate?: () => void) {
+    this.three = material ?? createGhostShader()
+    this._onUpdate = onUpdate
+  }
+
+  get opacity () {
+    return this.three.uniforms.opacity.value
+  }
+
+  set opacity (value: number) {
+    this.three.uniforms.opacity.value = value
+    this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
+  }
+
+  get color (): THREE.Color {
+    return this.three.uniforms.fillColor.value
+  }
+
+  set color (value: THREE.Color) {
+    this.three.uniforms.fillColor.value = value
+    this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
+  }
+
+  get clippingPlanes () {
+    return this.three.clippingPlanes
+  }
+
+  set clippingPlanes (value: THREE.Plane[] | null) {
+    this.three.clippingPlanes = value
+    this._onUpdate?.()
+  }
+
+  dispose () {
+    this.three.dispose()
+  }
+}
+
+/**
+ * @internal
+ * Creates a GhostMaterial for isolation mode.
+ */
+export function createGhostMaterial(): GhostMaterial {
+  return new GhostMaterial(createGhostShader())
+}
+
+/**
+ * Creates the shader material for the ghost effect.
+ *
  * - **Non-visible items**: Rendered as transparent objects using a customizable fill color.
  * - **Visible items**: Completely excluded from rendering.
  * - Designed for use with instanced or merged meshes.
- * - Includes clipping plane support, vertex colors, and transparency.
- *
- * @returns {THREE.ShaderMaterial} A custom shader material for the ghost effect.
+ * - Includes clipping plane support and transparency.
  */
-export function createGhostMaterial() {
+function createGhostShader() {
   return new THREE.ShaderMaterial({
     userData: {
       isGhost: true
     },
     uniforms: {
-      // Uniform controlling the overall transparency of the non-visible objects.
-      opacity: { value: 0.25 },
-      // Uniform specifying the fill color for non-visible objects.
-      fillColor: { value: new THREE.Vector3(14/255, 14/255, 14/255) }
+      // Overall transparency for non-visible objects.
+      opacity: { value: 7 / 255 },
+      // Fill color for non-visible objects. Pre-computed to avoid per-uniform divisions.
+      fillColor: { value: new THREE.Vector3(0.0549, 0.0549, 0.0549) }
     },
-    
-    /*
-    blending: THREE.CustomBlending,
-    blendSrc: THREE.SrcAlphaFactor,
-    blendEquation: THREE.AddEquation,
-    blendDst: THREE.OneMinusDstColorFactor,
-    */
-    
-    
-    // Render only the front side of faces to prevent drawing internal geometry.
+
+    // Draw only front faces for performance, ghost are approximate anyway.
     side: THREE.FrontSide,
-    // Enable support for vertex colors.
-    vertexColors: true,
+    // Use GLSL ES 3.0 for WebGL 2
+    glslVersion: THREE.GLSL3,
     // Enable transparency for the material.
     transparent: true,
     // Enable clipping planes for geometry slicing.
@@ -52,7 +99,7 @@ export function createGhostMaterial() {
 
       // Attribute to determine if an object or vertex should be visible.
       // Used as an instance attribute for instanced meshes or a vertex attribute for merged meshes.
-      attribute float ignore;
+      in float ignore;
 
       void main() {
         // Standard transformations to calculate vertex position.
@@ -60,10 +107,12 @@ export function createGhostMaterial() {
         #include <project_vertex>
         #include <clipping_planes_vertex>
 
-        // Hide objects or vertices where the 'ignore' attribute is set to 0.
+        // Hide objects where ignore == 0.0 (visible items are excluded from ghost rendering).
+        // Placing behind near plane (z = -2 in clip space) clips the triangle.
+        // Faster than fragment discard since no fragments are generated.
         if (ignore == 0.0) {
-          // Push the vertex far out of view, effectively hiding it.
-          gl_Position = vec4(1e20, 1e20, 1e20, 1.0);
+          gl_Position = vec4(0.0, 0.0, -2.0, 1.0);
+          return;
         }
       }
     `,
@@ -75,12 +124,13 @@ export function createGhostMaterial() {
       // Uniform specifying the fill color for non-visible objects.
       uniform vec3 fillColor;
 
+      out vec4 fragColor;
+
       void main() {
         // Handle clipping planes to discard fragments outside the defined planes.
         #include <clipping_planes_fragment>
-        // Set the fragment color to the specified fill color and opacity.
-        // Divided by 10 just to match Ultra ghost opacity at 0.25
-        gl_FragColor = vec4(fillColor, opacity / 10.0);
+        // Output fill color with pre-divided opacity (no per-fragment division needed).
+        fragColor = vec4(fillColor, opacity);
       }
     `
   });

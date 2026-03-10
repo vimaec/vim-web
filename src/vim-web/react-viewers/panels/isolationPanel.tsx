@@ -1,14 +1,19 @@
 import { forwardRef } from "react";
-import { IsolationRef } from "../state/sharedIsolation";
-import { GenericPanel, GenericPanelHandle } from "../generic/genericPanel";
+import { IsolationApi } from "../state/sharedIsolation";
+import { GenericPanel, GenericPanelApi } from "../generic/genericPanel";
 
 export const Ids = {
   showGhost: "isolationPanel.showGhost",
   ghostOpacity: "isolationPanel.ghostOpacity",
   transparency: "isolationPanel.transparency",
+  outlineEnabled: "isolationPanel.outlineEnabled",
+  outlineQuality: "isolationPanel.outlineQuality",
+  outlineThickness: "isolationPanel.outlineThickness",
+  selectionFillMode: "isolationPanel.selectionFillMode",
+  selectionOverlayOpacity: "isolationPanel.selectionOverlayOpacity",
 }
 
-export const IsolationPanel = forwardRef<GenericPanelHandle, { state: IsolationRef, transparency: boolean }>(
+export const IsolationPanel = forwardRef<GenericPanelApi, { state: IsolationApi }>(
   (props, ref) => {
     return (
       <GenericPanel
@@ -19,18 +24,16 @@ export const IsolationPanel = forwardRef<GenericPanelHandle, { state: IsolationR
         entries={[
           {
             type: "bool",
+            id: Ids.transparency,
+            label: "Transparency",
+            state: props.state.transparency
+          },
+          {
+            type: "bool",
             id: Ids.showGhost,
             label: "Show Ghost",
             state: props.state.showGhost
           },
-          /*
-          {
-            type: "bool",
-            id: "showRooms",
-            label: "Show Rooms",
-            state: props.state.showRooms
-          },
-          */
           {
             type: "number",
             id: Ids.ghostOpacity,
@@ -43,10 +46,56 @@ export const IsolationPanel = forwardRef<GenericPanelHandle, { state: IsolationR
           },
           {
             type: "bool",
-            visible: () => props.transparency,
-            id: Ids.transparency,
-            label: "Transparency",
-            state: props.state.transparency
+            id: Ids.outlineEnabled,
+            label: "Selection Outline",
+            state: props.state.outlineEnabled
+          },
+          {
+            type: "select",
+            id: Ids.outlineQuality,
+            label: "Outline Quality",
+            options: [
+              { label: 'Low', value: 'low' },
+              { label: 'Medium', value: 'medium' },
+              { label: 'High', value: 'high' },
+            ],
+            enabled: () => props.state.outlineEnabled.get(),
+            state: props.state.outlineQuality
+          },
+          {
+            type: "number",
+            id: Ids.outlineThickness,
+            label: "Outline Thickness",
+            state: props.state.outlineThickness,
+            enabled: () => props.state.outlineEnabled.get(),
+            min: 1,
+            max: 5,
+            step: 1
+          },
+          {
+            type: "select",
+            id: Ids.selectionFillMode,
+            label: "Selection Fill",
+            options: [
+              { label: 'None', value: 'none' },
+              { label: 'Default', value: 'default' },
+              { label: 'X-Ray', value: 'xray' },
+              { label: 'See-Through', value: 'seethrough' },
+            ],
+            state: props.state.selectionFillMode
+          },
+          {
+            type: "number",
+            id: Ids.selectionOverlayOpacity,
+            label: "Selection Opacity",
+            state: props.state.selectionOverlayOpacity,
+            enabled: () => {
+              const mode = props.state.selectionFillMode.get()
+              return mode === 'xray' || mode === 'seethrough'
+            },
+            min: 0,
+            max: 1,
+            step: 0.05
           },
         ]}
       />

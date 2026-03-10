@@ -11,7 +11,97 @@ import { RecursivePartial } from '../../../../utils/partial'
 
 export type TextureEncoding = 'url' | 'base64' | undefined
 
-/** Viewer related options independant from vims */
+/**
+ * How selected elements are filled (beyond the outline).
+ * - 'none': Outline only, no fill.
+ * - 'default': Tint selected meshes in the main render pass (zero cost).
+ * - 'xray': Tint + render selected on top of everything (1 extra pass).
+ * - 'seethrough': Tint + render a semi-transparent ghost where behind geometry (1 extra pass).
+ */
+export type SelectionFillMode = 'none' | 'default' | 'xray' | 'seethrough'
+
+export type MaterialSettings = {
+  /**
+  * Ghost material options
+  */
+  ghost: {
+    /**
+    * Ghost material color
+    * Default: rgb(78, 82, 92)
+    */
+    color: THREE.Color
+    /**
+    * Ghost material opacity
+    * Default: 0.08
+    */
+    opacity: number
+  }
+  /**
+  * Selection outline options
+  */
+  outline: {
+    /**
+    * Selection outline opacity (0 = invisible, 1 = fully opaque).
+    * Default: 1
+    */
+    opacity: number;
+    /**
+    * Selection outline color.
+    * Default: rgb(0, 255, 255)
+    */
+    color: THREE.Color;
+    /**
+    * Scale factor for outline render target resolution (0-1).
+    * Lower = faster, higher = sharper outlines.
+    * Default: 0.75
+    */
+    scale: number;
+    /**
+    * Outline thickness in pixels (of the outline render target).
+    * Higher values sample more pixels per fragment (4 fetches per level).
+    * Range: 1-5. Default: 2
+    */
+    thickness: number;
+  }
+  /**
+  * Selection fill options (beyond outlines).
+  */
+  selection: {
+    /**
+    * How selected elements are filled.
+    * Default: 'none'
+    */
+    fillMode: SelectionFillMode
+    /**
+    * Tint color applied to selected elements.
+    * Default: rgb(0, 100, 255) — blue
+    */
+    color: THREE.Color
+    /**
+    * Tint blend strength (0 = no tint, 1 = solid color).
+    * Default: 0.3
+    */
+    opacity: number
+    /**
+    * Opacity of the overlay pass in 'xray' and 'seethrough' modes.
+    * In xray: applies to all selected geometry rendered on top.
+    * In seethrough: applies to selected geometry rendered behind other objects.
+    * Default: 0.25
+    */
+    overlayOpacity: number
+  }
+}
+
+/**
+ * Core renderer configuration, passed to `Core.Webgl.createViewer(settings)` at initialization.
+ * Controls camera defaults, lighting, materials, canvas, and rendering pipeline.
+ * Not to be confused with {@link VimSettings} (per-model transform) or WebglSettings (React UI toggles).
+ *
+ * @example
+ * const viewer = Core.Webgl.createViewer({
+ *   camera: { orthographic: true, fov: 50 },
+ * })
+ */
 export type ViewerSettings = {
   /**
    * Webgl canvas related options
@@ -40,16 +130,18 @@ export type ViewerSettings = {
     orthographic: boolean
 
     /**
-     * Vector3 of 0 or 1 to enable/disable movement along each axis
+     * Movement lock per axis in Z-up space (X = right, Y = forward, Z = up).
+     * Each component should be 0 (locked) or 1 (free).
      * Default: THREE.Vector3(1, 1, 1)
      */
-    allowedMovement: THREE.Vector3
+    lockMovement: THREE.Vector3
 
     /**
-     * Vector2 of 0 or 1 to enable/disable rotation around x or y.
+     * Rotation lock per axis. x = yaw (around Z), y = pitch (up/down).
+     * Each component should be 0 (locked) or 1 (free).
      * Default: THREE.Vector2(1, 1)
      */
-    allowedRotation: THREE.Vector2
+    lockRotation: THREE.Vector2
 
     /**
      * Near clipping plane distance
@@ -76,8 +168,8 @@ export type ViewerSettings = {
     zoom: number
 
     /**
-     * Initial forward vector of the camera
-     * THREE.Vector3(1, -1, 1)
+     * Initial forward vector of the camera in Z-up space (X = right, Y = forward, Z = up).
+     * Default: THREE.Vector3(1, -1, 1)
      */
     forward: THREE.Vector3
 
@@ -128,26 +220,32 @@ export type ViewerSettings = {
       enable: boolean
 
       /**
-      * Size of camera gizmo.
-      * Default: 0.01
+      * Size of camera gizmo as fraction of screen (0-1).
+      * Default: 0.1
       */
       size: number
 
       /**
-      * Color of camera gizmo.
-      * Default: THREE.Color(255, 255, 255)
+      * Color of vertical rings (great circles).
+      * Default: THREE.Color(0x0590cc) - VIM blue
       */
       color: THREE.Color
 
       /**
-      * Opacity of the camera gizmo.
+      * Color of horizontal rings (latitude circles).
+      * Default: THREE.Color(0x58b5dd) - Primary_300
+      */
+      colorHorizontal: THREE.Color
+
+      /**
+      * Opacity of the camera gizmo when in front of objects.
       * Default: 0.5
       */
       opacity: number
 
       /**
       * Opacity of the camera gizmo when behind objects.
-      * Default: 0.125
+      * Default: 0.1
       */
       opacityAlways: number
     }
@@ -162,170 +260,22 @@ export type ViewerSettings = {
      */
     color: THREE.Color
   },
-  /**
-   * Skybox options
-   */
-  skybox:{
-    /**
-     * Enables/Disables skybox.
-     */
-    enable: boolean
-
-    /**
-     * Color for the lower part of the skybox.
-     */
-    groundColor: THREE.Color
-    /**
-     * Color for the upper part of the skybox.
-     */
-    skyColor: THREE.Color
-
-    /**
-     * Controls the gradient transition between the sky and the ground.
-     */
-    sharpness: number
-  },
-
 /**
-* Object highlight on click options
+* Material options
 */
-materials: {
-  /**
-  * Default color of standard material
-  */
-  standard: {
-    color: THREE.Color
-  }
-  /**
-  * Highlight on hover options
-  */
-  highlight: {
-    /**
-    * Highlight color
-    * Default: rgb(106, 210, 255)
-    */
-    color: THREE.Color
-    /**
-    * Highlight opacity
-    * Default: 0.5
-    */
-    opacity: number
-  }
-  /**
-  * Ghost material options
-  */
-  ghost: {
-    /**
-    * Ghost material color
-    * Default: rgb(78, 82, 92)
-    */
-    color: THREE.Color
-    /**
-    * Ghost material opacity
-    * Default: 0.08
-    */
-    opacity: number
-  }
-  /**
-  * Section box intersection highlight options
-  */
-  section: {
-    /**
-    * Intersection highlight stroke width.
-    * Default: 0.01
-    */
-    strokeWidth: number;
-    /**
-    * Intersection highlight stroke falloff.
-    * Default: 0.75
-    */
-    strokeFalloff: number;
-    /**
-    * Intersection highlight stroke color.
-    * Default: rgb(246, 246, 246)
-    */
-    strokeColor: THREE.Color;
-  }
-  /**
-  * Selection outline options
-  */
-  outline: {
-
-    /**
-    * Enable antialiasing for the outline.
-    * Default: false
-    */
-    antialias: boolean
-    /**
-    * Selection outline intensity.
-    * Default: 3
-    */
-    intensity: number;
-    /**
-    * Selection outline falloff.
-    * Default: 3
-    */
-    falloff: number;
-    /**
-    * Selection outline blur.
-    * Default: 2
-    */
-    blur: number;
-    /**
-    * Selection outline color.
-    * Default: rgb(0, 255, 255)
-    */
-    color: THREE.Color;
-  }
-}
+materials: MaterialSettings
 
   /**
    * Axes gizmo options
    */
   axes: Partial<AxesSettings>
 
-  /**
-   * Skylight (hemisphere light) options
-   */
-  skylight: {
-    /**
-    * Skylight sky Color.
-    * Default: THREE.Color(153, 204, 255)
-    */
-    skyColor: THREE.Color
-
-    /**
-    * Skylight ground color.
-    * Default: THREE.Color(242, 213, 181)
-    */
-    groundColor: THREE.Color
-
-    /**
-    * Skylight intensity.
-    * Default: 0.8
-    */
-    intensity: number
-  }
-  /**
-   * Sunlight (directional light) options
-   * Two Blue-Green lights at odd angles. See defaultViewerSettings.
-   */
-  sunlights: {
-    followCamera: boolean;
-    /** Light position. */
-    position: THREE.Vector3;
-    /** Light color. */
-    color: THREE.Color;
-    /** Light intensity. */
-    intensity: number;
-  }[]
-
   rendering: {
     /**
-     * Enable on-demand rendering which wait for changes before rendering to the canvas.
+     * When true, only renders when changes are detected. When false, renders every frame.
      * Default: true
      */
-    onDemand: boolean
+    autoRender: boolean
   }
 }
 

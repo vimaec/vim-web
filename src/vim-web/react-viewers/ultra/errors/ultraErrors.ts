@@ -23,7 +23,7 @@ export function getRequestErrorMessage (serverUrl: string, source: Core.Ultra.Vi
     case 'downloadingError':
     case 'unknown':
     case 'cancelled':
-      return Errors.serverFileDownloadingError(source.url, source.authToken, serverUrl)
+      return Errors.serverFileDownloadingError(source.url, source.headers?.['Authorization'], serverUrl)
     case 'serverDisconnected':
       return Errors.serverConnectionError(source.url)
   }

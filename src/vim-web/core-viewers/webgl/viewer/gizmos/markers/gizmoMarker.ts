@@ -1,18 +1,54 @@
-import { Vim } from '../../../loader/vim'
-import { Viewer } from '../../viewer'
+import { IWebglVim } from '../../../loader/vim'
+import { Renderer } from '../../rendering/renderer'
 import * as THREE from 'three'
 import { SimpleInstanceSubmesh } from '../../../loader/mesh'
 import { WebglAttribute } from '../../../loader/webglAttribute'
 import { WebglColorAttribute } from '../../../loader/colorAttribute'
-import { IVimElement } from '../../../../shared/vim'
+import { ISelectable } from '../../selection'
 
 /**
+ * Public interface for a marker gizmo in the scene.
+ *
+ * Obtained via `viewer.gizmos.markers.add(position)`.
+ */
+export interface IMarker extends ISelectable {
+  readonly type: 'Marker'
+  /** The Vim object from which this marker came, if any. */
+  vim: IWebglVim | undefined
+  /** The BIM element index, if associated with a Vim element. */
+  element: number | undefined
+  /** The geometry instances, if derived from multiple instances. */
+  instances: number[] | undefined
+  /** The index of the marker in the marker collection. */
+  readonly index: number
+  /** Always false for markers. */
+  readonly isRoom: boolean
+  /** Always false; marker is a gizmo, not an actual mesh. */
+  readonly hasMesh: boolean
+  /** Whether the marker is outlined (highlighted). */
+  outline: boolean
+  /** Whether the marker is visible in the scene. */
+  visible: boolean
+  /** Whether the marker is focused (enlarged). */
+  focused: boolean
+  /** The color override for the marker. */
+  color: THREE.Color | undefined
+  /** The uniform scale factor applied to the marker. */
+  size: number
+  /** The world position of the marker in Z-up space (X = right, Y = forward, Z = up). */
+  position: THREE.Vector3
+  /** Retrieves the bounding box of the marker in Z-up world space. */
+  getBoundingBox(): Promise<THREE.Box3>
+}
+
+/**
+ * @internal
  * Marker gizmo that displays an interactive sphere at a 3D position.
  * Marker gizmos are still under development.
  */
-export class Marker implements IVimElement {
+export class Marker implements IMarker {
   public readonly type = 'Marker'
-  private _viewer: Viewer
+  private _renderer: Renderer
   private _submesh: SimpleInstanceSubmesh
 
   private static _tmpMatrix = new THREE.Matrix4()
@@ -22,7 +58,7 @@ export class Marker implements IVimElement {
    * The Vim object from which this object came.
    * Can be undefined if the object is not part of a Vim.
    */
-  vim: Vim | undefined
+  vim: IWebglVim | undefined
 
   /**
    * The BIM element index associated with this object.
@@ -58,8 +94,8 @@ export class Marker implements IVimElement {
    * @param viewer - The viewer managing rendering and interaction.
    * @param submesh - The instanced submesh this marker is bound to.
    */
-  constructor(viewer: Viewer, submesh: SimpleInstanceSubmesh) {
-    this._viewer = viewer
+  constructor(renderer: Renderer, submesh: SimpleInstanceSubmesh) {
+    this._renderer = renderer
     this._submesh = submesh
 
     const array = [submesh]
@@ -67,12 +103,13 @@ export class Marker implements IVimElement {
     this._visibleAttribute = new WebglAttribute(true, 'ignore', 'ignore', array, (v) => (v ? 0 : 1))
     this._focusedAttribute = new WebglAttribute(false, 'focused', 'focused', array, (v) => (v ? 1 : 0))
     this._coloredAttribute = new WebglAttribute(false, 'colored', 'colored', array, (v) => (v ? 1 : 0))
-    this._colorAttribute = new WebglColorAttribute(array, undefined, undefined)
+    this._colorAttribute = new WebglColorAttribute(array, undefined)
 
     this.color = new THREE.Color(0xff1a1a)
   }
 
   /**
+   * @internal
    * Updates the underlying submesh and rebinds all attributes to the new mesh.
    * @param mesh - The new submesh to bind to this marker.
    */
@@ -84,7 +121,7 @@ export class Marker implements IVimElement {
     this._outlineAttribute.updateMeshes(array)
     this._colorAttribute.updateMeshes(array)
     this._coloredAttribute.updateMeshes(array)
-    this._viewer.renderer.needsUpdate = true
+    this._renderer.requestRender()
   }
 
   /**
@@ -94,7 +131,7 @@ export class Marker implements IVimElement {
     Marker._tmpMatrix.compose(value, new THREE.Quaternion(), new THREE.Vector3(1, 1, 1))
     this._submesh.mesh.setMatrixAt(this.index, Marker._tmpMatrix)
     this._submesh.mesh.instanceMatrix.needsUpdate = true
-    this._viewer.renderer.needsUpdate = true
+    this._renderer.requestRender()
     this._submesh.mesh.computeBoundingSphere() // Required for raycasting
   }
 
@@ -125,8 +162,8 @@ export class Marker implements IVimElement {
    */
   set outline(value: boolean) {
     if (this._outlineAttribute.apply(value)) {
-      if (value) this._viewer.renderer.addOutline()
-      else this._viewer.renderer.removeOutline()
+      if (value) this._renderer.addOutline()
+      else this._renderer.removeOutline()
     }
   }
 
@@ -142,7 +179,7 @@ export class Marker implements IVimElement {
    */
   set focused(value: boolean) {
     this._focusedAttribute.apply(value)
-    this._viewer.renderer.needsUpdate = true
+    this._renderer.requestRender()
   }
 
   /**
@@ -157,7 +194,7 @@ export class Marker implements IVimElement {
    */
   set visible(value: boolean) {
     this._visibleAttribute.apply(value)
-    this._viewer.renderer.needsUpdate = true
+    this._renderer.requestRender()
   }
 
   /**
@@ -178,7 +215,7 @@ export class Marker implements IVimElement {
     } else {
       this._coloredAttribute.apply(false)
     }
-    this._viewer.renderer.needsUpdate = true
+    this._renderer.requestRender()
   }
 
   /**
@@ -203,7 +240,7 @@ export class Marker implements IVimElement {
       matrix.elements[10] = value
       this._submesh.mesh.setMatrixAt(this.index, matrix)
       this._submesh.mesh.instanceMatrix.needsUpdate = true
-      this._viewer.renderer.needsUpdate = true
+      this._renderer.requestRender()
       this._submesh.mesh.computeBoundingSphere() // Required for Raycast
     }
   }

@@ -1,7 +1,8 @@
-
-// type exports
-export type * from './genericField';
-export {type GenericPanelHandle} from './genericPanel';
-
-// Not exported
-// export * from './inputNumber' 
+// Public types for generic panel customization
+export type { GenericPanelApi } from './genericPanel'
+export type {
+  GenericEntryType,
+  GenericTextEntry,
+  GenericNumberEntry,
+  GenericBoolEntry,
+} from './genericField'

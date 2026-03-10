@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import { InputHandler } from "../../core-viewers/shared";
-import { CameraRef } from "./cameraState";
+import { type IInputHandler } from "../../core-viewers/shared";
+import { FramingApi } from "./cameraState";
 
 // Input binding override for the viewer are defined here.
-export function useViewerInput(handler: InputHandler, camera: CameraRef){
+export function useViewerInput(handler: IInputHandler, framing: FramingApi){
   useEffect(() => {
-    handler.keyboard.registerKeyUp('KeyF', 'replace', () => camera.frameSelection.call());
+    handler.keyboard.override('KeyF', 'up', () => framing.frameSelection.call());
   }, [])
 }

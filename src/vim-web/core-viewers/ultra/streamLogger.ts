@@ -1,5 +1,5 @@
 import type { VideoFrameMessage } from './protocol'
-import { ILogger } from './logger'
+import { ILogger } from '../shared/logger'
 
 export class StreamLogger {
   private readonly _logger: ILogger

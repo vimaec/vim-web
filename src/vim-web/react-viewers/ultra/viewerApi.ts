@@ -1,0 +1,100 @@
+import * as Core from '../../core-viewers';
+import { ModalApi } from '../panels/modal';
+import { FramingApi } from '../state/cameraState';
+import { SectionBoxApi } from '../state/sectionBoxState';
+import { IsolationApi } from '../state/sharedIsolation';
+import { ControlBarApi } from '../controlbar/controlBar';
+import { GenericPanelApi } from '../generic/genericPanel';
+import { SettingsApi } from '../state/settingsApi';
+import { UltraSettings } from './settings';
+import { Container } from '../container';
+
+export type UltraViewerApi = {
+  /**
+   * Discriminant to distinguish Ultra from WebGL viewer.
+   */
+  type: 'ultra'
+
+  /**
+   * HTML structure containing the viewer.
+   */
+  container: Container
+
+  /**
+   * The underlying Ultra core viewer. Provides direct access to the server connection,
+   * camera, selection, raycaster, renderer, and section box.
+   *
+   * Common uses:
+   * - `viewer.core.camera.lerp(1).frame(element)` — animated camera movement
+   * - `viewer.core.camera.snap().set(pos, target)` — instant camera placement
+   * - `viewer.core.selection.select(element)` — programmatic selection
+   * - `viewer.core.inputs.pointerMode` — change interaction mode
+   * - `viewer.core.sectionBox` — direct section box manipulation
+   * - `viewer.core.renderer.ghostColor` — ghost rendering settings
+   */
+  core: Core.Ultra.Viewer;
+
+  /**
+   * API to manage the modal dialog.
+   */
+  modal: ModalApi;
+
+  /**
+   * API to manage the section box.
+   */
+  sectionBox: SectionBoxApi;
+
+  /**
+   * API to customize the control.
+   */
+  controlBar: ControlBarApi
+
+  /**
+   * High-level framing API with semantic operations (frame selection, auto-camera).
+   * For low-level camera control (snap/lerp, set position), use {@link core}.camera instead.
+   * @see {@link FramingApi}
+   */
+  framing: FramingApi
+
+  /**
+   * Isolation API managing element visibility and isolation state.
+   * @see {@link IsolationApi}
+   */
+  isolation: IsolationApi
+
+  /**
+   * Settings API managing UI feature toggles applied to the viewer.
+   * Use `update()` to modify settings at runtime.
+   */
+  settings: SettingsApi<UltraSettings>
+
+  /**
+   * API to interact with the isolation panel.
+   */
+  isolationPanel : GenericPanelApi
+
+  /**
+   * API to interact with the section box panel.
+   */
+  sectionBoxPanel : GenericPanelApi
+
+  /**
+   * Disposes of the viewer and its resources.
+   */
+  dispose: () => void;
+
+  /**
+   * Loads a VIM file via the Ultra server.
+   * Wraps core.load() with connection management, progress UI (loading modal),
+   * and error reporting. For headless loading, use core.load() directly.
+   * @param source The VIM source (url and optional headers)
+   * @returns LoadRequest to track progress and get result
+   */
+  load(source: Core.Ultra.VimSource): Core.Ultra.IUltraLoadRequest;
+
+  /**
+   * Unloads a vim from the viewer and disposes it.
+   * @param vim The vim to unload
+   */
+  unload(vim: Core.Ultra.IUltraVim): void;
+};

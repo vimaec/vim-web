@@ -1,6 +1,6 @@
 import { MessageBoxProps } from '../../panels/messageBox'
 import * as style from '../../errors/errorStyle'
-import * as Urls from '../../urls'
+
 import { isLocalUrl } from '../../../utils/url'
 
 export function serverConnectionError (url: string): MessageBoxProps {

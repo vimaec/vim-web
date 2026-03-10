@@ -1,25 +1,26 @@
 /**
  * @module state-action-refs
  *
- * This module exports various React hooks and TypeScript interfaces to create references for state,
- * actions, and functions. These references allow you to store and manipulate values and functions,
- * as well as dynamically inject additional behavior (using prepend and append methods) into their call chains.
+ * Reactive state and function references for the React viewer layer.
  *
- * The provided hooks include:
- * - useStateRef: A state reference with event dispatching and validation.
- * - useActionRef: A reference for an action (a function with no arguments).
- * - useArgActionRef: A reference for an action that accepts an argument.
- * - useFuncRef: A reference for a function returning a value.
- * - useAsyncFuncRef: A reference for an asynchronous function.
- * - useArgFuncRef: A reference for a function that accepts an argument and returns a value.
+ * - `StateRef<T>` — observable state with get/set/onChange
+ * - `FuncRef<TArg, TReturn>` — callable function reference with `update` middleware
+ * - `useFuncRef(fn)` — creates a FuncRef (sync or async, with or without args)
+ *
+ * Common shapes: `FuncRef<void, void>`, `FuncRef<void, Promise<T>>`, `FuncRef<T, void>`
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ISimpleEvent, SimpleEventDispatcher } from "ste-simple-events";
+import type { ISimpleEvent } from '../../core-viewers/shared/events'
+import { SimpleEventDispatcher } from 'ste-simple-events'
 
 /**
- * Interface for a state reference.
- * Provides methods to get, set, and confirm the current state.
+ * Observable state container. Read, write, and subscribe to changes.
+ *
+ * @example
+ * state.get()                           // Read current value
+ * state.set(true)                       // Update value
+ * state.onChange.subscribe(v => ...)     // Subscribe (returns unsubscribe fn)
  */
 export interface StateRef<T> {
   /**
@@ -40,9 +41,15 @@ export interface StateRef<T> {
 }
 
 /**
- * A basic implementation of StateRef<T> without React.
+ * Creates a standalone StateRef<T> without React hooks.
+ * Use this when you need observable state outside of React components.
  */
-export class MutableState<T> implements StateRef<T> {
+export function createState<T>(initial: T): StateRef<T> {
+  return new MutableState(initial)
+}
+
+/** @internal */
+class MutableState<T> implements StateRef<T> {
   private _value: T;
   private _onChange = new SimpleEventDispatcher<T>();
 
@@ -198,341 +205,72 @@ export function useStateRef<T>(initialValue: T | (() => T), isLazy = false) {
 }
 
 /**
- * Interface for an action reference (a function with no arguments).
- * Provides methods to call, get, set, and inject code before or after the stored function.
- */
-export interface ActionRef {
-  /**
-   * Invokes the stored action.
-   */
-  call(): void;
-  /**
-   * Retrieves the current action function.
-   * @returns The stored action function.
-   */
-  get(): () => void;
-  /**
-   * Sets the stored action function.
-   * @param fn - The new action function.
-   */
-  set(fn: () => void): void;
-  /**
-   * Prepends a function to be executed before the stored action.
-   * @param fn - The function to run before the original action.
-   */
-  prepend(fn: () => void): void;
-  /**
-   * Appends a function to be executed after the stored action.
-   * @param fn - The function to run after the original action.
-   */
-  append(fn: () => void): void;
-}
-
-/**
- * Custom hook to create an action reference.
+ * A callable function reference with middleware support.
+ * All ref types (sync, async, with/without args) use this single interface.
  *
- * @param action - The initial action function.
- * @returns An object implementing ActionRef.
- */
-export function useActionRef(action: () => void): ActionRef {
-  const ref = useRef(action);
-  return {
-    call() {
-      ref?.current();
-    },
-    get() {
-      return ref.current;
-    },
-    set(fn: () => void) {
-      ref.current = fn;
-    },
-    prepend(fn: () => void) {
-      const oldFn = ref.current;
-      ref.current = () => {
-        fn();
-        oldFn();
-      };
-    },
-    append(fn: () => void) {
-      const oldFn = ref.current;
-      ref.current = () => {
-        oldFn();
-        fn();
-      };
-    },
-  };
-}
-
-/**
- * Interface for an action reference that accepts an argument.
- * Provides methods to call with an argument, get, set, and inject code before or after the stored function.
- */
-export interface ArgActionRef<T> {
-  /**
-   * Invokes the stored action with the provided argument.
-   * @param arg - The argument to pass to the action.
-   */
-  call(arg: T): void;
-  /**
-   * Retrieves the current action function.
-   * @returns The stored action function.
-   */
-  get(): (arg: T) => void;
-  /**
-   * Sets the stored action function.
-   * @param fn - The new action function.
-   */
-  set(fn: (arg: T) => void): void;
-  /**
-   * Prepends a function to be executed before the stored action.
-   * @param fn - The function to run before the original action.
-   */
-  prepend(fn: (arg: T) => void): void;
-  /**
-   * Appends a function to be executed after the stored action.
-   * @param fn - The function to run after the original action.
-   */
-  append(fn: (arg: T) => void): void;
-}
-
-/**
- * Custom hook to create an argument-based action reference.
+ * When `TArg` is `void`, `call()` can be invoked without arguments.
+ * For async functions, use `FuncRef<void, Promise<T>>`.
  *
- * @param action - The initial action function that accepts an argument.
- * @returns An object implementing ArgActionRef.
+ * @example
+ * ```ts
+ * ref.call()                                    // Execute (no-arg)
+ * ref.call(box)                                 // Execute (with arg)
+ * ref.set(() => newImpl())                      // Replace implementation
+ * ref.update(prev => (...args) => {             // Wrap with middleware
+ *   console.log('before')
+ *   const result = prev(...args)
+ *   console.log('after')
+ *   return result
+ * })
+ * ```
  */
-export function useArgActionRef<T>(action: (arg: T) => void): ArgActionRef<T> {
-  const ref = useRef(action);
-  return {
-    call(arg: T) {
-      ref?.current(arg);
-    },
-    get() {
-      return ref.current;
-    },
-    set(fn: (arg: T) => void) {
-      ref.current = fn;
-    },
-    prepend(fn: (arg: T) => void) {
-      const oldFn = ref.current;
-      ref.current = (arg: T) => {
-        fn(arg);
-        oldFn(arg);
-      };
-    },
-    append(fn: (arg: T) => void) {
-      const oldFn = ref.current;
-      ref.current = (arg: T) => {
-        oldFn(arg);
-        fn(arg);
-      };
-    },
-  };
+export interface FuncRef<TArg, TReturn> {
+  /** Invokes the stored function. When `TArg` is `void`, no argument is needed. */
+  call(arg: TArg): TReturn;
+  /** Returns the current function. */
+  get(): (arg: TArg) => TReturn;
+  /** Replaces the stored function. */
+  set(fn: (arg: TArg) => TReturn): void;
+  /**
+   * Wraps the stored function with a transform.
+   * Use this to inject behavior before/after the original function.
+   *
+   * @example
+   * ```ts
+   * // Append behavior
+   * ref.update(prev => async () => { await prev(); doAfter() })
+   * // Prepend behavior
+   * ref.update(prev => async () => { doBefore(); return await prev() })
+   * ```
+   */
+  update(transform: (prev: (arg: TArg) => TReturn) => (arg: TArg) => TReturn): void;
 }
 
 /**
- * Interface for a function reference that returns a value.
- * Provides methods to call, get, set, and inject code before or after the stored function.
- */
-export interface FuncRef<T> {
-  /**
-   * Invokes the stored function and returns its value.
-   * @returns The result of the function call.
-   */
-  call(): T;
-  /**
-   * Retrieves the current function.
-   * @returns The stored function.
-   */
-  get(): () => T;
-  /**
-   * Sets the stored function.
-   * @param fn - The new function.
-   */
-  set(fn: () => T): void;
-  /**
-   * Prepends a function to be executed before the stored function.
-   * @param fn - The function to run before the original function.
-   */
-  prepend(fn: () => void): void;
-  /**
-   * Appends a function to be executed after the stored function.
-   * @param fn - The function to run after the original function.
-   */
-  append(fn: () => void): void;
-}
-
-/**
- * Custom hook to create a function reference.
+ * Creates a function reference. Works for both sync and async, with or without arguments.
  *
- * @param fn - The initial function.
- * @returns An object implementing FuncRef.
+ * @example
+ * const action = useFuncRef(() => console.log('hi'))         // FuncRef<void, void>
+ * const query = useFuncRef(async () => fetch('/api'))        // FuncRef<void, Promise<Response>>
+ * const setter = useFuncRef((box: Box3) => apply(box))      // FuncRef<Box3, void>
  */
-export function useFuncRef<T>(fn: () => T): FuncRef<T> {
-  const ref = useRef(fn);
-  return {
-    call() {
-      return ref?.current();
-    },
-    get() {
-      return ref.current;
-    },
-    set(fn: () => T) {
-      ref.current = fn;
-    },
-    prepend(fn: () => void) {
-      const oldFn = ref.current;
-      ref.current = () => {
-        fn();
-        return oldFn();
-      };
-    },
-    append(fn: () => void) {
-      const oldFn = ref.current;
-      ref.current = () => {
-        const result = oldFn();
-        fn();
-        return result;
-      };
-    },
-  };
-}
-
-/**
- * Interface for an asynchronous function reference.
- * Provides methods to call, get, set, and inject code before or after the stored async function.
- */
-export interface AsyncFuncRef<T> {
-  /**
-   * Invokes the stored asynchronous function and returns a promise of its result.
-   * @returns A promise resolving to the result of the async function.
-   */
-  call(): Promise<T>;
-  /**
-   * Retrieves the current asynchronous function.
-   * @returns The stored async function.
-   */
-  get(): () => Promise<T>;
-  /**
-   * Sets the stored asynchronous function.
-   * @param fn - The new async function.
-   */
-  set(fn: () => Promise<T>): void;
-  /**
-   * Prepends a function to be executed before the stored async function.
-   * @param fn - The function to run before the original async function.
-   */
-  prepend(fn: () => Promise<void> | void): void;
-  /**
-   * Appends a function to be executed after the stored async function.
-   * @param fn - The function to run after the original async function.
-   */
-  append(fn: () => Promise<void> | void): void;
-}
-
-/**
- * Custom hook to create an asynchronous function reference.
- *
- * @param fn - The initial asynchronous function.
- * @returns An object implementing AsyncFuncRef.
- */
-export function useAsyncFuncRef<T>(fn: () => Promise<T>): AsyncFuncRef<T> {
-  const ref = useRef(fn);
-  return {
-    async call() {
-      return ref?.current();
-    },
-    get() {
-      return ref.current;
-    },
-    set(fn: () => Promise<T>) {
-      ref.current = fn;
-    },
-    prepend(fn: () => Promise<void> | void) {
-      const oldFn = ref.current;
-      ref.current = async () => {
-        await fn();
-        return await oldFn();
-      };
-    },
-    append(fn: () => Promise<void> | void) {
-      const oldFn = ref.current;
-      ref.current = async () => {
-        const result = await oldFn();
-        await fn();
-        return result;
-      };
-    },
-  };
-}
-
-/**
- * Interface for a function reference that accepts an argument and returns a result.
- * Provides methods to call, get, set, and inject code before or after the stored function.
- */
-export interface ArgFuncRef<TArg, TResult> {
-  /**
-   * Invokes the stored function with the provided argument.
-   * @param arg - The argument to pass to the function.
-   * @returns The result of the function call.
-   */
-  call(arg: TArg): TResult;
-  /**
-   * Retrieves the current function.
-   * @returns The stored function.
-   */
-  get(): (arg: TArg) => TResult;
-  /**
-   * Sets the stored function.
-   * @param fn - The new function.
-   */
-  set(fn: (arg: TArg) => TResult): void;
-  /**
-   * Prepends a function to be executed before the stored function.
-   * @param fn - The function to run before the original function.
-   */
-  prepend(fn: (arg: TArg) => void): void;
-  /**
-   * Appends a function to be executed after the stored function.
-   * @param fn - The function to run after the original function.
-   */
-  append(fn: (arg: TArg) => void): void;
-}
-
-/**
- * Custom hook to create an argument-based function reference.
- *
- * @param fn - The initial function that accepts an argument and returns a result.
- * @returns An object implementing ArgFuncRef.
- */
-export function useArgFuncRef<TArg, TResult>(
-  fn: (arg: TArg) => TResult
-): ArgFuncRef<TArg, TResult> {
+export function useFuncRef<TReturn>(fn: () => TReturn): FuncRef<void, TReturn>
+export function useFuncRef<TArg, TReturn>(fn: (arg: TArg) => TReturn): FuncRef<TArg, TReturn>
+export function useFuncRef<TArg, TReturn>(fn: (arg: TArg) => TReturn): FuncRef<TArg, TReturn> {
   const ref = useRef(fn);
   return {
     call(arg: TArg) {
-      return ref?.current(arg);
+      return ref.current(arg);
     },
     get() {
       return ref.current;
     },
-    set(fn: (arg: TArg) => TResult) {
+    set(fn: (arg: TArg) => TReturn) {
       ref.current = fn;
     },
-    prepend(fn: (arg: TArg) => void) {
-      const oldFn = ref.current;
-      ref.current = (arg: TArg) => {
-        fn(arg);
-        return oldFn(arg);
-      };
-    },
-    append(fn: (arg: TArg) => void) {
-      const oldFn = ref.current;
-      ref.current = (arg: TArg) => {
-        const result = oldFn(arg);
-        fn(arg);
-        return result;
-      };
+    update(transform: (prev: (arg: TArg) => TReturn) => (arg: TArg) => TReturn) {
+      ref.current = transform(ref.current);
     },
   };
 }
+

@@ -3,23 +3,26 @@
  */
 
 import deepmerge from 'deepmerge'
-import { Transparency } from './geometry'
+import { TransparencyMode, isTransparencyModeValid } from './geometry'
 import * as THREE from 'three'
 
-export type FileType = 'vim' | 'vimx' | undefined
-
 /**
- * Represents settings for configuring the behavior and rendering of a vim object.
+ * Per-model transform and rendering settings, passed to `viewer.load(source, settings)`.
+ * Controls how an individual VIM file is positioned, rotated, and scaled in the scene.
+ * Not to be confused with {@link ViewerSettings} (renderer config) or WebglSettings (UI toggles).
+ *
+ * @example
+ * viewer.load({ url }, { position: new THREE.Vector3(100, 0, 0), scale: 2 })
  */
 export type VimSettings = {
 
   /**
-   * The positional offset for the vim object.
+   * The positional offset for the vim object, in Z-up space (X = right, Y = forward, Z = up).
    */
   position: THREE.Vector3
 
   /**
-   * The XYZ rotation applied to the vim object.
+   * The XYZ rotation applied to the vim object, in degrees.
    */
   rotation: THREE.Vector3
 
@@ -37,47 +40,26 @@ export type VimSettings = {
   /**
    * Determines whether objects are drawn based on their transparency.
    */
-  transparency: Transparency.Mode
+  transparency: TransparencyMode
 
   /**
    * Set to true to enable verbose HTTP logging.
    */
   verboseHttp: boolean
-
-  // VIMX
-
-  /**
-   * Specifies the file type (vim or vimx) if it cannot or should not be inferred from the file extension.
-   */
-  fileType: FileType
-
-  /**
-   * Set to true to stream geometry to the scene. Only supported with vimx files.
-   */
-  progressive: boolean
-
-  /**
-   * The time in milliseconds between each scene refresh during progressive loading.
-   */
-  progressiveInterval: number
 }
 
 /**
+ * @internal
  * Default configuration settings for a vim object.
  */
 export function getDefaultVimSettings(): VimSettings {
-return {
+  return {
     position: new THREE.Vector3(),
     rotation: new THREE.Vector3(),
     scale: 1,
     matrix: undefined,
     transparency: 'all',
-    verboseHttp: false,
-
-    // progressive
-    fileType: undefined,
-    progressive: false,
-    progressiveInterval: 1000
+    verboseHttp: false
   }
 }
 
@@ -87,16 +69,17 @@ return {
 export type VimPartialSettings = Partial<VimSettings>
 
 /**
+ * @internal
  * Wraps Vim options, converting values to related THREE.js types and providing default values.
  * @param {VimPartialSettings} [options] - Optional partial settings for the Vim object.
  * @returns {VimSettings} The complete settings for the Vim object, including defaults.
  */
-export function createVimSettings (options?: VimPartialSettings) {
-  const merge = options
+export function createVimSettings (options?: VimPartialSettings): VimSettings {
+  const merge = (options
     ? deepmerge(getDefaultVimSettings(), options, undefined)
-    : getDefaultVimSettings()
+    : getDefaultVimSettings()) as VimSettings
 
-  merge.transparency = Transparency.isValid(merge.transparency)
+  merge.transparency = isTransparencyModeValid(merge.transparency)
     ? merge.transparency
     : 'all'
 

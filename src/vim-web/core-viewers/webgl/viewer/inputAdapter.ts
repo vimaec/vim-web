@@ -1,17 +1,23 @@
-import {type IInputAdapter} from "../../shared/inputAdapter"
-import {InputHandler, PointerMode} from "../../shared/inputHandler"
-import { Viewer } from "./viewer"
+import {type IInputAdapter} from "../../shared/input/inputAdapter"
+import {InputHandler} from "../../shared/input/inputHandler"
+import { WebglViewer } from "./viewer"
+import { ViewerSettings } from './settings/viewerSettings'
+import { Element3D } from '../loader/element3d'
 import * as THREE from 'three'
 
-export function createInputHandler(viewer: Viewer) {
+/** @internal */
+export function createInputHandler(viewer: WebglViewer, controls: ViewerSettings['camera']['controls']) {
   return new InputHandler(
     viewer.viewport.canvas,
     createAdapter(viewer),
-    viewer.settings.camera.controls
+    controls
   )
 }
 
-function createAdapter(viewer: Viewer ) : IInputAdapter {
+function createAdapter(viewer: WebglViewer ) : IInputAdapter {
+  let _pinchWorldPoint: THREE.Vector3 | undefined
+  let _pinchStartDist = 0
+
   return {
     init: () => {},
     orbitCamera: (value: THREE.Vector2) => {
@@ -21,22 +27,17 @@ function createAdapter(viewer: Viewer ) : IInputAdapter {
       viewer.camera.snap().rotate(value)
     },
     panCamera: (value: THREE.Vector2) => {
-      const size = viewer.camera.frustrumSizeAt(viewer.camera.target)
+      const size = viewer.camera.frustumSizeAt(viewer.camera.target)
       size.multiply(value)
-      viewer.camera.snap().move2(size, 'XZ')
+      viewer.camera.snap().move('XZ', new THREE.Vector2(-size.x, size.y), 'local')
     },
     dollyCamera: (value: THREE.Vector2) => {
       const dist = viewer.camera.orbitDistance * value.y
-      viewer.camera.snap().move1(dist, 'Y')
+      viewer.camera.snap().move('Y', dist, 'local')
     },
 
     toggleOrthographic: () => {
       viewer.camera.orthographic = !viewer.camera.orthographic
-    },
-    toggleCameraOrbitMode: () => {
-      viewer.inputs.pointerActive = viewer.inputs.pointerActive === PointerMode.ORBIT
-        ? PointerMode.LOOK
-        : PointerMode.ORBIT;
     },
 
     resetCamera: () => {
@@ -58,30 +59,65 @@ function createAdapter(viewer: Viewer ) : IInputAdapter {
       //TODO: This logic should happen in shared code
       const result = await viewer.raycaster.raycastFromScreen(pos)
       if(add){
-        
-        viewer.selection.add(result.object)
+        viewer.selection.add(result?.object)
       }
       else{
-        viewer.selection.select(result.object)
+        viewer.selection.select(result?.object)
+      }
+      if (result?.object instanceof Element3D) {
+        await viewer.camera.snap().setTarget(result.object)
       }
     },
     frameAtPointer: async (pos: THREE.Vector2) => {
       //TODO: This logic should happen in shared code
       const result = await viewer.raycaster.raycastFromScreen(pos)
-      viewer.camera.lerp(0.75).frame(result.object ?? 'all')
+      viewer.camera.lerp(0.75).frame(result?.object ?? 'all')
     },
-    zoom: (value: number) => {
+    zoom: async (value: number, screenPos?: THREE.Vector2) => {
+      if (screenPos) {
+        const result = await viewer.raycaster.raycastFromScreen(screenPos)
+        if (result?.worldPosition) {
+          viewer.camera.lerp(0.25).zoomTowards(value, result.worldPosition, screenPos)
+          return
+        }
+        // No hit: zoom in the direction of the cursor without updating target
+        const dir = viewer.camera.screenToDirection(screenPos)
+        const displacement = dir.multiplyScalar(viewer.camera.orbitDistance * (1 - 1 / value))
+        viewer.camera.lerp(0.25).move('XYZ', displacement, 'world')
+        return
+      }
       viewer.camera.lerp(0.75).zoom(value)
     },
     moveCamera: (value : THREE.Vector3) => {
       viewer.camera.localVelocity = value
     },
 
+    pinchStart: async (screenPos: THREE.Vector2) => {
+      const result = await viewer.raycaster.raycastFromScreen(screenPos)
+      if (result?.worldPosition) {
+        _pinchWorldPoint = result.worldPosition.clone()
+        _pinchStartDist = viewer.camera.position.distanceTo(result.worldPosition)
+      } else {
+        _pinchWorldPoint = undefined
+      }
+    },
+    pinchZoom: (totalRatio: number) => {
+      if (_pinchWorldPoint) {
+        const currentDist = viewer.camera.position.distanceTo(_pinchWorldPoint)
+        const desiredDist = _pinchStartDist / totalRatio
+        if (currentDist > 1e-6) {
+          viewer.camera.snap().zoomTowards(currentDist / desiredDist, _pinchWorldPoint)
+        }
+      } else {
+        viewer.camera.snap().zoom(totalRatio)
+      }
+    },
+
     keyDown: (keyCode: string) => {return false},
     keyUp: (keyCode: string) => {return false},
-    mouseDown: () => {},
-    mouseMove: () => {},
-    mouseUp: () => {},
+    pointerDown: () => {},
+    pointerMove: () => {},
+    pointerUp: () => {},
 
   }
 }

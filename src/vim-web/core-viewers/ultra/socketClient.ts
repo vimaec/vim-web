@@ -1,6 +1,6 @@
 import { SimpleEventDispatcher } from 'ste-simple-events'
 import * as Utils from '../../utils'
-import { ILogger } from './logger'
+import { ILogger } from '../shared/logger'
 import * as Protocol from './protocol'
 import { Marshal, ReadMarshal } from './rpcMarshal'
 import { Segment } from './rpcTypes'
@@ -16,7 +16,7 @@ export type ConnectionSettings = {
 }
 
 export type ClientState = ClientStateConnecting | ClientStateConnected | ClientStateDisconnected | ClientStateValidating | ClientError
-export type ClientError = ClientStateCompatibilityError | ClientStateConnectionError | ClientStreamError// | other types of errors
+export type ClientError = ClientStateCompatibilityError | ClientStateConnectionError | ClientStateStreamError// | other types of errors
 
 export type ClientStateConnecting = {
   status: 'connecting'
@@ -44,7 +44,7 @@ export type ClientStateConnectionError = {
   serverUrl: string
 }
 
-export type ClientStreamError = {
+export type ClientStateStreamError = {
   status: 'error'
   error: 'stream'
   serverUrl: string
@@ -298,6 +298,7 @@ export class SocketClient {
     const issues = await this._validateConnection()
     if (issues !== undefined) {
       this._disconnect(issues)
+      this._connectPromise.resolve(false)
       return
     }
 

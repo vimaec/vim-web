@@ -5,51 +5,55 @@
 import * as THREE from 'three'
 import { Vim } from '../vim'
 import { InstancedSubmesh } from './instancedSubmesh'
-import { G3d, G3dMesh } from 'vim-format'
-import { ModelMaterial } from '../materials/materials'
+import { MaterialSet, applyMaterial } from '../materials/materials'
 
+/** @internal */
 export class InstancedMesh {
-  g3dMesh: G3dMesh | G3d
   vim: Vim
   mesh: THREE.InstancedMesh
-
-  // instances
-  bimInstances: ArrayLike<number>
-  meshInstances: ArrayLike<number>
+  instances: ArrayLike<number>
   boundingBox: THREE.Box3
-  boxes: THREE.Box3[]
+  private _boxes?: THREE.Box3[]
 
   // State
-  ignoreSceneMaterial: boolean
-  
-  private _material: ModelMaterial
+  transparent: boolean
+
+  private _material: THREE.Material | THREE.Material[]
   readonly size: number = 0
 
   constructor (
-    g3d: G3dMesh | G3d,
     mesh: THREE.InstancedMesh,
-    instances: Array<number>
+    instances: Array<number>,
+    transparent: boolean = false
   ) {
-    this.g3dMesh = g3d
     this.mesh = mesh
     this.mesh.userData.vim = this
-    this.bimInstances =
-      g3d instanceof G3dMesh
-        ? instances.map((i) => g3d.scene.instanceNodes[i])
-        : instances
-    this.meshInstances = instances
+    this.mesh.userData.transparent = transparent
+    this.instances = instances
+    this.transparent = transparent
 
-    this.boxes =
-      g3d instanceof G3dMesh
-        ? this.importBoundingBoxes()
-        : this.computeBoundingBoxes()
-    this.size = this.boxes[0]?.getSize(new THREE.Vector3()).length() ?? 0
-    this.boundingBox = this.computeBoundingBox(this.boxes)
+    // Compute size from geometry bounding box (untransformed, represents typical instance size)
+    this.mesh.geometry.computeBoundingBox()
+    this.size = this.mesh.geometry.boundingBox?.getSize(new THREE.Vector3()).length() ?? 0
+
+    // Compute overall bounding box without allocating per-instance boxes
+    this.boundingBox = this.computeBoundingBox()
     this._material = this.mesh.material
   }
 
   get merged () {
     return false
+  }
+
+  /**
+   * Returns all per-instance bounding boxes.
+   * Computed lazily on first access - only allocates if actually needed.
+   */
+  get boxes(): THREE.Box3[] {
+    if (!this._boxes) {
+      this._boxes = this.computeBoundingBoxes()
+    }
+    return this._boxes
   }
 
   /**
@@ -60,61 +64,25 @@ export class InstancedMesh {
   }
 
   /**
-   * Returns all submeshes for given index.
+   * Returns all submeshes.
    */
   getSubmeshes () {
-    const submeshes = new Array<InstancedSubmesh>(this.bimInstances.length)
-    for (let i = 0; i < this.bimInstances.length; i++) {
+    const submeshes = new Array<InstancedSubmesh>(this.instances.length)
+    for (let i = 0; i < this.instances.length; i++) {
       submeshes[i] = new InstancedSubmesh(this, i)
     }
     return submeshes
   }
 
-  /**
-     * Sets the material for this mesh. 
-     * Set to undefined to reset to original materials.
-     */
-    setMaterial(value: ModelMaterial) {
-      if (this.ignoreSceneMaterial) return;
-
-      const base = this._material; // always defined
-      let mat: ModelMaterial;
-
-      if (Array.isArray(value)) {
-        mat = this._mergeMaterials(value, base);
-      } else {
-        mat = value ?? base;
-      }
-
-      // Apply it
-      this.mesh.material = mat;
-
-      // Update groups
-      this.mesh.geometry.clearGroups();
-      if (Array.isArray(mat)) {
-        mat.forEach((_m, i) => {
-          this.mesh.geometry.addGroup(0, Infinity, i);
-        });
-      }
+  forEachSubmesh (callback: (submesh: InstancedSubmesh) => void) {
+    for (let i = 0; i < this.instances.length; i++) {
+      callback(new InstancedSubmesh(this, i))
     }
+  }
 
-    private _mergeMaterials(
-      value: THREE.Material[],
-      base: ModelMaterial
-    ): THREE.Material[] {
-      const baseArr = Array.isArray(base) ? base : [base];
-      const result: THREE.Material[] = [];
-
-      for (const v of value) {
-        if (v === undefined) {
-          result.push(...baseArr);
-        } else {
-          result.push(v);
-        }
-      }
-
-      return result;
-    }
+  setMaterial(value: MaterialSet) {
+    applyMaterial(this.mesh, value)
+  }
 
   private computeBoundingBoxes () {
     this.mesh.geometry.computeBoundingBox()
@@ -129,24 +97,21 @@ export class InstancedMesh {
     return boxes
   }
 
-  private importBoundingBoxes () {
-    if (this.g3dMesh instanceof G3d) throw new Error('Wrong type')
-    const boxes = new Array<THREE.Box3>(this.meshInstances.length)
-    for (let i = 0; i < this.meshInstances.length; i++) {
-      const box = new THREE.Box3()
-      const instance = this.meshInstances[i]
-      box.min.fromArray(this.g3dMesh.scene.getInstanceMin(instance))
-      box.max.fromArray(this.g3dMesh.scene.getInstanceMax(instance))
-      boxes[i] = box
-    }
-    return boxes
-  }
+  /**
+   * Computes overall bounding box without allocating per-instance boxes.
+   */
+  private computeBoundingBox (): THREE.Box3 {
+    const geoBBox = this.mesh.geometry.boundingBox
+    const matrix = new THREE.Matrix4()
+    const tempBox = new THREE.Box3()
+    const result = new THREE.Box3().makeEmpty()
 
-  computeBoundingBox (boxes: THREE.Box3[]) {
-    const box = boxes[0].clone()
-    for (let i = 1; i < boxes.length; i++) {
-      box.union(boxes[i])
+    for (let i = 0; i < this.mesh.count; i++) {
+      this.mesh.getMatrixAt(i, matrix)
+      tempBox.copy(geoBBox).applyMatrix4(matrix)
+      result.union(tempBox)
     }
-    return box
+
+    return result
   }
 }

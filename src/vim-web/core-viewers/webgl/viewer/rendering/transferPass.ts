@@ -7,6 +7,7 @@ import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass'
 import { createTransferMaterial } from '../../loader/materials/transferMaterial'
 
 /**
+ * @internal
  * Copies a source buffer to the current write buffer.
  */
 export class TransferPass extends Pass {
@@ -43,15 +44,12 @@ export class TransferPass extends Pass {
     writeBuffer: THREE.WebGLRenderTarget,
     readBuffer: THREE.WebGLRenderTarget
   ) {
-    // 2. Draw the outlines using the depth texture and normal texture
-    // and combine it with the scene color
     if (this.renderToScreen) {
-      // If this is the last effect, then renderToScreen is true.
-      // So we should render to the screen by setting target null
-      // Otherwise, just render into the writeBuffer that the next effect will use as its read buffer.
       renderer.setRenderTarget(null)
       this._fsQuad.render(renderer)
     } else {
+      // Write to readBuffer (not writeBuffer) because needsSwap=false.
+      // This pass just copies the scene texture through without consuming a swap.
       renderer.setRenderTarget(readBuffer)
       this._fsQuad.render(renderer)
     }

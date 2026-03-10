@@ -1,9 +1,19 @@
-import { RecursivePartial } from "../helpers/utils"
+import { RecursivePartial } from "../../utils"
 import { UserBoolean } from "../settings/userBoolean"
 import { ControlBarCameraSettings, ControlBarCursorSettings, ControlBarMeasureSettings, ControlBarSectionBoxSettings, ControlBarVisibilitySettings } from "../state/controlBarState"
 
 export type PartialUltraSettings = RecursivePartial<UltraSettings>
 
+/**
+ * React UI feature toggles for the Ultra viewer, passed to `React.Ultra.createViewer(container, settings)`.
+ * Controls which UI panels and toolbar buttons are shown.
+ * Access at runtime via `viewer.settings.update(s => { s.ui.panelControlBar = false })`.
+ *
+ * @example
+ * const viewer = await React.Ultra.createViewer(div, {
+ *   ui: { panelControlBar: true, miscHelp: false }
+ * })
+ */
 export type UltraSettings = {
   ui: ControlBarCameraSettings &
       ControlBarCursorSettings &

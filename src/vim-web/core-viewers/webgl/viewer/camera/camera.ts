@@ -4,11 +4,12 @@
 
 import * as THREE from 'three'
 
-import { ISignal, SignalDispatcher } from 'ste-signals'
+import type { ISignal } from '../../../shared/events'
+import { SignalDispatcher } from 'ste-signals'
 import { RenderScene } from '../rendering/renderScene'
 import { ViewerSettings } from '../settings/viewerSettings'
 import { Viewport } from '../viewport'
-import { CameraSaveState, ICamera } from './cameraInterface'
+import { CameraSaveState, IWebglCamera } from './cameraInterface'
 import { CameraMovement } from './cameraMovement'
 import { CameraLerp } from './cameraMovementLerp'
 import { CameraMovementSnap } from './cameraMovementSnap'
@@ -16,14 +17,18 @@ import { OrthographicCamera } from './cameraOrthographic'
 import { PerspectiveCamera } from './cameraPerspective'
 
 /**
+ * @internal
  * Manages viewer camera movement and position
  */
-export class Camera implements ICamera {
-  camPerspective: PerspectiveCamera
-  camOrthographic: OrthographicCamera
+export class Camera implements IWebglCamera {
+  readonly camPerspective: PerspectiveCamera
+  readonly camOrthographic: OrthographicCamera
+
+  private static readonly _ALL_MOVEMENT = new THREE.Vector3(1, 1, 1)
+  private static readonly _ALL_ROTATION = new THREE.Vector2(1, 1)
 
   private _viewport: Viewport
-  private _scene: RenderScene // make private again
+  private _scene: RenderScene
   private _lerp: CameraLerp
   private _movement: CameraMovementSnap
 
@@ -34,13 +39,16 @@ export class Camera implements ICamera {
   // orbit
   private _orthographic: boolean = false
   private _target = new THREE.Vector3()
+  private _screenTarget = new THREE.Vector2(0.5, 0.5)
+  private _isTargetFloating = false
+  private _cachedFrustumLength = 0
 
   // updates
   private _lastPosition = new THREE.Vector3()
   private _lastQuaternion = new THREE.Quaternion()
   private _lastTarget = new THREE.Vector3()
 
-  // Reuseable vectors for calculations
+  // Reusable vectors for calculations
   private _tmp1 = new THREE.Vector3()
   private _tmp2 = new THREE.Vector3()
 
@@ -78,40 +86,43 @@ export class Camera implements ICamera {
 
   private _onMoved = new SignalDispatcher()
 
-  /** Ignore movement permissions when true */
-  private _force: boolean = false
+  /**
+   * When true, lockMovement and lockRotation are bypassed.
+   * Set temporarily to position the camera while ignoring user-configured constraints.
+   */
+  ignoreConstraints: boolean = false
 
   /**
-   * Represents allowed movement along each axis using a Vector3 object.
-   * Each component of the Vector3 should be either 0 or 1 to enable/disable movement along the corresponding axis.
+   * Allowed movement axes in Z-up space (X = right, Y = forward, Z = up).
+   * Each component should be 0 (locked) or 1 (free).
    */
-  private _allowedMovement = new THREE.Vector3(1, 1, 1)
-  get allowedMovement () {
-    return this._force ? new THREE.Vector3(1, 1, 1) : this._allowedMovement
+  private _lockMovement = new THREE.Vector3(1, 1, 1)
+  get lockMovement () {
+    return this.ignoreConstraints ? Camera._ALL_MOVEMENT : this._lockMovement
   }
 
-  set allowedMovement (axes: THREE.Vector3) {
-    this._allowedMovement.copy(axes)
-    this._allowedMovement.x = this._allowedMovement.x === 0 ? 0 : 1
-    this._allowedMovement.y = this._allowedMovement.y === 0 ? 0 : 1
-    this._allowedMovement.z = this._allowedMovement.z === 0 ? 0 : 1
+  set lockMovement (axes: THREE.Vector3) {
+    this._lockMovement.copy(axes)
+    this._lockMovement.x = this._lockMovement.x === 0 ? 0 : 1
+    this._lockMovement.y = this._lockMovement.y === 0 ? 0 : 1
+    this._lockMovement.z = this._lockMovement.z === 0 ? 0 : 1
   }
 
   /**
-   * Represents allowed rotation using a Vector2 object.
-   * Each component of the Vector2 should be either 0 or 1 to enable/disable rotation around the corresponding axis.
+   * Allowed rotation axes. x = yaw (around Z), y = pitch (up/down).
+   * Each component should be 0 (locked) or 1 (free).
    */
-  get allowedRotation () {
-    return this._force ? new THREE.Vector2(1, 1) : this._allowedRotation
+  get lockRotation () {
+    return this.ignoreConstraints ? Camera._ALL_ROTATION : this._lockRotation
   }
 
-  set allowedRotation (axes: THREE.Vector2) {
-    this._allowedRotation.copy(axes)
-    this._allowedRotation.x = this._allowedRotation.x === 0 ? 0 : 1
-    this._allowedRotation.y = this._allowedRotation.y === 0 ? 0 : 1
+  set lockRotation (axes: THREE.Vector2) {
+    this._lockRotation.copy(axes)
+    this._lockRotation.x = this._lockRotation.x === 0 ? 0 : 1
+    this._lockRotation.y = this._lockRotation.y === 0 ? 0 : 1
   }
 
-  private _allowedRotation = new THREE.Vector2(1, 1)
+  private _lockRotation = new THREE.Vector2(1, 1)
 
   /**
    * The default forward direction that can be used to initialize the camera.
@@ -152,39 +163,39 @@ export class Camera implements ICamera {
     
     this.defaultForward = settings.camera.forward
     this._orthographic = settings.camera.orthographic
-    this.allowedMovement = settings.camera.allowedMovement
-    this.allowedRotation = settings.camera.allowedRotation
+    this.lockMovement = settings.camera.lockMovement
+    this.lockRotation = settings.camera.lockRotation
 
     // Values
     this._onValueChanged.dispatch()
 
-    this.snap(true).setDistance(-1000)
-    this.snap(true).orbitTowards(this._defaultForward)
+    // Place camera far from target before orienting it
+    this.ignoreConstraints = true
+    const initPos = this._target.clone().add(this.forward.multiplyScalar(1000))
+    this.snap().set(initPos, this._target)
+    this.snap().orbitTowards(this._defaultForward)
+    this.ignoreConstraints = false
     this.updateProjection()
   }
 
   /**
    * Interface for instantaneously moving the camera.
-   * @param {boolean} [force=false] - Set to true to ignore locked axis and rotation.
    * @returns {CameraMovement} The camera movement api.
    */
-  snap (force: boolean = false) : CameraMovement {
-    this._force = force
+  snap () : CameraMovement {
     this._lerp.cancel()
     return this._movement as CameraMovement
   }
 
   /**
    * Interface for smoothly moving the camera over time.
-   * @param {number} [duration=1] - The duration of the camera movement animation.
-   * @param {boolean} [force=false] - Set to true to ignore locked axis and rotation.
+   * @param {number} [duration=1] - The duration of the camera movement in seconds.
    * @returns {CameraMovement} The camera movement api.
    */
-  lerp (duration: number = 1, force: boolean = false) {
-    if(duration <= 0) return this.snap(force)
-      
+  lerp (duration: number = 1) {
+    if(duration <= 0) return this.snap()
+
     this.stop()
-    this._force = force
     this._lerp.init(duration)
     return this._lerp as CameraMovement
   }
@@ -192,10 +203,22 @@ export class Camera implements ICamera {
   /**
    * Calculates the frustum size at a given point in the scene.
    * @param {THREE.Vector3} point - The point in the scene to calculate the frustum size at.
-   * @returns {number} The frustum size at the specified point.
+   * @returns {THREE.Vector2} The frustum size (width, height) at the specified point.
    */
-  frustrumSizeAt (point: THREE.Vector3) {
-    return this.orthographic ? this.camOrthographic.frustrumSizeAt(point) : this.camPerspective.frustrumSizeAt(point)
+  frustumSizeAt (point: THREE.Vector3) {
+    return this.orthographic ? this.camOrthographic.frustumSizeAt(point) : this.camPerspective.frustumSizeAt(point)
+  }
+
+  /**
+   * Returns the world-space direction from the camera through the given screen position.
+   * @param screenPos Screen position in 0-1 range (0,0 is top-left).
+   */
+  screenToDirection (screenPos: THREE.Vector2): THREE.Vector3 {
+    const cam = this.camPerspective.camera
+    cam.updateMatrixWorld(true)
+    const ndc = new THREE.Vector3(screenPos.x * 2 - 1, -(screenPos.y * 2 - 1), 1)
+    ndc.unproject(cam)
+    return ndc.sub(this.position).normalize()
   }
 
   /**
@@ -208,7 +231,9 @@ export class Camera implements ICamera {
   }
 
   /**
-   * The quaternion representing the orientation of the object.
+   * The quaternion representing the camera's orientation.
+   * @returns Live reference to internal state. Mutations affect the camera.
+   * Call `.clone()` if you need an independent copy.
    */
   get quaternion () {
     return this.camPerspective.camera.quaternion
@@ -216,6 +241,8 @@ export class Camera implements ICamera {
 
   /**
    * The position of the camera.
+   * @returns Live reference to internal state. Mutations affect the camera.
+   * Call `.clone()` if you need an independent copy.
    */
   get position () {
     return this.camPerspective.camera.position
@@ -223,6 +250,8 @@ export class Camera implements ICamera {
 
   /**
    * The matrix representing the transformation of the camera.
+   * @returns Live reference to internal state. Mutations affect the camera.
+   * Call `.clone()` if you need an independent copy.
    */
   get matrix () {
     this.camPerspective.camera.updateMatrix()
@@ -231,13 +260,15 @@ export class Camera implements ICamera {
 
   /**
    * The forward direction of the camera.
+   * @returns A new Vector3 instance (read-only). Mutations do not affect the camera.
    */
   get forward () {
     return this.camPerspective.camera.getWorldDirection(new THREE.Vector3())
   }
 
   /**
-   * The current or target velocity of the camera.
+   * The current velocity in camera-local Z-up space (X = right, Y = forward, Z = up).
+   * @returns A new Vector3 instance (read-only). Mutations do not affect the camera.
    */
   get localVelocity () {
     const result = this._velocity.clone()
@@ -247,7 +278,7 @@ export class Camera implements ICamera {
   }
 
   /**
-   * The current or target velocity of the camera.
+   * Sets the desired velocity in camera-local Z-up space (X = right, Y = forward, Z = up).
    */
   set localVelocity (vector: THREE.Vector3) {
     this._lerp.cancel()
@@ -265,16 +296,42 @@ export class Camera implements ICamera {
   }
 
   /**
-   * The target at which the camera is looking at and around which it rotates.
+   * The point the camera looks at and orbits around.
+   * @returns Live reference to internal state. Mutations affect the camera.
+   * Call `.clone()` if you need an independent copy.
    */
   get target () {
     return this._target
   }
 
-  private applySettings (settings: ViewerSettings) {
-    // Camera
+  /**
+   * The screen position where the orbit target appears.
+   * (0,0) is top-left, (1,1) is bottom-right, (0.5, 0.5) is center.
+   */
+  get screenTarget () {
+    return this._screenTarget
+  }
 
+  set screenTarget (value: THREE.Vector2) {
+    this._screenTarget.copy(value)
+  }
 
+  /**
+   * When true the orbit target is not anchored to a scene point and
+   * will translate with the camera during WASD / pan movement.
+   * Set automatically when the orbit target is reset because it drifted
+   * off-screen. Cleared when the target is explicitly set (select,
+   * lookAt, frame, zoomTowards, etc.).
+   */
+  get isTargetFloating () {
+    return this._isTargetFloating
+  }
+
+  set isTargetFloating (value: boolean) {
+    if (value && !this._isTargetFloating) {
+      this._cachedFrustumLength = this.frustumSizeAt(this._target).length()
+    }
+    this._isTargetFloating = value
   }
 
   /**
@@ -329,7 +386,7 @@ export class Camera implements ICamera {
 
   private updateOrthographic () {
     const aspect = this._viewport.getAspectRatio()
-    const size = this.camPerspective.frustrumSizeAt(this.target)
+    const size = this.camPerspective.frustumSizeAt(this.target)
 
     this.camOrthographic.updateProjection(size, aspect)
     this.camOrthographic.camera.position.copy(this.position)
@@ -365,15 +422,19 @@ export class Camera implements ICamera {
     // Apply velocity to move the camera
     this._tmp1.copy(this._velocity)
       .multiplyScalar(deltaTime * this.getVelocityMultiplier())
-    this.snap().move3(this._tmp1)
+    // Convert Three.js camera-local (x,y,z) → Z-up local (x, -z, y)
+    this._tmp2.set(this._tmp1.x, -this._tmp1.z, this._tmp1.y)
+    this.snap().move('XYZ', this._tmp2, 'local')
     return true
   }
 
   private getVelocityMultiplier () {
     const rotated = !this._lastQuaternion.equals(this.quaternion)
     const mod = rotated ? 1 : 1.66
-    const frustrum = this.frustrumSizeAt(this.target).length()
-    return mod * frustrum
+    const frustum = this._isTargetFloating && this._cachedFrustumLength > 0
+      ? this._cachedFrustumLength
+      : this.frustumSizeAt(this.target).length()
+    return mod * frustum
   }
 
   private checkForMovement () {

@@ -1,5 +1,6 @@
 
-import { ISignal, SignalDispatcher } from 'ste-signals';
+import type { ISignal } from '../core-viewers/shared/events'
+import { SignalDispatcher } from 'ste-signals'
 
 export function debounce<T extends (...args: any[]) => void>(func: T, delay: number): [(...args: Parameters<T>) => void, () => void] {
   let timeoutId: ReturnType<typeof setTimeout>;

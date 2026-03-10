@@ -1,6 +1,6 @@
 import { WebGLRenderer } from './streamRenderer'
 import type { VideoFrameMessage } from './protocol'
-import { ILogger } from './logger'
+import { ILogger } from '../shared/logger'
 import DecoderWorker from './decoderWorker'
 
 const RenderDelayMs = 500
@@ -13,7 +13,7 @@ export enum FrameType {
 }
 
 /**
- * Decoder class responsible for decoding video frames and rendering them using WebGL.
+ * @internal
  */
 export class DecoderWithWorker {
   private readonly _canvas: OffscreenCanvas

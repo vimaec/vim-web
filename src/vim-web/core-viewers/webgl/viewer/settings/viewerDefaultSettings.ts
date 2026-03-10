@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { createAxesSettings, getDefaultAxesSettings } from '../gizmos/axes/axesSettings'
+import { getDefaultAxesSettings } from '../gizmos/axes/axesSettings'
 import { ViewerSettings } from './viewerSettings'
 
 /**
@@ -13,8 +13,8 @@ export function getDefaultViewerSettings(): ViewerSettings {
     },
     camera: {
       orthographic: false,
-      allowedMovement: new THREE.Vector3(1, 1, 1),
-      allowedRotation: new THREE.Vector2(1, 1),
+      lockMovement: new THREE.Vector3(1, 1, 1),
+      lockRotation: new THREE.Vector2(1, 1),
       near: 0.001,
       far: 15000,
       fov: 50,
@@ -26,71 +26,40 @@ export function getDefaultViewerSettings(): ViewerSettings {
         rotateSpeed: 1,
         orbitSpeed: 1,
         moveSpeed: 1,
-        scrollSpeed: 1.5
+        scrollSpeed: 1.75
       },
   
       gizmo: {
         enable: true,
         size: 0.01,
-        color: new THREE.Color(0x444444),
-        opacity: 0.3,
-        opacityAlways: 0.02
+        color: new THREE.Color(0x0590cc),
+        colorHorizontal: new THREE.Color(0x58b5dd),
+        opacity: 0.5,
+        opacityAlways: 0.1
       }
     },
-    background: { color: new THREE.Color(0xc1c2c6) },
-    skybox: {
-      enable: true,
-      skyColor: new THREE.Color(0xffffff), // white
-      groundColor: new THREE.Color(0xf6f6f6), // less white
-      sharpness: 2
-    },
-    skylight: {
-      skyColor: new THREE.Color(0xffffff),
-      groundColor: new THREE.Color(0xffffff),
-      intensity: 0.8
-    },
-    sunlights: [
-      {
-        followCamera: true,
-        position: new THREE.Vector3(1000, 1000, 1000),
-        color: new THREE.Color(0xffffff),
-        intensity: 0.8
-      },
-      {
-        followCamera: true,
-        position: new THREE.Vector3(-1000, -1000, -1000),
-        color: new THREE.Color(0xffffff),
-        intensity: 0.2
-      }
-    ],
+    background: { color: new THREE.Color(0xffffff) },
     materials: {
-      standard: {
-        color: new THREE.Color(0xcccccc)
-      },
-      highlight: {
-        color: new THREE.Color(0x6ad2ff),
-        opacity: 0.5
-      },
       ghost: {
         color: new THREE.Color(0x0E0E0E),
-        opacity: 0.25
-      },
-      section: {
-        strokeWidth: 0.01,
-        strokeFalloff: 0.75,
-        strokeColor: new THREE.Color(0xf6f6f6)
+        opacity: 7 / 255
       },
       outline: {
-        antialias: true,
-        intensity: 3,
-        falloff: 3,
-        blur: 2,
-        color: new THREE.Color(0x00ffff)
+        opacity: 0.85,
+        color: new THREE.Color(0x00ffff),
+        scale: 2,
+        thickness: 3
+      },
+      selection: {
+        fillMode: 'none',
+        color: new THREE.Color(0x0064ff),
+        opacity: 0.3,
+        overlayOpacity: 0.25
       }
     },
     axes: getDefaultAxesSettings(),
     rendering: {
-      onDemand: true
+      autoRender: true
     }
   }
 }

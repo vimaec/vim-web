@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { AxesSettings } from './axesSettings'
 
+/** @internal */
 export class Axis {
   axis: string
   direction: THREE.Vector3
@@ -27,6 +28,7 @@ export class Axis {
   }
 }
 
+/** @internal */
 export function createAxes (settings : AxesSettings) {
   return [
     new Axis({

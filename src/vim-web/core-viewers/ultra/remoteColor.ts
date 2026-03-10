@@ -2,10 +2,21 @@ import { ColorManager } from './colorManager';
 import * as THREE from 'three';
 
 /**
- * Represents a handle to a color in the color management system.
- * This class provides access to color components and manages the lifecycle of color instances.
+ * Public interface for a remote color handle.
+ * Provides read-only access to color properties and lifecycle management.
  */
-export class RemoteColor {
+export interface IRemoteColor {
+  readonly id: number
+  readonly color: THREE.Color
+  readonly disposed: boolean
+  readonly hex: number
+  dispose(): void
+}
+
+/**
+ * @internal
+ */
+export class RemoteColor implements IRemoteColor {
   private _manager: ColorManager;
   /** Unique identifier for the color instance */
   readonly id: number;

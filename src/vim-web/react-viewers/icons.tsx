@@ -13,15 +13,15 @@ import React from 'react'
  * Common Icon Options.
  */
 export type IconOptions = {
-  height: number | string
-  width: number | string
-  fill: string
+  height?: number | string
+  width?: number | string
+  fill?: string
   className?: string
 }
 
 // Common
 
-export function pointer({ height, width, fill, className }: IconOptions) {
+export function pointer({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 50 50">
       <path
@@ -32,7 +32,7 @@ export function pointer({ height, width, fill, className }: IconOptions) {
   );
 }
 
-export function filter({ height, width, fill, className }: IconOptions) {
+export function filter({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
@@ -45,7 +45,7 @@ export function filter({ height, width, fill, className }: IconOptions) {
 }
 
 
-export function slidersHoriz ({ height, width, fill, className }: IconOptions) {
+export function slidersHoriz ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
   <svg className={className} height={height} width={width} viewBox="0 0 256 256">
     <path
@@ -64,7 +64,7 @@ export function slidersHoriz ({ height, width, fill, className }: IconOptions) {
 )}
 
 
-export function settings ({ height, width, fill, className }: IconOptions) {
+export function settings ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
@@ -75,7 +75,7 @@ export function settings ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function help ({ height, width, fill, className }: IconOptions) {
+export function help ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg
       height={height}
@@ -95,7 +95,7 @@ export function help ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function trash ({ height, width, fill, className }: IconOptions) {
+export function trash ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
@@ -110,7 +110,7 @@ export function trash ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function checkmark ({ height, width, fill, className }: IconOptions) {
+export function checkmark ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
@@ -121,7 +121,7 @@ export function checkmark ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function undo ({ height, width, fill, className }: IconOptions) {
+export function undo ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
@@ -132,7 +132,7 @@ export function undo ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function close ({ height, width, fill, className }: IconOptions) {
+export function closeIcon ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
@@ -143,7 +143,7 @@ export function close ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function home ({ height, width, fill, className }: IconOptions) {
+export function home ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
@@ -155,7 +155,7 @@ export function home ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function fullsScreen ({ height, width, fill, className }: IconOptions) {
+export function fullScreen ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
@@ -170,7 +170,7 @@ export function fullsScreen ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function minimize ({ height, width, fill, className }: IconOptions) {
+export function minimize ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
@@ -182,7 +182,7 @@ export function minimize ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function treeView ({ height, width, fill, className }: IconOptions) {
+export function treeView ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
@@ -192,7 +192,7 @@ export function treeView ({ height, width, fill, className }: IconOptions) {
     </svg>
   )
 }
-export function more ({ height, width, fill, className }: IconOptions) {
+export function more ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} fill={fill} height={height} width={width} viewBox="0 0 256 256">
       <path
@@ -211,7 +211,7 @@ export function more ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function collapse ({ height, width, fill, className }: IconOptions) {
+export function collapse ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg
       height={height}
@@ -227,7 +227,7 @@ export function collapse ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function arrowLeft ({ height, width, fill, className }: IconOptions) {
+export function arrowLeft ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
@@ -236,12 +236,12 @@ export function arrowLeft ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function fullArrowLeft ({ height, width, fill, className }: IconOptions) {
+export function fullArrowLeft ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
-      <circle cx="128" cy="32" r="16" />
-      <circle cx="128" cy="224" r="16" />
+      <circle cx="128" cy="32" r="16" fill={fill} />
+      <circle cx="128" cy="224" r="16" fill={fill} />
       <path
         fill={fill}
         d="M224 112H70.627l68.686-68.686c6.249-6.248 6.249-16.379 0-22.627-6.248-6.248-16.379-6.248-22.627 0l-95.999 95.999C17.791 119.582 16 123.582 16 128s1.791 8.418 4.687 11.314l96 96c6.248 6.248 16.379 6.248 22.627 0 6.249-6.248 6.249-16.379 0-22.627l-68.686-68.686H224c8.836 0 16-7.164 16-16s-7.164-16-16-16Z"
@@ -250,7 +250,7 @@ export function fullArrowLeft ({ height, width, fill, className }: IconOptions) 
   )
 }
 
-export function visible ({ height, width, fill, className }: IconOptions) {
+export function visible ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg
       className={className}
@@ -267,7 +267,7 @@ export function visible ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function hidden ({ height, width, fill, className = '' }: IconOptions) {
+export function hidden ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg
       className={className}
@@ -289,7 +289,7 @@ export function hidden ({ height, width, fill, className = '' }: IconOptions) {
 }
 
 // Camera
-export function frameScene({ height, width, fill, className }: IconOptions) {
+export function frameScene({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg
       className={className}
@@ -327,7 +327,7 @@ export function frameScene({ height, width, fill, className }: IconOptions) {
 }
 
 
-export function autoCamera ({ height, width, fill = '', className }: IconOptions) {
+export function autoCamera ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
@@ -343,7 +343,7 @@ export function autoCamera ({ height, width, fill = '', className }: IconOptions
   )
 }
 
-export function orbit ({ height, width, fill = '', className }: IconOptions) {
+export function orbit ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
@@ -360,7 +360,7 @@ export function orbit ({ height, width, fill = '', className }: IconOptions) {
   )
 }
 
-export function look ({ height, width, fill, className }: IconOptions) {
+export function look ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
@@ -372,7 +372,7 @@ export function look ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function perspective ({ height, width, fill, className }: IconOptions) {
+export function perspective ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
@@ -384,7 +384,7 @@ export function perspective ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function orthographic ({ height, width, fill, className }: IconOptions) {
+export function orthographic ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
@@ -396,7 +396,7 @@ export function orthographic ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function camera ({ height, width, fill, className }: IconOptions) {
+export function camera ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
@@ -409,7 +409,7 @@ export function camera ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function pan ({ height, width, fill, className }: IconOptions) {
+export function pan ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
@@ -421,7 +421,7 @@ export function pan ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function zoom ({ height, width, fill, className }: IconOptions) {
+export function zoom ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
@@ -433,7 +433,7 @@ export function zoom ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function frameRect ({ height, width, fill, className }: IconOptions) {
+export function frameRect ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z"></path>
@@ -529,7 +529,7 @@ export function frameRect ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function frameSelection ({ height, width, fill, className }: IconOptions) {
+export function frameSelection ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
@@ -558,7 +558,7 @@ export function frameSelection ({ height, width, fill, className }: IconOptions)
 
 // Isolation
 
-export function showAll({ height, width, fill, className }: IconOptions) {
+export function showAll({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg
       height={height}
@@ -592,7 +592,7 @@ export function showAll({ height, width, fill, className }: IconOptions) {
 
 
 
-export function showSelection({ height, width, fill, className }: IconOptions) {
+export function showSelection({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg
       height={height}
@@ -613,7 +613,7 @@ export function showSelection({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function hideSelection({ height, width, fill, className }: IconOptions) {
+export function hideSelection({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg
       height={height}
@@ -641,7 +641,7 @@ export function hideSelection({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function isolateSelection({ height, width, fill, className }: IconOptions) {
+export function isolateSelection({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg
       height={height}
@@ -664,7 +664,7 @@ export function isolateSelection({ height, width, fill, className }: IconOptions
   )
 }
 
-export function autoIsolate({ height, width, fill, className }: IconOptions) {
+export function autoIsolate({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg
       height={height}
@@ -689,7 +689,7 @@ export function autoIsolate({ height, width, fill, className }: IconOptions) {
 }
 
 // Measure
-export function toggleIsolation ({ height, width, fill, className }: IconOptions) {
+export function toggleIsolation ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
@@ -706,7 +706,7 @@ export function toggleIsolation ({ height, width, fill, className }: IconOptions
 }
 
 // Measure
-export function measure ({ height, width, fill, className }: IconOptions) {
+export function measure ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
@@ -719,7 +719,7 @@ export function measure ({ height, width, fill, className }: IconOptions) {
 }
 
 // Section Box
-export function sectionBoxSettings ({ height, width, fill, className }: IconOptions) {
+export function sectionBoxSettings ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
@@ -734,7 +734,7 @@ export function sectionBoxSettings ({ height, width, fill, className }: IconOpti
   )
 }
 
-export function sectionBoxAuto ({ height, width, fill, className }: IconOptions) {
+export function sectionBoxAuto ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
@@ -749,7 +749,7 @@ export function sectionBoxAuto ({ height, width, fill, className }: IconOptions)
   )
 }
 
-export function sectionBoxVisible ({ height, width, fill, className }: IconOptions) {
+export function sectionBoxVisible ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
@@ -767,7 +767,7 @@ export function sectionBoxVisible ({ height, width, fill, className }: IconOptio
 
 
 
-export function sectionBox ({ height, width, fill, className }: IconOptions) {
+export function sectionBox ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
@@ -782,7 +782,7 @@ export function sectionBox ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function sectionBoxDisable ({ height, width, fill, className }: IconOptions) {
+export function sectionBoxDisable ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path
@@ -800,7 +800,7 @@ export function sectionBoxDisable ({ height, width, fill, className }: IconOptio
     </svg>
   )}
 
-export function sectionBoxClip ({ height, width, fill, className }: IconOptions) {
+export function sectionBoxClip ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
@@ -836,7 +836,7 @@ export function sectionBoxClip ({ height, width, fill, className }: IconOptions)
   )
 }
 
-export function sectionBoxIgnore ({ height, width, fill, className }: IconOptions) {
+export function sectionBoxIgnore ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
@@ -848,7 +848,7 @@ export function sectionBoxIgnore ({ height, width, fill, className }: IconOption
   )
 }
 
-export function sectionBoxReset ({ height, width, fill, className }: IconOptions) {
+export function sectionBoxReset ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <path fill="none" d="M0 0h256v256H0z" />
@@ -859,7 +859,7 @@ export function sectionBoxReset ({ height, width, fill, className }: IconOptions
     </svg>
   )
 }
-export function sectionBoxShrink ({ height, width, fill, className }: IconOptions) {
+export function sectionBoxShrink ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
       <g data-name="FRAMES">
@@ -875,7 +875,7 @@ export function sectionBoxShrink ({ height, width, fill, className }: IconOption
   )
 }
 
-export function sectionBoxShrink2 ({ height, width, fill, className }: IconOptions) {
+export function sectionBoxShrink2 ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
     <svg className={className} height={height} width={width} viewBox="0 0 256 256">
     <path
@@ -890,9 +890,9 @@ export function sectionBoxShrink2 ({ height, width, fill, className }: IconOptio
   )
 }
 
-export function ghost ({ height, width, fill, className }: IconOptions) {
+export function ghost ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
-    <svg className={className} width={height} height={width} viewBox="0 0 20 20">
+    <svg className={className} width={width} height={height} viewBox="0 0 20 20">
       <g data-name="ICONS">
         <path
           d="M7.19 6.4955C6.47991 6.4955 5.90428 7.45488 5.90428 8.63837C5.90428 9.82186 6.47991 10.7812 7.19 10.7812C7.90009 10.7812 8.47572 9.82186 8.47572 8.63837C8.47572 7.45488 7.90009 6.4955 7.19 6.4955Z"
@@ -911,9 +911,9 @@ export function ghost ({ height, width, fill, className }: IconOptions) {
   )
 }
 
-export function ghostDead ({ height, width, fill, className }: IconOptions) {
+export function ghostDead ({ height = 20, width = 20, fill = 'currentColor', className }: IconOptions = {}) {
   return (
-    <svg className={className} width={height} height={width} viewBox="0 0 20 20">
+    <svg className={className} width={width} height={height} viewBox="0 0 20 20">
       <g data-name="ICONS">
         <path
           d="M1.66666 8.07787C1.66666 3.63566 5.30128 0.00103311 9.74341 0.000854492C14.1856 0.000854492 17.8205 3.63557 17.8205 8.07787V18.0778C17.8205 19.1355 17.2053 20.0009 15.8975 20.0009C15.2239 20.0009 14.763 19.7968 14.316 19.5989C13.8951 19.4126 13.4865 19.2317 12.9243 19.2317C12.3744 19.2317 11.9508 19.4047 11.5056 19.5867C11.0122 19.7883 10.492 20.0009 9.74359 20.0009C9.03329 20.0009 8.60419 19.8094 8.17411 19.6176C7.74206 19.4248 7.30903 19.2317 6.58896 19.2317C5.8541 19.2317 5.42941 19.4328 5.01441 19.6294C4.61796 19.8172 4.23037 20.0009 3.58968 20.0009C2.27835 20.0009 1.66666 19.1355 1.66666 18.0778V8.07787ZM13.5284 6.73466L12.7791 7.48395L12.0298 6.73466C11.8705 6.57529 11.6615 6.49556 11.4526 6.49556C11.2437 6.49556 11.0347 6.57529 10.8754 6.73466C10.5566 7.05341 10.5566 7.57028 10.8754 7.88912L11.6246 8.63841L10.8754 9.38769C10.5566 9.70644 10.5566 10.2233 10.8754 10.5421C11.0347 10.7015 11.2437 10.7813 11.4526 10.7813C11.6615 10.7813 11.8705 10.7015 12.0298 10.5421L12.7791 9.79286L13.5284 10.5421C13.6878 10.7015 13.8967 10.7813 14.1056 10.7813C14.3145 10.7813 14.5235 10.7015 14.6828 10.5421C15.0016 10.2234 15.0016 9.70653 14.6828 9.38769L13.9336 8.63841L14.6828 7.88912C15.0016 7.57028 15.0016 7.05341 14.6828 6.73466C14.5235 6.57529 14.3145 6.49556 14.1056 6.49556C13.8967 6.49556 13.6878 6.57529 13.5284 6.73466ZM7.45699 6.73466L6.70771 7.48395L5.95842 6.73466C5.79905 6.57529 5.59012 6.49556 5.38119 6.49556C5.17227 6.49556 4.96334 6.57529 4.80396 6.73466C4.48522 7.05341 4.48522 7.57028 4.80396 7.88912L5.55325 8.63841L4.80396 9.38769C4.48522 9.70644 4.48522 10.2233 4.80396 10.5421C4.96334 10.7015 5.17227 10.7813 5.38119 10.7813C5.59012 10.7813 5.79905 10.7015 5.95842 10.5421L6.70771 9.79286L7.45699 10.5421C7.61636 10.7015 7.82529 10.7813 8.03422 10.7813C8.24315 10.7813 8.45207 10.7015 8.61145 10.5421C8.9302 10.2234 8.9302 9.70653 8.61145 9.38769L7.86216 8.63841L8.61145 7.88912C8.9302 7.57028 8.9302 7.05341 8.61145 6.73466C8.45207 6.57529 8.24315 6.49556 8.03422 6.49556C7.82529 6.49556 7.61636 6.57529 7.45699 6.73466Z"

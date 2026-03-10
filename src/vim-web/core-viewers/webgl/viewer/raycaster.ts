@@ -4,35 +4,39 @@
 
 import * as THREE from 'three'
 import { Element3D } from '../loader/element3d'
-import { Mesh } from '../loader/mesh'
+import { InsertableMesh } from '../loader/progressive/insertableMesh'
+import { InstancedMesh } from '../loader/progressive/instancedMesh'
 import { RenderScene } from './rendering/renderScene'
 import { Camera } from './camera/camera'
 import { Renderer } from './rendering/renderer'
-import { Marker } from './gizmos/markers/gizmoMarker'
+import { type IMarker } from './gizmos/markers/gizmoMarker'
 import { GizmoMarkers } from './gizmos/markers/gizmoMarkers'
 import type {
   IRaycaster as IRaycasterBase,
   IRaycastResult as IRaycastResultBase,
-} from '../../shared'
+} from '../../shared/raycaster'
 import { Validation } from '../../../utils'
+import type { ISelectable } from './selection'
 
 /**
+ * @internal
  * Type alias for an array of THREE.Intersection objects.
  */
 export type ThreeIntersectionList = THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>>[]
-export type RaycastableObject = Element3D | Marker
-export type IRaycastResult = IRaycastResultBase<RaycastableObject>
-export type IRaycaster = IRaycasterBase<RaycastableObject>
+export type IWebglRaycastResult = IRaycastResultBase<ISelectable>
+export type IWebglRaycaster = IRaycasterBase<ISelectable>
+/** @internal */
 export enum Layers {
   Default = 0,
   NoRaycast = 1,
 }
 
 /**
+ * @internal
  * A simple container for raycast results.
  */
-export class RaycastResult implements IRaycastResult {
-  object: Element3D | Marker | undefined
+export class RaycastResult implements IWebglRaycastResult {
+  object: Element3D | IMarker | undefined
   intersections: ThreeIntersectionList
   firstHit: THREE.Intersection | undefined
 
@@ -44,7 +48,7 @@ export class RaycastResult implements IRaycastResult {
     return this.firstHit?.point
   }
 
-  constructor(intersections: ThreeIntersectionList, firstHit?: THREE.Intersection, object?: Element3D | Marker) {
+  constructor(intersections: ThreeIntersectionList, firstHit?: THREE.Intersection, object?: Element3D | IMarker) {
     this.intersections = intersections
     this.firstHit = firstHit
     this.object = object
@@ -52,9 +56,12 @@ export class RaycastResult implements IRaycastResult {
 }
 
 /**
- * Performs raycasting operations.
+ * @internal
+ * Performs CPU-based raycasting operations using Three.js.
+ * This is kept as a reference/fallback implementation.
+ * The primary raycaster is GpuPicker which implements IRaycaster.
  */
-export class Raycaster implements IRaycaster {
+export class Raycaster implements IWebglRaycaster {
   private _camera: Camera
   private _scene: RenderScene
   private _renderer: Renderer
@@ -104,7 +111,7 @@ export class Raycaster implements IRaycaster {
    * Processes the list of intersections to determine the first valid hit.
    * It first checks for a marker hit, then for a model object hit.
    */
-  private processIntersections(intersections: ThreeIntersectionList): { firstHit?: THREE.Intersection, object?: Element3D | Marker } {
+  private processIntersections(intersections: ThreeIntersectionList): { firstHit?: THREE.Intersection, object?: Element3D | IMarker } {
     // Check for marker hit first
     for (let i = 0; i < intersections.length; i++) {
       const userData = intersections[i].object.userData.vim
@@ -130,11 +137,11 @@ export class Raycaster implements IRaycaster {
    * Extracts the core model object from a raycast hit.
    */
   private getVimObjectFromHit(hit: THREE.Intersection): Element3D | undefined {
-    const mesh = hit.object.userData.vim as Mesh
+    const mesh = hit.object.userData.vim as InsertableMesh | InstancedMesh
     if (!mesh) return undefined
     const sub = mesh.merged
-      ? mesh.getSubmeshFromFace(hit.faceIndex)
-      : mesh.getSubMesh(hit.instanceId)
+      ? (mesh as InsertableMesh).getSubmeshFromFace(hit.faceIndex)
+      : (mesh as InstancedMesh).getSubMesh(hit.instanceId)
     return sub?.object
   }
 
@@ -148,6 +155,7 @@ export class Raycaster implements IRaycaster {
 }
 
 /**
+ * @internal
  * Converts normalized screen coordinates (0-1 range) into Three.js NDC ([-1, 1] range).
  */
 export function threeNDCFromVector2(position: THREE.Vector2): THREE.Vector2 {

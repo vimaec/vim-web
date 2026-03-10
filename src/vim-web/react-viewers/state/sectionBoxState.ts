@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef, useLayoutEffect, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
 import { addBox } from '../../utils/threeUtils';
-import { ISignal } from 'ste-signals';
-import { ActionRef, ArgActionRef, AsyncFuncRef, StateRef, useArgActionRef, useAsyncFuncRef, useFuncRef, useStateRef } from '../helpers/reactUtils';
+import type { ISignal } from '../../core-viewers/shared/events'
+import { FuncRef, StateRef, useFuncRef, useStateRef } from '../helpers/reactUtils';
 
 export type Offsets = {
   topOffset: string;
@@ -12,14 +12,23 @@ export type Offsets = {
 
 export type OffsetField = keyof Offsets;
 
-export interface SectionBoxRef {
-  enable: StateRef<boolean>;
+/**
+ * Controls the section box clipping volume.
+ * Shared between WebGL and Ultra viewers.
+ *
+ * @example
+ * viewer.sectionBox.active.set(true)
+ * viewer.sectionBox.sectionSelection.call()  // Fit to selection
+ * viewer.sectionBox.sectionScene.call()      // Fit to scene
+ */
+export interface SectionBoxApi {
+  active: StateRef<boolean>;
   visible: StateRef<boolean>;
   auto: StateRef<boolean>;
 
-  sectionSelection: AsyncFuncRef<void>;
-  sectionScene: AsyncFuncRef<void>;
-  sectionBox: ArgActionRef<THREE.Box3>;
+  sectionSelection: FuncRef<void, Promise<void>>;
+  sectionScene: FuncRef<void, Promise<void>>;
+  sectionBox: FuncRef<THREE.Box3, void>;
   getBox: () => THREE.Box3;
 
   showOffsetPanel: StateRef<boolean>;
@@ -28,12 +37,12 @@ export interface SectionBoxRef {
   sideOffset: StateRef<number>;
   bottomOffset: StateRef<number>;
 
-  getSelectionBox: AsyncFuncRef<THREE.Box3 | undefined>;
-  getSceneBox: AsyncFuncRef<THREE.Box3>;
+  getSelectionBox: FuncRef<void, Promise<THREE.Box3 | undefined>>;
+  getSceneBox: FuncRef<void, Promise<THREE.Box3 | undefined>>;
 }
 
-export interface SectionBoxAdapter {
-  setClip : (b: boolean) => void;
+export interface ISectionBoxAdapter {
+  setActive : (b: boolean) => void;
   setVisible: (visible: boolean) => void;
   getBox: () => THREE.Box3;
   setBox: (box: THREE.Box3) => void;
@@ -41,14 +50,14 @@ export interface SectionBoxAdapter {
 
   // Allow to override these at the viewer level
   getSelectionBox: () => Promise<THREE.Box3 | undefined>;
-  getSceneBox: () => Promise<THREE.Box3>;
+  getSceneBox: () => Promise<THREE.Box3 | undefined>;
 }
 
 export function useSectionBox(
-  adapter: SectionBoxAdapter
-): SectionBoxRef {
+  adapter: ISectionBoxAdapter
+): SectionBoxApi {
   // Local state.
-  const enable = useStateRef(false);
+  const active = useStateRef(false);
   const visible = useStateRef(false);
   const showOffsetPanel = useStateRef(false);
   const auto = useStateRef(false);
@@ -59,21 +68,21 @@ export function useSectionBox(
 
   // The reference box on which the offsets are applied.
   const boxRef = useRef<THREE.Box3>(adapter.getBox());
-  const getSelectionBox = useAsyncFuncRef(adapter.getSelectionBox);
-  const getSceneBox = useAsyncFuncRef(adapter.getSceneBox);
+  const getSelectionBox = useFuncRef(adapter.getSelectionBox);
+  const getSceneBox = useFuncRef(adapter.getSceneBox);
 
   // One Time Setup
   useEffect(() => {
     adapter.setVisible(false);
-    adapter.setClip(false);
+    adapter.setActive(false);
     return adapter.onSelectionChanged.sub(() => {
-      if(auto.get() && enable.get()) sectionSelection.call()
+      if(auto.get() && active.get()) sectionSelection.call()
     })
   }, []);
 
-  // Reset everything when the enable state changes.
-  enable.useOnChange((v) => {
-    adapter.setClip(v);
+  // Reset everything when the active state changes.
+  active.useOnChange((v) => {
+    adapter.setActive(v);
     visible.set(v);
     showOffsetPanel.set(false)
     
@@ -85,9 +94,9 @@ export function useSectionBox(
     }
   })
 
-  // Cannot change values if not enabled.
-  visible.useValidate((v) => enable.get() && v);
-  showOffsetPanel.useValidate((v) => enable.get() && v);
+  // Cannot change values if not active.
+  visible.useValidate((v) => active.get() && v);
+  showOffsetPanel.useValidate((v) => active.get() && v);
 
   // Update the section box on offset change.
   topOffset.useOnChange((v) => sectionBox.call(boxRef.current));
@@ -101,7 +110,7 @@ export function useSectionBox(
   visible.useOnChange((v) => adapter.setVisible(v));
 
   // Update the box by combining the base box and the computed offsets.
-  const sectionBox = useArgActionRef((box: THREE.Box3) => {
+  const sectionBox = useFuncRef((box: THREE.Box3) => {
     if(box === undefined) return
     requestId.current ++;
 
@@ -126,7 +135,7 @@ export function useSectionBox(
   });
 
   return {
-    enable,
+    active,
     visible,
     auto,
     showOffsetPanel,

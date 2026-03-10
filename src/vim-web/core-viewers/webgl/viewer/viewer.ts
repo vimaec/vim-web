@@ -6,83 +6,129 @@ import * as THREE from 'three'
 
 // internal
 import { Camera } from './camera/camera'
-import { Environment } from './environment/environment'
-import { Gizmos } from './gizmos/gizmos'
-import { IRaycaster, Raycaster } from './raycaster'
+import { IWebglCamera } from './camera/cameraInterface'
+import { Gizmos, IGizmos } from './gizmos/gizmos'
+import { IWebglRaycaster } from './raycaster'
+import { GpuPicker } from './rendering/gpuPicker'
 import { RenderScene } from './rendering/renderScene'
-import { createSelection, ISelection } from './selection'
+import { createSelection, IWebglSelection } from './selection'
 import { createViewerSettings, PartialViewerSettings, ViewerSettings } from './settings/viewerSettings'
-import { Viewport } from './viewport'
+import { IWebglViewport, Viewport } from './viewport'
 
 // loader
-import { ISignal, SignalDispatcher } from 'ste-signals'
-import type {InputHandler} from '../../shared'
-import { Materials } from '../loader/materials/materials'
-import { Vim } from '../loader/vim'
+import type { ISignal } from '../../shared/events'
+import { SignalDispatcher } from 'ste-signals'
+import {type IInputHandler} from '../../shared'
+import {type InputHandler} from '../../shared/input/inputHandler'
+import { IMaterials, Materials } from '../loader/materials/materials'
+import { Vim, IWebglVim } from '../loader/vim'
+import { Scene } from '../loader/scene'
+import { VimCollection } from '../../shared/vimCollection'
 import { createInputHandler } from './inputAdapter'
-import { Renderer } from './rendering/renderer'
+import { IWebglRenderer, Renderer } from './rendering/renderer'
+import { LoadRequest as CoreLoadRequest, RequestSource, IWebglLoadRequest } from '../loader/progressive/loadRequest'
+import { VimPartialSettings } from '../loader/vimSettings'
+
+/**
+ * Public interface for the WebGL viewer.
+ * Consumers should use this instead of the concrete class.
+ *
+ * **Lifecycle:** Call `load()` to add VIM models (auto-populates `vims`),
+ * `unload(vim)` to remove one, `clear()` to remove all, and `dispose()` to
+ * tear down the viewer entirely. Do not call `dispose()` on individual vims —
+ * always go through `unload()`.
+ *
+ * @example
+ * ```ts
+ * const viewer = Core.Webgl.createViewer()
+ * const vim = await viewer.load({ url: 'model.vim' }).getVim()
+ * console.log(viewer.vims.length)  // 1
+ *
+ * viewer.unload(vim)               // Remove one vim
+ * viewer.clear()                   // Remove all vims
+ * viewer.dispose()                 // Tear down viewer
+ * ```
+ */
+export interface IWebglViewer {
+  readonly type: 'webgl'
+  readonly renderer: IWebglRenderer
+  readonly viewport: IWebglViewport
+  readonly selection: IWebglSelection
+  readonly inputs: IInputHandler
+  readonly raycaster: IWebglRaycaster
+  readonly materials: IMaterials
+  readonly camera: IWebglCamera
+  readonly gizmos: IGizmos
+  /** Fires when a vim finishes loading and is added to the scene. */
+  readonly onVimLoaded: ISignal
+  /** All loaded VIM models. Auto-populated on load, auto-removed on unload. */
+  readonly vims: IWebglVim[]
+  /** Loads a VIM file. The resulting vim is added to `vims` on success. */
+  load (source: RequestSource, settings?: VimPartialSettings): IWebglLoadRequest
+  /** Removes a vim from the viewer and disposes its resources. */
+  unload (vim: IWebglVim): void
+  /** Removes and disposes all loaded vims. */
+  clear (): void
+  /** Tears down the viewer entirely — releases WebGL context, DOM elements, and all resources. */
+  dispose (): void
+}
 
 /**
  * Viewer and loader for vim files.
  */
-export class Viewer {
+export class WebglViewer implements IWebglViewer {
   /**
    * The type of the viewer, indicating it is a WebGL viewer.
    * Useful for distinguishing between different viewer types in a multi-viewer application.
    */
   public readonly type = 'webgl'
-  /**
-   * The settings configuration used by the viewer.
-   */
-  readonly settings: ViewerSettings
 
   /**
    * The renderer used by the viewer for rendering scenes.
    */
-  readonly renderer: Renderer
+  get renderer(): IWebglRenderer { return this._renderer }
+  private readonly _renderer: Renderer
 
   /**
    * The interface for managing the HTML canvas viewport.
    */
-
-  readonly viewport: Viewport
+  get viewport(): IWebglViewport { return this._viewport }
+  private readonly _viewport: Viewport
 
   /**
    * The interface for managing viewer selection.
    */
-  readonly selection: ISelection
+  readonly selection: IWebglSelection
 
   /**
    * The interface for manipulating default viewer inputs.
    */
-  readonly inputs: InputHandler
+  get inputs(): IInputHandler { return this._inputs }
+  private readonly _inputs: InputHandler
 
   /**
    * The interface for performing raycasting into the scene to find objects.
    */
-  readonly raycaster: IRaycaster
+  readonly raycaster: IWebglRaycaster
 
   /**
    * The materials used by the viewer to render the vims.
    */
-  readonly materials: Materials
-
-  /**
-   * The environment of the viewer, including the ground plane and lights.
-   */
-  readonly environment: Environment
+  get materials (): IMaterials { return this._materials }
+  private readonly _materials: Materials
 
   /**
    * The interface for manipulating the viewer's camera.
    */
-  get camera () {
-    return this._camera as Camera
+  get camera (): IWebglCamera {
+    return this._camera
   }
 
   /**
    * The collection of gizmos available for visualization and interaction within the viewer.
    */
-  gizmos: Gizmos
+  get gizmos (): IGizmos { return this._gizmos }
+  private _gizmos: Gizmos
 
   /**
    * A signal that is dispatched when a new Vim object is loaded or unloaded.
@@ -92,45 +138,55 @@ export class Viewer {
   }
 
   private _camera: Camera
-  private _clock = new THREE.Clock()
+  private _timer = new THREE.Timer()
 
   // State
-  private _vims = new Set<Vim>()
+  private readonly vimCollection = new VimCollection<Vim>()
   private _onVimLoaded = new SignalDispatcher()
   private _updateId: number
 
-  constructor (settings?: PartialViewerSettings) {
-    this.settings = createViewerSettings(settings)
+  constructor (options?: PartialViewerSettings) {
+    const settings = createViewerSettings(options)
 
-    this.materials = Materials.getInstance()
+    this._materials = Materials.getInstance()
 
     const scene = new RenderScene()
-    this.viewport = new Viewport(this.settings)
-    this._camera = new Camera(scene, this.viewport, this.settings)
-    this.renderer = new Renderer(
+    this._viewport = new Viewport(settings)
+    this._camera = new Camera(scene, this._viewport, settings)
+    this._renderer = new Renderer(
       scene,
-      this.viewport,
-      this.materials,
+      this._viewport,
+      this._materials,
       this._camera,
-      this.settings
+      settings
     )
 
-    this.inputs = createInputHandler(this)
-    this.gizmos = new Gizmos(this, this._camera)
-    this.materials.applySettings(this.settings)
-
-    // Ground plane and lights
-    this.environment = new Environment(this.camera, this.renderer, this.materials, this.settings)
-
-    // Input and Selection
     this.selection = createSelection()
-    this.raycaster = new Raycaster(
+    this._inputs = createInputHandler(this, settings.camera.controls)
+    this._gizmos = new Gizmos(this._renderer, this._viewport, this, this._camera, settings)
+    this.materials.applySettings(settings.materials)
+
+    // GPU-based raycaster for element picking and world position queries
+    const size = this._renderer.three.getSize(new THREE.Vector2())
+    const gpuPicker = new GpuPicker(
+      this._renderer.three,
       this._camera,
       scene,
-      this.renderer
+      this.vimCollection,
+      this._renderer.section,
+      size.x || 1,
+      size.y || 1
     )
+    gpuPicker.setMarkers(this._gizmos.markers)
+    this.raycaster = gpuPicker
 
-    this.inputs.init()
+    // Update raycaster size on viewport resize
+    this._viewport.onResize.sub(() => {
+      const size = this._viewport.getParentSize()
+      ;(this.raycaster as GpuPicker).setSize(size.x, size.y)
+    })
+
+    this._inputs.init()
 
     // Start Loop
     this.animate()
@@ -138,65 +194,77 @@ export class Viewer {
 
   // Calls render, and asks the framework to prepare the next frame
   private animate () {
-    const deltaTime = this._clock.getDelta()
+    this._timer.update()
+    const deltaTime = this._timer.getDelta()
     this._updateId = requestAnimationFrame(() => this.animate())
 
     // Camera
-    this.renderer.needsUpdate = this._camera.update(deltaTime)
+    if (this._camera.update(deltaTime)) this._renderer.requestRender()
 
     // Gizmos
-    this.gizmos.updateAfterCamera()
+    this._gizmos.updateAfterCamera()
 
     // Rendering
-    this.renderer.render()
+    this._renderer.render()
   }
 
   /**
-   * Retrieves an array containing all currently loaded Vim objects.
-   * @returns {Vim[]} An array of all Vim objects currently loaded in the viewer.
+   * Starts loading a VIM file. The resulting Vim is auto-added to the viewer on success.
+   * @param source The url or buffer to load from.
+   * @param settings Optional settings for the vim.
+   * @returns A load request to track progress and get the result.
+   * @throws Error if the viewer has reached maximum capacity (256 vims)
    */
-  get vims () {
-    return [...this._vims]
+  load (source: RequestSource, settings?: VimPartialSettings): IWebglLoadRequest {
+    const vimIndex = this.vimCollection.allocateId()
+    if (vimIndex === undefined) {
+      throw new Error('Cannot load vim: maximum of 256 vims already loaded')
+    }
+    const request = new CoreLoadRequest(source, settings ?? {}, vimIndex)
+    request.getResult().then((result) => {
+      if (result.isSuccess) {
+        this.add(result.vim)
+      }
+    })
+    return request
   }
 
   /**
-   * The number of Vim objects currently loaded in the viewer.
+   * All currently loaded Vim models.
    */
-  get vimCount () {
-    return this._vims.size
+  get vims (): IWebglVim[] {
+    return this.vimCollection.getAll()
   }
 
   /**
-   * Adds a Vim object to the renderer, triggering the appropriate actions and dispatching events upon successful addition.
-   * @param {Vim} vim - The Vim object to add to the renderer.
-   * @throws {Error} If the Vim object is already added or if loading the Vim would exceed maximum geometry memory.
+   * Adds a Vim object to the renderer.
+   * @throws {Error} If the Vim object is already added.
    */
-  add (vim: Vim) {
-    if (this._vims.has(vim)) {
+  private add (vim: Vim) {
+    if (this.vimCollection.has(vim)) {
       throw new Error('Vim cannot be added again, unless removed first.')
     }
 
-    const success = this.renderer.add(vim.scene)
-    if (!success) {
-      throw new Error('Could not load vim. Max geometry memory reached.')
-    }
-
-    this._vims.add(vim)
+    this._renderer.add(vim.scene as Scene)
+    this.vimCollection.add(vim)
     this._onVimLoaded.dispatch()
   }
 
   /**
-   * Unloads the given Vim object from the viewer, updating the scene and triggering necessary actions.
-   * @param {Vim} vim - The Vim object to remove from the viewer.
-   * @throws {Error} If attempting to remove a Vim object that is not present in the viewer.
+   * Unloads and disposes the given Vim from the viewer.
+   * This is the proper way to unload a vim — do not call `vim.dispose()` directly.
+   * @param vim - The Vim to unload.
+   * @throws If the vim is not present in the viewer.
    */
-  remove (vim: Vim) {
-    if (!this._vims.has(vim)) {
+  unload (vim: IWebglVim) {
+    const v = vim as Vim
+    if (!this.vimCollection.has(v)) {
       throw new Error('Cannot remove missing vim from viewer.')
     }
-    this._vims.delete(vim)
-    this.renderer.remove(vim.scene)
-    this.selection.removeFromVim(vim)
+    this.vimCollection.remove(v)
+    this._renderer.remove(v.scene as Scene)
+    this.selection.removeFromVim(v)
+    v.dispose()
     this._onVimLoaded.dispatch()
   }
 
@@ -204,7 +272,11 @@ export class Viewer {
    * Removes all Vim objects from the viewer, clearing the scene.
    */
   clear () {
-    this.vims.forEach((v) => this.remove(v))
+    // Get a copy of all vims before clearing
+    const vims = this.vimCollection.getAll()
+    for (const vim of vims) {
+      this.unload(vim)
+    }
   }
 
   /**
@@ -212,13 +284,30 @@ export class Viewer {
    */
   dispose () {
     cancelAnimationFrame(this._updateId)
-    this.environment.dispose()
     this.selection.clear()
-    this.viewport.dispose()
-    this.renderer.dispose()
-    this.inputs.unregisterAll()
-    this._vims.forEach((v) => v?.dispose())
-    this.materials.dispose()
-    this.gizmos.dispose()
+    this.clear()
+    this._viewport.dispose()
+    this._renderer.dispose()
+    ;(this.raycaster as GpuPicker).dispose()
+    this._inputs.dispose()
+    this._materials.dispose()
+    this._gizmos.dispose()
   }
+}
+
+/**
+ * Creates a headless WebGL viewer without React UI.
+ * Use this for programmatic-only usage or custom UI frameworks.
+ * For a full React UI viewer, use `React.Webgl.createViewer()` instead.
+ *
+ * @param settings - Optional renderer config (camera, materials, lighting). See {@link ViewerSettings}.
+ * @returns A new WebGL viewer.
+ *
+ * @example
+ * const viewer = Core.Webgl.createViewer({ camera: { orthographic: true } })
+ * document.body.appendChild(viewer.viewport.canvas)
+ * const vim = await viewer.load({ url: 'model.vim' }).getVim()
+ */
+export function createCoreWebglViewer (settings?: PartialViewerSettings): IWebglViewer {
+  return new WebglViewer(settings)
 }

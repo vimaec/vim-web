@@ -4,21 +4,27 @@
 
 import * as THREE from 'three'
 import { Camera } from './camera'
-import { Element3D } from '../../loader/element3d'
 import { CameraMovementSnap } from './cameraMovementSnap'
 import { CameraMovement } from './cameraMovement'
 import { CameraSaveState } from './cameraInterface'
+import { SphereCoord } from './sphereCoord'
 
 
 
+/** @internal */
 export class CameraLerp extends CameraMovement {
-  _movement: CameraMovementSnap
-  _clock = new THREE.Clock()
+  private _movement: CameraMovementSnap
+  private _startTime = 0
+  private _running = false
 
   // position
-  onProgress: ((progress: number) => void) | undefined
+  private onProgress: ((progress: number) => void) | undefined
 
-  _duration = 1
+  private _duration = 1
+
+  private _lrTmp = new THREE.Vector3()
+  private _lrTmp2 = new THREE.Vector3()
+  private _lrQuat = new THREE.Quaternion()
 
   constructor (camera: Camera, movement: CameraMovementSnap, savedState: CameraSaveState, getBoundingBox:() => THREE.Box3) {
     super(camera, savedState, getBoundingBox)
@@ -26,130 +32,161 @@ export class CameraLerp extends CameraMovement {
   }
 
   get isLerping () {
-    return this._clock.running
+    return this._running
   }
 
   init (duration: number) {
     this.cancel()
     this._duration = Math.max(duration, 0.01)
-    this._clock.start()
+    this._startTime = performance.now()
+    this._running = true
   }
 
   cancel () {
-    this._clock.stop()
+    this._running = false
     this.onProgress = undefined
   }
 
-  easeOutCubic (x: number): number {
+  private easeOutCubic (x: number): number {
     return 1 - Math.pow(1 - x, 3)
   }
 
   update () {
-    if (!this._clock.running) return
+    if (!this._running) return
 
-    let t = this._clock.getElapsedTime() / this._duration
+    let t = (performance.now() - this._startTime) / 1000 / this._duration
     t = this.easeOutCubic(t)
     if (t >= 1) {
       t = 1
-      this._clock.stop()
+      this._running = false
       this.onProgress = undefined
     }
     this.onProgress?.(t)
   }
 
-  override move3 (vector: THREE.Vector3): void {
-    const v = vector.clone()
-    v.applyQuaternion(this._camera.quaternion)
-    const start = this._camera.position.clone()
-    const end = this._camera.position.clone().add(v)
-    const pos = new THREE.Vector3()
-
-    const offset = this._camera.forward.multiplyScalar(this._camera.orbitDistance)
+  protected applyMove (worldVector: THREE.Vector3): void {
+    const startPos = this._camera.position.clone()
+    const endPos = this._camera.position.clone().add(worldVector)
 
     this.onProgress = (progress) => {
-      pos.copy(start)
-      pos.lerp(end, progress)
-      this._movement.set(pos, pos.clone().add(offset))
+      this._lrTmp.copy(startPos).lerp(endPos, progress)
+      this._movement.reposition(this._lrTmp)
     }
   }
 
   rotate (angle: THREE.Vector2): void {
-    const euler = new THREE.Euler(0, 0, 0, 'YXZ')
-    euler.setFromQuaternion(this._camera.quaternion)
-
-    // When moving the mouse one full sreen
-    // Orbit will rotate 180 degree around the scene
-    euler.x += angle.x
-    euler.y += angle.y
-    euler.z = 0
-
-    // Clamp X rotation to prevent performing a loop.
-    const max = Math.PI * 0.48
-    euler.x = Math.max(-max, Math.min(max, euler.x))
-
+    const locked = angle.clone().multiply(this._camera.lockRotation)
     const start = this._camera.quaternion.clone()
-    const end = new THREE.Quaternion().setFromEuler(euler)
+    const end = this.computeRotation(locked)
     const rot = new THREE.Quaternion()
     this.onProgress = (progress) => {
       rot.copy(start)
       rot.slerp(end, progress)
-      this._movement.applyRotation(rot)
+      this.applyRotation(rot)
     }
   }
 
-  zoom (amount: number): void {
-    const dist = this._camera.orbitDistance * amount
-    this.setDistance(dist)
-  }
-
-  setDistance (dist: number): void {
+  protected setDistance (dist: number): void {
     const start = this._camera.position.clone()
     const end = this._camera.target
       .clone()
       .lerp(start, dist / this._camera.orbitDistance)
 
     this.onProgress = (progress) => {
-      this._camera.position.copy(start)
-      this._camera.position.lerp(end, progress)
+      this._lrTmp.copy(start).lerp(end, progress)
+      this._movement.reposition(this._lrTmp)
     }
   }
 
-  orbit (angle: THREE.Vector2): void {
+  zoomTowards(amount: number, worldPoint: THREE.Vector3, screenPoint?: THREE.Vector2): void {
     const startPos = this._camera.position.clone()
-    const startTarget = this._camera.target.clone()
-    const a = new THREE.Vector2()
+
+    // Direction from world point to camera
+    const direction = startPos.clone().sub(worldPoint).normalize()
+
+    // Calculate end position
+    const currentDist = startPos.distanceTo(worldPoint)
+    const newDist = currentDist / amount
+    const endPos = worldPoint.clone().add(direction.multiplyScalar(newDist))
+
+    // Set orbit target immediately (not animated)
+    this._camera.target.copy(worldPoint)
+    this._camera.isTargetFloating = false
+
+    // Update screen target so orbit pivot stays at cursor position
+    if (screenPoint) {
+      this._camera.screenTarget.copy(screenPoint)
+    }
 
     this.onProgress = (progress) => {
-      a.set(0, 0)
-      a.lerp(angle, progress)
-      this._movement.set(startPos, startTarget)
-      this._movement.orbit(a)
+      this._lrTmp.copy(startPos).lerp(endPos, progress)
+      this.lockVector(this._lrTmp, this._camera.position, this._lrTmp2)
+      this._camera.position.copy(this._lrTmp2)
     }
   }
 
-  async target (target: Element3D | THREE.Vector3) {
-    const pos = target instanceof Element3D ? (await target.getCenter()) : target
-    const next = pos.clone().sub(this._camera.position)
-    const start = this._camera.quaternion.clone()
-    const rot = new THREE.Quaternion().setFromUnitVectors(
-      new THREE.Vector3(0, 0, -1),
-      next.normalize()
-    )
+  protected applyOrbit (angle: THREE.Vector2): void {
+    const locked = angle.clone().multiply(this._camera.lockRotation)
+    const radius = this._camera.orbitDistance
+
+    const start = SphereCoord.fromForward(this._camera.forward, radius)
+    const startOffset = start.toVector3()
+    const endOffset = start.rotate(locked.x, locked.y).toVector3()
+
     this.onProgress = (progress) => {
-      const r = start.clone().slerp(rot, progress)
-      this._movement.applyRotation(r)
+      this._lrTmp.copy(startOffset).lerp(endOffset, progress)
+      this._lrTmp.normalize().multiplyScalar(radius)
+      this._lrTmp.add(this._camera.target)
+
+      this.lockVector(this._lrTmp, this._camera.position, this._lrTmp2)
+      this._camera.position.copy(this._lrTmp2)
+
+      this._camera.camPerspective.camera.up.set(0, 0, 1)
+      this._camera.camPerspective.camera.lookAt(this._camera.target)
+      this.applyScreenTargetOffset()
+    }
+  }
+
+  protected lookAtPoint (point: THREE.Vector3) {
+    const start = this._camera.quaternion.clone()
+
+    // Compute end orientation using Three.js lookAt (respects Z-up)
+    const savedQuat = this._camera.quaternion.clone()
+    this._camera.camPerspective.camera.up.set(0, 0, 1)
+    this._camera.camPerspective.camera.lookAt(point)
+    const end = this._camera.quaternion.clone()
+    this._camera.quaternion.copy(savedQuat)
+
+    this.onProgress = (progress) => {
+      this._lrQuat.copy(start).slerp(end, progress)
+      this.applyRotation(this._lrQuat)
     }
   }
 
   set (position: THREE.Vector3, target?: THREE.Vector3) {
+    this._camera.isTargetFloating = false
     const endTarget = target ?? this._camera.target
     const startPos = this._camera.position.clone()
     const startTarget = this._camera.target.clone()
+    const startQuat = this._camera.quaternion.clone()
+
+    // Compute the final camera state (includes elevation clamping, lookAt, screen offset)
+    this._movement.set(position, endTarget)
+    const endPos = this._camera.position.clone()
+    const endQuat = this._camera.quaternion.clone()
+
+    // Restore start state
+    this._camera.position.copy(startPos)
+    this._camera.target.copy(startTarget)
+    this._camera.quaternion.copy(startQuat)
+
     this.onProgress = (progress) => {
-      this._movement.set(
-        startPos.clone().lerp(position, progress),
-        startTarget.clone().lerp(endTarget, progress)
-      )
+      this._lrTmp.copy(startPos).lerp(endPos, progress)
+      this._lrTmp2.copy(startTarget).lerp(endTarget, progress)
+      this._lrQuat.copy(startQuat).slerp(endQuat, progress)
+      this._camera.position.copy(this._lrTmp)
+      this._camera.target.copy(this._lrTmp2)
+      this._camera.quaternion.copy(this._lrQuat)
     }
   }
 }

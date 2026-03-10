@@ -1,8 +1,10 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils';
-import { ICamera } from '../../camera';
+import { IWebglCamera } from '../../camera';
+/** @internal */
 export type AxisName = 'x' | 'y' | 'z';
 
+/** @internal */
 export class SectionBoxHandle extends THREE.Mesh {
   readonly axis : AxisName
   readonly sign: number;
@@ -13,7 +15,7 @@ export class SectionBoxHandle extends THREE.Mesh {
   
   private _materials: THREE.MeshBasicMaterial[];
 
-  private _camera : ICamera | undefined
+  private _camera : IWebglCamera | undefined
   private _camSub : () => void
 
   constructor(axes: AxisName, sign: number, size: number, color?: THREE.Color) {
@@ -52,7 +54,7 @@ export class SectionBoxHandle extends THREE.Mesh {
     this.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), this._forward);
   }
 
-  trackCamera(camera: ICamera) {
+  trackCamera(camera: IWebglCamera) {
     this._camera = camera
     this.update()
     this._camSub = camera.onMoved.subscribe(() => this.update());
@@ -60,7 +62,7 @@ export class SectionBoxHandle extends THREE.Mesh {
 
   update(){
     if(!this._camera) return;
-    const size = this._camera.frustrumSizeAt(this.position);
+    const size = this._camera.frustumSizeAt(this.position);
     this.scale.set(size.x * 0.003, size.x * 0.003, size.x * 0.003);
   }
 

@@ -1,6 +1,6 @@
 import { THREE } from "../..";
 import { Viewer } from "../../core-viewers/webgl";
-import { isTrue } from "../settings";
+import { isTrue } from "../settings/userBoolean";
 import { SettingsItem } from "../settings/settingsItem";
 import { SettingsPanelKeys } from "../settings/settingsKeys";
 import { getControlBarCameraSettings, getControlBarCursorSettings, getControlBarSectionBoxSettings, getControlBarVisibilitySettings } from "../settings/settingsPanelContent";

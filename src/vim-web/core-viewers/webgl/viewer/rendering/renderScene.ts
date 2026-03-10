@@ -5,10 +5,13 @@
 import * as THREE from 'three'
 import { Scene } from '../../loader/scene'
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer'
-import { ModelMaterial } from '../../loader/materials/materials'
+import { Materials } from '../../loader/materials/materials'
+import { MaterialSet } from '../../loader/materials/materialSet'
 import { InstancedMesh } from '../../loader/progressive/instancedMesh'
+import { MAX_VIMS } from '../../../shared/vimCollection'
 
 /**
+ * @internal
  * Wrapper around the THREE scene that tracks bounding box and other information.
  */
 export class RenderScene {
@@ -18,25 +21,26 @@ export class RenderScene {
   boxUpdated = false
 
   // public value
-  smallGhostThreshold: number | undefined = 10
+  smallGhostThreshold: number = 10
 
-  private _vimScenes: Scene[] = []
+  // Sparse storage indexed by stable vim ID for GPU picking
+  private _vimScenesById: (Scene | undefined)[] = new Array(MAX_VIMS).fill(undefined)
   private _boundingBox: THREE.Box3 | undefined
-  private _memory = 0
   private _2dCount = 0
   private _outlineCount = 0
-  private _modelMaterial: ModelMaterial
+  private _modelMaterial: MaterialSet
 
   get meshes() {
-    return this._vimScenes.flatMap((s) => s.meshes)
+    return this._vimScenesById
+      .filter((s): s is Scene => s !== undefined)
+      .flatMap((s) => s.meshes)
   }
 
   constructor () {
     this.threeScene = new THREE.Scene()
-  }
-
-  get estimatedMemory () {
-    return this._memory
+    // Initialize with simple material (fast mode) - will be overridden by isolation system
+    const m = Materials.getInstance()
+    this._modelMaterial = new MaterialSet(m.modelOpaqueMaterial, m.modelTransparentMaterial)
   }
 
   has2dObjects () {
@@ -45,7 +49,9 @@ export class RenderScene {
 
   /** Clears the scene updated flags */
   clearUpdateFlags () {
-    this._vimScenes.forEach((s) => s.clearUpdateFlag())
+    for (const scene of this._vimScenesById) {
+      scene?.clearUpdateFlag()
+    }
   }
 
   /**
@@ -63,13 +69,14 @@ export class RenderScene {
    * Less precise but is more stable against outliers.
    */
   getAverageBoundingBox () {
-    if (this._vimScenes.length === 0) {
+    const scenes = this._vimScenesById.filter((s): s is Scene => s !== undefined)
+    if (scenes.length === 0) {
       return new THREE.Box3()
     }
     const result = new THREE.Box3()
-    result.copy(this._vimScenes[0].getAverageBoundingBox())
-    for (let i = 1; i < this._vimScenes.length; i++) {
-      result.union(this._vimScenes[i].getAverageBoundingBox())
+    result.copy(scenes[0].getAverageBoundingBox())
+    for (let i = 1; i < scenes.length; i++) {
+      result.union(scenes[i].getAverageBoundingBox())
     }
     return result
   }
@@ -124,25 +131,25 @@ export class RenderScene {
    */
   clear () {
     this.threeScene.clear()
+    this._vimScenesById.fill(undefined)
     this._boundingBox = undefined
-    this._memory = 0
   }
 
   get modelMaterial() {
     return this._modelMaterial
   }
-  set modelMaterial(material: ModelMaterial) {
+  set modelMaterial(material: MaterialSet) {
     this._modelMaterial = material
-    this._vimScenes.forEach((s) => {
-      s.material = material
-    })
+    for (const scene of this._vimScenesById) {
+      if (scene) scene.material = material
+    }
 
     // Hide small instances when using ghost material
     this.updateInstanceMeshVisibility()
   }
 
   private updateInstanceMeshVisibility(){
-    const hide = this._modelMaterial?.[1]?.userData.isGhost === true
+    const hide = this._modelMaterial?.hidden?.userData.isGhost === true
 
     for(const mesh of this.meshes){
       if(mesh instanceof InstancedMesh){
@@ -151,7 +158,7 @@ export class RenderScene {
           continue
         }
         // Check if any submesh is visible
-        const visible = mesh.getSubmeshes().some((m) => 
+        const visible = mesh.getSubmeshes().some((m) =>
           m.object.visible
         )
         mesh.mesh.visible = !(hide && !visible && mesh.size < this.smallGhostThreshold)
@@ -160,15 +167,15 @@ export class RenderScene {
   }
 
   private addScene (scene: Scene) {
-    this._vimScenes.push(scene)
+    // Store scene at its vim's stable ID for GPU picking
+    const vimIndex = scene.vim?.vimIndex ?? 0
+    this._vimScenesById[vimIndex] = scene
+
     scene.meshes.forEach((m) => {
       this.threeScene.add(m.mesh)
     })
 
     this.updateBox(scene.getBoundingBox())
-
-    // Memory
-    this._memory += scene.getMemory()
   }
 
   updateBox (box: THREE.Box3 | undefined) {
@@ -178,21 +185,22 @@ export class RenderScene {
   }
 
   private removeScene (scene: Scene) {
-    // Remove from array
-    this._vimScenes = this._vimScenes.filter((f) => f !== scene)
+    // Clear the slot at this scene's vim ID
+    const vimIndex = scene.vim?.vimIndex ?? 0
+    this._vimScenesById[vimIndex] = undefined
 
     // Remove all meshes from three scene
     for (let i = 0; i < scene.meshes.length; i++) {
       this.threeScene.remove(scene.meshes[i].mesh)
     }
 
-    // Recompute bounding box
+    // Recompute bounding box from remaining scenes
+    const remainingScenes = this._vimScenesById.filter((s): s is Scene => s !== undefined)
     this._boundingBox =
-      this._vimScenes.length > 0
-        ? this._vimScenes
+      remainingScenes.length > 0
+        ? remainingScenes
           .map((s) => s.getBoundingBox())
           .reduce((b1, b2) => b1.union(b2))
         : undefined
-    this._memory -= scene.getMemory()
   }
 }

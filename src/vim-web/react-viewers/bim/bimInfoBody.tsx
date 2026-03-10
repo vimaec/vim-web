@@ -3,14 +3,14 @@ import ReactTooltip from 'react-tooltip'
 import * as Icons from '../icons'
 import * as BIM from './bimInfoData'
 import { createOpenState } from './openState'
-import { BimInfoPanelRef } from './bimInfoData'
+import { BimInfoPanelApi } from './bimInfoData'
 
 /**
  * Represents the details of a BIM object.
  */
 export function BimBody (
   props:{
-    bimInfoRef: BimInfoPanelRef,
+    bimInfoRef: BimInfoPanelApi,
     sections : BIM.Section[],
   }
 ) {
@@ -49,7 +49,7 @@ export function BimBody (
 }
 
 function createSection (
-  bimInfoRef: BimInfoPanelRef,
+  bimInfoRef: BimInfoPanelApi,
   section: BIM.Section,
   getOpen: (key: string) => boolean,
   setOpen: (key: string, value: boolean) => void
@@ -86,7 +86,7 @@ function createSection (
 }
 
 function createGroup (
-  bimInfoRef: BimInfoPanelRef,
+  bimInfoRef: BimInfoPanelApi,
   group: BIM.Group,
   getOpen: (key: string) => boolean,
   setOpen: (key: string, value: boolean) => void
@@ -137,7 +137,7 @@ function createCollapseButton (
 }
 
 function createGroupContent (
-  bimInfoRef: BimInfoPanelRef,
+  bimInfoRef: BimInfoPanelApi,
   group: BIM.Group,
   open: boolean) {
   if (open === false) return null
@@ -156,7 +156,7 @@ function createGroupContent (
     </div>))
 }
 
-function createEntry (bimInfoRef: BimInfoPanelRef, entry: BIM.Entry) {
+function createEntry (bimInfoRef: BimInfoPanelApi, entry: BIM.Entry) {
   const func = () => {
     const standard = () => (<>{entry.value}</>)
     if (bimInfoRef.onRenderBodyEntryValue !== undefined) {

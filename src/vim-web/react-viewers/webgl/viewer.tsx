@@ -25,42 +25,49 @@ import { addPerformanceCounter } from '../panels/performance'
 import { applyWebglBindings } from './inputsBindings'
 import { CursorManager } from '../helpers/cursor'
 import { useSettings } from '../settings/settingsState'
-import { TreeActionRef } from '../bim/bimTree'
+import { TreeActionApi } from '../bim/bimTree'
 import { Container, createContainer } from '../container'
 import { useViewerState } from './viewerState'
 import { LogoMemo } from '../panels/logo'
-import { ViewerRef } from './viewerRef'
+import { WebglViewerApi } from './viewerApi'
 import { useBimInfo } from '../bim/bimInfoData'
 import { whenTrue } from '../helpers/utils'
 import { ComponentLoader } from './loading'
-import { Modal, ModalHandle } from '../panels/modal'
+import { Modal, ModalApi } from '../panels/modal'
 import { SectionBoxPanel } from '../panels/sectionBoxPanel'
 import { useWebglSectionBox } from './sectionBox'
-import { useWebglCamera } from './camera'
+import { useWebglFraming } from './camera'
 import { useViewerInput } from '../state/viewerInputs'
 import { IsolationPanel } from '../panels/isolationPanel'
 import { useWebglIsolation } from './isolation'
-import { GenericPanelHandle } from '../generic'
+import { GenericPanelApi } from '../generic/genericPanel'
 import { ControllablePromise } from '../../utils'
-import { SettingsCustomizer } from '../settings/settingsItem'
+import { SettingsCustomization } from '../settings/settingsItem'
 import { getDefaultSettings, PartialWebglSettings, WebglSettings } from './settings'
 import { isTrue } from '../settings/userBoolean'
 import { SettingsPanel } from '../settings/settingsPanel'
 import { applyWebglSettings, getWebglSettingsContent } from './settingsPanel'
 
 /**
- * Creates a UI container along with a VIM.Viewer and its associated React viewer.
- * @param container An optional container object. If none is provided, a container will be created.
- * @param settings UI Component settings.
-*  @param coreSettings Viewer settings.
- * @returns An object containing the resulting container, reactRoot, and viewer.
+ * Creates a WebGL viewer with full React UI (BIM tree, context menu, control bar, etc.).
+ * Returns a {@link WebglViewerApi} for programmatic interaction.
+ *
+ * @param container An optional container or DOM element. If none is provided, one will be created.
+ * @param settings React UI feature toggles (panels, buttons). See {@link WebglSettings}.
+ * @param coreSettings Core renderer config (camera, materials, lighting). See {@link ViewerSettings}.
+ * @returns A promise resolving to the viewer API.
+ *
+ * @example
+ * const viewer = await React.Webgl.createViewer(document.getElementById('app'))
+ * const vim = await viewer.load({ url: 'model.vim' }).getVim()
+ * viewer.framing.frameScene.call()
  */
-export function createViewer (
+export function createWebglViewer (
   container?: Container | HTMLElement,
   settings: PartialWebglSettings = {},
   coreSettings: Core.Webgl.PartialViewerSettings = {}
-) : Promise<ViewerRef> {
-  const controllablePromise = new ControllablePromise<ViewerRef>()
+) : Promise<WebglViewerApi> {
+  const controllablePromise = new ControllablePromise<WebglViewerApi>()
 
   // Create the container
   const cmpContainer = container instanceof HTMLElement
@@ -68,14 +75,14 @@ export function createViewer (
     : container ?? createContainer()
 
   // Create the viewer inside the container
-  const viewer = new Core.Webgl.Viewer(coreSettings)
+  const viewer = Core.Webgl.createViewer(coreSettings)
   viewer.viewport.reparent(cmpContainer.gfx)
 
   // Create the React root
   const reactRoot = createRoot(cmpContainer.ui)
 
   // Patch the viewer to clean up after itself
-  const patchRef = (cmp : ViewerRef) => {
+  const patchRef = (cmp : WebglViewerApi) => {
     cmp.dispose = () => {
       viewer.dispose()
       cmpContainer.dispose()  
@@ -87,10 +94,10 @@ export function createViewer (
   }
 
   reactRoot.render(
-    <Viewer
+    <WebglViewerComponent
       container={cmpContainer}
       viewer={viewer}
-      onMount = {(cmp : ViewerRef) => controllablePromise.resolve(patchRef(cmp))}
+      onMount = {(cmp : WebglViewerApi) => controllablePromise.resolve(patchRef(cmp))}
       settings={settings}
     />
   )
@@ -104,23 +111,23 @@ export function createViewer (
  * @param onMount A callback function triggered when the viewer is mounted. Receives a reference to the Vim viewer.
  * @param settings Optional settings for configuring the Vim viewer's behavior.
  */
-export function Viewer (props: {
+export function WebglViewerComponent (props: {
   container: Container
   viewer: Core.Webgl.Viewer
-  onMount: (viewer: ViewerRef) => void
+  onMount: (viewer: WebglViewerApi) => void
   settings?: PartialWebglSettings
 }) {
   const settings = useSettings(props.settings ?? {}, getDefaultSettings(), (s) => applyWebglSettings(s))
-  const modal = useRef<ModalHandle>(null)
+  const modal = useRef<ModalApi>(null)
 
   const sectionBoxRef = useWebglSectionBox(props.viewer)
-  const isolationPanelHandle = useRef<GenericPanelHandle>(null)
-  const sectionBoxPanelHandle = useRef<GenericPanelHandle>(null)
+  const isolationPanelHandle = useRef<GenericPanelApi>(null)
+  const sectionBoxPanelHandle = useRef<GenericPanelApi>(null)
 
-  const camera = useWebglCamera(props.viewer, sectionBoxRef)
+  const framing = useWebglFraming(props.viewer, sectionBoxRef)
   const cursor = useMemo(() => new CursorManager(props.viewer), [])
   const loader = useRef(new ComponentLoader(props.viewer, modal, settings.value))
-  useViewerInput(props.viewer.inputs, camera)
+  useViewerInput(props.viewer.inputs, framing)
 
   const side = useSideState(
     isTrue(settings.value.ui.panelBimTree) ||
@@ -132,10 +139,10 @@ export function Viewer (props: {
   const bimInfoRef = useBimInfo()
 
   const viewerState = useViewerState(props.viewer)
-  const treeRef = useRef<TreeActionRef>()
+  const treeRef = useRef<TreeActionApi>()
   const performanceRef = useRef<HTMLDivElement>(null)
   const isolationRef = useWebglIsolation(props.viewer)
-  const controlBar = useControlBar(props.viewer, camera, modal.current, side, cursor, settings.value, sectionBoxRef, isolationRef, controlBarCustom)
+  const controlBar = useControlBar(props.viewer, framing, modal.current, side, cursor, settings.value, sectionBoxRef, isolationRef, controlBarCustom)
 
   useEffect(() => {
     side.setHasBim(viewerState.vim.get()?.bim !== undefined)
@@ -163,22 +170,25 @@ export function Viewer (props: {
 
     // Setup custom input scheme
     props.viewer.viewport.canvas.tabIndex = 0
-    applyWebglBindings(props.viewer, camera, isolationRef, side)
+    applyWebglBindings(props.viewer, framing, isolationRef, side)
 
     // Register context menu
     const subContext =
       props.viewer.inputs.onContextMenu.subscribe(showContextMenu)
 
     props.onMount({
+      type: 'webgl',
       container: props.container,
       core: props.viewer,
-      loader: loader.current,
+      load: (source, loadSettings) => loader.current.load(source, loadSettings),
+      open: (source, loadSettings) => loader.current.open(source, loadSettings),
+      unload: (vim) => props.viewer.unload(vim),
       isolation: isolationRef,
-      camera,
+      framing,
       settings: {
         update : settings.update,
         register : settings.register,
-        customize : (c: SettingsCustomizer<WebglSettings>) => settings.customizer.set(c)
+        customize : (c: SettingsCustomization<WebglSettings>) => settings.customizer.set(c)
       },
       get isolationPanel(){
         return isolationPanelHandle.current
@@ -211,7 +221,7 @@ export function Viewer (props: {
     <>
       {<OptionalBimPanel
         viewer={props.viewer}
-        camera={camera}
+        framing={framing}
         viewerState={viewerState}
         visible={side.getContent() === 'bim'}
         isolation={isolationRef}
@@ -245,10 +255,10 @@ export function Viewer (props: {
           show={isTrue(settings.value.ui.panelControlBar)}
         />
         <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBoxRef}/>
-        <IsolationPanel ref={isolationPanelHandle} state={isolationRef} transparency={true}/>
+        <IsolationPanel ref={isolationPanelHandle} state={isolationRef}/>
         <AxesPanelMemo
           viewer={props.viewer}
-          camera={camera}
+          framing={framing}
           settings={settings}
         />
       </>
@@ -256,7 +266,7 @@ export function Viewer (props: {
 
       <VimContextMenuMemo
         viewer={props.viewer}
-        camera={camera}
+        framing={framing}
         modal={modal.current}
         isolation={isolationRef}
         selection={viewerState.selection.get()}

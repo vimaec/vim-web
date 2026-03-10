@@ -48,7 +48,7 @@ export function getMeasureState (viewer: Core.Webgl.Viewer, cursor: CursorManage
         setMeasurement(undefined)
       })
       .finally(() => {
-        cursor.setCursor(pointerToCursor(viewer.inputs.pointerActive))
+        cursor.setCursor(pointerToCursor(viewer.inputs.pointerMode))
         viewer.viewport.canvas.removeEventListener('mousemove', onMouseMove)
         if (activeRef.current) {
           loop()

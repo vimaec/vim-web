@@ -4,11 +4,13 @@
 
 /**
  * Different styles of measure display.
+ * @internal
  */
 export type MeasureStyle = 'all' | 'Dist' | 'X' | 'Y' | 'Z'
 
 /**
  * Structure of the html element used for measure.
+ * @internal
  */
 export type MeasureElement = {
   div: HTMLElement
@@ -25,6 +27,7 @@ export type MeasureElement = {
  * Creates a html structure for measure value overlays
  * It either creates a single rows or all rows depending on style
  * Structure is a Table of Label:Value
+ * @internal
  */
 export function createMeasureElement (style: MeasureStyle): MeasureElement {
   const div = document.createElement('div')

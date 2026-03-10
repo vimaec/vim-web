@@ -7,9 +7,21 @@ import { Materials } from '../../loader/materials/materials'
 import { Renderer } from './renderer'
 
 /**
+ * Public interface for section box management.
+ * Exposes only the members needed by API consumers.
+ */
+export interface IRenderingSection {
+  readonly box: THREE.Box3
+  fitBox(box: THREE.Box3): void
+  active: boolean
+  readonly clippingPlanes: THREE.Plane[]
+}
+
+/**
+ * @internal
  * Manages a section box from renderer clipping planes
  */
-export class RenderingSection {
+export class RenderingSection implements IRenderingSection {
   private _renderer: Renderer
 
   private _materials: Materials
@@ -48,6 +60,8 @@ export class RenderingSection {
    * @param box The bounding box to match the section box to.
    */
   fitBox (box: THREE.Box3) {
+    // THREE.Plane equation: normal · point + constant = 0
+    // Min planes have positive normals, so constant = -position.
     this.maxX.constant = box.max.x
     this.minX.constant = -box.min.x
     this.maxY.constant = box.max.y
@@ -55,7 +69,7 @@ export class RenderingSection {
     this.maxZ.constant = box.max.z
     this.minZ.constant = -box.min.z
     this.box.copy(box)
-    this._renderer.needsUpdate = true
+    this._renderer.requestRender()
   }
 
   /**
@@ -63,12 +77,19 @@ export class RenderingSection {
    */
   set active (value: boolean) {
     this._materials.clippingPlanes = this.planes
-    this._renderer.renderer.localClippingEnabled = value
+    this._renderer.three.localClippingEnabled = value
     this._active = value
-    this._renderer.needsUpdate = true
+    this._renderer.requestRender()
   }
 
   get active () {
     return this._active
+  }
+
+  /**
+   * Returns the clipping planes used for section box culling.
+   */
+  get clippingPlanes (): THREE.Plane[] {
+    return this.planes
   }
 }

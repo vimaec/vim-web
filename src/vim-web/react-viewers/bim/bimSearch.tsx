@@ -47,11 +47,11 @@ export function BimSearch (props: {
   }
 
   const onFocus = () => {
-    props.viewer.inputs.keyboard.unregister()
+    props.viewer.inputs.keyboard.active = false
   }
 
   const onBlur = () => {
-    props.viewer.inputs.keyboard.register()
+    props.viewer.inputs.keyboard.active = true
   }
 
   return (
@@ -84,7 +84,7 @@ export function BimSearch (props: {
           className="search-clear vc-absolute vc-right-0 vc-flex vc-h-4 vc-w-4 vc-shrink-0 vc-items-center vc-justify-center vc-rounded-full vc-bg-gray-medium vc-text-white"
           onClick={onClear}
         >
-          {Icons.close({ width: 10, height: 10, fill: 'currentColor' })}{' '}
+          {Icons.closeIcon({ width: 10, height: 10, fill: 'currentColor' })}{' '}
         </button>
           )
         : null}

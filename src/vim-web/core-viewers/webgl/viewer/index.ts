@@ -1,19 +1,29 @@
+// Viewer interface (concrete class is internal)
+export type { IWebglViewer } from './viewer'
+export { createCoreWebglViewer } from './viewer'
 
-// Full export
-export * from './viewer';
-export * from './settings';
+// Settings
+export type { ViewerSettings, PartialViewerSettings, MaterialSettings, SelectionFillMode } from './settings'
 
-// Partial export
-export {Layers} from './raycaster';
+// Camera
+export type { IWebglCamera, ICameraMovement } from './camera'
 
-// Type only
-export type * from './environment';
-export type * from './gizmos';
-export type * from './raycaster';
-export type * from './selection';
-export type * from './viewport';
-export type * from './rendering';
-export type * from './camera';
+// Rendering
+export type { IWebglRenderer, IRenderingSection } from './rendering'
 
-// Not exported
-// export * from './inputsAdapter';
+// Selection
+export { isElement3D } from './selection'
+export type { ISelectable, IWebglSelection } from './selection'
+
+// Viewport
+export type { IWebglViewport } from './viewport'
+
+// Raycaster
+export type { IWebglRaycaster, IWebglRaycastResult } from './raycaster'
+
+// Gizmos
+export type { IGizmos, IGizmoOrbit } from './gizmos'
+export type { IGizmoAxes, AxesSettings } from './gizmos'
+export type { IMarker, IGizmoMarkers } from './gizmos'
+export type { IMeasure, MeasureStage } from './gizmos'
+export type { IWebglSectionBox } from './gizmos'

@@ -3,19 +3,28 @@
  */
 
 import { Camera } from './camera'
-import { Element3D } from '../../loader/element3d'
-import { Selectable } from '../selection'
+import { Element3D, type IElement3D } from '../../loader/element3d'
+import { ISelectable } from '../selection'
 import * as THREE from 'three'
 import { Marker } from '../gizmos/markers/gizmoMarker'
-import { Vim } from '../../loader/vim'
-import { CameraSaveState } from './cameraInterface'
+import { type IWebglVim, Vim } from '../../loader/vim'
+import { CameraSaveState, ICameraMovement } from './cameraInterface'
 
 
 
-export abstract class CameraMovement {
+/** @internal */
+export abstract class CameraMovement implements ICameraMovement {
+  protected static readonly MAX_PITCH = Math.PI * 0.48
+
   protected _camera: Camera
   private _savedState: CameraSaveState
   private _getBoundingBox: () => THREE.Box3
+
+  // Reusable tmp vectors to avoid per-frame allocations
+  private _mvDir = new THREE.Vector3()
+  private _mvLocal = new THREE.Vector3()
+  private _mvProjected = new THREE.Vector3()
+  private _mvOffset = new THREE.Vector3()
 
   constructor (camera: Camera, savedState: CameraSaveState, getBoundingBox: () => THREE.Box3) {
     this._camera = camera
@@ -24,65 +33,103 @@ export abstract class CameraMovement {
   }
 
   /**
-   * Moves the camera by the specified 3D vector.
-   * @param {THREE.Vector3} vector - The 3D vector representing the direction and distance of movement.
+   * Moves the camera along a single axis.
+   * @param axis The Z-up axis to move along ('X' = right, 'Y' = forward, 'Z' = up).
+   * @param amount The distance to move.
+   * @param space 'local' to move relative to camera orientation, 'world' for absolute axes.
    */
-  abstract move3(vector: THREE.Vector3): void
-
+  move(axis: 'X' | 'Y' | 'Z', amount: number, space: 'local' | 'world'): void
   /**
-   * Moves the camera in a specified 2D direction within a plane defined by the given axes.
-   * @param {THREE.Vector2} vector - The 2D vector representing the direction of movement.
-   * @param {'XY' | 'XZ'} axes - The axes defining the plane of movement ('XY' or 'XZ').
+   * Moves the camera along two axes.
+   * @param axes The Z-up plane to move in (e.g. 'XY' = ground, 'XZ' = vertical).
+   * @param vector The 2D displacement, components mapped to the specified axes.
+   * @param space 'local' to move relative to camera orientation, 'world' for absolute axes.
    */
-  move2 (vector: THREE.Vector2, axes: 'XY' | 'XZ'): void {
-    const direction =
-      axes === 'XY'
-        ? new THREE.Vector3(-vector.x, 0, vector.y)
-        : axes === 'XZ'
-          ? new THREE.Vector3(-vector.x, vector.y, 0)
-          : undefined
+  move(axes: 'XY' | 'XZ' | 'YZ', vector: THREE.Vector2, space: 'local' | 'world'): void
+  /**
+   * Moves the camera along all three axes.
+   * @param axes Must be 'XYZ'.
+   * @param vector The 3D displacement in Z-up convention (X = right, Y = forward, Z = up).
+   * @param space 'local' to move relative to camera orientation, 'world' for absolute axes.
+   */
+  move(axes: 'XYZ', vector: THREE.Vector3, space: 'local' | 'world'): void
+  move (
+    axes: 'X' | 'Y' | 'Z' | 'XY' | 'XZ' | 'YZ' | 'XYZ',
+    value: number | THREE.Vector2 | THREE.Vector3,
+    space: 'local' | 'world'
+  ): void {
+    // Build Z-up direction vector from axes and value
+    this._mvDir.set(0, 0, 0)
+    if (value instanceof THREE.Vector3) {
+      this._mvDir.copy(value)
+    } else if (value instanceof THREE.Vector2) {
+      this.setComponent(this._mvDir, axes[0], value.x)
+      this.setComponent(this._mvDir, axes[1], value.y)
+    } else {
+      this.setComponent(this._mvDir, axes, value)
+    }
 
-    if (direction) this.move3(direction)
+    if (space === 'local') {
+      // Remap Z-up (x,y,z) → Three.js camera-local (x, z, -y), then to world
+      this._mvLocal.set(this._mvDir.x, this._mvDir.z, -this._mvDir.y)
+      this._mvLocal.applyQuaternion(this._camera.quaternion)
+      this.applyMove(this._mvLocal)
+    } else {
+      this.applyMove(this._mvDir)
+    }
+  }
+
+  protected abstract applyMove(worldVector: THREE.Vector3): void
+
+  private setComponent (v: THREE.Vector3, axis: string, value: number) {
+    if (axis === 'X') v.x = value
+    else if (axis === 'Y') v.y = value
+    else v.z = value
   }
 
   /**
-   * Moves the camera along a specified axis by a given amount.
-   * @param {number} amount - The amount to move the camera.
-   * @param {'X' | 'Y' | 'Z'} axis - The axis along which to move the camera ('X', 'Y', or 'Z').
-   */
-  move1 (amount: number, axis: 'X' | 'Y' | 'Z'): void {
-    const direction = new THREE.Vector3(
-      axis === 'X' ? -amount : 0,
-      axis === 'Z' ? amount : 0,
-      axis === 'Y' ? amount : 0,
-    )
-
-    this.move3(direction)
-  }
-
-  /**
-   * Rotates the camera by the specified angles.
-   * @param {THREE.Vector2} angle - The 2D vector representing the rotation angles around the X and Y axes.
+   * Rotates the camera in place by the given angles.
+   * @param angle - x: yaw (around Z), y: pitch (up/down), in degrees.
    */
   abstract rotate(angle: THREE.Vector2): void
 
   /**
    * Changes the distance between the camera and its target by a specified factor.
-   * @param {number} amount - The factor by which to change the distance (e.g., 0.5 for halving the distance, 2 for doubling the distance).
+   * @param {number} amount - The zoom factor (e.g., 2 to zoom in / halve the distance, 0.5 to zoom out / double the distance).
    */
-  abstract zoom(amount: number): void
+  zoom (amount: number): void {
+    this.setDistance(this._camera.orbitDistance / amount)
+  }
 
   /**
-   * Sets the distance between the camera and its target to the specified value.
-   * @param {number} dist - The new distance between the camera and its target.
+   * Zooms the camera toward a specific world point while preserving camera orientation.
+   * The orbit target is updated to the world point for future orbit operations.
+   * @param amount - The zoom factor (e.g., 2 to zoom in / move closer, 0.5 to zoom out / move farther).
+   * @param worldPoint - The world position to zoom toward.
+   * @param [screenPoint] - Screen position of the world point, used to keep the target pinned under the cursor.
    */
-  abstract setDistance(dist: number): void
+  abstract zoomTowards(amount: number, worldPoint: THREE.Vector3, screenPoint?: THREE.Vector2): void
+
+  protected abstract setDistance(dist: number): void
 
   /**
-   * Orbits the camera around its target by the given angle while maintaining the distance.
-   * @param {THREE.Vector2} vector - The 2D vector representing the orbit angles around the X and Y axes.
+   * Orbits the camera around its target while maintaining the distance.
+   * If the target has drifted off-screen, it is reset to 10 units
+   * in front of the camera so the orbit feels natural.
+   * @param angle - x: azimuth change, y: elevation change, in degrees.
    */
-  abstract orbit(vector: THREE.Vector2): void
+  orbit (angle: THREE.Vector2): void {
+    const st = this._camera.screenTarget
+    if (st.x < 0 || st.x > 1 || st.y < 0 || st.y > 1) {
+      this._camera.target.copy(this._camera.position)
+        .add(this._camera.forward.multiplyScalar(10))
+      this._camera.screenTarget.set(0.5, 0.5)
+      this._camera.isTargetFloating = true
+    }
+    this.applyOrbit(angle)
+  }
+
+  protected abstract applyOrbit(angle: THREE.Vector2): void
 
   /**
    * Orbits the camera around its target to align with the given direction.
@@ -117,7 +164,7 @@ export abstract class CameraMovement {
     const declination = angleForward - angleDirection;
 
     // Convert to degrees.
-    const angle = new THREE.Vector2(-declination, azimuth);
+    const angle = new THREE.Vector2(azimuth, -declination);
     angle.multiplyScalar(180 / Math.PI);
 
     // Apply rotation.
@@ -126,32 +173,55 @@ export abstract class CameraMovement {
 
 
   /**
-   * Rotates the camera without moving so that it looks at the specified target.
-   * @param {Element3D | THREE.Vector3} target - The target object or position to look at.
+   * Orients the camera to look at the given point. The orbit target is updated.
+   * @param target - The target element or world position to look at.
    */
-  abstract target(target: Element3D | THREE.Vector3): void
+  async lookAt (target: IElement3D | THREE.Vector3) {
+    const pos = target instanceof THREE.Vector3 ? target : (await target.getCenter())
+    if (!pos) return
+    this._camera.screenTarget.set(0.5, 0.5)
+    this._camera.isTargetFloating = false
+    this.lookAtPoint(pos)
+  }
+
+  protected abstract lookAtPoint(point: THREE.Vector3): void
+
+  /**
+   * Moves the orbit target without moving the camera or changing orientation.
+   * @param target - The new orbit target (element or world position).
+   */
+  async setTarget (target: IElement3D | THREE.Vector3) {
+    const pos = target instanceof THREE.Vector3 ? target : (await target.getCenter())
+    if (!pos) return
+    this._camera.target.copy(pos)
+    this._camera.isTargetFloating = false
+    this.updateScreenTarget()
+  }
 
   /**
    * Resets the camera to its last saved position and orientation.
    */
   reset () {
+    this._camera.screenTarget.set(0.5, 0.5)
+    this._camera.isTargetFloating = false
     this.set(this._savedState.position, this._savedState.target)
   }
 
   /**
-   * Moves both the camera and its target to the given positions.
-   * @param {THREE.Vector3} position - The new position of the camera.
-   * @param {THREE.Vector3 | undefined} [target] - The new position of the target (optional).
+   * Sets the camera position and target, orienting the camera to look at the target.
+   * Elevation is clamped to avoid gimbal lock at poles.
+   * @param position - The new camera position.
+   * @param [target] - The new orbit target. Defaults to the current target.
    */
   abstract set(position: THREE.Vector3, target?: THREE.Vector3)
 
   /**
    * Sets the camera's orientation and position to focus on the specified target.
-   * @param {IObject | Vim | THREE.Sphere | THREE.Box3 | 'all' | undefined} target - The target object, or 'all' to frame all objects.
-   * @param {THREE.Vector3} [forward] - Optional forward direction after framing.
+   * @param target - The target to frame, or 'all' to frame everything.
+   * @param [forward] - Optional forward direction after framing.
    */
   async frame (
-    target: Selectable | Vim | THREE.Sphere | THREE.Box3 | 'all' | undefined,
+    target: ISelectable | IWebglVim | THREE.Sphere | THREE.Box3 | 'all',
     forward?: THREE.Vector3
   ) {
     if ((target instanceof Marker) || (target instanceof Element3D)) {
@@ -161,7 +231,6 @@ export abstract class CameraMovement {
       target = target.scene.getAverageBoundingBox()
     }
     if (target === 'all') {
-      console.log('frame all')
       target = this._getBoundingBox()
     }
     if (target instanceof THREE.Box3) {
@@ -174,21 +243,104 @@ export abstract class CameraMovement {
 
   protected frameSphere (sphere: THREE.Sphere, forward?: THREE.Vector3) {
     const direction = this.getNormalizedDirection(forward)
-    // Compute best distance to frame sphere
-    const frustrum = this._camera.frustrumSizeAt(sphere.center) // lets use this in our calculation instead, mr
 
-    const vFov = (this._camera.camPerspective.camera.fov * Math.PI) / 180
+    const cam = this._camera.camPerspective.camera
+    const vFov = (cam.fov * Math.PI) / 180
     const vDist = (sphere.radius * 1.2) / Math.tan(vFov / 2)
 
-    const hFov = vFov * this._camera.camPerspective.camera.aspect
-    const hDist = (sphere.radius * 1.2) / Math.tan(hFov / 2)
+    const hHalfFov = Math.atan(Math.tan(vFov / 2) * cam.aspect)
+    const hDist = (sphere.radius * 1.2) / Math.tan(hHalfFov)
 
     const dist = Math.max(vDist, hDist)
     const safeDist = Math.max(dist, this._camera.camPerspective.camera.near * 2)
 
     const pos = direction.multiplyScalar(-safeDist).add(sphere.center)
 
+    this._camera.screenTarget.set(0.5, 0.5)
+    this._camera.isTargetFloating = false
     this.set(pos, sphere.center)
+  }
+
+  protected applyRotation (quaternion: THREE.Quaternion) {
+    this._camera.quaternion.copy(quaternion)
+    this.updateScreenTarget()
+  }
+
+  /**
+   * Computes a clamped rotation quaternion from the current orientation plus the given angles.
+   * @param angle - x: yaw (around Z), y: pitch (up/down), in degrees.
+   */
+  protected computeRotation (angle: THREE.Vector2): THREE.Quaternion {
+    const euler = new THREE.Euler(0, 0, 0, 'ZXY')
+    euler.setFromQuaternion(this._camera.quaternion)
+
+    euler.x += (angle.y * Math.PI) / 180
+    euler.z += (angle.x * Math.PI) / 180
+    euler.y = 0
+
+    euler.x = Math.max(-CameraMovement.MAX_PITCH, Math.min(CameraMovement.MAX_PITCH, euler.x))
+
+    return new THREE.Quaternion().setFromEuler(euler)
+  }
+
+  /**
+   * Slides the camera position on the orbit sphere so the target appears
+   * at screenTarget instead of screen center. Orientation is unchanged.
+   * Must be called after lookAt(target).
+   */
+  protected applyScreenTargetOffset () {
+    const st = this._camera.screenTarget
+    if (st.x === 0.5 && st.y === 0.5) return
+
+    const cam = this._camera.camPerspective.camera
+    const vFov = cam.fov * Math.PI / 180
+    const tanHalfV = Math.tan(vFov / 2)
+    const tanHalfH = tanHalfV * cam.aspect
+
+    // Screen offset in tangent space
+    const sx = (2 * st.x - 1) * tanHalfH
+    const sy = (1 - 2 * st.y) * tanHalfV
+
+    // Exact offset: in camera local space the direction from target to
+    // camera that places the target at (sx, sy) on screen is (-sx, -sy, 1).
+    const dist = this._camera.position.distanceTo(this._camera.target)
+    this._mvOffset.set(-sx, -sy, 1).normalize().multiplyScalar(dist)
+    this._mvOffset.applyQuaternion(cam.quaternion)
+
+    this._camera.position.copy(this._camera.target).add(this._mvOffset)
+  }
+
+  /**
+   * Projects the orbit target onto the screen and stores the result
+   * in screenTarget. Called when camera moves without re-orienting
+   * so the next orbit reflects the target's actual screen position.
+   */
+  protected updateScreenTarget () {
+    const cam = this._camera.camPerspective.camera
+    cam.updateMatrixWorld(true)
+    this._mvProjected.copy(this._camera.target).project(cam)
+
+    if (this._mvProjected.z > 1) {
+      this._camera.screenTarget.set(0.5, 0.5)
+      return
+    }
+
+    // No clamping: values outside [0,1] signal that the target has
+    // drifted off-screen (e.g. after WASD movement). orbit() uses
+    // this to detect and reset a stale target.
+    this._camera.screenTarget.set(
+      (this._mvProjected.x + 1) / 2,
+      (1 - this._mvProjected.y) / 2
+    )
+  }
+
+  protected lockVector (position: THREE.Vector3, fallback: THREE.Vector3, out: THREE.Vector3): THREE.Vector3 {
+    const allowed = this._camera.lockMovement
+    return out.set(
+      allowed.x === 0 ? fallback.x : position.x,
+      allowed.y === 0 ? fallback.y : position.y,
+      allowed.z === 0 ? fallback.z : position.z
+    )
   }
 
   private getNormalizedDirection (forward?: THREE.Vector3) {

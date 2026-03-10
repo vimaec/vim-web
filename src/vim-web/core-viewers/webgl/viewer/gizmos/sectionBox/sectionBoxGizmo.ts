@@ -3,8 +3,9 @@ import { SectionBoxMesh } from './SectionBoxMesh'
 import { SectionBoxOutline } from './sectionBoxOutline'
 import { SectionBoxHandles } from './sectionBoxHandles'
 import { Renderer } from '../../rendering/renderer'
-import { ICamera } from '../../camera'
+import { IWebglCamera } from '../../camera'
 
+/** @internal */
 export class SectionBoxGizmo
 {
     private _renderer: Renderer
@@ -22,7 +23,7 @@ export class SectionBoxGizmo
       this.handles.visible = value
     }
 
-    constructor(renderer: Renderer, camera: ICamera)
+    constructor(renderer: Renderer, camera: IWebglCamera)
     {
         this._renderer = renderer
         this.cube = new SectionBoxMesh()

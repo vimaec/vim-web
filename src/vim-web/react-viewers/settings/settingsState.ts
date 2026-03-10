@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { isTrue } from './userBoolean'
 import { saveSettingsToLocal } from './settingsStorage'
 import { StateRef, useStateRef } from '../helpers/reactUtils'
-import { SettingsCustomizer } from './settingsItem'
+import { SettingsCustomization } from './settingsItem'
 import { AnySettings } from './anySettings'
 import { RecursivePartial } from '../../utils'
 import deepmerge from 'deepmerge'
@@ -15,7 +15,7 @@ export type SettingsState<T extends AnySettings> = {
   value: T
   update: (updater: (s: T) => void) => void
   register: (action: (s: T) => void) => void
-  customizer : StateRef<SettingsCustomizer<T>>
+  customizer : StateRef<SettingsCustomization<T>>
 }
 
 /**
@@ -29,7 +29,7 @@ export function useSettings<T extends AnySettings> (
   const merged = createSettings(value, defaultSettings)
   const [settings, setSettings] = useState(merged)
   const onUpdate = useRef<(s: T) => void>()
-  const customizer = useStateRef<SettingsCustomizer<T>>(settings => settings)
+  const customizer = useStateRef<SettingsCustomization<T>>(settings => settings)
 
   const update = function (updater: (s: T) => void) {
     const next = { ...settings } // Shallow copy

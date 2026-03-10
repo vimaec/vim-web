@@ -2,29 +2,27 @@ import { AnySettings } from './anySettings'
 import { UserBoolean } from './userBoolean'
 
 
-export type SettingsCustomizer<T extends AnySettings> = (items: SettingsItem<T>[]) => SettingsItem<T>[]
+export type SettingsCustomization<T extends AnySettings> = (items: SettingsItem<T>[]) => SettingsItem<T>[]
 
-export type SettingsItem<T extends AnySettings> = SettingsSubtitle | SettingsToggle<T> | SettingsBox<T> | SettingsElement
+export type SettingsItem<T extends AnySettings> = SettingsSubtitle | SettingsToggle<T> | SettingsBox<T> | SettingsSelect<T> | SettingsElement
 
-export type BaseSettingsItem = {
-  type: string
-  key: string
-}
-
-export type SettingsSubtitle = BaseSettingsItem & {
+export type SettingsSubtitle = {
   type: 'subtitle'
+  key: string
   title: string
 }
 
-export type SettingsToggle<T extends AnySettings> = BaseSettingsItem & {
+export type SettingsToggle<T extends AnySettings> = {
   type: 'toggle'
+  key: string
   label: string
   getter: (settings: T) => UserBoolean
   setter: (settings: T, b: boolean) => void
 }
 
-export type SettingsBox<T extends AnySettings> = BaseSettingsItem & {
+export type SettingsBox<T extends AnySettings> = {
   type: 'box'
+  key: string
   label: string
   info: string
   transform: (value: number) => number
@@ -32,7 +30,17 @@ export type SettingsBox<T extends AnySettings> = BaseSettingsItem & {
   setter: (settings: T, b: number) => void
 }
 
-export type SettingsElement = BaseSettingsItem & {
+export type SettingsSelect<T extends AnySettings> = {
+  type: 'select'
+  key: string
+  label: string
+  options: { label: string, value: string }[]
+  getter: (settings: T) => string
+  setter: (settings: T, value: string) => void
+}
+
+export type SettingsElement = {
   type: 'element'
+  key: string
   element: JSX.Element
 }

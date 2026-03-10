@@ -2,12 +2,31 @@
  * @module vim-loader
  */
 
+/**
+ * Manages the Three.js BufferGeometry for merged (InsertableMesh) meshes.
+ *
+ * Buffer layout (all pre-allocated via G3dMeshOffsets):
+ * - index: Uint32 — triangle indices
+ * - position: Float32x3 — world-space vertices (transforms baked in)
+ * - colorIndex: Uint16 — per-vertex color palette index for texture-based color lookup
+ * - packedId: Uint32 — per-vertex (vimIndex << 24 | elementIndex) for GPU picking
+ *
+ * Geometry is inserted incrementally via insertFromG3d(), which iterates over
+ * all instances for a given mesh, bakes the instance matrix into vertex positions,
+ * and tracks submesh boundaries for Element3D mapping.
+ *
+ * The update() method uploads only the dirty buffer ranges to the GPU.
+ */
+
 import * as THREE from 'three'
-import { G3d, G3dMesh, G3dMaterial } from 'vim-format'
+import { G3d, G3dMaterial } from 'vim-format'
 import { Scene } from '../scene'
 import { G3dMeshOffsets } from './g3dOffsets'
+import { ElementMapping } from '../elementMapping'
+import { packPickingId } from '../../viewer/rendering/gpuPicker'
+import { MappedG3d } from './mappedG3d'
 
-// TODO Merge both submeshes class.
+/** @internal */
 export class GeometrySubmesh {
   instance: number
   start: number
@@ -21,6 +40,7 @@ export class GeometrySubmesh {
   }
 }
 
+/** @internal */
 export class InsertableGeometry {
   _scene: Scene
   materials: G3dMaterial
@@ -32,7 +52,10 @@ export class InsertableGeometry {
   private _computeBoundingBox = false
   private _indexAttribute: THREE.Uint32BufferAttribute
   private _vertexAttribute: THREE.BufferAttribute
-  private _colorAttribute: THREE.BufferAttribute
+  private _colorIndexAttribute: THREE.Uint16BufferAttribute
+  private _packedIdAttribute: THREE.Uint32BufferAttribute
+  private _mapping: ElementMapping
+  private _vimIndex: number
 
   private _updateStartMesh = 0
   private _updateEndMesh = 0
@@ -41,10 +64,14 @@ export class InsertableGeometry {
   constructor (
     offsets: G3dMeshOffsets,
     materials: G3dMaterial,
-    transparent: boolean
+    transparent: boolean,
+    mapping: ElementMapping,
+    vimIndex: number = 0
   ) {
     this.offsets = offsets
     this.materials = materials
+    this._mapping = mapping
+    this._vimIndex = vimIndex
 
     this._indexAttribute = new THREE.Uint32BufferAttribute(
       offsets.counts.indices,
@@ -56,155 +83,51 @@ export class InsertableGeometry {
       G3d.POSITION_SIZE
     )
 
-    const colorSize = transparent ? 4 : 3
-    this._colorAttribute = new THREE.Float32BufferAttribute(
-      offsets.counts.vertices * colorSize,
-      colorSize
+    // Per-vertex color palette index (uint16 → 128×128 texture lookup)
+    this._colorIndexAttribute = new THREE.Uint16BufferAttribute(
+      offsets.counts.vertices,
+      1
     )
 
-    // this._indexAttribute.count = 0
-    // this._vertexAttribute.count = 0
-    // this._colorAttribute.count = 0
+    // Packed ID attribute for GPU picking: (vimIndex << 24) | elementIndex
+    this._packedIdAttribute = new THREE.Uint32BufferAttribute(
+      offsets.counts.vertices,
+      1
+    )
 
     this.geometry = new THREE.BufferGeometry()
     this.geometry.setIndex(this._indexAttribute)
     this.geometry.setAttribute('position', this._vertexAttribute)
-    this.geometry.setAttribute('color', this._colorAttribute)
+    this.geometry.setAttribute('colorIndex', this._colorIndexAttribute)
+    this.geometry.setAttribute('packedId', this._packedIdAttribute)
 
-    this.boundingBox = offsets.subset.getBoundingBox()
-    if (this.boundingBox) {
-      this.geometry.boundingBox = this.boundingBox
-      this.geometry.boundingSphere = new THREE.Sphere()
-      this.boundingBox.getBoundingSphere(this.geometry.boundingSphere)
-    } else {
-      this._computeBoundingBox = true
-    }
+    // Initialize with inverted bounds (min = +∞, max = -∞) so any point naturally expands it
+    this.boundingBox = new THREE.Box3()
+    this.boundingBox.makeEmpty()
+
+    this._computeBoundingBox = true
   }
 
   get progress () {
     return this._indexAttribute.count / this._indexAttribute.array.length
   }
 
-  // TODO: remove the need for mesh argument.
-  insert (mesh: G3dMesh, at: number) {
-    const added: number[] = []
-    const section = this.offsets.section
-    const indexStart = mesh.getIndexStart(section)
-    const indexEnd = mesh.getIndexEnd(section)
-
-    // Skip empty mesh
-    if (indexStart === indexEnd) {
-      this._meshToUpdate.add(at)
-      return added
-    }
-
-    // Reusable matrix and vector3 to avoid allocations
-    const matrix = new THREE.Matrix4()
-    const vector = new THREE.Vector3()
-
-    const vertexStart = mesh.getVertexStart(section)
-    const vertexEnd = mesh.getVertexEnd(section)
-    const vertexCount = vertexEnd - vertexStart
-    const sectionOffset = mesh.getVertexStart(section)
-
-    const subStart = mesh.getSubmeshStart(section)
-    const subEnd = mesh.getSubmeshEnd(section)
-
-    const indexOffset = this.offsets.getIndexOffset(at)
-    const vertexOffset = this.offsets.getVertexOffset(at)
-
-    let indexOut = 0
-    let vertexOut = 0
-    let colorOut = 0
-
-    const instanceCount = this.offsets.getMeshInstanceCount(at)
-    for (let instanceIndex = 0; instanceIndex < instanceCount; instanceIndex++) {
-      const instance = this.offsets.getMeshInstance(at, instanceIndex)
-      const arr1 = mesh.scene.getInstanceMatrix(instance)
-      // console.assert(this.float32ArraysAreEqual(arr1, arr2))
-
-      // matrix.fromArray(this.offsets.subset.getTransform(instance))
-      matrix.fromArray(arr1)
-      const submesh = new GeometrySubmesh()
-      submesh.instance = mesh.scene.instanceNodes[instance]
-
-      // Append indices
-      submesh.start = indexOffset + indexOut
-      const vertexMergeOffset = vertexCount * instanceIndex
-      for (let index = indexStart; index < indexEnd; index++) {
-        this.setIndex(
-          indexOffset + indexOut,
-          vertexOffset +
-            vertexMergeOffset +
-            mesh.chunk.indices[index] -
-            sectionOffset
-        )
-        indexOut++
-      }
-      submesh.end = indexOffset + indexOut
-
-      // Append vertices
-      for (let vertex = vertexStart; vertex < vertexEnd; vertex++) {
-        vector.fromArray(mesh.chunk.positions, vertex * G3d.POSITION_SIZE)
-        vector.applyMatrix4(matrix)
-        this.setVertex(vertexOffset + vertexOut, vector)
-        // submesh.expandBox(vector)
-        vertexOut++
-      }
-
-      // Append Colors
-      for (let sub = subStart; sub < subEnd; sub++) {
-        const color = this.materials.getMaterialColor(
-          mesh.chunk.submeshMaterial[sub]
-        )
-        const vertexCount = mesh.getSubmeshVertexCount(sub)
-        for (let v = 0; v < vertexCount; v++) {
-          this.setColor(vertexOffset + colorOut, color, 0.25)
-          colorOut++
-        }
-      }
-
-      submesh.boundingBox.min.fromArray(mesh.scene.getInstanceMin(instance))
-      submesh.boundingBox.max.fromArray(mesh.scene.getInstanceMax(instance))
-      this.submeshes.push(submesh)
-      added.push(this.submeshes.length - 1)
-    }
-    this._meshToUpdate.add(at)
-    return added
-  }
-
-  float32ArraysAreEqual (array1: Float32Array, array2: Float32Array): boolean {
-    // Check if arrays have the same length
-    if (array1.length !== array2.length) {
-      return false
-    }
-
-    // Check if each element is equal
-    for (let i = 0; i < array1.length; i++) {
-      if (array1[i] !== array2[i]) {
-        return false
-      }
-    }
-
-    // Arrays are equal
-    return true
-  }
-
-  insertFromG3d (g3d: G3d, mesh: number) {
-    const added: number[] = []
-    const meshG3dIndex = this.offsets.getSourceMesh(mesh)
+  /**
+   * Inserts geometry for a single mesh definition, duplicated for each instance.
+   * For each instance: bakes the instance matrix into vertex positions, copies indices
+   * with offset adjustment, sets per-vertex colors and packed picking IDs,
+   * and creates a GeometrySubmesh tracking the index range and bounding box.
+   */
+  insertFromG3d (g3d: MappedG3d, mesh: number) {
+    const meshG3dIndex = this.offsets.subset.getSourceMesh(mesh)
     const subStart = g3d.getMeshSubmeshStart(meshG3dIndex, this.offsets.section)
     const subEnd = g3d.getMeshSubmeshEnd(meshG3dIndex, this.offsets.section)
 
     // Skip empty mesh
     if (subStart === subEnd) {
       this._meshToUpdate.add(mesh)
-      return added
+      return
     }
-
-    // Reusable matrix and vector3 to avoid allocations
-    const matrix = new THREE.Matrix4()
-    const vector = new THREE.Vector3()
 
     // Offsets for this mesh and all its instances
     const indexOffset = this.offsets.getIndexOffset(mesh)
@@ -215,72 +138,113 @@ export class InsertableGeometry {
     const vertexEnd = g3d.getMeshVertexEnd(meshG3dIndex)
     const vertexCount = vertexEnd - vertexStart
 
+    // Cache array references for performance (avoid method call overhead)
+    const instanceTransforms = g3d.instanceTransforms
+    const instanceNodes = g3d.instanceNodes
+
     let indexOut = 0
     let vertexOut = 0
+    // Reusable 16-element array for matrix (better cache locality than direct array access)
+    const matrixElements = new Float32Array(16)
     // Iterate over all included instances for this mesh.
-    const instanceCount = this.offsets.getMeshInstanceCount(mesh)
+    const instanceCount = this.offsets.subset.getMeshInstanceCount(mesh)
     for (let instance = 0; instance < instanceCount; instance++) {
-      const g3dInstance = this.offsets.getMeshInstance(mesh, instance)
-      matrix.fromArray(g3d.getInstanceMatrix(g3dInstance))
+      const g3dInstance = this.offsets.subset.getMeshInstance(mesh, instance)
+
+      // Compute matrix offset for direct indexed access
+      const matrixOffset = g3dInstance * 16
+
+      // Copy matrix elements to local array (better cache locality in hot vertex loop)
+      for (let i = 0; i < 16; i++) {
+        matrixElements[i] = instanceTransforms[matrixOffset + i]
+      }
+
+      // Get element index for this instance (for GPU picking)
+      const elementIndex = this._mapping.getElementFromInstance(g3dInstance) ?? -1
 
       const submesh = new GeometrySubmesh()
-      submesh.instance = g3d.instanceNodes[g3dInstance]
+      submesh.instance = instanceNodes[g3dInstance]
       submesh.start = indexOffset + indexOut
+
+      // Direct array access for performance (avoid function call overhead)
+      const indices = this._indexAttribute.array as Uint32Array
+      const colorIndices = this._colorIndexAttribute.array as Uint16Array
 
       const mergeOffset = instance * vertexCount
       for (let sub = subStart; sub < subEnd; sub++) {
-        const color = g3d.getSubmeshColor(sub)
-
         const indexStart = g3d.getSubmeshIndexStart(sub)
         const indexEnd = g3d.getSubmeshIndexEnd(sub)
 
+        const colorIndex = g3d.colorIndices[sub]
+
         // Merge all indices for this instance
-        // Color referenced indices according to current submesh
         for (let index = indexStart; index < indexEnd; index++) {
           const v = vertexOffset + mergeOffset + g3d.indices[index]
-          this.setIndex(indexOffset + indexOut, v)
-          this.setColor(v, color, 0.25)
+
+          // Direct array writes (no function calls, no bounds checking)
+          indices[indexOffset + indexOut] = v
+          colorIndices[v] = colorIndex
           indexOut++
         }
       }
 
+      // Direct array access for performance (avoid function call overhead)
+      const positions = this._vertexAttribute.array as Float32Array
+      const packedIds = this._packedIdAttribute.array as Uint32Array
+      const packedId = packPickingId(this._vimIndex, elementIndex)
+
+      // Short alias for matrix elements - local copy improves cache locality
+      const e = matrixElements
+
+      // Initialize submesh bounding box with inverted bounds (min = +∞, max = -∞)
+      // Any vertex will naturally expand it via Math.min/max - no special first-vertex handling needed
+      submesh.boundingBox.makeEmpty()
+      const boxMin = submesh.boundingBox.min
+      const boxMax = submesh.boundingBox.max
+
       // Transform and merge vertices
       for (let vertex = vertexStart; vertex < vertexEnd; vertex++) {
-        vector.fromArray(g3d.positions, vertex * G3d.POSITION_SIZE)
-        vector.applyMatrix4(matrix)
-        this.setVertex(vertexOffset + vertexOut, vector)
-        submesh.expandBox(vector)
+        const srcIdx = vertex * G3d.POSITION_SIZE
+        const x = g3d.positions[srcIdx]
+        const y = g3d.positions[srcIdx + 1]
+        const z = g3d.positions[srcIdx + 2]
+
+        // Inline matrix transform using local matrix copy (better cache locality)
+        const tx = e[0] * x + e[4] * y + e[8] * z + e[12]
+        const ty = e[1] * x + e[5] * y + e[9] * z + e[13]
+        const tz = e[2] * x + e[6] * y + e[10] * z + e[14]
+
+        // Direct array writes
+        const dstIdx = (vertexOffset + vertexOut) * 3
+        positions[dstIdx] = tx
+        positions[dstIdx + 1] = ty
+        positions[dstIdx + 2] = tz
+
+        packedIds[vertexOffset + vertexOut] = packedId
+
+        // Inline bounding box expansion (no method calls, no isEmpty check)
+        boxMin.x = Math.min(boxMin.x, tx)
+        boxMin.y = Math.min(boxMin.y, ty)
+        boxMin.z = Math.min(boxMin.z, tz)
+        boxMax.x = Math.max(boxMax.x, tx)
+        boxMax.y = Math.max(boxMax.y, ty)
+        boxMax.z = Math.max(boxMax.z, tz)
+
         vertexOut++
       }
 
       submesh.end = indexOffset + indexOut
       this.expandBox(submesh.boundingBox)
       this.submeshes.push(submesh)
-      added.push(this.submeshes.length - 1)
     }
 
     this._meshToUpdate.add(mesh)
-    return added
-  }
-
-  private setIndex (index: number, value: number) {
-    this._indexAttribute.setX(index, value)
-  }
-
-  private setVertex (index: number, vector: THREE.Vector3) {
-    this._vertexAttribute.setXYZ(index, vector.x, vector.y, vector.z)
-  }
-
-  private setColor (index: number, color: Float32Array, alpha: number) {
-    this._colorAttribute.setXYZ(index, color[0], color[1], color[2])
-    if (this._colorAttribute.itemSize === 4) {
-      this._colorAttribute.setW(index, alpha)
-    }
   }
 
   private expandBox (box: THREE.Box3) {
-    if (!box) return
-    this.boundingBox = this.boundingBox?.union(box) ?? box.clone()
+    // Direct min/max expansion (no null checks needed - boundingBox initialized with inverted bounds)
+    this.boundingBox.min.min(box.min)
+    this.boundingBox.max.max(box.max)
   }
 
   flushUpdate () {
@@ -288,6 +252,11 @@ export class InsertableGeometry {
     this._updateStartMesh = this._updateEndMesh
   }
 
+  /**
+   * Uploads dirty buffer ranges to the GPU. Uses range-based updates
+   * (addUpdateRange) to minimize GPU transfer — only the contiguous range
+   * of newly inserted meshes is uploaded for each attribute.
+   */
   update () {
     // Update up to the mesh for which all preceding meshes are ready
     while (this._meshToUpdate.has(this._updateEndMesh)) {
@@ -316,15 +285,22 @@ export class InsertableGeometry {
     // this._vertexAttribute.count = vertexEnd
     this._vertexAttribute.needsUpdate = true
 
-    // update colors
-    const cSize = this._colorAttribute.itemSize
-    this._colorAttribute.addUpdateRange(vertexStart * cSize, (vertexEnd - vertexStart) * cSize)
-    // this._colorAttribute.count = vertexEnd
-    this._colorAttribute.needsUpdate = true
+    // update color palette indices (itemSize is 1)
+    this._colorIndexAttribute.addUpdateRange(vertexStart, vertexEnd - vertexStart)
+    this._colorIndexAttribute.needsUpdate = true
+
+    // update packed IDs (itemSize is 1)
+    this._packedIdAttribute.addUpdateRange(vertexStart, vertexEnd - vertexStart)
+    this._packedIdAttribute.needsUpdate = true
 
     if (this._computeBoundingBox) {
-      this.geometry.computeBoundingBox()
-      this.geometry.computeBoundingSphere()
+      // Use incrementally computed bounding box (already maintained via expandBox)
+      // instead of recomputing from all vertices - avoids iterating 4M vertices on each update
+      this.geometry.boundingBox = this.boundingBox?.clone() ?? null
+      // Compute bounding sphere from box (cheaper than iterating all vertices)
+      this.geometry.boundingSphere = this.boundingBox
+        ? this.boundingBox.getBoundingSphere(new THREE.Sphere())
+        : new THREE.Sphere()
     }
   }
 }

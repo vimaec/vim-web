@@ -1,11 +1,11 @@
 // useUltraSectionBox.ts
 import * as Core from '../../core-viewers';
-import { useSectionBox, SectionBoxAdapter, SectionBoxRef } from '../state/sectionBoxState';
+import { useSectionBox, ISectionBoxAdapter, SectionBoxApi } from '../state/sectionBoxState';
 
-export function useUltraSectionBox(viewer: Core.Ultra.Viewer): SectionBoxRef {
-  const ultraAdapter: SectionBoxAdapter = {
-    setClip: (b) => {
-      viewer.sectionBox.clip = b;
+export function useUltraSectionBox(viewer: Core.Ultra.Viewer): SectionBoxApi {
+  const ultraAdapter: ISectionBoxAdapter = {
+    setActive: (b) => {
+      viewer.sectionBox.active = b;
     },
     setVisible: (b) => {
       viewer.sectionBox.visible = b;

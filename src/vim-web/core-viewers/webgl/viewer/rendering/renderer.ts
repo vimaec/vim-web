@@ -3,26 +3,76 @@
  */
 
 import * as THREE from 'three'
-import { IRenderer, Scene } from '../../loader/scene'
+import { ISceneRenderer, Scene } from '../../loader/scene'
 import { Viewport } from '../viewport'
 import { RenderScene } from './renderScene'
-import { ModelMaterial, Materials } from '../../loader/materials/materials'
+import { MaterialSet, Materials } from '../../loader/materials/materials'
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer'
 
 import { Camera } from '../camera/camera'
-import { RenderingSection } from './renderingSection'
+import { IRenderingSection, RenderingSection } from './renderingSection'
 import { RenderingComposer } from './renderingComposer'
-import { ViewerSettings } from '../settings/viewerSettings'
+import { ViewerSettings, SelectionFillMode } from '../settings/viewerSettings'
+import type { ISignal } from '../../../shared/events'
 import { SignalDispatcher } from 'ste-signals'
 
 /**
+ * Public interface for the WebGL renderer.
+ * Exposes only the members needed by API consumers.
+ */
+export interface IWebglRenderer {
+  /** The THREE WebGL renderer. */
+  readonly three: THREE.WebGLRenderer
+  /** Interface to interact with section box directly without using the gizmo. */
+  readonly section: IRenderingSection
+  /** Whether a re-render has been requested for the current frame. */
+  readonly needsUpdate: boolean
+  /**
+   * Flags the scene as dirty so it will be re-rendered on the next animation frame.
+   * Selection, visibility, camera, and material changes call this automatically.
+   * Only needed when making direct Three.js changes the renderer can't detect.
+   */
+  requestRender(): void
+  /**
+   * Immediately renders the current frame.
+   * For screenshots: call `requestRender()`, then `render()`, then read `canvas.toDataURL()`.
+   */
+  render(): void
+  /** Gets or sets the background color or texture of the scene. */
+  background: THREE.Color | THREE.Texture
+  /** Gets or sets the material used to render models. */
+  modelMaterial: MaterialSet
+  /** The target MSAA sample count. Higher = better quality. */
+  samples: number
+  /** Scale factor for outline/selection render target resolution (0-1). */
+  outlineScale: number
+  /** Signal dispatched once per render frame if the scene was updated. */
+  readonly onSceneUpdated: ISignal
+  /** Signal dispatched when bounding box is updated. */
+  readonly onBoxUpdated: ISignal
+  /** Whether text rendering is enabled. */
+  textEnabled: boolean
+  /** Instance count below which ghosted meshes are hidden entirely. */
+  smallGhostThreshold: number
+  /** Returns the bounding box encompassing all rendered objects. */
+  getBoundingBox(target?: THREE.Box3): THREE.Box3 | undefined
+  /** When true (default), only renders when dirty (`requestRender()` was called). When false, renders every frame. */
+  autoRender: boolean
+  /** Whether selection outlines are enabled. */
+  outlineEnabled: boolean
+  /** Selection fill mode for the rendering pipeline. */
+  selectionFillMode: SelectionFillMode
+}
+
+/**
+ * @internal
  * Manages how vim objects are added and removed from the THREE.Scene to be rendered
  */
-export class Renderer implements IRenderer {
+export class Renderer implements ISceneRenderer {
   /**
    * The THREE WebGL renderer.
    */
-  readonly renderer: THREE.WebGLRenderer
+  readonly three: THREE.WebGLRenderer
 
   /**
    * The THREE sample ui renderer
@@ -33,11 +83,6 @@ export class Renderer implements IRenderer {
    * Interface to interact with section box directly without using the gizmo.
    */
   readonly section: RenderingSection
-
-  /**
-   * Determines whether antialias will be applied to rendering or not.
-   */
-  antialias: boolean = true
 
   private _scene: RenderScene
   private _viewport: Viewport
@@ -52,27 +97,28 @@ export class Renderer implements IRenderer {
   private _onBoxUpdated = new SignalDispatcher()
   private _sceneUpdated = false
 
-  // 3GB
-  private maxMemory = 3 * Math.pow(10, 9)
   private _outlineCount = 0
-
+  private _outlineEnabled = true
 
   /**
-   * Indicates whether the scene should be re-rendered on change only.
+   * When true, the renderer only renders when a render has been requested.
+   * When false, the renderer renders every frame.
    */
-  onDemand: boolean
-
+  autoRender: boolean
 
   /**
-   * Indicates whether the scene needs to be re-rendered.
-   * Can only be set to true. Cleared on each render.
+   * Whether a re-render has been requested for the current frame.
+   * Cleared automatically after each render frame.
    */
   get needsUpdate () {
     return this._needsUpdate
   }
 
-  set needsUpdate (value: boolean) {
-    this._needsUpdate = this._needsUpdate || value
+  /**
+   * Requests a re-render on the next frame.
+   */
+  requestRender () {
+    this._needsUpdate = true
   }
 
   constructor (
@@ -87,38 +133,52 @@ export class Renderer implements IRenderer {
     this._materials = materials
     this._camera = camera
 
-    this.renderer = new THREE.WebGLRenderer({
-      canvas: viewport.canvas,
+    // Force WebGL 2 context
+    const context = viewport.canvas.getContext('webgl2', {
+      alpha: true,
       antialias: true,
-      precision: 'highp', 
+      stencil: false,
+      powerPreference: 'high-performance'
+    })
+
+    if (!context) {
+      throw new Error('WebGL 2 is not supported by this browser')
+    }
+
+    this.three = new THREE.WebGLRenderer({
+      canvas: viewport.canvas,
+      context: context,
+      antialias: true,
+      precision: 'highp',
       alpha: true,
       stencil: false,
       powerPreference: 'high-performance',
       logarithmicDepthBuffer: true,
-
     })
 
-    this.onDemand = settings.rendering.onDemand
+    this.autoRender = settings.rendering.autoRender
     this.textRenderer = this._viewport.textRenderer
     this.textEnabled = true
 
     this._composer = new RenderingComposer(
-      this.renderer,
+      this.three,
       scene,
       viewport,
       materials,
       camera
     )
 
+    this.outlineScale = settings.materials.outline.scale
+    this.selectionFillMode = settings.materials.selection.fillMode
     this.section = new RenderingSection(this, this._materials)
 
     this.fitViewport()
     this._viewport.onResize.subscribe(() => this.fitViewport())
     this._camera.onSettingsChanged.sub(() => {
       this._composer.camera = this._camera.three
-      this.needsUpdate = true
+      this._needsUpdate = true
     })
-    this._materials.onUpdate.sub(() => (this.needsUpdate = true))
+    this._materials.onUpdate.sub(() => (this._needsUpdate = true))
     this.background = settings.background.color
   }
 
@@ -128,9 +188,9 @@ export class Renderer implements IRenderer {
   dispose () {
     this.clear()
 
-    this.renderer.clear()
-    this.renderer.forceContextLoss()
-    this.renderer.dispose()
+    this.three.clear()
+    this.three.forceContextLoss()
+    this.three.dispose()
     this._composer.dispose()
   }
 
@@ -143,27 +203,24 @@ export class Renderer implements IRenderer {
 
   set background (color: THREE.Color | THREE.Texture) {
     this._scene.threeScene.background = color
-    this.needsUpdate = true
+    this._needsUpdate = true
   }
 
   /**
-   * Sets the material used to render models. If set to undefined, the default model or mesh material is used.
+   * Sets the material used to render models.
    */
   get modelMaterial () {
     return this._scene.modelMaterial
   }
 
-  set modelMaterial (material: ModelMaterial) {
-    this._scene.modelMaterial = material ?? this.defaultModelMaterial
+  set modelMaterial (material: MaterialSet) {
+    this._scene.modelMaterial = material
   }
 
   /**
-   * The material that will be used when setting model material to undefined.
-   */
-  defaultModelMaterial: ModelMaterial
-
-  /**
-   * Signal dispatched at the end of each frame if the scene was updated, such as visibility changes.
+   * Signal dispatched once per render frame if the scene was updated (e.g. visibility changes).
+   * Fires during `render()`, not when `notifySceneUpdate()` is called,
+   * so multiple updates within a frame are coalesced into a single dispatch.
    */
   get onSceneUpdated () {
     return this._onSceneUpdate.asEvent()
@@ -185,11 +242,16 @@ export class Renderer implements IRenderer {
 
   set textEnabled (value: boolean) {
     if (value === this._renderText) return
-    this.needsUpdate = true
+    this._needsUpdate = true
     this._renderText = value
     this.textRenderer.domElement.style.display = value ? 'block' : 'none'
   }
 
+  /**
+   * Instance count below which ghosted meshes are hidden entirely.
+   * Set to -1 to disable (show all ghosted meshes regardless of size).
+   * @default 10
+   */
   get smallGhostThreshold(){
     return this._scene.smallGhostThreshold
   }
@@ -220,17 +282,33 @@ export class Renderer implements IRenderer {
    */
   notifySceneUpdate () {
     this._sceneUpdated = true
-    this.needsUpdate = true
+    this._needsUpdate = true
   }
 
   addOutline () {
     this._outlineCount++
-    this.needsUpdate = true
+    this._needsUpdate = true
   }
 
   removeOutline () {
     this._outlineCount--
-    this.needsUpdate = true
+    this._needsUpdate = true
+  }
+
+  /** Whether selection outlines are enabled. When false, outlines are suppressed even if elements have outline=true. */
+  get outlineEnabled () {
+    return this._outlineEnabled
+  }
+
+  set outlineEnabled (value: boolean) {
+    this._outlineEnabled = value
+    this._needsUpdate = true
+  }
+
+  /** Sets the selection fill mode on the rendering composer. */
+  set selectionFillMode (value: SelectionFillMode) {
+    this._composer.selectionFillMode = value
+    this._needsUpdate = true
   }
 
   /**
@@ -247,8 +325,8 @@ export class Renderer implements IRenderer {
       this._sceneUpdated = false
     }
 
-    this._composer.outlines = this._outlineCount > 0
-    if(this.needsUpdate || !this.onDemand) {
+    this._composer.outlines = this._outlineEnabled && this._outlineCount > 0
+    if(this._needsUpdate || !this.autoRender) {
       this._composer.render()
     }
     this._needsUpdate = false
@@ -266,18 +344,12 @@ export class Renderer implements IRenderer {
    */
   add (target: Scene | THREE.Object3D) {
     if (target instanceof Scene) {
-      const mem = target.getMemory()
-      const remaining = this.maxMemory - this.estimatedMemory
-      if (mem > remaining) {
-        return false
-      }
       target.renderer = this
       this._sceneUpdated = true
     }
 
     this._scene.add(target)
     this.notifySceneUpdate()
-    return true
   }
 
   /**
@@ -298,13 +370,6 @@ export class Renderer implements IRenderer {
   }
 
   /**
-   * Returns an estimate of the memory used by the renderer.
-   */
-  get estimatedMemory () {
-    return this._scene.estimatedMemory
-  }
-
-  /**
    * Determines the target sample count on the rendering target.
    * Higher number increases quality.
    */
@@ -316,12 +381,24 @@ export class Renderer implements IRenderer {
     this._composer.samples = value
   }
 
+  /**
+   * Scale factor for outline/selection render target resolution (0-1).
+   * Lower = faster, higher = sharper outlines. Default: 0.75.
+   */
+  get outlineScale () {
+    return this._composer.outlineScale
+  }
+
+  set outlineScale (value: number) {
+    this._composer.outlineScale = value
+  }
+
   private fitViewport = () => {
     const size = this._viewport.getParentSize()
-    this.renderer.setPixelRatio(window.devicePixelRatio)
-    this.renderer.setSize(size.x, size.y)
+    this.three.setPixelRatio(window.devicePixelRatio)
+    this.three.setSize(size.x, size.y)
     this._composer.setSize(size.x, size.y)
     this.textRenderer.setSize(size.x, size.y)
-    this.needsUpdate = true
+    this._needsUpdate = true
   }
 }

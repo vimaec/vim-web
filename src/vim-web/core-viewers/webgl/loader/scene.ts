@@ -3,19 +3,19 @@
  */
 
 import * as THREE from 'three'
-import { Mesh, Submesh } from './mesh'
+import { Submesh } from './mesh'
 import { Vim } from './vim'
-import { estimateBytesUsed } from 'three/examples/jsm/utils/BufferGeometryUtils'
 import { InsertableMesh } from './progressive/insertableMesh'
 import { InstancedMesh } from './progressive/instancedMesh'
 import { getAverageBoundingBox } from './averageBoundingBox'
-import { ModelMaterial } from './materials/materials'
+import { MaterialSet } from './materials/materials'
 import { Renderer } from '../viewer/rendering/renderer'
 
 /**
- * Interface for a renderer object, providing methods to add and remove objects from a scene, update bounding boxes, and notify scene updates.
+ * @internal
+ * Internal renderer callback interface used by Scene to notify the renderer of changes.
  */
-export interface IRenderer {
+export interface ISceneRenderer {
   // eslint-disable-next-line no-use-before-define
   add(scene: Scene | THREE.Object3D)
   // eslint-disable-next-line no-use-before-define
@@ -24,30 +24,45 @@ export interface IRenderer {
   notifySceneUpdate()
 }
 
+/** Public-facing interface for vim.scene. Represents loaded geometry in the renderer. */
+export interface IScene {
+  /** The world transform matrix applied to all meshes in this scene. */
+  readonly matrix: THREE.Matrix4
+  /** Bounding box of currently loaded geometry in Z-up world space (X = right, Y = forward, Z = up). Undefined if nothing loaded yet. */
+  getBoundingBox(target?: THREE.Box3): THREE.Box3 | undefined
+  /** Bounding box using average mesh centers, in Z-up world space. More stable against outliers. */
+  getAverageBoundingBox(): THREE.Box3
+  /** Material override for all meshes in this scene. */
+  material: MaterialSet
+}
+
 /**
+ * @internal
  * Represents a scene that contains multiple meshes.
  * It tracks the global bounding box as meshes are added and maintains a mapping between g3d instance indices and meshes.
  */
-// TODO: Only expose what should be public to vim.scene
-export class Scene {
+export class Scene implements IScene {
   // Dependencies
   private _renderer: Renderer
   private _vim: Vim | undefined
   private _matrix = new THREE.Matrix4()
+  get matrix (): THREE.Matrix4 { return this._matrix }
 
   // State
   insertables: InsertableMesh[] = []
-  meshes: (Mesh | InsertableMesh | InstancedMesh)[] = []
+  meshes: (InsertableMesh | InstancedMesh)[] = []
 
   private _boundingBox: THREE.Box3
 
   private _averageBoundingBox: THREE.Box3 | undefined
 
-  private _instanceToMeshes: Map<number, Submesh[]> = new Map()
-  private _material: ModelMaterial
+  // Array-based lookup for O(1) access (instance indices are dense 0..N)
+  private _instanceToMeshes: Array<Submesh[] | undefined> = []
+  private _material: MaterialSet
 
   constructor (matrix: THREE.Matrix4) {
     this._matrix = matrix
+    // Material will be set when Scene is added to renderer via renderScene.add()
   }
 
   setDirty () {
@@ -95,19 +110,13 @@ export class Scene {
     }
   }
 
-  getMemory () {
-    return this.meshes
-      .map((m) => estimateBytesUsed(m.mesh.geometry))
-      .reduce((n1, n2) => n1 + n2, 0)
-  }
-
   /**
    * Returns the THREE.Mesh in which this instance is represented along with index
    * For merged mesh, index refers to submesh index
    * For instanced mesh, index refers to instance index.
    */
   getMeshFromInstance (instance: number) {
-    return this._instanceToMeshes.get(instance)
+    return this._instanceToMeshes[instance]
   }
 
   getMeshesFromInstances (instances: number[] | undefined) {
@@ -118,7 +127,7 @@ export class Scene {
       const instance = instances[i]
       if (instance < 0) continue
       const submeshes = this.getMeshFromInstance(instance)
-      submeshes?.forEach((s) => meshes.push(s))
+      submeshes?.forEach((s: Submesh) => meshes.push(s))
     }
     if (meshes.length === 0) return
     return meshes
@@ -144,24 +153,27 @@ export class Scene {
     this.meshes.forEach((m) => (m.vim = value))
   }
 
-  addSubmesh (submesh: Submesh) {
-    const meshes = this._instanceToMeshes.get(submesh.instance) ?? []
-    meshes.push(submesh)
-    this._instanceToMeshes.set(submesh.instance, meshes)
-    this.setDirty()
-    if (this.vim) {
-      const obj = this.vim.getElement(submesh.instance)
-      obj._addMesh(submesh)
+  /**
+   * Registers a submesh in the instance → submesh map.
+   */
+  private registerSubmesh (submesh: Submesh) {
+    let meshes = this._instanceToMeshes[submesh.instance]
+    if (!meshes) {
+      meshes = []
+      this._instanceToMeshes[submesh.instance] = meshes
     }
+    meshes.push(submesh)
   }
 
   /**
-   * Add an instanced mesh to the Scene and recomputes fields as needed.
-   * @param mesh Is expected to have:
-   * userData.instances = number[] (indices of the g3d instances that went into creating the mesh)
-   * userData.boxes = THREE.Box3[] (bounding box of each instance)
+   * Adds a mesh to the scene. Wiring sequence:
+   * 1. Add Three.js mesh to renderer
+   * 2. Apply scene transform matrix (position/rotation/scale from VimSettings)
+   * 3. Expand scene bounding box
+   * 4. Register all submeshes (maps instance → submesh)
+   * 5. Apply current material override if any
    */
-  addMesh (mesh: Mesh | InsertableMesh | InstancedMesh) {
+  addMesh (mesh: InsertableMesh | InstancedMesh) {
     this.renderer?.add(mesh.mesh)
     mesh.vim = this.vim
 
@@ -169,7 +181,7 @@ export class Scene {
     mesh.mesh.matrix.copy(this._matrix)
     this.updateBox(mesh.boundingBox)
 
-    mesh.getSubmeshes().forEach((s) => this.addSubmesh(s))
+    mesh.forEachSubmesh((s) => this.registerSubmesh(s))
     mesh.setMaterial(this.material)
 
     this.meshes.push(mesh)
@@ -183,11 +195,19 @@ export class Scene {
   merge (other: Scene) {
     if (!other) return this
     other.meshes.forEach((mesh) => this.meshes.push(mesh))
-    other._instanceToMeshes.forEach((meshes, instance) => {
-      const set = this._instanceToMeshes.get(instance) ?? []
-      meshes.forEach((m) => set.push(m))
-      this._instanceToMeshes.set(instance, set)
-    })
+
+    // Merge instance→mesh mappings
+    for (let instance = 0; instance < other._instanceToMeshes.length; instance++) {
+      const otherMeshes = other._instanceToMeshes[instance]
+      if (!otherMeshes) continue
+
+      let thisMeshes = this._instanceToMeshes[instance]
+      if (!thisMeshes) {
+        thisMeshes = []
+        this._instanceToMeshes[instance] = thisMeshes
+      }
+      otherMeshes.forEach((m) => thisMeshes!.push(m))
+    }
 
     if (other._boundingBox) {
       this._boundingBox =
@@ -210,8 +230,8 @@ export class Scene {
   /**
    * Sets and apply a material override to the scene, set to undefined to remove override.
    */
-  set material (value: ModelMaterial) {
-    if (this._material === value) return
+  set material (value: MaterialSet) {
+    // Always update - don't check equality to ensure materials propagate
     this.setDirty()
     this._material = value
     this.meshes.forEach((m) => m.setMaterial(value))
@@ -227,7 +247,7 @@ export class Scene {
       m.mesh.geometry.dispose()
     }
     this.meshes.length = 0
-    this._instanceToMeshes.clear()
+    this._instanceToMeshes.length = 0
 
     this.renderer?.add(this)
     this._boundingBox = undefined

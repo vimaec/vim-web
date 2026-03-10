@@ -1,2 +1,2 @@
-export * from './errors'
+// Error styling utilities
 export * as Style from './errorStyle'

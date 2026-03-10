@@ -1,0 +1,17 @@
+export const contextMenuIds = {
+  showControls: 'showControls',
+  dividerCamera: 'dividerCamera',
+  resetCamera: 'resetCamera',
+  zoomToFit: 'zoomToFit',
+  dividerSelection: 'dividerSelection',
+  isolateSelection: 'isolateObject',
+  selectSimilar: 'selectSimilar',
+  hideObject: 'hideObject',
+  showObject: 'showObject',
+  clearSelection: 'clearSelection',
+  showAll: 'showAll',
+  dividerSection: 'dividerSection',
+  ignoreSection: 'ignoreSection',
+  resetSection: 'resetSection',
+  fitSectionToSelection: 'fitSectionToSelection',
+} as const

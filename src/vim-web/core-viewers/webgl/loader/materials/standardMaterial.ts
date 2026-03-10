@@ -5,115 +5,110 @@
 import * as THREE from 'three'
 
 /**
+ * @internal
  * Type alias for THREE uniforms
  */
 export type ShaderUniforms = { [uniform: string]: THREE.IUniform<any> }
 
+/** @internal */
 export function createOpaque () {
   return new StandardMaterial(createBasicOpaque())
 }
 
+/** @internal */
 export function createTransparent () {
   return new StandardMaterial(createBasicTransparent())
 }
 
 /**
+ * @internal
  * Creates a new instance of the default loader opaque material.
  * @returns {THREE.MeshLambertMaterial} A new instance of MeshLambertMaterial with transparency.
  */
 export function createBasicOpaque () {
   return new THREE.MeshLambertMaterial({
     color: 0xcccccc,
-    vertexColors: true,
     flatShading: true,
     side: THREE.DoubleSide,
   })
 }
 
 /**
+ * @internal
  * Creates a new instance of the default loader transparent material.
  * @returns {THREE.MeshPhongMaterial} A new instance of MeshPhongMaterial with transparency.
  */
 export function createBasicTransparent () {
   const mat = createBasicOpaque()
   mat.transparent = true
+  mat.opacity = 0.25
   return mat
 }
 
 /**
+ * @internal
  * Material used for both opaque and tranparent surfaces of a VIM model.
  */
 export class StandardMaterial {
-  material: THREE.Material
+  three: THREE.Material
   uniforms: ShaderUniforms | undefined
 
   // Parameters
-  _focusIntensity: number = 0.5
-  _focusColor: THREE.Color = new THREE.Color(0xffffff)
-
-  _sectionStrokeWitdh: number = 0.01
-  _sectionStrokeFallof: number = 0.75
+  _sectionStrokeWidth: number = 0.01
+  _sectionStrokeFalloff: number = 0.75
   _sectionStrokeColor: THREE.Color = new THREE.Color(0xf6f6f6)
 
+  // Color palette texture (shared, owned by Materials singleton)
+  _colorPaletteTexture: THREE.DataTexture | undefined
+
   constructor (material: THREE.Material) {
-    this.material = material
+    this.three = material
     this.patchShader(material)
   }
 
+  /**
+   * Sets the color palette texture for indexed color lookup.
+   * The texture is shared between opaque and transparent materials (created in Materials singleton).
+   */
+  setColorPaletteTexture(texture: THREE.DataTexture | undefined) {
+    this._colorPaletteTexture = texture
+    if (this.uniforms) {
+      this.uniforms.colorPaletteTexture.value = texture ?? null
+    }
+  }
+
   get color () {
-    if (this.material instanceof THREE.MeshLambertMaterial) {
-      return this.material.color
+    if (this.three instanceof THREE.MeshLambertMaterial) {
+      return this.three.color
     }
     return new THREE.Color(0xffffff)
   }
 
   set color (color: THREE.Color) {
-    if (this.material instanceof THREE.MeshLambertMaterial) {
-      this.material.color = color
+    if (this.three instanceof THREE.MeshLambertMaterial) {
+      this.three.color = color
     }
   }
 
-  get focusIntensity () {
-    return this._focusIntensity
+  get sectionStrokeWidth () {
+    return this._sectionStrokeWidth
   }
 
-  set focusIntensity (value: number) {
-    this._focusIntensity = value
+  set sectionStrokeWidth (value: number) {
+    this._sectionStrokeWidth = value
     if (this.uniforms) {
-      this.uniforms.focusIntensity.value = value
+      this.uniforms.sectionStrokeWidth.value = value
     }
   }
 
-  get focusColor () {
-    return this._focusColor
+  get sectionStrokeFalloff () {
+    return this._sectionStrokeFalloff
   }
 
-  set focusColor (value: THREE.Color) {
-    this._focusColor = value
+  set sectionStrokeFalloff (value: number) {
+    this._sectionStrokeFalloff = value
     if (this.uniforms) {
-      this.uniforms.focusColor.value = value
-    }
-  }
-
-  get sectionStrokeWitdh () {
-    return this._sectionStrokeWitdh
-  }
-
-  set sectionStrokeWitdh (value: number) {
-    this._sectionStrokeWitdh = value
-    if (this.uniforms) {
-      this.uniforms.sectionStrokeWitdh.value = value
-    }
-  }
-
-  get sectionStrokeFallof () {
-    return this._sectionStrokeFallof
-  }
-
-  set sectionStrokeFallof (value: number) {
-    this._sectionStrokeFallof = value
-    if (this.uniforms) {
-      this.uniforms.sectionStrokeFallof.value = value
+      this.uniforms.sectionStrokeFalloff.value = value
     }
   }
 
@@ -129,15 +124,16 @@ export class StandardMaterial {
   }
 
   get clippingPlanes () {
-    return this.material.clippingPlanes
+    return this.three.clippingPlanes
   }
 
   set clippingPlanes (value: THREE.Plane[] | null) {
-    this.material.clippingPlanes = value
+    this.three.clippingPlanes = value
   }
 
   dispose () {
-    this.material.dispose()
+    // Don't dispose texture - it's owned by Materials singleton
+    this.three.dispose()
   }
 
   /**
@@ -149,11 +145,10 @@ export class StandardMaterial {
   patchShader (material: THREE.Material) {
     material.onBeforeCompile = (shader) => {
       this.uniforms = shader.uniforms
-      this.uniforms.focusIntensity = { value: this._focusIntensity }
-      this.uniforms.focusColor = { value: this._focusColor }
-      this.uniforms.sectionStrokeWidth = { value: this._sectionStrokeWitdh }
-      this.uniforms.sectionStrokeFalloff = { value: this._sectionStrokeFallof }
+      this.uniforms.sectionStrokeWidth = { value: this._sectionStrokeWidth }
+      this.uniforms.sectionStrokeFalloff = { value: this._sectionStrokeFalloff }
       this.uniforms.sectionStrokeColor = { value: this._sectionStrokeColor }
+      this.uniforms.colorPaletteTexture = { value: this._colorPaletteTexture ?? null }
 
       shader.vertexShader = shader.vertexShader
         // VERTEX DECLARATIONS
@@ -161,38 +156,30 @@ export class StandardMaterial {
           '#include <color_pars_vertex>',
           `
         #include <color_pars_vertex>
-        
+
         // COLORING
 
-        // attribute for color override
-        // merged meshes use it as vertex attribute
-        // instanced meshes use it as an instance attribute
+        // Per-vertex color palette index
+        attribute float colorIndex;
+        // Per-instance palette override index (instanced meshes only)
+        attribute float instanceColorIndex;
+        // 1 = use instanceColorIndex, 0 = use per-vertex colorIndex
         attribute float colored;
+        // 128×128 quantized color palette (25³ = 15,625 entries)
+        uniform sampler2D colorPaletteTexture;
 
-        // There seems to be an issue where setting mehs.instanceColor
-        // doesn't properly set USE_INSTANCING_COLOR
-        // so we always use it as a fix
-        #ifndef USE_INSTANCING_COLOR
-        attribute vec3 instanceColor;
-        #endif
-
-        // Passed to fragment to ignore phong model
+        // Passed to fragment to control lighting model
         varying float vColored;
-        
+
         // VISIBILITY
 
         // Instance or vertex attribute to hide objects
-        // Used as instance attribute for instanced mesh and as vertex attribute for merged meshes. 
-        attribute float ignore; 
+        // Used as instance attribute for instanced mesh and as vertex attribute for merged meshes.
+        attribute float ignore;
 
         // Passed to fragment to discard them
         varying float vIgnore;
 
-        // FOCUS
-        // Instance or vertex attribute to higlight objects
-        // Used as instance attribute for instanced mesh and as vertex attribute for merged meshes. 
-        attribute float focused; 
-        varying float vHighlight;
         `
         )
         // VERTEX IMPLEMENTATION
@@ -200,20 +187,17 @@ export class StandardMaterial {
           '#include <color_vertex>',
           `
           // COLORING
-          vColor = color;
           vColored = colored;
-
-          // colored == 1 -> instance color
-          // colored == 0 -> vertex color
+          int palIdx = int(colorIndex);
           #ifdef USE_INSTANCING
-            vColor.xyz = colored * instanceColor.xyz + (1.0f - colored) * color.xyz;
+            if (colored > 0.5) palIdx = int(instanceColorIndex);
           #endif
+          int x = palIdx % 128;
+          int y = palIdx / 128;
+          vColor.xyz = texelFetch(colorPaletteTexture, ivec2(x, y), 0).rgb;
 
           // VISIBILITY
           vIgnore = ignore;
-          
-          // FOCUS
-          vHighlight = focused;
         `
         )
       // FRAGMENT DECLARATIONS
@@ -234,10 +218,6 @@ export class StandardMaterial {
         uniform float sectionStrokeFalloff;
         uniform vec3 sectionStrokeColor;
 
-        // FOCUS
-        varying float vHighlight;
-        uniform float focusIntensity;
-        uniform vec3 focusColor; 
         `
         )
         // FRAGMENT IMPLEMENTATION
@@ -255,9 +235,6 @@ export class StandardMaterial {
           // vColored == 0 -> Phong Color 
           float d = length(outgoingLight);
           gl_FragColor = vec4(vColored * vColor.xyz * d + (1.0f - vColored) * outgoingLight.xyz, diffuseColor.a);
-          
-          // FOCUS
-          gl_FragColor = mix(gl_FragColor, vec4(focusColor,1.0f), vHighlight * focusIntensity);
           
           // STROKES WHERE GEOMETRY INTERSECTS CLIPPING PLANE
           #if NUM_CLIPPING_PLANES > 0

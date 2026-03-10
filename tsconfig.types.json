@@ -3,6 +3,7 @@
   "compilerOptions": {
     "declaration": true,
     "emitDeclarationOnly": true,
+    "stripInternal": true,
     "outDir": "./dist/types",
     "rootDir": "./src/vim-web"
   },
