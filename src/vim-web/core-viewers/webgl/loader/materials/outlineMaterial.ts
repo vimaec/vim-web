@@ -40,7 +40,7 @@ export class OutlineMaterial {
   }
 
   /**
-   * Thickness of the outline in pixels (of the outline render target).
+   * Thickness of the outline in screen pixels.
    */
   get thickness () {
     return this.three.uniforms.thickness.value
@@ -48,6 +48,20 @@ export class OutlineMaterial {
 
   set thickness (value: number) {
     this.three.uniforms.thickness.value = Math.max(1, Math.round(value))
+    this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
+  }
+
+  /**
+   * Render target scale relative to screen resolution.
+   * Sobel offsets are multiplied by this to keep thickness in screen pixels.
+   */
+  get scale () {
+    return this.three.uniforms.scale.value
+  }
+
+  set scale (value: number) {
+    this.three.uniforms.scale.value = value
     this.three.uniformsNeedUpdate = true
     this._onUpdate?.()
   }
@@ -74,8 +88,8 @@ export class OutlineMaterial {
 }
 
 /**
- * Creates outline material using mask-based silhouette edge detection.
- * The fragment shader is manually unrolled for up to 5 pixel thickness.
+ * Creates outline material using Sobel convolution edge detection.
+ * Multi-scale Sobel for thickness control, bilinear sampling for smooth edges.
  */
 export function createOutlineMaterial () {
   return new THREE.ShaderMaterial({
@@ -85,7 +99,8 @@ export function createOutlineMaterial () {
     uniforms: {
       sceneBuffer: { value: null },
       screenSize: { value: new THREE.Vector4(1, 1, 1, 1) },
-      thickness: { value: 2 }
+      thickness: { value: 2 },
+      scale: { value: 1.0 }
     },
     vertexShader: `
       out vec2 vUv;
@@ -98,52 +113,57 @@ export function createOutlineMaterial () {
       uniform sampler2D sceneBuffer;
       uniform vec4 screenSize;
       uniform float thickness;
+      uniform float scale;
 
       in vec2 vUv;
       out vec4 fragColor;
 
-      // Read binary selection mask (1.0 = selected, 0.0 = background).
-      // Clamped to texture bounds to avoid false outlines at screen edges.
-      float getMask(int x, int y) {
-        ivec2 pixelCoord = ivec2(vUv * screenSize.xy) + ivec2(x, y);
-        pixelCoord = clamp(pixelCoord, ivec2(0), ivec2(screenSize.xy) - 1);
-        return texelFetch(sceneBuffer, pixelCoord, 0).x;
+      // Bilinear-filtered mask sample at float pixel offset (in render-target pixels).
+      float getMask(float x, float y) {
+        vec2 offset = vec2(x, y) * screenSize.zw;
+        vec2 uv = clamp(vUv + offset, screenSize.zw * 0.5, 1.0 - screenSize.zw * 0.5);
+        return texture(sceneBuffer, uv).x;
       }
 
-      // Check the full grid ring at Chebyshev distance d.
-      // Called with literal constants so the compiler inlines and unrolls.
-      bool checkRing(int d) {
-        // Top and bottom rows (full width)
-        for (int x = -d; x <= d; x++) {
-          if (getMask(x, -d) < 0.5) return true;
-          if (getMask(x,  d) < 0.5) return true;
-        }
-        // Left and right columns (excluding corners)
-        for (int y = -d + 1; y < d; y++) {
-          if (getMask(-d, y) < 0.5) return true;
-          if (getMask( d, y) < 0.5) return true;
-        }
-        return false;
+      // Sobel edge detection at a given screen-pixel distance.
+      // Multiplies by scale to convert screen pixels → render-target pixels.
+      float sobel(float s) {
+        float d = s * scale;
+        float tl = getMask(-d, -d);
+        float t  = getMask( 0.0, -d);
+        float tr = getMask( d, -d);
+        float l  = getMask(-d,  0.0);
+        float r  = getMask( d,  0.0);
+        float bl = getMask(-d,  d);
+        float b  = getMask( 0.0,  d);
+        float br = getMask( d,  d);
+
+        float gx = (tr + 2.0 * r + br) - (tl + 2.0 * l + bl);
+        float gy = (bl + 2.0 * b + br) - (tl + 2.0 * t + tr);
+        return length(vec2(gx, gy));
       }
 
       void main() {
-        // Skip non-selected pixels
-        if (getMask(0, 0) < 0.5) {
+        float center = getMask(0.0, 0.0);
+        if (center < 0.01) {
           fragColor = vec4(0.0);
           return;
         }
 
-        // Full grid search ring by ring (3x3, 5x5, 7x7 ... up to 11x11).
-        // Each ring checks all pixels at that Chebyshev distance.
-        // Early-exit between rings once an edge is found.
-        bool edge = checkRing(1);
+        // Multi-scale Sobel: each scale detects edges at that screen-pixel distance.
+        // Inner scales get full weight, outer scales fade for natural falloff.
+        float edge = 0.0;
+        edge = max(edge, sobel(1.0));
+        if (thickness >= 2.0) edge = max(edge, sobel(2.0) * 0.75);
+        if (thickness >= 3.0) edge = max(edge, sobel(3.0) * 0.5);
+        if (thickness >= 4.0) edge = max(edge, sobel(4.0) * 0.35);
+        if (thickness >= 5.0) edge = max(edge, sobel(5.0) * 0.25);
 
-        if (!edge && thickness >= 2.0) edge = checkRing(2);
-        if (!edge && thickness >= 3.0) edge = checkRing(3);
-        if (!edge && thickness >= 4.0) edge = checkRing(4);
-        if (!edge && thickness >= 5.0) edge = checkRing(5);
+        // Normalize: Sobel max on binary mask is ~4.0, scale to 0-1.
+        // Use smoothstep for a soft natural ramp instead of hard clamp.
+        edge = smoothstep(0.0, 2.0, edge);
 
-        fragColor = vec4(edge ? 1.0 : 0.0, 0.0, 0.0, 0.0);
+        fragColor = vec4(edge, 0.0, 0.0, 0.0);
       }
       `
   })

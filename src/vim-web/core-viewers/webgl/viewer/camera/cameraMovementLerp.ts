@@ -14,7 +14,8 @@ import { SphereCoord } from './sphereCoord'
 /** @internal */
 export class CameraLerp extends CameraMovement {
   private _movement: CameraMovementSnap
-  private _clock = new THREE.Clock()
+  private _startTime = 0
+  private _running = false
 
   // position
   private onProgress: ((progress: number) => void) | undefined
@@ -31,17 +32,18 @@ export class CameraLerp extends CameraMovement {
   }
 
   get isLerping () {
-    return this._clock.running
+    return this._running
   }
 
   init (duration: number) {
     this.cancel()
     this._duration = Math.max(duration, 0.01)
-    this._clock.start()
+    this._startTime = performance.now()
+    this._running = true
   }
 
   cancel () {
-    this._clock.stop()
+    this._running = false
     this.onProgress = undefined
   }
 
@@ -50,13 +52,13 @@ export class CameraLerp extends CameraMovement {
   }
 
   update () {
-    if (!this._clock.running) return
+    if (!this._running) return
 
-    let t = this._clock.getElapsedTime() / this._duration
+    let t = (performance.now() - this._startTime) / 1000 / this._duration
     t = this.easeOutCubic(t)
     if (t >= 1) {
       t = 1
-      this._clock.stop()
+      this._running = false
       this.onProgress = undefined
     }
     this.onProgress?.(t)

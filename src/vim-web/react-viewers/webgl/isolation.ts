@@ -102,6 +102,13 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IIsolationAdapt
     setOutlineEnabled: (enabled: boolean) => {
       viewer.renderer.outlineEnabled = enabled
     },
+    setOutlineQuality: (quality: string) => {
+      const scaleMap: Record<string, number> = { low: 0.5, medium: 1, high: 2 }
+      viewer.renderer.outlineScale = scaleMap[quality] ?? 1
+    },
+    setOutlineThickness: (thickness: number) => {
+      viewer.materials.outlineThickness = thickness
+    },
     setSelectionFillMode: (mode: string) => {
       viewer.materials.selectionFillMode = mode as Core.Webgl.SelectionFillMode
       viewer.renderer.selectionFillMode = mode as Core.Webgl.SelectionFillMode

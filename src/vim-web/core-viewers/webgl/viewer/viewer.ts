@@ -138,7 +138,7 @@ export class WebglViewer implements IWebglViewer {
   }
 
   private _camera: Camera
-  private _clock = new THREE.Clock()
+  private _timer = new THREE.Timer()
 
   // State
   private readonly vimCollection = new VimCollection<Vim>()
@@ -194,7 +194,8 @@ export class WebglViewer implements IWebglViewer {
 
   // Calls render, and asks the framework to prepare the next frame
   private animate () {
-    const deltaTime = this._clock.getDelta()
+    this._timer.update()
+    const deltaTime = this._timer.getDelta()
     this._updateId = requestAnimationFrame(() => this.animate())
 
     // Camera

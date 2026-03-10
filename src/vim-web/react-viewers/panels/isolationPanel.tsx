@@ -7,6 +7,8 @@ export const Ids = {
   ghostOpacity: "isolationPanel.ghostOpacity",
   transparency: "isolationPanel.transparency",
   outlineEnabled: "isolationPanel.outlineEnabled",
+  outlineQuality: "isolationPanel.outlineQuality",
+  outlineThickness: "isolationPanel.outlineThickness",
   selectionFillMode: "isolationPanel.selectionFillMode",
   selectionOverlayOpacity: "isolationPanel.selectionOverlayOpacity",
 }
@@ -47,6 +49,28 @@ export const IsolationPanel = forwardRef<GenericPanelApi, { state: IsolationApi 
             id: Ids.outlineEnabled,
             label: "Selection Outline",
             state: props.state.outlineEnabled
+          },
+          {
+            type: "select",
+            id: Ids.outlineQuality,
+            label: "Outline Quality",
+            options: [
+              { label: 'Low', value: 'low' },
+              { label: 'Medium', value: 'medium' },
+              { label: 'High', value: 'high' },
+            ],
+            enabled: () => props.state.outlineEnabled.get(),
+            state: props.state.outlineQuality
+          },
+          {
+            type: "number",
+            id: Ids.outlineThickness,
+            label: "Outline Thickness",
+            state: props.state.outlineThickness,
+            enabled: () => props.state.outlineEnabled.get(),
+            min: 1,
+            max: 5,
+            step: 1
           },
           {
             type: "select",

@@ -28,6 +28,10 @@ export interface IsolationApi {
   transparency: StateRef<boolean>;
   /** Whether selection outlines are enabled (observable). */
   outlineEnabled: StateRef<boolean>;
+  /** Outline quality: 'low' (0.5x) | 'medium' (1x) | 'high' (2x) render target scale. */
+  outlineQuality: StateRef<string>;
+  /** Outline thickness in screen pixels (1-5). */
+  outlineThickness: StateRef<number>;
   /** Selection fill mode: 'none' | 'default' | 'xray' | 'seethrough' (observable). */
   selectionFillMode: StateRef<string>;
   /** Opacity of the overlay pass in 'xray' and 'seethrough' modes (0-1). */
@@ -100,6 +104,8 @@ export interface IIsolationAdapter{
   setTransparency(enabled: boolean): void;
 
   setOutlineEnabled(enabled: boolean): void;
+  setOutlineQuality(quality: string): void;
+  setOutlineThickness(thickness: number): void;
   setSelectionFillMode(mode: string): void;
   setSelectionOverlayOpacity(opacity: number): void;
 
@@ -116,6 +122,8 @@ export function useSharedIsolation(adapter : IIsolationAdapter){
   const showGhost = useStateRef<boolean>(false);
   const transparency = useStateRef<boolean>(true);
   const outlineEnabled = useStateRef<boolean>(true);
+  const outlineQuality = useStateRef<string>('high');
+  const outlineThickness = useStateRef<number>(3);
   const selectionFillMode = useStateRef<string>('none');
   const selectionOverlayOpacity = useStateRef<number>(0.25);
   const ghostOpacity = useStateRef<number>(() => adapter.getGhostOpacity(), true);
@@ -149,6 +157,8 @@ export function useSharedIsolation(adapter : IIsolationAdapter){
   showGhost.useOnChange((v) => adapter.showGhost(v));
   transparency.useOnChange((v) => adapter.setTransparency(v));
   outlineEnabled.useOnChange((v) => adapter.setOutlineEnabled(v));
+  outlineQuality.useOnChange((v) => adapter.setOutlineQuality(v));
+  outlineThickness.useOnChange((v) => adapter.setOutlineThickness(v));
   selectionFillMode.useOnChange((v) => adapter.setSelectionFillMode(v));
   selectionOverlayOpacity.useOnChange((v) => adapter.setSelectionOverlayOpacity(v));
   showRooms.useOnChange((v) => adapter.setShowRooms(v));
@@ -166,6 +176,8 @@ export function useSharedIsolation(adapter : IIsolationAdapter){
     showGhost,
     transparency,
     outlineEnabled,
+    outlineQuality,
+    outlineThickness,
     selectionFillMode,
     selectionOverlayOpacity,
     showRooms,

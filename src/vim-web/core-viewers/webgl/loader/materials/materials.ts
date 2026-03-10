@@ -303,9 +303,7 @@ export class Materials implements IMaterials {
 
     const textureData = buildPaletteTexture()
     this._colorPaletteTexture = new THREE.DataTexture(
-      // Cast: TS 5.7 narrows Uint8Array.buffer to ArrayBufferLike (includes SharedArrayBuffer),
-      // but Three.js expects BufferSource (ArrayBuffer only). Safe — Uint8Array always backs ArrayBuffer.
-      textureData as unknown as BufferSource,
+      textureData,
       128,
       128,
       THREE.RGBAFormat,

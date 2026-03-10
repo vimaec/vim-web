@@ -154,7 +154,6 @@ export class Renderer implements ISceneRenderer {
       stencil: false,
       powerPreference: 'high-performance',
       logarithmicDepthBuffer: true,
-
     })
 
     this.autoRender = settings.rendering.autoRender

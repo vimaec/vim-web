@@ -122,6 +122,8 @@ function createAdapter(viewer: Viewer): IIsolationAdapter {
     setTransparency: (enabled: boolean) => {console.log("setTransparency not implemented")},
 
     setOutlineEnabled: (_enabled: boolean) => {},
+    setOutlineQuality: (_quality: string) => {},
+    setOutlineThickness: (_thickness: number) => {},
     setSelectionFillMode: (_mode: string) => {},
     setSelectionOverlayOpacity: (_opacity: number) => {},
 

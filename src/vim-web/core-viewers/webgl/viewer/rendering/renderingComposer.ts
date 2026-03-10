@@ -52,7 +52,7 @@ export class RenderingComposer {
   private _selectionRenderPass: RenderPass
   private _transferPass: TransferPass
   private _outlines: boolean = false
-  private _clock: THREE.Clock
+  private _timer: THREE.Timer
 
   // Resources that need to be disposed when the composer is destroyed
   private _outlinePass: OutlinePass
@@ -66,7 +66,7 @@ export class RenderingComposer {
 
   // Scale factor for outline/selection render target (0.5 = 50% resolution = 4x faster)
   // Lower values = better performance, higher values = better quality
-  private _outlineScale = 0.75
+  private _outlineScale = 1
 
   /**
    * Creates a new RenderingComposer instance
@@ -89,7 +89,7 @@ export class RenderingComposer {
     this._size = viewport.getSize()
 
     this._camera = camera.three
-    this._clock = new THREE.Clock()
+    this._timer = new THREE.Timer()
 
     this.initSceneRenderingPipeline()
     this.initOutlinePipeline()
@@ -129,6 +129,9 @@ export class RenderingComposer {
    * @private
    */
   private initOutlinePipeline () {
+    // Sync scale to outline material so Sobel offsets stay in screen pixels
+    this._materials.system.outline.scale = this._outlineScale
+
     // Calculate scaled dimensions for outline/selection rendering
     const outlineWidth = Math.floor(this._size.x * this._outlineScale)
     const outlineHeight = Math.floor(this._size.y * this._outlineScale)
@@ -207,6 +210,7 @@ export class RenderingComposer {
 
   set outlineScale (value: number) {
     this._outlineScale = value
+    this._materials.system.outline.scale = value
     this.setSize(this._size.x, this._size.y)
   }
 
@@ -282,7 +286,8 @@ export class RenderingComposer {
    * First renders the main scene, then processes outlines if enabled
    */
   render () {
-    var delta = this._clock.getDelta()
+    this._timer.update()
+    var delta = this._timer.getDelta()
     // Render main scene to scene target
     this._renderPass.render(
       this._renderer,
