@@ -1,5 +1,5 @@
 // renderField.tsx
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { InputNumber } from "./inputNumber";
 import { StateRef, useRefresher } from "../helpers/reactUtils";
 
@@ -134,19 +134,55 @@ function GenericBoolField(props:{state: StateRef<boolean>, disabled?: boolean })
 
 function GenericSelectField(props:{field: GenericSelectEntry, disabled?: boolean}): React.ReactNode {
   const refresher = useRefresher()
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onPointerDown = (e: PointerEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => document.removeEventListener('pointerdown', onPointerDown)
+  }, [open])
+
+  const current = props.field.options.find(o => o.value === props.field.state.get())
+
   return (
-    <select
-      disabled={props.disabled ?? false}
-      value={props.field.state.get()}
-      onChange={(e) => {
-        refresher.refresh()
-        props.field.state.set(e.target.value)
-      }}
-      className="vc-border vc-inline vc-border-gray-300 vc-py-1 vc-w-full vc-px-1"
-    >
-      {props.field.options.map(opt => (
-        <option key={opt.value} value={opt.value}>{opt.label}</option>
-      ))}
-    </select>
+    <div ref={ref} className="vc-relative vc-w-full">
+      <button
+        type="button"
+        disabled={props.disabled ?? false}
+        onClick={() => setOpen(o => !o)}
+        className="vc-border vc-border-gray-300 vc-py-1 vc-w-full vc-px-1 vc-text-left vc-bg-white vc-cursor-pointer vc-flex vc-items-center vc-justify-between"
+      >
+        <span>{current?.label ?? ''}</span>
+        <svg className="vc-w-3 vc-h-3 vc-ml-1 vc-shrink-0" viewBox="0 0 12 12" fill="currentColor">
+          <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      {open && (
+        <div className="vc-absolute vc-left-0 vc-right-0 vc-bottom-full vc-z-50 vc-border vc-border-gray-300 vc-bg-white vc-shadow-lg">
+          {props.field.options.map(opt => (
+            <div
+              key={opt.value}
+              className={`vc-px-1 vc-py-1 vc-cursor-pointer hover:vc-bg-gray-100 ${
+                opt.value === props.field.state.get() ? 'vc-bg-gray-100' : ''
+              }`}
+              onPointerDown={(e) => {
+                e.stopPropagation()
+                props.field.state.set(opt.value)
+                refresher.refresh()
+                setOpen(false)
+              }}
+            >
+              {opt.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
