@@ -1,5 +1,5 @@
 import { RefObject, useEffect, useRef } from "react";
-import { FuncRef, StateRef, useFuncRef, useStateRef } from "../helpers/reactUtils";
+import { FuncRef, StateRef, useFuncRef, useStateRef, useSubscribe } from "../helpers/reactUtils";
 import type { ISignal } from '../../core-viewers/shared/events'
 
 export type VisibilityStatus = 'all' | 'allButSelection' |'onlySelection' | 'some' | 'none';  
@@ -142,13 +142,10 @@ export function useSharedIsolation(adapter : IIsolationAdapter){
   
   useEffect(() => {
     adapter.showGhost(showGhost.get());
-    adapter.onVisibilityChange.sub(() => {
-      onVisibilityChange.call();
-    });
-    adapter.onSelectionChanged.sub(() => {
-      if(autoIsolate.get()) onAutoIsolate.call();
-    });
   }, []);
+
+  useSubscribe(adapter.onVisibilityChange, () => onVisibilityChange.call())
+  useSubscribe(adapter.onSelectionChanged, () => { if(autoIsolate.get()) onAutoIsolate.call() })
 
   autoIsolate.useOnChange((v) => {
     if(v) onAutoIsolate.call();

@@ -2,10 +2,9 @@
  * @module viw-webgl-react
  */
 
-import { useEffect } from 'react'
 import * as Core from '../../core-viewers'
 import { AugmentedElement, getElements } from '../helpers/element'
-import { StateRef, useStateRef } from '../helpers/reactUtils'
+import { StateRef, useStateRef, useSubscribe } from '../helpers/reactUtils'
 
 export type ViewerState = {
   vim: StateRef<Core.Webgl.IWebglVim>
@@ -21,7 +20,7 @@ export function useViewerState (viewer: Core.Webgl.Viewer) : ViewerState {
   }
 
   const getSelection = () => {
-    return [...viewer.selection.getAll()].filter((o): o is Core.Webgl.IElement3D => o.type === 'Element3D')
+    return viewer.selection.getAll().filter((o): o is Core.Webgl.IElement3D => o.type === 'Element3D')
   }
 
   const vim = useStateRef<Core.Webgl.IWebglVim>(getVim())
@@ -48,21 +47,8 @@ export function useViewerState (viewer: Core.Webgl.Viewer) : ViewerState {
     applyFilter()
   })
 
-  useEffect(() => {
-    // register to viewer state changes
-    const subLoad = viewer.onVimLoaded.subscribe(() => {
-      vim.set(getVim())
-    })
-    const subSelect = viewer.selection.onSelectionChanged.subscribe(() => {
-      selection.set(getSelection())
-    })
-
-    // Clean up
-    return () => {
-      subLoad()
-      subSelect()
-    }
-  }, [])
+  useSubscribe(viewer.onVimLoaded, () => vim.set(getVim()))
+  useSubscribe(viewer.selection.onSelectionChanged, () => selection.set(getSelection()))
 
   return {
     vim,

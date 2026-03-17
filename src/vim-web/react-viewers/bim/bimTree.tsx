@@ -2,7 +2,7 @@
  * @module viw-webgl-react
  */
 
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import {
   ControlledTreeEnvironment,
   InteractionMode,
@@ -34,14 +34,15 @@ export type TreeActionApi = {
  * @param objects an array of objects to include in the tree view.
  * @param isolation current isolation state.
  */
-export function BimTree (props: {
-  actionRef: React.MutableRefObject<TreeActionApi>
+type BimTreeProps = {
   viewer: Viewer
   framing: FramingApi
   objects: IElement3D[]
   isolation: IsolationApi
   treeData: BimTreeData
-}) {
+}
+
+export const BimTree = forwardRef<TreeActionApi, BimTreeProps>((props, ref) => {
   // Data state
   const [objects, setObjects] = useState<IElement3D[]>([])
 
@@ -54,33 +55,29 @@ export function BimTree (props: {
   const focus = useRef<number>(0)
   const div = useRef<HTMLDivElement>()
 
-  props.actionRef.current = useMemo(
-    () => ({
-      showAll: () => {
-        props.isolation.showAll()
-      },
-      hideAll: () => {
-        props.isolation.hideAll()
-      },
-      collapseAll: () => {
-        setExpandedItems([])
-      },
-      selectSiblings: (object: IElement3D) => {
-        const element = object.element
-        const node = props.treeData.getNodeFromElement(element)
-        const siblings = props.treeData.getSiblings(node)
-        const result = siblings.map((n) => {
-          const nn = props.treeData.nodes[n]
-          const e = nn.data.index
-          const o = props.viewer.vims[0].getElementFromIndex(e)
-          return o
-        })
-
-        props.viewer.selection.select(result)
-      }
-    }),
-    [props.treeData]
-  )
+  useImperativeHandle(ref, () => ({
+    showAll: () => {
+      props.isolation.showAll()
+    },
+    hideAll: () => {
+      props.isolation.hideAll()
+    },
+    collapseAll: () => {
+      setExpandedItems([])
+    },
+    selectSiblings: (object: IElement3D) => {
+      const element = object.element
+      const node = props.treeData.getNodeFromElement(element)
+      const siblings = props.treeData.getSiblings(node)
+      const result = siblings.map((n) => {
+        const nn = props.treeData.nodes[n]
+        const e = nn.data.index
+        const o = props.viewer.vims[0].getElementFromIndex(e)
+        return o
+      })
+      props.viewer.selection.select(result)
+    }
+  }), [props.treeData])
 
   useEffect(() => {
     setExpandedItems([])
@@ -258,7 +255,7 @@ export function BimTree (props: {
       </ControlledTreeEnvironment>
     </div>
   )
-}
+})
 
 function toggleVisibility (
   viewer: Viewer,

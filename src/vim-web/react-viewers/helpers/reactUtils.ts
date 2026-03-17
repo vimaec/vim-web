@@ -10,7 +10,7 @@
  * Common shapes: `FuncRef<void, void>`, `FuncRef<void, Promise<T>>`, `FuncRef<T, void>`
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { DependencyList, useEffect, useMemo, useRef, useState } from "react";
 import type { ISimpleEvent } from '../../core-viewers/shared/events'
 import { SimpleEventDispatcher } from 'ste-simple-events'
 
@@ -244,6 +244,31 @@ export interface FuncRef<TArg, TReturn> {
    * ```
    */
   update(transform: (prev: (arg: TArg) => TReturn) => (arg: TArg) => TReturn): void;
+}
+
+/**
+ * Subscribes to a signal for the lifetime of the component. Cleanup is automatic.
+ * Accepts both ISignal (no payload) and ISimpleEvent<T> (with payload).
+ */
+export function useSubscribe(
+  signal: { subscribe: (fn: () => void) => () => void },
+  callback: () => void,
+  deps: DependencyList = []
+) {
+  useEffect(() => signal.subscribe(callback), deps)
+}
+
+/**
+ * Derives a React state value from an external signal.
+ * Re-renders whenever the signal fires.
+ */
+export function useSignalState<T>(
+  signal: ISimpleEvent<any>,
+  getState: () => T
+): [T, (value: T) => void] {
+  const [state, setState] = useState(getState)
+  useEffect(() => signal.subscribe(() => setState(getState())), [])
+  return [state, setState]
 }
 
 /**

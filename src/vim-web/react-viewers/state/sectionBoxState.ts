@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useLayoutEffect, useMemo, useCallback } from 'react';
+import { useSubscribe } from '../helpers/reactUtils';
 import * as THREE from 'three';
 import { addBox } from '../../utils/threeUtils';
 import type { ISignal } from '../../core-viewers/shared/events'
@@ -75,10 +76,11 @@ export function useSectionBox(
   useEffect(() => {
     adapter.setVisible(false);
     adapter.setActive(false);
-    return adapter.onSelectionChanged.sub(() => {
-      if(auto.get() && active.get()) sectionSelection.call()
-    })
   }, []);
+
+  useSubscribe(adapter.onSelectionChanged, () => {
+    if(auto.get() && active.get()) sectionSelection.call()
+  })
 
   // Reset everything when the active state changes.
   active.useOnChange((v) => {

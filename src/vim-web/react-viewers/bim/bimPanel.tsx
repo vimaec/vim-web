@@ -80,7 +80,7 @@ export function BimPanel (props: {
             count={props.viewerState.elements.get()?.length}
           />
           <BimTree
-            actionRef={props.treeRef}
+            ref={props.treeRef}
             viewer={props.viewer}
             framing={props.framing}
             objects={props.viewerState.selection.get()}
