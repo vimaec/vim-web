@@ -2,7 +2,7 @@
  * @module public-api
  */
 
-import React, { useEffect, useRef, useState, useMemo } from 'react'
+import React, { useEffect, useRef, useState, useMemo, forwardRef, useImperativeHandle } from 'react'
 import { createRoot } from 'react-dom/client'
 import ReactTooltip from 'react-tooltip'
 
@@ -80,24 +80,24 @@ export function createWebglViewer (
 
   // Create the React root
   const reactRoot = createRoot(cmpContainer.ui)
-
-  // Patch the viewer to clean up after itself
-  const patchRef = (cmp : WebglViewerApi) => {
-    cmp.dispose = () => {
-      viewer.dispose()
-      cmpContainer.dispose()  
-      queueMicrotask(() => {
-        reactRoot.unmount();
-      });
-    }
-    return cmp
-  }
+  const apiRef = React.createRef<WebglViewerApi>()
 
   reactRoot.render(
     <WebglViewerComponent
+      ref={apiRef}
       container={cmpContainer}
       viewer={viewer}
-      onMount = {(cmp : WebglViewerApi) => controllablePromise.resolve(patchRef(cmp))}
+      onMount={() => {
+        const api = apiRef.current!
+        api.dispose = () => {
+          viewer.dispose()
+          cmpContainer.dispose()
+          queueMicrotask(() => {
+            reactRoot.unmount()
+          })
+        }
+        controllablePromise.resolve(api)
+      }}
       settings={settings}
     />
   )
@@ -111,12 +111,12 @@ export function createWebglViewer (
  * @param onMount A callback function triggered when the viewer is mounted. Receives a reference to the Vim viewer.
  * @param settings Optional settings for configuring the Vim viewer's behavior.
  */
-export function WebglViewerComponent (props: {
+export const WebglViewerComponent = forwardRef<WebglViewerApi, {
   container: Container
   viewer: Core.Webgl.Viewer
-  onMount: (viewer: WebglViewerApi) => void
+  onMount: () => void
   settings?: PartialWebglSettings
-}) {
+}>((props, ref) => {
   const settings = useSettings(props.settings ?? {}, getDefaultSettings(), (s) => applyWebglSettings(s))
   const modal = useRef<ModalApi>(null)
 
@@ -148,6 +148,34 @@ export function WebglViewerComponent (props: {
     side.setHasBim(viewerState.vim.get()?.bim !== undefined)
   })
 
+  useImperativeHandle(ref, () => ({
+    type: 'webgl' as const,
+    container: props.container,
+    core: props.viewer,
+    load: (source, loadSettings) => loader.current.load(source, loadSettings),
+    open: (source, loadSettings) => loader.current.open(source, loadSettings),
+    unload: (vim) => props.viewer.unload(vim),
+    isolation: isolationRef,
+    framing,
+    settings: {
+      update: settings.update,
+      register: settings.register,
+      customize: (c: SettingsCustomization<WebglSettings>) => settings.customizer.set(c)
+    },
+    isolationPanel: isolationPanelHandle.current,
+    sectionBoxPanel: sectionBoxPanelHandle.current,
+    sectionBox: sectionBoxRef,
+    contextMenu: {
+      customize: (v) => setcontextMenu(() => v)
+    },
+    controlBar: {
+      customize: (v) => setControlBarCustom(() => v)
+    },
+    modal: modal.current,
+    bimInfo: bimInfoRef,
+    dispose: () => {}
+  }), [])
+
   // On first render
   useEffect(() => {
     // Close isolation panel when offset panel is shown and vice versa
@@ -176,39 +204,7 @@ export function WebglViewerComponent (props: {
     const subContext =
       props.viewer.inputs.onContextMenu.subscribe(showContextMenu)
 
-    props.onMount({
-      type: 'webgl',
-      container: props.container,
-      core: props.viewer,
-      load: (source, loadSettings) => loader.current.load(source, loadSettings),
-      open: (source, loadSettings) => loader.current.open(source, loadSettings),
-      unload: (vim) => props.viewer.unload(vim),
-      isolation: isolationRef,
-      framing,
-      settings: {
-        update : settings.update,
-        register : settings.register,
-        customize : (c: SettingsCustomization<WebglSettings>) => settings.customizer.set(c)
-      },
-      get isolationPanel(){
-        return isolationPanelHandle.current
-      },
-      get sectionBoxPanel(){
-        return sectionBoxPanelHandle.current
-      },
-      get sectionBox(){
-        return sectionBoxRef
-      },
-      contextMenu: {
-        customize: (v) => setcontextMenu(() => v)
-      },
-      controlBar: {
-        customize: (v) => setControlBarCustom(() => v)
-      },
-      get modal() { return modal.current },
-      bimInfo: bimInfoRef,
-      dispose: () => {}
-    })
+    props.onMount()
 
     // Clean up
     return () => {
@@ -283,4 +279,4 @@ export function WebglViewerComponent (props: {
       />
     </>
   )
-}
+})

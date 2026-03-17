@@ -2,7 +2,7 @@
 
 import * as Core from '../../core-viewers'
 import { useSettings } from '../settings/settingsState'
-import {useRef, RefObject, useEffect, useState } from 'react'
+import { useRef, RefObject, useEffect, useState, forwardRef, useImperativeHandle, createRef } from 'react'
 import { Container, createContainer } from '../container'
 import { createRoot } from 'react-dom/client'
 import { Overlay } from '../panels/overlay'
@@ -61,23 +61,23 @@ export function createUltraViewer (
 
   // Create the React root
   const reactRoot = createRoot(cmpContainer.ui)
-
-  // Patch the viewer to clean up after itself
-  const attachDispose = (cmp : UltraViewerApi) => {
-    cmp.dispose = () => {
-      core.dispose()
-      cmpContainer.dispose()
-      reactRoot.unmount()
-    }
-    return cmp
-  }
+  const apiRef = createRef<UltraViewerApi>()
 
   reactRoot.render(
     <UltraViewerComponent
+      ref={apiRef}
       container={cmpContainer}
       core={core}
       settings={settings}
-      onMount = {(cmp : UltraViewerApi) => controllablePromise.resolve(attachDispose(cmp))}
+      onMount={() => {
+        const api = apiRef.current!
+        api.dispose = () => {
+          core.dispose()
+          cmpContainer.dispose()
+          reactRoot.unmount()
+        }
+        controllablePromise.resolve(api)
+      }}
     />
   )
   return controllablePromise.promise
@@ -90,11 +90,12 @@ export function createUltraViewer (
  * @param onMount A callback function triggered when the viewer is mounted. Receives a reference to the Vim viewer.
  * @param settings Optional settings for configuring the Vim viewer's behavior.
  */
-export function UltraViewerComponent (props: {
+export const UltraViewerComponent = forwardRef<UltraViewerApi, {
   container: Container
   core: Core.Ultra.Viewer
   settings?: PartialUltraSettings
-  onMount: (viewer: UltraViewerApi) => void}) {
+  onMount: () => void
+}>((props, ref) => {
 
   const settings = useSettings(props.settings ?? {}, getDefaultUltraSettings())
   const sectionBoxRef = useUltraSectionBox(props.core)
@@ -120,6 +121,29 @@ export function UltraViewerComponent (props: {
   
   useViewerInput(props.core.inputs, framing)
 
+  useImperativeHandle(ref, () => ({
+    type: 'ultra' as const,
+    container: props.container,
+    core: props.core,
+    modal: modalHandle.current,
+    isolation: isolationRef,
+    sectionBox: sectionBoxRef,
+    framing,
+    settings: {
+      update: settings.update,
+      register: settings.register,
+      customize: (c: SettingsCustomization<UltraSettings>) => settings.customizer.set(c)
+    },
+    isolationPanel: isolationPanelHandle.current,
+    sectionBoxPanel: sectionBoxPanelHandle.current,
+    dispose: () => {},
+    controlBar: {
+      customize: (v) => setControlBarCustom(() => v)
+    },
+    load: patchLoad(props.core, modalHandle),
+    unload: (vim) => props.core.unload(vim)
+  }), [])
+
   // On First render
   useEffect(() => {
     // Close isolation panel when offset panel is shown and vice versa
@@ -137,33 +161,8 @@ export function UltraViewerComponent (props: {
     props.core.onStateChanged.subscribe(state => updateModal(modalHandle, state))
     props.core.selection.onSelectionChanged.subscribe(() =>{
       setSelectState(i => (i+1)%2)
-    } )
-    props.onMount({
-      type: 'ultra',
-      container: props.container,
-      core: props.core,
-      get modal() { return modalHandle.current },
-      isolation: isolationRef,
-      sectionBox: sectionBoxRef,
-      framing,
-      settings: {
-        update : settings.update,
-        register : settings.register,
-        customize : (c: SettingsCustomization<UltraSettings>) => settings.customizer.set(c)
-      },
-      get isolationPanel(){
-        return isolationPanelHandle.current
-      },
-      get sectionBoxPanel(){
-        return sectionBoxPanelHandle.current
-      },
-      dispose: () => {},
-      controlBar: {
-        customize: (v) => setControlBarCustom(() => v)
-      },
-      load: patchLoad(props.core, modalHandle),
-      unload: (vim) => props.core.unload(vim)
     })
+    props.onMount()
   }, [])
 
   const sidePanel = () => (
@@ -205,7 +204,7 @@ export function UltraViewerComponent (props: {
     delayShow={200}
   />
   </>
-}
+})
 
 function patchLoad(viewer: Core.Ultra.Viewer, modal: RefObject<ModalApi>) {
   return function load (source: Core.Ultra.VimSource): Core.Ultra.IUltraLoadRequest {
