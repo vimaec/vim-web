@@ -207,20 +207,21 @@ export class GpuPicker implements IRaycaster<ISelectable> {
     // Disable NoRaycast layer to hide skybox and gizmos
     camera.layers.disable(Layers.NoRaycast)
 
-    // Calculate pixel position for scissor (flip Y for WebGL coordinate system)
+    // Calculate pixel position (flip Y for WebGL coordinate system)
     const pixelX = Math.floor(screenPos.x * this._renderTarget.width)
     const pixelY = Math.floor((1 - screenPos.y) * this._renderTarget.height)
 
-    // Scissor to a 1x1 pixel region around the pick point.
-    // The GPU skips fragment processing for all other pixels and can
-    // cull geometry that doesn't intersect the scissor rect.
+    // Render with scissor optimization: only process the 1x1 pixel we need.
+    // Use raw GL scissor because Three.js render() internally resets viewport/scissor
+    // via setRenderTarget(), which can discard the scissor rect we set.
+    const gl = this._renderer.getContext()
     this._renderer.setRenderTarget(this._renderTarget)
-    this._renderer.setScissorTest(true)
-    this._renderer.setScissor(pixelX, pixelY, 1, 1)
     this._renderer.setClearColor(0x000000, 0)
+    gl.enable(gl.SCISSOR_TEST)
+    gl.scissor(pixelX, pixelY, 1, 1)
     this._renderer.clear()
     this._renderer.render(this._scene.threeScene, camera)
-    this._renderer.setScissorTest(false)
+    gl.disable(gl.SCISSOR_TEST)
 
     // Restore state
     this._renderer.setRenderTarget(currentRenderTarget)
