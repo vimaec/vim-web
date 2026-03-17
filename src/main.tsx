@@ -125,14 +125,20 @@ async function createWebgl (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDiv
   
   const url = getPathFromUrl() ?? 'https://storage.cdn.vimaec.com/samples/residence.v1.2.75.vim'
   const request = viewer.load({ url })
+  viewer.core.selection.onSelectionChanged.subscribe(() => {
+    console.log('Selection changed:', viewer.core.selection.count())
+  })
   
-  const result = await request.getResult()
-  if (result.isError) {
-    console.error('Load failed:', result.error)
-    return
+  const vim = await request.getVim()
+  if (!vim) return
+
+  // TEST: Color everything red, then reset after 3 seconds
+  const red = new VIM.THREE.Color(0xff0000)
+  const elements = vim.getAllElements().filter(e => e.hasMesh)
+  for (const e of elements) {
+    //e.outline = true
   }
 
-  
   viewer.framing.frameScene.call()
 }
 
