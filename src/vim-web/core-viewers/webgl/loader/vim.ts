@@ -213,7 +213,7 @@ export class Vim implements IWebglVim {
    * @returns {ISubset} A subset containing all instances.
    */
   subset (): ISubset {
-    return new G3dSubset(this._factory.g3d)
+    return new G3dSubset(this._factory.g3d, this.map)
   }
 
   /**

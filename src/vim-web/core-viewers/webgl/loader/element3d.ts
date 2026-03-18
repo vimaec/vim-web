@@ -36,6 +36,8 @@ export interface IElement3D extends ISelectable {
   readonly element: number
   /** The unique element ID. */
   readonly elementId: bigint
+  /** The Revit unique ID string. */
+  readonly elementUniqueId: string | undefined
   /** The geometry instances associated with this element. */
   readonly instances: number[] | undefined
   /** True if this element has associated geometry. */
@@ -104,6 +106,13 @@ export class Element3D implements IElement3D {
    */
   get elementId () : bigint {
     return this._vim.map.getElementId(this.element)!
+  }
+
+  /**
+   * The Revit unique ID string of the element associated with this object.
+   */
+  get elementUniqueId () : string | undefined {
+    return this._vim.map.getElementUniqueId(this.element)
   }
 
   /**
