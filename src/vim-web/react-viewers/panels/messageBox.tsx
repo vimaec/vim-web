@@ -1,4 +1,5 @@
 import React from 'react'
+import { Divider } from '../components'
 
 export type MessageBoxProps = {
   title: string;
@@ -77,5 +78,5 @@ function footer (content: string | JSX.Element) {
 }
 
 function divider () {
-  return <div className="vim-divider vc-border-b vc-border-[#DFDFE1] vc-my-6"></div>
+  return <Divider />
 }

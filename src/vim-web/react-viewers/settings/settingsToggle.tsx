@@ -2,6 +2,7 @@ import { SettingsToggle } from './settingsItem'
 import * as Core from '../../core-viewers'
 import { SettingsState } from './settingsState'
 import { AnySettings } from './anySettings'
+import { Checkbox } from '../components'
 
 /**
  * Renders a toggle (checkbox) UI element for a given SettingsToggle item.
@@ -24,12 +25,7 @@ export function renderSettingsToggle(
 
   return (
     <label className="vc-m-1 vc-block vc-select-none vc-items-center vc-py-1 vc-text-gray-warm">
-      <input
-        type="checkbox"
-        checked={value}
-        onChange={handleChange}
-        className="vim-settings-checkbox vc-checked:bg-primary-royal vc-mr-2 vc-rounded vc-border vc-border-gray-medium"
-      />{' '}
+      <Checkbox checked={value} onChange={handleChange} />{' '}
       {item.label}
     </label>
   )

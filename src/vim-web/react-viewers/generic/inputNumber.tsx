@@ -1,5 +1,6 @@
 import { useRef, useState, useSyncExternalStore, useEffect } from "react";
 import { GenericNumberEntry } from "./genericField";
+import { Input } from '../components'
 
 export function InputNumber(props: {entry : GenericNumberEntry}) {
   const entry = props.entry;
@@ -39,14 +40,14 @@ export function InputNumber(props: {entry : GenericNumberEntry}) {
     setInputValue(state.get().toString());
   };
 
+  const InputAny = Input as any
   return (
-    <input
-      disabled={entry.enabled?.() === false}
+    <InputAny
       type="number"
+      disabled={entry.enabled?.() === false}
       value={inputValue}
       onChange={handleChange}
       onBlur={handleBlur}
-      className="vc-border vc-inline vc-border-gray-300 vc-py-1 vc-w-full vc-px-1"
       min={entry.min}
       max={entry.max}
       step={entry.step}

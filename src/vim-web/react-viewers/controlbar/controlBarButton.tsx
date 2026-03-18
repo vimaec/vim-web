@@ -1,5 +1,6 @@
 import * as Style from './style'
 import { IconOptions } from '../icons'
+import { IconButton } from '../components'
 
 export interface IControlBarButton {
   id: string,
@@ -11,14 +12,23 @@ export interface IControlBarButton {
   style?: (on: boolean) => string
 }
 
+function resolveVariant (styleFn: (on: boolean) => string): 'default' | 'expand' | 'disabled' | 'blue' {
+  if (styleFn === Style.buttonExpandStyle) return 'expand'
+  if (styleFn === Style.buttonDisableStyle || styleFn === Style.buttonDisableDefaultStyle) return 'disabled'
+  if (styleFn === Style.buttonBlueStyle) return 'blue'
+  return 'default'
+}
+
 export function createButton (button: IControlBarButton) {
   if (button.enabled !== undefined && !button.enabled()) return null
-  const style = (button.style?? Style.buttonDefaultStyle)(button.isOn?.())
+  const styleFn = button.style ?? Style.buttonDefaultStyle
+  const variant = resolveVariant(styleFn)
+  const on = button.isOn?.() ?? false
 
   return (
-    <button key={button.id} id={button.id} data-tip={button.tip} onClick={button.action} className={style} type="button">
+    <IconButton key={button.id} variant={variant} on={on} title={button.tip} onClick={button.action}>
       {button.icon({ className: 'vc-max-h-[80%]' })}
-    </button>
+    </IconButton>
   )
 }
 

@@ -1,7 +1,8 @@
 // renderField.tsx
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import { InputNumber } from "./inputNumber";
 import { StateRef, useRefresher } from "../helpers/reactUtils";
+import { Input, Checkbox, Select } from '../components'
 
 // A text field.
 export interface GenericTextEntry {
@@ -97,15 +98,13 @@ function GenericField(props:{field: GenericEntryType, disabled?: boolean}): Reac
 function GenericTextField(props:{state: StateRef<string>, disabled?: boolean}): React.ReactNode {
   const refresher = useRefresher() // Makes sure the component re-renders when the state changes.
   return (
-    <input
-      type="text"
+    <Input
       disabled={props.disabled ?? false}
       value={props.state.get()}
       onChange={(e) => {
         refresher.refresh()
         props.state.set(e.target.value)
       }}
-      className="vc-border vc-inline vc-border-gray-300 vc-py-1 vc-w-full vc-px-1"
       onBlur={() => props.state.confirm()}
     />
   );
@@ -119,70 +118,29 @@ function GenericTextField(props:{state: StateRef<string>, disabled?: boolean}): 
 function GenericBoolField(props:{state: StateRef<boolean>, disabled?: boolean }): React.ReactNode {
   const refresher = useRefresher() // Makes sure the component re-renders when the state changes.
   return (
-    <input
-      type="checkbox"
-      disabled={props.disabled ?? false}
+    <Checkbox
       checked={props.state.get()}
-      onChange={(e) => {
+      onChange={(checked) => {
         refresher.refresh()
-        props.state.set(e.target.checked)}
-      }
-      className="vc-border vc-inline vc-border-gray-300 vc-py-1 vc-w-full vc-px-1"
+        props.state.set(checked)
+      }}
+      disabled={props.disabled ?? false}
     />
   );
 }
 
 function GenericSelectField(props:{field: GenericSelectEntry, disabled?: boolean}): React.ReactNode {
   const refresher = useRefresher()
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!open) return
-    const onPointerDown = (e: PointerEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
-    }
-    document.addEventListener('pointerdown', onPointerDown)
-    return () => document.removeEventListener('pointerdown', onPointerDown)
-  }, [open])
-
-  const current = props.field.options.find(o => o.value === props.field.state.get())
-
   return (
-    <div ref={ref} className="vc-relative vc-w-full">
-      <button
-        type="button"
-        disabled={props.disabled ?? false}
-        onClick={() => setOpen(o => !o)}
-        className="vc-border vc-border-gray-300 vc-py-1 vc-w-full vc-px-1 vc-text-left vc-bg-white vc-cursor-pointer vc-flex vc-items-center vc-justify-between"
-      >
-        <span>{current?.label ?? ''}</span>
-        <svg className="vc-w-3 vc-h-3 vc-ml-1 vc-shrink-0" viewBox="0 0 12 12" fill="currentColor">
-          <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </button>
-      {open && (
-        <div className="vc-absolute vc-left-0 vc-right-0 vc-bottom-full vc-z-50 vc-border vc-border-gray-300 vc-bg-white vc-shadow-lg">
-          {props.field.options.map(opt => (
-            <div
-              key={opt.value}
-              className={`vc-px-1 vc-py-1 vc-cursor-pointer hover:vc-bg-gray-100 ${
-                opt.value === props.field.state.get() ? 'vc-bg-gray-100' : ''
-              }`}
-              onPointerDown={(e) => {
-                e.stopPropagation()
-                props.field.state.set(opt.value)
-                refresher.refresh()
-                setOpen(false)
-              }}
-            >
-              {opt.label}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    <Select
+      variant="full"
+      value={props.field.state.get()}
+      options={props.field.options}
+      onChange={(value) => {
+        props.field.state.set(value)
+        refresher.refresh()
+      }}
+      disabled={props.disabled ?? false}
+    />
   );
 }
