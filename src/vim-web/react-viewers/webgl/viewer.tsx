@@ -2,10 +2,9 @@
  * @module public-api
  */
 
-import { useEffect, useRef, useMemo, forwardRef, useImperativeHandle, createRef } from 'react'
+import { useEffect, useRef, useMemo, forwardRef, useImperativeHandle } from 'react'
 import { useSubscribe, useCustomizer } from '../helpers/reactUtils'
 import { createRoot } from 'react-dom/client'
-import { flushSync } from 'react-dom'
 
 import ReactTooltip from 'react-tooltip'
 
@@ -67,7 +66,7 @@ export function createWebglViewer (
   container?: Container | HTMLElement,
   settings: PartialWebglSettings = {},
   coreSettings: Core.Webgl.PartialViewerSettings = {}
-) : WebglViewerApi {
+) : Promise<WebglViewerApi> {
   const cmpContainer = container instanceof HTMLElement
     ? createContainer(container)
     : container ?? createContainer()
@@ -76,26 +75,24 @@ export function createWebglViewer (
   viewer.viewport.reparent(cmpContainer.gfx)
 
   const reactRoot = createRoot(cmpContainer.ui)
-  const apiRef = createRef<WebglViewerApi>()
 
-  flushSync(() => {
+  return new Promise<WebglViewerApi>(resolve => {
     reactRoot.render(
       <WebglViewerComponent
-        ref={apiRef}
+        ref={(api) => { if (api) resolve(api) }}
         container={cmpContainer}
         viewer={viewer}
         settings={settings}
       />
     )
+  }).then(api => {
+    api.dispose = () => {
+      viewer.dispose()
+      cmpContainer.dispose()
+      queueMicrotask(() => reactRoot.unmount())
+    }
+    return api
   })
-
-  const api = apiRef.current!
-  api.dispose = () => {
-    viewer.dispose()
-    cmpContainer.dispose()
-    queueMicrotask(() => reactRoot.unmount())
-  }
-  return api
 }
 
 /**
