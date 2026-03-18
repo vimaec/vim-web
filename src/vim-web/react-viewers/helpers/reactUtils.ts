@@ -250,9 +250,9 @@ export interface FuncRef<TArg, TReturn> {
  * Subscribes to a signal for the lifetime of the component. Cleanup is automatic.
  * Accepts both ISignal (no payload) and ISimpleEvent<T> (with payload).
  */
-export function useSubscribe(
-  signal: { subscribe: (fn: () => void) => () => void },
-  callback: () => void,
+export function useSubscribe<T = void>(
+  signal: { subscribe: (fn: (value: T) => void) => () => void },
+  callback: (value: T) => void,
   deps: DependencyList = []
 ) {
   useEffect(() => signal.subscribe(callback), deps)
@@ -269,6 +269,29 @@ export function useSignalState<T>(
   const [state, setState] = useState(getState)
   useEffect(() => signal.subscribe(() => setState(getState())), [])
   return [state, setState]
+}
+
+/**
+ * Stores a transform function and applies it to a base value.
+ * The function is stored in a ref (no `() => fn` setState footgun).
+ * Returns the transformed value and a setter to update the transform.
+ *
+ * @example
+ * const [sections, setCustomization] = useCustomizer(baseSections)
+ * // later: setCustomization(sections => [...sections, mySection])
+ */
+export function useCustomizer<TData>(base: TData): [TData, { customize: (fn: (data: TData) => TData) => void }] {
+  const fn = useRef<((data: TData) => TData) | undefined>(undefined)
+  const [, setVersion] = useState(0)
+
+  const api = useRef({
+    customize: (newFn: (data: TData) => TData) => {
+      fn.current = newFn
+      setVersion(v => v + 1)
+    }
+  })
+
+  return [fn.current ? fn.current(base) : base, api.current]
 }
 
 /**

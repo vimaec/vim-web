@@ -121,7 +121,7 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IIsolationAdapt
     setShowRooms: (show: boolean) => {
       if(rooms !== show){
         rooms = show;
-        updateVisibility('all', o => o.visible);arguments
+        updateVisibility('all', o => o.visible)
       }
     },
   };

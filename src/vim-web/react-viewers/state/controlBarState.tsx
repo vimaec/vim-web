@@ -9,6 +9,7 @@ import { getPointerState } from './pointerState';
 import { getFullScreenState } from './fullScreenState';
 import { SectionBoxApi } from './sectionBoxState';
 import { getMeasureState } from './measureState';
+import { RefObject } from 'react'
 import { ModalApi } from '../panels/modal';
 
 import { IsolationApi } from './sharedIsolation';
@@ -17,7 +18,6 @@ import { PointerMode } from '../../core-viewers/shared';
 import * as Style from '../controlbar/style'
 import { controlBarIds as Ids } from '../controlbar/controlBarIds'
 import type { IControlBarSection } from '../controlbar/controlBarSection'
-import type { ControlBarCustomization } from '../controlbar/controlBar'
 import { isFalse, isTrue, UserBoolean } from "../settings/userBoolean";
 import { UltraSettings } from "../ultra/settings";
 import { WebglSettings } from "../webgl/settings";
@@ -206,14 +206,14 @@ function createMiscSettingsButton(
 }
 
 function createMiscHelpButton(
-  modal : ModalApi,
+  modal : RefObject<ModalApi>,
   settings: AnySettings,
 ){
   return {
     id: Ids.miscHelp,
     enabled: () => isTrue(settings.ui.miscHelp),
     tip: 'Help',
-    action: () => modal.help(true),
+    action: () => modal.current?.help(true),
     icon: Icons.help,
     style: Style.buttonDefaultStyle
   };
@@ -221,7 +221,7 @@ function createMiscHelpButton(
 
 // Ultra version
 export function controlBarMiscUltra(
-  modal : ModalApi,
+  modal : RefObject<ModalApi>,
   side: SideState,
   settings: UltraSettings
 ): IControlBarSection {
@@ -238,7 +238,7 @@ export function controlBarMiscUltra(
 
 // WebGL version
 function controlBarMisc(
-  modal: ModalApi,
+  modal: RefObject<ModalApi>,
   side: SideState,
   settings: WebglSettings
 ): IControlBarSection {
@@ -405,18 +405,16 @@ export function controlBarVisibility(isolation: IsolationApi, settings: ControlB
 export function useControlBar(
   viewer: Core.Webgl.Viewer,
   framing: FramingApi,
-  modal: ModalApi,
+  modal: RefObject<ModalApi>,
   side: SideState,
   cursor: CursorManager,
   settings: WebglSettings,
   section: SectionBoxApi,
   isolationRef: IsolationApi,
-  customization: ControlBarCustomization | undefined
 ) {
   const measure = getMeasureState(viewer, cursor);
 
-  // Apply user customization (note that pointerSection is added twice per original design)
-  let controlBarSections = [
+  return [
     controlBarPointer(viewer, settings.ui),
     controlBarCamera(framing, settings.ui),
     controlBarVisibility(isolationRef, settings.ui),
@@ -424,8 +422,6 @@ export function useControlBar(
     controlBarSectionBox(section, viewer.selection.any(), settings.ui),
     controlBarMisc(modal, side, settings)
   ];
-  controlBarSections = customization?.(controlBarSections) ?? controlBarSections;
-  return controlBarSections;
 }
 
 

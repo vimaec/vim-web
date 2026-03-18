@@ -34,12 +34,15 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if(window.location.pathname.includes('ultra')){
-      createUltra(viewerRef, div.current!)
-    }
-    else{
-      createWebgl(viewerRef, div.current!)
-    }
+    const el = div.current!
+    queueMicrotask(() => {
+      if(window.location.pathname.includes('ultra')){
+        createUltra(viewerRef, el)
+      }
+      else{
+        createWebgl(viewerRef, el)
+      }
+    })
 
     // Handle page destroy (tab close, navigation away)
     const handleBeforeUnload = () => {

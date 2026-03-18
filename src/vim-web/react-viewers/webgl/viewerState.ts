@@ -35,6 +35,7 @@ export function useViewerState (viewer: Core.Webgl.Viewer) : ViewerState {
   }
 
   vim.useOnChange(async (v) => {
+    if (!v) { allElements.set([]); return }
     const elements = await getElements(v)
     allElements.set(elements)
   })

@@ -1,9 +1,8 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import * as Icons from '../icons';
-import { StateRef } from "../helpers/reactUtils";
+import { StateRef, useCustomizer } from "../helpers/reactUtils";
 import { useFloatingPanelPosition } from "../helpers/layout";
 import { GenericEntryType, GenericEntry } from "./genericField";
-import { useCustomizer } from "../helpers/customizer";
 
 // Generic props for the panel.
 export interface GenericPanelProps {
@@ -27,7 +26,8 @@ export const GenericPanel = forwardRef<GenericPanelApi, GenericPanelProps>((prop
     props.showPanel.get()
   );
 
-  const entries = useCustomizer(props.entries, ref);
+  const [entries, api] = useCustomizer(props.entries)
+  useImperativeHandle(ref, () => api)
 
   if (!props.showPanel.get()) return null;
 

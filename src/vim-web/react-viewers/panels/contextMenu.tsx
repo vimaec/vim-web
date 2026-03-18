@@ -3,7 +3,8 @@
  */
 
 import * as FireMenu from '@firefox-devtools/react-contextmenu'
-import React, { useEffect, useState } from 'react'
+import React, { forwardRef, useImperativeHandle, RefObject } from 'react'
+import { useSignalState, useCustomizer } from '../helpers/reactUtils'
 import { FramingApi } from '../state/cameraState'
 import { TreeActionApi } from '../bim/bimTree'
 import { ModalApi } from './modal'
@@ -75,33 +76,35 @@ export type ContextMenuCustomization = (
 /**
  * Memoized version of VimContextMenu.
  */
-export const VimContextMenuMemo = React.memo(ContextMenu)
+export const VimContextMenuMemo = React.memo(forwardRef<ContextMenuApi, {
+  viewer: Core.Webgl.Viewer
+  framing: FramingApi
+  modal: RefObject<ModalApi>
+  isolation: IsolationApi
+  selection: Core.Webgl.IElement3D[]
+  treeRef: React.MutableRefObject<TreeActionApi | undefined>
+}>(ContextMenu))
 
 /**
  * Context menu viewer definition according to current state.
  */
-export function ContextMenu (props: {
+function ContextMenu (props: {
   viewer: Core.Webgl.Viewer
   framing: FramingApi
-  modal: ModalApi
+  modal: RefObject<ModalApi>
   isolation: IsolationApi
   selection: Core.Webgl.IElement3D[]
-  customization?: (e: ContextMenuElement[]) => ContextMenuElement[]
   treeRef: React.MutableRefObject<TreeActionApi | undefined>
-}) {
+}, ref: React.Ref<ContextMenuApi>) {
   const viewer = props.viewer
   const framing = props.framing
-  const [visibility, setVisibility] = useState(props.isolation.visibility.get())
-
-  useEffect(() => {
-    // force re-render and reevalution of isolation.
-    return props.isolation.visibility.onChange.subscribe((v) => {
-      setVisibility(v)
-    })
-  }, [])
+  const [visibility] = useSignalState(
+    props.isolation.visibility.onChange,
+    () => props.isolation.visibility.get()
+  )
 
   const onShowControlsBtn = (e: React.MouseEvent) => {
-    props.modal.help(true)
+    props.modal.current?.help(true)
     e.stopPropagation()
   }
 
@@ -168,7 +171,7 @@ export function ContextMenu (props: {
   const hasSelection = props.isolation.hasSelection()
   const measuring = !!viewer.gizmos.measure.stage
 
-  let elements: ContextMenuElement[] = [
+  const baseElements: ContextMenuElement[] = [
     {
       type: 'button',
       id: Ids.showControls,
@@ -231,7 +234,9 @@ export function ContextMenu (props: {
       enabled: visibility !== 'all'
     }
   ]
-  elements = props.customization?.(elements) ?? elements
+
+  const [elements, customizeApi] = useCustomizer(baseElements)
+  useImperativeHandle(ref, () => customizeApi)
 
   return (
     <div

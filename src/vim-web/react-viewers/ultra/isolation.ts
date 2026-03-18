@@ -1,6 +1,6 @@
 import { IIsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
 import * as Core from "../../core-viewers";
-import { useStateRef } from "../helpers/reactUtils";
+import { createState } from "../helpers/reactUtils";
 import { VisibilityState, type IVisibilitySynchronizer } from "../../core-viewers/ultra/visibility";
 
 // Internal access — these properties exist on concrete classes but are hidden from public API
@@ -15,7 +15,7 @@ export function useUltraIsolation(viewer: Viewer){
 
 function createAdapter(viewer: Viewer): IIsolationAdapter {
 
-  const ghost = useStateRef<boolean>(false);
+  const ghost = createState<boolean>(false);
 
   // Helper function to hide objects in ghost or hidden state
   const hide = (objects: Element3D[] | 'all') =>{

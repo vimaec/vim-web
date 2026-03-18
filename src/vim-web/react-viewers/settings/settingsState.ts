@@ -10,12 +10,14 @@ import { SettingsCustomization } from './settingsItem'
 import { AnySettings } from './anySettings'
 import { RecursivePartial } from '../../utils'
 import deepmerge from 'deepmerge'
+import { SettingsApi } from '../state/settingsApi'
 
 export type SettingsState<T extends AnySettings> = {
   value: T
   update: (updater: (s: T) => void) => void
   register: (action: (s: T) => void) => void
   customizer : StateRef<SettingsCustomization<T>>
+  api: SettingsApi<T>
 }
 
 /**
@@ -39,6 +41,15 @@ export function useSettings<T extends AnySettings> (
     onUpdate.current?.(next)
   }
 
+  const updateRef = useRef(update)
+  updateRef.current = update
+
+  const api = useRef<SettingsApi<T>>({
+    update: (updater) => updateRef.current(updater),
+    register: (v) => (onUpdate.current = v),
+    customize: (c) => customizer.set(c)
+  }).current
+
   // First Time
   useEffect(() => {
     applySettings(settings)
@@ -54,7 +65,8 @@ export function useSettings<T extends AnySettings> (
       value: settings,
       update,
       register: (v) => (onUpdate.current = v),
-      customizer
+      customizer,
+      api
     }),
     [settings]
   )

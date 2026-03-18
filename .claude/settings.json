@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Skill(review-react)",
+      "Skill(review-react:*)"
+    ]
+  }
+}

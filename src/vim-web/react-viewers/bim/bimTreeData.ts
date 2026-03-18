@@ -187,7 +187,7 @@ export class BimTreeData {
     let current = this.nodes[n]
     while (current) {
       result.push(n)
-      n = n = current.parent
+      n = current.parent
       current = this.nodes[n]
     }
     return result

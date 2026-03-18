@@ -1,6 +1,6 @@
 
+import { RefObject } from 'react'
 import * as Core from '../../core-viewers'
-import { ControlBarCustomization } from '../controlbar/controlBar'
 import { ModalApi } from '../panels/modal'
 import { FramingApi } from '../state/cameraState'
 import { controlBarCamera, controlBarSectionBox, controlBarMiscUltra, controlBarVisibility } from '../state/controlBarState'
@@ -16,16 +16,13 @@ export function useUltraControlBar (
   framing: FramingApi,
   settings: UltraSettings,
   side: SideState,
-  modal: ModalApi,
-  customization: ControlBarCustomization | undefined
+  modal: RefObject<ModalApi>,
 ) {
-  let bar = [
+  return [
     controlBarCamera(framing, settings.ui),
     controlBarVisibility(isolation, settings.ui),
     controlBarSectionBox(section, viewer.selection.any(), settings.ui),
     controlBarMiscUltra(modal, side, settings)
   ]
-  bar = customization?.(bar) ?? bar
-  return bar
 }
 

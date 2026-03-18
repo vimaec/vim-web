@@ -29,7 +29,6 @@ import { SettingsPanel } from '../settings/settingsPanel'
 import { SidePanelMemo } from '../panels/sidePanel'
 import { getDefaultUltraSettings, PartialUltraSettings, UltraSettings } from './settings'
 import { getUltraSettingsContent } from './settingsPanel'
-import { SettingsCustomization } from '../settings/settingsItem'
 import { isTrue } from '../settings/userBoolean'
 
 
@@ -100,8 +99,8 @@ export const UltraViewerComponent = forwardRef<UltraViewerApi, {
   const side = useSideState(true, 400)
   const [_, setSelectState] = useState(0)
   const isolationRef = useUltraIsolation(props.core)
-  const [controlBar, setControlBarCustom] = useCustomizer(
-    useUltraControlBar(props.core, sectionBoxRef, isolationRef, framing, settings.value, side, modalHandle.current)
+  const [controlBar, controlBarApi] = useCustomizer(
+    useUltraControlBar(props.core, sectionBoxRef, isolationRef, framing, settings.value, side, modalHandle)
   )
   
   useViewerInput(props.core.inputs, framing)
@@ -110,21 +109,15 @@ export const UltraViewerComponent = forwardRef<UltraViewerApi, {
     type: 'ultra' as const,
     container: props.container,
     core: props.core,
-    modal: modalHandle.current,
+    get modal() { return modalHandle.current },
     isolation: isolationRef,
     sectionBox: sectionBoxRef,
     framing,
-    settings: {
-      update: settings.update,
-      register: settings.register,
-      customize: (c: SettingsCustomization<UltraSettings>) => settings.customizer.set(c)
-    },
-    isolationPanel: isolationPanelHandle.current,
-    sectionBoxPanel: sectionBoxPanelHandle.current,
+    settings: settings.api,
+    get isolationPanel() { return isolationPanelHandle.current },
+    get sectionBoxPanel() { return sectionBoxPanelHandle.current },
     dispose: () => {},
-    controlBar: {
-      customize: (v) => setControlBarCustom(v)
-    },
+    controlBar: controlBarApi,
     load: patchLoad(props.core, modalHandle),
     unload: (vim) => props.core.unload(vim)
   }), [])
