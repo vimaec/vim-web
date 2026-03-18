@@ -2,13 +2,15 @@
  * @module public-api
  */
 
-import React, { useEffect, useRef, useState, useMemo, forwardRef, useImperativeHandle } from 'react'
+import { useEffect, useRef, useMemo, forwardRef, useImperativeHandle } from 'react'
+import { useSubscribe, useCustomizer } from '../helpers/reactUtils'
 import { createRoot } from 'react-dom/client'
+
 import ReactTooltip from 'react-tooltip'
 
 import * as Core from '../../core-viewers'
 import { AxesPanelMemo } from '../panels/axesPanel'
-import { ControlBar, ControlBarCustomization } from '../controlbar/controlBar'
+import { ControlBar } from '../controlbar/controlBar'
 import { useControlBar } from '../state/controlBarState'
 import { RestOfScreen } from '../panels/restOfScreen'
 import { OptionalBimPanel } from '../bim/bimPanel'  
@@ -41,7 +43,6 @@ import { useViewerInput } from '../state/viewerInputs'
 import { IsolationPanel } from '../panels/isolationPanel'
 import { useWebglIsolation } from './isolation'
 import { GenericPanelApi } from '../generic/genericPanel'
-import { ControllablePromise } from '../../utils'
 import { SettingsCustomization } from '../settings/settingsItem'
 import { getDefaultSettings, PartialWebglSettings, WebglSettings } from './settings'
 import { isTrue } from '../settings/userBoolean'
@@ -55,53 +56,44 @@ import { applyWebglSettings, getWebglSettingsContent } from './settingsPanel'
  * @param container An optional container or DOM element. If none is provided, one will be created.
  * @param settings React UI feature toggles (panels, buttons). See {@link WebglSettings}.
  * @param coreSettings Core renderer config (camera, materials, lighting). See {@link ViewerSettings}.
- * @returns A promise resolving to the viewer API.
+ * @returns The viewer API.
  *
  * @example
- * const viewer = await React.Webgl.createViewer(document.getElementById('app'))
+ * const viewer = React.Webgl.createViewer(document.getElementById('app'))
  * const vim = await viewer.load({ url: 'model.vim' }).getVim()
  * viewer.framing.frameScene.call()
  */
-export function createWebglViewer (
+export async function createWebglViewer (
   container?: Container | HTMLElement,
   settings: PartialWebglSettings = {},
   coreSettings: Core.Webgl.PartialViewerSettings = {}
 ) : Promise<WebglViewerApi> {
-  const controllablePromise = new ControllablePromise<WebglViewerApi>()
-
-  // Create the container
   const cmpContainer = container instanceof HTMLElement
     ? createContainer(container)
     : container ?? createContainer()
 
-  // Create the viewer inside the container
   const viewer = Core.Webgl.createViewer(coreSettings)
   viewer.viewport.reparent(cmpContainer.gfx)
 
-  // Create the React root
   const reactRoot = createRoot(cmpContainer.ui)
-  const apiRef = React.createRef<WebglViewerApi>()
 
-  reactRoot.render(
-    <WebglViewerComponent
-      ref={apiRef}
-      container={cmpContainer}
-      viewer={viewer}
-      onMount={() => {
-        const api = apiRef.current!
-        api.dispose = () => {
-          viewer.dispose()
-          cmpContainer.dispose()
-          queueMicrotask(() => {
-            reactRoot.unmount()
-          })
-        }
-        controllablePromise.resolve(api)
-      }}
-      settings={settings}
-    />
-  )
-  return controllablePromise.promise
+  const api = await new Promise<WebglViewerApi>(resolve => {
+    reactRoot.render(
+      <WebglViewerComponent
+        ref={(api) => { if (api) resolve(api) }}
+        container={cmpContainer}
+        viewer={viewer}
+        settings={settings}
+      />
+    )
+  })
+
+  api.dispose = () => {
+    viewer.dispose()
+    cmpContainer.dispose()
+    queueMicrotask(() => reactRoot.unmount())
+  }
+  return api
 }
 
 /**
@@ -114,7 +106,6 @@ export function createWebglViewer (
 export const WebglViewerComponent = forwardRef<WebglViewerApi, {
   container: Container
   viewer: Core.Webgl.Viewer
-  onMount: () => void
   settings?: PartialWebglSettings
 }>((props, ref) => {
   const settings = useSettings(props.settings ?? {}, getDefaultSettings(), (s) => applyWebglSettings(s))
@@ -134,15 +125,16 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
     isTrue(settings.value.ui.panelBimInfo),
     Math.min(props.container.root.clientWidth * 0.25, 340)
   )
-  const [contextMenu, setcontextMenu] = useState<ContextMenuCustomization>()
-  const [controlBarCustom, setControlBarCustom] = useState<ControlBarCustomization>()
+  const contextMenuFn = useRef<ContextMenuCustomization>()
   const bimInfoRef = useBimInfo()
 
   const viewerState = useViewerState(props.viewer)
   const treeRef = useRef<TreeActionApi>()
   const performanceRef = useRef<HTMLDivElement>(null)
   const isolationRef = useWebglIsolation(props.viewer)
-  const controlBar = useControlBar(props.viewer, framing, modal.current, side, cursor, settings.value, sectionBoxRef, isolationRef, controlBarCustom)
+  const [controlBar, setControlBarCustom] = useCustomizer(
+    useControlBar(props.viewer, framing, modal.current, side, cursor, settings.value, sectionBoxRef, isolationRef)
+  )
 
   useEffect(() => {
     side.setHasBim(viewerState.vim.get()?.bim !== undefined)
@@ -166,30 +158,27 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
     sectionBoxPanel: sectionBoxPanelHandle.current,
     sectionBox: sectionBoxRef,
     contextMenu: {
-      customize: (v) => setcontextMenu(() => v)
+      customize: (v) => { contextMenuFn.current = v }
     },
     controlBar: {
-      customize: (v) => setControlBarCustom(() => v)
+      customize: (v) => setControlBarCustom(v)
     },
     modal: modal.current,
     bimInfo: bimInfoRef,
     dispose: () => {}
   }), [])
 
+  useSubscribe(sectionBoxRef.showOffsetPanel.onChange, (show) => {
+    if(show) isolationRef.showPanel.set(false)
+  })
+  useSubscribe(isolationRef.showPanel.onChange, (show) => {
+    if(show) sectionBoxRef.showOffsetPanel.set(false)
+  })
+
+  useSubscribe(props.viewer.inputs.onContextMenu, showContextMenu)
+
   // On first render
   useEffect(() => {
-    // Close isolation panel when offset panel is shown and vice versa
-    sectionBoxRef.showOffsetPanel.onChange.subscribe((show) => {
-      if(show) {
-        isolationRef.showPanel.set(false)
-      }
-    })
-    isolationRef.showPanel.onChange.subscribe((show) => {
-      if(show) {
-        sectionBoxRef.showOffsetPanel.set(false)
-      }
-    })
-
     if (performanceRef.current) {
       addPerformanceCounter(performanceRef.current)
     }
@@ -200,17 +189,7 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
     props.viewer.viewport.canvas.tabIndex = 0
     applyWebglBindings(props.viewer, framing, isolationRef, side)
 
-    // Register context menu
-    const subContext =
-      props.viewer.inputs.onContextMenu.subscribe(showContextMenu)
-
-    props.onMount()
-
-    // Clean up
-    return () => {
-      subContext()
-      cursor.register()
-    }
+    return () => cursor.unregister()
   }, [])
 
   const sidePanel = () => (
@@ -266,7 +245,7 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
         modal={modal.current}
         isolation={isolationRef}
         selection={viewerState.selection.get()}
-        customization={contextMenu}
+        customization={contextMenuFn.current}
         treeRef={treeRef}
       />
       <MenuToastMemo viewer={props.viewer} side={side}></MenuToastMemo>

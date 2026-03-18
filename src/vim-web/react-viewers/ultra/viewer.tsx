@@ -2,14 +2,15 @@
 
 import * as Core from '../../core-viewers'
 import { useSettings } from '../settings/settingsState'
-import { useRef, RefObject, useEffect, useState, forwardRef, useImperativeHandle, createRef } from 'react'
+import { useRef, RefObject, useState, forwardRef, useImperativeHandle } from 'react'
+import { useSubscribe, useCustomizer } from '../helpers/reactUtils'
 import { Container, createContainer } from '../container'
 import { createRoot } from 'react-dom/client'
 import { Overlay } from '../panels/overlay'
 import { Modal, ModalApi } from '../panels/modal'
 import { getRequestErrorMessage } from './errors/ultraErrors'
 import { updateModal, updateProgress as modalProgress } from './modal'
-import { ControlBar, ControlBarCustomization } from '../controlbar/controlBar'
+import { ControlBar } from '../controlbar/controlBar'
 import { useUltraSectionBox } from './sectionBox'
 import { useUltraControlBar } from './controlBar'
 import { SectionBoxPanel } from '../panels/sectionBoxPanel'
@@ -24,7 +25,6 @@ import { useViewerInput } from '../state/viewerInputs'
 import { useUltraIsolation } from './isolation'
 import { IsolationPanel } from '../panels/isolationPanel'
 import { GenericPanelApi } from '../generic/genericPanel'
-import { ControllablePromise } from '../../utils'
 import { SettingsPanel } from '../settings/settingsPanel'
 import { SidePanelMemo } from '../panels/sidePanel'
 import { getDefaultUltraSettings, PartialUltraSettings, UltraSettings } from './settings'
@@ -39,48 +39,42 @@ import { isTrue } from '../settings/userBoolean'
  *
  * @param container An optional container or DOM element. If none is provided, one will be created.
  * @param settings React UI feature toggles (panels, buttons). See {@link UltraSettings}.
- * @returns A promise resolving to the viewer API.
+ * @returns The viewer API.
  *
  * @example
- * const viewer = await React.Ultra.createViewer(document.getElementById('app'))
+ * const viewer = React.Ultra.createViewer(document.getElementById('app'))
  * await viewer.core.connect({ url: 'wss://server:8080' })
  * viewer.load({ url: 'model.vim' })
  */
-export function createUltraViewer (
+export async function createUltraViewer (
   container?: Container | HTMLElement,
-  settings?: PartialUltraSettings 
+  settings?: PartialUltraSettings
 ) : Promise<UltraViewerApi> {
-  
-  const controllablePromise = new ControllablePromise<UltraViewerApi>()
   const cmpContainer = container instanceof HTMLElement
     ? createContainer(container)
     : container ?? createContainer()
 
-  // Create the viewer and container
   const core = Core.Ultra.createViewer(cmpContainer.gfx)
 
-  // Create the React root
   const reactRoot = createRoot(cmpContainer.ui)
-  const apiRef = createRef<UltraViewerApi>()
 
-  reactRoot.render(
-    <UltraViewerComponent
-      ref={apiRef}
-      container={cmpContainer}
-      core={core}
-      settings={settings}
-      onMount={() => {
-        const api = apiRef.current!
-        api.dispose = () => {
-          core.dispose()
-          cmpContainer.dispose()
-          reactRoot.unmount()
-        }
-        controllablePromise.resolve(api)
-      }}
-    />
-  )
-  return controllablePromise.promise
+  const api = await new Promise<UltraViewerApi>(resolve => {
+    reactRoot.render(
+      <UltraViewerComponent
+        ref={(api) => { if (api) resolve(api) }}
+        container={cmpContainer}
+        core={core}
+        settings={settings}
+      />
+    )
+  })
+
+  api.dispose = () => {
+    core.dispose()
+    cmpContainer.dispose()
+    reactRoot.unmount()
+  }
+  return api
 }
 
 /**
@@ -94,7 +88,6 @@ export const UltraViewerComponent = forwardRef<UltraViewerApi, {
   container: Container
   core: Core.Ultra.Viewer
   settings?: PartialUltraSettings
-  onMount: () => void
 }>((props, ref) => {
 
   const settings = useSettings(props.settings ?? {}, getDefaultUltraSettings())
@@ -106,17 +99,9 @@ export const UltraViewerComponent = forwardRef<UltraViewerApi, {
 
   const side = useSideState(true, 400)
   const [_, setSelectState] = useState(0)
-  const [controlBarCustom, setControlBarCustom] = useState<ControlBarCustomization>(() => c => c)
   const isolationRef = useUltraIsolation(props.core)
-  const controlBar = useUltraControlBar(
-    props.core,
-    sectionBoxRef,
-    isolationRef,
-    framing,
-    settings.value,
-    side,
-    modalHandle.current,
-    _ =>_
+  const [controlBar, setControlBarCustom] = useCustomizer(
+    useUltraControlBar(props.core, sectionBoxRef, isolationRef, framing, settings.value, side, modalHandle.current)
   )
   
   useViewerInput(props.core.inputs, framing)
@@ -138,32 +123,21 @@ export const UltraViewerComponent = forwardRef<UltraViewerApi, {
     sectionBoxPanel: sectionBoxPanelHandle.current,
     dispose: () => {},
     controlBar: {
-      customize: (v) => setControlBarCustom(() => v)
+      customize: (v) => setControlBarCustom(v)
     },
     load: patchLoad(props.core, modalHandle),
     unload: (vim) => props.core.unload(vim)
   }), [])
 
-  // On First render
-  useEffect(() => {
-    // Close isolation panel when offset panel is shown and vice versa
-    sectionBoxRef.showOffsetPanel.onChange.subscribe((show) => {
-      if(show) {
-        isolationRef.showPanel.set(false)
-      }
-    })
-    isolationRef.showPanel.onChange.subscribe((show) => {
-      if(show) {
-        sectionBoxRef.showOffsetPanel.set(false)
-      }
-    })
+  useSubscribe(sectionBoxRef.showOffsetPanel.onChange, (show) => {
+    if(show) isolationRef.showPanel.set(false)
+  })
+  useSubscribe(isolationRef.showPanel.onChange, (show) => {
+    if(show) sectionBoxRef.showOffsetPanel.set(false)
+  })
+  useSubscribe(props.core.onStateChanged, state => updateModal(modalHandle, state))
+  useSubscribe(props.core.selection.onSelectionChanged, () => setSelectState(i => (i+1)%2))
 
-    props.core.onStateChanged.subscribe(state => updateModal(modalHandle, state))
-    props.core.selection.onSelectionChanged.subscribe(() =>{
-      setSelectState(i => (i+1)%2)
-    })
-    props.onMount()
-  }, [])
 
   const sidePanel = () => (
     <>
@@ -187,7 +161,7 @@ export const UltraViewerComponent = forwardRef<UltraViewerApi, {
     {whenTrue(settings.value.ui.panelLogo, <LogoMemo/>)}
     <Overlay canvas={props.core.viewport.canvas}/>
     <ControlBar
-      content={controlBarCustom(controlBar)}
+      content={controlBar}
       show={isTrue(settings.value.ui.panelControlBar)}
     />
     <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBoxRef}/>
