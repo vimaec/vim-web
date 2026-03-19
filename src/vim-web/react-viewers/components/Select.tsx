@@ -61,7 +61,7 @@ export function Select({ value, options, onChange, disabled, variant = 'inline' 
         onClick={() => setOpen(o => !o)}
         className={triggerClass}
       >
-        <span>{current?.label ?? ''}</span>
+        <span className="vc-flex-1 vc-min-w-0 vc-truncate">{current?.label ?? ''}</span>
         {chevron}
       </button>
       {open && (

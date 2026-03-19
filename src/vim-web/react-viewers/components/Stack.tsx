@@ -1,6 +1,7 @@
 import React from 'react'
 
 const gaps = {
+  none: '',
   xs: 'vc-gap-1',
   sm: 'vc-gap-2',
   md: 'vc-gap-3',

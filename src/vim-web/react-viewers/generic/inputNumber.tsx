@@ -28,14 +28,14 @@ export function InputNumber(props: {entry : GenericNumberEntry}) {
 
     const parsed = parseFloat(input);
     if (!isNaN(parsed)) {
-      state.set(parsed);
+      state.set(entry.transform ? entry.transform(parsed) : parsed);
     }
   };
 
   const handleBlur = () => {
     const parsed = parseFloat(inputValue);
-    const value = isNaN(parsed) ? defaultValue.current : parsed;
-    
+    let value = isNaN(parsed) ? defaultValue.current : parsed;
+    if (entry.transform) value = entry.transform(value);
     state.set(value);
     setInputValue(state.get().toString());
   };

@@ -24,6 +24,8 @@ export interface GenericNumberEntry {
   min?: number;
   max?: number;
   step?: number;
+  info?: string;
+  transform?: (n: number) => number;
 }
 
 // A boolean field.
@@ -47,14 +49,128 @@ export interface GenericSelectEntry {
   state: StateRef<string>;
 }
 
-export type GenericEntryType = GenericTextEntry | GenericBoolEntry | GenericNumberEntry | GenericSelectEntry;
+export interface GenericSubtitleEntry {
+  type: 'subtitle'
+  id: string
+  label: string
+}
 
-/**
- * Renders a panel field based on its type.
- * @param field - The panel field to render.
- * @returns The rendered field element.
- */
+export interface GenericGroupEntry {
+  type: 'group'
+  id: string
+  label: string
+}
+
+export interface GenericReadonlyEntry {
+  type: 'readonly'
+  id: string
+  label: string
+  value: string
+  visible?: () => boolean
+  renderValue?: () => React.ReactNode
+}
+
+export interface GenericElementEntry {
+  type: 'element'
+  id: string
+  element: JSX.Element
+}
+
+export type GenericEntryType =
+  | GenericTextEntry
+  | GenericBoolEntry
+  | GenericNumberEntry
+  | GenericSelectEntry
+  | GenericSubtitleEntry
+  | GenericGroupEntry
+  | GenericReadonlyEntry
+  | GenericElementEntry
+
+type Section = { id: string; label: string; items: GenericEntryType[] }
+type Group = { id: string; label: string; sections: Section[] }
+
+function buildHierarchy(items: GenericEntryType[]): Group[] {
+  const groups: Group[] = []
+  let currentGroup: Group | null = null
+  let currentSection: Section | null = null
+
+  for (const item of items) {
+    if (item.type === 'group') {
+      currentSection = null
+      currentGroup = { id: item.id, label: item.label, sections: [] }
+      groups.push(currentGroup)
+    } else if (item.type === 'subtitle') {
+      if (!currentGroup) { currentGroup = { id: 'default', label: '', sections: [] }; groups.push(currentGroup) }
+      currentSection = { id: item.id, label: item.label, items: [] }
+      currentGroup.sections.push(currentSection)
+    } else {
+      if (!currentGroup) { currentGroup = { id: 'default', label: '', sections: [] }; groups.push(currentGroup) }
+      if (!currentSection) { currentSection = { id: 'default', label: '', items: [] }; currentGroup.sections.push(currentSection) }
+      currentSection.items.push(item)
+    }
+  }
+  return groups
+}
+
+function SectionContent({ section }: { section: Section }) {
+  return (
+    <details open className="vim-panel-section">
+      {section.label && <summary className="vim-panel-section-title">{section.label}</summary>}
+      <div className="vim-panel-list">{section.items.map(GenericEntry)}</div>
+    </details>
+  )
+}
+
+export function GenericContent({ items }: { items: GenericEntryType[] }) {
+  const hasGroups = items.some(i => i.type === 'group')
+  const hasSections = items.some(i => i.type === 'subtitle')
+
+  if (!hasGroups && !hasSections) {
+    return <div className="vim-panel-list">{items.map(GenericEntry)}</div>
+  }
+
+  const hierarchy = buildHierarchy(items)
+
+  if (!hasGroups) {
+    return (
+      <div className="vim-panel-list">
+        {hierarchy[0]?.sections.map(s => <SectionContent key={s.id} section={s} />)}
+      </div>
+    )
+  }
+
+  return (
+    <div className="vim-panel-list">
+      {hierarchy.map(group => (
+        <details key={group.id} open className="vim-panel-group">
+          {group.label && <summary className="vim-panel-group-title">{group.label}</summary>}
+          <div className="vim-panel-list">
+            {group.sections.map(s => <SectionContent key={s.id} section={s} />)}
+          </div>
+        </details>
+      ))}
+    </div>
+  )
+}
+
 export function GenericEntry(field: GenericEntryType): React.ReactNode {
+  if (field.type === 'subtitle') {
+    return <dt key={field.id} className="vim-panel-subtitle">{field.label}</dt>
+  }
+  if (field.type === 'group') return null  // rendered by GenericContent, not here
+  if (field.type === 'element') {
+    return <React.Fragment key={field.id}>{field.element}</React.Fragment>
+  }
+  if (field.type === 'readonly') {
+    if (field.visible?.() === false) return null
+    return (
+      <div key={field.id} className="vim-panel-entry">
+        <dt>{field.label}</dt>
+        <dd className="vim-panel-entry-value">{field.renderValue ? field.renderValue() : field.value}</dd>
+      </div>
+    )
+  }
+
   if (field.visible?.() === false) return null;
 
   const isEnabled = field.enabled?.() !== false;
@@ -62,12 +178,11 @@ export function GenericEntry(field: GenericEntryType): React.ReactNode {
   return (
     <div
       key={field.id}
-      className={`vim-sectionbox-offsets-entry vc-text-xs vc-flex vc-items-center vc-justify-between vc-my-2 ${
-        isEnabled ? '' : 'vc-opacity-50 vc-pointer-events-none'
-      }`}
+      className="vim-panel-entry"
+      data-disabled={!isEnabled || undefined}
     >
-      <dt className="vc-w-1/2 vc-inline">{field.label}</dt>
-      <dd className="vc-w-1/3 vc-inline">
+      <dt>{field.label}</dt>
+      <dd>
         <GenericField field={field} disabled={!isEnabled} />
       </dd>
     </div>
@@ -78,7 +193,10 @@ export function GenericEntry(field: GenericEntryType): React.ReactNode {
 function GenericField(props:{field: GenericEntryType, disabled?: boolean}): React.ReactNode {
   switch (props.field.type) {
     case "number":
-      return <InputNumber entry={props.field}/>;
+      return <>
+        <InputNumber entry={props.field}/>
+        {props.field.info && <span className="vim-panel-entry-info">{props.field.info}</span>}
+      </>;
     case "text":
       return <GenericTextField state={props.field.state} disabled={props.field.enabled?.() === false} />;
     case "bool":
