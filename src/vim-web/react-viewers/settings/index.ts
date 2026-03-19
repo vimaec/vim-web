@@ -1,12 +1,3 @@
-// Settings types
-export type {
-  SettingsCustomization,
-  SettingsItem,
-  SettingsSubtitle,
-  SettingsToggle,
-  SettingsBox,
-  SettingsElement,
-} from './settingsItem'
-
-// Settings utilities
+export type { GenericEntryType as SettingsItem } from '../generic/genericField'
+export type { SettingsCustomization } from './settingsItem'
 export { type UserBoolean, isTrue, isFalse } from './userBoolean'
