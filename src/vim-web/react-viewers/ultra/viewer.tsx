@@ -1,8 +1,9 @@
 
 
 import * as Core from '../../core-viewers'
-import { useSettings } from '../settings/settingsState'
-import { useRef, RefObject, useState, forwardRef, useImperativeHandle } from 'react'
+import { createSettings } from '../settings/settingsState'
+import { disableLocalStorage } from '../settings/localStorage'
+import { useRef, RefObject, useState, forwardRef, useImperativeHandle, useEffect } from 'react'
 import { useSubscribe, useCustomizer } from '../helpers/reactUtils'
 import { Container, createContainer } from '../container'
 import { createRoot } from 'react-dom/client'
@@ -89,21 +90,31 @@ export const UltraViewerComponent = forwardRef<UltraViewerApi, {
   settings?: PartialUltraSettings
 }>((props, ref) => {
 
-  const settings = useSettings(props.settings ?? {}, getDefaultUltraSettings())
-  const sectionBoxRef = useUltraSectionBox(props.core)
-  const framing = useUltraFraming(props.core, sectionBoxRef)
+  const settings = createSettings(props.settings ?? {}, getDefaultUltraSettings())
+  const sectionBoxRef = useUltraSectionBox(props.core, settings.sectionBox)
+  const framing = useUltraFraming(props.core, sectionBoxRef, settings.camera.autoCamera)
   const isolationPanelHandle = useRef<GenericPanelApi>(null)
   const sectionBoxPanelHandle = useRef<GenericPanelApi>(null)
   const modalHandle = useRef<ModalApi>(null)
 
   const side = useSideState(true, 400)
   const [_, setSelectState] = useState(0)
-  const isolationRef = useUltraIsolation(props.core)
+  const isolationRef = useUltraIsolation(props.core, settings.isolation)
   const [controlBar, controlBarApi] = useCustomizer(
-    useUltraControlBar(props.core, sectionBoxRef, isolationRef, framing, settings.value, side, modalHandle)
+    useUltraControlBar(props.core, sectionBoxRef, isolationRef, framing, settings, side, modalHandle)
   )
-  
+
   useViewerInput(props.core.inputs, framing)
+
+  useEffect(() => {
+    if (!settings.capacity.canReadLocalStorage) disableLocalStorage()
+  }, [])
+
+  useEffect(() => {
+    if (settings.cursor?.default !== undefined) {
+      props.core.inputs.pointerMode = settings.cursor.default
+    }
+  }, [])
 
   useImperativeHandle(ref, () => ({
     type: 'ultra' as const,
@@ -113,7 +124,6 @@ export const UltraViewerComponent = forwardRef<UltraViewerApi, {
     isolation: isolationRef,
     sectionBox: sectionBoxRef,
     framing,
-    settings: settings.api,
     get isolationPanel() { return isolationPanelHandle.current },
     get sectionBoxPanel() { return sectionBoxPanelHandle.current },
     dispose: () => {},
@@ -136,8 +146,7 @@ export const UltraViewerComponent = forwardRef<UltraViewerApi, {
     <>
       <SettingsPanel
         visible={side.getContent() === 'settings'}
-        content={getUltraSettingsContent(props.core)}
-        settings={settings}
+        content={getUltraSettingsContent(isolationRef)}
       />
     </>
   )
@@ -151,11 +160,11 @@ export const UltraViewerComponent = forwardRef<UltraViewerApi, {
   />
   <RestOfScreen side={side} content={() => {
     return <>
-    {whenTrue(settings.value.ui.panelLogo, <LogoMemo/>)}
+    {whenTrue(settings.ui.panelLogo, <LogoMemo/>)}
     <Overlay canvas={props.core.viewport.canvas}/>
     <ControlBar
       content={controlBar}
-      show={isTrue(settings.value.ui.panelControlBar)}
+      show={isTrue(settings.ui.panelControlBar)}
     />
     <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBoxRef}/>
     <IsolationPanel ref={isolationPanelHandle} state={isolationRef}/>

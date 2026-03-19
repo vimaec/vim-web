@@ -117,8 +117,9 @@ export type ControlBarCursorSettings = {
 function controlBarPointer(
   viewer: Core.Webgl.Viewer,
   settings: ControlBarCursorSettings,
+  defaultCursor?: Core.PointerMode,
 ): IControlBarSection {
-  const pointer = getPointerState(viewer);
+  const pointer = getPointerState(viewer, defaultCursor);
 
   return {
     id: Ids.cursorSpan,
@@ -415,7 +416,7 @@ export function useControlBar(
   const measure = getMeasureState(viewer, cursor);
 
   return [
-    controlBarPointer(viewer, settings.ui),
+    controlBarPointer(viewer, settings.ui, settings.cursor?.default),
     controlBarCamera(framing, settings.ui),
     controlBarVisibility(isolationRef, settings.ui),
     controlBarMeasure(measure, settings.ui),

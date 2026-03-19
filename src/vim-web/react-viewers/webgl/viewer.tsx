@@ -26,7 +26,8 @@ import { Overlay } from '../panels/overlay'
 import { addPerformanceCounter } from '../panels/performance'
 import { applyWebglBindings } from './inputsBindings'
 import { CursorManager } from '../helpers/cursor'
-import { useSettings } from '../settings/settingsState'
+import { createSettings } from '../settings/settingsState'
+import { disableLocalStorage } from '../settings/localStorage'
 import { TreeActionApi } from '../bim/bimTree'
 import { Container, createContainer } from '../container'
 import { useViewerState } from './viewerState'
@@ -107,21 +108,29 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
   viewer: Core.Webgl.Viewer
   settings?: PartialWebglSettings
 }>((props, ref) => {
-  const settings = useSettings(props.settings ?? {}, getDefaultSettings(), (s) => applyWebglSettings(s))
+  const settings = createSettings(props.settings ?? {}, getDefaultSettings())
   const modal = useRef<ModalApi>(null)
 
-  const sectionBoxRef = useWebglSectionBox(props.viewer)
+  useEffect(() => {
+    if (!settings.capacity.canReadLocalStorage) disableLocalStorage()
+  }, [])
+
+  useEffect(() => {
+    applyWebglSettings(settings)
+  }, [])
+
+  const sectionBoxRef = useWebglSectionBox(props.viewer, settings.sectionBox)
   const isolationPanelHandle = useRef<GenericPanelApi>(null)
   const sectionBoxPanelHandle = useRef<GenericPanelApi>(null)
 
-  const framing = useWebglFraming(props.viewer, sectionBoxRef)
+  const framing = useWebglFraming(props.viewer, sectionBoxRef, settings.camera.autoCamera)
   const cursor = useMemo(() => new CursorManager(props.viewer), [])
-  const loader = useRef(new ComponentLoader(props.viewer, modal, settings.value))
+  const loader = useRef(new ComponentLoader(props.viewer, modal, settings))
   useViewerInput(props.viewer.inputs, framing)
 
   const side = useSideState(
-    isTrue(settings.value.ui.panelBimTree) ||
-    isTrue(settings.value.ui.panelBimInfo),
+    isTrue(settings.ui.panelBimTree) ||
+    isTrue(settings.ui.panelBimInfo),
     Math.min(props.container.root.clientWidth * 0.25, 340)
   )
   const contextMenuRef = useRef<ContextMenuApi>(null)
@@ -129,9 +138,9 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
 
   const viewerState = useViewerState(props.viewer)
   const treeRef = useRef<TreeActionApi>()
-  const isolationRef = useWebglIsolation(props.viewer)
+  const isolationRef = useWebglIsolation(props.viewer, settings.isolation)
   const [controlBar, controlBarApi] = useCustomizer(
-    useControlBar(props.viewer, framing, modal, side, cursor, settings.value, sectionBoxRef, isolationRef)
+    useControlBar(props.viewer, framing, modal, side, cursor, settings, sectionBoxRef, isolationRef)
   )
 
   useSubscribe(viewerState.vim.onChange, (vim) => side.setHasBim(vim?.bim !== undefined))
@@ -145,7 +154,6 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
     unload: (vim) => props.viewer.unload(vim),
     isolation: isolationRef,
     framing,
-    settings: settings.api,
     get isolationPanel() { return isolationPanelHandle.current },
     get sectionBoxPanel() { return sectionBoxPanelHandle.current },
     sectionBox: sectionBoxRef,
@@ -175,20 +183,19 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
         visible={side.getContent() === 'bim'}
         isolation={isolationRef}
         treeRef={treeRef}
-        settings={settings.value}
+        settings={settings}
         bimInfoRef={bimInfoRef}
       />
       <SettingsPanel
         visible={side.getContent() === 'settings'}
-        content={getWebglSettingsContent(props.viewer)}
-        settings={settings}
+        content={getWebglSettingsContent(props.viewer, isolationRef)}
       />
     </>
   )
   return (
     <>
       <div className="vim-performance-div" ref={performanceRef}></div>
-      <Modal ref={modal} canFollowLinks={settings.value.capacity.canFollowUrl} />
+      <Modal ref={modal} canFollowLinks={settings.capacity.canFollowUrl} />
       <SidePanelMemo
         container={props.container}
         viewer={props.viewer}
@@ -198,10 +205,10 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
       <RestOfScreen side={side} content={() => {
         return <>
         <Overlay canvas={props.viewer.viewport.canvas}></Overlay>
-        {whenTrue(settings.value.ui.panelLogo, <LogoMemo/>)}
+        {whenTrue(settings.ui.panelLogo, <LogoMemo/>)}
         <ControlBar
           content={controlBar}
-          show={isTrue(settings.value.ui.panelControlBar)}
+          show={isTrue(settings.ui.panelControlBar)}
         />
         <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBoxRef}/>
         <IsolationPanel ref={isolationPanelHandle} state={isolationRef}/>
@@ -210,6 +217,7 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
           framing={framing}
           settings={settings}
         />
+
       </>
       }}/>
 

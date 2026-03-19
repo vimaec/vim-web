@@ -1,8 +1,9 @@
 // useUltraSectionBox.ts
 import * as Core from '../../core-viewers';
 import { useSectionBox, ISectionBoxAdapter, SectionBoxApi } from '../state/sectionBoxState';
+import { SectionBoxSettings } from '../webgl/settings';
 
-export function useUltraSectionBox(viewer: Core.Ultra.Viewer): SectionBoxApi {
+export function useUltraSectionBox(viewer: Core.Ultra.Viewer, initialState?: SectionBoxSettings): SectionBoxApi {
   const ultraAdapter: ISectionBoxAdapter = {
     setActive: (b) => {
       viewer.sectionBox.active = b;
@@ -20,5 +21,5 @@ export function useUltraSectionBox(viewer: Core.Ultra.Viewer): SectionBoxApi {
     getSceneBox: () => viewer.renderer.getBoundingBox(),
 
   };
-  return useSectionBox(ultraAdapter);
+  return useSectionBox(ultraAdapter, initialState);
 }

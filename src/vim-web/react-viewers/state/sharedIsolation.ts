@@ -1,4 +1,5 @@
 import { RefObject, useEffect, useRef } from "react";
+import { IsolationSettings } from "../webgl/settings";
 import { FuncRef, StateRef, useFuncRef, useStateRef, useSubscribe } from "../helpers/reactUtils";
 import type { ISignal } from '../../core-viewers/shared/events'
 
@@ -101,6 +102,14 @@ export interface IIsolationAdapter{
   getGhostOpacity(): number;
   setGhostOpacity(opacity: number): void;
 
+  getShowGhost(): boolean;
+  getTransparency(): boolean;
+  getOutlineEnabled(): boolean;
+  getOutlineQuality(): string;
+  getOutlineThickness(): number;
+  getSelectionFillMode(): string;
+  getSelectionOverlayOpacity(): number;
+
   setTransparency(enabled: boolean): void;
 
   setOutlineEnabled(enabled: boolean): void;
@@ -113,20 +122,20 @@ export interface IIsolationAdapter{
   setShowRooms(show: boolean): void;
 }
 
-export function useSharedIsolation(adapter : IIsolationAdapter){
+export function useSharedIsolation(adapter: IIsolationAdapter, initialState?: IsolationSettings){
   const _adapter = useRef(adapter);
   const visibility = useStateRef<VisibilityStatus>(() => adapter.computeVisibility(), true);
-  const autoIsolate = useStateRef<boolean>(false);
+  const autoIsolate = useStateRef<boolean>(initialState?.autoIsolate ?? false);
   const showPanel = useStateRef<boolean>(false);
-  const showRooms = useStateRef<boolean>(false);
-  const showGhost = useStateRef<boolean>(false);
-  const transparency = useStateRef<boolean>(true);
-  const outlineEnabled = useStateRef<boolean>(true);
-  const outlineQuality = useStateRef<string>('high');
-  const outlineThickness = useStateRef<number>(3);
-  const selectionFillMode = useStateRef<string>('none');
-  const selectionOverlayOpacity = useStateRef<number>(0.25);
-  const ghostOpacity = useStateRef<number>(() => adapter.getGhostOpacity(), true);
+  const showRooms = useStateRef<boolean>(initialState?.showRooms ?? false);
+  const showGhost = useStateRef<boolean>(() => adapter.getShowGhost(), true);
+  const transparency = useStateRef<boolean>(() => adapter.getTransparency(), true);
+  const outlineEnabled = useStateRef<boolean>(() => adapter.getOutlineEnabled(), true, 'vim.outline.enabled');
+  const outlineQuality = useStateRef<string>(() => adapter.getOutlineQuality(), true, 'vim.outline.quality');
+  const outlineThickness = useStateRef<number>(() => adapter.getOutlineThickness(), true, 'vim.outline.thickness');
+  const selectionFillMode = useStateRef<string>(() => adapter.getSelectionFillMode(), true, 'vim.selection.fillMode');
+  const selectionOverlayOpacity = useStateRef<number>(() => adapter.getSelectionOverlayOpacity(), true, 'vim.selection.overlayOpacity');
+  const ghostOpacity = useStateRef<number>(() => adapter.getGhostOpacity(), true, 'vim.ghost.opacity');
   const onAutoIsolate = useFuncRef(() => {
     if(adapter.hasSelection()){
       adapter.isolateSelection();

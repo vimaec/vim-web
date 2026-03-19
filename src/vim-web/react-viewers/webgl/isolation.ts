@@ -1,16 +1,17 @@
 import * as Core from "../../core-viewers";
 import { ISelectable } from "../../core-viewers/webgl";
 import { IIsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
+import { IsolationSettings } from "../webgl/settings";
 
-export function useWebglIsolation(viewer: Core.Webgl.Viewer){
-  const adapter = createWebglIsolationAdapter(viewer)
+export function useWebglIsolation(viewer: Core.Webgl.Viewer, initialState?: IsolationSettings){
+  const adapter = createWebglIsolationAdapter(viewer, initialState)
   return useSharedIsolation(adapter)
 }
 
-function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IIsolationAdapter {
-  var ghost: boolean = false;
-  var transparency: boolean = true;
-  var rooms: boolean = false;
+function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer, initialState?: IsolationSettings): IIsolationAdapter {
+  var ghost: boolean = initialState?.showGhost ?? false;
+  var transparency: boolean = initialState?.transparency ?? true;
+  var rooms: boolean = initialState?.showRooms ?? false;
 
   function updateMaterials(){
     const m = viewer.materials
@@ -93,6 +94,19 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer): IIsolationAdapt
 
     getGhostOpacity: () => viewer.materials.ghostOpacity,
     setGhostOpacity: (opacity: number) => viewer.materials.ghostOpacity = opacity,
+
+    getShowGhost: () => ghost,
+    getTransparency: () => transparency,
+    getOutlineEnabled: () => viewer.renderer.outlineEnabled,
+    getOutlineQuality: () => {
+      const scale = viewer.renderer.outlineScale
+      if (scale >= 2) return 'high'
+      if (scale >= 1) return 'medium'
+      return 'low'
+    },
+    getOutlineThickness: () => viewer.materials.outlineThickness,
+    getSelectionFillMode: () => viewer.materials.selectionFillMode,
+    getSelectionOverlayOpacity: () => viewer.materials.selectionOverlayOpacity,
 
     setTransparency: (enabled: boolean) => {
       transparency = enabled;

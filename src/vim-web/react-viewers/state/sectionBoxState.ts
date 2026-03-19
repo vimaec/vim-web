@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef, useLayoutEffect, useMemo, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSubscribe } from '../helpers/reactUtils';
 import * as THREE from 'three';
 import { addBox } from '../../utils/threeUtils';
 import type { ISignal } from '../../core-viewers/shared/events'
 import { FuncRef, StateRef, useFuncRef, useStateRef } from '../helpers/reactUtils';
+import { SectionBoxSettings } from '../webgl/settings';
 
 export type Offsets = {
   topOffset: string;
@@ -55,16 +56,17 @@ export interface ISectionBoxAdapter {
 }
 
 export function useSectionBox(
-  adapter: ISectionBoxAdapter
+  adapter: ISectionBoxAdapter,
+  initialState?: SectionBoxSettings
 ): SectionBoxApi {
   // Local state.
-  const active = useStateRef(false);
+  const active = useStateRef(initialState?.active ?? false);
   const visible = useStateRef(false);
   const showOffsetPanel = useStateRef(false);
-  const auto = useStateRef(false);
-  const topOffset = useStateRef(1);
-  const sideOffset = useStateRef(1);
-  const bottomOffset = useStateRef(1);
+  const auto = useStateRef(initialState?.auto ?? false);
+  const topOffset = useStateRef(initialState?.topOffset ?? 1);
+  const sideOffset = useStateRef(initialState?.sideOffset ?? 1);
+  const bottomOffset = useStateRef(initialState?.bottomOffset ?? 1);
   const requestId = useRef(0);
 
   // The reference box on which the offsets are applied.

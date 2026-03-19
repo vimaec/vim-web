@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   Design Tokens
+   ============================================================ */
 :root {
   --c-primary: #0590cc;
   --c-primary-green: #7ebf50;
@@ -58,6 +61,10 @@
 }
 
 /* Removes the shadow of the arrow that was cutting text in the tooltip */
+
+/* ============================================================
+   Base / Global
+   ============================================================ */
 .__react_component_tooltip::after,
 .__react_component_tooltip::before {
   content: none !important;
@@ -89,6 +96,9 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16.25' height='16.25' viewBox='0 0 16.25 16.25'%3E%3Cpath id='icon' d='M32.125,24a8.125,8.125,0,1,0,8.125,8.125A8.125,8.125,0,0,0,32.125,24ZM35.6,34.275A.937.937,0,0,1,34.275,35.6l-2.15-2.15-2.15,2.15a.937.937,0,0,1-1.326-1.326l2.15-2.15-2.15-2.15a.937.937,0,0,1,1.326-1.326l2.15,2.15,2.15-2.15A.937.937,0,1,1,35.6,29.975l-2.15,2.15Z' transform='translate(-24 -24)' fill='%238a8d95'/%3E%3C/svg%3E%0A");
 }
 
+/* ============================================================
+   Layout Containers
+   ============================================================ */
 .vim-help-overlay  {
   container-type: size;
 }
@@ -109,189 +119,341 @@
   container-type: size;
 }
 
-@container (width > 0px){
-  .vim-sectionbox-offsets .vc-text-xs{
-    font-size: min(5.5cqmin, 0.8rem);
-    line-height: min(6.5cqmin, 1rem);
-  }
-
-  .vim-sectionbox-offsets .vim-sectionbox-offsets-entry{
-    margin-top: min(3.0cqmin, 0.5rem);
-    margin-bottom: min(3.0cqmin, 0.5rem);
-  }
-
-  .vim-message-box .vc-text-xs{
-    font-size: min(5.5cqmin, 0.8rem);
-    line-height: min(6.5cqmin, 1rem);
-  }
-  .vim-message-box .vc-text-sm{
-    font-size: min(6cqmin, 0.875rem);
-    line-height: min(6.5cqmin, 1rem);
-  }
-  .vim-message-box .vc-text-base{
-    font-size: min(6.5cqmin, 1rem);
-    line-height: min(7cqmin, 1.15rem);
-  }
-  .vim-message-box .vc-text-lg{
-    font-size: min(7cqmin, 1.15rem);
-    line-height: min(7.5cqmin, 1.25rem);
-  }
-  .vim-message-box .vc-text-xl{
-    font-size: min(7.5cqmin, 1.25rem);
-    line-height: min(8cqmin, 1.35rem);
-  }
-  .vim-message-box {
-    padding: min(6cqmin, 1.5rem);
-  }
-
-  .vim-message-box .vim-divider{
-    margin-top: min(6cqmin, 1.5rem);
-    margin-bottom: min(6cqmin, 1.5rem);
-  }
-
-  .vim-message-box .vim-footer{
-    margin-top: min(6cqmin, 1.5rem);
-  }
-
-  .vim-message-box .vim-main-text{
-    margin-bottom: min(6cqmin, 1.5rem);
-  }
-
-  .vim-side-panel-content {
-    font-size: min(5.5cqmin, 0.8rem);
-    left: min(5cqmin, 1rem);
-    right: min(5cqmin, 1rem);
-    top:0px;
-    bottom:0px;
-  }
-  .vim-side-panel-nav{
-    height: min(6cqmin, 1.5rem);;
-  }
-
-  .vc-title{
-    font-weight: bold;
-    text-transform: uppercase;
-    font-size: min(5cqmin, 0.70rem);
-    line-height: min(12cqmin, 2rem);
-  }
-  .vc-subtitle{
-    font-weight: bold;
-    font-size: min(5cqmin, 0.70rem);
-    line-height: min(8cqmin, 1.5rem);
-  }
-
-  .vim-help-blocker{
-    gap:min(3cqh, 1rem)
-  }
-  
-  .vim-help-bottom{
-    min-height: min(4cqmin, 2rem);
-  }
-
-  .vim-help-title{
-    font-size: min(2.5cqmin, 0.9rem);
-  }
-  .vim-help-button {
-    font-size: min(2.5cqmin, 0.9rem);
-    padding-left:  min(2cqmin, 1rem);
-    padding-right:  min(2cqmin, 1rem);
-  }
-
-  .vim-control-bar-button {
-    height: min(8cqmin, 2.5rem);
-    width: min(8cqmin, 2.5rem);
-  }
-  .vim-control-bar-section {
-    gap: min(2cqmin, 0.5rem)
-  }
-
-  .vim-rest-of-screen .vc-text-xs {
-    font-size: min(2.0cqmin, 0.75rem);
-    line-height: min(2.5cqmin, 0.85rem);
-  }
-
-  .vim-control-bar-counter{
-    margin-bottom: min(1cqmin, 0.5rem);
-    margin-right: min(2cqmin, 0.5rem);
-    margin-left: max(-2cqmin, -0.75rem);
-  }
-
-  .vim-axes-panel,
-  .vim-axes-panel-empty {
-    border-radius: min(3cqmin, 1rem);
-    top: min(2cqmin, 1.5rem);
-    right: min(2cqmin, 1.5rem);
-    width: min(22cqmin, 112px);
-  }
-  
-  .vim-axes-panel {
-    height: min(28cqmin, 144px);
-  }
-  
-  .vim-axes-panel-empty {
-    height: min(22cqmin, 112px);
-  }
-  .vim-axes-panel-gizmo{
-    top: min(1cqmin, 0.5rem);
-    left: min(1cqmin, 0.5rem);
-    right: min(1cqmin, 0.5rem);
-    bottom: calc(20% + min(1cqmin, 0.5rem));
-  }
-  .vim-axes-button{
-    height: min(5cqmin, 1.25rem);
-    width: min(5cqmin, 1.25rem);
-  }
-
-  .vim-loading-box{
-    font-size: min(5cqmin, 1rem);
-  }
-  .vim-loading-widget, .vim-loading-widget::after{
-    height: min(5cqmin, 1rem);;
-  }
-  .vim-bim-lower-content{
-    gap: min(3cqmin, 1.5rem);
-  } 
-  .vim-bim-header-entry{
-    line-height: min(10cqmin, 1.5rem);
-  }
-  .vim-bim-body-entry{
-    line-height: min(10cqmin, 2rem);
-  }
-  .vim-bim-tree .rct-tree-item-title-container {
-    height: min(10cqmin, 2rem);
-  }
-  .vim-bim-tree .rct-tree-item-visibility {
-    width: min(6cqmin, 1rem);
-    height: min(6cqmin, 1rem);
-  }
-  .vim-bim-tree .rct-tree-item-arrow {
-    width: min(6cqmin, 1rem);
-  }
-  .vim-bim-tree .rct-tree-item-arrow:has(svg):before {
-    background-size: min(8cqmin, 1rem);
-  }
-
-  .vim-bim-actions{
-    height: min(8cqmin, 2rem);
-  }
-  .vim-settings-checkbox{
-    height: min(8cqmin, 1rem);
-    width: min(8cqmin, 1rem);
-  }
-  .vim-settings-textbox{
-    height: min(8cqmin, 1.5rem);
-  }
-
-  .vim-group-collapse-button{
-    height: min(6cqmin, 1.5rem);
-  }
+/* ============================================================
+   Panel
+   ============================================================ */
+.vim-settings-panel {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
 }
 
+.vim-panel-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  pointer-events: none;
+}
+
+.vim-panel {
+  background: white;
+  pointer-events: auto;
+}
+
+.vim-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0.5rem;
+  background: var(--c-light-gray);
+}
+
+.vim-panel-body {
+  margin: 0 0.5rem 0.5rem;
+  color: var(--c-darker-gray);
+}
+
+.vim-panel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vim-panel-group-title {
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  min-height: 32px;
+  padding: 0 0.25rem;
+  display: flex;
+  align-items: center;
+  text-transform: uppercase;
+  color: var(--c-dark-gray-cool);
+}
+
+.vim-panel-section-title {
+  font-weight: 500;
+  font-size: 0.8rem;
+  cursor: pointer;
+  min-height: 32px;
+  padding: 0 0.25rem;
+  display: flex;
+  align-items: center;
+  color: var(--c-dark-gray-cool);
+}
+
+.vim-panel-entry-value {
+  width: 33%;
+  font-size: 0.75rem;
+  color: var(--c-darker-gray);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vim-panel-subtitle {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--c-dark-gray-cool);
+  padding-top: 0.25rem;
+}
+
+.vim-panel-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  min-height: 24px;
+}
+
+.vim-panel-entry dt {
+  width: 50%;
+}
+
+.vim-panel-entry dd {
+  width: 33%;
+  display: flex;
+  flex-direction: column;
+}
+
+.vim-panel-entry[data-disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.vim-panel-entry-info {
+  color: var(--c-gray);
+  font-size: 0.75rem;
+}
+
+/* ============================================================
+   Settings Inputs
+   ============================================================ */
 .vim-settings-textbox{
   font-size: inherit;
 }
 
-/* === React Tree === */
+/* ============================================================
+   BIM Panel
+   ============================================================ */
+.vim-bim-lower {
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+}
+
+.vim-bim-lower-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.vim-bim-header-entry {
+  display: flex;
+  width: 100%;
+}
+
+.vim-bim-header-label {
+  margin-right: 0.25rem;
+  flex-shrink: 0;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--c-medium-gray);
+  width: 33%;
+}
+
+.vim-bim-header-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+}
+
+.vim-bim-section-title {
+  display: inline-flex;
+  width: auto;
+  border-top: 1px solid var(--c-light-gray);
+  border-left: 1px solid var(--c-light-gray);
+  border-right: 1px solid var(--c-light-gray);
+  border-radius: 4px 4px 0 0;
+  padding: 0 0.5rem;
+  color: var(--c-medium-gray);
+}
+
+.vim-bim-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--c-light-gray);
+  padding: 0 0.5rem;
+}
+
+.vim-bim-group-header-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vim-bim-collapse-icon {
+  max-height: 100%;
+  transition: transform 0.2s;
+  transform: rotate(0deg);
+}
+
+.vim-bim-collapse-icon[data-open] {
+  transform: rotate(180deg);
+}
+
+.vim-bim-body-entry {
+  display: flex;
+}
+
+.vim-bim-body-entry:nth-child(odd) {
+  background-color: var(--c-white);
+}
+
+.vim-bim-body-entry:nth-child(even) {
+  background-color: var(--c-gray-zebra);
+}
+
+.vim-bim-body-entry-title {
+  width: 33%;
+  padding: 0 0.5rem;
+  user-select: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-right: 1px solid var(--c-light-gray);
+}
+
+.vim-bim-body-entry-value {
+  width: 67%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 0.5rem;
+  color: var(--c-medium-gray);
+}
+
+/* BIM header: flat readonly entries, no groups */
+/* BIM header: flat readonly entries */
+.vim-bim-header .vim-panel-list {
+  gap: 0;
+}
+
+.vim-bim-header .vim-panel-entry {
+  overflow: hidden;
+}
+
+.vim-bim-header .vim-panel-entry dt {
+  flex-shrink: 0;
+  width: 33%;
+  color: var(--c-medium-gray);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.vim-bim-header .vim-panel-entry dd {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* BIM body: group → section → zebra entries */
+.vim-bim-body .vim-panel-list {
+  gap: 0;
+}
+
+.vim-bim-body .vim-panel-section {
+  margin-bottom: 4px;
+}
+
+.vim-bim-body .vim-panel-entry {
+  min-height: 32px;
+  overflow: hidden;
+}
+
+.vim-bim-body .vim-panel-entry:nth-child(odd) {
+  background: var(--c-white);
+}
+
+.vim-bim-body .vim-panel-entry:nth-child(even) {
+  background: var(--c-gray-zebra);
+}
+
+.vim-bim-body .vim-panel-entry dt {
+  flex-shrink: 0;
+  width: 33%;
+  padding: 0 0.5rem;
+  user-select: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-right: 1px solid var(--c-light-gray);
+}
+
+.vim-bim-body .vim-panel-entry dd {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 0.5rem;
+  color: var(--c-medium-gray);
+}
+
+/* "Instance Properties" tab (top-level group title) */
+.vim-bim-body .vim-panel-group-title {
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-top: 1px solid var(--c-light-gray);
+  border-left: 1px solid var(--c-light-gray);
+  border-right: 1px solid var(--c-light-gray);
+  border-radius: 4px 4px 0 0;
+  padding: 2px 0.5rem;
+  color: var(--c-medium-gray);
+}
+
+/* Section headers: STRUCTURAL, PHASING, etc. */
+.vim-bim-body .vim-panel-section-title {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--c-light-gray);
+  padding: 4px 0.5rem;
+  font-weight: bold;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--c-darker-gray);
+  list-style: none;
+  box-sizing: border-box;
+}
+
+.vim-bim-body .vim-panel-section-title::-webkit-details-marker {
+  display: none;
+}
+
+.vim-bim-body .vim-panel-section-title::after {
+  content: '∧';
+  font-size: 0.75rem;
+}
+
+.vim-bim-body details:not([open]) .vim-panel-section-title::after {
+  content: '∨';
+}
+
+/* ============================================================
+   BIM Tree
+   ============================================================ */
 .vim-bim-tree .rct-tree-root {
   padding: 0;
   width: 100%;
@@ -461,7 +623,83 @@
   background-image: var(--visible-royal-blue);
 }
 
-/* === Cursors ===*/
+/* ============================================================
+   Axes Panel
+   ============================================================ */
+.vim-axes-panel,
+.vim-axes-panel-empty {
+  pointer-events: none;
+  position: absolute;
+  overflow: hidden;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid white;
+  opacity: 0.5;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  filter: saturate(0);
+  transition: opacity 0.2s, filter 0.2s;
+}
+
+.vim-axes-panel:hover,
+.vim-axes-panel-empty:hover {
+  opacity: 1;
+  filter: saturate(1);
+}
+
+.vim-axes-panel.vim-hidden,
+.vim-axes-panel-empty.vim-hidden {
+  display: none;
+}
+
+.vim-axes-canvas {
+  position: absolute;
+  inset: 0;
+  order: 1;
+}
+
+.vim-axes-panel-gizmo {
+  position: absolute;
+}
+
+.vim-axes-panel-bar {
+  position: absolute;
+  top: 75%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.vim-axes-panel-buttons {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  order: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  background: white;
+}
+
+.vim-axes-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-medium-gray);
+  transition: color 0.2s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.vim-axes-button:hover {
+  color: var(--c-primary-royal);
+}
+
+/* ============================================================
+   Cursors
+   ============================================================ */
 .cursor-regular {
   cursor: default;
 }
@@ -501,7 +739,9 @@
     auto;
 }
 
-/* === Measure ===*/
+/* ============================================================
+   Measure
+   ============================================================ */
 
 .vim-text-renderer .vim-measure {
   font-size: 1rem;
@@ -538,7 +778,9 @@
   border: 1px solid var(--c-darkest-gray);
 }
 
-/* === Loader ===*/
+/* ============================================================
+   Loading
+   ============================================================ */
 
 .vim-loading-widget {
   width: 100%;
@@ -575,4 +817,201 @@
     left: 100%;
     transform: translateX(0%);
   }
+}
+
+/* ============================================================
+   Responsive Scaling
+   ============================================================ */
+@container (width > 0px){
+
+  /* --- Panel --- */
+  .vim-sectionbox-offsets .vc-text-xs{
+    font-size: min(5.5cqmin, 0.8rem);
+    line-height: min(6.5cqmin, 1rem);
+  }
+
+  .vim-panel-list {
+    gap: min(2cqmin, 4px);
+  }
+
+
+  /* --- Typography --- */
+  .vim-message-box .vc-text-xs{
+    font-size: min(5.5cqmin, 0.8rem);
+    line-height: min(6.5cqmin, 1rem);
+  }
+  .vim-message-box .vc-text-sm{
+    font-size: min(6cqmin, 0.875rem);
+    line-height: min(6.5cqmin, 1rem);
+  }
+  .vim-message-box .vc-text-base{
+    font-size: min(6.5cqmin, 1rem);
+    line-height: min(7cqmin, 1.15rem);
+  }
+  .vim-message-box .vc-text-lg{
+    font-size: min(7cqmin, 1.15rem);
+    line-height: min(7.5cqmin, 1.25rem);
+  }
+  .vim-message-box .vc-text-xl{
+    font-size: min(7.5cqmin, 1.25rem);
+    line-height: min(8cqmin, 1.35rem);
+  }
+  .vim-message-box {
+    padding: min(6cqmin, 1.5rem);
+  }
+
+  .vim-message-box .vim-divider{
+    margin-top: min(6cqmin, 1.5rem);
+    margin-bottom: min(6cqmin, 1.5rem);
+  }
+
+  .vim-message-box .vim-footer{
+    margin-top: min(6cqmin, 1.5rem);
+  }
+
+  .vim-message-box .vim-main-text{
+    margin-bottom: min(6cqmin, 1.5rem);
+  }
+
+  .vc-title{
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: min(5cqmin, 0.70rem);
+    line-height: min(12cqmin, 2rem);
+  }
+  .vc-subtitle{
+    font-weight: bold;
+    font-size: min(5cqmin, 0.70rem);
+    line-height: min(8cqmin, 1.5rem);
+  }
+
+  .vim-rest-of-screen .vc-text-xs {
+    font-size: min(2.0cqmin, 0.75rem);
+    line-height: min(2.5cqmin, 0.85rem);
+  }
+
+  /* --- Side Panel --- */
+  .vim-side-panel-content {
+    font-size: min(5.5cqmin, 0.8rem);
+    left: min(5cqmin, 1rem);
+    right: min(5cqmin, 1rem);
+    top:0px;
+    bottom:0px;
+  }
+  .vim-side-panel-nav{
+    height: min(6cqmin, 1.5rem);;
+  }
+
+  /* --- Help --- */
+  .vim-help-blocker{
+    gap:min(3cqh, 1rem)
+  }
+  
+  .vim-help-bottom{
+    min-height: min(4cqmin, 2rem);
+  }
+
+  .vim-help-title{
+    font-size: min(2.5cqmin, 0.9rem);
+  }
+  .vim-help-button {
+    font-size: min(2.5cqmin, 0.9rem);
+    padding-left:  min(2cqmin, 1rem);
+    padding-right:  min(2cqmin, 1rem);
+  }
+
+  /* --- Control Bar --- */
+  .vim-control-bar-button {
+    height: min(8cqmin, 2.5rem);
+    width: min(8cqmin, 2.5rem);
+  }
+  .vim-control-bar-section {
+    gap: min(2cqmin, 0.5rem)
+  }
+
+
+  .vim-control-bar-counter{
+    margin-bottom: min(1cqmin, 0.5rem);
+    margin-right: min(2cqmin, 0.5rem);
+    margin-left: max(-2cqmin, -0.75rem);
+  }
+
+  /* --- Axes --- */
+  .vim-axes-panel,
+  .vim-axes-panel-empty {
+    border-radius: min(3cqmin, 1rem);
+    top: min(2cqmin, 1.5rem);
+    right: min(2cqmin, 1.5rem);
+    width: min(22cqmin, 112px);
+  }
+  
+  .vim-axes-panel {
+    height: min(28cqmin, 144px);
+  }
+  
+  .vim-axes-panel-empty {
+    height: min(22cqmin, 112px);
+  }
+  .vim-axes-panel-gizmo{
+    top: min(1cqmin, 0.5rem);
+    left: min(1cqmin, 0.5rem);
+    right: min(1cqmin, 0.5rem);
+    bottom: calc(20% + min(1cqmin, 0.5rem));
+  }
+  .vim-axes-button{
+    height: min(5cqmin, 1.25rem);
+    width: min(5cqmin, 1.25rem);
+  }
+
+  /* --- Loading --- */
+  .vim-loading-box{
+    font-size: min(5cqmin, 1rem);
+  }
+  .vim-loading-widget, .vim-loading-widget::after{
+    height: min(5cqmin, 1rem);;
+  }
+
+  /* --- BIM Panel --- */
+  .vim-bim-lower-content{
+    gap: min(3cqmin, 1.5rem);
+  } 
+  .vim-bim-header-entry{
+    line-height: min(10cqmin, 1.5rem);
+  }
+  .vim-bim-body-entry{
+    line-height: min(10cqmin, 2rem);
+  }
+
+  .vim-bim-actions{
+    height: min(8cqmin, 2rem);
+  }
+
+  .vim-group-collapse-button{
+    height: min(6cqmin, 1.5rem);
+  }
+
+  /* --- BIM Tree --- */
+  .vim-bim-tree .rct-tree-item-title-container {
+    height: min(10cqmin, 2rem);
+  }
+  .vim-bim-tree .rct-tree-item-visibility {
+    width: min(6cqmin, 1rem);
+    height: min(6cqmin, 1rem);
+  }
+  .vim-bim-tree .rct-tree-item-arrow {
+    width: min(6cqmin, 1rem);
+  }
+  .vim-bim-tree .rct-tree-item-arrow:has(svg):before {
+    background-size: min(8cqmin, 1rem);
+  }
+
+  /* --- Settings Inputs --- */
+  .vim-settings-checkbox{
+    height: min(8cqmin, 1rem);
+    width: min(8cqmin, 1rem);
+  }
+  .vim-settings-textbox{
+    height: min(8cqmin, 1.5rem);
+  }
+
 }

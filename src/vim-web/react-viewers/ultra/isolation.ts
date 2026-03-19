@@ -2,20 +2,21 @@ import { IIsolationAdapter, useSharedIsolation as useSharedIsolation, Visibility
 import * as Core from "../../core-viewers";
 import { createState } from "../helpers/reactUtils";
 import { VisibilityState, type IVisibilitySynchronizer } from "../../core-viewers/ultra/visibility";
+import { IsolationSettings } from "../webgl/settings";
 
 // Internal access — these properties exist on concrete classes but are hidden from public API
 type Viewer = Core.Ultra.Viewer
 type Vim = Core.Ultra.IUltraVim & { readonly visibility: IVisibilitySynchronizer }
 type Element3D = Core.Ultra.IUltraElement3D & { state: VisibilityState }
 
-export function useUltraIsolation(viewer: Viewer){
-  const adapter = createAdapter(viewer)
+export function useUltraIsolation(viewer: Viewer, initialState?: IsolationSettings){
+  const adapter = createAdapter(viewer, initialState)
   return useSharedIsolation(adapter)
 }
 
-function createAdapter(viewer: Viewer): IIsolationAdapter {
+function createAdapter(viewer: Viewer, initialState?: IsolationSettings): IIsolationAdapter {
 
-  const ghost = createState<boolean>(false);
+  const ghost = createState<boolean>(initialState?.showGhost ?? false);
 
   // Helper function to hide objects in ghost or hidden state
   const hide = (objects: Element3D[] | 'all') =>{
@@ -121,6 +122,13 @@ function createAdapter(viewer: Viewer): IIsolationAdapter {
 
     setTransparency: (enabled: boolean) => {console.log("setTransparency not implemented")},
 
+    getShowGhost: () => ghost.get(),
+    getTransparency: () => true,
+    getOutlineEnabled: () => true,
+    getOutlineQuality: () => 'high',
+    getOutlineThickness: () => 2,
+    getSelectionFillMode: () => 'none',
+    getSelectionOverlayOpacity: () => 0.25,
     setOutlineEnabled: (_enabled: boolean) => {},
     setOutlineQuality: (_quality: string) => {},
     setOutlineThickness: (_thickness: number) => {},

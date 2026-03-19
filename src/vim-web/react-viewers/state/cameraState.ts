@@ -47,9 +47,9 @@ interface ICameraAdapter {
   getSceneBox: () => Promise<THREE.Box3 | undefined>
 }
 
-export function useFraming(adapter: ICameraAdapter, section: SectionBoxApi){
+export function useFraming(adapter: ICameraAdapter, section: SectionBoxApi, initialAutoCamera = false){
 
-  const autoCamera = useStateRef(false)
+  const autoCamera = useStateRef(initialAutoCamera)
   autoCamera.useOnChange((v) => {
     if (v) {frameSelection.call()}
   });
