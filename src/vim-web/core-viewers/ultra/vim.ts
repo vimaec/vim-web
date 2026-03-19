@@ -250,7 +250,7 @@ export class Vim implements IUltraVim {
       try {
         const state = await this._rpc.RPCGetVimLoadingState(handle)
         this._logger.log('state :', state)
-        result.onProgress({ type: 'percent', current: state.progress, total: 100 })
+        result.onProgress({ type: 'percent', current: state.progress * 100, total: 100 })
         switch (state.status) {
           case VimLoadingStatus.Loading:
           case VimLoadingStatus.Downloading:
