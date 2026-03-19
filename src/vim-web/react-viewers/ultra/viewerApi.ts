@@ -5,8 +5,6 @@ import { SectionBoxApi } from '../state/sectionBoxState';
 import { IsolationApi } from '../state/sharedIsolation';
 import { ControlBarApi } from '../controlbar/controlBar';
 import { GenericPanelApi } from '../generic/genericPanel';
-import { SettingsApi } from '../state/settingsApi';
-import { UltraSettings } from './settings';
 import { Container } from '../container';
 
 export type UltraViewerApi = {
@@ -61,12 +59,6 @@ export type UltraViewerApi = {
    * @see {@link IsolationApi}
    */
   isolation: IsolationApi
-
-  /**
-   * Settings API managing UI feature toggles applied to the viewer.
-   * Use `update()` to modify settings at runtime.
-   */
-  settings: SettingsApi<UltraSettings>
 
   /**
    * API to interact with the isolation panel.

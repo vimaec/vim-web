@@ -13,6 +13,7 @@
 import { DependencyList, useEffect, useMemo, useRef, useState } from "react";
 import type { ISimpleEvent } from '../../core-viewers/shared/events'
 import { SimpleEventDispatcher } from 'ste-simple-events'
+import { storageGet, storageSet } from '../settings/localStorage'
 
 /**
  * Observable state container. Read, write, and subscribe to changes.
@@ -100,8 +101,14 @@ export function useRefresher() : StateRefresher{
  * @returns An object implementing StateRef along with additional helper hooks.
  */
 
-export function useStateRef<T>(initialValue: T | (() => T), isLazy = false) {
+export function useStateRef<T>(initialValue: T | (() => T), isLazy = false, storageKey?: string) {
   const getInitialValue = (): T => {
+    if (storageKey) {
+      const stored = storageGet(storageKey)
+      if (stored !== null) {
+        try { return JSON.parse(stored) as T } catch {}
+      }
+    }
     if (isLazy && typeof initialValue === 'function') {
       return (initialValue as () => T)();
     }
@@ -113,7 +120,7 @@ export function useStateRef<T>(initialValue: T | (() => T), isLazy = false) {
   const [box, setBox] = useState<Box<T>>(() => ({
     current: getInitialValue()
   }));
-  
+
   const ref = useRef<T>(undefined!);
   if (ref.current === undefined) {
     ref.current = getInitialValue();
@@ -135,6 +142,7 @@ export function useStateRef<T>(initialValue: T | (() => T), isLazy = false) {
 
     ref.current = finalValue;
     setBox({ current: finalValue });
+    if (storageKey) storageSet(storageKey, JSON.stringify(finalValue));
     event.current.dispatch(finalValue);
   };
 

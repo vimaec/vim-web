@@ -1,6 +1,7 @@
 import { RecursivePartial } from "../../utils"
 import { UserBoolean } from "../settings/userBoolean"
 import { ControlBarCameraSettings, ControlBarCursorSettings, ControlBarMeasureSettings, ControlBarSectionBoxSettings, ControlBarVisibilitySettings } from "../state/controlBarState"
+import { PointerMode } from "../../core-viewers"
 
 export type PartialWebglSettings = RecursivePartial<WebglSettings>
   
@@ -15,13 +16,42 @@ export type PartialWebglSettings = RecursivePartial<WebglSettings>
  *   ui: { panelBimTree: false, miscHelp: false }
  * })
  */
+export type IsolationSettings = {
+  autoIsolate: boolean
+  showGhost: boolean
+  transparency: boolean
+  showRooms: boolean
+}
+
+export type SectionBoxSettings = {
+  active: boolean
+  auto: boolean
+  topOffset: number
+  sideOffset: number
+  bottomOffset: number
+}
+
+export type CursorSettings = {
+  default: PointerMode
+}
+
+export type CameraSettings = {
+  autoCamera: boolean
+}
+
+export type CapacitySettings = {
+  canFollowUrl: boolean
+  canGoFullScreen: boolean
+  canDownload: boolean
+  canReadLocalStorage: boolean
+}
+
 export type WebglSettings = {
-  capacity: {
-    canFollowUrl: boolean
-    canGoFullScreen: boolean
-    canDownload: boolean
-    canReadLocalStorage: boolean
-  }
+  capacity: CapacitySettings
+  isolation: IsolationSettings
+  sectionBox: SectionBoxSettings
+  cursor: CursorSettings
+  camera: CameraSettings
   ui: ControlBarCameraSettings &
       ControlBarCursorSettings &
       ControlBarSectionBoxSettings &
@@ -61,6 +91,25 @@ export function getDefaultSettings(): WebglSettings {
       canGoFullScreen: true,
       canDownload: true,
       canReadLocalStorage: true
+    },
+    isolation: {
+      autoIsolate: false,
+      showGhost: false,
+      transparency: true,
+      showRooms: false,
+    },
+    sectionBox: {
+      active: false,
+      auto: false,
+      topOffset: 1,
+      sideOffset: 1,
+      bottomOffset: 1,
+    },
+    cursor: {
+      default: PointerMode.ORBIT,
+    },
+    camera: {
+      autoCamera: false,
     },
     ui: {
       panelLogo: true,

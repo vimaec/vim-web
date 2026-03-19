@@ -13,8 +13,6 @@ import { ModalApi } from '../panels/modal'
 import { SectionBoxApi } from '../state/sectionBoxState'
 import { IsolationApi } from '../state/sharedIsolation'
 import { GenericPanelApi } from '../generic/genericPanel'
-import { SettingsApi } from '../state/settingsApi'
-import { WebglSettings } from './settings'
 
 export type { OpenSettings } from './loading'
 
@@ -90,11 +88,6 @@ export type WebglViewerApi = {
    * Control bar API managing the content and behavior of the control bar.
    */
   controlBar: ControlBarApi
-
-  /**
-   * Settings API managing settings applied to the viewer.
-   */
-  settings: SettingsApi<WebglSettings>
 
   /**
    * Message API to interact with the loading box.
