@@ -31,10 +31,9 @@ export type LoadingBoxPropsTyped = LoadingBoxProps & {
  */
 export function LoadingBox (props: { content: LoadingBoxProps }) {
   return (
-    <div className="vim-loading-box vc-flex vc-box-content vc-gap-2 vc-flex-col vc-max-w-[320px] vc-w-[72%] vc-self-center vc-rounded vc-bg-white vc-px-5 vc-py-4 vc-shadow-lg">
-
+    <div className="vim-loading-box">
       {content(props.content)}
-      <div className="vim-loading-widget vc-mt-2"></div>
+      <div className="vim-loading-widget"></div>
       {props.content.more ?? null}
     </div>
   )
@@ -47,8 +46,8 @@ export function LoadingBox (props: { content: LoadingBoxProps }) {
  */
 function content (info: LoadingBoxProps) {
   return (
-    <h1 className={'vim-loading-title vc-w-full vc-text-gray-medium'}>
-      <div className="vc-flex vc-w-full vc-justify-between">
+    <h1 className='vim-loading-title'>
+      <div className="vim-loading-header-row">
         <span> {info.message ?? 'Loading...'}</span>
         {info.progress ? <span>{formatProgress(info.progress, info.mode)} </span> : null}
       </div>
@@ -75,12 +74,11 @@ function formatProgress (progress: number, mode? : ProgressMode): string {
 
 export function UltraSuggestion() {
   return (
-    <div className="vc-text-secondary-yellow vc-text-sm vc-text-center vc-max-w-md vc-mx-auto vc-mt-2">
+    <div className="vim-ultra-suggestion">
       <span>Large model? Long wait time?</span>
       <div>
         Check out {' '}
         <a
-          className='vc-text-primary vc-underline vc-font-bold'
           href='https://docs.vimaec.com/docs/vim-flex/vim-ultra'
           target="_blank"
           rel="noopener noreferrer"

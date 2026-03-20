@@ -13,7 +13,7 @@ export function serverStreamError (url: string): MessageBoxProps {
 
 function body (url: string): JSX.Element {
   return (
-    <div className={style.vcRoboto}>
+    <>
       {style.mainText(<>
         We encountered a streaming error with VIM Ultra.
       </>)}
@@ -23,6 +23,6 @@ function body (url: string): JSX.Element {
         'Close other applications that may be using VIM Ultra',
         'Restart VIM Ultra',
       ])}
-    </div>
+    </>
   )
 }

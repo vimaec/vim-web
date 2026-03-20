@@ -46,25 +46,15 @@ function MenuToast (props: { viewer: Core.Webgl.Viewer; side: SideState }) {
 
   return (
     <div
-      className={
-        'vim-menu-toast vc-pointer-events-none vc-absolute vc-top-[10%] vc-flex'
-      }
+      className='vim-menu-toast-wrapper'
       style={{
         marginLeft: props.side.getWidth(),
         width: `calc(100% - ${props.side.getWidth()}px)`
       }}
     >
-      <div
-        className={`vim-menu-toast vc-m-auto vc-flex vc-items-center vc-justify-between vc-rounded vc-bg-gray-warm vc-py-2 vc-px-5 vc-shadow-lg vc-transition-all ${
-          visible ? 'vc-opacity-100' : 'vc-opacity-0'
-        }`}
-      >
-        <span className="vc-text-sm vc-font-semibold vc-uppercase vc-text-gray-light">
-          Speed:
-        </span>
-        <span className="vc-ml-1 vc-text-lg vc-font-bold vc-text-white">
-          {speed + 25}
-        </span>
+      <div className='vim-menu-toast' data-visible={String(!!visible)}>
+        <span className="vim-menu-toast-label">Speed:</span>
+        <span className="vim-menu-toast-value">{speed + 25}</span>
       </div>
     </div>
   )

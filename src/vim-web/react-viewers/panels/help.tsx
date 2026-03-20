@@ -15,22 +15,17 @@ export function MenuHelp () {
   return (
     <>
       <div
-        className="vim-help-blocker vc-gap-4 vc-justify-center vc-max-w-[900px] vc-w-[90%] vc-h-[80%] vc-absolute vc-p-5 vc-flex vc-flex-col"
+        className="vim-help-blocker"
         onClick={(e) => {
           e.stopPropagation()
         }}
       >
         <div className="vim-help-top">
-          <h2
-            className="vim-help-title vc-text-center vc-font-bold vc-uppercase vc-text-white"
-          >
+          <h2 className="vim-help-title">
             Key navigation controls
           </h2>
         </div>
-          <img
-            className="vim-help-img vc-min-h-0"
-            src={helpImage}
-          ></img>
+        <img className="vim-help-img" src={helpImage}></img>
       </div>
     </>
   )

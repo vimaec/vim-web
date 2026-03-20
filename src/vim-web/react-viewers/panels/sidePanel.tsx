@@ -4,7 +4,6 @@
 
 import React, { useEffect, useRef } from 'react'
 import * as Core from '../../core-viewers'
-import * as Icons from '../icons'
 import { SideState } from '../state/sideState'
 import { Enable, Resizable } from 're-resizable'
 import { Container } from '../container'
@@ -72,7 +71,6 @@ export function SidePanel (props: {
     props.side.popContent()
   }
 
-  const iconOptions = { height: 20, width: 20, fill: 'currentColor' }
   return (
     <Resizable
       enable={
@@ -104,19 +102,14 @@ export function SidePanel (props: {
       style={{
         position: 'absolute'
       }}
-      className={`vim-side-panel vc-top-0 vc-left-0 vc-z-20 
-            vc-bg-gray-lightest vc-text-gray-darker 
-            vc-border-r vc-border-gray-light 
-            ${props.side.getContent() !== 'none' ? '' : 'vc-hidden'}`}
+      className='vim-side-panel'
+      data-hidden={props.side.getContent() === 'none' || undefined}
     >
       <button
-        className="vim-side-panel-nav vc-z-30 vc-absolute vc-right-1 vc-top-1 vc-w-4 vc-h-4 vc-text-gray-medium"
+        className="vim-side-panel-nav"
         onClick={onNavBtn}
-      >
-        {Icons.closeIcon({ ...iconOptions, className: 'vc-max-h-full vc-max-w-full' })}
-      </button>
-      <div
-       className='vim-side-panel-content vc-absolute vc-top-0 vc-bottom-0'>
+      />
+      <div className='vim-side-panel-content'>
 
         {props.content()}
       </div>

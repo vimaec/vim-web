@@ -27,7 +27,7 @@ export function RestOfScreen (props:{
   }, [])
 
   return (
-    <div className='vim-rest-of-screen vc-absolute vc-right-0 vc-top-0 vc-bottom-0' style={{
+    <div className='vim-rest-of-screen' style={{
       left: props.side.getWidth(),
       width: `calc(100% - ${props.side.getWidth()}px)`
     }}>

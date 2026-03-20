@@ -60,7 +60,7 @@ export const Modal = forwardRef<ModalApi, {canFollowLinks: boolean}>((props, ref
   if(top === undefined) {return null}
 
   return <div
-  className="vim-modal vc-absolute vc-inset-0 vc-z-40 vc-flex vc-items-center vc-justify-center vc-bg-gray"
+  className="vim-modal"
   onClick={top?.canClose ? () => top?.onClose?.() : () => {}}
   onContextMenu={(event) => event.preventDefault()}
 >
@@ -73,7 +73,7 @@ function closeButton (onButton: () => void) {
   if (onButton === undefined) return null
   return (
     <button
-      className="vim-help-close vc-absolute vc-top-[20px] vc-right-[20px] vc-text-white"
+      className="vim-help-close"
       onClick={onButton}
     >
       {Icons.closeIcon({

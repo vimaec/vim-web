@@ -13,12 +13,12 @@ export function fileOpeningError (url: string): MessageBoxProps {
 
 function serverFileOpeningErrorBody (url : string) {
   return (
-    <div className={style.vcRoboto}>
+    <>
       {style.mainText(<>
         We encountered an error opening the VIM file in VIM Ultra.
       </>)}
       {style.subTitle('Details')}
       {style.dotList([style.bullet('File path:', url)])}
-    </div>
+    </>
   )
 }
