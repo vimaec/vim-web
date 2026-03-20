@@ -15,6 +15,7 @@ import {
 import { G3dSubset, ISubset } from './progressive/g3dSubset'
 import { VimMeshFactory } from './progressive/vimMeshFactory'
 import { IVim } from '../../shared/vim'
+import { SignalDispatcher, ISignal } from 'ste-signals'
 import { MappedG3d } from './progressive/mappedG3d'
 
 /**
@@ -73,6 +74,8 @@ export interface IWebglVim extends IVim<IElement3D> {
   load(subset?: ISubset): Promise<void>
   /** Removes all loaded geometry from the renderer (does NOT unload the vim from the viewer). */
   clear(): void
+  /** Fires after `load(subset)` completes and new geometry is available. */
+  readonly onGeometryLoaded: ISignal
 }
 
 /** @internal */
@@ -123,6 +126,9 @@ export class Vim implements IWebglVim {
 
   private readonly _factory: VimMeshFactory
   private readonly _elementToObject = new Map<number, Element3D>()
+  private readonly _onGeometryLoaded = new SignalDispatcher()
+
+  get onGeometryLoaded (): ISignal { return this._onGeometryLoaded.asEvent() }
 
   constructor (
     header: VimHeader | undefined,
@@ -168,6 +174,12 @@ export class Vim implements IWebglVim {
    * @param {number} id - The element ID to retrieve objects for.
    * @returns {THREE.Object3D[]} An array of objects corresponding to the element ID, or an empty array if none are found.
    */
+  getElementFromUniqueId (uniqueId: string): Element3D | undefined {
+    const element = this.map.getElementFromUniqueId(uniqueId)
+    if (element === undefined) return
+    return this.getElementFromIndex(element)
+  }
+
   getElementsFromId (id: number | bigint) {
     const elements = this.map.getElementsFromElementId(id)
     return elements
@@ -225,6 +237,7 @@ export class Vim implements IWebglVim {
     subset ??= this.subset()
     if (subset.getInstanceCount() === 0) return
     this._factory.add(subset as G3dSubset)
+    this._onGeometryLoaded.dispatch()
   }
 
   /**

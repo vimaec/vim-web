@@ -121,9 +121,11 @@ export class Vim implements IUltraVim {
     return object
   }
 
+  getElementFromUniqueId(_uniqueId: string): Element3D | undefined {
+    return undefined
+  }
+
   getElementsFromId(_id: number | bigint): Element3D[] {
-    // Ultra viewer does not support element ID lookup.
-    // Use getElementFromIndex() or getAllElements() instead.
     return []
   }
 

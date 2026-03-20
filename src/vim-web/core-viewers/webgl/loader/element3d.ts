@@ -40,7 +40,9 @@ export interface IElement3D extends ISelectable {
   readonly elementUniqueId: string | undefined
   /** The geometry instances associated with this element. */
   readonly instances: number[] | undefined
-  /** True if this element has associated geometry. */
+  /** True if this element has geometry definitions (instances). Always available after the vim is parsed, even before geometry is loaded. */
+  readonly hasGeometry: boolean
+  /** True if this element has loaded mesh data. Only true after `vim.load()` has been called for a subset containing this element. */
   readonly hasMesh: boolean
   /** True if this element is a room. */
   readonly isRoom: boolean
@@ -121,8 +123,16 @@ export class Element3D implements IElement3D {
   readonly instances: number[] | undefined
 
   /**
-   * Checks if this object has associated geometry.
-   * @returns {boolean} True if this object has geometry, otherwise false.
+   * True if this element has geometry definitions (instances).
+   * Always available after the vim is parsed, even before geometry is loaded.
+   */
+  get hasGeometry () {
+    return (this.instances?.length ?? 0) > 0
+  }
+
+  /**
+   * True if this element has loaded mesh data.
+   * Only true after `vim.load()` has been called for a subset containing this element.
    */
   get hasMesh () {
     return (this._meshes?.length ?? 0) > 0
