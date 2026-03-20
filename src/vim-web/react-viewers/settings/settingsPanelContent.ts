@@ -5,7 +5,7 @@ import { IsolationApi } from '../state/sharedIsolation'
 export function getIsolationSettings(isolation: IsolationApi): GenericEntryType[] {
   return [
     {
-      type: 'subtitle',
+      type: 'section',
       id: SettingsPanelKeys.ControlBarVisibilitySubtitle,
       label: 'Render Settings',
     },
@@ -26,7 +26,8 @@ export function getIsolationSettings(isolation: IsolationApi): GenericEntryType[
       id: 'ghostOpacity',
       label: 'Ghost Opacity',
       info: '[0,1]',
-      transform: (n) => Math.max(0.01, Math.min(1, n)),
+      step: 1 / 255,
+      transform: (n) => Math.max(0, Math.min(1, n)),
       state: isolation.ghostOpacity,
     },
     {

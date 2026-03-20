@@ -17,9 +17,9 @@ export const SectionBoxPanel = forwardRef<GenericPanelApi, { state: SectionBoxAp
         anchorElement={document.getElementById("vim-control-bar")}
         showPanel={props.state.showOffsetPanel}
         entries={[
-          { type: "number", id: Ids.topOffset, label: "Top Offset", state: props.state.topOffset },
-          { type: "number", id: Ids.sideOffset, label: "Side Offset", state: props.state.sideOffset },
-          { type: "number", id: Ids.bottomOffset, label: "Bottom Offset", state: props.state.bottomOffset },
+          { type: "number", id: Ids.topOffset, label: "Top Offset", min: 0, state: props.state.topOffset },
+          { type: "number", id: Ids.sideOffset, label: "Side Offset", min: 0, state: props.state.sideOffset },
+          { type: "number", id: Ids.bottomOffset, label: "Bottom Offset", min: 0, state: props.state.bottomOffset },
         ]}
       />
     );

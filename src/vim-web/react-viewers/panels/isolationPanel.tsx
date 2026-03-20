@@ -42,7 +42,8 @@ export const IsolationPanel = forwardRef<GenericPanelApi, { state: IsolationApi 
             enabled: () => props.state.showGhost.get(),
             min: 0,
             max: 1,
-            step: 0.05
+            step: 1 / 255,
+            transform: (n) => Math.max(0, Math.min(1, n))
           },
           {
             type: "bool",
