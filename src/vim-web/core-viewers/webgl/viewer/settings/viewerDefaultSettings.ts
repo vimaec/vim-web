@@ -38,7 +38,7 @@ export function getDefaultViewerSettings(): ViewerSettings {
         opacityAlways: 0.1
       }
     },
-    background: { color: new THREE.Color(0xffffff) },
+    background: { color: new THREE.Color().setRGB(0xF0 / 255, 0xF0 / 255, 0xF0 / 255) },
     materials: {
       ghost: {
         color: new THREE.Color(0x0E0E0E),

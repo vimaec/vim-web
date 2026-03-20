@@ -170,7 +170,8 @@ export function useSharedIsolation(adapter: IIsolationAdapter, initialState?: Is
   showRooms.useOnChange((v) => adapter.setShowRooms(v));
 
   ghostOpacity.useValidate((next, current) => {
-    return next <= 0 ? current : next
+    const rounded = Math.round(Math.max(0, Math.min(1, next)) * 100) / 100
+    return rounded <= 0 ? current : rounded
   });
   ghostOpacity.useOnChange((v) => adapter.setGhostOpacity(v));
 
