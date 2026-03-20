@@ -95,20 +95,7 @@ async function createWebgl (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDiv
   
   const url = getPathFromUrl() ?? 'https://storage.cdn.vimaec.com/samples/residence.v1.2.75.vim'
   const request = viewer.load({ url })
-  viewer.core.selection.onSelectionChanged.subscribe(() => {
-    console.log('Selection changed:', viewer.core.selection.count())
-  })
-  
-  const vim = await request.getVim()
-  if (!vim) return
-
-  // TEST: Color everything red, then reset after 3 seconds
-  const red = new VIM.THREE.Color(0xff0000)
-  const elements = vim.getAllElements().filter(e => e.hasMesh)
-  for (const e of elements) {
-    //e.outline = true
-  }
-
+  await request.getVim()
   viewer.framing.frameScene.call()
 }
 
@@ -133,11 +120,7 @@ async function createUltra (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDiv
     return
   }
   viewer.framing.frameScene.call()
-}
-
-
-
-function getPathFromUrl () {
+}function getPathFromUrl () {
   const params = new URLSearchParams(window.location.search)
   return params.get('vim') ?? undefined
 }
