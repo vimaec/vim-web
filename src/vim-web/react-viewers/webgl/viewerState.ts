@@ -2,6 +2,7 @@
  * @module viw-webgl-react
  */
 
+import { useEffect } from 'react'
 import * as Core from '../../core-viewers'
 import { AugmentedElement, getElements } from '../helpers/element'
 import { StateRef, useStateRef, useSubscribe } from '../helpers/reactUtils'
@@ -34,17 +35,32 @@ export function useViewerState (viewer: Core.Webgl.Viewer) : ViewerState {
     filteredElements.set(filtered)
   }
 
-  vim.useOnChange(async (v) => {
+  const refreshElements = async () => {
+    const v = vim.get()
     if (!v) { allElements.set([]); return }
     const elements = await getElements(v)
     allElements.set(elements)
-  })
+  }
 
-  filter.useOnChange((f) => {
+  vim.useOnChange(() => refreshElements())
+
+  // Subscribe to onGeometryLoaded on the current vim.
+  // Handles open() + vim.load(subset) where geometry arrives after the vim is added.
+  useEffect(() => {
+    const sub = (v: Core.Webgl.IWebglVim) => v?.onGeometryLoaded.subscribe(() => refreshElements())
+    let unsub = sub(vim.get())
+    const outerUnsub = vim.onChange.subscribe((v) => {
+      unsub?.()
+      unsub = sub(v)
+    })
+    return () => { unsub?.(); outerUnsub() }
+  }, [])
+
+  filter.useOnChange(() => {
     applyFilter()
   })
 
-  allElements.useOnChange((elements) => {
+  allElements.useOnChange(() => {
     applyFilter()
   })
 

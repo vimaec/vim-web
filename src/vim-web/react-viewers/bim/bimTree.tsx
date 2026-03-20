@@ -110,7 +110,7 @@ export const BimTree = forwardRef<TreeActionApi, BimTreeProps>((props, ref) => {
   // Display loading if no elements
   if (!props.treeData) {
     return (
-      <div className="vim-bim-tree" ref={div}>
+      <div className="vim-bim-tree" ref={div} style={{ alignItems: 'center', justifyContent: 'center' }}>
         Bim data not available . . .
       </div>
     )

@@ -170,13 +170,18 @@ export function useStateRef<T>(initialValue: T | (() => T), isLazy = false, stor
      */
     useOnChange(on: (value: T) => void | (() => void) | Promise<void>) {
       useEffect(() => {
-        return event.current.subscribe((value) => {
-          const result = on(value);
-          // If it's a promise, we just call it and ignore resolution/rejection
+        let cleanup: (() => void) | undefined
+        const unsub = event.current.subscribe((value) => {
+          cleanup?.()
+          cleanup = undefined
+          const result = on(value)
           if (result instanceof Promise) {
-            result.catch(console.error); // Optional: log errors
+            result.catch(console.error)
+          } else if (typeof result === 'function') {
+            cleanup = result
           }
-        });
+        })
+        return () => { cleanup?.(); unsub() }
       }, []);
     },
     
