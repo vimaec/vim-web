@@ -143,7 +143,7 @@ export const BimTree = forwardRef<TreeActionApi, BimTreeProps>((props, ref) => {
       onBlur={() => (props.viewer.inputs.keyboard.active = true)}
     >
       <ControlledTreeEnvironment
-        renderDepthOffset={div.current ? Math.min(div.current.clientWidth * 0.04, 10) : 10 }
+        renderDepthOffset={10}
         items={props.treeData.nodes}
 
         getItemTitle={(item) => (item as VimTreeNode).title}
