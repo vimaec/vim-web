@@ -43,7 +43,7 @@ function groupToItems(group: Group, api: BimInfoPanelApi): GenericEntryType[] {
     return [{ type: 'element', id: entryId('g', group.key, 0), element: React.createElement(api.onRenderBodyGroup, { data: group, standard }) }]
   }
   return [
-    { type: 'subtitle', id: entryId('g', group.key, 0), label: group.title ?? '' },
+    { type: 'section', id: entryId('g', group.key, 0), label: group.title ?? '' },
     ...group.content.map((e, i) => bodyEntryToGeneric(e, i, api))
   ]
 }

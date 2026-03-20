@@ -8,7 +8,7 @@ import { MapTree, sort, toMapTree } from '../helpers/data'
 import { AugmentedElement } from '../helpers/element'
 
 /**
- * Custom visibility CSS classes to avoid clashes with tailwind
+ * Custom visibility CSS classes.
  */
 export type NodeVisibility = 'vim-visible' | 'vim-undefined' | 'vim-hidden'
 

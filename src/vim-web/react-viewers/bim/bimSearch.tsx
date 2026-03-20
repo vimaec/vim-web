@@ -22,6 +22,7 @@ export function BimSearch (props: {
 }) {
   const [text, setText] = useState('')
   const changeTimeout = useRef<ReturnType<typeof setTimeout>>()
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     setText(props.filter)
@@ -44,6 +45,7 @@ export function BimSearch (props: {
     setText('')
     clearTimeout(changeTimeout.current)
     props.setFilter('')
+    inputRef.current?.focus()
   }
 
   const onFocus = () => {
@@ -55,9 +57,9 @@ export function BimSearch (props: {
   }
 
   return (
-    <div className="vim-bim-search vc-relative vc-flex vc-items-center">
+    <div className="vim-bim-search">
       <svg
-        className="search-icon -vc-mr-4 vc-text-gray-light"
+        className="search-icon"
         xmlns="http://www.w3.org/2000/svg"
         width="16"
         viewBox="0 0 256 256"
@@ -69,10 +71,11 @@ export function BimSearch (props: {
         />
       </svg>
       <input
-        className="search-input vc-placeholder-text-gray-medium vc-w-full vc-border-b vc-border-t-0 vc-border-l-0 vc-border-r-0 vc-border-gray-light vc-bg-transparent vc-py-1 vc-pl-6 vc-outline-none focus-within:vc-border-b-primary-royal focus-within:vc-text-primary-royal focus-within:vc-outline-none focus:vc-outline-none active:vc-text-primary-royal"
+        ref={inputRef}
+        className="search-input"
         type="input"
         name="name"
-        placeholder="Type here to search"
+        placeholder="Search elements..."
         value={text}
         onFocus={onFocus}
         onBlur={onBlur}
@@ -81,7 +84,7 @@ export function BimSearch (props: {
       {text.length > 0
         ? (
         <button
-          className="search-clear vc-absolute vc-right-0 vc-flex vc-h-4 vc-w-4 vc-shrink-0 vc-items-center vc-justify-center vc-rounded-full vc-bg-gray-medium vc-text-white"
+          className="search-clear"
           onClick={onClear}
         >
           {Icons.closeIcon({ width: 10, height: 10, fill: 'currentColor' })}{' '}
@@ -91,7 +94,7 @@ export function BimSearch (props: {
 
       {props.count !== undefined && text
         ? (
-        <div className="search-count vc-absolute vc-right-8 vc-rounded-full vc-bg-primary-royal vc-py-0.5 vc-px-2 vc-font-bold vc-text-white">
+        <div className="search-count">
           {props.count}
         </div>
           )

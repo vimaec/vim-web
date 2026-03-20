@@ -110,7 +110,7 @@ export const BimTree = forwardRef<TreeActionApi, BimTreeProps>((props, ref) => {
   // Display loading if no elements
   if (!props.treeData) {
     return (
-      <div className="vim-bim-tree vc-mt-4" ref={div}>
+      <div className="vim-bim-tree" ref={div}>
         Bim data not available . . .
       </div>
     )
@@ -136,7 +136,7 @@ export const BimTree = forwardRef<TreeActionApi, BimTreeProps>((props, ref) => {
 
   return (
     <div
-      className="vim-bim-tree vc-mt-2  vc-flex-1 vc-flex vc-w-full vc-min-h-0"
+      className="vim-bim-tree"
       ref={div}
       tabIndex={0}
       onFocus={() => (props.viewer.inputs.keyboard.active = false)}

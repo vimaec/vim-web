@@ -37,7 +37,7 @@ export function BimInfoPanel(props: {
 
   return (
     <div className='vim-bim-lower'>
-      <h2 className="vim-bim-lower-title vc-title">
+      <h2 className="vim-bim-lower-title">
         Bim Inspector
       </h2>
       <div className='vim-bim-lower-content'>
