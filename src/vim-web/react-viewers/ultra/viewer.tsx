@@ -176,7 +176,7 @@ export const UltraViewerComponent = forwardRef<UltraViewerApi, {
     multiline={true}
     arrowColor="transparent"
     type="light"
-    className="!vc-max-w-xs !vc-border !vc-border-solid !vc-border-gray-medium !vc-bg-white !vc-text-xs !vc-text-gray-darkest !vc-opacity-100 !vc-shadow-[2px_6px_15px_rgba(0,0,0,0.3)] !vc-transition-opacity"
+    className="vim-tooltip"
     delayShow={200}
   />
   </>

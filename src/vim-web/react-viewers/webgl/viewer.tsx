@@ -2,7 +2,7 @@
  * @module public-api
  */
 
-import { useEffect, useRef, useMemo, forwardRef, useImperativeHandle } from 'react'
+import { useEffect, useRef, useMemo, useState, forwardRef, useImperativeHandle } from 'react'
 import { useSubscribe, useCustomizer } from '../helpers/reactUtils'
 import { createRoot } from 'react-dom/client'
 
@@ -34,7 +34,6 @@ import { useViewerState } from './viewerState'
 import { LogoMemo } from '../panels/logo'
 import { WebglViewerApi } from './viewerApi'
 import { useBimInfo } from '../bim/bimInfoData'
-import { whenTrue } from '../helpers/utils'
 import { ComponentLoader } from './loading'
 import { Modal, ModalApi } from '../panels/modal'
 import { SectionBoxPanel } from '../panels/sectionBoxPanel'
@@ -45,9 +44,8 @@ import { IsolationPanel } from '../panels/isolationPanel'
 import { useWebglIsolation } from './isolation'
 import { GenericPanelApi } from '../generic/genericPanel'
 import { getDefaultSettings, PartialWebglSettings, WebglSettings } from './settings'
-import { isTrue } from '../settings/userBoolean'
 import { SettingsPanel } from '../settings/settingsPanel'
-import { applyWebglSettings, getWebglSettingsContent } from './settingsPanel'
+import { getWebglSettingsContent, makeInitialUiState, SetUiKey } from './settingsPanel'
 
 /**
  * Creates a WebGL viewer with full React UI (BIM tree, context menu, control bar, etc.).
@@ -110,14 +108,18 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
 }>((props, ref) => {
   const settings = createSettings(props.settings ?? {}, getDefaultSettings())
   const modal = useRef<ModalApi>(null)
+  const [uiState, setUiState] = useState(() => makeInitialUiState(settings.ui))
+  const setUiKey: SetUiKey = (key, value) => setUiState(prev => ({ ...prev, [key]: value }))
+  const effectiveSettings: WebglSettings = { ...settings, ui: { ...settings.ui, ...uiState } }
 
   useEffect(() => {
     if (!settings.capacity.canReadLocalStorage) disableLocalStorage()
   }, [])
 
   useEffect(() => {
-    applyWebglSettings(settings)
-  }, [])
+    const el = document.getElementsByClassName('vim-performance-div')[0]
+    if (el) el.classList.toggle('vim-hidden', !uiState.panelPerformance)
+  }, [uiState.panelPerformance])
 
   const sectionBoxRef = useWebglSectionBox(props.viewer, settings.sectionBox)
   const isolationPanelHandle = useRef<GenericPanelApi>(null)
@@ -129,8 +131,7 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
   useViewerInput(props.viewer.inputs, framing)
 
   const side = useSideState(
-    isTrue(settings.ui.panelBimTree) ||
-    isTrue(settings.ui.panelBimInfo),
+    uiState.panelBimTree || uiState.panelBimInfo,
     Math.min(props.container.root.clientWidth * 0.25, 340)
   )
   const contextMenuRef = useRef<ContextMenuApi>(null)
@@ -140,7 +141,7 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
   const treeRef = useRef<TreeActionApi>()
   const isolationRef = useWebglIsolation(props.viewer, settings.isolation)
   const [controlBar, controlBarApi] = useCustomizer(
-    useControlBar(props.viewer, framing, modal, side, cursor, settings, sectionBoxRef, isolationRef)
+    useControlBar(props.viewer, framing, modal, side, cursor, effectiveSettings, sectionBoxRef, isolationRef)
   )
 
   useSubscribe(viewerState.vim.onChange, (vim) => side.setHasBim(vim?.bim !== undefined))
@@ -183,12 +184,12 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
         visible={side.getContent() === 'bim'}
         isolation={isolationRef}
         treeRef={treeRef}
-        settings={settings}
+        settings={effectiveSettings}
         bimInfoRef={bimInfoRef}
       />
       <SettingsPanel
         visible={side.getContent() === 'settings'}
-        content={getWebglSettingsContent(props.viewer, isolationRef)}
+        content={getWebglSettingsContent(props.viewer, isolationRef, uiState, setUiKey, settings.ui)}
       />
     </>
   )
@@ -205,18 +206,18 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
       <RestOfScreen side={side} content={() => {
         return <>
         <Overlay canvas={props.viewer.viewport.canvas}></Overlay>
-        {whenTrue(settings.ui.panelLogo, <LogoMemo/>)}
+        {uiState.panelLogo && <LogoMemo/>}
         <ControlBar
           content={controlBar}
-          show={isTrue(settings.ui.panelControlBar)}
+          show={uiState.panelControlBar}
         />
         <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBoxRef}/>
         <IsolationPanel ref={isolationPanelHandle} state={isolationRef}/>
-        <AxesPanelMemo
+        {uiState.panelAxes && <AxesPanelMemo
           viewer={props.viewer}
           framing={framing}
-          settings={settings}
-        />
+          settings={effectiveSettings}
+        />}
 
       </>
       }}/>
@@ -235,7 +236,7 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
         multiline={true}
         arrowColor="transparent"
         type="light"
-        className="!vc-max-w-xs !vc-border !vc-border-solid !vc-border-gray-medium !vc-bg-white !vc-text-xs !vc-text-gray-darkest !vc-opacity-100 !vc-shadow-[2px_6px_15px_rgba(0,0,0,0.3)] !vc-transition-opacity"
+        className="vim-tooltip"
         delayShow={200}
       />
     </>

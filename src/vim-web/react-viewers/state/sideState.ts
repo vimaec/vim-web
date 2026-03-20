@@ -92,6 +92,6 @@ export function useSideState (
       getWidth,
       setWidth
     } as SideState),
-    [side, width]
+    [side, width, useInspector]
   )
 }

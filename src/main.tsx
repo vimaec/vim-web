@@ -54,10 +54,6 @@ function App() {
     }
   }, [])
 
-  const handleLoadLocalFile = () => {
-    fileInputRef.current?.click()
-  }
-
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file || !viewerRef.current) return
@@ -78,41 +74,14 @@ function App() {
 
   return (
     <>
-      {/* TEST SECTION - Local File Loading */}
-      <div style={{
-        position: 'absolute',
-        top: '10px',
-        left: '10px',
-        zIndex: 1000,
-        padding: '10px',
-        background: 'rgba(0, 0, 0, 0.7)',
-        borderRadius: '4px',
-        color: 'white'
-      }}>
-        <button
-          onClick={handleLoadLocalFile}
-          style={{
-            padding: '8px 16px',
-            background: '#4CAF50',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
-        >
-          Load Local VIM File
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".vim"
-          style={{ display: 'none' }}
-          onChange={handleFileChange}
-        />
-      </div>
-
-      <div ref={div} className='vc-inset-0 vc-absolute'/>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".vim"
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
+      <div ref={div} style={{ position: 'absolute', inset: 0 }}/>
     </>
   )
 }
