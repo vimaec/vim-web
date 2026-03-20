@@ -15,14 +15,14 @@ export function Checkbox({ checked, onChange, disabled, label, className = '' }:
       checked={checked}
       disabled={disabled}
       onChange={(e) => onChange(e.target.checked)}
-      className={`vim-settings-checkbox vc-checked:bg-primary-royal vc-mr-2 vc-rounded vc-border vc-border-gray-medium ${className}`}
+      className={`vim-settings-checkbox ${className}`}
     />
   )
 
   if (!label) return input
 
   return (
-    <label className={`vc-flex vc-items-center vc-select-none vc-cursor-pointer ${disabled ? 'vc-opacity-50 vc-pointer-events-none' : ''}`}>
+    <label className='vim-checkbox-label' data-disabled={disabled || undefined}>
       {input}
       <span>{label}</span>
     </label>

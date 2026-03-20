@@ -15,7 +15,7 @@ type SelectProps = {
 }
 
 const chevron = (
-  <svg className="vc-w-3 vc-h-3 vc-shrink-0" viewBox="0 0 12 12">
+  <svg className="vim-select-chevron" viewBox="0 0 12 12">
     <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 )
@@ -37,39 +37,29 @@ export function Select({ value, options, onChange, disabled, variant = 'inline' 
 
   const current = options.find(o => o.value === value)
 
-  const triggerClass = variant === 'inline'
-    ? 'vc-rounded vc-border vc-border-gray-medium vc-bg-white vc-px-1 vc-py-0.5 vc-text-sm vc-cursor-pointer vc-text-left vc-inline-flex vc-items-center vc-gap-1'
-    : 'vc-border vc-border-gray-300 vc-py-1 vc-w-full vc-px-1 vc-text-left vc-bg-white vc-cursor-pointer vc-flex vc-items-center vc-justify-between'
-
-  const listClass = variant === 'inline'
-    ? 'vc-absolute vc-left-0 vc-bottom-full vc-z-50 vc-min-w-full vc-rounded vc-border vc-border-gray-medium vc-bg-white vc-shadow-lg vc-text-sm'
-    : 'vc-absolute vc-left-0 vc-right-0 vc-bottom-full vc-z-50 vc-border vc-border-gray-300 vc-bg-white vc-shadow-lg'
-
-  const optionClass = (opt: SelectOption) =>
-    variant === 'inline'
-      ? `vc-px-2 vc-py-1 vc-cursor-pointer hover:vc-bg-gray-100 vc-whitespace-nowrap ${opt.value === value ? 'vc-bg-gray-100' : ''}`
-      : `vc-px-1 vc-py-1 vc-cursor-pointer hover:vc-bg-gray-100 ${opt.value === value ? 'vc-bg-gray-100' : ''}`
-
   return (
     <div
       ref={ref}
-      className={`vc-relative ${variant === 'full' ? 'vc-w-full' : 'vc-inline-block'} ${disabled ? 'vc-opacity-50 vc-pointer-events-none' : ''}`}
+      className='vim-select'
+      data-variant={variant}
+      data-disabled={disabled || undefined}
     >
       <button
         type="button"
         disabled={disabled}
         onClick={() => setOpen(o => !o)}
-        className={triggerClass}
+        className='vim-select-trigger'
       >
-        <span className="vc-flex-1 vc-min-w-0 vc-truncate">{current?.label ?? ''}</span>
+        <span className="vim-select-label">{current?.label ?? ''}</span>
         {chevron}
       </button>
       {open && (
-        <div className={listClass}>
+        <div className='vim-select-list'>
           {options.map(opt => (
             <div
               key={opt.value}
-              className={optionClass(opt)}
+              className='vim-select-option'
+              data-selected={opt.value === value || undefined}
               onPointerDown={(e) => {
                 e.stopPropagation()
                 onChange(opt.value)

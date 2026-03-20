@@ -1,7 +1,4 @@
-export { Stack } from './Stack'
-export { Group } from './Group'
 export { IconButton } from './IconButton'
 export { Input } from './Input'
 export { Checkbox } from './Checkbox'
 export { Select } from './Select'
-export { Divider } from './Divider'
