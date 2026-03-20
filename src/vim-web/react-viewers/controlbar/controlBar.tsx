@@ -40,16 +40,8 @@ export function ControlBar (props : { content: IControlBarSection[], show: boole
   }
 
   return (
-    <div
-      style={{
-        gap: 'min(10px, 2%)',
-        bottom: 'min(36px, 10%)'
-      }}
-      id='vim-control-bar'
-      className='vim-control-bar vc-pointer-events-auto vc-flex-wrap vc-mx-2 vc-min-w-0 vc-absolute vc-left-0 vc-right-0 vc-z-20 vc-flex vc-items-center vc-justify-center transition-all'
-    >
+    <div id='vim-control-bar' className='vim-control-bar'>
       {props.content.map(createSection)}
     </div>
   )
 }
-

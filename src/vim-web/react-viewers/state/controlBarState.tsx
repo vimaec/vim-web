@@ -43,7 +43,7 @@ export function controlBarSectionBox(
 
   return {
     id: Ids.sectioningSpan,
-    style: section.active.get()? Style.sectionNoPadStyle : Style.sectionDefaultStyle,
+    variant: section.active.get()? Style.sectionNoPadStyle : Style.sectionDefaultStyle,
     //enable: () => section.getEnable(),
     buttons: [
       {
@@ -51,7 +51,7 @@ export function controlBarSectionBox(
         enabled: () => isTrue(settings.sectioningEnable),
         tip: 'Enable Section Box',
         isOn: () => section.active.get(),
-        style: Style.buttonExpandStyle,
+        variant: Style.buttonExpandStyle,
         action: () => section.active.set(!section.active.get()),
         icon: Icons.sectionBox,
       },
@@ -61,7 +61,7 @@ export function controlBarSectionBox(
         tip: 'Fit Section',
         enabled: () => section.active.get() && isTrue(settings.sectioningFitToSelection),
         isOn: () => hasSelection,
-        style: Style.buttonDisableStyle,
+        variant: Style.buttonDisableStyle,
         action: () => section.sectionSelection.call(), 
         icon: Icons.sectionBoxShrink,
       },
@@ -69,7 +69,7 @@ export function controlBarSectionBox(
         id: Ids.sectioningFitScene,
         tip: 'Reset Section',
         enabled: () => section.active.get() && isTrue(settings.sectioningReset),
-        style: Style.buttonDefaultStyle,
+        variant: Style.buttonDefaultStyle,
         action: () => section.sectionScene.call(), 
         icon: Icons.sectionBoxReset,
       },
@@ -78,7 +78,7 @@ export function controlBarSectionBox(
         tip: 'Show Section Box',
         enabled: () => section.active.get() && isTrue(settings.sectioningShow),
         isOn: () => section.visible.get(),
-        style: Style.buttonDefaultStyle,
+        variant: Style.buttonDefaultStyle,
         action: () => section.visible.set(!section.visible.get()),
         icon: Icons.visible,
       },
@@ -87,7 +87,7 @@ export function controlBarSectionBox(
         tip: 'Auto Section',
         enabled: () => section.active.get() && isTrue(settings.sectioningAuto),
         isOn: () => section.auto.get(),
-        style: Style.buttonDefaultStyle,
+        variant: Style.buttonDefaultStyle,
         action: () => section.auto.set(!section.auto.get()),
         icon: Icons.sectionBoxAuto,
       },
@@ -96,7 +96,7 @@ export function controlBarSectionBox(
         tip: 'Section Settings',
         enabled: () => section.active.get() && isTrue(settings.sectioningSettings),
         isOn: () => section.showOffsetPanel.get(),
-        style: Style.buttonDefaultStyle,
+        variant: Style.buttonDefaultStyle,
         action: () => section.showOffsetPanel.set(!section.showOffsetPanel.get()),
         icon: Icons.slidersHoriz,
       },
@@ -124,7 +124,7 @@ function controlBarPointer(
   return {
     id: Ids.cursorSpan,
     enable: () => anyUiCursorButton(settings),
-    style: Style.sectionDefaultStyle,
+    variant: Style.sectionDefaultStyle,
     buttons: [
       {
         id: Ids.cursorOrbit,
@@ -133,7 +133,7 @@ function controlBarPointer(
         action: () => pointer.onButton(PointerMode.ORBIT),
         icon: Icons.orbit,
         isOn: () => pointer.mode === PointerMode.ORBIT,
-        style: Style.buttonDefaultStyle,
+        variant: Style.buttonDefaultStyle,
       },
       {
         id: Ids.cursorLook,
@@ -142,7 +142,7 @@ function controlBarPointer(
         action: () => pointer.onButton(PointerMode.LOOK),
         icon: Icons.look,
         isOn: () => pointer.mode === PointerMode.LOOK,
-        style: Style.buttonDefaultStyle,
+        variant: Style.buttonDefaultStyle,
       },
       {
         id: Ids.cursorPan,
@@ -151,7 +151,7 @@ function controlBarPointer(
         action: () => pointer.onButton(PointerMode.PAN),
         icon: Icons.pan,
         isOn: () => pointer.mode === PointerMode.PAN,
-        style: Style.buttonDefaultStyle,
+        variant: Style.buttonDefaultStyle,
       },
       {
         id: Ids.cursorZoom,
@@ -160,7 +160,7 @@ function controlBarPointer(
         action: () => pointer.onButton(PointerMode.ZOOM),
         icon: Icons.zoom,
         isOn: () => pointer.mode === PointerMode.ZOOM,
-        style: Style.buttonDefaultStyle,
+        variant: Style.buttonDefaultStyle,
       },
     ],
   };
@@ -177,7 +177,7 @@ export function controlBarMeasure(
   return {
     id: Ids.measureSpan,
     enable: () => true,
-    style: Style.sectionDefaultStyle,
+    variant: Style.sectionDefaultStyle,
     buttons: [
       {
         id: Ids.measureEnable,
@@ -186,7 +186,7 @@ export function controlBarMeasure(
         tip: 'Measuring Mode',
         action: () => measure.toggle(),
         icon: Icons.measure,
-        style: Style.buttonDefaultStyle,
+        variant: Style.buttonDefaultStyle,
       },
     ]
   }
@@ -202,7 +202,7 @@ function createMiscSettingsButton(
     tip: 'Settings',
     action: () => side.toggleContent('settings'),
     icon: Icons.settings,
-    style: Style.buttonDefaultStyle
+    variant: Style.buttonDefaultStyle
   };
 }
 
@@ -216,7 +216,7 @@ function createMiscHelpButton(
     tip: 'Help',
     action: () => modal.current?.help(true),
     icon: Icons.help,
-    style: Style.buttonDefaultStyle
+    variant: Style.buttonDefaultStyle
   };
 }
 
@@ -229,7 +229,7 @@ export function controlBarMiscUltra(
   return {
     id: Ids.miscSpan,
     enable: () => anyUltraMiscButton(settings),
-    style: Style.sectionDefaultStyle,
+    variant: Style.sectionDefaultStyle,
     buttons: [
       createMiscSettingsButton(side, settings),
       createMiscHelpButton(modal, settings)
@@ -248,7 +248,7 @@ function controlBarMisc(
   return {
     id: Ids.miscSpan,
     enable: () => anyWebglMiscButton(settings),
-    style: Style.sectionDefaultStyle,
+    variant: Style.sectionDefaultStyle,
     buttons: [
       {
         id: Ids.miscInspector,
@@ -256,7 +256,7 @@ function controlBarMisc(
         tip: 'Project Inspector',
         action: () => side.toggleContent('bim'),
         icon: Icons.treeView,
-        style: Style.buttonDefaultStyle
+        variant: Style.buttonDefaultStyle
       },
       createMiscSettingsButton(side, settings),
       createMiscHelpButton(modal, settings),
@@ -268,7 +268,7 @@ function controlBarMisc(
         tip: fullScreen.get() ? 'Minimize' : 'Fullscreen',
         action: () => fullScreen.toggle(),
         icon: fullScreen.get() ? Icons.minimize : Icons.fullScreen,
-        style: Style.buttonDefaultStyle
+        variant: Style.buttonDefaultStyle
       }
     ]
   };
@@ -284,7 +284,7 @@ export function controlBarCamera(camera: FramingApi, settings: ControlBarCameraS
   return {
     id: Ids.cameraSpan,
     enable: () => true,
-    style: Style.sectionDefaultStyle,
+    variant: Style.sectionDefaultStyle,
     buttons: [
       {
         id: Ids.cameraAuto,
@@ -293,7 +293,7 @@ export function controlBarCamera(camera: FramingApi, settings: ControlBarCameraS
         isOn: () => camera.autoCamera.get(),
         action: () => camera.autoCamera.set(!camera.autoCamera.get()),
         icon: Icons.autoCamera,
-        style: Style.buttonDefaultStyle,
+        variant: Style.buttonDefaultStyle,
       },
       {
         id: Ids.cameraFrameSelection,
@@ -302,7 +302,7 @@ export function controlBarCamera(camera: FramingApi, settings: ControlBarCameraS
         action: () => camera.frameSelection.call(),
         icon: Icons.frameSelection,
         isOn: () => false,
-        style: Style.buttonDefaultStyle,
+        variant: Style.buttonDefaultStyle,
       },
       {
         id: Ids.cameraFrameScene,
@@ -311,7 +311,7 @@ export function controlBarCamera(camera: FramingApi, settings: ControlBarCameraS
         action: () => camera.frameScene.call(),
         icon: Icons.frameScene,
         isOn: () => false,
-        style: Style.buttonDefaultStyle,
+        variant: Style.buttonDefaultStyle,
       } 
     ]
   }
@@ -332,7 +332,7 @@ export function controlBarVisibility(isolation: IsolationApi, settings: ControlB
   return {
     id: Ids.visibilitySpan,
     enable: () => true,
-    style: Style.sectionDefaultStyle,
+    variant: Style.sectionDefaultStyle,
     buttons: [
       {
         id: Ids.visibilityClearSelection,
@@ -341,7 +341,7 @@ export function controlBarVisibility(isolation: IsolationApi, settings: ControlB
         action: () => isolation.clearSelection(),
         icon: Icons.pointer,
         isOn: () => isolation.hasSelection(),
-        style: Style.buttonDisableDefaultStyle,
+        variant: Style.buttonDisableDefaultStyle,
       },
       {
         id: Ids.visibilityShowAll,
@@ -350,7 +350,7 @@ export function controlBarVisibility(isolation: IsolationApi, settings: ControlB
         action: () => isolation.showAll(),
         icon: Icons.showAll,
         isOn: () =>!isolation.autoIsolate.get() && isolation.visibility.get() !== 'all',
-        style: Style.buttonDisableStyle,
+        variant: Style.buttonDisableStyle,
       },
 
       {
@@ -360,7 +360,7 @@ export function controlBarVisibility(isolation: IsolationApi, settings: ControlB
         action: () => isolation.hideSelection(),
         icon: Icons.hideSelection,
         isOn: () =>!isolation.autoIsolate.get() && isolation.hasVisibleSelection(),
-        style: Style.buttonDisableStyle,
+        variant: Style.buttonDisableStyle,
       },
       {
         id: Ids.visibilityShowSelection,
@@ -369,7 +369,7 @@ export function controlBarVisibility(isolation: IsolationApi, settings: ControlB
         action: () => isolation.showSelection(),
         icon: Icons.showSelection,
         isOn: () => !isolation.autoIsolate.get() && isolation.hasHiddenSelection(),
-        style: Style.buttonDisableStyle,
+        variant: Style.buttonDisableStyle,
       },
       {
         id: Ids.visibilityIsolateSelection,
@@ -378,7 +378,7 @@ export function controlBarVisibility(isolation: IsolationApi, settings: ControlB
         action: () => isolation.isolateSelection(),
         icon: Icons.isolateSelection,
         isOn: () =>!isolation.autoIsolate.get() && isolation.hasSelection() && isolation.visibility.get() !== 'onlySelection',
-        style: Style.buttonDisableStyle,
+        variant: Style.buttonDisableStyle,
       },
       {
         id: Ids.visibilityAutoIsolate,
