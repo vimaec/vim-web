@@ -237,7 +237,6 @@ function GenericTextField(props:{state: StateRef<string>, disabled?: boolean}): 
         refresher.refresh()
         props.state.set(e.target.value)
       }}
-      onBlur={() => props.state.confirm()}
     />
   );
 }

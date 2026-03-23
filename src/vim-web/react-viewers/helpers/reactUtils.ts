@@ -33,10 +33,6 @@ export interface StateRef<T> {
    * @param value - The new state value.
    */
   set(value: T): void;
-  /**
-   * Confirms the current state (potentially applying a confirmation transformation).
-   */
-  confirm(): void;
 
   onChange: ISimpleEvent<T>;
 }
@@ -66,10 +62,6 @@ class MutableState<T> implements StateRef<T> {
     if (value === this._value) return;
     this._value = value;
     this._onChange.dispatch(value);
-  }
-
-  confirm(): void {
-    // No-op by default
   }
 
   get onChange(): ISimpleEvent<T> {
@@ -128,7 +120,7 @@ export function useStateRef<T>(initialValue: T | (() => T), isLazy = false, stor
 
   const event = useRef(new SimpleEventDispatcher<T>());
   const validate = useRef((next: T, current: T) => next);
-  const confirm = useRef((value: T) => value);
+
 
   /**
    * Updates the state if the validated value differs from the current value.
@@ -155,12 +147,6 @@ export function useStateRef<T>(initialValue: T | (() => T), isLazy = false, stor
     },
     set,
     onChange: event.current.asEvent(),
-    /**
-     * Confirms the current state by applying the confirm function and updating the state.
-     */
-    confirm() {
-      set(confirm.current(ref.current));
-    },
 
     /**
      * Registers a callback to be invoked when the state changes.
@@ -203,15 +189,6 @@ export function useStateRef<T>(initialValue: T | (() => T), isLazy = false, stor
       set(on(ref.current, ref.current));
       useEffect(() => {
         validate.current = on;
-      }, []);
-    },
-    /**
-     * Sets a confirmation function to process the state value during confirmation.
-     * @param on - A function that confirms (and optionally transforms) the current state value.
-     */
-    useConfirm(on: (value: T) => T) {
-      useEffect(() => {
-        confirm.current = on;
       }, []);
     },
   };
