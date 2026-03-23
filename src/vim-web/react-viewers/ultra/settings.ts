@@ -9,7 +9,7 @@ export type PartialUltraSettings = RecursivePartial<UltraSettings>
 /**
  * React UI feature toggles for the Ultra viewer, passed to `React.Ultra.createViewer(container, settings)`.
  * Controls which UI panels and toolbar buttons are shown.
- * Access at runtime via `viewer.settings.update(s => { s.ui.panelControlBar = false })`.
+ * Access at runtime via `viewer.ui.controlBar.set(false)`.
  *
  * @example
  * const viewer = await React.Ultra.createViewer(div, {

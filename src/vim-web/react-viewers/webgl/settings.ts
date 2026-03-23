@@ -8,7 +8,7 @@ export type PartialWebglSettings = RecursivePartial<WebglSettings>
 /**
  * React UI feature toggles, passed to `React.Webgl.createViewer(container, settings)`.
  * Controls which UI panels and toolbar buttons are shown.
- * Access at runtime via `viewer.settings.update(s => { s.ui.panelBimTree = false })`.
+ * Access at runtime via `viewer.ui.bimTree.set(false)`.
  * Not to be confused with {@link ViewerSettings} (renderer config) or {@link VimSettings} (per-model transform).
  *
  * @example
@@ -94,7 +94,7 @@ export function getDefaultSettings(): WebglSettings {
     },
     isolation: {
       autoIsolate: false,
-      showGhost: false,
+      showGhost: true,
       transparency: true,
       showRooms: false,
     },
