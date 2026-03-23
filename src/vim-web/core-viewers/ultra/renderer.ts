@@ -38,7 +38,7 @@ export interface IUltraRenderer {
   hdrBackgroundScale: number
   hdrBackgroundSaturation: number
   backgroundBlur: number
-  backgroundColor: THREE.Color
+  background: THREE.Color
   getBoundingBox(): Promise<THREE.Box3 | undefined>
 }
 
@@ -164,7 +164,7 @@ export class Renderer implements IUltraRenderer {
    * Gets the background color
    * @returns Current background color as RGBA
    */
-  get backgroundColor(): THREE.Color {
+  get background(): THREE.Color {
     return this._settings.backgroundColor;
   }
 
@@ -253,7 +253,7 @@ export class Renderer implements IUltraRenderer {
    * Sets the background color
    * @param value - New background color as THREE.Color
    */
-  set backgroundColor(value: THREE.Color) {
+  set background(value: THREE.Color) {
     if (this._settings.backgroundColor.equals(value)) return;
     this._settings.backgroundColor = value.clone();
     this._updateLighting = true
