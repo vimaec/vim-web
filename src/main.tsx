@@ -89,7 +89,6 @@ function App() {
 async function createWebgl (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDivElement) {
   const viewer = await VIM.React.Webgl.createViewer(div, {ui: {
   }})
-
   viewerRef.current = viewer
   globalThis.viewer = viewer // for testing in browser console
   
