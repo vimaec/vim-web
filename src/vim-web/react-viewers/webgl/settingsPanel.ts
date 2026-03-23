@@ -1,46 +1,32 @@
 import { THREE } from "../..";
 import { Viewer } from "../../core-viewers/webgl";
-import { isTrue, UserBoolean } from "../settings/userBoolean";
 import { GenericEntryType } from '../generic/genericField'
 import { SettingsPanelKeys } from "../settings/settingsKeys";
 import { getIsolationSettings } from "../settings/settingsPanelContent";
 import { IsolationApi } from "../state/sharedIsolation";
 import { WebglSettings } from "./settings";
 import { createState } from "../helpers/reactUtils";
-
-export type UiState = Record<keyof WebglSettings['ui'], boolean>
-
-export function makeInitialUiState(ui: WebglSettings['ui']): UiState {
-  return Object.fromEntries(
-    Object.entries(ui).map(([k, v]) => [k, isTrue(v as UserBoolean)])
-  ) as UiState
-}
-
-export type SetUiKey = (key: keyof WebglSettings['ui'], value: boolean) => void
+import { UiRefs } from "../state/uiState";
 
 function tog(
   id: string,
   label: string,
   key: keyof WebglSettings['ui'],
   src: WebglSettings['ui'],
-  uiState: UiState,
-  setUiKey: SetUiKey
+  refs: UiRefs,
 ): GenericEntryType[] {
   if (src[key] === 'AlwaysTrue' || src[key] === 'AlwaysFalse') return []
-  const state = createState(uiState[key])
-  state.onChange.subscribe(v => setUiKey(key, v))
-  return [{ type: 'bool', id, label, state }]
+  return [{ type: 'bool', id, label, state: refs[key] }]
 }
 
 export function getWebglSettingsContent(
   viewer: Viewer,
   isolation: IsolationApi,
-  uiState: UiState,
-  setUiKey: SetUiKey,
+  refs: UiRefs,
   srcUi: WebglSettings['ui'],
 ): GenericEntryType[] {
   const t = (id: string, label: string, key: keyof WebglSettings['ui']) =>
-    tog(id, label, key, srcUi, uiState, setUiKey)
+    tog(id, label, key, srcUi, refs)
 
   const scrollSpeedState = createState(viewer.inputs.scrollSpeed)
   scrollSpeedState.onChange.subscribe(v => { viewer.inputs.scrollSpeed = v })

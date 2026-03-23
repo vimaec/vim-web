@@ -24,6 +24,7 @@ export type ViewerApi = WebglViewerApi | UltraViewerApi
 export type { FramingApi } from './state/cameraState'
 export type { SectionBoxApi } from './state/sectionBoxState'
 export type { IsolationApi, VisibilityStatus } from './state/sharedIsolation'
+export type { WebglUiApi, UltraUiApi } from './state/uiState'
 
 // Ref types
 export type {

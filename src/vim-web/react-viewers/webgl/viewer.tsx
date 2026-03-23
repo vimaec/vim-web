@@ -2,7 +2,7 @@
  * @module public-api
  */
 
-import { useEffect, useRef, useMemo, useState, forwardRef, useImperativeHandle } from 'react'
+import { useEffect, useRef, useMemo, forwardRef, useImperativeHandle } from 'react'
 import { useSubscribe, useCustomizer } from '../helpers/reactUtils'
 import { createRoot } from 'react-dom/client'
 
@@ -45,7 +45,8 @@ import { useWebglIsolation } from './isolation'
 import { GenericPanelApi } from '../generic/genericPanel'
 import { getDefaultSettings, PartialWebglSettings, WebglSettings } from './settings'
 import { SettingsPanel } from '../settings/settingsPanel'
-import { getWebglSettingsContent, makeInitialUiState, SetUiKey } from './settingsPanel'
+import { getWebglSettingsContent } from './settingsPanel'
+import { useWebglUiState } from '../state/uiState'
 
 /**
  * Creates a WebGL viewer with full React UI (BIM tree, context menu, control bar, etc.).
@@ -108,8 +109,7 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
 }>((props, ref) => {
   const settings = createSettings(props.settings ?? {}, getDefaultSettings())
   const modal = useRef<ModalApi>(null)
-  const [uiState, setUiState] = useState(() => makeInitialUiState(settings.ui))
-  const setUiKey: SetUiKey = (key, value) => setUiState(prev => ({ ...prev, [key]: value }))
+  const { ui: uiApi, refs: uiRefs, uiValues: uiState } = useWebglUiState(settings.ui)
   const effectiveSettings: WebglSettings = { ...settings, ui: { ...settings.ui, ...uiState } }
 
   useEffect(() => {
@@ -162,6 +162,7 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
     controlBar: controlBarApi,
     get modal() { return modal.current },
     bimInfo: bimInfoRef,
+    ui: uiApi,
     dispose: () => {}
   }), [])
 
@@ -189,7 +190,7 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
       />
       <SettingsPanel
         visible={side.getContent() === 'settings'}
-        content={getWebglSettingsContent(props.viewer, isolationRef, uiState, setUiKey, settings.ui)}
+        content={getWebglSettingsContent(props.viewer, isolationRef, uiRefs, settings.ui)}
       />
     </>
   )

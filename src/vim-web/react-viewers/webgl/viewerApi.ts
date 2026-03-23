@@ -13,6 +13,7 @@ import { ModalApi } from '../panels/modal'
 import { SectionBoxApi } from '../state/sectionBoxState'
 import { IsolationApi } from '../state/sharedIsolation'
 import { GenericPanelApi } from '../generic/genericPanel'
+import { WebglUiApi } from '../state/uiState'
 
 export type { OpenSettings } from './loading'
 
@@ -115,6 +116,17 @@ export type WebglViewerApi = {
    * API to interact with the section box panel.
    */
   sectionBoxPanel : GenericPanelApi
+
+  /**
+   * Reactive UI visibility controls. Each key from the settings `ui` block
+   * is a `StateRef<boolean>` that can be read, written, and subscribed to.
+   *
+   * @example
+   * viewer.ui.bimTree.set(false)             // Hide BIM tree
+   * viewer.ui.controlBar.get()               // Read current state
+   * viewer.ui.axes.onChange.subscribe(…)      // Subscribe to changes
+   */
+  ui: WebglUiApi
 
   /**
    * Cleans up and releases resources used by the viewer.

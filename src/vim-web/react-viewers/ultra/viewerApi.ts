@@ -6,6 +6,7 @@ import { IsolationApi } from '../state/sharedIsolation';
 import { ControlBarApi } from '../controlbar/controlBar';
 import { GenericPanelApi } from '../generic/genericPanel';
 import { Container } from '../container';
+import { UltraUiApi } from '../state/uiState';
 
 export type UltraViewerApi = {
   /**
@@ -69,6 +70,16 @@ export type UltraViewerApi = {
    * API to interact with the section box panel.
    */
   sectionBoxPanel : GenericPanelApi
+
+  /**
+   * Reactive UI visibility controls. Each key from the settings `ui` block
+   * is a `StateRef<boolean>` that can be read, written, and subscribed to.
+   *
+   * @example
+   * viewer.ui.logo.set(false)                // Hide logo
+   * viewer.ui.controlBar.get()               // Read current state
+   */
+  ui: UltraUiApi
 
   /**
    * Disposes of the viewer and its resources.

@@ -17,7 +17,6 @@ import { useUltraControlBar } from './controlBar'
 import { SectionBoxPanel } from '../panels/sectionBoxPanel'
 import { RestOfScreen } from '../panels/restOfScreen'
 import { LogoMemo } from '../panels/logo'
-import { whenTrue } from '../helpers/utils'
 import { useSideState } from '../state/sideState'
 import { UltraViewerApi } from './viewerApi'
 import ReactTooltip from 'react-tooltip'
@@ -30,7 +29,7 @@ import { SettingsPanel } from '../settings/settingsPanel'
 import { SidePanelMemo } from '../panels/sidePanel'
 import { getDefaultUltraSettings, PartialUltraSettings, UltraSettings } from './settings'
 import { getUltraSettingsContent } from './settingsPanel'
-import { isTrue } from '../settings/userBoolean'
+import { useUltraUiState } from '../state/uiState'
 
 
 /**
@@ -91,6 +90,7 @@ export const UltraViewerComponent = forwardRef<UltraViewerApi, {
 }>((props, ref) => {
 
   const settings = createSettings(props.settings ?? {}, getDefaultUltraSettings())
+  const { ui: uiApi, uiValues: uiState } = useUltraUiState(settings.ui)
   const sectionBoxRef = useUltraSectionBox(props.core, settings.sectionBox)
   const framing = useUltraFraming(props.core, sectionBoxRef, settings.camera.autoCamera)
   const isolationPanelHandle = useRef<GenericPanelApi>(null)
@@ -127,6 +127,7 @@ export const UltraViewerComponent = forwardRef<UltraViewerApi, {
     get isolationPanel() { return isolationPanelHandle.current },
     get sectionBoxPanel() { return sectionBoxPanelHandle.current },
     dispose: () => {},
+    ui: uiApi,
     controlBar: controlBarApi,
     load: patchLoad(props.core, modalHandle),
     unload: (vim) => props.core.unload(vim)
@@ -160,11 +161,11 @@ export const UltraViewerComponent = forwardRef<UltraViewerApi, {
   />
   <RestOfScreen side={side} content={() => {
     return <>
-    {whenTrue(settings.ui.panelLogo, <LogoMemo/>)}
+    {uiState.panelLogo && <LogoMemo/>}
     <Overlay canvas={props.core.viewport.canvas}/>
     <ControlBar
       content={controlBar}
-      show={isTrue(settings.ui.panelControlBar)}
+      show={uiState.panelControlBar}
     />
     <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBoxRef}/>
     <IsolationPanel ref={isolationPanelHandle} state={isolationRef}/>
