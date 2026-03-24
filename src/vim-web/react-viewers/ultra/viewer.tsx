@@ -1,5 +1,6 @@
 
 
+import { TooltipZone } from '../components/Tooltip'
 import * as Core from '../../core-viewers'
 import { createSettings } from '../settings/settingsState'
 import { disableLocalStorage } from '../settings/localStorage'
@@ -19,7 +20,6 @@ import { RestOfScreen } from '../panels/restOfScreen'
 import { LogoMemo } from '../panels/logo'
 import { useSideState } from '../state/sideState'
 import { UltraViewerApi } from './viewerApi'
-import ReactTooltip from 'react-tooltip'
 import { useUltraFraming } from './camera'
 import { useViewerInput } from '../state/viewerInputs'
 import { useUltraIsolation } from './isolation'
@@ -152,7 +152,7 @@ export const UltraViewerComponent = forwardRef<UltraViewerApi, {
     </>
   )
 
-  return <>
+  return <TooltipZone><>
   <SidePanelMemo
     container={props.container}
     viewer={props.core}
@@ -173,14 +173,7 @@ export const UltraViewerComponent = forwardRef<UltraViewerApi, {
   }}/>
   
   <Modal ref={modalHandle} canFollowLinks= {true}/>
-  <ReactTooltip
-    multiline={true}
-    arrowColor="transparent"
-    type="light"
-    className="vim-tooltip"
-    delayShow={200}
-  />
-  </>
+  </></TooltipZone>
 })
 
 function patchLoad(viewer: Core.Ultra.Viewer, modal: RefObject<ModalApi>) {

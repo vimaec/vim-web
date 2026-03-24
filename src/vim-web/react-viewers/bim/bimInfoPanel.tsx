@@ -1,7 +1,6 @@
 
 import { useEffect, useState } from 'react'
 import * as Core from '../../core-viewers'
-import ReactTooltip from 'react-tooltip'
 import { getObjectData } from './bimInfoObject'
 import { getVimData } from './bimInfoVim'
 import { AugmentedElement } from '../helpers/element'
@@ -18,10 +17,6 @@ export function BimInfoPanel(props: {
 }) {
   const target = props.object?.type === 'Element3D' ? props.object : undefined
 
-  useEffect(() => {
-    ReactTooltip.rebuild()
-  })
-
   const [data, setData] = useState<Data>()
 
   useEffect(() => {
@@ -37,7 +32,7 @@ export function BimInfoPanel(props: {
 
   return (
     <div className='vim-bim-lower'>
-      <h2 className="vim-bim-lower-title">
+      <h2 className="vim-bim-lower-title" data-tip="Bim Inspector">
         Bim Inspector
       </h2>
       <div className='vim-bim-lower-content'>

@@ -1,6 +1,5 @@
 
 import React, { useEffect, useRef, useState } from 'react'
-import ReactTooltip from 'react-tooltip'
 import { SideState } from '../state/sideState'
 
 export function RestOfScreen (props:{
@@ -9,11 +8,6 @@ export function RestOfScreen (props:{
 }) {
   const [, setVersion] = useState(0)
   const resizeObserver = useRef<ResizeObserver>()
-
-  // On Each Render
-  useEffect(() => {
-    ReactTooltip.rebuild()
-  })
 
   useEffect(() => {
     resizeObserver.current = new ResizeObserver(() => {

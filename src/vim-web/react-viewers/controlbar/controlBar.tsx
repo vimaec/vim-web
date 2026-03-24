@@ -2,8 +2,6 @@
  * @module viw-webgl-react
  */
 
-import { useEffect } from 'react'
-import ReactTooltip from 'react-tooltip'
 import { createSection, IControlBarSection } from './controlBarSection'
 
 /**
@@ -30,11 +28,6 @@ export type ControlBarCustomization = (
  */
 export function ControlBar (props : { content: IControlBarSection[], show: boolean })
 {
-  // On Each Render
-  useEffect(() => {
-    ReactTooltip.rebuild()
-  })
-
   if (!props.show) {
     return null
   }

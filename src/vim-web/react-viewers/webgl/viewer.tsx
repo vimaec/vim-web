@@ -6,8 +6,7 @@ import { useEffect, useRef, useMemo, forwardRef, useImperativeHandle } from 'rea
 import { useSubscribe, useCustomizer } from '../helpers/reactUtils'
 import { createRoot } from 'react-dom/client'
 
-import ReactTooltip from 'react-tooltip'
-
+import { TooltipZone } from '../components/Tooltip'
 import * as Core from '../../core-viewers'
 import { AxesPanelMemo } from '../panels/axesPanel'
 import { ControlBar } from '../controlbar/controlBar'
@@ -199,7 +198,7 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
     </>
   )
   return (
-    <>
+    <TooltipZone><>
       <div className="vim-performance-div" ref={performanceRef}></div>
       <Modal ref={modal} canFollowLinks={settings.capacity.canFollowUrl} />
       <SidePanelMemo
@@ -237,14 +236,7 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
         treeRef={treeRef}
       />
       <MenuToastMemo viewer={props.viewer} side={side}></MenuToastMemo>
-      <ReactTooltip
-        multiline={true}
-        arrowColor="transparent"
-        type="light"
-        className="vim-tooltip"
-        delayShow={200}
-      />
-    </>
+    </></TooltipZone>
   )
 })
 
