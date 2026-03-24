@@ -42,7 +42,7 @@ export const GenericPanel = forwardRef<GenericPanelApi, GenericPanelProps>((prop
           <span className="vim-panel-title">
             {props.header || "Panel Header"}
           </span>
-          <button className="vim-panel-close" onClick={props.onClose ?? (() => props.showPanel.set(false))} />
+          <button className="vim-panel-close" data-tip="Close" onClick={props.onClose ?? (() => props.showPanel.set(false))} />
         </div>
         <div className="vim-panel-body">
           <div className="vim-panel-content">

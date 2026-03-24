@@ -5,7 +5,7 @@ import { ButtonVariant } from './style'
 export interface IControlBarButton {
   id: string,
   enabled?: (() => boolean) | undefined
-  tip: string
+  tip: string | (() => string)
   action: () => void
   icon: (options?: IconOptions) => JSX.Element
   isOn?: () => boolean
@@ -18,7 +18,7 @@ export function createButton (button: IControlBarButton) {
   const on = button.isOn?.() ?? false
 
   return (
-    <IconButton key={button.id} variant={variant} on={on} title={button.tip} onClick={button.action}>
+    <IconButton key={button.id} variant={variant} on={on} data-tip={typeof button.tip === 'function' ? button.tip() : button.tip} onClick={button.action}>
       {button.icon()}
     </IconButton>
   )

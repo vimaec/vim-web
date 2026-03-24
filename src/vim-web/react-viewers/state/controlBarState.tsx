@@ -49,7 +49,7 @@ export function controlBarSectionBox(
       {
         id: Ids.sectioningEnable,
         enabled: () => isTrue(settings.sectioningEnable),
-        tip: 'Enable Section Box',
+        tip: () => section.active.get() ? 'Disable Section Box' : 'Enable Section Box',
         isOn: () => section.active.get(),
         variant: Style.buttonExpandStyle,
         action: () => section.active.set(!section.active.get()),
@@ -75,7 +75,7 @@ export function controlBarSectionBox(
       },
       {
         id: Ids.sectioningVisible,
-        tip: 'Show Section Box',
+        tip: () => section.visible.get() ? 'Hide Section Box' : 'Show Section Box',
         enabled: () => section.active.get() && isTrue(settings.sectioningShow),
         isOn: () => section.visible.get(),
         variant: Style.buttonDefaultStyle,
@@ -84,7 +84,7 @@ export function controlBarSectionBox(
       },
       {
         id: Ids.sectioningAuto,
-        tip: 'Auto Section',
+        tip: () => section.auto.get() ? 'Disable Auto Section' : 'Auto Section',
         enabled: () => section.active.get() && isTrue(settings.sectioningAuto),
         isOn: () => section.auto.get(),
         variant: Style.buttonDefaultStyle,
@@ -93,7 +93,7 @@ export function controlBarSectionBox(
       },
       {
         id: Ids.sectioningSettings,
-        tip: 'Section Settings',
+        tip: () => section.showOffsetPanel.get() ? 'Close Section Settings' : 'Section Settings',
         enabled: () => section.active.get() && isTrue(settings.sectioningSettings),
         isOn: () => section.showOffsetPanel.get(),
         variant: Style.buttonDefaultStyle,
@@ -183,7 +183,7 @@ export function controlBarMeasure(
         id: Ids.measureEnable,
         enabled: () => isTrue(settings.measureEnable),
         isOn: () => measure.active,
-        tip: 'Measuring Mode',
+        tip: () => measure.active ? 'Stop Measuring' : 'Measuring Mode',
         action: () => measure.toggle(),
         icon: Icons.measure,
         variant: Style.buttonDefaultStyle,
@@ -265,7 +265,7 @@ function controlBarMisc(
         enabled: () =>
           isTrue(settings.ui.miscMaximise) &&
           settings.capacity.canGoFullScreen,
-        tip: fullScreen.get() ? 'Minimize' : 'Fullscreen',
+        tip: () => fullScreen.get() ? 'Minimize' : 'Fullscreen',
         action: () => fullScreen.toggle(),
         icon: fullScreen.get() ? Icons.minimize : Icons.fullScreen,
         variant: Style.buttonDefaultStyle
@@ -289,7 +289,7 @@ export function controlBarCamera(camera: FramingApi, settings: ControlBarCameraS
       {
         id: Ids.cameraAuto,
         enabled: () => isTrue(settings.cameraAuto),
-        tip: 'Auto Camera',
+        tip: () => camera.autoCamera.get() ? 'Disable Auto Camera' : 'Auto Camera',
         isOn: () => camera.autoCamera.get(),
         action: () => camera.autoCamera.set(!camera.autoCamera.get()),
         icon: Icons.autoCamera,
@@ -383,7 +383,7 @@ export function controlBarVisibility(isolation: IsolationApi, settings: ControlB
       {
         id: Ids.visibilityAutoIsolate,
         enabled: () => isTrue(settings.visibilityAutoIsolate),
-        tip: 'Auto Isolate',
+        tip: () => isolation.autoIsolate.get() ? 'Disable Auto Isolate' : 'Auto Isolate',
         action: () => isolation.autoIsolate.set(!isolation.autoIsolate.get()),
         isOn: () =>  isolation.autoIsolate.get(),
         icon: Icons.autoIsolate,
@@ -391,7 +391,7 @@ export function controlBarVisibility(isolation: IsolationApi, settings: ControlB
       {
         id: Ids.visibilitySettings,
         enabled: () => isTrue(settings.visibilitySettings),
-        tip: 'Isolation Settings',
+        tip: () => isolation.showPanel.get() ? 'Close Isolation Settings' : 'Isolation Settings',
         action: () => isolation.showPanel.set(!isolation.showPanel.get()),
         icon: Icons.slidersHoriz,
         isOn: () => isolation.showPanel.get(),

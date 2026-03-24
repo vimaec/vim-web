@@ -118,7 +118,7 @@ function SectionContent({ section }: { section: Section }) {
   }
   return (
     <details open className="vim-panel-section">
-      <summary className="vim-panel-section-title">{section.label}</summary>
+      <summary className="vim-panel-section-title" data-tip={section.label}>{section.label}</summary>
       <div className="vim-panel-list">{section.items.map(GenericEntry)}</div>
     </details>
   )
@@ -146,7 +146,7 @@ export function GenericContent({ items }: { items: GenericEntryType[] }) {
     <div className="vim-panel-list">
       {hierarchy.map(group => group.label ? (
         <details key={group.id} open className="vim-panel-group">
-          <summary className="vim-panel-group-title">{group.label}</summary>
+          <summary className="vim-panel-group-title" data-tip={group.label}>{group.label}</summary>
           <div className="vim-panel-list">
             {group.sections.map(s => <SectionContent key={s.id} section={s} />)}
           </div>
@@ -172,8 +172,8 @@ export function GenericEntry(field: GenericEntryType): React.ReactNode {
     if (field.visible?.() === false) return null
     return (
       <div key={field.id} className="vim-panel-entry">
-        <dt>{field.label}</dt>
-        <dd className="vim-panel-entry-value">{field.renderValue ? field.renderValue() : field.value}</dd>
+        <dt data-tip={field.label}>{field.label}</dt>
+        <dd className="vim-panel-entry-value" data-tip={field.value}>{field.renderValue ? field.renderValue() : field.value}</dd>
       </div>
     )
   }
@@ -188,7 +188,7 @@ export function GenericEntry(field: GenericEntryType): React.ReactNode {
       className="vim-panel-entry"
       data-disabled={!isEnabled || undefined}
     >
-      <dt>{field.label}</dt>
+      <dt data-tip={field.label}>{field.label}</dt>
       <dd>
         <GenericField field={field} disabled={!isEnabled} />
       </dd>

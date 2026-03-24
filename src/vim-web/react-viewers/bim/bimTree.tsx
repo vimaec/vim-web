@@ -9,7 +9,6 @@ import {
   Tree
 } from 'react-complex-tree'
 import 'react-complex-tree/lib/style.css'
-import ReactTooltip from 'react-tooltip'
 import * as Core from '../../core-viewers'
 import { showContextMenu } from '../panels/contextMenu'
 import { FramingApi } from '../state/cameraState'
@@ -82,10 +81,6 @@ export const BimTree = forwardRef<TreeActionApi, BimTreeProps>((props, ref) => {
   useEffect(() => {
     setExpandedItems([])
   }, [props.treeData])
-
-  useEffect(() => {
-    ReactTooltip.rebuild()
-  }, [expandedItems, props.treeData])
 
   // Scroll view so that element is visible, if needed.
   useEffect(() => {
@@ -162,6 +157,7 @@ export const BimTree = forwardRef<TreeActionApi, BimTreeProps>((props, ref) => {
               {title}
             </span>
             <div
+              data-tip={props.treeData.nodes[item.index as number].visible === 'vim-visible' ? 'Hide' : 'Show'}
               className={`rct-tree-item-visibility ${
                 props.treeData.nodes[item.index as number].visible
               }`}

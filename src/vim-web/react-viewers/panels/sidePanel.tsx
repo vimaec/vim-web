@@ -107,10 +107,10 @@ export function SidePanel (props: {
     >
       <button
         className="vim-side-panel-nav"
+        data-tip="Close panel"
         onClick={onNavBtn}
       />
       <div className='vim-side-panel-content'>
-
         {props.content()}
       </div>
     </Resizable>

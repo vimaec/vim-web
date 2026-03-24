@@ -69,7 +69,7 @@ export function BimPanel (props: {
     <div className={`vim-bim-panel ${fullTree ? 'full-tree' : ''}`} data-hidden={!props.visible || undefined}>
       {whenTrue(props.settings.ui.panelBimTree,
         <div className='vim-bim-upper' data-full={fullTree || undefined}>
-          <div className="vim-bim-upper-title">Project Inspector</div>
+          <div className="vim-bim-upper-title" data-tip="Project Inspector">Project Inspector</div>
           <BimSearch
             viewer={props.viewer}
             filter={props.viewerState.filter.get()}

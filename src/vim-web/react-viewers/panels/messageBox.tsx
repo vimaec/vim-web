@@ -41,11 +41,11 @@ function title (title: string) {
 
 function closeBtn (onClose: () => void) {
   if (!onClose) return null
-  return <button onClick={onClose} className="vim-message-box-btn">&times;</button>
+  return <button onClick={onClose} data-tip="Close" className="vim-message-box-btn">&times;</button>
 }
 
 function minimizeButton (minimized: boolean, setMinimized: (value:boolean) => void) {
-  return <button onClick={() => setMinimized(!minimized)} className="vim-message-box-btn">
+  return <button onClick={() => setMinimized(!minimized)} data-tip={minimized ? 'Expand' : 'Minimize'} className="vim-message-box-btn">
     { minimized
      ? <span>&#9660;</span>
      : <span>&#9650;</span>

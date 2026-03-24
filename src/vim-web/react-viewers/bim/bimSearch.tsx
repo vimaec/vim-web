@@ -85,6 +85,7 @@ export function BimSearch (props: {
         ? (
         <button
           className="search-clear"
+          data-tip="Clear search"
           onClick={onClear}
         >
           {Icons.closeIcon({ width: 10, height: 10, fill: 'currentColor' })}{' '}

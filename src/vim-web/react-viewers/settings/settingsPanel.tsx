@@ -9,7 +9,7 @@ export function SettingsPanel(props: {
   return (
     <div className="vim-settings-panel">
       <div className="vim-panel-header">
-        <span className="vim-panel-title">Settings</span>
+        <span className="vim-panel-title" data-tip="Settings">Settings</span>
       </div>
       <div className="vim-panel-body">
         <GenericContent items={props.content} />

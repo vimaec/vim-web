@@ -94,11 +94,9 @@ function AxesPanel (props: { viewer: Core.Webgl.Viewer, framing: FramingApi, set
   const createBar = () => {
     if (empty) return null
     return (
-      <div className='vim-axes-panel-bar'>
-        <div className="vim-axes-panel-buttons">
-          {whenAllTrue([props.settings.ui.axesOrthographic], btnOrtho)}
-          {whenTrue(props.settings.ui.axesHome, btnHome)}
-        </div>
+      <div className="vim-axes-panel-buttons">
+        {whenAllTrue([props.settings.ui.axesOrthographic], btnOrtho)}
+        {whenTrue(props.settings.ui.axesHome, btnHome)}
       </div>
     )
   }

@@ -74,6 +74,7 @@ function closeButton (onButton: () => void) {
   return (
     <button
       className="vim-help-close"
+      data-tip="Close"
       onClick={onButton}
     >
       {Icons.closeIcon({
