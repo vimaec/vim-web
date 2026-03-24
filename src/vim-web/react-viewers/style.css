@@ -91,17 +91,13 @@
    Base / Global
    ============================================================ */
 
-/* Removes the shadow arrow that was cutting into tooltip text */
-.__react_component_tooltip::after,
-.__react_component_tooltip::before {
-  content: none !important;
-}
 
 .vim-component {
   font-family: 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
+  cursor: default;
 }
 
 
@@ -580,7 +576,6 @@ details:not([open]) .vim-panel-section-title::after {
 .vim-bim-header-label {
   margin-right: 0.25rem;
   flex-shrink: 0;
-  user-select: none;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -640,7 +635,6 @@ details:not([open]) .vim-panel-section-title::after {
 .vim-bim-body-entry-title {
   width: 33%;
   padding: 0 0.5rem;
-  user-select: none;
   overflow: hidden;
   text-overflow: ellipsis;
   border-right: 1px solid var(--c-light-gray);
@@ -674,7 +668,6 @@ details:not([open]) .vim-panel-section-title::after {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  user-select: none;
 }
 
 .vim-bim-header .vim-panel-entry dd {
@@ -703,7 +696,6 @@ details:not([open]) .vim-panel-section-title::after {
   flex-shrink: 0;
   width: 33%;
   padding: 0 6px;
-  user-select: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -985,7 +977,6 @@ details:not([open]) .vim-panel-section-title::after {
 .vim-axes-panel,
 .vim-axes-panel-empty {
   position: absolute;
-  overflow: hidden;
   z-index: var(--z-ui);
   display: flex;
   flex-direction: column;
@@ -1002,6 +993,7 @@ details:not([open]) .vim-panel-section-title::after {
   position: absolute;
   inset: 0;
   order: 1;
+  border-radius: inherit;
   opacity: 0.5;
   filter: saturate(0);
   transition: opacity var(--transition-base), filter var(--transition-base);
@@ -1017,23 +1009,19 @@ details:not([open]) .vim-panel-section-title::after {
   position: absolute;
 }
 
-.vim-axes-panel-bar {
+.vim-axes-panel-buttons {
   position: absolute;
-  top: 75%;  /* bottom quarter of the axes panel, below the 3D gizmo */
+  top: 75%;
   bottom: 0;
   left: 0;
   right: 0;
-}
-
-.vim-axes-panel-buttons {
-  position: absolute;
-  inset: 0;
   pointer-events: auto;
-  order: 2;
   display: flex;
   align-items: center;
   justify-content: space-evenly;
   background: var(--c-white);
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
 }
 
 .vim-axes-button {
@@ -1289,13 +1277,11 @@ details:not([open]) .vim-panel-section-title::after {
    ============================================================ */
 .vim-performance-div.vim-hidden { display: none; }
 
-/* !important overrides react-tooltip's inline positioning styles.
-   13rem pushes it below the axes panel + control bar stack. */
 .vim-performance {
-  position: absolute !important;
-  right: 1.5rem !important;
-  left: auto !important;
-  top: 13rem !important;
+  position: absolute;
+  right: 1.5rem;
+  left: auto;
+  top: 13rem;
 }
 
 /* ============================================================
@@ -1823,16 +1809,20 @@ details:not([open]) .vim-panel-section-title::after {
 /* ============================================================
    Tooltip
    ============================================================ */
-/* !important throughout: overrides react-tooltip's own inline and default styles */
-.vim-tooltip {
-  max-width: 20rem !important;
-  border: 1px solid var(--c-medium-gray) !important;
-  background: var(--c-white) !important;
-  font-size: var(--font-size-sm) !important;
-  color: var(--c-darker-gray) !important;
-  opacity: 1 !important;
-  box-shadow: 2px 6px 15px rgba(0, 0, 0, 0.3) !important;
-  transition: opacity var(--transition-fast) !important;
+
+/* Portal tooltip — rendered at document.body, never clipped */
+.vim-tooltip-portal {
+  position: fixed;
+  font-family: 'Roboto', sans-serif;
+  padding: 4px 8px;
+  border: 1px solid var(--c-medium-gray);
+  background: var(--c-white);
+  color: var(--c-darker-gray);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+  box-shadow: 2px 6px 15px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 9999;
 }
 
 /* ============================================================
