@@ -121,6 +121,10 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
     if (el) el.classList.toggle('vim-hidden', !uiState.panelPerformance)
   }, [uiState.panelPerformance])
 
+  useEffect(() => {
+    props.viewer.gizmos.axes.canvas.style.display = uiState.panelAxes ? '' : 'none'
+  }, [uiState.panelAxes])
+
   const sectionBoxRef = useWebglSectionBox(props.viewer, settings.sectionBox)
   const isolationPanelHandle = useRef<GenericPanelApi>(null)
   const sectionBoxPanelHandle = useRef<GenericPanelApi>(null)
