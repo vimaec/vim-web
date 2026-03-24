@@ -27,6 +27,8 @@ export interface IsolationApi {
   ghostOpacity: StateRef<number>;
   /** Whether transparent materials are rendered (observable). */
   showTransparent: StateRef<boolean>;
+  /** Opacity of transparent materials 0-1 (observable). Default: 0.25. */
+  transparentOpacity: StateRef<number>;
   /** Whether selection outlines are enabled (observable). */
   outlineEnabled: StateRef<boolean>;
   /** Outline quality: 'low' (0.5x) | 'medium' (1x) | 'high' (2x) render target scale. */
@@ -104,6 +106,8 @@ export interface IIsolationAdapter{
 
   getShowGhost(): boolean;
   getShowTransparent(): boolean;
+  getTransparentOpacity(): number;
+  setTransparentOpacity(opacity: number): void;
   getOutlineEnabled(): boolean;
   getOutlineQuality(): string;
   getOutlineThickness(): number;
@@ -130,6 +134,7 @@ export function useSharedIsolation(adapter: IIsolationAdapter, initialState?: Is
   const showRooms = useStateRef<boolean>(initialState?.showRooms ?? false);
   const showGhost = useStateRef<boolean>(() => adapter.getShowGhost(), true);
   const showTransparent = useStateRef<boolean>(() => adapter.getShowTransparent(), true);
+  const transparentOpacity = useStateRef<number>(() => adapter.getTransparentOpacity(), true, 'vim.transparent.opacity');
   const outlineEnabled = useStateRef<boolean>(() => adapter.getOutlineEnabled(), true, 'vim.outline.enabled');
   const outlineQuality = useStateRef<string>(() => adapter.getOutlineQuality(), true, 'vim.outline.quality');
   const outlineThickness = useStateRef<number>(() => adapter.getOutlineThickness(), true, 'vim.outline.thickness');
@@ -162,6 +167,7 @@ export function useSharedIsolation(adapter: IIsolationAdapter, initialState?: Is
 
   showGhost.useOnChange((v) => adapter.showGhost(v));
   showTransparent.useOnChange((v) => adapter.setShowTransparent(v));
+  transparentOpacity.useOnChange((v) => adapter.setTransparentOpacity(v));
   outlineEnabled.useOnChange((v) => adapter.setOutlineEnabled(v));
   outlineQuality.useOnChange((v) => adapter.setOutlineQuality(v));
   outlineThickness.useOnChange((v) => adapter.setOutlineThickness(v));
@@ -182,6 +188,7 @@ export function useSharedIsolation(adapter: IIsolationAdapter, initialState?: Is
     showPanel,
     showGhost,
     showTransparent,
+    transparentOpacity,
     outlineEnabled,
     outlineQuality,
     outlineThickness,

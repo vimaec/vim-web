@@ -97,6 +97,8 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer, initialState?: I
 
     getShowGhost: () => ghost,
     getShowTransparent: () => showTransparent,
+    getTransparentOpacity: () => viewer.materials.transparentOpacity,
+    setTransparentOpacity: (opacity: number) => { viewer.materials.transparentOpacity = opacity },
     getOutlineEnabled: () => viewer.renderer.outlineEnabled,
     getOutlineQuality: () => {
       const scale = viewer.renderer.outlineScale

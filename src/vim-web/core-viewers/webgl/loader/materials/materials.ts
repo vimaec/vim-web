@@ -45,6 +45,9 @@ export interface IMaterials {
   /** Clipping planes applied to all materials. Set to undefined to disable clipping. */
   clippingPlanes: THREE.Plane[] | undefined
 
+  /** Opacity of the transparent model material (0 = invisible, 1 = fully opaque). Default: 0.25. */
+  transparentOpacity: number
+
   /** Selection fill mode: 'none' | 'default' | 'xray' | 'seethrough'. */
   selectionFillMode: SelectionFillMode
   /** Color used to tint selected elements. */
@@ -173,6 +176,10 @@ export class Materials implements IMaterials {
   /** Color of the ghost material. */
   get ghostColor () { return this._ghost.color }
   set ghostColor (value: THREE.Color) { this._ghost.color = value }
+
+  /** Opacity of the transparent model material (0 = invisible, 1 = fully opaque). Default: 0.25. */
+  get transparentOpacity () { return this._modelTransparent.baseOpacity }
+  set transparentOpacity (value: number) { this._modelTransparent.baseOpacity = value }
 
   /**
    * Updates material settings based on the provided configuration.

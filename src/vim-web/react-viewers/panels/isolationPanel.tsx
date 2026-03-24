@@ -6,6 +6,7 @@ export const Ids = {
   showGhost: "isolationPanel.showGhost",
   ghostOpacity: "isolationPanel.ghostOpacity",
   showTransparent: "isolationPanel.showTransparent",
+  transparentOpacity: "isolationPanel.transparentOpacity",
   outlineEnabled: "isolationPanel.outlineEnabled",
   outlineQuality: "isolationPanel.outlineQuality",
   outlineThickness: "isolationPanel.outlineThickness",
@@ -27,6 +28,17 @@ export const IsolationPanel = forwardRef<GenericPanelApi, { state: IsolationApi 
             id: Ids.showTransparent,
             label: "Show Transparent",
             state: props.state.showTransparent
+          },
+          {
+            type: "number",
+            id: Ids.transparentOpacity,
+            label: "Transparent Opacity",
+            state: props.state.transparentOpacity,
+            enabled: () => props.state.showTransparent.get(),
+            min: 0,
+            max: 1,
+            step: 0.05,
+            transform: (n) => Math.max(0, Math.min(1, n))
           },
           {
             type: "bool",

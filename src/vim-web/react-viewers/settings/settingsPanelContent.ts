@@ -16,6 +16,15 @@ export function getIsolationSettings(isolation: IsolationApi): GenericEntryType[
       state: isolation.showTransparent,
     },
     {
+      type: 'number',
+      id: 'transparentOpacity',
+      label: 'Transparent Opacity',
+      info: '[0,1]',
+      step: 0.05,
+      transform: (n) => Math.max(0, Math.min(1, n)),
+      state: isolation.transparentOpacity,
+    },
+    {
       type: 'bool',
       id: 'showGhost',
       label: 'Show Ghost',

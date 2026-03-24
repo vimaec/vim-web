@@ -33,6 +33,17 @@ export class ModelMaterial {
     this._onUpdate?.()
   }
 
+  /** Base opacity of the material (0 = invisible, 1 = fully opaque). */
+  get baseOpacity (): number {
+    return this.three.uniforms.baseOpacity.value
+  }
+
+  set baseOpacity (value: number) {
+    this.three.uniforms.baseOpacity.value = value
+    this.three.uniformsNeedUpdate = true
+    this._onUpdate?.()
+  }
+
   /** Blend strength for selection tint (0 = off, 1 = solid). */
   get selectionTintOpacity (): number {
     return this.three.uniforms.selectionTintOpacity.value
@@ -102,6 +113,7 @@ function createModelMaterialShader (transparent: boolean = false) {
       colorPaletteTexture: { value: null },
       selectionTintColor: { value: new THREE.Color(0x0064ff) },
       selectionTintOpacity: { value: 0.0 },
+      baseOpacity: { value: transparent ? 0.25 : 1.0 },
     },
     clipping: true,
     transparent: transparent,
@@ -164,6 +176,7 @@ function createModelMaterialShader (transparent: boolean = false) {
 
       uniform vec3 selectionTintColor;
       uniform float selectionTintOpacity;
+      uniform float baseOpacity;
 
       out vec4 fragColor;
 
@@ -185,7 +198,7 @@ function createModelMaterialShader (transparent: boolean = false) {
           finalColor = mix(finalColor, selectionTintColor, selectionTintOpacity);
         }
 
-        fragColor = vec4(finalColor, ${transparent ? '0.25' : '1.0'});
+        fragColor = vec4(finalColor, baseOpacity);
       }
       `
   })
