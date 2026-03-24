@@ -5,7 +5,7 @@ import { GenericPanel, GenericPanelApi } from "../generic/genericPanel";
 export const Ids = {
   showGhost: "isolationPanel.showGhost",
   ghostOpacity: "isolationPanel.ghostOpacity",
-  transparency: "isolationPanel.transparency",
+  showTransparent: "isolationPanel.showTransparent",
   outlineEnabled: "isolationPanel.outlineEnabled",
   outlineQuality: "isolationPanel.outlineQuality",
   outlineThickness: "isolationPanel.outlineThickness",
@@ -24,9 +24,9 @@ export const IsolationPanel = forwardRef<GenericPanelApi, { state: IsolationApi 
         entries={[
           {
             type: "bool",
-            id: Ids.transparency,
-            label: "Transparency",
-            state: props.state.transparency
+            id: Ids.showTransparent,
+            label: "Show Transparent",
+            state: props.state.showTransparent
           },
           {
             type: "bool",

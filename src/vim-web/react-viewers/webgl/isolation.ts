@@ -10,14 +10,14 @@ export function useWebglIsolation(viewer: Core.Webgl.Viewer, initialState?: Isol
 
 function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer, initialState?: IsolationSettings): IIsolationAdapter {
   var ghost: boolean = initialState?.showGhost ?? false;
-  var transparency: boolean = initialState?.transparency ?? true;
+  var showTransparent: boolean = initialState?.showTransparent ?? true;
   var rooms: boolean = initialState?.showRooms ?? false;
 
   function updateMaterials(){
     const m = viewer.materials
     viewer.renderer.modelMaterial = new Core.Webgl.MaterialSet(
       m.modelOpaqueMaterial,
-      transparency ? m.modelTransparentMaterial : m.modelOpaqueMaterial,
+      showTransparent ? m.modelTransparentMaterial : m.modelOpaqueMaterial,
       ghost ? m.ghostMaterial : undefined
     )
   }
@@ -96,7 +96,7 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer, initialState?: I
     setGhostOpacity: (opacity: number) => viewer.materials.ghostOpacity = opacity,
 
     getShowGhost: () => ghost,
-    getTransparency: () => transparency,
+    getShowTransparent: () => showTransparent,
     getOutlineEnabled: () => viewer.renderer.outlineEnabled,
     getOutlineQuality: () => {
       const scale = viewer.renderer.outlineScale
@@ -108,8 +108,8 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer, initialState?: I
     getSelectionFillMode: () => viewer.materials.selectionFillMode,
     getSelectionOverlayOpacity: () => viewer.materials.selectionOverlayOpacity,
 
-    setTransparency: (enabled: boolean) => {
-      transparency = enabled;
+    setShowTransparent: (enabled: boolean) => {
+      showTransparent = enabled;
       updateMaterials();
     },
 

@@ -47,7 +47,7 @@ export function getDefaultUltraSettings(): UltraSettings {
     isolation: {
       autoIsolate: false,
       showGhost: false,
-      transparency: true,
+      showTransparent: true,
       showRooms: false,
     },
     sectionBox: {

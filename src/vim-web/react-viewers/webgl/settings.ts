@@ -19,7 +19,7 @@ export type PartialWebglSettings = RecursivePartial<WebglSettings>
 export type IsolationSettings = {
   autoIsolate: boolean
   showGhost: boolean
-  transparency: boolean
+  showTransparent: boolean
   showRooms: boolean
 }
 
@@ -95,7 +95,7 @@ export function getDefaultSettings(): WebglSettings {
     isolation: {
       autoIsolate: false,
       showGhost: true,
-      transparency: true,
+      showTransparent: true,
       showRooms: false,
     },
     sectionBox: {

@@ -119,10 +119,10 @@ function createAdapter(viewer: Viewer, initialState?: IsolationSettings): IIsola
       viewer.renderer.ghostOpacity = opacity
     },
 
-    setTransparency: (_enabled: boolean) => {},
+    setShowTransparent: (_enabled: boolean) => {},
 
     getShowGhost: () => ghost.get(),
-    getTransparency: () => true,
+    getShowTransparent: () => true,
     getOutlineEnabled: () => true,
     getOutlineQuality: () => 'high',
     getOutlineThickness: () => 2,

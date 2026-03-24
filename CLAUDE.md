@@ -733,7 +733,6 @@ type VimSettings = {
   rotation: THREE.Vector3    // XYZ rotation in degrees
   scale: number              // Uniform scale factor
   matrix: THREE.Matrix4      // Override transform (replaces position/rotation/scale)
-  transparency: 'all' | 'opaque' | 'transparent'  // What to render
   verboseHttp: boolean       // Enable HTTP logging
 }
 

@@ -11,9 +11,9 @@ export function getIsolationSettings(isolation: IsolationApi): GenericEntryType[
     },
     {
       type: 'bool',
-      id: 'transparency',
-      label: 'Transparency',
-      state: isolation.transparency,
+      id: 'showTransparent',
+      label: 'Show Transparent',
+      state: isolation.showTransparent,
     },
     {
       type: 'bool',

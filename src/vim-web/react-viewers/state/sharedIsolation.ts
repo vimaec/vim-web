@@ -26,7 +26,7 @@ export interface IsolationApi {
   /** Ghost material opacity 0-1 (observable). */
   ghostOpacity: StateRef<number>;
   /** Whether transparent materials are rendered (observable). */
-  transparency: StateRef<boolean>;
+  showTransparent: StateRef<boolean>;
   /** Whether selection outlines are enabled (observable). */
   outlineEnabled: StateRef<boolean>;
   /** Outline quality: 'low' (0.5x) | 'medium' (1x) | 'high' (2x) render target scale. */
@@ -103,14 +103,14 @@ export interface IIsolationAdapter{
   setGhostOpacity(opacity: number): void;
 
   getShowGhost(): boolean;
-  getTransparency(): boolean;
+  getShowTransparent(): boolean;
   getOutlineEnabled(): boolean;
   getOutlineQuality(): string;
   getOutlineThickness(): number;
   getSelectionFillMode(): string;
   getSelectionOverlayOpacity(): number;
 
-  setTransparency(enabled: boolean): void;
+  setShowTransparent(enabled: boolean): void;
 
   setOutlineEnabled(enabled: boolean): void;
   setOutlineQuality(quality: string): void;
@@ -129,7 +129,7 @@ export function useSharedIsolation(adapter: IIsolationAdapter, initialState?: Is
   const showPanel = useStateRef<boolean>(false);
   const showRooms = useStateRef<boolean>(initialState?.showRooms ?? false);
   const showGhost = useStateRef<boolean>(() => adapter.getShowGhost(), true);
-  const transparency = useStateRef<boolean>(() => adapter.getTransparency(), true);
+  const showTransparent = useStateRef<boolean>(() => adapter.getShowTransparent(), true);
   const outlineEnabled = useStateRef<boolean>(() => adapter.getOutlineEnabled(), true, 'vim.outline.enabled');
   const outlineQuality = useStateRef<string>(() => adapter.getOutlineQuality(), true, 'vim.outline.quality');
   const outlineThickness = useStateRef<number>(() => adapter.getOutlineThickness(), true, 'vim.outline.thickness');
@@ -161,7 +161,7 @@ export function useSharedIsolation(adapter: IIsolationAdapter, initialState?: Is
   });
 
   showGhost.useOnChange((v) => adapter.showGhost(v));
-  transparency.useOnChange((v) => adapter.setTransparency(v));
+  showTransparent.useOnChange((v) => adapter.setShowTransparent(v));
   outlineEnabled.useOnChange((v) => adapter.setOutlineEnabled(v));
   outlineQuality.useOnChange((v) => adapter.setOutlineQuality(v));
   outlineThickness.useOnChange((v) => adapter.setOutlineThickness(v));
@@ -181,7 +181,7 @@ export function useSharedIsolation(adapter: IIsolationAdapter, initialState?: Is
     autoIsolate,
     showPanel,
     showGhost,
-    transparency,
+    showTransparent,
     outlineEnabled,
     outlineQuality,
     outlineThickness,
