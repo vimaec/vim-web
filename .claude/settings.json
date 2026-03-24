@@ -5,7 +5,8 @@
       "Skill(review-react)",
       "Skill(review-react:*)",
       "Bash(python3 reorganize_css.py)",
-      "Bash(find d:DriveVimvim-websrc -type f \\\\\\(-name *.css -o -name *.scss \\\\\\))"
+      "Bash(find d:DriveVimvim-websrc -type f \\\\\\(-name *.css -o -name *.scss \\\\\\))",
+      "Bash(npx tsc:*)"
     ],
     "additionalDirectories": [
       "d:\\Drive\\Vim\\vim-web\\.claude\\skills"

@@ -19,7 +19,6 @@ if (!container) {
 // Create a React root
 const root = createRoot(container);
 
-console.log("Root container found", container);
 // Render your App
 root.render(
   //<React.StrictMode>
@@ -88,6 +87,7 @@ function App() {
 
 async function createWebgl (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDivElement) {
   const viewer = await VIM.React.Webgl.createViewer(div, {ui: {
+    panelAxes: false,
   }})
   viewerRef.current = viewer
   globalThis.viewer = viewer // for testing in browser console
@@ -96,6 +96,30 @@ async function createWebgl (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDiv
   const request = viewer.load({ url })
   await request.getVim()
   viewer.framing.frameScene.call()
+
+  // Test: lag spike during lerp — press L to simulate
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'l') {
+      console.log('Starting lerp + simulating lag spike...')
+      // Start a 1s lerp to frame the scene
+      viewer.framing.frameScene.call()
+      // Block the main thread for 500ms mid-animation
+      setTimeout(() => {
+        const start = performance.now()
+        while (performance.now() - start < 500) { /* busy wait */ }
+        console.log('Lag spike done (500ms)')
+      }, 100)
+    }
+    if (e.key === 'k') {
+      console.log('Starting lerp + simulating LONG lag spike...')
+      viewer.framing.frameScene.call()
+      setTimeout(() => {
+        const start = performance.now()
+        while (performance.now() - start < 1500) { /* busy wait */ }
+        console.log('Lag spike done (1500ms)')
+      }, 100)
+    }
+  })
 }
 
 async function createUltra (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDivElement) {
@@ -119,6 +143,17 @@ async function createUltra (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDiv
     return
   }
   viewer.framing.frameScene.call()
+
+  // Test: press B to cycle background colors
+  const colors = [0xf0f0f0, 0xff0000, 0x00ff00, 0x0000ff, 0x000000, 0xffffff]
+  let colorIdx = 0
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'b') {
+      colorIdx = (colorIdx + 1) % colors.length
+      viewer.core.renderer.background = new VIM.THREE.Color(colors[colorIdx])
+      console.log('background =', '#' + colors[colorIdx].toString(16).padStart(6, '0'))
+    }
+  })
 }function getPathFromUrl () {
   const params = new URLSearchParams(window.location.search)
   return params.get('vim') ?? undefined
