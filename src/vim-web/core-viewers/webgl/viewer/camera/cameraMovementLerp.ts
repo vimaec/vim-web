@@ -59,9 +59,11 @@ export class CameraLerp extends CameraMovement {
     if (t >= 1) {
       t = 1
       this._running = false
-      this.onProgress = undefined
     }
     this.onProgress?.(t)
+    if (!this._running) {
+      this.onProgress = undefined
+    }
   }
 
   protected applyMove (worldVector: THREE.Vector3): void {
