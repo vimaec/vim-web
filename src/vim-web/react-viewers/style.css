@@ -65,6 +65,7 @@
   --transition-base: 0.2s;
 
   /* Typography */
+  --font-family: 'Roboto', sans-serif;
   --font-size-xs: 0.7rem;
   --font-size-sm: 0.75rem;
   --font-size-base: 0.875rem;
@@ -93,7 +94,7 @@
 
 
 .vim-component {
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
@@ -889,6 +890,109 @@ details:not([open]) .vim-panel-section-title::after {
 }
 
 /* ============================================================
+   BIM Tree (headless-tree)
+   ============================================================ */
+.vim-ht-container {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  outline: none;
+}
+
+.vim-ht-item {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  padding-right: 4px;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.vim-ht-item:nth-child(odd)  { background-color: var(--c-white); }
+.vim-ht-item:nth-child(even) { background-color: transparent; }
+
+.vim-ht-item.vim-ht-selected {
+  background-color: var(--c-lightest-blue);
+}
+
+.vim-ht-item:hover {
+  background-color: var(--c-list-hover);
+}
+
+.vim-ht-arrow {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  transition: transform 0.3s;
+}
+
+.vim-ht-arrow-folder {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: url("data:image/svg+xml,%3Csvg id='Arrow' xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Crect id='frame' width='20' height='20' fill='%238a8d95' opacity='0'/%3E%3Cpath id='icon' d='M100.072,70.536l-3.987,3.987a.938.938,0,0,1-1.6-.663V65.886a.938.938,0,0,1,1.6-.663l3.987,3.987A.937.937,0,0,1,100.072,70.536Z' transform='translate(-87.104 -59.873)' fill='%238a8d95'/%3E%3C/svg%3E%0A");
+}
+
+.vim-ht-arrow-open {
+  transform: rotate(90deg);
+}
+
+.vim-ht-title {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vim-ht-visibility {
+  flex-shrink: 0;
+  background-repeat: no-repeat;
+}
+
+/* Default state */
+.vim-ht-visibility.vim-visible {
+  display: none;
+}
+
+.vim-ht-visibility.vim-hidden {
+  display: block;
+  background-image: var(--hidden-dark);
+}
+
+/* Hover unselected */
+.vim-ht-item:hover .vim-ht-visibility.vim-visible {
+  display: block;
+  background-image: var(--visible-beige);
+}
+
+.vim-ht-item:hover .vim-ht-visibility.vim-hidden {
+  background-image: var(--hidden-beige);
+}
+
+/* Hover selected */
+.vim-ht-item.vim-ht-selected:hover .vim-ht-visibility.vim-visible {
+  display: block;
+  background-image: var(--visible-light-blue);
+}
+
+.vim-ht-item.vim-ht-selected:hover .vim-ht-visibility.vim-hidden {
+  background-image: var(--hidden-light-blue);
+}
+
+/* Hover toggle button directly */
+.vim-ht-item .vim-ht-visibility.vim-visible:hover {
+  display: block;
+  background-image: var(--hidden-royal-blue);
+}
+
+.vim-ht-item .vim-ht-visibility.vim-hidden:hover {
+  background-image: var(--visible-royal-blue);
+}
+
+/* ============================================================
    Control Bar
    ============================================================ */
 .vim-control-bar {
@@ -1220,6 +1324,16 @@ details:not([open]) .vim-panel-section-title::after {
   display: none;
 }
 
+.vim-side-panel-handle {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: var(--z-panel);
+}
+
 .vim-side-panel-nav {
   z-index: var(--z-panel);
   position: absolute;
@@ -1534,7 +1648,7 @@ details:not([open]) .vim-panel-section-title::after {
   background: var(--c-white);
   border-radius: var(--radius-md);
   box-shadow: 0 4px 16px rgba(33, 39, 51, 0.5);
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--font-family);
   overflow: auto;
   padding: 1.5rem;
 }
@@ -1587,6 +1701,8 @@ details:not([open]) .vim-panel-section-title::after {
   padding: 0.25rem 0;
   color: var(--c-darker-gray);
   box-shadow: var(--shadow-md);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
 }
 
 .vim-context-menu-item {
@@ -1813,7 +1929,7 @@ details:not([open]) .vim-panel-section-title::after {
 /* Portal tooltip — rendered at document.body, never clipped */
 .vim-tooltip-portal {
   position: fixed;
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--font-family);
   padding: 4px 8px;
   border: 1px solid var(--c-medium-gray);
   background: var(--c-white);
@@ -1949,7 +2065,7 @@ details:not([open]) .vim-panel-section-title::after {
     height: min(6cqmin, 1.5rem);
   }
 
-  /* --- BIM Tree --- */
+  /* --- BIM Tree (react-complex-tree) --- */
   .vim-bim-tree .rct-tree-item-title-container {
     height: min(10cqmin, 2rem);
   }
@@ -1961,6 +2077,20 @@ details:not([open]) .vim-panel-section-title::after {
     width: min(6cqmin, 1rem);
   }
   .vim-bim-tree .rct-tree-item-arrow:has(svg):before {
+    background-size: min(8cqmin, 1rem);
+  }
+
+  /* --- BIM Tree (headless-tree) --- */
+  .vim-ht-item {
+    height: min(10cqmin, 2rem);
+  }
+  .vim-ht-visibility {
+    width: min(6cqmin, 1rem);
+    height: min(6cqmin, 1rem);
+  }
+  .vim-ht-arrow {
+    width: min(6cqmin, 1rem);
+    height: min(6cqmin, 1rem);
     background-size: min(8cqmin, 1rem);
   }
 
