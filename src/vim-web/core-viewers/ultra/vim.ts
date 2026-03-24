@@ -297,7 +297,6 @@ export class Vim implements IUltraVim {
       } else if (Utils.isFileURI(source.url)) {
         handle = await this._rpc.RPCLoadVim(source)
       } else {
-        console.log('Defaulting to file path')
         handle = await this._rpc.RPCLoadVim(source)
       }
     } catch (e) {

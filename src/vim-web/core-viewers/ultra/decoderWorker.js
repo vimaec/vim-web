@@ -57,7 +57,6 @@ function log (message) {
   postMessage(`[Decoder Worker] ${message}`)
 }
 function handleFrame (videoFrame) {
-  console.log('Frame decoded', videoFrame)
   // Transfer the VideoFrame back to the main thread
   postMessage({ type: 'frame', frame: videoFrame }, [videoFrame])
 }

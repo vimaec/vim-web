@@ -15,7 +15,7 @@ export function updateModal (modal: RefObject<ModalApi>, state: Core.Ultra.Clien
     }
   }
   if (state.status === 'error') {
-    console.log('Error loading vim', state)
+    console.error('Error loading vim', state)
     m.message(getErrorMessage(state))
   }
 }

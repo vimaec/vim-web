@@ -151,7 +151,6 @@ export function useSectionBox(
     sectionBox,
     getBox: () => adapter.getBox(),
 
-    // TODO - Remove these from here, it should be overriden at the viewer level.
     getSceneBox: getSceneBox,
     getSelectionBox,
   }

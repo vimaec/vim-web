@@ -79,8 +79,7 @@ function createAdapter(viewer: Viewer, initialState?: IsolationSettings): IIsola
       })
     },
 
-    // TODO: Change this api to use elements
-    isolate: (instances: number[]) => {
+    isolate: (_instances: number[]) => {
       hide('all') // Hide all objects
       ;(viewer.selection.getAll() as Element3D[]).forEach(obj => {
         obj.state = VisibilityState.HIGHLIGHTED
@@ -120,7 +119,7 @@ function createAdapter(viewer: Viewer, initialState?: IsolationSettings): IIsola
       viewer.renderer.ghostOpacity = opacity
     },
 
-    setTransparency: (enabled: boolean) => {console.log("setTransparency not implemented")},
+    setTransparency: (_enabled: boolean) => {},
 
     getShowGhost: () => ghost.get(),
     getTransparency: () => true,
@@ -136,7 +135,7 @@ function createAdapter(viewer: Viewer, initialState?: IsolationSettings): IIsola
     setSelectionOverlayOpacity: (_opacity: number) => {},
 
     getShowRooms: () => true,
-    setShowRooms: (show: boolean) => {console.log("setShowRooms not implemented")},
+    setShowRooms: (_show: boolean) => {},
 
 
   };
@@ -176,11 +175,11 @@ function getVisibilityState(viewer: Viewer): VisibilityStatus {
 }
 
 //returns true if only the selection is visible
-function onlySelection(viewer: Viewer, vim: Vim): boolean {
+function onlySelection(_viewer: Viewer, _vim: Vim): boolean {
   return false
 }
 
 //returns true if only the selection is hidden
-function allButSelection(viewer: Viewer, vim: Vim): boolean {
+function allButSelection(_viewer: Viewer, _vim: Vim): boolean {
   return false
 }

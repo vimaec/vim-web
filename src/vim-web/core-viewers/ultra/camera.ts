@@ -135,7 +135,6 @@ export class Camera implements IUltraCamera {
 
   private _restoreLastPosition () {
     if (this._lastPosition?.isValid()) {
-      console.log('Restoring camera position: ', this._lastPosition)
       this._rpc.RPCSetCameraView(this._lastPosition, 0.5)
     }
   }
