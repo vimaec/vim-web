@@ -128,6 +128,7 @@ function createWebglIsolationAdapter(viewer: Core.Webgl.Viewer, initialState?: I
       viewer.renderer.selectionFillMode = mode as Core.Webgl.SelectionFillMode
     },
     setSelectionOverlayOpacity: (opacity: number) => {
+      viewer.materials.selectionOpacity = opacity
       viewer.materials.selectionOverlayOpacity = opacity
     },
 

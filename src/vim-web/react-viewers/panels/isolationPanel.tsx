@@ -90,10 +90,7 @@ export const IsolationPanel = forwardRef<GenericPanelApi, { state: IsolationApi 
             id: Ids.selectionOverlayOpacity,
             label: "Selection Opacity",
             state: props.state.selectionOverlayOpacity,
-            enabled: () => {
-              const mode = props.state.selectionFillMode.get()
-              return mode === 'xray' || mode === 'seethrough'
-            },
+            enabled: () => props.state.selectionFillMode.get() !== 'none',
             min: 0,
             max: 1,
             step: 0.05
