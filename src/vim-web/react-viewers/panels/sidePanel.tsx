@@ -2,10 +2,9 @@
  * @module viw-webgl-react
  */
 
-import React, { useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import * as Core from '../../core-viewers'
 import { SideState } from '../state/sideState'
-import { Enable, Resizable } from 're-resizable'
 import { Container } from '../container'
 
 const MAX_WIDTH = 0.75
@@ -25,8 +24,8 @@ export function SidePanel (props: {
   content: () => JSX.Element
 }) {
   const resizeTimeOut = useRef<number>()
+  const panelRef = useRef<HTMLDivElement>(null)
 
-  // state to force re-render on resize
   const resizeGfx = () => {
     if (props.side.getContent() !== 'none') {
       const width = props.side.getWidth()
@@ -34,7 +33,6 @@ export function SidePanel (props: {
     } else {
       props.container.gfx.style.left = '0px'
     }
-
     props.viewer.viewport.resizeToParent()
   }
 
@@ -56,8 +54,7 @@ export function SidePanel (props: {
   })
 
   useEffect(() => {
-    // Init size to parent
-    const obs = new ResizeObserver((entries) => {
+    const obs = new ResizeObserver(() => {
       updateSize()
       clearTimeout(resizeTimeOut.current)
       resizeTimeOut.current = window.setTimeout(() => {
@@ -65,54 +62,45 @@ export function SidePanel (props: {
       }, 100)
     })
     obs.observe(props.container.root)
+    return () => obs.disconnect()
   }, [])
 
-  const onNavBtn = () => {
-    props.side.popContent()
-  }
+  const onDragStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = props.side.getWidth()
+
+    const onMove = (e: MouseEvent) => {
+      const delta = e.clientX - startX
+      const width = Math.max(props.side.minWidth, Math.min(startWidth + delta, getMaxSize()))
+      props.side.setWidth(width)
+    }
+
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+    }
+
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }, [])
 
   return (
-    <Resizable
-      enable={
-        {
-          right: true,
-          top: false,
-          topLeft: false,
-          topRight: false,
-          left: false,
-          bottom: false,
-          bottomLeft: false,
-          bottomRight: false
-        } as Enable
-      }
-      size={{ width: props.side.getWidth(), height: '100%' }}
-      minWidth={props.side.minWidth}
-      maxWidth={getMaxSize()}
-      onResizeStart={(e, direction, ref) => {
-        if (direction !== 'right') {
-          e.stopPropagation()
-        }
-      }}
-      onResize={(e, direction, ref, d) => {
-        if (direction !== 'right') {
-          e.stopPropagation()
-        }
-        props.side.setWidth(ref.clientWidth)
-      }}
-      style={{
-        position: 'absolute'
-      }}
+    <div
+      ref={panelRef}
       className='vim-side-panel'
+      style={{ position: 'absolute', width: props.side.getWidth(), height: '100%' }}
       data-hidden={props.side.getContent() === 'none' || undefined}
     >
+      <div className="vim-side-panel-handle" onMouseDown={onDragStart} />
       <button
         className="vim-side-panel-nav"
         data-tip="Close panel"
-        onClick={onNavBtn}
+        onClick={() => props.side.popContent()}
       />
       <div className='vim-side-panel-content'>
         {props.content()}
       </div>
-    </Resizable>
+    </div>
   )
 }
