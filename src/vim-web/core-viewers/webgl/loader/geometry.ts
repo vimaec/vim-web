@@ -6,21 +6,6 @@ import * as THREE from 'three'
 import { MeshSection } from 'vim-format'
 import { MappedG3d } from './progressive/mappedG3d'
 
-/**
- * Determines how to draw (or not) transparent and opaque objects
- */
-export type TransparencyMode = 'opaqueOnly' | 'transparentOnly' | 'allAsOpaque' | 'all'
-
-/**
- * @internal
- * Returns true if the transparency mode is one of the valid values
- */
-export function isTransparencyModeValid (value: string | undefined | null): value is TransparencyMode {
-  if (!value) return false
-  return ['all', 'opaqueOnly', 'transparentOnly', 'allAsOpaque'].includes(
-    value
-  )
-}
 
 /**
  * @internal
