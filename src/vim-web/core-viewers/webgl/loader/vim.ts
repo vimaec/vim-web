@@ -68,7 +68,7 @@ export interface IWebglVim extends IVim<IElement3D> {
   subset(): ISubset
   /**
    * Loads geometry for the given subset, or all geometry if no subset is provided.
-   * Caller is responsible for not loading the same subset twice.
+   * Clears any previously loaded geometry first so meshes are never duplicated.
    * @param subset - The subset to load. Omit to load everything.
    */
   load(subset?: ISubset): Promise<void>
@@ -230,12 +230,13 @@ export class Vim implements IWebglVim {
 
   /**
    * Loads geometry for the given subset, or all geometry if no subset is provided.
-   * Caller is responsible for not loading the same subset twice.
+   * Clears any previously loaded geometry first so meshes are never duplicated.
    * @param subset - The subset to load. Omit to load everything.
    */
   async load (subset?: ISubset) {
     subset ??= this.subset()
     if (subset.getInstanceCount() === 0) return
+    this.clear()
     this._factory.add(subset as G3dSubset)
     this._onGeometryLoaded.dispatch()
   }
