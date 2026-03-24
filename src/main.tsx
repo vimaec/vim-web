@@ -94,31 +94,25 @@ async function createWebgl (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDiv
   
   const url = getPathFromUrl() ?? 'https://storage.cdn.vimaec.com/samples/residence.v1.2.75.vim'
   const request = viewer.load({ url })
-  await request.getVim()
+  const vim = await request.getVim()
   viewer.framing.frameScene.call()
 
-  // Test: lag spike during lerp — press L to simulate
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'l') {
-      console.log('Starting lerp + simulating lag spike...')
-      // Start a 1s lerp to frame the scene
-      viewer.framing.frameScene.call()
-      // Block the main thread for 500ms mid-animation
-      setTimeout(() => {
-        const start = performance.now()
-        while (performance.now() - start < 500) { /* busy wait */ }
-        console.log('Lag spike done (500ms)')
-      }, 100)
-    }
-    if (e.key === 'k') {
-      console.log('Starting lerp + simulating LONG lag spike...')
-      viewer.framing.frameScene.call()
-      setTimeout(() => {
-        const start = performance.now()
-        while (performance.now() - start < 1500) { /* busy wait */ }
-        console.log('Lag spike done (1500ms)')
-      }, 100)
-    }
+  // Test: double load — transparent meshes will stack and look more opaque
+  if (vim) {
+    console.log('Loading geometry a second time (double load)...')
+    await vim.load()
+    console.log('Double load complete — windows should look more opaque if meshes stack')
+  }
+}
+
+function logMaterials(vim: VIM.Core.Webgl.IWebglVim, label: string) {
+  const scene = (vim as any)._scene
+  const mat = scene?.material
+  console.log(`[${label}] scene.material:`, {
+    opaque: mat?.opaque?.type,
+    transparent: mat?.transparent?.type,
+    hidden: mat?.hidden?.type,
+    hiddenIsGhost: mat?.hidden?.userData?.isGhost,
   })
 }
 
