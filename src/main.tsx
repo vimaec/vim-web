@@ -59,8 +59,13 @@ function App() {
     if (!isWebglViewer(viewerRef.current)) return
 
     console.log('Loading local file:', file.name)
+    // Unload existing vims
+    const viewer = viewerRef.current
+    for (const vim of [...viewer.core.vims]) {
+      viewer.unload(vim)
+    }
     const buffer = await file.arrayBuffer()
-    const request = viewerRef.current.load({ buffer })
+    const request = viewer.load({ buffer })
     
     const result = await request.getResult()
     if (result.isError) {
@@ -80,6 +85,12 @@ function App() {
         style={{ display: 'none' }}
         onChange={handleFileChange}
       />
+      <button
+        onClick={() => fileInputRef.current?.click()}
+        style={{ position: 'absolute', bottom: 10, right: 10, zIndex: 100, padding: '8px 16px' }}
+      >
+        Open Local File
+      </button>
       <div ref={div} style={{ position: 'absolute', inset: 0 }}/>
     </>
   )

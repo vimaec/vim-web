@@ -9,7 +9,10 @@
       "Bash(npx tsc:*)",
       "Bash(npm ls:*)",
       "Bash(npm view:*)",
-      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\(''''homepage'''',''''no homepage''''\\)\\)\")"
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\(''''homepage'''',''''no homepage''''\\)\\)\")",
+      "Bash(npm search:*)",
+      "Bash(python3 -c \":*)",
+      "Bash(npm install:*)"
     ],
     "additionalDirectories": [
       "d:\\Drive\\Vim\\vim-web\\.claude\\skills"
