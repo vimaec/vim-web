@@ -104,7 +104,7 @@ async function createWebgl (viewerRef: MutableRefObject<ViewerRef>, div: HTMLDiv
   globalThis.viewer = viewer // for testing in browser console
   
   const url = getPathFromUrl() ?? 'https://storage.cdn.vimaec.com/samples/residence.v1.2.75.vim'
-  const request = viewer.load({ url })
+  const request = viewer.load({ url }, { prewarmBim: true })
   const vim = await request.getVim()
   viewer.framing.frameScene.call()
 
