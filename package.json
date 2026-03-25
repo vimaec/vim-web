@@ -56,7 +56,7 @@
     "ste-signals": "^3.0.11",
     "ste-simple-events": "^3.0.11",
     "three": "^0.183.2",
-    "vim-format": "1.0.15-dev.5"
+    "vim-format": "^1.0.16-dev.6"
   },
   "peerDependencies": {
     "react": "^18.3.1 || ^19.0.0",
