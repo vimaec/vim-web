@@ -36,8 +36,8 @@
   },
   "devDependencies": {
     "@types/dom-webcodecs": "^0.1.13",
-    "@types/react": "^18.3.13",
-    "@types/react-dom": "^18.3.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.17.0",
     "@typescript-eslint/parser": "^8.17.0",
     "@vitejs/plugin-react": "^4.3.4",
@@ -63,7 +63,6 @@
     "@types/three": "0.183.0",
     "deepmerge": "^4.3.1",
     "is-plain-object": "^5.0.0",
-    "react-complex-tree": "^2.6.0",
     "stats-js": "^1.0.1",
     "ste-signals": "^3.0.11",
     "ste-simple-events": "^3.0.11",
@@ -71,8 +70,8 @@
     "vim-format": "1.0.15-dev.5"
   },
   "peerDependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react": "^18.3.1 || ^19.0.0",
+    "react-dom": "^18.3.1 || ^19.0.0"
   },
   "keywords": [
     "3d",

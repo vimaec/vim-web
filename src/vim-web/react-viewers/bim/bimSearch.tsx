@@ -21,7 +21,7 @@ export function BimSearch (props: {
   count: number
 }) {
   const [text, setText] = useState('')
-  const changeTimeout = useRef<ReturnType<typeof setTimeout>>()
+  const changeTimeout = useRef<ReturnType<typeof setTimeout>>(undefined)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {

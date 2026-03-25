@@ -11,7 +11,7 @@ export function serverStreamError (url: string): MessageBoxProps {
   }
 }
 
-function body (url: string): JSX.Element {
+function body (url: string): React.ReactElement {
   return (
     <>
       {style.mainText(<>

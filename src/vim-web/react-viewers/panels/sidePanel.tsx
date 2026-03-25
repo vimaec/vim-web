@@ -21,9 +21,9 @@ export function SidePanel (props: {
   container: Container
   side: SideState
   viewer: Core.Webgl.Viewer | Core.Ultra.Viewer
-  content: () => JSX.Element
+  content: () => React.ReactElement
 }) {
-  const resizeTimeOut = useRef<number>()
+  const resizeTimeOut = useRef<number>(undefined)
   const panelRef = useRef<HTMLDivElement>(null)
 
   const resizeGfx = () => {

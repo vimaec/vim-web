@@ -1,4 +1,4 @@
-export function mainText (text: JSX.Element) {
+export function mainText (text: React.ReactElement) {
   return <p className="vim-main-text">{text}</p>
 }
 
@@ -14,7 +14,7 @@ export function subTitle (title: string) {
   return <p className="vim-sub-title">{title}</p>
 }
 
-export function dotList (elements: (JSX.Element | string)[]) {
+export function dotList (elements: (React.ReactElement | string)[]) {
   return (
     <ul className="vim-dot-list">
       {elements.filter(v => v).map((element, index) => (
@@ -24,7 +24,7 @@ export function dotList (elements: (JSX.Element | string)[]) {
   )
 }
 
-export function numList (elements: (JSX.Element | string)[]) {
+export function numList (elements: (React.ReactElement | string)[]) {
   return (
     <ul className="vim-num-list">
       {elements.filter(v => v).map((element, index) => (

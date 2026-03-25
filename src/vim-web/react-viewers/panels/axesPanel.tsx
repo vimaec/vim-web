@@ -31,7 +31,7 @@ function AxesPanel (props: { viewer: Core.Webgl.Viewer, framing: FramingApi, set
   const [ortho, setOrtho] = useState<boolean>(viewer.camera.orthographic)
 
   const gizmoDiv = useRef<HTMLDivElement>(null)
-  const resize = useRef<ResizeObserver>()
+  const resize = useRef<ResizeObserver>(undefined)
 
   useEffect(() => {
     const gizmo = gizmoDiv.current

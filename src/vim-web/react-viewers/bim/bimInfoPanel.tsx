@@ -19,7 +19,7 @@ export function BimInfoPanel(props: {
 
   const [data, setData] = useState<Data>()
 
-  const debounce = useRef<ReturnType<typeof setTimeout>>()
+  const debounce = useRef<ReturnType<typeof setTimeout>>(undefined)
   useEffect(() => {
     let cancelled = false
     clearTimeout(debounce.current)

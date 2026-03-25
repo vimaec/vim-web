@@ -23,7 +23,7 @@ function MenuToast (props: { viewer: Core.Webgl.Viewer; side: SideState }) {
   const [visible, setVisible] = useState<boolean>()
   const [speed, setSpeed] = useState<number>(-1)
   const speedRef = useRef<number>(speed)
-  const toastTimeout = useRef<ReturnType<typeof setTimeout>>()
+  const toastTimeout = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   useEffect(() => {
     speedRef.current = props.viewer.inputs.moveSpeed

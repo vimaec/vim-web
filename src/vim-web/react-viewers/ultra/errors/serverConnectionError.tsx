@@ -12,7 +12,7 @@ export function serverConnectionError (url: string): MessageBoxProps {
   }
 }
 
-function body (url: string, local: boolean): JSX.Element {
+function body (url: string, local: boolean): React.ReactElement {
   return (
     <>
       {style.mainText(<>

@@ -11,7 +11,7 @@ export function serverCompatibilityError (url: string, localVersion: string, rem
   }
 }
 
-function body (url: string, localVersion: string, remoteVersion: string): JSX.Element {
+function body (url: string, localVersion: string, remoteVersion: string): React.ReactElement {
   return (
     <>
       {style.mainText(<>

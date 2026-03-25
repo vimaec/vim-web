@@ -13,7 +13,7 @@ export function TooltipZone({ children, delay = 300 }: {
   delay?: number
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const timer = useRef<ReturnType<typeof setTimeout>>()
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
   const mouse = useRef({ x: 0, y: 0 })
   const activeTarget = useRef<HTMLElement | null>(null)
   const [tip, setTip] = useState<{ text: string, x: number, top: number, bottom: number } | null>(null)

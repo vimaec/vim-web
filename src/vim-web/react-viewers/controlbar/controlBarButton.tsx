@@ -7,7 +7,7 @@ export interface IControlBarButton {
   enabled?: (() => boolean) | undefined
   tip: string | (() => string)
   action: () => void
-  icon: (options?: IconOptions) => JSX.Element
+  icon: (options?: IconOptions) => React.ReactElement
   isOn?: () => boolean
   variant?: ButtonVariant
 }

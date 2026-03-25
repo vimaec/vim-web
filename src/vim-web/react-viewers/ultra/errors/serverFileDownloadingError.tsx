@@ -17,7 +17,7 @@ export function serverFileDownloadingError (url : string, authToken?: string, se
   }
 }
 
-function body (url : string, authToken?: string, server?: string): JSX.Element {
+function body (url : string, authToken?: string, server?: string): React.ReactElement {
   return (
     <>
       {style.mainText(<>

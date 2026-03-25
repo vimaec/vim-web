@@ -2,9 +2,9 @@ import React from 'react'
 
 export type MessageBoxProps = {
   title: string;
-  body: string | JSX.Element;
-  icon?: JSX.Element
-  footer?: string | JSX.Element;
+  body: string | React.ReactElement;
+  icon?: React.ReactElement
+  footer?: string | React.ReactElement;
   canClose?: boolean;
   minimize?: boolean;
   onClose?: () => void;
@@ -53,7 +53,7 @@ function minimizeButton (minimized: boolean, setMinimized: (value:boolean) => vo
   </button>
 }
 
-function body (content: string | JSX.Element) {
+function body (content: string | React.ReactElement) {
   if (content === undefined) return null
   if (typeof content === 'string') {
     return <div className="vim-message-box-body">{content}</div>
@@ -61,7 +61,7 @@ function body (content: string | JSX.Element) {
   return content
 }
 
-function footer (content: string | JSX.Element) {
+function footer (content: string | React.ReactElement) {
   if (content === undefined) return null
   return <div className="vim-footer">{content}</div>
 }

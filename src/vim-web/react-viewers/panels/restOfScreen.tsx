@@ -4,10 +4,10 @@ import { SideState } from '../state/sideState'
 
 export function RestOfScreen (props:{
   side: SideState,
-  content: () => JSX.Element
+  content: () => React.ReactElement
 }) {
   const [, setVersion] = useState(0)
-  const resizeObserver = useRef<ResizeObserver>()
+  const resizeObserver = useRef<ResizeObserver>(undefined)
 
   useEffect(() => {
     resizeObserver.current = new ResizeObserver(() => {

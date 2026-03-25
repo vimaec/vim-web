@@ -73,7 +73,7 @@ export interface GenericReadonlyEntry {
 export interface GenericElementEntry {
   type: 'element'
   id: string
-  element: JSX.Element
+  element: React.ReactElement
 }
 
 export type GenericEntryType =
