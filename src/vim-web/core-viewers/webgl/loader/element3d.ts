@@ -275,7 +275,32 @@ export class Element3D implements IElement3D {
    * @returns {VimHelpers.ElementParameter[]} An array of all bim parameters for this elements.
    */
   async getBimParameters (): Promise<VimHelpers.ElementParameter[]> {
-    return VimHelpers.getElementParameters(this._vim.bim, this.element)
+    const cache = await this._vim.getParameterCache()
+    if (!cache) return VimHelpers.getElementParameters(this._vim.bim, this.element)
+
+    // Build the element set (this element + family type/family elements)
+    const elements = new Map<number, boolean>()
+    elements.set(this.element, true)
+    const familyElements = await VimHelpers.getFamilyElements(this._vim.bim, this.element)
+    familyElements.forEach(e => { if (e !== undefined) elements.set(e, false) })
+
+    // Look up from cached columns instead of re-decompressing
+    const { elements: paramElements, values, descriptorIndices, descriptorNames, descriptorGroups } = cache
+    const result: VimHelpers.ElementParameter[] = []
+    for (let i = 0; i < paramElements.length; i++) {
+      if (!elements.has(paramElements[i])) continue
+      const isInstance = elements.get(paramElements[i])
+      const descriptor = descriptorIndices[i]
+      const value = values[i]
+      const displayValue = value?.indexOf('|') >= 0 ? value.substring(value.indexOf('|') + 1) : value
+      result.push({
+        name: Number.isInteger(descriptor) ? descriptorNames?.[descriptor] : undefined,
+        value: displayValue,
+        group: Number.isInteger(descriptor) ? descriptorGroups?.[descriptor] : undefined,
+        isInstance,
+      })
+    }
+    return result
   }
 
   /**

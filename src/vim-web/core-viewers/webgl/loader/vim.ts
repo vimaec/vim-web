@@ -76,6 +76,9 @@ export interface IWebglVim extends IVim<IElement3D> {
   clear(): void
   /** Fires after `load(subset)` completes and new geometry is available. */
   readonly onGeometryLoaded: ISignal
+  /** Pre-caches BIM parameter table columns so subsequent `getBimParameters()` calls are fast.
+   *  Call after loading if your application uses BIM data. No-op if already cached. */
+  prewarmBimCache(): Promise<void>
 }
 
 /** @internal */
@@ -127,6 +130,35 @@ export class Vim implements IWebglVim {
   private readonly _factory: VimMeshFactory
   private readonly _elementToObject = new Map<number, Element3D>()
   private readonly _onGeometryLoaded = new SignalDispatcher()
+
+  async prewarmBimCache () {
+    await this.getParameterCache()
+  }
+
+  /** @internal Cached parameter table columns — loaded once, shared by all Element3D.getBimParameters() calls. */
+  _parameterCache: {
+    elements: number[]
+    values: string[]
+    descriptorIndices: number[]
+    descriptorNames: string[]
+    descriptorGroups: string[]
+  } | undefined
+
+  /** @internal */
+  async getParameterCache () {
+    if (this._parameterCache) return this._parameterCache
+    if (!this.bim) return undefined
+    const [elements, values, descriptorIndices, descriptorNames, descriptorGroups] = await Promise.all([
+      this.bim.parameter.getAllElementIndex(),
+      this.bim.parameter.getAllValue(),
+      this.bim.parameter.getAllParameterDescriptorIndex(),
+      this.bim.parameterDescriptor.getAllName(),
+      this.bim.parameterDescriptor.getAllGroup(),
+    ])
+    if (!elements || !values || !descriptorIndices) return undefined
+    this._parameterCache = { elements, values, descriptorIndices, descriptorNames, descriptorGroups }
+    return this._parameterCache
+  }
 
   get onGeometryLoaded (): ISignal { return this._onGeometryLoaded.asEvent() }
 
