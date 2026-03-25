@@ -12,7 +12,9 @@
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\(''''homepage'''',''''no homepage''''\\)\\)\")",
       "Bash(npm search:*)",
       "Bash(python3 -c \":*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm outdated:*)"
     ],
     "additionalDirectories": [
       "d:\\Drive\\Vim\\vim-web\\.claude\\skills"

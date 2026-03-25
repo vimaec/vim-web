@@ -1,4 +1,9 @@
-// Fixes image import errors in typecript.
+// Fixes import errors for non-code modules in TypeScript.
+
+declare module '*.css' {
+  const value: any
+  export default value
+}
 
 declare module '*.png' {
   const value: any
