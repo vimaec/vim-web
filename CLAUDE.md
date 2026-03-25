@@ -71,9 +71,10 @@ VIM.THREE                  // Three.js re-export
 
 ## Tech Stack
 
-- **TypeScript 5.7** (strict mode disabled), **React 18.3**, **Vite 6**
-- **Three.js 0.171**, **Tailwind CSS 3.4** (`vc-` prefix)
-- **ste-events** for typed events, **vim-format** for BIM data
+- **TypeScript 6**, **React 18.3/19**, **Vite 8**
+- **Three.js 0.183**
+- **ste-signals** / **ste-simple-events** for typed events, **vim-format** for BIM data
+- **@headless-tree** for BIM tree, **@tanstack/react-virtual** for virtualization
 
 ## Architecture
 
@@ -120,7 +121,7 @@ type WebglViewerApi = {
   contextMenu: ContextMenuApi
   bimInfo: BimInfoPanelApi
   modal: ModalApi
-  settings: SettingsApi
+  ui: WebglUiApi                    // Runtime UI visibility toggles
   isolationPanel: GenericPanelApi   // Isolation render settings
   sectionBoxPanel: GenericPanelApi  // Section box offset settings
   dispose: () => void
@@ -535,14 +536,15 @@ for (let row = 0; row < gridSize; row++) {
 | `Api` suffix | React API handles | `ViewerApi`, `FramingApi` |
 | `Ref` suffix | Reactive primitives | `StateRef`, `ActionRef` |
 | `use` prefix | React hooks | `useStateRef` |
-| `vc-` prefix | Tailwind classes | `vc-flex` |
+| `vim-` prefix | CSS classes | `vim-bim-tree` |
 | `--c-` prefix | CSS variables | `--c-primary` |
 
 ## Code Style
 
-- Prettier: no semicolons, trailing commas, single quotes
+- No semicolons, trailing commas, single quotes
 - Index files control module exports
-- No test framework configured
+- No test framework configured — build pass is verification
+- No linter or formatter — TypeScript compiler is the only gate
 - Do not keep deprecated code or backwards-compatibility shims unless explicitly requested
 
 ### Import Discipline
@@ -555,7 +557,6 @@ for (let row = 0; row < gridSize; row++) {
 ```bash
 npm run dev           # Dev server (localhost:5173)
 npm run build         # Production build (vite + tsc declarations + rollup d.ts bundles)
-npm run eslint        # Lint
 npm run documentation # TypeDoc
 ```
 
