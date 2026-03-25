@@ -24,6 +24,7 @@
 
   /* Accents */
   --c-lightest-blue: #d9edf9;
+  --c-light-blue: #c8e2f4;
   --c-list-hover: #fff8e5;
   --c-overflow: rgba(5, 12, 26, 0.8);
   --c-focus-ring: rgba(106, 159, 216, 0.2);
@@ -908,6 +909,7 @@ details:not([open]) .vim-panel-section-title::after {
   padding-right: 4px;
   min-width: 0;
   cursor: pointer;
+  height: 24px;
 }
 
 .vim-ht-item:nth-child(odd)  { background-color: var(--c-white); }
@@ -919,6 +921,10 @@ details:not([open]) .vim-panel-section-title::after {
 
 .vim-ht-item:hover {
   background-color: var(--c-list-hover);
+}
+
+.vim-ht-item.vim-ht-selected:hover {
+  background-color: var(--c-light-blue);
 }
 
 .vim-ht-arrow {
@@ -952,43 +958,43 @@ details:not([open]) .vim-panel-section-title::after {
   background-repeat: no-repeat;
 }
 
-/* Default state */
-.vim-ht-visibility.vim-visible {
+/* Default: visible items hide the icon, hidden items show it */
+.vim-ht-visibility[data-visibility="visible"] {
   display: none;
 }
 
-.vim-ht-visibility.vim-hidden {
+.vim-ht-visibility[data-visibility="hidden"] {
   display: block;
   background-image: var(--hidden-dark);
 }
 
 /* Hover unselected */
-.vim-ht-item:hover .vim-ht-visibility.vim-visible {
+.vim-ht-item:hover .vim-ht-visibility[data-visibility="visible"] {
   display: block;
   background-image: var(--visible-beige);
 }
 
-.vim-ht-item:hover .vim-ht-visibility.vim-hidden {
+.vim-ht-item:hover .vim-ht-visibility[data-visibility="hidden"] {
   background-image: var(--hidden-beige);
 }
 
 /* Hover selected */
-.vim-ht-item.vim-ht-selected:hover .vim-ht-visibility.vim-visible {
+.vim-ht-item.vim-ht-selected:hover .vim-ht-visibility[data-visibility="visible"] {
   display: block;
   background-image: var(--visible-light-blue);
 }
 
-.vim-ht-item.vim-ht-selected:hover .vim-ht-visibility.vim-hidden {
+.vim-ht-item.vim-ht-selected:hover .vim-ht-visibility[data-visibility="hidden"] {
   background-image: var(--hidden-light-blue);
 }
 
 /* Hover toggle button directly */
-.vim-ht-item .vim-ht-visibility.vim-visible:hover {
+.vim-ht-item .vim-ht-visibility[data-visibility="visible"]:hover {
   display: block;
   background-image: var(--hidden-royal-blue);
 }
 
-.vim-ht-item .vim-ht-visibility.vim-hidden:hover {
+.vim-ht-item .vim-ht-visibility[data-visibility="hidden"]:hover {
   background-image: var(--visible-royal-blue);
 }
 

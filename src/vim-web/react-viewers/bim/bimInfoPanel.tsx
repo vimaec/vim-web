@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as Core from '../../core-viewers'
 import { getObjectData } from './bimInfoObject'
 import { getVimData } from './bimInfoVim'
@@ -19,15 +19,27 @@ export function BimInfoPanel(props: {
 
   const [data, setData] = useState<Data>()
 
+  const debounce = useRef<ReturnType<typeof setTimeout>>()
   useEffect(() => {
-    async function update() {
+    let cancelled = false
+    clearTimeout(debounce.current)
+    debounce.current = setTimeout(async () => {
+      if (cancelled) return
+      // Yield to let the UI update before starting the expensive BIM query
+      await new Promise(r => setTimeout(r, 0))
+      if (cancelled) return
       let data = props.object === undefined
         ? await getVimData(props.vim)
         : await getObjectData(target, props.elements)
+      if (cancelled) return
+      // Yield again so the browser can paint between query and render
+      await new Promise(r => setTimeout(r, 0))
+      if (cancelled) return
       data = await props.bimInfoRef.onData(data, target ?? props.vim)
+      if (cancelled) return
       setData(data)
-    }
-    update()
+    }, 50)
+    return () => { cancelled = true; clearTimeout(debounce.current) }
   }, [props.object, props.vim, props.elements, props.bimInfoRef])
 
   return (
