@@ -8,7 +8,7 @@ import { AugmentedElement } from '../helpers/element'
 export type NodeVisibility = 'visible' | 'partial' | 'hidden'
 export type Grouping = 'Family' | 'Level' | 'Workset'
 
-/** A single node in the BIM tree. Uses string IDs for headless-tree compatibility. */
+/** A single node in the BIM tree. */
 export type BimNode = {
   id: string
   parentId: string
@@ -52,16 +52,20 @@ export function toTreeData(
 
 export class BimTreeData {
   readonly vim: Core.Webgl.IWebglVim
+  /** Node map. Nodes are mutable (visibility, childIds) but the map structure is stable after construction. */
   readonly nodes: Map<string, BimNode>
   private readonly _elementToNode: Map<number, string>
-  private readonly _orderedIds: string[]
+  private readonly _orderedIds: string[]           // insertion-order array for O(range) slice
+  private readonly _idToOrder: Map<string, number>  // id → index in _orderedIds for O(1) lookup
+  private _nextId = 0
 
   constructor(vim: Core.Webgl.IWebglVim, map: MapTree<string, AugmentedElement>) {
     this.vim = vim
     this.nodes = new Map()
     this._elementToNode = new Map()
     this._orderedIds = []
-    this._flatten(map)
+    this._idToOrder = new Map()
+    this._buildTree(map, '')
   }
 
   // --- Data Loader (for headless-tree) ---
@@ -101,19 +105,31 @@ export class BimTreeData {
     return result
   }
 
-  getSiblings(id: string): string[] {
-    const node = this.nodes.get(id)
-    if (!node) return []
-    return this.nodes.get(node.parentId)?.childIds ?? []
+  getSelection(elements: number[]): string[] {
+    const nodeIds = elements.map(e => this._elementToNode.get(e)).filter(Boolean)
+    return [...new Set(nodeIds.flatMap(id => this.getAncestors(id)))]
   }
+
+  /** Returns all node IDs between start and end (inclusive) in tree order. O(1) lookup + O(range) slice. */
+  getRange(start: string, end: string): string[] {
+    const startIdx = this._idToOrder.get(start)
+    const endIdx = this._idToOrder.get(end)
+    if (startIdx === undefined || endIdx === undefined) return []
+    const min = Math.min(startIdx, endIdx)
+    const max = Math.max(startIdx, endIdx)
+    return this._orderedIds.slice(min, max + 1)
+  }
+
+  // --- Element resolution ---
 
   /** Resolve a node to the 3D elements under its leaves. */
   getLeafElements(id: string): Core.Webgl.IElement3D[] {
-    return this.getLeafs(id)
-      .map(leafId => this.nodes.get(leafId)?.elementIndex)
-      .filter(i => i !== undefined)
-      .map(i => this.vim.getElementFromIndex(i))
-      .filter(Boolean)
+    return this._resolveElements(this.getLeafs(id))
+  }
+
+  /** Resolve multiple node IDs to their leaf 3D elements. */
+  getElementsFromNodes(nodeIds: string[]): Core.Webgl.IElement3D[] {
+    return this._resolveElements(nodeIds)
   }
 
   /** Resolve a node to the geometry instances under its leaves (for visibility). */
@@ -124,28 +140,12 @@ export class BimTreeData {
       .flatMap(i => this.vim.getElementFromIndex(i)?.instances ?? [])
   }
 
-  /** Resolve multiple node IDs to their leaf 3D elements. */
-  getElementsFromNodes(nodeIds: string[]): Core.Webgl.IElement3D[] {
+  private _resolveElements(nodeIds: string[]): Core.Webgl.IElement3D[] {
     return nodeIds
       .map(id => this.nodes.get(id)?.elementIndex)
       .filter(i => i !== undefined)
       .map(i => this.vim.getElementFromIndex(i))
       .filter(Boolean)
-  }
-
-  getSelection(elements: number[]): string[] {
-    const nodeIds = elements.map(e => this._elementToNode.get(e)).filter(Boolean)
-    return [...new Set(nodeIds.flatMap(id => this.getAncestors(id)))]
-  }
-
-  /** Returns all node IDs between start and end (inclusive) in tree order. */
-  getRange(start: string, end: string): string[] {
-    const startIdx = this._orderedIds.indexOf(start)
-    const endIdx = this._orderedIds.indexOf(end)
-    if (startIdx < 0 || endIdx < 0) return []
-    const min = Math.min(startIdx, endIdx)
-    const max = Math.max(startIdx, endIdx)
-    return this._orderedIds.slice(min, max + 1)
   }
 
   // --- Visibility ---
@@ -178,25 +178,33 @@ export class BimTreeData {
 
   // --- Build ---
 
-  private _flatten(map: MapTree<string, AugmentedElement>, counter = { i: -1 }): string[] {
-    const siblingIds: string[] = []
-    const parentId = String(counter.i)
+  private _addNode(node: BimNode) {
+    this.nodes.set(node.id, node)
+    this._idToOrder.set(node.id, this._orderedIds.length)
+    this._orderedIds.push(node.id)
+  }
+
+  private _buildTree(map: MapTree<string, AugmentedElement>, parentId: string): string[] {
+    const childIds: string[] = []
 
     for (const [key, value] of map.entries()) {
-      const id = String(++counter.i)
-      siblingIds.push(id)
-      this._orderedIds.push(id)
+      const id = String(this._nextId++)
+      childIds.push(id)
 
       if (value instanceof Map) {
-        const childIds = this._flatten(value, counter)
-        this.nodes.set(id, { id, parentId, title: key, childIds, visible: undefined })
+        // Branch node — added before children for parent-first tree order.
+        // childIds backfilled after recursion since they aren't known yet.
+        this._addNode({ id, parentId, title: key, childIds: [], visible: undefined })
+        const grandchildIds = this._buildTree(value, id)
+        this.nodes.get(id).childIds = grandchildIds
       } else {
+        // Type node — added before leaves. childIds backfilled after loop.
+        this._addNode({ id, parentId, title: key, childIds: [], visible: undefined })
         const leafIds: string[] = []
         for (const e of value) {
-          const leafId = String(++counter.i)
+          const leafId = String(this._nextId++)
           leafIds.push(leafId)
-          this._orderedIds.push(leafId)
-          this.nodes.set(leafId, {
+          this._addNode({
             id: leafId,
             parentId: id,
             title: e.id ? `#${e.id}` : 'N/A',
@@ -206,9 +214,9 @@ export class BimTreeData {
           })
           this._elementToNode.set(e.index, leafId)
         }
-        this.nodes.set(id, { id, parentId, title: key, childIds: leafIds, visible: undefined })
+        this.nodes.get(id).childIds = leafIds
       }
     }
-    return siblingIds
+    return childIds
   }
 }

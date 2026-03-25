@@ -3,7 +3,7 @@
  * BIM tree using @headless-tree/react + @tanstack/react-virtual.
  */
 
-import React, { useEffect, useRef, useCallback } from 'react'
+import React, { useEffect, useRef, useMemo, useCallback } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useTree } from '@headless-tree/react'
 import { syncDataLoaderFeature, selectionFeature, hotkeysCoreFeature } from '@headless-tree/core'
@@ -21,7 +21,7 @@ type Viewer = Core.Webgl.Viewer
 type BimTreeProps = {
   viewer: Viewer
   framing: FramingApi
-  objects: IElement3D[]
+  selectedElements: IElement3D[]
   isolation: IsolationApi
   treeData: BimTreeData
 }
@@ -29,6 +29,7 @@ type BimTreeProps = {
 const EMPTY_NODE: BimNode = { id: '0', parentId: '', title: '', childIds: [], visible: undefined }
 const EMPTY_LOADER = { getItem: () => EMPTY_NODE, getChildren: () => [] as string[] }
 const ROW_HEIGHT = 24
+const DOUBLE_CLICK_MS = 300
 
 // ============================================================
 // BimTree — composes hooks and renders the tree
@@ -38,13 +39,13 @@ export function BimTree(props: BimTreeProps) {
   const { viewer, framing, treeData, isolation } = props
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const skipSync = useRef(false)
+  const treeOrigin = useRef(false)
 
   const tree = useBimTree(treeData, framing)
   const { items, virtualizer } = useBimVirtualizer(tree, treeData, scrollRef)
   useBimVisibility(tree, viewer, treeData)
-  useBimSelectionSync(tree, virtualizer, treeData, props.objects, skipSync)
-  const onItemClick = useBimClickHandler(tree, treeData, viewer, skipSync)
+  useBimSelectionSync(tree, virtualizer, treeData, props.selectedElements, treeOrigin)
+  const onItemClick = useBimClickHandler(tree, treeData, viewer, treeOrigin)
 
   if (!treeData) {
     return (
@@ -88,9 +89,12 @@ export function BimTree(props: BimTreeProps) {
 function useBimTree(treeData: BimTreeData, framing: FramingApi) {
   const lastClick = useRef({ target: '', time: 0 })
 
-  const dataLoader = React.useMemo(
+  const dataLoader = useMemo(
     () => treeData
-      ? { getItem: (id: string) => treeData.getItem(id), getChildren: (id: string) => treeData.getChildren(id) }
+      ? {
+          getItem: (id: string) => treeData.getItem(id) ?? EMPTY_NODE,
+          getChildren: (id: string) => treeData.getChildren(id)
+        }
       : null,
     [treeData]
   )
@@ -111,7 +115,7 @@ function useBimTree(treeData: BimTreeData, framing: FramingApi) {
     onPrimaryAction: (item) => {
       const id = item.getId()
       const now = Date.now()
-      if (lastClick.current.target === id && now - lastClick.current.time < 300) {
+      if (lastClick.current.target === id && now - lastClick.current.time < DOUBLE_CLICK_MS) {
         framing.frameSelection.call()
         lastClick.current = { target: '', time: 0 }
       } else {
@@ -130,7 +134,10 @@ function useBimTree(treeData: BimTreeData, framing: FramingApi) {
 
 /** Virtualizes the flat item list for large trees. */
 function useBimVirtualizer(tree: TreeInstance<BimNode>, treeData: BimTreeData, scrollRef: React.RefObject<HTMLDivElement>) {
-  const items = treeData ? tree.getItems() : []
+  const items = useMemo(
+    () => treeData ? tree.getItems() : [],
+    [treeData, tree.getState()]
+  )
   const virtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => scrollRef.current,
@@ -148,48 +155,53 @@ function useBimVisibility(tree: TreeInstance<BimNode>, viewer: Viewer, treeData:
   }, [treeData])
 }
 
-/** Syncs viewer selection → tree when selection comes from the 3D viewport. */
+/**
+ * Syncs viewer selection → tree when selection comes from the 3D viewport.
+ * When `treeOrigin` is true, the selection was initiated by a tree click
+ * and the tree state is already correct — skip the expensive sync.
+ */
 function useBimSelectionSync(
   tree: TreeInstance<BimNode>,
   virtualizer: ReturnType<typeof useVirtualizer>,
   treeData: BimTreeData,
-  objects: IElement3D[],
-  skipSync: React.MutableRefObject<boolean>
+  selectedElements: IElement3D[],
+  treeOrigin: React.MutableRefObject<boolean>
 ) {
-  const prevObjects = useRef<IElement3D[]>([])
+  const prev = useRef<IElement3D[]>([])
+  const pendingScroll = useRef<string | null>(null)
 
+  // On selection change, expand ancestors and request a scroll
   useEffect(() => {
     if (!treeData) return
-    if (objects === prevObjects.current) return
-    prevObjects.current = objects
+    if (selectedElements === prev.current) return
+    prev.current = selectedElements
 
-    if (skipSync.current) {
-      skipSync.current = false
+    if (treeOrigin.current) {
+      treeOrigin.current = false
       return
     }
 
-    for (const o of objects) {
-      const nodeId = treeData.getNodeFromElement(o.element)
-      if (!nodeId) continue
-      for (const ancestor of treeData.getAncestors(nodeId)) {
-        tree.getItemInstance(ancestor)?.expand()
-      }
-    }
+    expandAncestors(tree, treeData, selectedElements)
+    highlightSelection(tree, treeData, selectedElements)
 
-    tree.setSelectedItems(treeData.getSelection(objects.map(o => o.element)))
-
-    if (objects.length > 0) {
-      const last = objects[objects.length - 1]
-      const lastNodeId = treeData.getNodeFromElement(last.element)
-      if (lastNodeId) {
-        requestAnimationFrame(() => {
-          const allItems = tree.getItems()
-          const idx = allItems.findIndex(i => i.getId() === lastNodeId)
-          if (idx >= 0) virtualizer.scrollToIndex(idx, { align: 'auto' })
-        })
-      }
+    if (selectedElements.length > 0) {
+      const last = selectedElements[selectedElements.length - 1]
+      pendingScroll.current = treeData.getNodeFromElement(last.element) ?? null
     }
-  }, [objects, treeData])
+  }, [selectedElements, treeData])
+
+  // Execute pending scroll once virtualizer has the correct item count.
+  // Intentionally no deps — must re-check after every render until fulfilled.
+  useEffect(() => {
+    if (!pendingScroll.current) return
+    // Must search tree.getItems() (visible/expanded items only), not treeData._idToOrder
+    // (all nodes). The virtualizer index matches the visible item list, not the full tree.
+    const items = tree.getItems()
+    const idx = items.findIndex(i => i.getId() === pendingScroll.current)
+    if (idx < 0 || idx >= virtualizer.options.count) return
+    virtualizer.scrollToIndex(idx, { align: 'auto' })
+    pendingScroll.current = null
+  })
 }
 
 /** Handles click, shift-click, ctrl-click on tree items. */
@@ -197,33 +209,22 @@ function useBimClickHandler(
   tree: TreeInstance<BimNode>,
   treeData: BimTreeData,
   viewer: Viewer,
-  skipSync: React.MutableRefObject<boolean>
+  treeOrigin: React.MutableRefObject<boolean>
 ) {
-  const focusRef = useRef('0')
+  const rangeAnchor = useRef('0')
 
   return useCallback((e: React.MouseEvent, item: ItemInstance<BimNode>) => {
     const id = item.getId()
-    const leafElements = treeData.getLeafElements(id)
-    skipSync.current = true
+    treeOrigin.current = true
 
     if (e.shiftKey) {
-      const range = treeData.getRange(focusRef.current, id)
-      const allLeafs = range.flatMap(r => treeData.getLeafs(r))
-      viewer.selection.select(treeData.getElementsFromNodes(allLeafs))
-      tree.setSelectedItems(range)
-    } else if (e.ctrlKey || (navigator.platform.toUpperCase().includes('MAC') && e.metaKey)) {
-      if (item.isSelected()) {
-        viewer.selection.remove(leafElements)
-        item.deselect()
-      } else {
-        viewer.selection.add(leafElements)
-        item.select()
-      }
-      focusRef.current = id
+      selectRange(tree, treeData, viewer, rangeAnchor.current, id)
+    } else if (e.ctrlKey || e.metaKey) {
+      toggleSelection(treeData, viewer, item)
+      rangeAnchor.current = id
     } else {
-      viewer.selection.select(leafElements)
-      tree.setSelectedItems(treeData.getAncestors(id))
-      focusRef.current = id
+      replaceSelection(tree, treeData, viewer, id)
+      rangeAnchor.current = id
     }
 
     item.primaryAction()
@@ -235,7 +236,7 @@ function useBimClickHandler(
 // TreeItem — single row rendering
 // ============================================================
 
-function TreeItem({ item, treeData, isolation, onClick, style }: {
+const TreeItem = React.memo(function TreeItem({ item, treeData, isolation, onClick, style }: {
   item: ItemInstance<BimNode>
   treeData: BimTreeData
   isolation: IsolationApi
@@ -247,6 +248,23 @@ function TreeItem({ item, treeData, isolation, onClick, style }: {
   const visible = node?.visible
   const level = item.getItemMeta().level
 
+  const onArrowClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    item.isExpanded() ? item.collapse() : item.expand()
+  }, [item])
+
+  const onVisibilityClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    toggleVisibility(treeData, isolation, item.getId(), visible)
+  }, [item, visible])
+
+  const onContext = useCallback((e: React.MouseEvent) => {
+    onClick(e, item)
+    showContextMenu({ x: e.clientX, y: e.clientY })
+    e.preventDefault()
+    e.stopPropagation()
+  }, [onClick, item])
+
   return (
     <div
       {...item.getProps()}
@@ -254,19 +272,11 @@ function TreeItem({ item, treeData, isolation, onClick, style }: {
       data-selected={item.isSelected() || undefined}
       style={{ ...style, paddingLeft: level * 10 }}
       onClick={(e) => onClick(e, item)}
-      onContextMenu={(e) => {
-        onClick(e, item)
-        showContextMenu({ x: e.clientX, y: e.clientY })
-        e.preventDefault()
-        e.stopPropagation()
-      }}
+      onContextMenu={onContext}
     >
       <span
         className={cls('vim-ht-arrow', item.isFolder() && 'vim-ht-arrow-folder', item.isExpanded() && 'vim-ht-arrow-open')}
-        onClick={(e) => {
-          e.stopPropagation()
-          item.isExpanded() ? item.collapse() : item.expand()
-        }}
+        onClick={onArrowClick}
       />
       <span className="vim-ht-title" data-tip={title}>
         {title}
@@ -275,23 +285,70 @@ function TreeItem({ item, treeData, isolation, onClick, style }: {
         data-tip={visible === 'visible' ? 'Hide' : 'Show'}
         className="vim-ht-visibility"
         data-visibility={visible}
-        onClick={(e) => {
-          e.stopPropagation()
-          const instances = treeData.getLeafInstances(item.getId())
-          if (visible !== 'visible') {
-            isolation.show(instances)
-          } else {
-            isolation.hide(instances)
-          }
-        }}
+        onClick={onVisibilityClick}
       />
     </div>
   )
+})
+
+// ============================================================
+// Selection helpers
+// ============================================================
+
+/** Expand all ancestor nodes so selected items are visible. */
+function expandAncestors(tree: TreeInstance<BimNode>, treeData: BimTreeData, selectedElements: IElement3D[]) {
+  for (const el of selectedElements) {
+    const nodeId = treeData.getNodeFromElement(el.element)
+    if (!nodeId) continue
+    for (const ancestor of treeData.getAncestors(nodeId)) {
+      tree.getItemInstance(ancestor)?.expand()
+    }
+  }
+}
+
+/** Update tree selection highlight to match viewer selection. */
+function highlightSelection(tree: TreeInstance<BimNode>, treeData: BimTreeData, selectedElements: IElement3D[]) {
+  tree.setSelectedItems(treeData.getSelection(selectedElements.map(el => el.element)))
+}
+
+/** Shift-click: select all leaves between anchor and target. */
+function selectRange(tree: TreeInstance<BimNode>, treeData: BimTreeData, viewer: Viewer, fromId: string, toId: string) {
+  const range = treeData.getRange(fromId, toId)
+  const allLeafs = range.flatMap(r => treeData.getLeafs(r))
+  viewer.selection.select(treeData.getElementsFromNodes(allLeafs))
+  tree.setSelectedItems(range)
+}
+
+/** Ctrl-click: add or remove this node's leaves from selection. */
+function toggleSelection(treeData: BimTreeData, viewer: Viewer, item: ItemInstance<BimNode>) {
+  const elements = treeData.getLeafElements(item.getId())
+  if (item.isSelected()) {
+    viewer.selection.remove(elements)
+    item.deselect()
+  } else {
+    viewer.selection.add(elements)
+    item.select()
+  }
+}
+
+/** Normal click: replace selection with this node's leaves, highlight the node. */
+function replaceSelection(tree: TreeInstance<BimNode>, treeData: BimTreeData, viewer: Viewer, id: string) {
+  viewer.selection.select(treeData.getLeafElements(id))
+  tree.setSelectedItems([id])
 }
 
 // ============================================================
 // Utilities
 // ============================================================
+
+function toggleVisibility(treeData: BimTreeData, isolation: IsolationApi, nodeId: string, visible: string) {
+  const instances = treeData.getLeafInstances(nodeId)
+  if (visible !== 'visible') {
+    isolation.show(instances)
+  } else {
+    isolation.hide(instances)
+  }
+}
 
 function cls(...parts: (string | false | undefined)[]) {
   return parts.filter(Boolean).join(' ')

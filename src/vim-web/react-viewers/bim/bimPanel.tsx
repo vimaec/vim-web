@@ -79,7 +79,7 @@ export function BimPanel (props: {
             : <BimTree
                 viewer={props.viewer}
                 framing={props.framing}
-                objects={props.viewerState.selection.get()}
+                selectedElements={props.viewerState.selection.get()}
                 isolation={props.isolation}
                 treeData={tree}
               />
