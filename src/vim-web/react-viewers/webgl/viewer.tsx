@@ -27,7 +27,6 @@ import { applyWebglBindings } from './inputsBindings'
 import { CursorManager } from '../helpers/cursor'
 import { createSettings } from '../settings/settingsState'
 import { disableLocalStorage } from '../settings/localStorage'
-import { TreeActionApi } from '../bim/bimTree'
 import { Container, createContainer } from '../container'
 import { useViewerState } from './viewerState'
 import { LogoMemo } from '../panels/logo'
@@ -141,7 +140,6 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
   const bimInfoRef = useBimInfo()
 
   const viewerState = useViewerState(props.viewer)
-  const treeRef = useRef<TreeActionApi>()
   const isolationRef = useWebglIsolation(props.viewer, settings.isolation)
   const [controlBar, controlBarApi] = useCustomizer(
     useControlBar(props.viewer, framing, modal, side, cursor, effectiveSettings, sectionBoxRef, isolationRef)
@@ -187,7 +185,6 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
         viewerState={viewerState}
         visible={side.getContent() === 'bim'}
         isolation={isolationRef}
-        treeRef={treeRef}
         settings={effectiveSettings}
         bimInfoRef={bimInfoRef}
       />
@@ -233,7 +230,6 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
         modal={modal}
         isolation={isolationRef}
         selection={viewerState.selection.get()}
-        treeRef={treeRef}
       />
       <MenuToastMemo viewer={props.viewer} side={side}></MenuToastMemo>
     </></TooltipZone>

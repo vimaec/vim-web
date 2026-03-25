@@ -1,29 +1,22 @@
 /**
  * @module viw-webgl-react
- * BIM tree implementation using @headless-tree/react.
- * Drop-in replacement for bimTree.tsx with virtual scrolling support.
+ * BIM tree using @headless-tree/react + @tanstack/react-virtual.
  */
 
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState, useCallback } from 'react'
+import React, { useEffect, useRef, useCallback } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { useTree } from '@headless-tree/react'
 import { syncDataLoaderFeature, selectionFeature, hotkeysCoreFeature } from '@headless-tree/core'
-import type { ItemInstance } from '@headless-tree/core'
+import type { ItemInstance, TreeInstance } from '@headless-tree/core'
 import * as Core from '../../core-viewers'
 import { showContextMenu } from '../panels/contextMenu'
 import { FramingApi } from '../state/cameraState'
-import { ArrayEquals } from '../helpers/data'
-import { BimTreeData, VimTreeNode } from './bimTreeData'
+import { useSubscribe } from '../helpers/reactUtils'
+import { BimTreeData, BimNode } from './bimTreeData'
 import { IsolationApi } from '../state/sharedIsolation'
 
 type IElement3D = Core.Webgl.IElement3D
 type Viewer = Core.Webgl.Viewer
-
-export type TreeActionApi = {
-  showAll: () => void
-  hideAll: () => void
-  collapseAll: () => void
-  selectSiblings: (element: IElement3D) => void
-}
 
 type BimTreeProps = {
   viewer: Viewer
@@ -33,36 +26,82 @@ type BimTreeProps = {
   treeData: BimTreeData
 }
 
-export const BimTree = forwardRef<TreeActionApi, BimTreeProps>((props, ref) => {
-  const [objects, setObjects] = useState<IElement3D[]>([])
-  const [, setVersion] = useState(0)
-  const focus = useRef<number>(0)
-  const div = useRef<HTMLDivElement>(null)
-  const doubleClick = useRef(new DoubleClickManager())
+const EMPTY_NODE: BimNode = { id: '0', parentId: '', title: '', childIds: [], visible: undefined }
+const EMPTY_LOADER = { getItem: () => EMPTY_NODE, getChildren: () => [] as string[] }
+const ROW_HEIGHT = 24
 
-  // Adapter: convert BimTreeData to headless-tree data loader
-  const dataLoader = React.useMemo(() => {
-    if (!props.treeData) return null
-    return {
-      getItem: (itemId: string) => props.treeData.nodes[Number(itemId)],
-      getChildren: (itemId: string) => {
-        const node = props.treeData.nodes[Number(itemId)]
-        return (node?.children ?? []).map(String)
-      }
-    }
-  }, [props.treeData])
+// ============================================================
+// BimTree — composes hooks and renders the tree
+// ============================================================
 
-  const tree = useTree<VimTreeNode>({
+export function BimTree(props: BimTreeProps) {
+  const { viewer, framing, treeData, isolation } = props
+  const containerRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const skipSync = useRef(false)
+
+  const tree = useBimTree(treeData, framing)
+  const { items, virtualizer } = useBimVirtualizer(tree, treeData, scrollRef)
+  useBimVisibility(tree, viewer, treeData)
+  useBimSelectionSync(tree, virtualizer, treeData, props.objects, skipSync)
+  const onItemClick = useBimClickHandler(tree, treeData, viewer, skipSync)
+
+  if (!treeData) {
+    return (
+      <div className="vim-bim-tree" ref={containerRef} style={{ alignItems: 'center', justifyContent: 'center' }}>
+        Bim data not available . . .
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className="vim-bim-tree"
+      ref={containerRef}
+      tabIndex={0}
+      onFocus={() => { viewer.inputs.keyboard.active = false }}
+      onBlur={() => { viewer.inputs.keyboard.active = true }}
+    >
+      <div {...tree.getContainerProps('BIM Tree')} className="vim-ht-container" ref={scrollRef}>
+        <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
+          {virtualizer.getVirtualItems().map(virtual => (
+            <TreeItem
+              key={items[virtual.index].getId()}
+              item={items[virtual.index]}
+              treeData={treeData}
+              isolation={isolation}
+              onClick={onItemClick}
+              style={{ position: 'absolute', top: virtual.start, left: 0, right: 0, height: ROW_HEIGHT }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ============================================================
+// Hooks (in call order from BimTree)
+// ============================================================
+
+/** Configures headless-tree with our data model. */
+function useBimTree(treeData: BimTreeData, framing: FramingApi) {
+  const lastClick = useRef({ target: '', time: 0 })
+
+  const dataLoader = React.useMemo(
+    () => treeData
+      ? { getItem: (id: string) => treeData.getItem(id), getChildren: (id: string) => treeData.getChildren(id) }
+      : null,
+    [treeData]
+  )
+
+  const tree = useTree<BimNode>({
     rootItemId: '0',
     getItemName: (item) => item.getItemData()?.title ?? '',
-    isItemFolder: (item) => (item.getItemData()?.children?.length ?? 0) > 0,
-    dataLoader: dataLoader ?? { getItem: () => ({ index: 0, title: '', children: [], isFolder: false, data: undefined, parent: -1, visible: undefined } as any), getChildren: () => [] },
+    isItemFolder: (item) => (item.getItemData()?.childIds?.length ?? 0) > 0,
+    dataLoader: dataLoader ?? EMPTY_LOADER,
     indent: 10,
-    features: [
-      syncDataLoaderFeature,
-      selectionFeature,
-      hotkeysCoreFeature,
-    ],
+    features: [syncDataLoaderFeature, selectionFeature, hotkeysCoreFeature],
     hotkeys: {
       focusNextItem: { hotkey: 'ArrowDown' },
       focusPreviousItem: { hotkey: 'ArrowUp' },
@@ -70,222 +109,190 @@ export const BimTree = forwardRef<TreeActionApi, BimTreeProps>((props, ref) => {
       collapseOrUp: { hotkey: 'ArrowLeft' },
     },
     onPrimaryAction: (item) => {
-      const index = Number(item.getId())
-      if (doubleClick.current.isDoubleClick(index)) {
-        props.framing.frameSelection.call()
+      const id = item.getId()
+      const now = Date.now()
+      if (lastClick.current.target === id && now - lastClick.current.time < 300) {
+        framing.frameSelection.call()
+        lastClick.current = { target: '', time: 0 }
+      } else {
+        lastClick.current = { target: id, time: now }
       }
     },
   })
 
-  useImperativeHandle(ref, () => ({
-    showAll: () => props.isolation.showAll(),
-    hideAll: () => props.isolation.hideAll(),
-    collapseAll: () => {
-      tree.setState(prev => ({ ...prev, expandedItems: [] }))
-    },
-    selectSiblings: (object: IElement3D) => {
-      const element = object.element
-      const node = props.treeData.getNodeFromElement(element)
-      const siblings = props.treeData.getSiblings(node)
-      const result = siblings.map((n) => {
-        const nn = props.treeData.nodes[n]
-        const e = nn.data.index
-        return props.viewer.vims[0].getElementFromIndex(e)
-      })
-      props.viewer.selection.select(result)
-    }
-  }), [props.treeData])
-
-  // Reset expanded on new tree data
   useEffect(() => {
     tree.setState(prev => ({ ...prev, expandedItems: [] }))
-  }, [props.treeData])
+    tree.rebuildTree()
+  }, [treeData])
 
-  // Scroll to the deepest selected leaf after ancestors expand and render
+  return tree
+}
+
+/** Virtualizes the flat item list for large trees. */
+function useBimVirtualizer(tree: TreeInstance<BimNode>, treeData: BimTreeData, scrollRef: React.RefObject<HTMLDivElement>) {
+  const items = treeData ? tree.getItems() : []
+  const virtualizer = useVirtualizer({
+    count: items.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 20,
+  })
+  return { items, virtualizer }
+}
+
+/** Keeps tree visibility in sync with the 3D scene. */
+function useBimVisibility(tree: TreeInstance<BimNode>, viewer: Viewer, treeData: BimTreeData) {
+  useSubscribe(viewer.renderer.onSceneUpdated, () => {
+    treeData?.updateVisibility()
+    tree.rebuildTree()
+  }, [treeData])
+}
+
+/** Syncs viewer selection → tree when selection comes from the 3D viewport. */
+function useBimSelectionSync(
+  tree: TreeInstance<BimNode>,
+  virtualizer: ReturnType<typeof useVirtualizer>,
+  treeData: BimTreeData,
+  objects: IElement3D[],
+  skipSync: React.MutableRefObject<boolean>
+) {
+  const prevObjects = useRef<IElement3D[]>([])
+
   useEffect(() => {
-    if (!props.treeData || objects.length === 0 || !div.current) return
-    const last = objects[objects.length - 1]
-    const nodeId = props.treeData.getNodeFromElement(last.element)
-    if (nodeId === undefined) return
-    // Defer so expanded ancestors render first
-    requestAnimationFrame(() => {
-      const allSelected = div.current?.querySelectorAll('[data-selected="true"]')
-      allSelected?.[allSelected.length - 1]?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
-    })
-  }, [props.treeData, objects])
+    if (!treeData) return
+    if (objects === prevObjects.current) return
+    prevObjects.current = objects
 
-  // Subscribe to visibility changes
-  useEffect(() => {
-    const unsubscribe = props.viewer.renderer.onSceneUpdated.subscribe(() => {
-      props.treeData?.updateVisibility()
-      setVersion((v) => v + 1)
-    })
-    return () => { unsubscribe() }
-  }, [props.treeData])
-
-  // Sync viewer selection → tree selection
-  if (!ArrayEquals(props.objects, objects)) {
-    setObjects(props.objects)
-    if (props.treeData) {
-      const nodes = props.objects.map((o) => props.treeData.getNodeFromElement(o.element))
-
-      // Expand ancestors using native API
-      for (const n of nodes) {
-        if (n === undefined) continue
-        for (const ancestorId of props.treeData.getAncestors(n)) {
-          tree.getItemInstance(String(ancestorId))?.expand()
-        }
-      }
-
-      // Set selection
-      const selection = props.treeData.getSelection(props.objects.map((o) => o.element))
-      tree.setSelectedItems(selection.map(String))
+    if (skipSync.current) {
+      skipSync.current = false
+      return
     }
-  }
 
-  const onItemClick = useCallback((e: React.MouseEvent, item: ItemInstance<VimTreeNode>) => {
-    const index = Number(item.getId())
+    for (const o of objects) {
+      const nodeId = treeData.getNodeFromElement(o.element)
+      if (!nodeId) continue
+      for (const ancestor of treeData.getAncestors(nodeId)) {
+        tree.getItemInstance(ancestor)?.expand()
+      }
+    }
+
+    tree.setSelectedItems(treeData.getSelection(objects.map(o => o.element)))
+
+    if (objects.length > 0) {
+      const last = objects[objects.length - 1]
+      const lastNodeId = treeData.getNodeFromElement(last.element)
+      if (lastNodeId) {
+        requestAnimationFrame(() => {
+          const allItems = tree.getItems()
+          const idx = allItems.findIndex(i => i.getId() === lastNodeId)
+          if (idx >= 0) virtualizer.scrollToIndex(idx, { align: 'auto' })
+        })
+      }
+    }
+  }, [objects, treeData])
+}
+
+/** Handles click, shift-click, ctrl-click on tree items. */
+function useBimClickHandler(
+  tree: TreeInstance<BimNode>,
+  treeData: BimTreeData,
+  viewer: Viewer,
+  skipSync: React.MutableRefObject<boolean>
+) {
+  const focusRef = useRef('0')
+
+  return useCallback((e: React.MouseEvent, item: ItemInstance<BimNode>) => {
+    const id = item.getId()
+    const leafElements = treeData.getLeafElements(id)
+    skipSync.current = true
+
     if (e.shiftKey) {
-      const range = props.treeData.getRange(focus.current, index)
-      updateViewerSelection(props.treeData, props.viewer, range, 'set')
-    } else if (isControlKey(e)) {
-      const leafs = props.treeData.getLeafs(index)
+      const range = treeData.getRange(focusRef.current, id)
+      const allLeafs = range.flatMap(r => treeData.getLeafs(r))
+      viewer.selection.select(treeData.getElementsFromNodes(allLeafs))
+      tree.setSelectedItems(range)
+    } else if (e.ctrlKey || (navigator.platform.toUpperCase().includes('MAC') && e.metaKey)) {
       if (item.isSelected()) {
-        updateViewerSelection(props.treeData, props.viewer, leafs, 'remove')
+        viewer.selection.remove(leafElements)
+        item.deselect()
       } else {
-        updateViewerSelection(props.treeData, props.viewer, leafs, 'add')
+        viewer.selection.add(leafElements)
+        item.select()
       }
-      focus.current = index
+      focusRef.current = id
     } else {
-      const leafs = props.treeData.getLeafs(index)
-      updateViewerSelection(props.treeData, props.viewer, leafs, 'set')
-      focus.current = index
+      viewer.selection.select(leafElements)
+      tree.setSelectedItems(treeData.getAncestors(id))
+      focusRef.current = id
     }
+
     item.primaryAction()
     item.setFocused()
-  }, [props.treeData, props.viewer])
+  }, [treeData, viewer])
+}
 
-  if (!props.treeData) {
-    return (
-      <div className="vim-bim-tree" ref={div} style={{ alignItems: 'center', justifyContent: 'center' }}>
-        Bim data not available . . .
-      </div>
-    )
-  }
+// ============================================================
+// TreeItem — single row rendering
+// ============================================================
 
-  const items = tree.getItems()
+function TreeItem({ item, treeData, isolation, onClick, style }: {
+  item: ItemInstance<BimNode>
+  treeData: BimTreeData
+  isolation: IsolationApi
+  onClick: (e: React.MouseEvent, item: ItemInstance<BimNode>) => void
+  style?: React.CSSProperties
+}) {
+  const node = item.getItemData()
+  const title = node?.title ?? ''
+  const visible = node?.visible
+  const level = item.getItemMeta().level
 
   return (
     <div
-      className="vim-bim-tree"
-      ref={div}
-      tabIndex={0}
-      onFocus={() => (props.viewer.inputs.keyboard.active = false)}
-      onBlur={() => (props.viewer.inputs.keyboard.active = true)}
+      {...item.getProps()}
+      className={cls('vim-ht-item', item.isSelected() && 'vim-ht-selected', item.isFocused() && 'vim-ht-focused')}
+      data-selected={item.isSelected() || undefined}
+      style={{ ...style, paddingLeft: level * 10 }}
+      onClick={(e) => onClick(e, item)}
+      onContextMenu={(e) => {
+        onClick(e, item)
+        showContextMenu({ x: e.clientX, y: e.clientY })
+        e.preventDefault()
+        e.stopPropagation()
+      }}
     >
-      <div {...tree.getContainerProps('BIM Tree')} className="vim-ht-container">
-        {items.map((item) => {
-          const node = props.treeData.nodes[Number(item.getId())]
-          const title = item.getItemName()
-          const level = item.getItemMeta().level
-
-          return (
-            <div
-              key={item.getId()}
-              {...item.getProps()}
-              className={`vim-ht-item${item.isSelected() ? ' vim-ht-selected' : ''}${item.isFocused() ? ' vim-ht-focused' : ''}`}
-              data-selected={item.isSelected() || undefined}
-              style={{ paddingLeft: level * 10 }}
-              onClick={(e) => onItemClick(e, item)}
-              onContextMenu={(e) => {
-                onItemClick(e, item)
-                showContextMenu({ x: e.clientX, y: e.clientY })
-                e.preventDefault()
-                e.stopPropagation()
-              }}
-            >
-              <span
-                className={`vim-ht-arrow${item.isFolder() ? ' vim-ht-arrow-folder' : ''}${item.isExpanded() ? ' vim-ht-arrow-open' : ''}`}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  if (item.isExpanded()) item.collapse()
-                  else item.expand()
-                }}
-              />
-              <span className="vim-ht-title" data-tip={title}>
-                {title}
-              </span>
-              <div
-                data-tip={node?.visible === 'vim-visible' ? 'Hide' : 'Show'}
-                className={`vim-ht-visibility ${node?.visible ?? ''}`}
-                onClick={(e) => {
-                  toggleVisibility(props.viewer, props.isolation, props.treeData, Number(item.getId()))
-                  e.stopPropagation()
-                }}
-              />
-            </div>
-          )
-        })}
-      </div>
+      <span
+        className={cls('vim-ht-arrow', item.isFolder() && 'vim-ht-arrow-folder', item.isExpanded() && 'vim-ht-arrow-open')}
+        onClick={(e) => {
+          e.stopPropagation()
+          item.isExpanded() ? item.collapse() : item.expand()
+        }}
+      />
+      <span className="vim-ht-title" data-tip={title}>
+        {title}
+      </span>
+      <div
+        data-tip={visible === 'visible' ? 'Hide' : 'Show'}
+        className="vim-ht-visibility"
+        data-visibility={visible}
+        onClick={(e) => {
+          e.stopPropagation()
+          const instances = treeData.getLeafInstances(item.getId())
+          if (visible !== 'visible') {
+            isolation.show(instances)
+          } else {
+            isolation.hide(instances)
+          }
+        }}
+      />
     </div>
   )
-})
-
-function toggleVisibility (
-  viewer: Viewer,
-  isolation: IsolationApi,
-  tree: BimTreeData,
-  index: number
-) {
-  const objs = tree
-    .getLeafs(index)
-    .map((n) => tree.vim.getElementFromIndex(tree.nodes[n]?.data.index))
-
-  const visibility = tree.nodes[index].visible
-  if (visibility !== 'vim-visible') {
-    isolation.show(objs.flatMap(o => o?.instances ?? []))
-  } else {
-    isolation.hide(objs.flatMap(o => o?.instances ?? []))
-  }
 }
 
-function updateViewerSelection (
-  tree: BimTreeData,
-  viewer: Viewer,
-  nodes: number[],
-  operation: 'add' | 'remove' | 'set'
-) {
-  const objects: IElement3D[] = []
-  nodes.forEach((n) => {
-    const item = tree.nodes[n]
-    const element = item.data.index
-    const obj = tree.vim.getElementFromIndex(element)
-    objects.push(obj)
-  })
-  switch (operation) {
-    case 'add': viewer.selection.add(objects); break
-    case 'remove': viewer.selection.remove(objects); break
-    case 'set': viewer.selection.select(objects); break
-  }
-}
+// ============================================================
+// Utilities
+// ============================================================
 
-export const isControlKey = (e: React.MouseEvent<any, any>) => {
-  return e.ctrlKey || (navigator.platform.toUpperCase().indexOf('MAC') >= 0 && e.metaKey)
-}
-
-class DoubleClickManager {
-  private _lastTime = 0
-  private _lastTarget = -1
-
-  isDoubleClick = (target: number) => {
-    const time = Date.now()
-    if (this._lastTarget === target && time - this._lastTime < 200) {
-      this._lastTarget = -1
-      this._lastTime = 0
-      return true
-    }
-    this._lastTarget = target
-    this._lastTime = time
-    return false
-  }
+function cls(...parts: (string | false | undefined)[]) {
+  return parts.filter(Boolean).join(' ')
 }

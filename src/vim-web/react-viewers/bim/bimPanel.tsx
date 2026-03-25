@@ -12,7 +12,7 @@ import { ViewerState } from '../webgl/viewerState'
 import { BimInfoPanelApi } from './bimInfoData'
 import { BimInfoPanel } from './bimInfoPanel'
 import { BimSearch } from './bimSearch'
-import { BimTree, TreeActionApi } from './bimTreeHeadless'
+import { BimTree } from './bimTreeHeadless'
 import { toTreeData } from './bimTreeData'
 import { WebglSettings } from '../webgl/settings'
 import { isFalse } from '../settings/userBoolean'
@@ -27,7 +27,6 @@ export function OptionalBimPanel (props: {
   isolation: IsolationApi
   visible: boolean
   settings: WebglSettings
-  treeRef: React.MutableRefObject<TreeActionApi | undefined>
   bimInfoRef: BimInfoPanelApi
 }) {
   return whenSomeTrue([
@@ -52,7 +51,6 @@ export function BimPanel (props: {
   isolation: IsolationApi
   visible: boolean
   settings: WebglSettings
-  treeRef: React.MutableRefObject<TreeActionApi | undefined>
   bimInfoRef: BimInfoPanelApi
 }) {
 
@@ -79,7 +77,6 @@ export function BimPanel (props: {
           {props.viewerState.filter.get() && props.viewerState.elements.get()?.length === 0
             ? <div className="vim-bim-no-results">No results for "{props.viewerState.filter.get()}"</div>
             : <BimTree
-                ref={props.treeRef}
                 viewer={props.viewer}
                 framing={props.framing}
                 objects={props.viewerState.selection.get()}

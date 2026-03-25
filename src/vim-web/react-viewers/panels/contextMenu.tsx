@@ -6,7 +6,6 @@ import React, { forwardRef, useImperativeHandle, useEffect, useRef, RefObject, u
 import { createPortal } from 'react-dom'
 import { useSignalState, useCustomizer } from '../helpers/reactUtils'
 import { FramingApi } from '../state/cameraState'
-import { TreeActionApi } from '../bim/bimTree'
 import { ModalApi } from './modal'
 import { IsolationApi } from '../state/sharedIsolation'
 import * as Core from '../../core-viewers'
@@ -77,7 +76,7 @@ export const VimContextMenuMemo = React.memo(forwardRef<ContextMenuApi, {
   modal: RefObject<ModalApi>
   isolation: IsolationApi
   selection: Core.Webgl.IElement3D[]
-  treeRef: React.MutableRefObject<TreeActionApi | undefined>
+
 }>(ContextMenu))
 
 /**
@@ -89,7 +88,7 @@ function ContextMenu (props: {
   modal: RefObject<ModalApi>
   isolation: IsolationApi
   selection: Core.Webgl.IElement3D[]
-  treeRef: React.MutableRefObject<TreeActionApi | undefined>
+
 }, ref: React.Ref<ContextMenuApi>) {
   const viewer = props.viewer
   const framing = props.framing
