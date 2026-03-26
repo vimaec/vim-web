@@ -48,10 +48,10 @@ export function SidePanel (props: {
     props.side.setWidth(width)
   }
 
-  // Resize canvas on each re-render.
+  // Resize canvas when side panel width or visibility changes.
   useEffect(() => {
     resizeGfx()
-  })
+  }, [props.side.getWidth(), props.side.getContent()])
 
   useEffect(() => {
     const obs = new ResizeObserver(() => {
