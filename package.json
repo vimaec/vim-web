@@ -1,6 +1,6 @@
 {
   "name": "vim-web",
-  "version": "1.0.0-alpha.14",
+  "version": "1.0.0-beta.1",
   "description": "WebGL and cloud-streaming 3D viewers for VIM files with BIM support",
   "type": "module",
   "files": [
@@ -40,6 +40,7 @@
     "build": "vite build && npm run declarations && npm run bundle-dts && npm run bundle-bim-dts",
     "publish:package": "npm run build && npm publish",
     "publish:package:alpha": "npm run build && npm publish --tag alpha",
+    "publish:package:beta": "npm run build && npm publish --tag beta",
     "publish:documentation": "npm run documentation && gh-pages -d docs2",
     "publish:both": "npm run publish:package && npm run publish:documentation"
   },
