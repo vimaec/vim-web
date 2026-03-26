@@ -1,8 +1,9 @@
 import { SettingsPanelKeys } from './settingsKeys'
 import { GenericEntryType } from '../generic/genericField'
+import { RenderSettingsApi } from '../state/renderSettings'
 import { IsolationApi } from '../state/sharedIsolation'
 
-export function getIsolationSettings(isolation: IsolationApi): GenericEntryType[] {
+export function getIsolationSettings(isolation: IsolationApi, renderSettings: RenderSettingsApi): GenericEntryType[] {
   return [
     {
       type: 'section',
@@ -13,7 +14,7 @@ export function getIsolationSettings(isolation: IsolationApi): GenericEntryType[
       type: 'bool',
       id: 'showTransparent',
       label: 'Show Transparent',
-      state: isolation.showTransparent,
+      state: renderSettings.showTransparent,
     },
     {
       type: 'number',
@@ -22,7 +23,7 @@ export function getIsolationSettings(isolation: IsolationApi): GenericEntryType[
       info: '[0,1]',
       step: 0.05,
       transform: (n) => Math.max(0, Math.min(1, n)),
-      state: isolation.transparentOpacity,
+      state: renderSettings.transparentOpacity,
     },
     {
       type: 'bool',
@@ -43,7 +44,7 @@ export function getIsolationSettings(isolation: IsolationApi): GenericEntryType[
       type: 'bool',
       id: 'outlineEnabled',
       label: 'Selection Outline',
-      state: isolation.outlineEnabled,
+      state: renderSettings.outlineEnabled,
     },
     {
       type: 'select',
@@ -54,7 +55,7 @@ export function getIsolationSettings(isolation: IsolationApi): GenericEntryType[
         { label: 'Medium', value: 'medium' },
         { label: 'High', value: 'high' },
       ],
-      state: isolation.outlineQuality,
+      state: renderSettings.outlineQuality,
     },
     {
       type: 'number',
@@ -62,7 +63,7 @@ export function getIsolationSettings(isolation: IsolationApi): GenericEntryType[
       label: 'Outline Thickness',
       info: '[1,5]',
       transform: (n) => Math.max(1, Math.min(5, Math.round(n))),
-      state: isolation.outlineThickness,
+      state: renderSettings.outlineThickness,
     },
     {
       type: 'select',
@@ -74,7 +75,7 @@ export function getIsolationSettings(isolation: IsolationApi): GenericEntryType[
         { label: 'X-Ray', value: 'xray' },
         { label: 'See-Through', value: 'seethrough' },
       ],
-      state: isolation.selectionFillMode,
+      state: renderSettings.selectionFillMode,
     },
     {
       type: 'number',
@@ -82,7 +83,7 @@ export function getIsolationSettings(isolation: IsolationApi): GenericEntryType[
       label: 'Selection Opacity',
       info: '[0,1]',
       transform: (n) => Math.max(0, Math.min(1, n)),
-      state: isolation.selectionOverlayOpacity,
+      state: renderSettings.selectionOverlayOpacity,
     },
   ]
 }

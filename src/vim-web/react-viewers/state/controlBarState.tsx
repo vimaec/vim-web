@@ -377,7 +377,7 @@ export function controlBarVisibility(isolation: IsolationApi, settings: ControlB
         tip: 'Isolate Selection',
         action: () => isolation.isolateSelection(),
         icon: Icons.isolateSelection,
-        isOn: () =>!isolation.autoIsolate.get() && isolation.hasSelection() && isolation.visibility.get() !== 'onlySelection',
+        isOn: () =>!isolation.autoIsolate.get() && isolation.hasVisibleSelection() && isolation.visibility.get() === 'some',
         variant: Style.buttonDisableStyle,
       },
       {
