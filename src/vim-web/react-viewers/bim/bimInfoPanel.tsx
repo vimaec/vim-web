@@ -25,7 +25,6 @@ export function BimInfoPanel(props: {
     clearTimeout(debounce.current)
     debounce.current = setTimeout(async () => {
       if (cancelled) return
-      // Yield to let the UI update before starting the expensive BIM query
       await new Promise(r => setTimeout(r, 0))
       if (cancelled) return
       let data = props.object === undefined
