@@ -12,6 +12,7 @@ export function useWebglIsolation(viewer: Core.Webgl.Viewer, initialState?: Isol
 }
 
 function createWebglAdapters(viewer: Core.Webgl.Viewer, initialState?: IsolationSettings) {
+  // Shared closure state — read by both adapters (e.g. showGhost triggers updateMaterials).
   let ghost = initialState?.showGhost ?? false
   let showTransparent = initialState?.showTransparent ?? true
   let rooms = initialState?.showRooms ?? false
@@ -112,7 +113,6 @@ function createWebglAdapters(viewer: Core.Webgl.Viewer, initialState?: Isolation
     setOutlineThickness: (thickness: number) => { viewer.materials.outlineThickness = thickness },
     getSelectionFillMode: () => viewer.materials.selectionFillMode,
     setSelectionFillMode: (mode: string) => {
-      viewer.materials.selectionFillMode = mode as Core.Webgl.SelectionFillMode
       viewer.renderer.selectionFillMode = mode as Core.Webgl.SelectionFillMode
     },
     getSelectionOverlayOpacity: () => viewer.materials.selectionOverlayOpacity,

@@ -305,9 +305,10 @@ export class Renderer implements ISceneRenderer {
     this._needsUpdate = true
   }
 
-  /** Sets the selection fill mode on the rendering composer. */
+  /** Sets the selection fill mode on both the rendering pipeline and materials. */
   set selectionFillMode (value: SelectionFillMode) {
     this._composer.selectionFillMode = value
+    this._materials.selectionFillMode = value
     this._needsUpdate = true
   }
 

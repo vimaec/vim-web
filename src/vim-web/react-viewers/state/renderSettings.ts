@@ -54,7 +54,7 @@ export function useRenderSettings(adapter: IRenderSettingsAdapter): RenderSettin
   const outlineThickness = useStateRef<number>(() => adapter.getOutlineThickness(), true, 'vim.outline.thickness')
   const selectionFillMode = useStateRef<string>(() => adapter.getSelectionFillMode(), true, 'vim.selection.fillMode')
   const selectionOverlayOpacity = useStateRef<number>(() => adapter.getSelectionOverlayOpacity(), true, 'vim.selection.overlayOpacity')
-  const showRooms = useStateRef<boolean>(false)
+  const showRooms = useStateRef<boolean>(() => adapter.getShowRooms(), true)
 
   showTransparent.useOnChange((v) => adapter.setShowTransparent(v))
   transparentOpacity.useOnChange((v) => adapter.setTransparentOpacity(v))

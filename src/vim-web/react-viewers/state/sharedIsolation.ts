@@ -89,6 +89,7 @@ export interface IIsolationAdapter {
 }
 
 export function useSharedIsolation(adapter: IIsolationAdapter) {
+  // Adapter is captured once — callers must provide a stable reference.
   const _adapter = useRef(adapter);
   const visibility = useStateRef<VisibilityStatus>(() => adapter.computeVisibility(), true);
   const autoIsolate = useStateRef<boolean>(false);
@@ -121,6 +122,7 @@ export function useSharedIsolation(adapter: IIsolationAdapter) {
 
   showGhost.useOnChange((v) => adapter.showGhost(v));
 
+  // Block zero — fully transparent ghost is invisible, same as hidden.
   ghostOpacity.useValidate((next, current) => {
     const rounded = Math.round(Math.max(0, Math.min(1, next)) * 100) / 100
     return rounded <= 0 ? current : rounded
