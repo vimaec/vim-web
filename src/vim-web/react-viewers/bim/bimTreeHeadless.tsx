@@ -165,7 +165,7 @@ function useBimSelectionSync(
   virtualizer: ReturnType<typeof useVirtualizer>,
   treeData: BimTreeData,
   selectedElements: IElement3D[],
-  treeOrigin: React.MutableRefObject<boolean>
+  treeOrigin: React.RefObject<boolean>
 ) {
   const prev = useRef<IElement3D[]>([])
   const pendingScroll = useRef<string | null>(null)
@@ -209,7 +209,7 @@ function useBimClickHandler(
   tree: TreeInstance<BimNode>,
   treeData: BimTreeData,
   viewer: Viewer,
-  treeOrigin: React.MutableRefObject<boolean>
+  treeOrigin: React.RefObject<boolean>
 ) {
   const rangeAnchor = useRef('0')
 

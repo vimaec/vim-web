@@ -212,7 +212,7 @@ function ContextMenu (props: {
       label: 'Isolate Object',
       keyboard: 'I',
       action: onSelectionIsolateBtn,
-      enabled: hasSelection && visibility === 'onlySelection'
+      enabled: hasSelection && visibility === 'some'
     },
     {
       type: 'button',
