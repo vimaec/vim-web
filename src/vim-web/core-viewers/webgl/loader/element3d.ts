@@ -278,27 +278,27 @@ export class Element3D implements IElement3D {
     const cache = await this._vim.getParameterCache()
     if (!cache) return VimHelpers.getElementParameters(this._vim.bim, this.element)
 
-    // Build the element set (this element + family type/family elements)
-    const elements = new Map<number, boolean>()
-    elements.set(this.element, true)
-    const familyElements = await VimHelpers.getFamilyElements(this._vim.bim, this.element)
-    familyElements.forEach(e => { if (e !== undefined) elements.set(e, false) })
+    // Pre-computed element set: this element + family type + family (all O(1) lookups)
+    const related = cache.familyElements.get(this.element) ?? new Map([[this.element, true]])
 
-    // Look up from cached columns instead of re-decompressing
-    const { elements: paramElements, values, descriptorIndices, descriptorNames, descriptorGroups } = cache
+    const { values, descriptorIndices, descriptorNames, descriptorGroups, parametersByElement } = cache
     const result: VimHelpers.ElementParameter[] = []
-    for (let i = 0; i < paramElements.length; i++) {
-      if (!elements.has(paramElements[i])) continue
-      const isInstance = elements.get(paramElements[i])
-      const descriptor = descriptorIndices[i]
-      const value = values[i]
-      const displayValue = value?.indexOf('|') >= 0 ? value.substring(value.indexOf('|') + 1) : value
-      result.push({
-        name: Number.isInteger(descriptor) ? descriptorNames?.[descriptor] : undefined,
-        value: displayValue,
-        group: Number.isInteger(descriptor) ? descriptorGroups?.[descriptor] : undefined,
-        isInstance,
-      })
+
+    // Only visit parameter rows belonging to related elements (O(params per element), not O(all params))
+    for (const [elementIdx, isInstance] of related) {
+      const rows = parametersByElement.get(elementIdx)
+      if (!rows) continue
+      for (const i of rows) {
+        const descriptor = descriptorIndices[i]
+        const value = values[i]
+        const displayValue = value?.indexOf('|') >= 0 ? value.substring(value.indexOf('|') + 1) : value
+        result.push({
+          name: Number.isInteger(descriptor) ? descriptorNames?.[descriptor] : undefined,
+          value: displayValue,
+          group: Number.isInteger(descriptor) ? descriptorGroups?.[descriptor] : undefined,
+          isInstance,
+        })
+      }
     }
     return result
   }

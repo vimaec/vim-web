@@ -135,28 +135,76 @@ export class Vim implements IWebglVim {
     await this.getParameterCache()
   }
 
-  /** @internal Cached parameter table columns — loaded once, shared by all Element3D.getBimParameters() calls. */
+  /** @internal Cached parameter + family table columns — loaded once, shared by all getBimParameters() calls. */
   _parameterCache: {
     elements: number[]
     values: string[]
     descriptorIndices: number[]
     descriptorNames: string[]
     descriptorGroups: string[]
+    /** element index → Set of related element indices (family type + family) with isInstance flag */
+    familyElements: Map<number, Map<number, boolean>>
+    /** element index → parameter indices in the elements/values/descriptors arrays */
+    parametersByElement: Map<number, number[]>
   } | undefined
 
   /** @internal */
   async getParameterCache () {
     if (this._parameterCache) return this._parameterCache
     if (!this.bim) return undefined
-    const [elements, values, descriptorIndices, descriptorNames, descriptorGroups] = await Promise.all([
+    const [
+      elements, values, descriptorIndices, descriptorNames, descriptorGroups,
+      fiElements, fiFamilyTypes,
+      ftElements, ftFamilies,
+      fElements
+    ] = await Promise.all([
       this.bim.parameter.getAllElementIndex(),
       this.bim.parameter.getAllValue(),
       this.bim.parameter.getAllParameterDescriptorIndex(),
       this.bim.parameterDescriptor.getAllName(),
       this.bim.parameterDescriptor.getAllGroup(),
+      // Family resolution columns — cached to avoid per-query decompression
+      this.bim.familyInstance.getAllElementIndex(),
+      this.bim.familyInstance.getAllFamilyTypeIndex(),
+      this.bim.familyType.getAllElementIndex(),
+      this.bim.familyType.getAllFamilyIndex(),
+      this.bim.family.getAllElementIndex(),
     ])
     if (!elements || !values || !descriptorIndices) return undefined
-    this._parameterCache = { elements, values, descriptorIndices, descriptorNames, descriptorGroups }
+
+    // Pre-compute family element sets for every element — O(1) lookup per getBimParameters call
+    const familyElements = new Map<number, Map<number, boolean>>()
+    if (fiElements && fiFamilyTypes && ftElements && ftFamilies && fElements) {
+      const fiByElement = new Map<number, number>()
+      for (let i = 0; i < fiElements.length; i++) fiByElement.set(fiElements[i], i)
+
+      for (const [element, fi] of fiByElement) {
+        const related = new Map<number, boolean>()
+        related.set(element, true)
+        const ftIdx = fiFamilyTypes[fi]
+        if (Number.isInteger(ftIdx)) {
+          const ftElement = ftElements[ftIdx]
+          if (ftElement !== undefined) related.set(ftElement, false)
+          const fIdx = ftFamilies[ftIdx]
+          if (Number.isInteger(fIdx)) {
+            const fElement = fElements[fIdx]
+            if (fElement !== undefined) related.set(fElement, false)
+          }
+        }
+        familyElements.set(element, related)
+      }
+    }
+
+    // Pre-index: element → parameter row indices for O(1) lookup per element
+    const parametersByElement = new Map<number, number[]>()
+    for (let i = 0; i < elements.length; i++) {
+      const el = elements[i]
+      let list = parametersByElement.get(el)
+      if (!list) { list = []; parametersByElement.set(el, list) }
+      list.push(i)
+    }
+
+    this._parameterCache = { elements, values, descriptorIndices, descriptorNames, descriptorGroups, familyElements, parametersByElement }
     return this._parameterCache
   }
 
