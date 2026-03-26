@@ -40,6 +40,7 @@ import { useWebglFraming } from './camera'
 import { useViewerInput } from '../state/viewerInputs'
 import { IsolationPanel } from '../panels/isolationPanel'
 import { useWebglIsolation } from './isolation'
+import { IsolationApi } from '../state/sharedIsolation'
 import { GenericPanelApi } from '../generic/genericPanel'
 import { getDefaultSettings, PartialWebglSettings, WebglSettings } from './settings'
 import { SettingsPanel } from '../settings/settingsPanel'
@@ -56,7 +57,7 @@ import { useWebglUiState } from '../state/uiState'
  * @returns The viewer API.
  *
  * @example
- * const viewer = React.Webgl.createViewer(document.getElementById('app'))
+ * const viewer = await React.Webgl.createViewer(document.getElementById('app'))
  * const vim = await viewer.load({ url: 'model.vim' }).getVim()
  * viewer.framing.frameScene.call()
  */
@@ -140,7 +141,7 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
   const bimInfoRef = useBimInfo()
 
   const viewerState = useViewerState(props.viewer)
-  const isolationRef = useWebglIsolation(props.viewer, settings.isolation)
+  const { isolation: isolationRef, renderSettings: renderSettingsRef } = useWebglIsolation(props.viewer, settings.isolation)
   const [controlBar, controlBarApi] = useCustomizer(
     useControlBar(props.viewer, framing, modal, side, cursor, effectiveSettings, sectionBoxRef, isolationRef)
   )
@@ -155,6 +156,7 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
     open: (source, loadSettings) => loader.current.open(source, loadSettings),
     unload: (vim) => props.viewer.unload(vim),
     isolation: isolationRef,
+    renderSettings: renderSettingsRef,
     framing,
     get isolationPanel() { return isolationPanelHandle.current },
     get sectionBoxPanel() { return sectionBoxPanelHandle.current },
@@ -190,7 +192,7 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
       />
       <SettingsPanel
         visible={side.getContent() === 'settings'}
-        content={getWebglSettingsContent(props.viewer, isolationRef, uiRefs, settings.ui)}
+        content={getWebglSettingsContent(props.viewer, isolationRef, renderSettingsRef, uiRefs, settings.ui)}
       />
     </>
   )
@@ -213,7 +215,7 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
           show={uiState.panelControlBar}
         />
         <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBoxRef}/>
-        <IsolationPanel ref={isolationPanelHandle} state={isolationRef}/>
+        <IsolationPanel ref={isolationPanelHandle} isolation={isolationRef} renderSettings={renderSettingsRef}/>
         {uiState.panelAxes && <AxesPanelMemo
           viewer={props.viewer}
           framing={framing}
@@ -239,7 +241,7 @@ export const WebglViewerComponent = forwardRef<WebglViewerApi, {
 function useWebglSetup (
   viewer: Core.Webgl.Viewer,
   framing: ReturnType<typeof useWebglFraming>,
-  isolationRef: ReturnType<typeof useWebglIsolation>,
+  isolation: IsolationApi,
   side: ReturnType<typeof useSideState>,
   cursor: CursorManager
 ) {
@@ -251,7 +253,7 @@ function useWebglSetup (
     }
     cursor.register()
     viewer.viewport.canvas.tabIndex = 0
-    applyWebglBindings(viewer, framing, isolationRef, side)
+    applyWebglBindings(viewer, framing, isolation, side)
     return () => cursor.unregister()
   }, [])
 

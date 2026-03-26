@@ -18,7 +18,7 @@ export function applyWebglBindings(
   k.override("NumpadDivide", 'up', () => sideState.toggleContent('settings'))
   k.override("KeyF", 'up', () => framing.frameSelection.call())
   k.override("KeyI", 'up', () =>{
-    if(isolation.hasVisibleSelection() && isolation.visibility.get() !== 'onlySelection'){
+    if(isolation.hasVisibleSelection() && isolation.visibility.get() === 'some'){
       isolation.isolateSelection()
     }
     else{

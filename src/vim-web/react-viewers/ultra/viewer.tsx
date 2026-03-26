@@ -23,7 +23,7 @@ import { UltraViewerApi } from './viewerApi'
 import { useUltraFraming } from './camera'
 import { useViewerInput } from '../state/viewerInputs'
 import { useUltraIsolation } from './isolation'
-import { IsolationPanel } from '../panels/isolationPanel'
+import { UltraIsolationPanel } from './isolationPanel'
 import { GenericPanelApi } from '../generic/genericPanel'
 import { SettingsPanel } from '../settings/settingsPanel'
 import { SidePanelMemo } from '../panels/sidePanel'
@@ -99,7 +99,7 @@ export const UltraViewerComponent = forwardRef<UltraViewerApi, {
 
   const side = useSideState(true, 400)
   const [_, setSelectState] = useState(0)
-  const isolationRef = useUltraIsolation(props.core, settings.isolation)
+  const isolationRef = useUltraIsolation(props.core, settings.isolation.showGhost)
   const [controlBar, controlBarApi] = useCustomizer(
     useUltraControlBar(props.core, sectionBoxRef, isolationRef, framing, settings, side, modalHandle)
   )
@@ -168,7 +168,7 @@ export const UltraViewerComponent = forwardRef<UltraViewerApi, {
       show={uiState.panelControlBar}
     />
     <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBoxRef}/>
-    <IsolationPanel ref={isolationPanelHandle} state={isolationRef}/>
+    <UltraIsolationPanel ref={isolationPanelHandle} isolation={isolationRef}/>
   </>
   }}/>
   

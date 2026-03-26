@@ -12,6 +12,7 @@ import { OpenSettings } from './loading'
 import { ModalApi } from '../panels/modal'
 import { SectionBoxApi } from '../state/sectionBoxState'
 import { IsolationApi } from '../state/sharedIsolation'
+import { RenderSettingsApi } from '../state/renderSettings'
 import { GenericPanelApi } from '../generic/genericPanel'
 import { WebglUiApi } from '../state/uiState'
 
@@ -71,9 +72,14 @@ export type WebglViewerApi = {
   unload: (vim: Core.Webgl.IWebglVim) => void
 
   /**
-   * Isolation API managing isolation state in the viewer.
+   * Isolation API managing element visibility and isolation.
    */
   isolation: IsolationApi
+
+  /**
+   * Render settings API controlling outline, transparency, and selection fill.
+   */
+  renderSettings: RenderSettingsApi
 
   /**
    * Section box API managing the section box in the viewer.

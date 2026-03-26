@@ -4,6 +4,7 @@ import { GenericEntryType } from '../generic/genericField'
 import { SettingsPanelKeys } from "../settings/settingsKeys";
 import { getIsolationSettings } from "../settings/settingsPanelContent";
 import { IsolationApi } from "../state/sharedIsolation";
+import { RenderSettingsApi } from "../state/renderSettings";
 import { WebglSettings } from "./settings";
 import { createState } from "../helpers/reactUtils";
 import { UiRefs } from "../state/uiState";
@@ -22,6 +23,7 @@ function tog(
 export function getWebglSettingsContent(
   viewer: Viewer,
   isolation: IsolationApi,
+  renderSettings: RenderSettingsApi,
   refs: UiRefs,
   srcUi: WebglSettings['ui'],
 ): GenericEntryType[] {
@@ -31,7 +33,7 @@ export function getWebglSettingsContent(
   const scrollSpeedState = createState(viewer.inputs.scrollSpeed)
   scrollSpeedState.onChange.subscribe(v => { viewer.inputs.scrollSpeed = v })
 
-  const isolationEntries = getIsolationSettings(isolation).filter(e => e.type !== 'section')
+  const isolationEntries = getIsolationSettings(isolation, renderSettings).filter(e => e.type !== 'section')
 
   return [
     { type: 'section', id: 'inputs', label: 'Inputs' },
