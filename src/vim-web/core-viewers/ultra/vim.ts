@@ -134,7 +134,7 @@ export class Vim implements IUltraVim {
   }
 
   getAllElements(): Element3D[] {
-    for (var i = 0; i < this._elementCount; i++) {
+    for (let i = 0; i < this._elementCount; i++) {
       this.getElement(i)
     }
     return Array.from(this._objects.values())

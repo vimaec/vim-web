@@ -1,6 +1,6 @@
 {
   "name": "vim-web",
-  "version": "1.0.0-alpha.13",
+  "version": "1.0.0-alpha.14",
   "description": "WebGL and cloud-streaming 3D viewers for VIM files with BIM support",
   "type": "module",
   "files": [
@@ -14,8 +14,7 @@
   "exports": {
     ".": {
       "types": "./dist/vim-web.d.ts",
-      "import": "./dist/vim-web.js",
-      "require": "./dist/vim-web.iife.js"
+      "import": "./dist/vim-web.js"
     },
     "./style.css": "./dist/style.css",
     "./bim": {

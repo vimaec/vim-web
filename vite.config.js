@@ -11,7 +11,7 @@ export default defineConfig({
       name: 'VIMReact'
     },
     rollupOptions: {
-      external: ['react', 'react-dom'],
+      external: ['react', 'react-dom', /^react-dom\//],
       output: {
         // Save react and react-dom as globals so they can be provided as external dependencies
         globals: {
