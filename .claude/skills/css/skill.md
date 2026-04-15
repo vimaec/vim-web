@@ -1,37 +1,36 @@
 ---
 name: css
-description: CSS best practices reference for writing and reviewing CSS/Tailwind. Covers general patterns, AI-friendliness, modern features, performance, accessibility, and this project's conventions. Use when writing, reviewing, or refactoring CSS.
+description: CSS best practices reference for writing and reviewing CSS. Covers general patterns, AI-friendliness, modern features, performance, accessibility, and this project's conventions. Use when writing, reviewing, or refactoring CSS.
 allowed-tools: Read, Grep, Glob, Edit, Write, Agent
 ---
 
 # CSS Best Practices
 
-Reference guide for writing, reviewing, and refactoring CSS in this project. Apply these rules when touching `style.css`, Tailwind classes in TSX files, or CSS custom properties.
+Reference guide for writing, reviewing, and refactoring CSS in this project. Apply these rules when touching `style.css` or component CSS classes.
 
 ---
 
 ## Project-Specific Conventions
 
-This project uses **Tailwind CSS v3** with the `vc-` prefix, CSS custom properties with `--c-` prefix, and a single `style.css` file for global styles + tokens.
-
-> **Full styling reference**: See [STYLING.md](../../docs/STYLING.md) for the complete token system, panel architecture, `vim-hidden` pattern, third-party override conventions, and code style rules.
+This project uses **semantic CSS** with a single `style.css` file for global styles + design tokens. No utility framework (no Tailwind), no CSS modules, no CSS-in-JS.
 
 ### Token Hierarchy
 ```
-Primitives (--c-primary, --c-dark-gray, --gap-xs, --z-ui …)
-  → used directly in style.css rules and Tailwind config
+Primitives (--c-primary, --c-dark-gray, --gap-xs, --z-ui, --font-family …)
+  → used directly in style.css rules
 ```
 
+### Class Naming
+- All component classes use the `vim-` prefix: `vim-panel`, `vim-bim-tree`, `vim-control-bar-button`
+- Double-dash suffixes for variants: `vim-panel-header`, `vim-panel-body`
+- State via `data-*` attributes over modifier classes: `data-disabled`, `data-selected`, `data-visibility="hidden"`
+
 ### Token Rules
-- All Tailwind classes MUST use the `vc-` prefix: `vc-flex`, `vc-p-4`, `hover:vc-bg-blue-500`
-- Never mix prefixed and non-prefixed Tailwind classes
 - CSS custom properties use `--c-` prefix for colors: `--c-primary`, `--c-dark-gray-cool`
-- Responsive/state variants go before the prefix: `sm:vc-flex`, `hover:vc-opacity-100`
-- Inline Tailwind classes in TSX are preferred over @apply for component-specific styles
-- Extract React components instead of creating @apply abstractions
-- **Zero values**: always bare `0`, never `0px` — the unit is ignored on zero and `0px` is inconsistent
-- **Gap values**: use `var(--gap-xs)` (4px) or `var(--gap-sm)` (10px) — never raw `4px`, `8px`, `0.25rem`, `0.5rem`
+- Spacing tokens: `--gap-xs`, `--gap-sm`, `--gap-md` — never raw `4px`, `8px`, `0.25rem`
+- **Zero values**: always bare `0`, never `0px`
 - **Magic numbers**: add an inline comment when a value isn't self-evident (e.g. `/* chevron size */`, `/* 33% label / 67% value split */`)
+- `--font-family` is used on portaled elements (tooltips, context menu) that live outside `.vim-component`
 
 ---
 
@@ -40,23 +39,21 @@ Primitives (--c-primary, --c-dark-gray, --gap-xs, --z-ui …)
 LLMs cannot render CSS — they infer visual outcomes. Structure CSS to minimize ambiguity.
 
 ### Do
-- **Colocate styles with components** — Tailwind inline classes keep full context in one file
-- **Use flat, single-class selectors** — each class does one thing, no cascade surprises
-- **Use constrained vocabularies** — Tailwind utilities are a predictable API
-- **Make cascade explicit** — use `@layer` declarations to spell out priority order
-- **One styling approach per component** — don't mix inline styles, CSS classes, and Tailwind
-- **Use semantic token names** — `--c-primary` not `--c-blue-hex`
+- **Flat, single-class selectors** — each class does one thing, no cascade surprises
+- **Semantic class names** — `.vim-panel-header` not `.top-section`
+- **Colocate CSS by feature** — all `.vim-bim-tree-*` rules live together in `style.css`
+- **Make cascade explicit** — use `@layer` declarations if priority conflicts arise
+- **One styling approach per component** — no inline styles mixed with classes
+- **Use design tokens** — `var(--c-primary)` not `#0590cc`
 
 ### Don't
-- **Rely on implicit inheritance chains** — `.form .input .label` requires tracing up the DOM
+- **Rely on deep inheritance chains** — `.form .input .label` requires tracing up the DOM
 - **Use ambiguous class names** — `.container`, `.wrapper`, `.inner` mean nothing to an LLM
-- **Scatter related styles across files** — forces massive context to reason about a single component
 - **Use deeply nested selectors** — `.a .b .c .d .e` is unpredictable
+- **Use `!important`** — the fact we removed it (with react-tooltip) is the result of good selectors
 
 ### Why This Matters
-- Utility-first is the most AI-friendly approach: full context in one file, constrained vocabulary, no cascade
-- CSS Modules are second-best: scoped by default, standard CSS syntax, no global side effects
-- Global CSS files are worst: require cross-file context, implicit cascade, naming ambiguity
+Semantic CSS with flat selectors and design tokens gives LLMs a predictable API. The full styling context for any component is grep-able via its prefix.
 
 ---
 
@@ -248,23 +245,29 @@ Align children across sibling grid items (e.g., card grids with aligned titles/f
 
 ---
 
-## 9. Tailwind-Specific Best Practices
+## 9. Component Styling Patterns
 
-### @apply vs Inline
-- **Prefer inline classes** in TSX — keeps context colocated, no file switching, no naming
-- **@apply only for**: tiny, highly-reused patterns like input resets, AND only when component extraction feels too heavy
-- **In React**: extract a component (`<Button>`) over creating a `.btn` @apply class
-
-### Class Organization in TSX
-Group logically: layout → sizing → spacing → typography → colors → effects
+### State via data attributes
+Prefer `data-*` attributes over modifier classes for dynamic state:
 ```tsx
-className="vc-flex vc-items-center vc-gap-2 vc-px-4 vc-py-2 vc-text-sm vc-text-white vc-bg-blue-600 vc-rounded hover:vc-bg-blue-700"
+// Good — grep-able, state is visible in DOM
+<div className="vim-panel-entry" data-disabled={!enabled || undefined}>
+
+// CSS
+.vim-panel-entry[data-disabled] { opacity: 0.5; pointer-events: none; }
 ```
 
-### Prefix Consistency
-- Every Tailwind class must have `vc-` prefix — no exceptions
-- Variants go before prefix: `sm:vc-flex`, `dark:vc-bg-gray-900`, `group-hover:vc-opacity-100`
-- Use complete class strings in markup for PurgeCSS to detect them — never construct class names dynamically with string interpolation
+### Portal elements
+Tooltips, context menus, and modals rendered via React portals live outside `.vim-component` and must explicitly set `font-family: var(--font-family)` since they don't inherit from the viewer root.
+
+### Container queries
+The viewer uses `container-type: size` on root containers. Responsive scaling uses `cqmin` units:
+```css
+.vim-control-bar-button {
+  height: min(8cqmin, 2.5rem);
+  width: min(8cqmin, 2.5rem);
+}
+```
 
 ---
 
@@ -272,13 +275,13 @@ className="vc-flex vc-items-center vc-gap-2 vc-px-4 vc-py-2 vc-text-sm vc-text-w
 
 When reviewing CSS changes, check for:
 
-1. **Specificity conflicts** — are new selectors at the same specificity level as existing ones?
+1. **Specificity conflicts** — are new selectors at the same level as existing ones?
 2. **Unused styles** — did the change orphan any CSS rules?
 3. **Token usage** — are raw color/spacing values used instead of tokens?
-4. **Prefix compliance** — are all Tailwind classes using `vc-`?
-5. **Performance** — are `width`/`height`/`margin` being animated?
+4. **No `!important`** — rewrite the selector instead
+5. **Performance** — are `width`/`height`/`margin` being animated? Use `transform`/`opacity`
 6. **Accessibility** — do interactive elements have focus styles? Touch targets >= 44px?
 7. **Reduced motion** — do new animations respect `prefers-reduced-motion`?
 8. **Cascade safety** — could the new rule unintentionally affect other components?
-9. **AI friendliness** — are styles colocated? Are selectors flat and unambiguous?
-10. **Consistency** — does the pattern match existing conventions in the codebase?
+9. **AI friendliness** — are selectors flat, prefixed, and grep-able?
+10. **Consistency** — does the pattern match existing conventions?

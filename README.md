@@ -91,14 +91,16 @@ The React viewer exposes customization points for:
 
 ## Tech Stack
 
-- **TypeScript 5.7**, **React 18.3**, **Vite 6**
-- **Three.js 0.171**, **Tailwind CSS 3.4** (`vc-` prefix)
-- **ste-events/ste-signals** for typed events, **vim-format** for BIM data
+- **TypeScript 6**, **React 18.3/19**, **Vite 8**
+- **Three.js 0.183**, semantic CSS with design tokens (`--c-` prefix)
+- **@headless-tree/react** + **@tanstack/react-virtual** for the BIM tree
+- **ste-signals/ste-simple-events** for typed events, **vim-format** for BIM data
 - **Rollup** + **rollup-plugin-dts** for type bundle generation
 
 ## Code Style
 
-- Prettier: no semicolons, trailing commas, single quotes
+- No semicolons, trailing commas, single quotes
 - Index files control module exports
 - No test framework — build pass is the verification
+- No linter or formatter — TypeScript compiler is the only gate
 - No deprecated code or backwards-compatibility shims
