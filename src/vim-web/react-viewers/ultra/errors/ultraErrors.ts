@@ -16,7 +16,7 @@ export function getErrorMessage (state: Core.Ultra.ClientState) {
 }
 
 export function getRequestErrorMessage (serverUrl: string, source: Core.Ultra.VimSource, error: Core.Ultra.VimRequestErrorType ) {
-  console.log(error)
+  console.error(error)
   switch (error) {
     case 'loadingError':
       return Errors.serverFileLoadingError(source.url)

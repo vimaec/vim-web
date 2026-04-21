@@ -5,6 +5,7 @@
 import { MeshSection } from 'vim-format'
 import { G3dMeshOffsets } from './g3dOffsets'
 import { MappedG3d } from './mappedG3d'
+import { IElementMapping } from '../elementMapping'
 
 /** Filter mode for subset operations. Only exports modes that are actually implemented. */
 export type SubsetFilter = 'instance' | 'mesh'
@@ -39,6 +40,10 @@ export interface ISubset {
   except(mode: SubsetFilter, filter: number[] | Set<number>): ISubset
   /** Return a new subset including only instances matching the filter. */
   filter(mode: SubsetFilter, filter: number[] | Set<number>): ISubset
+  /** Return a new subset including only instances whose element matches one of the given Revit unique IDs. */
+  filterByUniqueId(uniqueIds: string[] | Set<string>): ISubset
+  /** Return a new subset excluding instances whose element matches one of the given Revit unique IDs. */
+  exceptByUniqueId(uniqueIds: string[] | Set<string>): ISubset
 }
 
 /**
@@ -48,6 +53,7 @@ export interface ISubset {
  */
 export class G3dSubset implements ISubset {
   private _source: MappedG3d
+  private _mapping: IElementMapping | null
 
   /** Lazy flat instance list — only materialized when filter/getVimInstance needs it */
   private _flatInstances: number[] | null = null
@@ -62,8 +68,9 @@ export class G3dSubset implements ISubset {
   /**
    * Creates a full set containing all instances from the source.
    */
-  constructor (source: MappedG3d) {
+  constructor (source: MappedG3d, mapping?: IElementMapping) {
     this._source = source
+    this._mapping = mapping ?? null
     this._meshes = source._meshKeys
     this._meshInstances = source._meshValues
     this._instanceCount = source._totalInstanceCount
@@ -75,12 +82,14 @@ export class G3dSubset implements ISubset {
    */
   private static _fromPrebuilt (
     source: MappedG3d,
+    mapping: IElementMapping | null,
     instanceCount: number,
     meshes: number[],
     meshInstances: number[][]
   ): G3dSubset {
     const subset = Object.create(G3dSubset.prototype) as G3dSubset
     subset._source = source
+    subset._mapping = mapping
     subset._flatInstances = null
     subset._instanceCount = instanceCount
     subset._meshes = meshes
@@ -111,7 +120,7 @@ export class G3dSubset implements ISubset {
 
       if (currentSize > count) {
         result.push(G3dSubset._fromPrebuilt(
-          this._source, currentInstanceCount, currentMeshes, currentMeshInstances
+          this._source, this._mapping, currentInstanceCount, currentMeshes, currentMeshInstances
         ))
         currentMeshes = []
         currentMeshInstances = []
@@ -122,7 +131,7 @@ export class G3dSubset implements ISubset {
 
     if (currentInstanceCount > 0) {
       result.push(G3dSubset._fromPrebuilt(
-        this._source, currentInstanceCount, currentMeshes, currentMeshInstances
+        this._source, this._mapping, currentInstanceCount, currentMeshes, currentMeshInstances
       ))
     }
 
@@ -229,7 +238,7 @@ export class G3dSubset implements ISubset {
       }
     }
 
-    return G3dSubset._fromPrebuilt(this._source, instanceCount, meshes, meshInstances)
+    return G3dSubset._fromPrebuilt(this._source, this._mapping, instanceCount, meshes, meshInstances)
   }
 
   /**
@@ -260,8 +269,8 @@ export class G3dSubset implements ISubset {
     }
 
     return [
-      G3dSubset._fromPrebuilt(this._source, lowCount, lowMeshes, lowMeshInstances),
-      G3dSubset._fromPrebuilt(this._source, highCount, highMeshes, highMeshInstances)
+      G3dSubset._fromPrebuilt(this._source, this._mapping, lowCount, lowMeshes, lowMeshInstances),
+      G3dSubset._fromPrebuilt(this._source, this._mapping, highCount, highMeshes, highMeshInstances)
     ]
   }
 
@@ -293,6 +302,53 @@ export class G3dSubset implements ISubset {
     return this._filter(mode, filter, true)
   }
 
+  /**
+   * Returns a new subset including only instances whose element matches one of the given Revit unique IDs.
+   */
+  filterByUniqueId (uniqueIds: string[] | Set<string>): G3dSubset {
+    return this._filterByUniqueId(uniqueIds, true)
+  }
+
+  /**
+   * Returns a new subset excluding instances whose element matches one of the given Revit unique IDs.
+   */
+  exceptByUniqueId (uniqueIds: string[] | Set<string>): G3dSubset {
+    return this._filterByUniqueId(uniqueIds, false)
+  }
+
+  private _filterByUniqueId (uniqueIds: string[] | Set<string>, has: boolean): G3dSubset {
+    const filterSize = uniqueIds instanceof Set ? uniqueIds.size : uniqueIds.length
+    if (filterSize === 0) {
+      return has
+        ? G3dSubset._fromPrebuilt(this._source, this._mapping, 0, [], [])
+        : this
+    }
+
+    const set = uniqueIds instanceof Set ? uniqueIds : new Set(uniqueIds)
+    const mapping = this._mapping
+
+    const meshes: number[] = []
+    const meshInstances: number[][] = []
+    let instanceCount = 0
+
+    for (let i = 0; i < this._meshes.length; i++) {
+      const filtered = this._meshInstances[i].filter(inst => {
+        const element = mapping?.getElementFromInstance(this._source.instanceNodes[inst])
+        if (element === undefined) return !has
+        const uid = mapping?.getElementUniqueId(element)
+        return set.has(uid!) === has
+      })
+      if (filtered.length > 0) {
+        meshes.push(this._meshes[i])
+        meshInstances.push(filtered)
+        instanceCount += filtered.length
+      }
+    }
+
+    if (instanceCount === this._instanceCount) return this
+    return G3dSubset._fromPrebuilt(this._source, this._mapping, instanceCount, meshes, meshInstances)
+  }
+
   private _filter (
     mode: SubsetFilter,
     filter: number[] | Set<number>,
@@ -302,7 +358,7 @@ export class G3dSubset implements ISubset {
     const filterSize = filter instanceof Set ? filter.size : filter.length
     if (filterSize === 0) {
       return has
-        ? G3dSubset._fromPrebuilt(this._source, 0, [], [])
+        ? G3dSubset._fromPrebuilt(this._source, this._mapping, 0, [], [])
         : this
     }
 
@@ -328,7 +384,7 @@ export class G3dSubset implements ISubset {
     }
 
     if (instanceCount === this._instanceCount) return this
-    return G3dSubset._fromPrebuilt(this._source, instanceCount, meshes, meshInstances)
+    return G3dSubset._fromPrebuilt(this._source, this._mapping, instanceCount, meshes, meshInstances)
   }
 
   /** Lazily materializes the flat instance array from mesh-grouped data. */

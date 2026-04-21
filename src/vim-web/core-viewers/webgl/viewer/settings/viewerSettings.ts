@@ -255,8 +255,8 @@ export type ViewerSettings = {
    */
   background: {
     /**
-     * Color of the cavas background
-     * Default: THREE.Color('#96999f')
+     * Color of the canvas background.
+     * Default: #F0F0F0
      */
     color: THREE.Color
   },

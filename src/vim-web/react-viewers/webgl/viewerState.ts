@@ -5,7 +5,7 @@
 import { useEffect } from 'react'
 import * as Core from '../../core-viewers'
 import { AugmentedElement, getElements } from '../helpers/element'
-import { StateRef, useStateRef } from '../helpers/reactUtils'
+import { StateRef, useStateRef, useSubscribe } from '../helpers/reactUtils'
 
 export type ViewerState = {
   vim: StateRef<Core.Webgl.IWebglVim>
@@ -21,7 +21,7 @@ export function useViewerState (viewer: Core.Webgl.Viewer) : ViewerState {
   }
 
   const getSelection = () => {
-    return [...viewer.selection.getAll()].filter((o): o is Core.Webgl.IElement3D => o.type === 'Element3D')
+    return viewer.selection.getAll().filter((o): o is Core.Webgl.IElement3D => o.type === 'Element3D')
   }
 
   const vim = useStateRef<Core.Webgl.IWebglVim>(getVim())
@@ -35,34 +35,37 @@ export function useViewerState (viewer: Core.Webgl.Viewer) : ViewerState {
     filteredElements.set(filtered)
   }
 
-  vim.useOnChange(async (v) => {
+  const refreshElements = async () => {
+    const v = vim.get()
+    if (!v) { allElements.set([]); return }
     const elements = await getElements(v)
     allElements.set(elements)
-  })
+  }
 
-  filter.useOnChange((f) => {
-    applyFilter()
-  })
+  vim.useOnChange(() => refreshElements())
 
-  allElements.useOnChange((elements) => {
-    applyFilter()
-  })
-
+  // Subscribe to onGeometryLoaded on the current vim.
+  // Handles open() + vim.load(subset) where geometry arrives after the vim is added.
   useEffect(() => {
-    // register to viewer state changes
-    const subLoad = viewer.onVimLoaded.subscribe(() => {
-      vim.set(getVim())
+    const sub = (v: Core.Webgl.IWebglVim) => v?.onGeometryLoaded.subscribe(() => refreshElements())
+    let unsub = sub(vim.get())
+    const outerUnsub = vim.onChange.subscribe((v) => {
+      unsub?.()
+      unsub = sub(v)
     })
-    const subSelect = viewer.selection.onSelectionChanged.subscribe(() => {
-      selection.set(getSelection())
-    })
-
-    // Clean up
-    return () => {
-      subLoad()
-      subSelect()
-    }
+    return () => { unsub?.(); outerUnsub() }
   }, [])
+
+  filter.useOnChange(() => {
+    applyFilter()
+  })
+
+  allElements.useOnChange(() => {
+    applyFilter()
+  })
+
+  useSubscribe(viewer.onVimLoaded, () => vim.set(getVim()))
+  useSubscribe(viewer.selection.onSelectionChanged, () => selection.set(getSelection()))
 
   return {
     vim,

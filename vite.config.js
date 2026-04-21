@@ -11,12 +11,14 @@ export default defineConfig({
       name: 'VIMReact'
     },
     rollupOptions: {
-      external: ['react', 'react-dom'],
+      external: ['react', 'react-dom', /^react\//, /^react-dom\//],
       output: {
         // Save react and react-dom as globals so they can be provided as external dependencies
         globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM'
+          'react': 'React',
+          'react/jsx-runtime': 'React',
+          'react-dom': 'ReactDOM',
+          'react-dom/client': 'ReactDOM'
         },
 
         // Keep style.css name

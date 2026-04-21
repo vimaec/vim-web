@@ -38,7 +38,7 @@ export type VimLoadingState = {
   status: VimLoadingStatus;
 
   /**
-   * Loading progress as a percentage from 0 to 100.
+   * Loading progress as a fraction from 0 to 1.
    */
   progress: number;
 }

@@ -3,4 +3,6 @@ dist
 docs
 docs2
 src/pages/*.vim
+.claude/settings.json
 .claude/settings.local.json
+.claude/worktrees/

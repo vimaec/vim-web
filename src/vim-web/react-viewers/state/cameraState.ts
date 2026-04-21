@@ -3,6 +3,7 @@
  */
 
 import { useEffect } from 'react'
+import { useSubscribe } from '../helpers/reactUtils'
 import * as THREE from 'three'
 import { SectionBoxApi } from './sectionBoxState'
 import { FuncRef, StateRef, useFuncRef, useStateRef } from '../helpers/reactUtils'
@@ -46,25 +47,24 @@ interface ICameraAdapter {
   getSceneBox: () => Promise<THREE.Box3 | undefined>
 }
 
-export function useFraming(adapter: ICameraAdapter, section: SectionBoxApi){
+export function useFraming(adapter: ICameraAdapter, section: SectionBoxApi, initialAutoCamera = false){
 
-  const autoCamera = useStateRef(false)
+  const autoCamera = useStateRef(initialAutoCamera)
   autoCamera.useOnChange((v) => {
     if (v) {frameSelection.call()}
   });
 
+  const refresh = () => {
+    if(autoCamera.get()) frameSelection.call()
+  }
+
   useEffect(() => {
-    const refresh = () => {
-      if(autoCamera.get()){
-        frameSelection.call()
-      }
-    }
-    
     // Reframe on section box change.
     section.sectionSelection.update(prev => async () => { await prev(); refresh() })
     section.sectionScene.update(prev => async () => { await prev(); refresh() })
-    adapter.onSelectionChanged.sub(refresh)
-  },[])
+  }, [])
+
+  useSubscribe(adapter.onSelectionChanged, refresh)
 
   const reset = useFuncRef(() => adapter.resetCamera(1))
   const getSelectionBox = useFuncRef(adapter.getSelectionBox)

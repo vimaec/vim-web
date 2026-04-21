@@ -56,7 +56,6 @@ export class DecoderWithWorker {
     // Listen for decoded frames from the worker
     this._worker.onmessage = (event) => {
       const msg = event.data
-      console.log('received message from worker', msg)
       if (msg.type === 'frame') {
         this.renderFrame(msg.frame)
       }
@@ -69,7 +68,6 @@ export class DecoderWithWorker {
   // Function to send frames to the worker
   sendFrameToWorker (frame: VideoFrameMessage) {
   // Transfer the dataBuffer to avoid copying
-    // console.log('sending message to worker')
     this._worker.postMessage({
       type: 'frame',
       timestamp: frame.header.timestamp,

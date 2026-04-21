@@ -34,7 +34,7 @@ export function createContainer (element?: HTMLElement): Container {
   if (root === undefined) {
     root = document.createElement('div')
     document.body.append(root)
-    root.classList.add('vc-inset-0')
+    root.style.inset = '0'
   }
   // UI relies on absolute positioning
   root.style.position = 'absolute'
@@ -42,11 +42,11 @@ export function createContainer (element?: HTMLElement): Container {
 
   // container for viewer canvases
   const gfx = document.createElement('div')
-  gfx.className = 'vim-gfx vc-absolute vc-inset-0 vc-pointer-events-none'
+  gfx.className = 'vim-gfx'
 
   // container for ui
   const ui = document.createElement('div')
-  ui.className = 'vim-ui vc-absolute vc-inset-0'
+  ui.className = 'vim-ui'
 
   root.append(gfx)
   root.append(ui)

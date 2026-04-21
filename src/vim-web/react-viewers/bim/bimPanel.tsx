@@ -2,17 +2,17 @@
  * @module viw-webgl-react
  */
 
-import React, { useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import * as Core from '../../core-viewers'
 
-import { whenAllTrue, whenFalse, whenSomeTrue, whenTrue } from '../helpers/utils'
+import { whenAllTrue, whenSomeTrue, whenTrue } from '../helpers/utils'
 import { FramingApi } from '../state/cameraState'
 import { IsolationApi } from '../state/sharedIsolation'
 import { ViewerState } from '../webgl/viewerState'
 import { BimInfoPanelApi } from './bimInfoData'
 import { BimInfoPanel } from './bimInfoPanel'
 import { BimSearch } from './bimSearch'
-import { BimTree, TreeActionApi } from './bimTree'
+import { BimTree } from './bimTreeHeadless'
 import { toTreeData } from './bimTreeData'
 import { WebglSettings } from '../webgl/settings'
 import { isFalse } from '../settings/userBoolean'
@@ -27,7 +27,6 @@ export function OptionalBimPanel (props: {
   isolation: IsolationApi
   visible: boolean
   settings: WebglSettings
-  treeRef: React.MutableRefObject<TreeActionApi | undefined>
   bimInfoRef: BimInfoPanelApi
 }) {
   return whenSomeTrue([
@@ -52,7 +51,6 @@ export function BimPanel (props: {
   isolation: IsolationApi
   visible: boolean
   settings: WebglSettings
-  treeRef: React.MutableRefObject<TreeActionApi | undefined>
   bimInfoRef: BimInfoPanelApi
 }) {
 
@@ -66,27 +64,26 @@ export function BimPanel (props: {
   const fullTree = isFalse(props.settings.ui.panelBimInfo)
   const fullInfo = isFalse(props.settings.ui.panelBimTree)
   return (
-    <div className={`vim-bim-panel vc-inset-0 vc-absolute vc-h-full vc-w-full ${fullTree ? 'full-tree' : ''} ${props.visible ? '' : 'vc-hidden'}`}>
+    <div className={`vim-bim-panel ${fullTree ? 'full-tree' : ''}`} data-hidden={!props.visible || undefined}>
       {whenTrue(props.settings.ui.panelBimTree,
-        <div className={`vim-bim-upper vc-flex vc-flex-col vc-absolute vc-w-full ${fullTree ? 'vc-h-full' : 'vc-h-[49%]'} `}>
-          {<h2
-            className="vim-bim-upper-title vc-title vc-text-xs vc-font-bold vc-uppercase">
-            Project Inspector
-          </h2>}
+        <div className='vim-bim-upper' data-full={fullTree || undefined}>
+          <div className="vim-bim-upper-title" data-tip="Project Inspector">Project Inspector</div>
           <BimSearch
             viewer={props.viewer}
             filter={props.viewerState.filter.get()}
             setFilter={props.viewerState.filter.set}
             count={props.viewerState.elements.get()?.length}
           />
-          <BimTree
-            actionRef={props.treeRef}
-            viewer={props.viewer}
-            framing={props.framing}
-            objects={props.viewerState.selection.get()}
-            isolation={props.isolation}
-            treeData={tree}
-          />
+          {props.viewerState.filter.get() && props.viewerState.elements.get()?.length === 0
+            ? <div className="vim-bim-no-results">No results for "{props.viewerState.filter.get()}"</div>
+            : <BimTree
+                viewer={props.viewer}
+                framing={props.framing}
+                selectedElements={props.viewerState.selection.get()}
+                isolation={props.isolation}
+                treeData={tree}
+              />
+          }
         </div>
       )}
       {
@@ -99,7 +96,7 @@ export function BimPanel (props: {
         divider())
       }
       {whenTrue(props.settings.ui.panelBimInfo,
-        <div className={`vim-bim-lower-container vc-absolute ${fullInfo ? 'vc-top-0' : 'vc-top-[50%]'} vc-bottom-0 vc-bottom vc-left-0 vc-right-0`}>
+        <div className='vim-bim-lower-container' data-full={fullInfo || undefined}>
           <BimInfoPanel
             object={last}
             vim={props.viewerState.vim.get()}
@@ -113,7 +110,7 @@ export function BimPanel (props: {
 }
 
 function divider () {
-  return <hr style={{ top: '50%' }} className="divider vc-absolute vc-w-full vc-border-gray-divider" />
+  return <hr className="vim-bim-divider" />
 }
 
 

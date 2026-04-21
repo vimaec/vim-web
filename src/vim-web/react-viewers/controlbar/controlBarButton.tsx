@@ -1,24 +1,25 @@
-import * as Style from './style'
 import { IconOptions } from '../icons'
+import { IconButton } from '../components'
+import { ButtonVariant } from './style'
 
 export interface IControlBarButton {
   id: string,
   enabled?: (() => boolean) | undefined
-  tip: string
+  tip: string | (() => string)
   action: () => void
-  icon: (options?: IconOptions) => JSX.Element
+  icon: (options?: IconOptions) => React.ReactElement
   isOn?: () => boolean
-  style?: (on: boolean) => string
+  variant?: ButtonVariant
 }
 
 export function createButton (button: IControlBarButton) {
   if (button.enabled !== undefined && !button.enabled()) return null
-  const style = (button.style?? Style.buttonDefaultStyle)(button.isOn?.())
+  const variant = button.variant ?? 'default'
+  const on = button.isOn?.() ?? false
 
   return (
-    <button key={button.id} id={button.id} data-tip={button.tip} onClick={button.action} className={style} type="button">
-      {button.icon({ className: 'vc-max-h-[80%]' })}
-    </button>
+    <IconButton key={button.id} variant={variant} on={on} data-tip={typeof button.tip === 'function' ? button.tip() : button.tip} onClick={button.action}>
+      {button.icon()}
+    </IconButton>
   )
 }
-

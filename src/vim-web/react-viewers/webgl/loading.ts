@@ -15,6 +15,12 @@ type AddSettings = {
    * Default: true
    */
   autoFrame?: boolean
+  /**
+   * Pre-caches BIM parameter table columns in the background after loading.
+   * Eliminates the ~300ms delay on the first `getBimParameters()` call.
+   * Default: false
+   */
+  prewarmBim?: boolean
 }
 
 export type OpenSettings = Core.Webgl.VimPartialSettings & AddSettings
@@ -111,6 +117,7 @@ export class ComponentLoader {
   }
 
   private async initVim (vim: Core.Webgl.IWebglVim, settings: AddSettings, loadGeometry: boolean) {
+    if (settings.prewarmBim) vim.prewarmBimCache()
     if (loadGeometry) {
       await vim.load()
       if (settings.autoFrame !== false) {

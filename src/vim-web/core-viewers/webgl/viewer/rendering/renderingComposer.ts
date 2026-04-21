@@ -287,7 +287,7 @@ export class RenderingComposer {
    */
   render () {
     this._timer.update()
-    var delta = this._timer.getDelta()
+    const delta = this._timer.getDelta()
     // Render main scene to scene target
     this._renderPass.render(
       this._renderer,

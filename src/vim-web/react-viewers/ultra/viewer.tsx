@@ -1,36 +1,35 @@
 
 
+import { TooltipZone } from '../components/Tooltip'
 import * as Core from '../../core-viewers'
-import { useSettings } from '../settings/settingsState'
-import {useRef, RefObject, useEffect, useState } from 'react'
+import { createSettings } from '../settings/settingsState'
+import { disableLocalStorage } from '../settings/localStorage'
+import { useRef, RefObject, useState, forwardRef, useImperativeHandle, useEffect } from 'react'
+import { useSubscribe, useCustomizer } from '../helpers/reactUtils'
 import { Container, createContainer } from '../container'
 import { createRoot } from 'react-dom/client'
 import { Overlay } from '../panels/overlay'
 import { Modal, ModalApi } from '../panels/modal'
 import { getRequestErrorMessage } from './errors/ultraErrors'
 import { updateModal, updateProgress as modalProgress } from './modal'
-import { ControlBar, ControlBarCustomization } from '../controlbar/controlBar'
+import { ControlBar } from '../controlbar/controlBar'
 import { useUltraSectionBox } from './sectionBox'
 import { useUltraControlBar } from './controlBar'
 import { SectionBoxPanel } from '../panels/sectionBoxPanel'
 import { RestOfScreen } from '../panels/restOfScreen'
 import { LogoMemo } from '../panels/logo'
-import { whenTrue } from '../helpers/utils'
 import { useSideState } from '../state/sideState'
 import { UltraViewerApi } from './viewerApi'
-import ReactTooltip from 'react-tooltip'
 import { useUltraFraming } from './camera'
 import { useViewerInput } from '../state/viewerInputs'
 import { useUltraIsolation } from './isolation'
-import { IsolationPanel } from '../panels/isolationPanel'
+import { UltraIsolationPanel } from './isolationPanel'
 import { GenericPanelApi } from '../generic/genericPanel'
-import { ControllablePromise } from '../../utils'
 import { SettingsPanel } from '../settings/settingsPanel'
 import { SidePanelMemo } from '../panels/sidePanel'
 import { getDefaultUltraSettings, PartialUltraSettings, UltraSettings } from './settings'
 import { getUltraSettingsContent } from './settingsPanel'
-import { SettingsCustomization } from '../settings/settingsItem'
-import { isTrue } from '../settings/userBoolean'
+import { useUltraUiState } from '../state/uiState'
 
 
 /**
@@ -39,48 +38,42 @@ import { isTrue } from '../settings/userBoolean'
  *
  * @param container An optional container or DOM element. If none is provided, one will be created.
  * @param settings React UI feature toggles (panels, buttons). See {@link UltraSettings}.
- * @returns A promise resolving to the viewer API.
+ * @returns The viewer API.
  *
  * @example
- * const viewer = await React.Ultra.createViewer(document.getElementById('app'))
+ * const viewer = React.Ultra.createViewer(document.getElementById('app'))
  * await viewer.core.connect({ url: 'wss://server:8080' })
  * viewer.load({ url: 'model.vim' })
  */
-export function createUltraViewer (
+export async function createUltraViewer (
   container?: Container | HTMLElement,
-  settings?: PartialUltraSettings 
+  settings?: PartialUltraSettings
 ) : Promise<UltraViewerApi> {
-  
-  const controllablePromise = new ControllablePromise<UltraViewerApi>()
   const cmpContainer = container instanceof HTMLElement
     ? createContainer(container)
     : container ?? createContainer()
 
-  // Create the viewer and container
   const core = Core.Ultra.createViewer(cmpContainer.gfx)
 
-  // Create the React root
   const reactRoot = createRoot(cmpContainer.ui)
 
-  // Patch the viewer to clean up after itself
-  const attachDispose = (cmp : UltraViewerApi) => {
-    cmp.dispose = () => {
-      core.dispose()
-      cmpContainer.dispose()
-      reactRoot.unmount()
-    }
-    return cmp
-  }
+  const api = await new Promise<UltraViewerApi>(resolve => {
+    reactRoot.render(
+      <UltraViewerComponent
+        ref={(api) => { if (api) resolve(api) }}
+        container={cmpContainer}
+        core={core}
+        settings={settings}
+      />
+    )
+  })
 
-  reactRoot.render(
-    <UltraViewerComponent
-      container={cmpContainer}
-      core={core}
-      settings={settings}
-      onMount = {(cmp : UltraViewerApi) => controllablePromise.resolve(attachDispose(cmp))}
-    />
-  )
-  return controllablePromise.promise
+  api.dispose = () => {
+    core.dispose()
+    cmpContainer.dispose()
+    reactRoot.unmount()
+  }
+  return api
 }
 
 /**
@@ -90,93 +83,76 @@ export function createUltraViewer (
  * @param onMount A callback function triggered when the viewer is mounted. Receives a reference to the Vim viewer.
  * @param settings Optional settings for configuring the Vim viewer's behavior.
  */
-export function UltraViewerComponent (props: {
+export const UltraViewerComponent = forwardRef<UltraViewerApi, {
   container: Container
   core: Core.Ultra.Viewer
   settings?: PartialUltraSettings
-  onMount: (viewer: UltraViewerApi) => void}) {
+}>((props, ref) => {
 
-  const settings = useSettings(props.settings ?? {}, getDefaultUltraSettings())
-  const sectionBoxRef = useUltraSectionBox(props.core)
-  const framing = useUltraFraming(props.core, sectionBoxRef)
+  const settings = createSettings(props.settings ?? {}, getDefaultUltraSettings())
+  const { ui: uiApi, uiValues: uiState } = useUltraUiState(settings.ui)
+  const sectionBoxRef = useUltraSectionBox(props.core, settings.sectionBox)
+  const framing = useUltraFraming(props.core, sectionBoxRef, settings.camera.autoCamera)
   const isolationPanelHandle = useRef<GenericPanelApi>(null)
   const sectionBoxPanelHandle = useRef<GenericPanelApi>(null)
   const modalHandle = useRef<ModalApi>(null)
 
   const side = useSideState(true, 400)
   const [_, setSelectState] = useState(0)
-  const [controlBarCustom, setControlBarCustom] = useState<ControlBarCustomization>(() => c => c)
-  const isolationRef = useUltraIsolation(props.core)
-  const controlBar = useUltraControlBar(
-    props.core,
-    sectionBoxRef,
-    isolationRef,
-    framing,
-    settings.value,
-    side,
-    modalHandle.current,
-    _ =>_
+  const isolationRef = useUltraIsolation(props.core, settings.isolation.showGhost)
+  const [controlBar, controlBarApi] = useCustomizer(
+    useUltraControlBar(props.core, sectionBoxRef, isolationRef, framing, settings, side, modalHandle)
   )
-  
+
   useViewerInput(props.core.inputs, framing)
 
-  // On First render
   useEffect(() => {
-    // Close isolation panel when offset panel is shown and vice versa
-    sectionBoxRef.showOffsetPanel.onChange.subscribe((show) => {
-      if(show) {
-        isolationRef.showPanel.set(false)
-      }
-    })
-    isolationRef.showPanel.onChange.subscribe((show) => {
-      if(show) {
-        sectionBoxRef.showOffsetPanel.set(false)
-      }
-    })
-
-    props.core.onStateChanged.subscribe(state => updateModal(modalHandle, state))
-    props.core.selection.onSelectionChanged.subscribe(() =>{
-      setSelectState(i => (i+1)%2)
-    } )
-    props.onMount({
-      type: 'ultra',
-      container: props.container,
-      core: props.core,
-      get modal() { return modalHandle.current },
-      isolation: isolationRef,
-      sectionBox: sectionBoxRef,
-      framing,
-      settings: {
-        update : settings.update,
-        register : settings.register,
-        customize : (c: SettingsCustomization<UltraSettings>) => settings.customizer.set(c)
-      },
-      get isolationPanel(){
-        return isolationPanelHandle.current
-      },
-      get sectionBoxPanel(){
-        return sectionBoxPanelHandle.current
-      },
-      dispose: () => {},
-      controlBar: {
-        customize: (v) => setControlBarCustom(() => v)
-      },
-      load: patchLoad(props.core, modalHandle),
-      unload: (vim) => props.core.unload(vim)
-    })
+    if (!settings.capacity.canReadLocalStorage) disableLocalStorage()
   }, [])
+
+  useEffect(() => {
+    if (settings.cursor?.default !== undefined) {
+      props.core.inputs.pointerMode = settings.cursor.default
+    }
+  }, [])
+
+  useImperativeHandle(ref, () => ({
+    type: 'ultra' as const,
+    container: props.container,
+    core: props.core,
+    get modal() { return modalHandle.current },
+    isolation: isolationRef,
+    sectionBox: sectionBoxRef,
+    framing,
+    get isolationPanel() { return isolationPanelHandle.current },
+    get sectionBoxPanel() { return sectionBoxPanelHandle.current },
+    dispose: () => {},
+    ui: uiApi,
+    controlBar: controlBarApi,
+    load: patchLoad(props.core, modalHandle),
+    unload: (vim) => props.core.unload(vim)
+  }), [])
+
+  useSubscribe(sectionBoxRef.showOffsetPanel.onChange, (show) => {
+    if(show) isolationRef.showPanel.set(false)
+  })
+  useSubscribe(isolationRef.showPanel.onChange, (show) => {
+    if(show) sectionBoxRef.showOffsetPanel.set(false)
+  })
+  useSubscribe(props.core.onStateChanged, state => updateModal(modalHandle, state))
+  useSubscribe(props.core.selection.onSelectionChanged, () => setSelectState(i => (i+1)%2))
+
 
   const sidePanel = () => (
     <>
       <SettingsPanel
         visible={side.getContent() === 'settings'}
-        content={getUltraSettingsContent(props.core)}
-        settings={settings}
+        content={getUltraSettingsContent(isolationRef)}
       />
     </>
   )
 
-  return <>
+  return <TooltipZone><>
   <SidePanelMemo
     container={props.container}
     viewer={props.core}
@@ -185,27 +161,20 @@ export function UltraViewerComponent (props: {
   />
   <RestOfScreen side={side} content={() => {
     return <>
-    {whenTrue(settings.value.ui.panelLogo, <LogoMemo/>)}
+    {uiState.panelLogo && <LogoMemo/>}
     <Overlay canvas={props.core.viewport.canvas}/>
     <ControlBar
-      content={controlBarCustom(controlBar)}
-      show={isTrue(settings.value.ui.panelControlBar)}
+      content={controlBar}
+      show={uiState.panelControlBar}
     />
     <SectionBoxPanel ref={sectionBoxPanelHandle} state={sectionBoxRef}/>
-    <IsolationPanel ref={isolationPanelHandle} state={isolationRef}/>
+    <UltraIsolationPanel ref={isolationPanelHandle} isolation={isolationRef}/>
   </>
   }}/>
   
   <Modal ref={modalHandle} canFollowLinks= {true}/>
-  <ReactTooltip
-    multiline={true}
-    arrowColor="transparent"
-    type="light"
-    className="!vc-max-w-xs !vc-border !vc-border-solid !vc-border-gray-medium !vc-bg-white !vc-text-xs !vc-text-gray-darkest !vc-opacity-100 !vc-shadow-[2px_6px_15px_rgba(0,0,0,0.3)] !vc-transition-opacity"
-    delayShow={200}
-  />
-  </>
-}
+  </></TooltipZone>
+})
 
 function patchLoad(viewer: Core.Ultra.Viewer, modal: RefObject<ModalApi>) {
   return function load (source: Core.Ultra.VimSource): Core.Ultra.IUltraLoadRequest {

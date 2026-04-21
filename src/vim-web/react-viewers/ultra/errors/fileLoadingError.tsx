@@ -13,7 +13,7 @@ export function serverFileLoadingError (url: string): MessageBoxProps {
 
 function body (url : string) {
   return (
-    <div className={style.vcRoboto}>
+    <>
       {style.mainText(<>
         We encountered an error loading the VIM file in VIM Ultra.
       </>)}
@@ -25,6 +25,6 @@ function body (url : string) {
         'Ensure the VIM URL points to a valid VIM file',
         'Clear your VIM Ultra download cache'
       ])}
-    </div>
+    </>
   )
 }

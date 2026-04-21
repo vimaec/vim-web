@@ -287,7 +287,6 @@ export class ReadMarshal{
     return value
   }
 
-  //TODO: Maybe wrong
   public readUInt64(): bigint {
     const low = this.readUInt();  // lower 32 bits
     const high = this.readUInt(); // upper 32 bits

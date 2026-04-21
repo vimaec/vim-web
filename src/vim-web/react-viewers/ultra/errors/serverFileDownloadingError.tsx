@@ -17,9 +17,9 @@ export function serverFileDownloadingError (url : string, authToken?: string, se
   }
 }
 
-function body (url : string, authToken?: string, server?: string): JSX.Element {
+function body (url : string, authToken?: string, server?: string): React.ReactElement {
   return (
-    <div className={style.vcRoboto}>
+    <>
       {style.mainText(<>
         We encountered an error downloading the VIM file in VIM Ultra.
       </>)}
@@ -34,6 +34,6 @@ function body (url : string, authToken?: string, server?: string): JSX.Element {
         'Ensure the VIM URL is valid',
         'Check your network connection and access policies'
       ])}
-    </div>
+    </>
   )
 }

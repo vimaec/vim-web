@@ -1,194 +1,101 @@
 import { THREE } from "../..";
 import { Viewer } from "../../core-viewers/webgl";
-import { isTrue } from "../settings/userBoolean";
-import { SettingsItem } from "../settings/settingsItem";
+import { GenericEntryType } from '../generic/genericField'
 import { SettingsPanelKeys } from "../settings/settingsKeys";
-import { getControlBarCameraSettings, getControlBarCursorSettings, getControlBarSectionBoxSettings, getControlBarVisibilitySettings } from "../settings/settingsPanelContent";
+import { getIsolationSettings } from "../settings/settingsPanelContent";
+import { IsolationApi } from "../state/sharedIsolation";
+import { RenderSettingsApi } from "../state/renderSettings";
 import { WebglSettings } from "./settings";
+import { createState } from "../helpers/reactUtils";
+import { UiRefs } from "../state/uiState";
 
-export function getControlBarVariousSettings(): SettingsItem<WebglSettings>[] {
-  return [
-    {
-      type: 'subtitle',
-      key: SettingsPanelKeys.ControlBarMiscSubtitle,
-      title: 'Control Bar - Settings',
-    },
-    {
-      type: 'toggle',
-      key: SettingsPanelKeys.ControlBarMiscShowProjectInspectorButtonToggle,
-      label: 'Project Inspector',
-      getter: (s) => s.ui.miscProjectInspector,
-      setter: (s, v) => (s.ui.miscProjectInspector = v),
-    },
-    {
-      type: 'toggle',
-      key: SettingsPanelKeys.ControlBarMiscShowSettingsButtonToggle,
-      label: 'Settings',
-      getter: (s) => s.ui.miscSettings,
-      setter: (s, v) => (s.ui.miscSettings = v),
-    },
-    {
-      type: 'toggle',
-      key: SettingsPanelKeys.ControlBarMiscShowHelpButtonToggle,
-      label: 'Help',
-      getter: (s) => s.ui.miscHelp,
-      setter: (s, v) => (s.ui.miscHelp = v),
-    },
-    {
-      type: 'toggle',
-      key: SettingsPanelKeys.ControlBarMiscShowMaximiseButtonToggle,
-      label: 'Maximise',
-      getter: (s) => s.ui.miscMaximise,
-      setter: (s, v) => (s.ui.miscMaximise = v),
-    },
-  ]
-}
-
-
-
-export function getPanelsVisibilitySettings(): SettingsItem<WebglSettings>[] {
-  return [
-    {
-      type: 'subtitle',
-      key: SettingsPanelKeys.PanelsSubtitle,
-      title: 'Panels Visibility',
-    },
-    {
-      type: 'toggle',
-      key: SettingsPanelKeys.PanelsShowLogoToggle,
-      label: 'Logo',
-      getter: (s) => s.ui.panelLogo,
-      setter: (s, v) => (s.ui.panelLogo = v),
-    },
-    {
-      type: 'toggle',
-      key: SettingsPanelKeys.PanelsShowBimTreeToggle,
-      label: 'Bim Tree',
-      getter: (s) => s.ui.panelBimTree,
-      setter: (s, v) => (s.ui.panelBimTree = v),
-    },
-    {
-      type: 'toggle',
-      key: SettingsPanelKeys.PanelsShowBimInfoToggle,
-      label: 'Bim Info',
-      getter: (s) => s.ui.panelBimInfo,
-      setter: (s, v) => (s.ui.panelBimInfo = v),
-    },
-    {
-      type: 'toggle',
-      key: SettingsPanelKeys.PanelsShowAxesPanelToggle,
-      label: 'Axes',
-      getter: (s) => s.ui.panelAxes,
-      setter: (s, v) => (s.ui.panelAxes = v),
-    },
-    {
-      type: 'toggle',
-      key: SettingsPanelKeys.PanelsShowPerformancePanelToggle,
-      label: 'Performance',
-      getter: (s) => s.ui.panelPerformance,
-      setter: (s, v) => (s.ui.panelPerformance = v),
-    },
-    {
-      type: 'toggle',
-      key: SettingsPanelKeys.ControlBarShowControlBarToggle,
-      label: 'Control Bar',
-      getter: (s) => s.ui.panelControlBar,
-      setter: (s, v) => (s.ui.panelControlBar = v),
-    },
-  ]
-}
-
-export function getInputsSettings(
-  viewer: Viewer,
-): SettingsItem<WebglSettings>[] {
-  return [
-    {
-      type: 'subtitle',
-      key: SettingsPanelKeys.InputsSubtitle,
-      title: 'Inputs',
-    },
-    {
-      type: 'box',
-      key: SettingsPanelKeys.InputsScrollSpeedBox,
-      label: 'Scroll Speed',
-      info: '[0.1,10]',
-      transform: (n) => THREE.MathUtils.clamp(n, 0.1, 10),
-      getter: (_s) => viewer.inputs.scrollSpeed,
-      setter: (_s, v) => {
-        viewer.inputs.scrollSpeed = v
-      },
-    },
-  ]
-}
-
-function getAxesPanelSettings(): SettingsItem<WebglSettings>[] {
-  return [
-    {
-      type: 'subtitle',
-      key: SettingsPanelKeys.AxesSubtitle,
-      title: 'Axes Panel',
-    },
-    {
-      type: 'toggle',
-      key: SettingsPanelKeys.AxesShowOrthographicButtonToggle,
-      label: 'Orthographic Camera',
-      getter: (s) => s.ui.axesOrthographic,
-      setter: (s, v) => (s.ui.axesOrthographic = v),
-    },
-    {
-      type: 'toggle',
-      key: SettingsPanelKeys.AxesShowResetCameraButtonToggle,
-      label: 'Reset Camera',
-      getter: (s) => s.ui.axesHome,
-      setter: (s, v) => (s.ui.axesHome = v),
-    },
-  ]
-}
-
-export function getControlBarMeasureSettings(): SettingsItem<WebglSettings>[] {
-  return [
-    {
-      type: 'subtitle',
-      key: SettingsPanelKeys.ControlBarToolsSubtitle,
-      title: 'Control Bar - Measurement',
-    },
-    {
-      type: 'toggle',
-      key: SettingsPanelKeys.ControlBarToolsShowMeasuringModeButtonToggle,
-      label: 'Enable',
-      getter: (s) => s.ui.measureEnable,
-      setter: (s, v) => (s.ui.measureEnable = v),
-    },
-  ]
+function tog(
+  id: string,
+  label: string,
+  key: keyof WebglSettings['ui'],
+  src: WebglSettings['ui'],
+  refs: UiRefs,
+): GenericEntryType[] {
+  if (src[key] === 'AlwaysTrue' || src[key] === 'AlwaysFalse') return []
+  return [{ type: 'bool', id, label, state: refs[key] }]
 }
 
 export function getWebglSettingsContent(
   viewer: Viewer,
-): SettingsItem<WebglSettings>[] {
-  return [
-    ...getInputsSettings(viewer),
-    ...getPanelsVisibilitySettings(),
-    ...getAxesPanelSettings(),
-    ...getControlBarCursorSettings(),
-    ...getControlBarCameraSettings(),
-    ...getControlBarVisibilitySettings(),
-    ...getControlBarMeasureSettings(),
-    ...getControlBarSectionBoxSettings(),
-    ...getControlBarVariousSettings(),
-  ]
-}
+  isolation: IsolationApi,
+  renderSettings: RenderSettingsApi,
+  refs: UiRefs,
+  srcUi: WebglSettings['ui'],
+): GenericEntryType[] {
+  const t = (id: string, label: string, key: keyof WebglSettings['ui']) =>
+    tog(id, label, key, srcUi, refs)
 
-/**
- * Apply given vim viewer settings to the given viewer.
- */
-export function applyWebglSettings (settings: WebglSettings) {
-  // Show/Hide performance gizmo
-  const performance = document.getElementsByClassName('vim-performance-div')[0]
-  if (performance) {
-    if (isTrue(settings.ui.panelPerformance)) {
-      performance.classList.remove('vc-hidden')
-    } else {
-      performance.classList.add('vc-hidden')
-    }
-  }
+  const scrollSpeedState = createState(viewer.inputs.scrollSpeed)
+  scrollSpeedState.onChange.subscribe(v => { viewer.inputs.scrollSpeed = v })
+
+  const isolationEntries = getIsolationSettings(isolation, renderSettings).filter(e => e.type !== 'section')
+
+  return [
+    { type: 'section', id: 'inputs', label: 'Inputs' },
+    {
+      type: 'number',
+      id: SettingsPanelKeys.InputsScrollSpeedBox,
+      label: 'Scroll Speed',
+      info: '[0.1,10]',
+      transform: (n) => THREE.MathUtils.clamp(n, 0.1, 10),
+      state: scrollSpeedState,
+    },
+
+    { type: 'section', id: 'renderSettings', label: 'Render Settings' },
+    ...isolationEntries,
+
+    { type: 'group', id: 'ui', label: 'UI' },
+    { type: 'section', id: SettingsPanelKeys.PanelsSubtitle, label: 'Panels' },
+    ...t(SettingsPanelKeys.PanelsShowLogoToggle, 'Logo', 'panelLogo'),
+    ...t(SettingsPanelKeys.ControlBarShowControlBarToggle, 'Control Bar', 'panelControlBar'),
+    ...t(SettingsPanelKeys.PanelsShowAxesPanelToggle, 'Axes', 'panelAxes'),
+    ...t(SettingsPanelKeys.PanelsShowPerformancePanelToggle, 'Performance', 'panelPerformance'),
+    ...t(SettingsPanelKeys.PanelsShowBimTreeToggle, 'Bim Tree', 'panelBimTree'),
+    ...t(SettingsPanelKeys.PanelsShowBimInfoToggle, 'Bim Info', 'panelBimInfo'),
+
+    { type: 'section', id: SettingsPanelKeys.AxesSubtitle, label: 'Axes Panel' },
+    ...t(SettingsPanelKeys.AxesShowOrthographicButtonToggle, 'Orthographic Camera', 'axesOrthographic'),
+    ...t(SettingsPanelKeys.AxesShowResetCameraButtonToggle, 'Reset Camera', 'axesHome'),
+
+    { type: 'section', id: SettingsPanelKeys.ControlBarCursorsSubtitle, label: 'Cursors' },
+    ...t(SettingsPanelKeys.ControlBarCursorsShowOrbitButtonToggle, 'Orbit', 'cursorOrbit'),
+    ...t(SettingsPanelKeys.ControlBarCursorsShowLookAroundButtonToggle, 'Look Around', 'cursorLookAround'),
+    ...t(SettingsPanelKeys.ControlBarCursorsShowPanButtonToggle, 'Pan', 'cursorPan'),
+    ...t(SettingsPanelKeys.ControlBarCursorsShowZoomButtonToggle, 'Zoom', 'cursorZoom'),
+
+    { type: 'section', id: SettingsPanelKeys.ControlBarCameraSubtitle, label: 'Camera' },
+    ...t(SettingsPanelKeys.ControlBarAutoCamera, 'Auto Camera', 'cameraAuto'),
+    ...t(SettingsPanelKeys.ControlBarFrameAll, 'Frame Scene', 'cameraFrameScene'),
+    ...t(SettingsPanelKeys.ControlBarFrameSelection, 'Frame Selection', 'cameraFrameSelection'),
+
+    { type: 'section', id: SettingsPanelKeys.ControlBarSectioningSubtitle, label: 'Section Box' },
+    ...t(SettingsPanelKeys.ControlBarSectioningEnable, 'Enable', 'sectioningEnable'),
+    ...t(SettingsPanelKeys.ControlBarSectioningFitToSelection, 'Fit to Selection', 'sectioningFitToSelection'),
+    ...t(SettingsPanelKeys.ControlBarSectioningReset, 'Reset', 'sectioningReset'),
+    ...t(SettingsPanelKeys.ControlBarSectioningShow, 'Show', 'sectioningShow'),
+    ...t(SettingsPanelKeys.ControlBarSectioningAuto, 'Auto', 'sectioningAuto'),
+    ...t(SettingsPanelKeys.ControlBarSectioningSettings, 'Settings', 'sectioningSettings'),
+
+    { type: 'section', id: SettingsPanelKeys.ControlBarToolsSubtitle, label: 'Measure' },
+    ...t(SettingsPanelKeys.ControlBarToolsShowMeasuringModeButtonToggle, 'Enable', 'measureEnable'),
+
+    { type: 'section', id: SettingsPanelKeys.ControlBarSubtitle, label: 'Visibility' },
+    ...t(SettingsPanelKeys.ControlBarVisibilityClearSelection, 'Clear Selection', 'visibilityClearSelection'),
+    ...t(SettingsPanelKeys.ControlBarVisibilityShowAll, 'Show All', 'visibilityShowAll'),
+    ...t(SettingsPanelKeys.ControlBarVisibilityToggle, 'Toggle', 'visibilityToggle'),
+    ...t(SettingsPanelKeys.ControlBarVisibilityIsolate, 'Isolate', 'visibilityIsolate'),
+    ...t(SettingsPanelKeys.ControlBarVisibilityAutoIsolate, 'Auto Isolate', 'visibilityAutoIsolate'),
+    ...t(SettingsPanelKeys.ControlBarVisibilitySettings, 'Settings', 'visibilitySettings'),
+
+    { type: 'section', id: SettingsPanelKeys.ControlBarMiscSubtitle, label: 'Misc' },
+    ...t(SettingsPanelKeys.ControlBarMiscShowProjectInspectorButtonToggle, 'Project Inspector', 'miscProjectInspector'),
+    ...t(SettingsPanelKeys.ControlBarMiscShowSettingsButtonToggle, 'Settings', 'miscSettings'),
+    ...t(SettingsPanelKeys.ControlBarMiscShowHelpButtonToggle, 'Help', 'miscHelp'),
+    ...t(SettingsPanelKeys.ControlBarMiscShowMaximiseButtonToggle, 'Maximise', 'miscMaximise'),
+  ]
 }

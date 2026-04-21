@@ -11,9 +11,9 @@ export function serverCompatibilityError (url: string, localVersion: string, rem
   }
 }
 
-function body (url: string, localVersion: string, remoteVersion: string): JSX.Element {
+function body (url: string, localVersion: string, remoteVersion: string): React.ReactElement {
   return (
-    <div className={style.vcRoboto}>
+    <>
       {style.mainText(<>
         The VIM Ultra version is incompatible with this visual.
       </>)}
@@ -28,6 +28,6 @@ function body (url: string, localVersion: string, remoteVersion: string): JSX.El
         'Update this visual to a compatible version.',
         'Start a compatible version of VIM Ultra.'
       ]) }
-    </div>
+    </>
   )
 }

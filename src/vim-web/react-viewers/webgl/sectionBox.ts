@@ -1,8 +1,9 @@
 // useVimSectionBox.ts
 import * as Core from '../../core-viewers';
 import {ISectionBoxAdapter, SectionBoxApi, useSectionBox } from '../state/sectionBoxState';
+import { SectionBoxSettings } from './settings';
 
-export function useWebglSectionBox(viewer: Core.Webgl.Viewer): SectionBoxApi {
+export function useWebglSectionBox(viewer: Core.Webgl.Viewer, initialState?: SectionBoxSettings): SectionBoxApi {
   const vimAdapter: ISectionBoxAdapter = {
     setActive: (b) => {
       viewer.gizmos.sectionBox.active = b;
@@ -18,5 +19,5 @@ export function useWebglSectionBox(viewer: Core.Webgl.Viewer): SectionBoxApi {
     getSceneBox: () => Promise.resolve(viewer.renderer.getBoundingBox()),
     onSelectionChanged: viewer.selection.onSelectionChanged,
   };
-  return useSectionBox(vimAdapter);
+  return useSectionBox(vimAdapter, initialState);
 }

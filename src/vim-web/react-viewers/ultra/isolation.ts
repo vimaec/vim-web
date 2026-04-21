@@ -1,178 +1,139 @@
-import { IIsolationAdapter, useSharedIsolation as useSharedIsolation, VisibilityStatus } from "../state/sharedIsolation";
-import * as Core from "../../core-viewers";
-import { useStateRef } from "../helpers/reactUtils";
-import { VisibilityState, type IVisibilitySynchronizer } from "../../core-viewers/ultra/visibility";
+import { IIsolationAdapter, useSharedIsolation, VisibilityStatus } from '../state/sharedIsolation'
+import * as Core from '../../core-viewers'
+import { createState } from '../helpers/reactUtils'
+import { VisibilityState, type IVisibilitySynchronizer } from '../../core-viewers/ultra/visibility'
 
 // Internal access — these properties exist on concrete classes but are hidden from public API
 type Viewer = Core.Ultra.Viewer
 type Vim = Core.Ultra.IUltraVim & { readonly visibility: IVisibilitySynchronizer }
 type Element3D = Core.Ultra.IUltraElement3D & { state: VisibilityState }
 
-export function useUltraIsolation(viewer: Viewer){
-  const adapter = createAdapter(viewer)
+export function useUltraIsolation(viewer: Viewer, showGhostDefault?: boolean) {
+  const adapter = createAdapter(viewer, showGhostDefault)
   return useSharedIsolation(adapter)
 }
 
-function createAdapter(viewer: Viewer): IIsolationAdapter {
+function createAdapter(viewer: Viewer, showGhostDefault?: boolean): IIsolationAdapter {
+  const ghost = createState<boolean>(showGhostDefault ?? false)
 
-  const ghost = useStateRef<boolean>(false);
+  const hideState = () => ghost.get() ? VisibilityState.GHOSTED : VisibilityState.HIDDEN
+  const hideHighlightedState = () => ghost.get() ? VisibilityState.GHOSTED_HIGHLIGHTED : VisibilityState.HIDDEN_HIGHLIGHTED
 
-  // Helper function to hide objects in ghost or hidden state
-  const hide = (objects: Element3D[] | 'all') =>{
-    const state = ghost.get() ? VisibilityState.GHOSTED : VisibilityState.HIDDEN
-    if(objects === 'all'){
+  /** Hide elements — respects ghost mode and preserves selection highlight. */
+  const hideElements = (objects: Element3D[] | 'all') => {
+    if (objects === 'all') {
       for (const vim of viewer.vims as Vim[]) {
-        vim.visibility.setStateForAll(state)
+        vim.visibility.setStateForAll(hideState())
       }
       return
     }
-
-    for(const obj of objects){
-      if(viewer.selection.has(obj)){
-        obj.state = state == VisibilityState.GHOSTED
-         ? VisibilityState.GHOSTED_HIGHLIGHTED
-         : VisibilityState.HIDDEN_HIGHLIGHTED
-      }
-      else{
-        obj.state = state
-      }
+    for (const obj of objects) {
+      obj.state = viewer.selection.has(obj) ? hideHighlightedState() : hideState()
     }
   }
 
   return {
-    onVisibilityChange  : viewer.renderer.onSceneUpdated,
+    onVisibilityChange: viewer.renderer.onSceneUpdated,
     onSelectionChanged: viewer.selection.onSelectionChanged,
     computeVisibility: () => getVisibilityState(viewer),
     hasSelection: () => viewer.selection.any(),
-    hasVisibleSelection: () => checkSelectionState(viewer, s => s === VisibilityState.VISIBLE || s === VisibilityState.HIGHLIGHTED),
-    hasHiddenSelection: () => checkSelectionState(viewer, s => s === VisibilityState.HIDDEN || s === VisibilityState.GHOSTED),
+    hasVisibleSelection: () => checkSelectionHasAny(viewer, s => s === VisibilityState.VISIBLE || s === VisibilityState.HIGHLIGHTED),
+    hasHiddenSelection: () => checkSelectionHasAny(viewer, s => s === VisibilityState.HIDDEN || s === VisibilityState.GHOSTED),
 
     clearSelection: () => viewer.selection.clear(),
 
     isolateSelection: () => {
-      hide('all')
-
-      for(const obj of viewer.selection.getAll() as Element3D[]){
+      hideElements('all')
+      for (const obj of viewer.selection.getAll() as Element3D[]) {
         obj.state = VisibilityState.HIGHLIGHTED
       }
     },
+
     hideSelection: () => {
-      const objs = viewer.selection.getAll() as Element3D[]
-      hide(objs)
+      hideElements(viewer.selection.getAll() as Element3D[])
     },
+
     showSelection: () => {
-      (viewer.selection.getAll() as Element3D[]).forEach(obj => {
+      for (const obj of viewer.selection.getAll() as Element3D[]) {
         obj.state = VisibilityState.VISIBLE
-      })
+      }
     },
 
     hideAll: () => {
-      hide('all')
-    },
-    showAll: () => {
-      for(const vim of viewer.vims as Vim[]){
-        vim.visibility.setStateForAll(VisibilityState.VISIBLE)
-      }
-      ;(viewer.selection.getAll() as Element3D[]).forEach(obj => {
-        obj.state = VisibilityState.HIGHLIGHTED
-      })
+      hideElements('all')
     },
 
-    // TODO: Change this api to use elements
-    isolate: (instances: number[]) => {
-      hide('all') // Hide all objects
-      ;(viewer.selection.getAll() as Element3D[]).forEach(obj => {
+    showAll: () => {
+      for (const vim of viewer.vims as Vim[]) {
+        vim.visibility.setStateForAll(VisibilityState.VISIBLE)
+      }
+      for (const obj of viewer.selection.getAll() as Element3D[]) {
         obj.state = VisibilityState.HIGHLIGHTED
-      })
+      }
     },
+
+    isolate: (instances: number[]) => {
+      hideElements('all')
+      for (const vim of viewer.vims) {
+        for (const i of instances) {
+          const obj = vim.getElement(i) as Element3D
+          if (obj) obj.state = viewer.selection.has(obj) ? VisibilityState.HIGHLIGHTED : VisibilityState.VISIBLE
+        }
+      }
+    },
+
     show: (instances: number[]) => {
-      for(const vim of viewer.vims){
-        for(const i of instances){
-          ;(vim.getElement(i) as Element3D).state = VisibilityState.VISIBLE
+      for (const vim of viewer.vims) {
+        for (const i of instances) {
+          const obj = vim.getElement(i) as Element3D
+          if (obj) obj.state = VisibilityState.VISIBLE
         }
       }
     },
 
     hide: (instances: number[]) => {
-      for(const vim of viewer.vims){
-        for(const i of instances){
+      for (const vim of viewer.vims) {
+        for (const i of instances) {
           const obj = vim.getElement(i) as Element3D
-          hide([obj])
+          if (obj) hideElements([obj])
         }
       }
-      const objs = viewer.selection.getAll() as Element3D[]
-      hide(objs)
     },
+
     showGhost: (show: boolean) => {
       ghost.set(show)
-
-      for(const vim of viewer.vims as Vim[]){
-        if(show){
+      for (const vim of viewer.vims as Vim[]) {
+        if (show) {
           vim.visibility.replaceState(VisibilityState.HIDDEN, VisibilityState.GHOSTED)
+          vim.visibility.replaceState(VisibilityState.HIDDEN_HIGHLIGHTED, VisibilityState.GHOSTED_HIGHLIGHTED)
         } else {
           vim.visibility.replaceState(VisibilityState.GHOSTED, VisibilityState.HIDDEN)
+          vim.visibility.replaceState(VisibilityState.GHOSTED_HIGHLIGHTED, VisibilityState.HIDDEN_HIGHLIGHTED)
         }
       }
     },
+
+    getShowGhost: () => ghost.get(),
     getGhostOpacity: () => viewer.renderer.ghostOpacity,
-    setGhostOpacity: (opacity: number) => {
-      viewer.renderer.ghostOpacity = opacity
-    },
-
-    setTransparency: (enabled: boolean) => {console.log("setTransparency not implemented")},
-
-    setOutlineEnabled: (_enabled: boolean) => {},
-    setOutlineQuality: (_quality: string) => {},
-    setOutlineThickness: (_thickness: number) => {},
-    setSelectionFillMode: (_mode: string) => {},
-    setSelectionOverlayOpacity: (_opacity: number) => {},
-
-    getShowRooms: () => true,
-    setShowRooms: (show: boolean) => {console.log("setShowRooms not implemented")},
-
-
-  };
+    setGhostOpacity: (opacity: number) => { viewer.renderer.ghostOpacity = opacity },
+  }
 }
 
-function checkSelectionState(viewer: Viewer, test: (state: VisibilityState) => boolean): boolean {
-  if(!viewer.selection.any()){
-    return false
-  }
-
-  return (viewer.selection.getAll() as Element3D[]).every(obj => test(obj.state))
+function checkSelectionHasAny(viewer: Viewer, test: (state: VisibilityState) => boolean): boolean {
+  if (!viewer.selection.any()) return false
+  return (viewer.selection.getAll() as Element3D[]).some(obj => test(obj.state))
 }
 
 function getVisibilityState(viewer: Viewer): VisibilityStatus {
-  let all = true;
-  let none = true;
-  let allButSelectionFlag = true;
-  let onlySelectionFlag = true;
-
-  for (let v of viewer.vims as Vim[]) {
+  let all = true
+  let none = true
+  for (const v of viewer.vims as Vim[]) {
     const allVisible = v.visibility.areAllInState([VisibilityState.VISIBLE, VisibilityState.HIGHLIGHTED])
     const allHidden = v.visibility.areAllInState([VisibilityState.HIDDEN, VisibilityState.GHOSTED])
-
     all = all && allVisible
     none = none && allHidden
-    onlySelectionFlag = onlySelection(viewer, v)
-    allButSelectionFlag = allButSelection(viewer, v)
   }
-
-  if (all) return 'all';
-  if (none) return 'none';
-  if (allButSelectionFlag) return 'allButSelection';
-  if (onlySelectionFlag) return 'onlySelection';
-
-  // If none of the above conditions are met, it must be 'some'
-  return 'some';
-}
-
-//returns true if only the selection is visible
-function onlySelection(viewer: Viewer, vim: Vim): boolean {
-  return false
-}
-
-//returns true if only the selection is hidden
-function allButSelection(viewer: Viewer, vim: Vim): boolean {
-  return false
+  if (all) return 'all'
+  if (none) return 'none'
+  return 'some'
 }

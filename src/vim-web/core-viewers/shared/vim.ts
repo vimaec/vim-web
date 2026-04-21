@@ -49,6 +49,13 @@ export interface IVim<T extends IVimElement> {
     getElementFromIndex(element: number): T | undefined
 
     /**
+     * Retrieves the element associated with the specified Revit unique ID string.
+     * @param uniqueId - The Revit unique ID string.
+     * @returns The element, or undefined if not found.
+     */
+    getElementFromUniqueId(uniqueId: string): T | undefined
+
+    /**
      * Retrieves all elements within the Vim.
      * @returns An array of all Vim objects.
      */

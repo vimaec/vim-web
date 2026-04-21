@@ -15,6 +15,7 @@ import {
 import { G3dSubset, ISubset } from './progressive/g3dSubset'
 import { VimMeshFactory } from './progressive/vimMeshFactory'
 import { IVim } from '../../shared/vim'
+import { SignalDispatcher, ISignal } from 'ste-signals'
 import { MappedG3d } from './progressive/mappedG3d'
 
 /**
@@ -67,12 +68,17 @@ export interface IWebglVim extends IVim<IElement3D> {
   subset(): ISubset
   /**
    * Loads geometry for the given subset, or all geometry if no subset is provided.
-   * Caller is responsible for not loading the same subset twice.
+   * Clears any previously loaded geometry first so meshes are never duplicated.
    * @param subset - The subset to load. Omit to load everything.
    */
   load(subset?: ISubset): Promise<void>
   /** Removes all loaded geometry from the renderer (does NOT unload the vim from the viewer). */
   clear(): void
+  /** Fires after `load(subset)` completes and new geometry is available. */
+  readonly onGeometryLoaded: ISignal
+  /** Pre-caches BIM parameter table columns so subsequent `getBimParameters()` calls are fast.
+   *  Call after loading if your application uses BIM data. No-op if already cached. */
+  prewarmBimCache(): Promise<void>
 }
 
 /** @internal */
@@ -123,6 +129,86 @@ export class Vim implements IWebglVim {
 
   private readonly _factory: VimMeshFactory
   private readonly _elementToObject = new Map<number, Element3D>()
+  private readonly _onGeometryLoaded = new SignalDispatcher()
+
+  async prewarmBimCache () {
+    await this.getParameterCache()
+  }
+
+  /** @internal Cached parameter + family table columns — loaded once, shared by all getBimParameters() calls. */
+  _parameterCache: {
+    elements: number[]
+    values: string[]
+    descriptorIndices: number[]
+    descriptorNames: string[]
+    descriptorGroups: string[]
+    /** element index → Set of related element indices (family type + family) with isInstance flag */
+    familyElements: Map<number, Map<number, boolean>>
+    /** element index → parameter indices in the elements/values/descriptors arrays */
+    parametersByElement: Map<number, number[]>
+  } | undefined
+
+  /** @internal */
+  async getParameterCache () {
+    if (this._parameterCache) return this._parameterCache
+    if (!this.bim) return undefined
+    const [
+      elements, values, descriptorIndices, descriptorNames, descriptorGroups,
+      fiElements, fiFamilyTypes,
+      ftElements, ftFamilies,
+      fElements
+    ] = await Promise.all([
+      this.bim.parameter.getAllElementIndex(),
+      this.bim.parameter.getAllValue(),
+      this.bim.parameter.getAllParameterDescriptorIndex(),
+      this.bim.parameterDescriptor.getAllName(),
+      this.bim.parameterDescriptor.getAllGroup(),
+      // Family resolution columns — cached to avoid per-query decompression
+      this.bim.familyInstance.getAllElementIndex(),
+      this.bim.familyInstance.getAllFamilyTypeIndex(),
+      this.bim.familyType.getAllElementIndex(),
+      this.bim.familyType.getAllFamilyIndex(),
+      this.bim.family.getAllElementIndex(),
+    ])
+    if (!elements || !values || !descriptorIndices) return undefined
+
+    // Pre-compute family element sets for every element — O(1) lookup per getBimParameters call
+    const familyElements = new Map<number, Map<number, boolean>>()
+    if (fiElements && fiFamilyTypes && ftElements && ftFamilies && fElements) {
+      const fiByElement = new Map<number, number>()
+      for (let i = 0; i < fiElements.length; i++) fiByElement.set(fiElements[i], i)
+
+      for (const [element, fi] of fiByElement) {
+        const related = new Map<number, boolean>()
+        related.set(element, true)
+        const ftIdx = fiFamilyTypes[fi]
+        if (Number.isInteger(ftIdx)) {
+          const ftElement = ftElements[ftIdx]
+          if (ftElement !== undefined) related.set(ftElement, false)
+          const fIdx = ftFamilies[ftIdx]
+          if (Number.isInteger(fIdx)) {
+            const fElement = fElements[fIdx]
+            if (fElement !== undefined) related.set(fElement, false)
+          }
+        }
+        familyElements.set(element, related)
+      }
+    }
+
+    // Pre-index: element → parameter row indices for O(1) lookup per element
+    const parametersByElement = new Map<number, number[]>()
+    for (let i = 0; i < elements.length; i++) {
+      const el = elements[i]
+      let list = parametersByElement.get(el)
+      if (!list) { list = []; parametersByElement.set(el, list) }
+      list.push(i)
+    }
+
+    this._parameterCache = { elements, values, descriptorIndices, descriptorNames, descriptorGroups, familyElements, parametersByElement }
+    return this._parameterCache
+  }
+
+  get onGeometryLoaded (): ISignal { return this._onGeometryLoaded.asEvent() }
 
   constructor (
     header: VimHeader | undefined,
@@ -168,6 +254,12 @@ export class Vim implements IWebglVim {
    * @param {number} id - The element ID to retrieve objects for.
    * @returns {THREE.Object3D[]} An array of objects corresponding to the element ID, or an empty array if none are found.
    */
+  getElementFromUniqueId (uniqueId: string): Element3D | undefined {
+    const element = this.map.getElementFromUniqueId(uniqueId)
+    if (element === undefined) return
+    return this.getElementFromIndex(element)
+  }
+
   getElementsFromId (id: number | bigint) {
     const elements = this.map.getElementsFromElementId(id)
     return elements
@@ -213,18 +305,20 @@ export class Vim implements IWebglVim {
    * @returns {ISubset} A subset containing all instances.
    */
   subset (): ISubset {
-    return new G3dSubset(this._factory.g3d)
+    return new G3dSubset(this._factory.g3d, this.map)
   }
 
   /**
    * Loads geometry for the given subset, or all geometry if no subset is provided.
-   * Caller is responsible for not loading the same subset twice.
+   * Clears any previously loaded geometry first so meshes are never duplicated.
    * @param subset - The subset to load. Omit to load everything.
    */
   async load (subset?: ISubset) {
     subset ??= this.subset()
     if (subset.getInstanceCount() === 0) return
+    this.clear()
     this._factory.add(subset as G3dSubset)
+    this._onGeometryLoaded.dispatch()
   }
 
   /**

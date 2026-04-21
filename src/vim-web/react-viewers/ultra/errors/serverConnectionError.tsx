@@ -12,9 +12,9 @@ export function serverConnectionError (url: string): MessageBoxProps {
   }
 }
 
-function body (url: string, local: boolean): JSX.Element {
+function body (url: string, local: boolean): React.ReactElement {
   return (
-    <div className={style.vcRoboto}>
+    <>
       {style.mainText(<>
         We encountered an error connecting to VIM Ultra.
       </>)}
@@ -23,6 +23,6 @@ function body (url: string, local: boolean): JSX.Element {
         <>Ensure that VIM Ultra is running at {style.detailText(url)}</>,
         'Check your network connection and access policies'
       ])}
-    </div>
+    </>
   )
 }

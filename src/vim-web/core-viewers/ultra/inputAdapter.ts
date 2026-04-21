@@ -55,7 +55,7 @@ function createAdapter(viewer: UltraViewer): IInputAdapter {
       // handled server side
     },
     toggleOrthographic: () => {
-      console.log('toggleOrthographic. Not supported yet');
+      // Not supported in Ultra
     },
     resetCamera: () => {
       viewer.camera.lerp().reset();

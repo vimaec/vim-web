@@ -10,8 +10,7 @@ import Stats from 'stats-js'
 export function addPerformanceCounter (parent: HTMLDivElement) {
   const stats = new Stats()
   const div = stats.dom as HTMLDivElement
-  div.className =
-    'vim-performance !vc-absolute !vc-right-6 !vc-left-auto !vc-top-52'
+  div.className = 'vim-performance'
   parent.appendChild(div)
   div.style.zIndex = '35'
 

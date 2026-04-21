@@ -92,7 +92,7 @@ export class Renderer implements ISceneRenderer {
   private _renderText: boolean | undefined
 
   private _needsUpdate: boolean
-  
+
   private _onSceneUpdate = new SignalDispatcher()
   private _onBoxUpdated = new SignalDispatcher()
   private _sceneUpdated = false
@@ -119,6 +119,7 @@ export class Renderer implements ISceneRenderer {
    */
   requestRender () {
     this._needsUpdate = true
+    
   }
 
   constructor (
@@ -177,8 +178,12 @@ export class Renderer implements ISceneRenderer {
     this._camera.onSettingsChanged.sub(() => {
       this._composer.camera = this._camera.three
       this._needsUpdate = true
+      
     })
-    this._materials.onUpdate.sub(() => (this._needsUpdate = true))
+    this._materials.onUpdate.sub(() => {
+      this._needsUpdate = true
+      
+    })
     this.background = settings.background.color
   }
 
@@ -283,16 +288,19 @@ export class Renderer implements ISceneRenderer {
   notifySceneUpdate () {
     this._sceneUpdated = true
     this._needsUpdate = true
+    
   }
 
   addOutline () {
     this._outlineCount++
     this._needsUpdate = true
+    
   }
 
   removeOutline () {
     this._outlineCount--
     this._needsUpdate = true
+    
   }
 
   /** Whether selection outlines are enabled. When false, outlines are suppressed even if elements have outline=true. */
@@ -305,9 +313,10 @@ export class Renderer implements ISceneRenderer {
     this._needsUpdate = true
   }
 
-  /** Sets the selection fill mode on the rendering composer. */
+  /** Sets the selection fill mode on both the rendering pipeline and materials. */
   set selectionFillMode (value: SelectionFillMode) {
     this._composer.selectionFillMode = value
+    this._materials.selectionFillMode = value
     this._needsUpdate = true
   }
 

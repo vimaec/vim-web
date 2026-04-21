@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react'
-import ReactTooltip from 'react-tooltip'
 import * as THREE from 'three'
 import * as Core from '../../core-viewers'
 import { CursorManager, pointerToCursor } from '../helpers/cursor'
@@ -11,8 +10,6 @@ export function getMeasureState (viewer: Core.Webgl.Viewer, cursor: CursorManage
   const [, setMeasurement] = useState<THREE.Vector3>()
 
   const toggle = () => {
-    ReactTooltip.hide()
-
     if (activeRef.current) {
       viewer.gizmos.measure.abort()
       activeRef.current = false
@@ -25,7 +22,6 @@ export function getMeasureState (viewer: Core.Webgl.Viewer, cursor: CursorManage
   }
 
   const clear = () => {
-    ReactTooltip.hide()
     viewer.gizmos.measure.abort()
     toggle()
   }

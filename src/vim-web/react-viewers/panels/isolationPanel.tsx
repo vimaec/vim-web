@@ -1,11 +1,13 @@
 import { forwardRef } from "react";
 import { IsolationApi } from "../state/sharedIsolation";
+import { RenderSettingsApi } from "../state/renderSettings";
 import { GenericPanel, GenericPanelApi } from "../generic/genericPanel";
 
 export const Ids = {
   showGhost: "isolationPanel.showGhost",
   ghostOpacity: "isolationPanel.ghostOpacity",
-  transparency: "isolationPanel.transparency",
+  showTransparent: "isolationPanel.showTransparent",
+  transparentOpacity: "isolationPanel.transparentOpacity",
   outlineEnabled: "isolationPanel.outlineEnabled",
   outlineQuality: "isolationPanel.outlineQuality",
   outlineThickness: "isolationPanel.outlineThickness",
@@ -13,42 +15,58 @@ export const Ids = {
   selectionOverlayOpacity: "isolationPanel.selectionOverlayOpacity",
 }
 
-export const IsolationPanel = forwardRef<GenericPanelApi, { state: IsolationApi }>(
+export const IsolationPanel = forwardRef<GenericPanelApi, {
+  isolation: IsolationApi
+  renderSettings: RenderSettingsApi
+}>(
   (props, ref) => {
+    const { isolation, renderSettings } = props
     return (
       <GenericPanel
         ref={ref}
         header="Render Settings"
         anchorElement={document.getElementById("vim-control-bar")}
-        showPanel={props.state.showPanel}
+        showPanel={isolation.showPanel}
         entries={[
           {
             type: "bool",
-            id: Ids.transparency,
-            label: "Transparency",
-            state: props.state.transparency
+            id: Ids.showTransparent,
+            label: "Show Transparent",
+            state: renderSettings.showTransparent
+          },
+          {
+            type: "number",
+            id: Ids.transparentOpacity,
+            label: "Transparent Opacity",
+            state: renderSettings.transparentOpacity,
+            enabled: () => renderSettings.showTransparent.get(),
+            min: 0,
+            max: 1,
+            step: 0.05,
+            transform: (n) => Math.max(0, Math.min(1, n))
           },
           {
             type: "bool",
             id: Ids.showGhost,
             label: "Show Ghost",
-            state: props.state.showGhost
+            state: isolation.showGhost
           },
           {
             type: "number",
             id: Ids.ghostOpacity,
             label: "Ghost Opacity",
-            state: props.state.ghostOpacity,
-            enabled: () => props.state.showGhost.get(),
+            state: isolation.ghostOpacity,
+            enabled: () => isolation.showGhost.get(),
             min: 0,
             max: 1,
-            step: 0.05
+            step: 1 / 255,
+            transform: (n) => Math.max(0, Math.min(1, n))
           },
           {
             type: "bool",
             id: Ids.outlineEnabled,
             label: "Selection Outline",
-            state: props.state.outlineEnabled
+            state: renderSettings.outlineEnabled
           },
           {
             type: "select",
@@ -59,15 +77,15 @@ export const IsolationPanel = forwardRef<GenericPanelApi, { state: IsolationApi 
               { label: 'Medium', value: 'medium' },
               { label: 'High', value: 'high' },
             ],
-            enabled: () => props.state.outlineEnabled.get(),
-            state: props.state.outlineQuality
+            enabled: () => renderSettings.outlineEnabled.get(),
+            state: renderSettings.outlineQuality
           },
           {
             type: "number",
             id: Ids.outlineThickness,
             label: "Outline Thickness",
-            state: props.state.outlineThickness,
-            enabled: () => props.state.outlineEnabled.get(),
+            state: renderSettings.outlineThickness,
+            enabled: () => renderSettings.outlineEnabled.get(),
             min: 1,
             max: 5,
             step: 1
@@ -82,17 +100,14 @@ export const IsolationPanel = forwardRef<GenericPanelApi, { state: IsolationApi 
               { label: 'X-Ray', value: 'xray' },
               { label: 'See-Through', value: 'seethrough' },
             ],
-            state: props.state.selectionFillMode
+            state: renderSettings.selectionFillMode
           },
           {
             type: "number",
             id: Ids.selectionOverlayOpacity,
             label: "Selection Opacity",
-            state: props.state.selectionOverlayOpacity,
-            enabled: () => {
-              const mode = props.state.selectionFillMode.get()
-              return mode === 'xray' || mode === 'seethrough'
-            },
+            state: renderSettings.selectionOverlayOpacity,
+            enabled: () => renderSettings.selectionFillMode.get() !== 'none',
             min: 0,
             max: 1,
             step: 0.05

@@ -94,6 +94,7 @@ export class GizmoAxes implements IGizmoAxes {
 
     this._center = new THREE.Vector3(size / 2, size / 2, 0)
     this._axes = createAxes(this._options)
+    this._resized = true
   }
 
   private createCanvas () {
@@ -186,10 +187,10 @@ export class GizmoAxes implements IGizmoAxes {
     const drag = new THREE.Vector2(x, y).sub(this._dragLast)
     this._dragLast.set(x, y)
 
-    const rotX = drag.y / this._canvas.height
-    const rotY = drag.x / this._canvas.width
+    const azimuth = drag.x / this._canvas.width
+    const elevation = drag.y / this._canvas.height
 
-    this._camera.snap().orbit(new THREE.Vector2(rotX * -180, rotY * -180))
+    this._camera.snap().orbit(new THREE.Vector2(azimuth * -180, elevation * -180))
   }
 
   private endDrag () {

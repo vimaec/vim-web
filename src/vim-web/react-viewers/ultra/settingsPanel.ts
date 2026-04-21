@@ -1,42 +1,28 @@
-import { Viewer } from "../../core-viewers/ultra";
-import { SettingsItem } from "../settings/settingsItem";
-import { SettingsPanelKeys } from "../settings/settingsKeys";
-import { getControlBarCameraSettings, getControlBarSectionBoxSettings, getControlBarVisibilitySettings } from "../settings/settingsPanelContent";
-import { UltraSettings } from "./settings";
+import { GenericEntryType } from '../generic/genericField'
+import { IsolationApi } from '../state/sharedIsolation'
 
-export function getControlBarUltraSettings(): SettingsItem<UltraSettings>[] {
+/** Ultra settings — only ghost controls are functional server-side. */
+export function getUltraSettingsContent(isolation: IsolationApi): GenericEntryType[] {
   return [
     {
-      type: 'subtitle',
-      key: SettingsPanelKeys.ControlBarMiscSubtitle,
-      title: 'Control Bar - Settings',
+      type: 'section',
+      id: 'ultraRenderSettings',
+      label: 'Render Settings',
     },
     {
-      type: 'toggle',
-      key: SettingsPanelKeys.ControlBarMiscShowSettingsButtonToggle,
-      label: 'Settings',
-      getter: (s) => s.ui.miscSettings,
-      setter: (s, v) => (s.ui.miscSettings = v),
+      type: 'bool',
+      id: 'showGhost',
+      label: 'Show Ghost',
+      state: isolation.showGhost,
     },
     {
-      type: 'toggle',
-      key: SettingsPanelKeys.ControlBarMiscShowHelpButtonToggle,
-      label: 'Help',
-      getter: (s) => s.ui.miscHelp,
-      setter: (s, v) => (s.ui.miscHelp = v),
+      type: 'number',
+      id: 'ghostOpacity',
+      label: 'Ghost Opacity',
+      info: '[0,1]',
+      step: 1 / 255,
+      transform: (n) => Math.max(0, Math.min(1, n)),
+      state: isolation.ghostOpacity,
     },
-  ]
-}
-
-  // Ultra: only control bar–related sections
-export function getUltraSettingsContent(
-  viewer: Viewer,
-): SettingsItem<UltraSettings>[] {
-  // viewer kept for a consistent signature, in case you need it later
-  return [
-    ...getControlBarCameraSettings(),
-    ...getControlBarVisibilitySettings(),
-    ...getControlBarSectionBoxSettings(),
-    ...getControlBarUltraSettings(),
   ]
 }

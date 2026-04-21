@@ -1,13 +1,15 @@
 import { RecursivePartial } from "../../utils"
 import { UserBoolean } from "../settings/userBoolean"
-import { ControlBarCameraSettings, ControlBarCursorSettings, ControlBarMeasureSettings, ControlBarSectionBoxSettings, ControlBarVisibilitySettings } from "../state/controlBarState"
+import { ControlBarCameraSettings, ControlBarCursorSettings, ControlBarSectionBoxSettings, ControlBarVisibilitySettings } from "../state/controlBarState"
+import { CameraSettings, CapacitySettings, CursorSettings, IsolationSettings, SectionBoxSettings } from "../webgl/settings"
+import { PointerMode } from "../../core-viewers"
 
 export type PartialUltraSettings = RecursivePartial<UltraSettings>
 
 /**
  * React UI feature toggles for the Ultra viewer, passed to `React.Ultra.createViewer(container, settings)`.
  * Controls which UI panels and toolbar buttons are shown.
- * Access at runtime via `viewer.settings.update(s => { s.ui.panelControlBar = false })`.
+ * Access at runtime via `viewer.ui.controlBar.set(false)`.
  *
  * @example
  * const viewer = await React.Ultra.createViewer(div, {
@@ -15,6 +17,11 @@ export type PartialUltraSettings = RecursivePartial<UltraSettings>
  * })
  */
 export type UltraSettings = {
+  capacity: CapacitySettings
+  isolation: IsolationSettings
+  sectionBox: SectionBoxSettings
+  cursor: CursorSettings
+  camera: CameraSettings
   ui: ControlBarCameraSettings &
       ControlBarCursorSettings &
       ControlBarSectionBoxSettings &
@@ -31,7 +38,31 @@ export type UltraSettings = {
 
 export function getDefaultUltraSettings(): UltraSettings {
   return {
-
+    capacity: {
+      canFollowUrl: true,
+      canGoFullScreen: true,
+      canDownload: true,
+      canReadLocalStorage: true,
+    },
+    isolation: {
+      autoIsolate: false,
+      showGhost: true,
+      showTransparent: true,
+      showRooms: false,
+    },
+    sectionBox: {
+      active: false,
+      auto: false,
+      topOffset: 1,
+      sideOffset: 1,
+      bottomOffset: 1,
+    },
+    cursor: {
+      default: PointerMode.ORBIT,
+    },
+    camera: {
+      autoCamera: false,
+    },
     ui: {
       // panels
       panelLogo: true,

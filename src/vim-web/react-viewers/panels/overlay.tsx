@@ -2,7 +2,7 @@
  * @module viw-webgl-react
  */
 
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 /** This overlay is designed to go over the viewer canvas to intercept and dispatch events to the viewer canvas.
  * The point is that quickly finding a ui hit avoids the browser hit detection to search through all elements.
@@ -50,7 +50,7 @@ export function Overlay (props: { canvas: HTMLCanvasElement }) {
     <div
       ref={overlay}
       onContextMenu={(e) => e.preventDefault()}
-      className={'vim-overlay vc-top-0 vc-left-0 vc-z-10 vc-h-full vc-touch-none'}
+      className={'vim-overlay'}
     ></div>
   )
 }

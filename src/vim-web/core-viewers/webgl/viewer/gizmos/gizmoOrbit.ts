@@ -126,6 +126,7 @@ export class GizmoOrbit implements IGizmoOrbit {
     }
 
     clearTimeout(this._timeout)
+    if (this._gizmos.visible === show) return
     this._gizmos.visible = show
     this._renderer.requestRender()
 

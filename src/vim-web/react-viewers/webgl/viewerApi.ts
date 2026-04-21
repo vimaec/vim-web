@@ -12,9 +12,9 @@ import { OpenSettings } from './loading'
 import { ModalApi } from '../panels/modal'
 import { SectionBoxApi } from '../state/sectionBoxState'
 import { IsolationApi } from '../state/sharedIsolation'
+import { RenderSettingsApi } from '../state/renderSettings'
 import { GenericPanelApi } from '../generic/genericPanel'
-import { SettingsApi } from '../state/settingsApi'
-import { WebglSettings } from './settings'
+import { WebglUiApi } from '../state/uiState'
 
 export type { OpenSettings } from './loading'
 
@@ -72,9 +72,14 @@ export type WebglViewerApi = {
   unload: (vim: Core.Webgl.IWebglVim) => void
 
   /**
-   * Isolation API managing isolation state in the viewer.
+   * Isolation API managing element visibility and isolation.
    */
   isolation: IsolationApi
+
+  /**
+   * Render settings API controlling outline, transparency, and selection fill.
+   */
+  renderSettings: RenderSettingsApi
 
   /**
    * Section box API managing the section box in the viewer.
@@ -90,11 +95,6 @@ export type WebglViewerApi = {
    * Control bar API managing the content and behavior of the control bar.
    */
   controlBar: ControlBarApi
-
-  /**
-   * Settings API managing settings applied to the viewer.
-   */
-  settings: SettingsApi<WebglSettings>
 
   /**
    * Message API to interact with the loading box.
@@ -122,6 +122,17 @@ export type WebglViewerApi = {
    * API to interact with the section box panel.
    */
   sectionBoxPanel : GenericPanelApi
+
+  /**
+   * Reactive UI visibility controls. Each key from the settings `ui` block
+   * is a `StateRef<boolean>` that can be read, written, and subscribed to.
+   *
+   * @example
+   * viewer.ui.bimTree.set(false)             // Hide BIM tree
+   * viewer.ui.controlBar.get()               // Read current state
+   * viewer.ui.axes.onChange.subscribe(…)      // Subscribe to changes
+   */
+  ui: WebglUiApi
 
   /**
    * Cleans up and releases resources used by the viewer.

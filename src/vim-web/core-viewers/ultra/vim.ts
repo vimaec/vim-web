@@ -121,9 +121,11 @@ export class Vim implements IUltraVim {
     return object
   }
 
+  getElementFromUniqueId(_uniqueId: string): Element3D | undefined {
+    return undefined
+  }
+
   getElementsFromId(_id: number | bigint): Element3D[] {
-    // Ultra viewer does not support element ID lookup.
-    // Use getElementFromIndex() or getAllElements() instead.
     return []
   }
 
@@ -132,7 +134,7 @@ export class Vim implements IUltraVim {
   }
 
   getAllElements(): Element3D[] {
-    for (var i = 0; i < this._elementCount; i++) {
+    for (let i = 0; i < this._elementCount; i++) {
       this.getElement(i)
     }
     return Array.from(this._objects.values())
@@ -250,7 +252,7 @@ export class Vim implements IUltraVim {
       try {
         const state = await this._rpc.RPCGetVimLoadingState(handle)
         this._logger.log('state :', state)
-        result.onProgress({ type: 'percent', current: state.progress, total: 100 })
+        result.onProgress({ type: 'percent', current: state.progress * 100, total: 100 })
         switch (state.status) {
           case VimLoadingStatus.Loading:
           case VimLoadingStatus.Downloading:
@@ -295,7 +297,6 @@ export class Vim implements IUltraVim {
       } else if (Utils.isFileURI(source.url)) {
         handle = await this._rpc.RPCLoadVim(source)
       } else {
-        console.log('Defaulting to file path')
         handle = await this._rpc.RPCLoadVim(source)
       }
     } catch (e) {

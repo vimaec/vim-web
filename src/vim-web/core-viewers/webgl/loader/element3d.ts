@@ -36,9 +36,13 @@ export interface IElement3D extends ISelectable {
   readonly element: number
   /** The unique element ID. */
   readonly elementId: bigint
+  /** The Revit unique ID string. */
+  readonly elementUniqueId: string | undefined
   /** The geometry instances associated with this element. */
   readonly instances: number[] | undefined
-  /** True if this element has associated geometry. */
+  /** True if this element has geometry definitions (instances). Always available after the vim is parsed, even before geometry is loaded. */
+  readonly hasGeometry: boolean
+  /** True if this element has loaded mesh data. Only true after `vim.load()` has been called for a subset containing this element. */
   readonly hasMesh: boolean
   /** True if this element is a room. */
   readonly isRoom: boolean
@@ -107,13 +111,28 @@ export class Element3D implements IElement3D {
   }
 
   /**
+   * The Revit unique ID string of the element associated with this object.
+   */
+  get elementUniqueId () : string | undefined {
+    return this._vim.map.getElementUniqueId(this.element)
+  }
+
+  /**
    * The geometry instances  associated with this object.
    */
   readonly instances: number[] | undefined
 
   /**
-   * Checks if this object has associated geometry.
-   * @returns {boolean} True if this object has geometry, otherwise false.
+   * True if this element has geometry definitions (instances).
+   * Always available after the vim is parsed, even before geometry is loaded.
+   */
+  get hasGeometry () {
+    return (this.instances?.length ?? 0) > 0
+  }
+
+  /**
+   * True if this element has loaded mesh data.
+   * Only true after `vim.load()` has been called for a subset containing this element.
    */
   get hasMesh () {
     return (this._meshes?.length ?? 0) > 0
@@ -256,7 +275,32 @@ export class Element3D implements IElement3D {
    * @returns {VimHelpers.ElementParameter[]} An array of all bim parameters for this elements.
    */
   async getBimParameters (): Promise<VimHelpers.ElementParameter[]> {
-    return VimHelpers.getElementParameters(this._vim.bim, this.element)
+    const cache = await this._vim.getParameterCache()
+    if (!cache) return VimHelpers.getElementParameters(this._vim.bim, this.element)
+
+    // Pre-computed element set: this element + family type + family (all O(1) lookups)
+    const related = cache.familyElements.get(this.element) ?? new Map([[this.element, true]])
+
+    const { values, descriptorIndices, descriptorNames, descriptorGroups, parametersByElement } = cache
+    const result: VimHelpers.ElementParameter[] = []
+
+    // Only visit parameter rows belonging to related elements (O(params per element), not O(all params))
+    for (const [elementIdx, isInstance] of related) {
+      const rows = parametersByElement.get(elementIdx)
+      if (!rows) continue
+      for (const i of rows) {
+        const descriptor = descriptorIndices[i]
+        const value = values[i]
+        const displayValue = value?.indexOf('|') >= 0 ? value.substring(value.indexOf('|') + 1) : value
+        result.push({
+          name: Number.isInteger(descriptor) ? descriptorNames?.[descriptor] : undefined,
+          value: displayValue,
+          group: Number.isInteger(descriptor) ? descriptorGroups?.[descriptor] : undefined,
+          isInstance,
+        })
+      }
+    }
+    return result
   }
 
   /**

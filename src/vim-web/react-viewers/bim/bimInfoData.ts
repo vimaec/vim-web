@@ -102,7 +102,7 @@ export type DataCustomization = (data: Data, source: Core.Webgl.IWebglVim | Core
  * @param props.standard - The standard rendering function for the data.
  * @returns A custom JSX element to render, or `undefined` to use the default rendering.
  */
-export type DataRender<T> = ((props: { data: T; standard: () => JSX.Element }) => JSX.Element) | undefined
+export type DataRender<T> = ((props: { data: T; standard: () => React.ReactElement }) => React.ReactElement) | undefined
 
 /**
  * A reference object exposing multiple customization callbacks for transforming data and rendering

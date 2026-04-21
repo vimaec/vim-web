@@ -10,9 +10,10 @@
  * Common shapes: `FuncRef<void, void>`, `FuncRef<void, Promise<T>>`, `FuncRef<T, void>`
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { DependencyList, useEffect, useMemo, useRef, useState } from "react";
 import type { ISimpleEvent } from '../../core-viewers/shared/events'
 import { SimpleEventDispatcher } from 'ste-simple-events'
+import { storageGet, storageSet } from '../settings/localStorage'
 
 /**
  * Observable state container. Read, write, and subscribe to changes.
@@ -32,10 +33,6 @@ export interface StateRef<T> {
    * @param value - The new state value.
    */
   set(value: T): void;
-  /**
-   * Confirms the current state (potentially applying a confirmation transformation).
-   */
-  confirm(): void;
 
   onChange: ISimpleEvent<T>;
 }
@@ -67,10 +64,6 @@ class MutableState<T> implements StateRef<T> {
     this._onChange.dispatch(value);
   }
 
-  confirm(): void {
-    // No-op by default
-  }
-
   get onChange(): ISimpleEvent<T> {
     return this._onChange.asEvent();
   }
@@ -100,8 +93,14 @@ export function useRefresher() : StateRefresher{
  * @returns An object implementing StateRef along with additional helper hooks.
  */
 
-export function useStateRef<T>(initialValue: T | (() => T), isLazy = false) {
+export function useStateRef<T>(initialValue: T | (() => T), isLazy = false, storageKey?: string) {
   const getInitialValue = (): T => {
+    if (storageKey) {
+      const stored = storageGet(storageKey)
+      if (stored !== null) {
+        try { return JSON.parse(stored) as T } catch {}
+      }
+    }
     if (isLazy && typeof initialValue === 'function') {
       return (initialValue as () => T)();
     }
@@ -113,7 +112,7 @@ export function useStateRef<T>(initialValue: T | (() => T), isLazy = false) {
   const [box, setBox] = useState<Box<T>>(() => ({
     current: getInitialValue()
   }));
-  
+
   const ref = useRef<T>(undefined!);
   if (ref.current === undefined) {
     ref.current = getInitialValue();
@@ -121,7 +120,7 @@ export function useStateRef<T>(initialValue: T | (() => T), isLazy = false) {
 
   const event = useRef(new SimpleEventDispatcher<T>());
   const validate = useRef((next: T, current: T) => next);
-  const confirm = useRef((value: T) => value);
+
 
   /**
    * Updates the state if the validated value differs from the current value.
@@ -135,6 +134,7 @@ export function useStateRef<T>(initialValue: T | (() => T), isLazy = false) {
 
     ref.current = finalValue;
     setBox({ current: finalValue });
+    if (storageKey) storageSet(storageKey, JSON.stringify(finalValue));
     event.current.dispatch(finalValue);
   };
 
@@ -147,12 +147,6 @@ export function useStateRef<T>(initialValue: T | (() => T), isLazy = false) {
     },
     set,
     onChange: event.current.asEvent(),
-    /**
-     * Confirms the current state by applying the confirm function and updating the state.
-     */
-    confirm() {
-      set(confirm.current(ref.current));
-    },
 
     /**
      * Registers a callback to be invoked when the state changes.
@@ -162,13 +156,18 @@ export function useStateRef<T>(initialValue: T | (() => T), isLazy = false) {
      */
     useOnChange(on: (value: T) => void | (() => void) | Promise<void>) {
       useEffect(() => {
-        return event.current.subscribe((value) => {
-          const result = on(value);
-          // If it's a promise, we just call it and ignore resolution/rejection
+        let cleanup: (() => void) | undefined
+        const unsub = event.current.subscribe((value) => {
+          cleanup?.()
+          cleanup = undefined
+          const result = on(value)
           if (result instanceof Promise) {
-            result.catch(console.error); // Optional: log errors
+            result.catch(console.error)
+          } else if (typeof result === 'function') {
+            cleanup = result
           }
-        });
+        })
+        return () => { cleanup?.(); unsub() }
       }, []);
     },
     
@@ -190,15 +189,6 @@ export function useStateRef<T>(initialValue: T | (() => T), isLazy = false) {
       set(on(ref.current, ref.current));
       useEffect(() => {
         validate.current = on;
-      }, []);
-    },
-    /**
-     * Sets a confirmation function to process the state value during confirmation.
-     * @param on - A function that confirms (and optionally transforms) the current state value.
-     */
-    useConfirm(on: (value: T) => T) {
-      useEffect(() => {
-        confirm.current = on;
       }, []);
     },
   };
@@ -244,6 +234,54 @@ export interface FuncRef<TArg, TReturn> {
    * ```
    */
   update(transform: (prev: (arg: TArg) => TReturn) => (arg: TArg) => TReturn): void;
+}
+
+/**
+ * Subscribes to a signal for the lifetime of the component. Cleanup is automatic.
+ * Accepts both ISignal (no payload) and ISimpleEvent<T> (with payload).
+ */
+export function useSubscribe<T = void>(
+  signal: { subscribe: (fn: (value: T) => void) => () => void },
+  callback: (value: T) => void,
+  deps: DependencyList = []
+) {
+  useEffect(() => signal.subscribe(callback), deps)
+}
+
+/**
+ * Derives a React state value from an external signal.
+ * Re-renders whenever the signal fires.
+ */
+export function useSignalState<T>(
+  signal: ISimpleEvent<any>,
+  getState: () => T
+): [T, (value: T) => void] {
+  const [state, setState] = useState(getState)
+  useEffect(() => signal.subscribe(() => setState(getState())), [])
+  return [state, setState]
+}
+
+/**
+ * Stores a transform function and applies it to a base value.
+ * The function is stored in a ref (no `() => fn` setState footgun).
+ * Returns the transformed value and a setter to update the transform.
+ *
+ * @example
+ * const [sections, setCustomization] = useCustomizer(baseSections)
+ * // later: setCustomization(sections => [...sections, mySection])
+ */
+export function useCustomizer<TData>(base: TData): [TData, { customize: (fn: (data: TData) => TData) => void }] {
+  const fn = useRef<((data: TData) => TData) | undefined>(undefined)
+  const [, setVersion] = useState(0)
+
+  const api = useRef({
+    customize: (newFn: (data: TData) => TData) => {
+      fn.current = newFn
+      setVersion(v => v + 1)
+    }
+  })
+
+  return [fn.current ? fn.current(base) : base, api.current]
 }
 
 /**
