@@ -194,13 +194,17 @@ export class RenderScene {
       this.threeScene.remove(scene.meshes[i].mesh)
     }
 
-    // Recompute bounding box from remaining scenes
-    const remainingScenes = this._vimScenesById.filter((s): s is Scene => s !== undefined)
+    // Recompute bounding box from remaining scenes. A scene's box can be
+    // undefined when its geometry isn't built yet (e.g. another scene is
+    // mid-clear() during a sequential load), so filter those out before the
+    // union — reducing over an undefined box would throw.
+    const boxes = this._vimScenesById
+      .filter((s): s is Scene => s !== undefined)
+      .map((s) => s.getBoundingBox())
+      .filter((b): b is THREE.Box3 => b !== undefined)
     this._boundingBox =
-      remainingScenes.length > 0
-        ? remainingScenes
-          .map((s) => s.getBoundingBox())
-          .reduce((b1, b2) => b1.union(b2))
+      boxes.length > 0
+        ? boxes.reduce((b1, b2) => b1.union(b2))
         : undefined
   }
 }

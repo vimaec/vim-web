@@ -259,6 +259,11 @@ export class Scene implements IScene {
    */
   dispose () {
     this.clear()
+    // clear() leaves the (now empty) scene registered in the renderer so it's
+    // ready to receive new geometry. On dispose we want it gone entirely —
+    // otherwise an empty scene with an undefined bounding box lingers in the
+    // renderer's scene list and breaks later bounding-box recomputes.
+    this._renderer?.remove(this)
     this._renderer = null
   }
 }

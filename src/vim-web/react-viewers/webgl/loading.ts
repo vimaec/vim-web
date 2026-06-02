@@ -2,7 +2,7 @@
  * @module viw-webgl-react
  */
 
-import { serverFileDownloadingError } from '../errors/errors'
+import { webglFileError } from '../errors/errors'
 import * as Core from '../../core-viewers'
 import { LoadRequest } from '../helpers/loadRequest'
 import { ModalApi } from '../panels/modal'
@@ -73,7 +73,7 @@ export class ComponentLoader {
    * Event emitter for error notifications.
    */
   onError (e: LoadingError) {
-    this._modal.current?.message(serverFileDownloadingError(e.url))
+    this._modal.current?.message(webglFileError(e.url, e.error))
   }
 
   /**
