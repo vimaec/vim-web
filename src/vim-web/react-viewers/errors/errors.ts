@@ -1,3 +1,5 @@
+export { webglFileError } from './webglFileError'
+
 export { fileOpeningError } from '../ultra/errors/fileOpeningError'
 export { serverFileDownloadingError } from '../ultra/errors/serverFileDownloadingError'
 export { serverFileLoadingError } from '../ultra/errors/fileLoadingError'

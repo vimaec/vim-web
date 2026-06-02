@@ -1,6 +1,6 @@
 {
   "name": "vim-web",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "WebGL and cloud-streaming 3D viewers for VIM files with BIM support",
   "type": "module",
   "files": [

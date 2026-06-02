@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import * as Core from '../../core-viewers'
 import { ISelectable } from '../../core-viewers/webgl'
 import { IIsolationAdapter, useSharedIsolation, VisibilityStatus } from '../state/sharedIsolation'
@@ -5,6 +6,18 @@ import { IRenderSettingsAdapter, useRenderSettings } from '../state/renderSettin
 import { IsolationSettings } from '../webgl/settings'
 
 export function useWebglIsolation(viewer: Core.Webgl.Viewer, initialState?: IsolationSettings) {
+  // Seed the material with the configured ghost opacity once, before the
+  // isolation StateRefs initialize from it. A persisted localStorage value still
+  // takes precedence (the StateRef reads it first). Done here rather than in
+  // createWebglAdapters because that runs on every render.
+  const seeded = useRef(false)
+  if (!seeded.current) {
+    seeded.current = true
+    if (initialState?.ghostOpacity !== undefined) {
+      viewer.materials.ghostOpacity = initialState.ghostOpacity
+    }
+  }
+
   const { isolationAdapter, renderSettingsAdapter } = createWebglAdapters(viewer, initialState)
   const isolation = useSharedIsolation(isolationAdapter)
   const renderSettings = useRenderSettings(renderSettingsAdapter)

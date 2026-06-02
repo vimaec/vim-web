@@ -21,6 +21,12 @@ export type IsolationSettings = {
   showGhost: boolean
   showTransparent: boolean
   showRooms: boolean
+  /**
+   * Initial ghost (hidden-element) opacity, 0-1. When omitted the material's
+   * built-in default is used. A persisted value from the settings panel (saved
+   * to localStorage) takes precedence over this.
+   */
+  ghostOpacity?: number
 }
 
 export type SectionBoxSettings = {

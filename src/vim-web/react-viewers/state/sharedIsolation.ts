@@ -109,8 +109,14 @@ export function useSharedIsolation(adapter: IIsolationAdapter) {
     visibility.set(adapter.computeVisibility());
   })
 
+  // Push the initial state into the adapter on mount. The StateRefs may hydrate
+  // from localStorage to a value that differs from the underlying system's
+  // independent default, and useOnChange only fires on later changes — so
+  // without this the persisted value shows in the UI but never reaches the
+  // material (e.g. a stored ghostOpacity that the ghost material never applies).
   useEffect(() => {
     adapter.showGhost(showGhost.get());
+    adapter.setGhostOpacity(ghostOpacity.get());
   }, []);
 
   useSubscribe(adapter.onVisibilityChange, () => onVisibilityChange.call())
