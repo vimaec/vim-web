@@ -1,7 +1,6 @@
 import { RefObject, useEffect, useRef, ChangeEvent } from 'react'
 import { createRoot } from 'react-dom/client'
 import * as VIM from './vim-web'
-import { CustomInspector } from './customInspector'
 
 type ViewerRef = VIM.React.Webgl.ViewerApi | VIM.React.Ultra.ViewerApi
 
@@ -11,15 +10,7 @@ function isWebglViewer (viewer: ViewerRef): viewer is VIM.React.Webgl.ViewerApi 
 
 const root = createRoot(document.getElementById('root')!)
 
-// Switch dev pages via the URL: `/?page=inspector` (or any path containing
-// "inspector") renders the CustomInspector regression test for the
-// RenderScene.removeScene crash; otherwise the default viewer demo loads.
-const params = new URLSearchParams(window.location.search)
-const isInspector =
-  params.get('page') === 'inspector' ||
-  window.location.pathname.includes('inspector')
-
-root.render(isInspector ? <CustomInspector /> : <App />)
+root.render(<App />)
 
 function App() {
   const div = useRef<HTMLDivElement>(null)
