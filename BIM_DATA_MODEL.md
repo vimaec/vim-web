@@ -219,67 +219,80 @@ WHERE     e._key = :id;
 
 ---
 
-## 5. Nested / embedded / hosted families
+## 5. Nested / embedded / hosted families — and curtain walls
 
-There are **three independent mechanisms** for "X is inside/attached to Y", and they are NOT interchangeable.
+This is the most commonly mis-modelled area, and the place a viewer most easily renders an empty frame or over-counts. **In the raw `.vim` there are exactly two containment links**, both on `Vim.FamilyInstance`, both raw `int` element-index references with the `-1` "none" sentinel and **no relationship defined** — resolve them yourself by index into `Element`:
 
-### The shapes
+| Column | Answers | Verified population (TowerS-ARCHITECTURE.vim, 97,613 family instances) |
+|---|---|---|
+| **`Host`** | "What building element is this *carved into / mounted on*?" | **32,715 hosted.** Children: curtain mullions (13,423), curtain panels (5,305), structural framing (2,965), electrical + lighting fixtures (5,122), sprinklers (2,014), doors (1,003)… Hosts: walls (18,514), linked models (8,043), levels (3,329), curtain systems (1,577), ceilings (412). |
+| **`SuperComponent`** | "What *parent family instance* is this a shared nested part of?" | **3,582 nested.** Children: furniture-system members (1,237), structural connections (912), plumbing fixtures (541), pipe fittings, casework, generic models. Parents: furniture systems, doors (912 — nested door hardware), plumbing fixtures, speciality equipment. |
 
-**`Vim.ElementHierarchy.parquet`** — the geometric/spatial containment tree, one row per ancestor→descendant pair. It is a **transitive closure**, not just parent→child edges:
-- `Element` → ancestor element index (FK → `Element._key`)
-- `Descendant` → descendant element index
-- `DescendantNodeIndex`, `DescendantGeometryIndex` — scene-graph node / geometry indices
-- `Distance` — depth below `Element` (immediate child = 1; self-row = 0)
-- `RootDistance` — depth below the root of the tree
-- `IsSelf` (bool) — TRUE on the self-pair row (`Element == Descendant`)
+> **Two PBIP-only artifacts that will mislead you if you read the Power BI schema instead of the raw file:**
+> - **There is no `ElementHierarchy` table in the raw `.vim`.** The complete SDK table set is `Element / FamilyInstance / FamilyType / Family / Node / Geometry / Shape / …` — there is **no** ancestor→descendant closure table. `Vim.ElementHierarchy` (with `Distance` / `IsSelf` / `Descendant`) exists **only in the BimAudit→Parquet/Power BI pipeline**. A raw consumer reconstructs nesting by walking `SuperComponent` upward itself.
+> - **There is no `SuperComponentDistance` column** in the raw `FamilyInstance` table, and **no** promoted `Element.FamilyInstanceSuperComponentDistance`. Both are Parquet-pipeline enrichments. To get nesting depth, follow `SuperComponent` until it returns `-1`.
 
-**`Vim.FamilyInstance.parquet`** — Revit family-instance semantics, one row per instance:
-- `Element` (FK → `Element._key`, the only active relationship on this table)
-- `Host` — the element this instance is **hosted by** (door→wall, light→ceiling). Raw FK index.
-- `SuperComponent` — the **parent assembly / nested-family** this is a sub-component of (curtain panel→curtain wall).
-- `SuperComponentDistance` — nesting depth under the super-component (top-level = 0).
-- `FromRoom` / `ToRoom`, `FamilyType`, `Name`.
+### Host vs SuperComponent — independent, do not merge
 
-> `Host`, `SuperComponent`, `FromRoom`, `ToRoom` are raw `int64` index columns with **NO relationship defined** — multiple of them point back into `Element`, which would be ambiguous. **Resolve them manually by index into `Element._key`.**
+- **`Host`** = Revit *hosting*: the host is usually a **different category** of physical element — door → wall, sprinkler → ceiling, framing → level, **curtain panel/mullion → curtain wall**.
+- **`SuperComponent`** = Revit *shared nested-family* parentage: the parent is itself a **placed family instance** — a chair in a furniture-system group, a handle nested in a door family, a fitting in a piped assembly.
 
-### Host vs SuperComponent vs ElementHierarchy
+The two are orthogonal and frequently both `-1`: **64,898 of 97,613** family instances here have no host at all (free-standing furniture, equipment, MEP). A single door can be *hosted* by a wall **and** be the *SuperComponent* of its own nested hardware.
 
-| Concept | Column(s) | Captures | Example |
-|---|---|---|---|
-| **Host** | `FamilyInstance.Host` | Revit *hosting* (carved into / face-mounted) | Door in a wall; sprinkler in a ceiling |
-| **SuperComponent** | `SuperComponent` + `SuperComponentDistance` | Revit *nested-family* parentage | Panel in a curtain wall; sub-family in an assembly |
-| **ElementHierarchy** | `Element`→`Descendant` + `Distance`/`IsSelf` | Engine-resolved geometric containment closure (the superset) | All of the above + group members + geometry sub-nodes |
+### Curtain walls — the headline gotcha
 
-`Host`/`SuperComponent` are Revit-authored facts; `ElementHierarchy` is the engine's geometric tree (generally a superset). Use Host/SuperComponent for Revit's semantic intent; use ElementHierarchy for everything the geometry nests.
+A curtain wall is **one** `Wall` element (`OST_Walls`), but it explodes into many **hosted** children:
 
-The model also **promotes `SuperComponentDistance` onto every element** as `Element.FamilyInstanceSuperComponentDistance` — so you can de-nest **without joining FamilyInstance at all**.
+- **Curtain panels** (`OST_CurtainWallPanels`) and **mullions** (`OST_CurtainWallMullions`) are each a `Physical` **instance** in their own right, with `Host` → the curtain wall. They are **not** `SuperComponent`s of the wall — verified: every panel and mullion has `SuperComponent = -1`. *(The older intuition "a curtain panel is a sub-component of the wall" is wrong in the data — it's hosted.)*
+- The **curtain grid** (`OST_CurtainGridsWall`, `OST_CurtainGridsCurtaSystem`, …) is **`Conceptual`** — reference geometry, correctly **excluded** from physical counts (see the physical-vs-non-physical guide).
+- A **curtain system** (`OST_CurtaSystem`, e.g. sloped glazing) hosts its panels/mullions exactly like a curtain wall.
 
-### Worked example — counting without double-counting
+**Worked example (live, TowerS-ARCHITECTURE.vim):** the busiest curtain wall — `Exterior - Curtain Wall - Enclosure_7" Nominal` (Element 33673; its own `Host = -1`, since a curtain wall is never itself hosted) — **hosts 607 panels + 1,750 mullions = 2,357 sub-elements**. The model has **72** curtain walls, **5,373** panels and **13,436** mullions in total.
 
-A curtain wall explodes into hundreds of panels/mullions; assemblies expand into sub-families. The promoted column is the de-nest key:
+What a viewer must therefore handle:
+- **Counting.** "Walls" counts that curtain wall as **1**; "physical elements" counts it as **1 + its panels + mullions** (2,358 for that one wall). Both answer different questions — just don't describe a physical-element total as a count of "walls."
+- **Isolation / selection.** Isolating a curtain wall must also pull in its hosted panels & mullions (`WHERE Host = <wall>`), or you isolate an empty frame — the visible glass and bars are the *children*, not the wall.
+- **Takeoff.** Glass/area lives on the **panels** (`MaterialInElement`, §6), not on the wall element.
+
+### Embedded / nested families — what appears vs what doesn't
+
+- **Shared** nested families are placed as their own `Element` + `FamilyInstance` rows, with `SuperComponent` → the parent instance (the 3,582 above). They count as physical instances and can be de-nested.
+- **Non-shared** nested families are **baked into the parent's geometry** and get **no** element rows of their own — you will never see them as separate elements and cannot take them off individually. (This is why a "by family" count can read lower than a designer expects.)
+- **Embedded walls** (a curtain wall embedded in a basic wall) and **door/window openings** use the same `Host` mechanism — the embedded/opening element's `Host` points at the parent wall. These are legitimate placed instances even when they carry little or no mesh, so never gate them on geometry presence (see the physical-elements guide).
+
+### Worked example — de-nesting without a closure table (raw `.vim`)
 
 ```sql
--- Top-level elements only (exclude nested sub-components):
-SELECT COUNT(*) FROM Element
-WHERE FamilyInstanceSuperComponentDistance = 0    -- 0 = top-level instance
-   OR FamilyInstanceSuperComponentDistance = -1;  -- -1 = not a sub-component at all
-```
+-- "Top-level" instances only (drop shared nested sub-components):
+SELECT e.*
+FROM Element e
+LEFT JOIN FamilyInstance fi ON fi.Element = e._key
+WHERE fi.SuperComponent = -1 OR fi.SuperComponent IS NULL;   -- -1 / not-a-family-instance = top-level
 
-Resolving a door's host wall:
-```sql
-SELECT d.Element AS door, d.Host AS wall_key, w.Name AS wall_name
+-- A curtain wall's components (panels + mullions):
+SELECT child.Name, cat.Name AS category
+FROM FamilyInstance fi
+JOIN Element  child ON child._key = fi.Element
+JOIN Category cat   ON child.Category = cat._key
+WHERE fi.Host = :curtainWallKey;
+
+-- Resolve a door's host wall:
+SELECT d.Element AS door, w.Name AS wall
 FROM FamilyInstance d
 JOIN Element w ON w._key = d.Host
-WHERE d.Host <> -1;        -- -1 = no host
+WHERE d.Host <> -1;          -- -1 = no host
 ```
 
+(In Power BI these are pre-flattened into `Vim_ElementEmbedded`, `FamilyInstanceSuperComponentDistance`, and `Vim_ElementHierarchy`. Raw `.vim` consumers do the index joins themselves.)
+
 > **Gotchas**
-> - **`-1` is the "no value" sentinel everywhere** — `Host`, `SuperComponent`, `FromRoom`, `ToRoom`, `FamilyInstance`, `FamilyTypeElement`, `FamilyElement` all use `-1` (not null, not 0). A consumer joining on `0` will silently grab element `_key = 0`.
-> - **`ElementHierarchy` is a transitive closure with self-rows.** A naïve `COUNT(*)`/`JOIN` massively over-counts. Filter: `Distance = 1` (immediate children), `IsSelf = FALSE` (real descendants), `IsSelf = TRUE` (the element itself).
-> - **`Host` ≠ `SuperComponent`.** A door is *hosted* by a wall but has no SuperComponent; a curtain panel has a SuperComponent but isn't "hosted". Don't merge them.
-> - **De-nesting depth is already on the element** (`FamilyInstanceSuperComponentDistance`) — you don't need to join FamilyInstance to drop nested sub-components.
-> - **For physical-object counts**, combine the de-nest filter with `IsInstance = true` and the physical-vs-non-physical category logic — family *Types* and *Families* appear as Element rows but are conceptual, with `IsInstance = false`.
-> - In PBIP, `Descendant` resolves to a calculated clone `Vim_ElementEmbedded` (PBI can't have two active relationships to `Element`); raw consumers should resolve `Descendant` straight to `Element._key`.
+> - **`-1` is the "no value" sentinel** for `Host`, `SuperComponent`, `FromRoom`, `ToRoom`, `FamilyType` — not `0`, not null. Joining on `0` silently grabs `Element._key = 0`.
+> - **`Host` ≠ `SuperComponent`.** Hosting (into a *building element*) vs shared-family nesting (inside a *parent instance*) — verified as distinct populations. Don't conflate them.
+> - **Curtain panels & mullions are `Physical - Instance`; curtain grids & curtain systems are `Conceptual`.** Count the panels/mullions; exclude the grid.
+> - **No raw closure table or depth column.** `ElementHierarchy`, `Distance`, `IsSelf`, `SuperComponentDistance` are Parquet-pipeline only — walk `SuperComponent` for depth.
+> - **Non-shared nested families don't exist as elements** — baked into the parent mesh. Don't expect to count or take them off.
+> - **Hosting is sparse** — ~⅔ of family instances have `Host = -1`. Don't assume every instance sits on something.
+> - **For physical-object counts**, the de-nest/host logic is orthogonal to physical-vs-non-physical: family *Types* and *Families* are conceptual (`IsInstance = false`) regardless of hierarchy. Apply both filters.
 
 ---
 
