@@ -88,6 +88,7 @@ The React viewer exposes customization points for:
 - **[.claude/docs/INPUT.md](./.claude/docs/INPUT.md)** — Input system architecture, coordinate systems, override patterns
 - **[.claude/docs/optimization.md](./.claude/docs/optimization.md)** — Loading pipeline performance and profiling
 - **[.claude/docs/RENDERING_OPTIMIZATIONS.md](./.claude/docs/RENDERING_OPTIMIZATIONS.md)** — Shader material architecture and rendering patterns
+- **[BIM_PHYSICAL_ELEMENTS.md](./BIM_PHYSICAL_ELEMENTS.md)** — Physical vs non-physical elements: how to correctly count/filter placed instances (and why `hasGeometry` is the wrong gate)
 
 ## Tech Stack
 
