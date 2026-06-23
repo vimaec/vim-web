@@ -89,6 +89,7 @@ The React viewer exposes customization points for:
 - **[.claude/docs/optimization.md](./.claude/docs/optimization.md)** — Loading pipeline performance and profiling
 - **[.claude/docs/RENDERING_OPTIMIZATIONS.md](./.claude/docs/RENDERING_OPTIMIZATIONS.md)** — Shader material architecture and rendering patterns
 - **[BIM_PHYSICAL_ELEMENTS.md](./BIM_PHYSICAL_ELEMENTS.md)** — Physical vs non-physical elements: how to correctly count/filter placed instances (and why `hasGeometry` is the wrong gate)
+- **[BIM_DATA_MODEL.md](./BIM_DATA_MODEL.md)** — Working with the VIM BIM data model: compound layers, rooms & objects-in-rooms, phases & phase filters, levels & containment, nested/hosted families, materials & quantities, parameters
 
 ## Tech Stack
 
