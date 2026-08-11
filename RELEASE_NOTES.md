@@ -1,3 +1,25 @@
+# vim-web 1.0.0-beta.3
+
+## Packaging
+
+### three is now a peer dependency
+
+`three` moved from `dependencies` to `peerDependencies` and is no longer bundled. Host apps provide their own three, so a single instance is shared across the page — fixing `instanceof` failures across the boundary (including against `VIM.THREE`, which vim-web re-exports), duplicated three module-level state, and ~1.8 MB of duplicated payload when the host already used three. The ESM bundle drops from 3.43 MB to 1.57 MB.
+
+Install three alongside vim-web (and `@types/three` for TypeScript):
+
+```bash
+npm install vim-web three react react-dom
+```
+
+Only the pinned three version (`^0.183`) is tested; other versions may work. See MIGRATION.md for details.
+
+### IIFE build removed
+
+The `<script>`-tag IIFE bundle (`dist/vim-web.iife.js`) is no longer produced; vim-web ships as ESM only (`dist/vim-web.js`). This is breaking only for consumers loading the library via a raw `<script>` tag.
+
+---
+
 # vim-web 1.0.0-alpha.0
 
 ## Selection & Outline Improvements
