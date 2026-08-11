@@ -199,5 +199,5 @@ All custom shader materials use `glslVersion: THREE.GLSL3`. The StandardMaterial
 ### Related Documentation
 
 - [CLAUDE.md](../../CLAUDE.md) - Main project documentation
-- [INPUT.md](./INPUT.md) - Input system architecture
+- [input.md](./input.md) - Input system architecture
 - [optimization.md](./optimization.md) - Loading pipeline performance
