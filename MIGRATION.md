@@ -1,4 +1,4 @@
-# Migration Guide: vim-web 0.5 → 1.0.0-beta.3
+# Migration Guide: vim-web 0.5 → 1.0.0-beta.4
 
 ## Install
 
@@ -185,7 +185,7 @@ All Tailwind utility classes (`vc-flex`, `vc-text-sm`, etc.) have been replaced 
 
 ## Peer Dependencies
 
-| | 0.5 | 1.0-beta.1 | 1.0-beta.3 |
+| | 0.5 | 1.0-beta.1 | 1.0-beta.4 |
 |---|---|---|---|
 | react | ^18.3.1 | ^18.3.1 \|\| ^19.0.0 | ^18.3.1 \|\| ^19.0.0 |
 | react-dom | ^18.3.1 | ^18.3.1 \|\| ^19.0.0 | ^18.3.1 \|\| ^19.0.0 |
@@ -193,9 +193,9 @@ All Tailwind utility classes (`vc-flex`, `vc-text-sm`, etc.) have been replaced 
 
 React 18.3+ continues to work. React 19 is now also supported.
 
-### three is now a peer dependency (1.0.0-beta.3)
+### three is now a peer dependency (1.0.0-beta.4)
 
-Through beta.2, `three` was bundled inside vim-web. As of beta.3 it is a peer dependency the host app must install:
+Through beta.3, `three` was bundled inside vim-web. As of beta.4 it is a peer dependency the host app must install:
 
 ```bash
 npm install three @types/three
@@ -205,6 +205,6 @@ This keeps a single instance of three in your app. Previously an app that alread
 
 Only the pinned version (`^0.183`) is tested; other three.js versions may work. If your app pins a different three, override the peer range at your own risk — a single shared copy is still preferable to a bundled duplicate.
 
-### IIFE build removed (1.0.0-beta.3)
+### IIFE build removed (1.0.0-beta.4)
 
 The `<script>`-tag IIFE bundle (`dist/vim-web.iife.js`) is no longer produced; vim-web now ships as ESM only (`dist/vim-web.js`). If you loaded vim-web through a raw `<script>` tag, switch to an ESM import (a bundler, or `<script type="module">`). Consumers importing through a bundler are unaffected.

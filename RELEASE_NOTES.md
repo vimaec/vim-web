@@ -1,4 +1,4 @@
-# vim-web 1.0.0-beta.3
+# vim-web 1.0.0-beta.4
 
 ## Packaging
 
