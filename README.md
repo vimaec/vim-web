@@ -16,7 +16,7 @@ npm run documentation # TypeDoc generation
 
 `npm run build` runs three steps in sequence:
 
-1. **Vite build** — bundles `vim-web.js` (ESM) and `vim-web.iife.js` (IIFE) into `dist/`
+1. **Vite build** — bundles `vim-web.js` (ESM) into `dist/`
 2. **TypeScript declarations** (`tsc -p tsconfig.types.json`) — emits individual `.d.ts` files to `dist/types/`
 3. **Rollup d.ts bundling** — produces two self-contained type bundles:
    - `dist/vim-web.d.ts` — full library API (3,300+ lines), referenced by `"types"` in package.json
@@ -85,9 +85,21 @@ The React viewer exposes customization points for:
 ## Documentation
 
 - **[CLAUDE.md](./CLAUDE.md)** — Detailed API reference, code examples, architecture details, and patterns. This is the primary reference for both developers and AI tools.
-- **[.claude/docs/INPUT.md](./.claude/docs/INPUT.md)** — Input system architecture, coordinate systems, override patterns
+- **[.claude/docs/input.md](./.claude/docs/input.md)** — Input system architecture, coordinate systems, override patterns
 - **[.claude/docs/optimization.md](./.claude/docs/optimization.md)** — Loading pipeline performance and profiling
-- **[.claude/docs/RENDERING_OPTIMIZATIONS.md](./.claude/docs/RENDERING_OPTIMIZATIONS.md)** — Shader material architecture and rendering patterns
+- **[.claude/docs/rendering-optimizations.md](./.claude/docs/rendering-optimizations.md)** — Shader material architecture and rendering patterns
+
+## Peer Dependencies
+
+`vim-web` does not bundle `react`, `react-dom`, or `three` — the host application provides them, so a single instance of each is shared across the app. Install them alongside the package:
+
+```bash
+npm install vim-web three react react-dom
+```
+
+`three` is pinned to the version the library is built and tested against (currently `^0.183`). **Only the pinned version is officially tested and supported**, but other three.js versions may work just as well — the public API surface `vim-web` relies on is stable across recent releases. If your app pins a different `three`, override the peer range at your own risk; keeping a single shared copy of three is still preferable to the duplicate-instance problems that come from bundling it.
+
+TypeScript users should also install `@types/three` matching their `three` version, since three.js does not ship its own type definitions.
 
 ## Tech Stack
 
