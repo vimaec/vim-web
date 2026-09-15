@@ -12,7 +12,10 @@
     "lib": ["ESNext", "DOM"],
     "declaration": true,
     "sourceMap": true,
-    "moduleResolution": "Node",
+    // "bundler" is required to resolve vim-html-ds's `.js`-extension imports (`../dom.js` -> dom.ts/.d.ts)
+    "moduleResolution": "bundler",
+    // vim-html-ds is a git submodule (see DS_PORT.md); resolve its built dist + styles
+    "paths": { "vim-html-ds/*": ["./vim-html-ds/*"] },
     "ignoreDeprecations": "6.0",
 
     "strict": false

@@ -1,0 +1,3 @@
+[submodule "vim-html-ds"]
+	path = vim-html-ds
+	url = https://github.com/vimaec/vim-html-ds.git

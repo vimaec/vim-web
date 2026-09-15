@@ -33,6 +33,9 @@
   },
   "scripts": {
     "dev": "vite",
+    "build:ds": "npm --prefix vim-html-ds install --silent && npm --prefix vim-html-ds run build",
+    "predev": "npm run build:ds",
+    "prebuild": "npm run build:ds",
     "documentation": "typedoc --entryPoints src/vim-web/index.ts --entryPointStrategy expand --out docs2 --excludeProtected --excludeExternals --excludePrivate",
     "declarations": "tsc -p tsconfig.types.json",
     "bundle-dts": "rollup -c rollup.dts.config.mjs",

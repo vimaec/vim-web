@@ -3,7 +3,7 @@
  */
 
 import * as THREE from 'three'
-import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass'
+import { FullScreenQuad, Pass } from 'three/examples/jsm/postprocessing/Pass.js'
 import { Materials } from '../../loader/materials/materials'
 import { MergeMaterial } from '../../loader/materials/mergeMaterial'
 

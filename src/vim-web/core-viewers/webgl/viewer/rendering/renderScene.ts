@@ -4,7 +4,7 @@
 
 import * as THREE from 'three'
 import { Scene } from '../../loader/scene'
-import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer'
+import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js'
 import { Materials } from '../../loader/materials/materials'
 import { MaterialSet } from '../../loader/materials/materialSet'
 import { InstancedMesh } from '../../loader/progressive/instancedMesh'

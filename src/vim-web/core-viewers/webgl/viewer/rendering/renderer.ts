@@ -7,7 +7,7 @@ import { ISceneRenderer, Scene } from '../../loader/scene'
 import { Viewport } from '../viewport'
 import { RenderScene } from './renderScene'
 import { MaterialSet, Materials } from '../../loader/materials/materials'
-import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer'
+import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js'
 
 import { Camera } from '../camera/camera'
 import { IRenderingSection, RenderingSection } from './renderingSection'

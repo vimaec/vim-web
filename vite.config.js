@@ -3,6 +3,10 @@ import { resolve } from 'path'
 import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    // vim-html-ds is a git submodule; alias so `vim-html-ds/...` resolves into it (see DS_PORT.md)
+    alias: { 'vim-html-ds': resolve(__dirname, 'vim-html-ds') }
+  },
   build: {
     sourcemap: true,
     lib: {
