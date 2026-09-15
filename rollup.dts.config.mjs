@@ -1,4 +1,8 @@
 import dts from 'rollup-plugin-dts'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+
+const root = dirname(fileURLToPath(import.meta.url))
 
 export default {
   input: 'dist/types/index.d.ts',
@@ -12,6 +16,18 @@ export default {
       name: 'skip-css',
       resolveId(source) {
         if (source.endsWith('.css')) return { id: source, external: true }
+        return null
+      },
+    },
+    // Inline vim-html-ds types. The DS is a path-aliased git submodule, not a package consumers
+    // install, so the public d.ts must never import from it — resolve the alias to the built
+    // declarations so rollup-plugin-dts bundles them (see DS_PORT.md).
+    {
+      name: 'inline-vim-html-ds',
+      resolveId(source) {
+        if (source.startsWith('vim-html-ds/')) {
+          return join(root, source.replace(/\.js$/, '.d.ts'))
+        }
         return null
       },
     },
@@ -50,7 +66,8 @@ export default {
         const nameMap = new Map()
 
         // Detect each namespace by peeking at its first export line
-        for (const m of code.matchAll(/declare namespace (index_d(?:\$\d+)?) \{/g)) {
+        // Suffixes are base36 ($1..$9, then $a, $b, …) — accept letters, not just digits
+        for (const m of code.matchAll(/declare namespace (index_d(?:\$[0-9a-z]+)?) \{/g)) {
           const id = m[1]
           const peek = code.substring(m.index, m.index + 500)
           // Names match the access path: Core.Webgl → Core_Webgl, React.Ultra → React_Ultra
@@ -63,6 +80,14 @@ export default {
           else if (peek.includes('isFalse')) nameMap.set(id, 'React_Settings')
           else if (peek.includes('errorStyle')) nameMap.set(id, 'React_Errors')
           else if (peek.includes('contextMenuIds')) nameMap.set(id, 'React_ContextMenu')
+          // DS-based layer (dom-viewers) — see DS_PORT.md
+          else if (peek.includes('CheckboxOptions')) nameMap.set(id, 'Dom_Components')
+          else if (peek.includes('childScope')) nameMap.set(id, 'Dom')
+          // Content-based detection where the expected name is fragile: the React barrel is
+          // only the bare `index_d` while it happens to deconflict first, and Core.Ultra's
+          // `createCoreUltraViewer` sorts past the 500-char peek.
+          else if (peek.includes(' as ContextMenu,')) nameMap.set(id, 'React')
+          else if (peek.includes('INVALID_HANDLE')) nameMap.set(id, 'Core_Ultra')
         }
 
         // Bare index_d is the React top-level namespace
@@ -80,7 +105,7 @@ export default {
         const sorted = [...nameMap.entries()].sort((a, b) => b[0].length - a[0].length)
         for (const [from, to] of sorted) {
           const escaped = from.replace(/\$/g, '\\$')
-          code = code.replace(new RegExp('\\b' + escaped + '(?!\\$|\\d)', 'g'), to)
+          code = code.replace(new RegExp('\\b' + escaped + '(?![\\$0-9a-z])', 'g'), to)
         }
         return code
       },
@@ -98,22 +123,22 @@ export default {
       renderChunk(code) {
         // Collect all alias names (not namespace names) from standalone declarations
         const aliases = new Set()
-        for (const m of code.matchAll(/^type ((?:Core|React)_\w+)/gm)) {
+        for (const m of code.matchAll(/^type ((?:Core|React|Dom)_\w+)/gm)) {
           aliases.add(m[1])
         }
-        for (const m of code.matchAll(/^declare const ((?:Core|React)_\w+):/gm)) {
+        for (const m of code.matchAll(/^declare const ((?:Core|React|Dom)_\w+):/gm)) {
           aliases.add(m[1])
         }
 
         // Remove standalone type alias lines
-        code = code.replace(/^type (?:Core|React)_\w+[^;]*;\n/gm, '')
+        code = code.replace(/^type (?:Core|React|Dom)_\w+[^;]*;\n/gm, '')
         // Remove standalone const alias lines
-        code = code.replace(/^declare const (?:Core|React)_\w+: typeof \w+;\n/gm, '')
+        code = code.replace(/^declare const (?:Core|React|Dom)_\w+: typeof \w+;\n/gm, '')
 
         // In export blocks, replace known aliases with direct references:
         // "Core_Webgl_IFoo as IFoo" → "IFoo"
         // Namespace references like "Core_Ultra as Ultra" are NOT in aliases set, so kept
-        code = code.replace(/(?:Core|React)_\w+ as (\w+)/g, (match, realName) => {
+        code = code.replace(/(?:Core|React|Dom)_\w+ as (\w+)/g, (match, realName) => {
           const aliasName = match.split(' as ')[0]
           return aliases.has(aliasName) ? realName : match
         })

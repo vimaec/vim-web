@@ -16,6 +16,7 @@ function App() {
   const div = useRef<HTMLDivElement>(null)
   const viewerRef = useRef<ViewerRef>(undefined)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const dsSpike = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const el = div.current!
@@ -30,6 +31,17 @@ function App() {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload)
       viewerRef.current?.dispose()
+    }
+  }, [])
+
+  // DS-port spike: mount a React-free DS widget beside the viewer to prove the toolchain end to end.
+  useEffect(() => {
+    const state = VIM.React.createState(false)
+    const cb = VIM.Dom.Components.checkbox(dsSpike.current!, { label: 'DS checkbox', state })
+    const unsubscribe = state.onChange.subscribe(v => console.log('DS checkbox:', v))
+    return () => {
+      unsubscribe()
+      cb.destroy()
     }
   }, [])
 
@@ -66,6 +78,11 @@ function App() {
       >
         Open Local File
       </button>
+      <div
+        ref={dsSpike}
+        className="ds-root"
+        style={{ position: 'absolute', top: 10, right: 10, zIndex: 100, padding: 8 }}
+      />
       <div ref={div} style={{ position: 'absolute', inset: 0 }}/>
     </>
   )
