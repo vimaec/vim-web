@@ -1,7 +1,7 @@
 /**
  * Touch input handler with support for tap, pinch, and pan gestures.
  *
- * See INPUT.md for gesture recognition, state management, and performance patterns.
+ * See .claude/docs/input.md for gesture recognition, state management, and performance patterns.
  */
 
 import * as THREE from 'three'

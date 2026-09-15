@@ -6,21 +6,14 @@ export default defineConfig({
   build: {
     sourcemap: true,
     lib: {
-      formats: ['iife', 'es'],
-      entry: resolve(__dirname, 'src/vim-web/index.ts'),
-      name: 'VIMReact'
+      formats: ['es'],
+      entry: resolve(__dirname, 'src/vim-web/index.ts')
     },
     rollupOptions: {
-      external: ['react', 'react-dom', /^react\//, /^react-dom\//],
+      // react, react-dom and three are peer dependencies provided by the host app,
+      // never bundled — this keeps a single instance of each in the consuming app.
+      external: ['react', 'react-dom', /^react\//, /^react-dom\//, 'three', /^three\//],
       output: {
-        // Save react and react-dom as globals so they can be provided as external dependencies
-        globals: {
-          'react': 'React',
-          'react/jsx-runtime': 'React',
-          'react-dom': 'ReactDOM',
-          'react-dom/client': 'ReactDOM'
-        },
-
         // Keep style.css name
         assetFileNames: (assetInfo) => {
           if (assetInfo.names[0] === 'vim-web.css') {

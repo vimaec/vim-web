@@ -274,7 +274,7 @@ state.useMemo((v) => compute(v))
 
 ## Input System
 
-> **📖 Full Documentation**: See [INPUT.md](./.claude/docs/INPUT.md) for architecture, patterns, and advanced customization
+> **📖 Full Documentation**: See [.claude/docs/input.md](./.claude/docs/input.md) for architecture, patterns, and advanced customization
 
 ### Default Bindings
 
@@ -335,7 +335,7 @@ viewer.core.inputs.mouse.onClick = (pos) => { /* custom logic */ }
 // Restore: viewer.core.inputs.pointerMode = originalMode
 ```
 
-See [INPUT.md](./.claude/docs/INPUT.md) for more patterns, coordinate systems, performance optimization, and debugging techniques
+See [.claude/docs/input.md](./.claude/docs/input.md) for more patterns, coordinate systems, performance optimization, and debugging techniques
 
 ---
 
@@ -566,7 +566,7 @@ npm run documentation # TypeDoc
 
 ### Loading Pipeline (WebGL)
 
-> **📖 Loading Optimization**: See [.claude/optimization.md](./.claude/docs/optimization.md) for geometry building performance, lazy Element3D creation, and profiling techniques
+> **📖 Loading Optimization**: See [.claude/docs/optimization.md](./.claude/docs/optimization.md) for geometry building performance, lazy Element3D creation, and profiling techniques
 
 Full call chain from `viewer.load()` to rendered scene:
 
@@ -607,7 +607,7 @@ await vim.load(sub)
 
 ### Rendering Pipeline (WebGL)
 
-> **📖 Optimization Guide**: See [.claude/RENDERING_OPTIMIZATIONS.md](./.claude/docs/RENDERING_OPTIMIZATIONS.md) for shader optimizations, GLSL3 migration, and performance improvements
+> **📖 Optimization Guide**: See [.claude/docs/rendering-optimizations.md](./.claude/docs/rendering-optimizations.md) for shader optimizations, GLSL3 migration, and performance improvements
 
 Multi-pass compositor:
 ```
