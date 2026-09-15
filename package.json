@@ -33,7 +33,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build:ds": "npm --prefix vim-html-ds install --silent && npm --prefix vim-html-ds run build",
+    "build:ds": "cd vim-html-ds && npm install --no-save --silent && npm run build",
     "predev": "npm run build:ds",
     "prebuild": "npm run build:ds",
     "documentation": "typedoc --entryPoints src/vim-web/index.ts --entryPointStrategy expand --out docs2 --excludeProtected --excludeExternals --excludePrivate",

@@ -18,6 +18,9 @@ the whole time and every widget is independently verifiable.
   After cloning: `git submodule update --init`.
 - Its `dist/` is gitignored inside the submodule and must be built: **`npm run build:ds`**
   (runs automatically before both `npm run build` and `npm run dev` via `prebuild`/`predev`).
+  The script `cd`s into the submodule and installs with `--no-save`. **Never run npm with
+  `--prefix vim-html-ds`**: it installs *vim-web itself* into the submodule as
+  `"vim-web": "file:.."`, rewriting the DS's `package.json` and lockfile.
 - `tsconfig.json` uses `moduleResolution: "bundler"` — required to resolve the DS's `.js`-extension
   imports (`../dom.js` → `dom.ts`/`.d.ts`). `vite.config.js` aliases `vim-html-ds` to the submodule.
 - `bundler` resolution honours three's `exports` map, so every `three/examples/jsm/*` import must
