@@ -55,6 +55,16 @@ children with the DS `childScope()` and dispose them in one call. No virtual DOM
 reconciliation — this removes the whole class of React footguns (`useEffect` subscription leaks,
 `StateRef`-vs-hooks, Rules of Hooks in adapters) that the current layer documents.
 
+Refinements set by the other atoms:
+
+- **External-change guard** (`input`, `select`): only call the DS setter when the observable's
+  value differs from the DS's current value — echoing a user's own keystroke back moves the caret,
+  and re-setting an unchanged select value is wasted work.
+- **Parent-owned toggles** (`iconButton.on`): accept `StateRef<boolean> | boolean`. A StateRef keeps
+  the look in sync; the widget never toggles itself — its owner does, exactly like the React version.
+- **Delegated zones** (`tooltipZone`): one handle per container; targets carry `TIP_ATTR`. No
+  per-widget wiring.
+
 ## Inventory — ~37 UI units
 
 **Complexity:** ⬜ Trivial · 🟨 Moderate · 🟥 Hard
@@ -80,10 +90,10 @@ React hook bridge and subscribing DS handles directly.
 | # | Done | Widget | Source | DS target | Cx | Notes |
 |---|:---:|---|---|---|----|---|
 | 1 | ✅ | Checkbox | `components/Checkbox.tsx` | `ds-checkbox` | ⬜ | Pattern-setter — `dom-viewers/components/checkbox.ts` |
-| 2 | | IconButton | `components/IconButton.tsx` | `ds-icon-button` | ⬜ | |
-| 3 | | Input | `components/Input.tsx` | `ds-input` | ⬜ | |
-| 4 | | Select | `components/Select.tsx` | `ds-select` | ⬜ | |
-| 5 | | Tooltip | `components/Tooltip.tsx` | `ds-tooltip` | 🟨 | DS model is `data-ds-tip` + `tip.bindAll(root)` |
+| 2 | ✅ | IconButton | `components/IconButton.tsx` | `ds-icon-button` | ⬜ | `iconButton.ts` — custom `Element` icons mount via `.el`; `on` accepts `StateRef \| boolean` |
+| 3 | ✅ | Input | `components/Input.tsx` | `ds-input` | ⬜ | `input.ts` — `commit: 'input' \| 'change'`; external-change guard |
+| 4 | ✅ | Select | `components/Select.tsx` | `ds-select` | ⬜ | `select.ts` — the DS body-level menu replaces the outside-click logic |
+| 5 | ✅ | Tooltip | `components/Tooltip.tsx` | `ds-tooltip` | 🟨 | `tooltip.ts` — `tooltipZone(root)`; targets carry `TIP_ATTR` (`data-ds-tip`) |
 
 ### B. Control bar → `ds-toolbar`
 

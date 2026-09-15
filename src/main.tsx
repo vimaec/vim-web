@@ -34,14 +34,35 @@ function App() {
     }
   }, [])
 
-  // DS-port spike: mount a React-free DS widget beside the viewer to prove the toolchain end to end.
+  // DS-port spike: mount the React-free DS atoms beside the viewer to prove the toolchain end to end.
+  // The icon button's `on` is bound to the checkbox's state, so toggling one updates the other.
   useEffect(() => {
-    const state = VIM.React.createState(false)
-    const cb = VIM.Dom.Components.checkbox(dsSpike.current!, { label: 'DS checkbox', state })
-    const unsubscribe = state.onChange.subscribe(v => console.log('DS checkbox:', v))
+    const host = dsSpike.current!
+    const checked = VIM.React.createState(false)
+    const text = VIM.React.createState('hello')
+    const choice = VIM.React.createState('b')
+    const c = VIM.Dom.Components
+    const tips = c.tooltipZone(host)
+    const cb = c.checkbox(host, { label: 'DS checkbox', state: checked })
+    const btn = c.iconButton(host, {
+      icon: '★',
+      on: checked,
+      tip: 'Bound to the checkbox',
+      onClick: () => checked.set(!checked.get())
+    })
+    const inp = c.input(host, { state: text, placeholder: 'DS input' })
+    const sel = c.select(host, {
+      state: choice,
+      options: [{ value: 'a', label: 'Alpha' }, { value: 'b', label: 'Beta' }, { value: 'c', label: 'Gamma' }]
+    })
+    const unsubs = [
+      checked.onChange.subscribe(v => console.log('DS checkbox:', v)),
+      text.onChange.subscribe(v => console.log('DS input:', v)),
+      choice.onChange.subscribe(v => console.log('DS select:', v))
+    ]
     return () => {
-      unsubscribe()
-      cb.destroy()
+      for (const u of unsubs) u()
+      for (const h of [sel, inp, btn, cb, tips]) h.destroy()
     }
   }, [])
 
@@ -81,7 +102,10 @@ function App() {
       <div
         ref={dsSpike}
         className="ds-root"
-        style={{ position: 'absolute', top: 10, right: 10, zIndex: 100, padding: 8 }}
+        style={{
+          position: 'absolute', left: 10, bottom: 60, zIndex: 100, width: 200, padding: 8,
+          display: 'flex', flexDirection: 'column', gap: 6
+        }}
       />
       <div ref={div} style={{ position: 'absolute', inset: 0 }}/>
     </>
