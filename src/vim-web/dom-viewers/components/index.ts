@@ -1,5 +1,6 @@
 export { checkbox, type CheckboxOptions, type CheckboxHandle } from './checkbox'
 export { iconButton, type IconButtonOptions, type IconButtonHandle } from './iconButton'
 export { input, type InputOptions, type InputHandle } from './input'
+export { numberInput, type NumberInputOptions, type NumberInputHandle } from './numberInput'
 export { select, type SelectOption, type SelectOptions, type SelectHandle } from './select'
 export { tooltipZone, TIP_ATTR, type TooltipZoneOptions, type TooltipZoneHandle } from './tooltip'

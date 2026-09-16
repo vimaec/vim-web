@@ -87,6 +87,18 @@ the relevant observables change. `customize(fn)` is the same contract as the Rea
 actions. Layout (a bottom-centred strip of hairline sections) lives in `dom-viewers/style.css`:
 app chrome only, tokens only, `--vw-` prefix for its own.
 
+## Generic panels
+
+`dom-viewers/generic/` renders data-driven settings popovers. `genericPanel()` is a DS panel (title,
+close, body — `createPanel` with `fill`) inside a `position: fixed` `.vim-ds-floating` box kept above
+its anchor by `helpers/floating.ts` (`floatAbove`, the imperative twin of `useFloatingPanelPosition`;
+the pure `computeFloatingPosition` is shared with the React hook). The React "overlay" was only a
+`pointer-events: none` positioning layer and is gone. `genericContent()` lays entries out under
+`ds-collapse` groups/sections; each control is one of the atoms, and every entry's `state` is
+subscribed so `enabled` / `visible` re-sync in place where React re-rendered. Entry rows are app
+chrome (`.vim-ds-entry`, label 50% / control) because `ds-setting`'s fixed 170px label column
+overflows a 300px popover. `element` / `renderValue` entries take DOM instead of JSX (🔓).
+
 ## Inventory — ~37 UI units
 
 **Complexity:** ⬜ Trivial · 🟨 Moderate · 🟥 Hard
@@ -129,11 +141,11 @@ React hook bridge and subscribing DS handles directly.
 
 | # | Done | Widget | Source | DS target | Cx | Notes |
 |---|:---:|---|---|---|----|---|
-| 9 | | GenericPanel | `generic/genericPanel.tsx` | `ds-panel` | 🟨 | Float positioning; preserve `customize()` |
-| 10 | | GenericField | `generic/genericField.tsx` | `ds-field` / `ds-setting` | 🟨 | text→input, number→number, bool→checkbox, select→select |
-| 11 | | InputNumber | `generic/inputNumber.tsx` | `ds-number` | ⬜ | |
-| 12 | | IsolationPanel | `panels/isolationPanel.tsx` | composed GenericPanel | 🟨 | |
-| 13 | | SectionBoxPanel | `panels/sectionBoxPanel.tsx` | composed GenericPanel | 🟨 | |
+| 9 | ✅ | GenericPanel | `generic/genericPanel.tsx` | `ds-panel` (`fill`) in a fixed `.vim-ds-floating` box | 🟨 | `generic/genericPanel.ts`; `floatAbove()` replaces the overlay + hook; `customize()` keeps the `GenericPanelApi` contract |
+| 10 | ✅ | GenericField | `generic/genericField.tsx` | `ds-collapse` groups/sections + app entry rows | 🟨 | `generic/genericContent.ts`; `ds-setting`'s 170px grid does not fit a 300px popover, so rows are chrome CSS (label 50% / control). `enabled`/`visible` re-sync on any entry state change |
+| 11 | ✅ | InputNumber | `generic/inputNumber.tsx` | `ds-number` | ⬜ | `components/numberInput.ts`; commit + live scrub both write through |
+| 12 | ✅ | IsolationPanel | `panels/isolationPanel.tsx` | composed GenericPanel | 🟨 | `panels/isolationPanel.ts`; same entry ids (`isolationPanelIds`) |
+| 13 | ✅ | SectionBoxPanel | `panels/sectionBoxPanel.tsx` | composed GenericPanel | 🟨 | `panels/sectionBoxPanel.ts`; same entry ids (`sectionBoxPanelIds`) |
 
 ### D. BIM panel suite
 

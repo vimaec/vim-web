@@ -1,30 +1,7 @@
-/**
- * Computes a position for a floating element relative to a target, with smart fallback
- * if it overflows the top or sides of the screen.
- *
- * @param originRect - The bounding rect of the origin element.
- * @param panelRect - The bounding rect of the panel to position.
- * @returns The top-left position for the panel.
- */
-export function computeFloatingPosition(originRect: DOMRect, panelRect: DOMRect): { top: number; left: number } {
-  // Center horizontally above the origin
-  let left = originRect.left + originRect.width / 2 - panelRect.width / 2;
-  let top = originRect.top - 10 - panelRect.height;
-
-  // If overflowing on top, position below
-  if (top < 10) {
-    top = originRect.bottom + 10;
-  }
-
-  // Prevent horizontal overflow
-  if (left < 10) {
-    left = 10;
-  } else if (left + panelRect.width > window.innerWidth - 10) {
-    left = window.innerWidth - panelRect.width - 10;
-  }
-
-  return { top, left };
-}
+// The positioning math is shared with the DS layer (its imperative `floatAbove`);
+// only the React hook lives here. Direct import: this file goes away at the flip.
+import { computeFloatingPosition } from '../../dom-viewers/helpers/floating'
+export { computeFloatingPosition }
 
 import { useLayoutEffect, useState } from "react";
 

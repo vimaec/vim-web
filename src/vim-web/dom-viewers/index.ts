@@ -15,5 +15,7 @@ import './style.css'
 
 export * as Components from './components'
 export * as ControlBar from './controlbar'
+export * as Generic from './generic'
 export * as Icons from './iconSet'
+export * as Panels from './panels'
 export { childScope, type ChildScope } from './ds'

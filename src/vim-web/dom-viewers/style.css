@@ -8,6 +8,7 @@
 */
 :root {
   --vw-z-ui: 20;
+  --vw-z-panel: 30;
 }
 
 /* Control bar — a flat strip of hairline-bordered sections, bottom-centred. */
@@ -38,4 +39,65 @@
 .vim-ds-controlbar__section[data-variant="blue"] {
   border-color: var(--vim-cyan);
   background: var(--vim-cyan-tint);
+}
+
+/* Floating popover (generic panels) — a DS panel positioned above its anchor by floatAbove(). */
+.vim-ds-floating {
+  position: fixed;
+  width: min(300px, 70%);
+  z-index: var(--vw-z-panel);
+}
+/* The DS panel is a docked side panel with one hairline; as a popover it needs all four. */
+.vim-ds-floating .ds-panel {
+  border: 1px solid var(--hairline);
+}
+
+/* Generic entry rows — label 50% / control. ds-setting's fixed 170px grid overflows a 300px popover. */
+.vim-ds-list {
+  display: flex;
+  flex-direction: column;
+}
+.vim-ds-entry {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-height: var(--ds-control-h);
+  padding: 0 var(--ds-space-1);
+  font-size: var(--ds-fs-label);
+  color: var(--text-200);
+}
+.vim-ds-entry:nth-child(odd) {
+  background: var(--stage-800);
+}
+.vim-ds-entry__label {
+  flex: 0 0 50%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vim-ds-entry__control {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+}
+.vim-ds-entry__control > * {
+  min-width: 0;
+}
+.vim-ds-entry__value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vim-ds-entry__info {
+  font-size: var(--ds-fs-small);
+  color: var(--text-400);
+  white-space: nowrap;
+}
+.vim-ds-entry[data-disabled] {
+  opacity: 0.5;
+  pointer-events: none;
 }
