@@ -43,7 +43,9 @@ export function isolationPanel (host: HTMLElement, opts: {
         type: 'number', id: Ids.ghostOpacity, label: 'Ghost Opacity',
         state: isolation.ghostOpacity,
         enabled: () => isolation.showGhost.get(),
-        min: 0, max: 1, step: 1 / 255, transform: clamp01
+        // The DS stepper formats to the step's decimals; the React 1/255 (a byte-alpha artifact) would
+        // print 17 digits, so this uses a readable percent-scale step.
+        min: 0, max: 1, step: 0.01, transform: clamp01
       },
       { type: 'bool', id: Ids.outlineEnabled, label: 'Selection Outline', state: renderSettings.outlineEnabled },
       {
