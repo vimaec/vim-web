@@ -1,5 +1,5 @@
 import { createIconButton, type IconButtonHandle as DsIconButtonHandle } from '../ds'
-import type { StateRef } from '../../react-viewers'
+import type { StateRef } from '../../state'
 
 export type IconButtonOptions = {
   /** An SVG/HTML element rendered inside the button, or a DS named icon / glyph string. */

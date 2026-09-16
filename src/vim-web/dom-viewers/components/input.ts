@@ -1,5 +1,5 @@
 import { createInput, type InputHandle as DsInputHandle } from '../ds'
-import type { StateRef } from '../../react-viewers'
+import type { StateRef } from '../../state'
 
 export type InputOptions = {
   /** Observable the field reads from and writes back to. */

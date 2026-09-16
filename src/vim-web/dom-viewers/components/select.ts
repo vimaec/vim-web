@@ -1,5 +1,5 @@
 import { createSelect, type SelectHandle as DsSelectHandle } from '../ds'
-import type { StateRef } from '../../react-viewers'
+import type { StateRef } from '../../state'
 
 export type SelectOption = {
   value: string

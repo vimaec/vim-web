@@ -139,6 +139,19 @@ twins of the message-box builders (`webglFileError` and the six Ultra screens) o
 Bodies are structured HTML: no DS organism fits a multi-paragraph message. The React
 `serverConnectionError` computed `isLocalUrl(url)` and never used it; the twin drops the dead call.
 
+## Side panel & state
+
+The observable core — `StateRef`, `FuncRef`, `createState` and the non-hook `createFuncRef` — moved
+out of the React-importing `reactUtils.ts` into **`src/vim-web/state/observable.ts`**; `reactUtils`
+re-exports it (public surface unchanged) and the DS layer imports it directly. `dom-viewers/state/
+sideState.ts` is `createSideState`, the framework-neutral twin of `useSideState` (two-deep content
+stack, width, hasBim) with an `onChange` event. `panels/sidePanel.ts` follows it: width and `hidden`
+track the state, the canvas container's `left` moves with it and the viewport is re-measured; a
+`ResizeObserver` on the root clamps the width and re-applies. Resizing is the DS `columnGrip`
+(WAI-ARIA separator: drag, arrows, Home/double-click reset) instead of the hand-rolled handle. The
+panel has no head of its own — pages (settings, BIM) bring their DS head and pass `side.popContent`
+as their `onClose`.
+
 ## Inventory — ~37 UI units
 
 **Complexity:** ⬜ Trivial · 🟨 Moderate · 🟥 Hard
@@ -151,7 +164,7 @@ React hook bridge and subscribing DS handles directly.
 
 | Layer | Files | Action |
 |---|---|---|
-| Reactivity bridge | `helpers/reactUtils.ts` (`useStateRef`, `useOnChange`, `useCustomizer`, `useRefresher`) | Remove hook wrappers; keep the `StateRef`/`FuncRef` observables |
+| Reactivity bridge | `helpers/reactUtils.ts` (`useStateRef`, `useOnChange`, `useCustomizer`, `useRefresher`) | ✅ The observables (`StateRef`, `FuncRef`, `createState`, `createFuncRef`) now live in `src/vim-web/state/observable.ts`; `reactUtils` re-exports them and keeps only the hooks |
 | Observable state | `state/*` | 🔁 keep; strip React from `controlBarState.tsx`, `measureState.tsx` |
 | Settings persistence | `settings/*` (state, storage, localStorage, item, keys, anySettings, userBoolean, panelContent) | 🔁 keep |
 | BIM data mapping | `bim/bimInfoData.ts`, `bimInfoObject.ts`, `bimInfoVim.ts`, `bimTreeData.ts`, `bimUtils.ts` | 🔁 keep; `bimInfoConvert.tsx` de-React |
@@ -208,7 +221,7 @@ React hook bridge and subscribing DS handles directly.
 | 23 | ✅ | Help | `panels/help.tsx` | `ds-modal` | 🟨 | `modal/help.ts` — quick-controls image in the modal body |
 | 24 | ✅ | AxesPanel | `panels/axesPanel.tsx` | chrome square + `iconButton` atoms | 🟨 | `panels/axesPanel.ts` — adopts the core axes canvas, ResizeObserver sizes it; ortho/perspective icon swaps on `camera.onSettingsChanged` |
 | 25 | ✅ | Logo | `panels/logo.tsx` | `<img>` | ⬜ | `panels/logo.ts` |
-| 26 | | SidePanel | `panels/sidePanel.tsx` | `ds-panel` + DS `columnGrip()` | 🟥 | Resizable/collapsible; DS `dom.ts` ships `columnGrip` drag-resize |
+| 26 | ✅ | SidePanel | `panels/sidePanel.tsx` | chrome box + DS `columnGrip()` | 🟥 | `panels/sidePanel.ts` on `state/sideState.ts` (`createSideState`, the neutral `useSideState` twin); pages supply their own head/×; the grip is keyboard-accessible |
 | 27 | ✅ | RestOfScreen | `panels/restOfScreen.tsx` | layout helper | 🟨 | `panels/restOfScreen.ts` — `left`/`width` from `side.getWidth()`, re-synced on body resize and `update()` |
 | 28 | ✅ | **Overlay** | `panels/overlay.tsx` | port as-is (imperative) | 🟨⚡ | `panels/overlay.ts` — verbatim relay, plus the listener cleanup the React version lacked |
 

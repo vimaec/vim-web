@@ -197,6 +197,23 @@
   color: var(--text-300);
 }
 
+/* Side panel — width and visibility are set from the side state; the DS grip sits on its right edge. */
+.vim-ds-side {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  z-index: var(--vw-z-ui);
+  background: var(--stage-900);
+  border-right: 1px solid var(--hairline);
+}
+.vim-ds-side__body {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Settings page (inside the side panel). */
 .vim-ds-settings .ds-panel__body {
   padding: var(--ds-space-2);

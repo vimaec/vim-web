@@ -1,5 +1,5 @@
 import { createNumberInput, type NumberInputHandle as DsNumberInputHandle } from '../ds'
-import type { StateRef } from '../../react-viewers'
+import type { StateRef } from '../../state'
 
 export type NumberInputOptions = {
   /** Observable the stepper reads from and writes back to. */

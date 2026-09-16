@@ -5,6 +5,7 @@ export { overlay, type OverlayHandle } from './overlay'
 export { restOfScreen, type RestOfScreenHandle } from './restOfScreen'
 export { logo, type LogoHandle } from './logo'
 export { axesPanel, type AxesPanelHandle, type AxesSettings } from './axesPanel'
+export { sidePanel, type SidePanelHandle } from './sidePanel'
 export {
   contextMenu,
   contextMenuIds,

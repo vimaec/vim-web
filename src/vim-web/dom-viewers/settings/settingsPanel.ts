@@ -17,8 +17,10 @@ export type SettingsPanelHandle = {
 export function settingsPanel (host: HTMLElement, opts: {
   entries: GenericCommonEntry[]
   title?: string
+  /** Shows a × in the head; the side panel passes `side.popContent`. */
+  onClose?: () => void
 }): SettingsPanelHandle {
-  const panel = createPanel(host, { title: opts.title ?? 'Settings', fill: true })
+  const panel = createPanel(host, { title: opts.title ?? 'Settings', fill: true, onClose: opts.onClose })
   panel.el.classList.add('vim-ds-settings')
 
   let entries = opts.entries

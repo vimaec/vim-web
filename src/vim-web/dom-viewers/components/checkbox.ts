@@ -1,5 +1,5 @@
 import { createCheckbox, type CheckboxHandle as DsCheckboxHandle } from '../ds'
-import type { StateRef } from '../../react-viewers'
+import type { StateRef } from '../../state'
 
 /**
  * Options for a boolean checkbox bound two-way to a StateRef.

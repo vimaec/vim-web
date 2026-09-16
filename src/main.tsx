@@ -66,7 +66,11 @@ function App() {
     const mode = VIM.React.createState('orbit')
     const showPanel = VIM.React.createState(false)
     const dsModal = VIM.Dom.Modal.modal()
-    Object.assign(globalThis, { dsModal })
+    // Side panel state is created here (sync) and consumed by createWebgl once the viewer exists.
+    const dsSideState = VIM.Dom.State.createSideState(true, 260)
+    dsSideState.setHasBim(false)
+    dsSideState.setContent('settings')
+    Object.assign(globalThis, { dsModal, dsSideState })
     const modeButton = (id: string, icon: VIM.Dom.Icons.IconFactory, tip: string) => ({
       id, tip, icon, isOn: () => mode.get() === id, action: () => mode.set(id)
     })
@@ -90,6 +94,11 @@ function App() {
           {
             id: 'error', tip: 'Error demo', icon: I.trash,
             action: () => dsModal.message(VIM.Dom.Errors.webglFileError('https://example.com/model.vim', 'HTTP 404 Not Found'))
+          },
+          {
+            id: 'side', tip: 'Side panel demo', icon: I.treeView,
+            isOn: () => dsSideState.getContent() !== 'none',
+            action: () => dsSideState.toggleContent('settings')
           }
         ]
       }
@@ -127,6 +136,7 @@ function App() {
     })
     const unsubs = [
       showPanel.onChange.subscribe(() => bar.update()),
+      dsSideState.onChange.subscribe(() => bar.update()),
       g.ghostOpacity.onChange.subscribe(v => console.log('DS ghost opacity:', v)),
       checked.onChange.subscribe(v => console.log('DS checkbox:', v)),
       text.onChange.subscribe(v => console.log('DS input:', v)),
@@ -203,9 +213,9 @@ function App() {
         style={{ position: 'absolute', left: 380, top: 70, width: 136, height: 136, zIndex: 100 }}
       />
       <div
-        id="ds-settings-host"
+        id="ds-side-host"
         className="ds-root"
-        style={{ position: 'absolute', left: 530, top: 70, width: 300, height: 320, zIndex: 100 }}
+        style={{ position: 'absolute', left: 530, top: 70, width: 460, height: 320, zIndex: 100, overflow: 'hidden', background: 'var(--stage-950)' }}
       />
       <div ref={div} style={{ position: 'absolute', inset: 0 }}/>
     </>
@@ -230,8 +240,22 @@ async function createWebgl (viewerRef: RefObject<ViewerRef>, div: HTMLDivElement
     dsContextMenu: VIM.Dom.Panels.contextMenu({
       viewer: viewer.core, framing: viewer.framing, modal: dsModal, isolation: viewer.isolation
     }),
-    dsSettings: VIM.Dom.Settings.settingsPanel(document.getElementById('ds-settings-host')!, {
-      entries: getIsolationSettings(viewer.isolation, viewer.renderSettings)
+  })
+  // Side panel demo: a stand-in "gfx" box is pushed right by the panel; the settings page lives in it.
+  const sideHost = document.getElementById('ds-side-host')!
+  const fakeGfx = document.createElement('div')
+  fakeGfx.id = 'ds-fake-gfx'
+  fakeGfx.style.cssText = 'position:absolute; inset:0; background: var(--stage-800)'
+  sideHost.appendChild(fakeGfx)
+  const dsSideState = (globalThis as any).dsSideState as VIM.Dom.State.SideState
+  const dsSide = VIM.Dom.Panels.sidePanel(sideHost, {
+    side: dsSideState, root: sideHost, gfx: fakeGfx, resize: () => {}, defaultWidth: 260
+  })
+  Object.assign(globalThis, {
+    dsSide,
+    dsSettings: VIM.Dom.Settings.settingsPanel(dsSide.body, {
+      entries: getIsolationSettings(viewer.isolation, viewer.renderSettings),
+      onClose: () => dsSideState.popContent()
     })
   })
 

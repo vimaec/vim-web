@@ -1,4 +1,4 @@
-import type { StateRef } from '../../react-viewers'
+import type { StateRef } from '../../state'
 
 /**
  * Data-driven field definitions for generic panels. Same shapes as the React

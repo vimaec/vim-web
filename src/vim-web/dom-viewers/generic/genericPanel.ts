@@ -1,5 +1,5 @@
 import { createPanel } from '../ds'
-import type { StateRef } from '../../react-viewers'
+import type { StateRef } from '../../state'
 import { floatAbove } from '../helpers/floating'
 import { genericContent } from './genericContent'
 import type { GenericEntryType } from './entries'

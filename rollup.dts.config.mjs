@@ -81,6 +81,7 @@ export default {
           else if (peek.includes('_settingsPanel as settingsPanel')) nameMap.set(id, 'Dom_Settings')
           // getErrorMessage is unique to the DS errors barrel; the React one also exports webglFileError.
           else if (peek.includes('_getErrorMessage as getErrorMessage')) nameMap.set(id, 'Dom_Errors')
+          else if (peek.includes('_createSideState as createSideState')) nameMap.set(id, 'Dom_State')
           else if (peek.includes('childScope')) nameMap.set(id, 'Dom')
           // Core / React
           else if (peek.includes('createCoreWebglViewer')) nameMap.set(id, 'Core_Webgl')
