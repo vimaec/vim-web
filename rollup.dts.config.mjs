@@ -73,7 +73,8 @@ export default {
           // Names match the access path: Core.Webgl → Core_Webgl, React.Ultra → React_Ultra
           // DS-based layer (dom-viewers) first: its barrels re-export pure React-era modules
           // (contextMenuIds, …), so the React markers below would claim them (see DS_PORT.md).
-          if (peek.includes('CheckboxOptions')) nameMap.set(id, 'Dom_Components')
+          if (peek.includes('_bimPanel as bimPanel')) nameMap.set(id, 'Dom_Bim')
+          else if (peek.includes('CheckboxOptions')) nameMap.set(id, 'Dom_Components')
           else if (peek.includes('_controlBar as controlBar')) nameMap.set(id, 'Dom_ControlBar')
           else if (peek.includes('_genericPanel as genericPanel')) nameMap.set(id, 'Dom_Generic')
           else if (peek.includes('_isolationPanel as isolationPanel')) nameMap.set(id, 'Dom_Panels')

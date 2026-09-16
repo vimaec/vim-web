@@ -13,6 +13,7 @@
 import 'vim-html-ds/styles/ds.css'
 import './style.css'
 
+export * as Bim from './bim'
 export * as Components from './components'
 export * as ControlBar from './controlbar'
 export * as Errors from './errors'

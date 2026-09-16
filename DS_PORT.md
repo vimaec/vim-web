@@ -152,6 +152,23 @@ track the state, the canvas container's `left` moves with it and the viewport is
 panel has no head of its own — pages (settings, BIM) bring their DS head and pass `side.popContent`
 as their `onClose`.
 
+## BIM suite
+
+`dom-viewers/bim/` keeps the React data layer (`bimTreeData`, `bimInfoObject`, `bimInfoVim`,
+`helpers/element`) via deep imports and rebuilds the four widgets. **bimTree.ts** runs
+`@headless-tree/core` without its React adapter: `createTree` keeps its own state, `setMounted(true)`
+enables state updates, `registerElement(scrollBox)` binds the hotkeys, and the `setState` /
+`setExpandedItems` / `setSelectedItems` / `setFocusedItem` config hooks schedule a microtask render.
+The render is a window: `windowRange()` picks the row span, a recycled pool of `.ds-tree__item` rows
+is rebound in place (each row is `registerElement`ed with its item so headless-tree's focus handling
+finds it), and the spacer / `translateY` come from the DS virtual scaffold. Visibility is the DS
+tri-state check (`visible → on`, `partial → partial`, `hidden → off`). Selection stays two-way:
+viewer → tree expands ancestors in one `applySubStateUpdate`, highlights and reveals the last
+element; tree → viewer runs click / shift / ctrl exactly as before behind a `treeOrigin` guard that
+is cleared in `finally`, since the core echoes the selection synchronously. **bimPanel.ts** composes
+the page and docks the info panel in a `heightResizable` `ds-collapse`. **state/webglState.ts** is
+`createWebglState`, the twin of `useViewerState` (vim / selection / filtered elements / filter).
+
 ## Inventory — ~37 UI units
 
 **Complexity:** ⬜ Trivial · 🟨 Moderate · 🟥 Hard
@@ -204,10 +221,10 @@ React hook bridge and subscribing DS handles directly.
 
 | # | Done | Widget | Source | DS target | Cx | Notes |
 |---|:---:|---|---|---|----|---|
-| 14 | | BimPanel (shell) | `bim/bimPanel.tsx` | `ds-panel` | 🟥 | Orchestrates tree + search + info |
-| 15 | | **BimTree** | `bim/bimTreeHeadless.tsx` | `.ds-tree--virtual` scaffold + DS `windowRange()` + `@headless-tree/core` | 🟥⚡ | `createTree` does not virtualize. The DS ships pure windowing math (`virtual.ts`) and keeps row rendering with the consumer — pair it with `@headless-tree/core` (already a dep); drop `@tanstack/react-virtual`. Prove 10k+ nodes first |
-| 16 | | BimSearch | `bim/bimSearch.tsx` | `ds-search` | 🟨 | |
-| 17 | | BimInfoPanel | `bim/bimInfoPanel.tsx` | `ds-panel` + `ds-field`/`ds-table` | 🟥🔓 | `onData` / `onRenderHeaderEntryValue` return JSX — **public break**; DOM-returning callbacks |
+| 14 | ✅ | BimPanel (shell) | `bim/bimPanel.tsx` | `ds-panel` + `ds-collapse` | 🟥 | `bim/bimPanel.ts` — DS head ('Project Inspector', × → `side.popContent`); search + tree above, 'Bim Inspector' as a height-resizable `ds-collapse` docked below (the DS grab bar replaces the fixed split and `<hr>`) |
+| 15 | ✅ | **BimTree** | `bim/bimTreeHeadless.tsx` | `.ds-tree--virtual` scaffold + DS `windowRange()` + `@headless-tree/core` | 🟥⚡ | `bim/bimTree.ts` — headless-tree in a vanilla host (`setMounted`, `registerElement`, change hooks); rows are a recycled pool placed by `windowRange()`; tri-state `ds-check` replaces the eye toggle; `@tanstack/react-virtual` goes at the flip |
+| 16 | ✅ | BimSearch | `bim/bimSearch.tsx` | `ds-search` | 🟨 | `bim/bimSearch.ts` — DS search (icon and × built in), 200 ms debounce, count as `ds-tree__meta` |
+| 17 | ✅ | BimInfoPanel | `bim/bimInfoPanel.tsx` | `ds-collapse` body + generic entries | 🟥🔓 | `bim/bimInfoPanel.ts` + `bimInfoEntries.ts` + `bimInfoApi.ts` — `DataRender` returns `Element` (🔓); `createBimInfoApi()` is the plain-object twin of `useBimInfo` |
 
 ### E. Panels & overlays
 

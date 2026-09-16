@@ -219,6 +219,58 @@
   padding: var(--ds-space-2);
 }
 
+/* BIM page (inside the side panel): search + virtual tree above, resizable inspector section below. */
+.vim-ds-bim .ds-panel__body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+}
+.vim-ds-bim__tree {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.vim-ds-bim-search {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2);
+}
+.vim-ds-bim-search .ds-search {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.vim-ds-bim-tree {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* The scroll box fills the tree area; the side panel already draws the vertical hairlines. */
+.vim-ds-bim-tree .ds-tree--virtual {
+  flex: 1 1 auto;
+  min-height: 0;
+  border-left: 0;
+  border-right: 0;
+}
+.vim-ds-bim__info {
+  flex: 0 0 auto;
+}
+/* Info only (tree disabled): the section fills the page and loses the DS 50% resting cap. */
+.vim-ds-bim__info--full {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+}
+.vim-ds-bim-info__loading {
+  display: block;
+  padding: var(--ds-space-2);
+  font-size: var(--ds-fs-label);
+  color: var(--text-400);
+}
+
 /* Error message typography (modal body). */
 .vim-ds-error {
   color: var(--text-200);

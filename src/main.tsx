@@ -68,8 +68,8 @@ function App() {
     const dsModal = VIM.Dom.Modal.modal()
     // Side panel state is created here (sync) and consumed by createWebgl once the viewer exists.
     const dsSideState = VIM.Dom.State.createSideState(true, 260)
-    dsSideState.setHasBim(false)
-    dsSideState.setContent('settings')
+    dsSideState.setHasBim(true)
+    dsSideState.setContent('bim')
     Object.assign(globalThis, { dsModal, dsSideState })
     const modeButton = (id: string, icon: VIM.Dom.Icons.IconFactory, tip: string) => ({
       id, tip, icon, isOn: () => mode.get() === id, action: () => mode.set(id)
@@ -96,9 +96,14 @@ function App() {
             action: () => dsModal.message(VIM.Dom.Errors.webglFileError('https://example.com/model.vim', 'HTTP 404 Not Found'))
           },
           {
-            id: 'side', tip: 'Side panel demo', icon: I.treeView,
-            isOn: () => dsSideState.getContent() !== 'none',
+            id: 'side', tip: 'Side panel demo', icon: I.settings,
+            isOn: () => dsSideState.getContent() === 'settings',
             action: () => dsSideState.toggleContent('settings')
+          },
+          {
+            id: 'bim', tip: 'BIM panel demo', icon: I.treeView,
+            isOn: () => dsSideState.getContent() === 'bim',
+            action: () => dsSideState.toggleContent('bim')
           }
         ]
       }
@@ -215,7 +220,7 @@ function App() {
       <div
         id="ds-side-host"
         className="ds-root"
-        style={{ position: 'absolute', left: 530, top: 70, width: 460, height: 320, zIndex: 100, overflow: 'hidden', background: 'var(--stage-950)' }}
+        style={{ position: 'absolute', left: 530, top: 70, width: 460, height: 480, zIndex: 100, overflow: 'hidden', background: 'var(--stage-950)' }}
       />
       <div ref={div} style={{ position: 'absolute', inset: 0 }}/>
     </>
@@ -231,15 +236,16 @@ async function createWebgl (viewerRef: RefObject<ViewerRef>, div: HTMLDivElement
   // DS-port spike: axes panel (it adopts the gizmo canvas, so the React axes panel goes empty) and
   // context menu (it also listens to the core, so a right-click opens both menus while spiking).
   const dsModal = (globalThis as any).dsModal as VIM.Dom.Modal.ModalApi
+  const dsContextMenu = VIM.Dom.Panels.contextMenu({
+    viewer: viewer.core, framing: viewer.framing, modal: dsModal, isolation: viewer.isolation
+  })
   Object.assign(globalThis, {
     dsAxes: VIM.Dom.Panels.axesPanel(document.getElementById('ds-axes-host')!, {
       viewer: viewer.core,
       framing: viewer.framing,
       settings: { panelAxes: true, axesOrthographic: true, axesHome: true }
     }),
-    dsContextMenu: VIM.Dom.Panels.contextMenu({
-      viewer: viewer.core, framing: viewer.framing, modal: dsModal, isolation: viewer.isolation
-    }),
+    dsContextMenu
   })
   // Side panel demo: a stand-in "gfx" box is pushed right by the panel; the settings page lives in it.
   const sideHost = document.getElementById('ds-side-host')!
@@ -251,13 +257,31 @@ async function createWebgl (viewerRef: RefObject<ViewerRef>, div: HTMLDivElement
   const dsSide = VIM.Dom.Panels.sidePanel(sideHost, {
     side: dsSideState, root: sideHost, gfx: fakeGfx, resize: () => {}, defaultWidth: 260
   })
-  Object.assign(globalThis, {
-    dsSide,
-    dsSettings: VIM.Dom.Settings.settingsPanel(dsSide.body, {
-      entries: getIsolationSettings(viewer.isolation, viewer.renderSettings),
-      onClose: () => dsSideState.popContent()
-    })
+  const dsSettings = VIM.Dom.Settings.settingsPanel(dsSide.body, {
+    entries: getIsolationSettings(viewer.isolation, viewer.renderSettings),
+    onClose: () => dsSideState.popContent()
   })
+  // BIM page: the DS twin of the viewer state feeds the panel; pages show per the side content.
+  const dsState = VIM.Dom.State.createWebglState(viewer.core)
+  const dsBimInfo = VIM.Dom.Bim.createBimInfoApi()
+  const dsBim = VIM.Dom.Bim.bimPanel(dsSide.body, {
+    viewer: viewer.core,
+    framing: viewer.framing,
+    isolation: viewer.isolation,
+    state: dsState,
+    settings: { panelBimTree: true, panelBimInfo: true },
+    bimInfo: dsBimInfo,
+    onClose: () => dsSideState.popContent(),
+    onContextMenu: position => dsContextMenu.show(position)
+  })
+  const syncPages = () => {
+    const content = dsSideState.getContent()
+    dsSettings.setVisible(content === 'settings')
+    dsBim.setVisible(content === 'bim')
+  }
+  dsSideState.onChange.subscribe(syncPages)
+  syncPages()
+  Object.assign(globalThis, { dsSide, dsSettings, dsState, dsBimInfo, dsBim })
 
   const url = getPathFromUrl() ?? 'https://storage.cdn.vimaec.com/samples/residence.v1.2.75.vim'
   const request = viewer.load({ url }, { prewarmBim: true })
