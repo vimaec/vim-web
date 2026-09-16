@@ -65,6 +65,28 @@ Refinements set by the other atoms:
 - **Delegated zones** (`tooltipZone`): one handle per container; targets carry `TIP_ATTR`. No
   per-widget wiring.
 
+## Icons
+
+`ds-icon` is a glyph-font span, so the 49 custom SVG icons could not come from the DS. Their
+geometry now lives in framework-neutral data, **`src/vim-web/icons/iconData.ts`** — generated once
+from the old JSX by `scripts/extract-icons.mjs` (a one-shot; edit the data directly from now on) and
+typed by `icons/types.ts`. Two renderers draw it: `icons/svg.ts` (`createIcon` → `SVGSVGElement`)
+for the DOM layer, exposed name-for-name as `VIM.Dom.Icons.*`, and `react-viewers/iconRender.tsx`
+behind the unchanged `VIM.React.Icons.*` API. The 925-line JSX file became a 35-line binding, and
+the two layers cannot drift. Inside a DS icon button pass `className: 'ds-iconbtn__svg'` so the DS
+sizes the icon. Note: `iconData` uses `satisfies`, which keeps its 49-member literal type — read
+entries through an `IconDef` annotation, not `iconData[name].fill` directly.
+
+## Control bar
+
+`dom-viewers/controlbar/controlBar.ts` renders sections of `iconButton`s keyed by id. There is no
+re-render: **`update()`** re-evaluates `enable`/`enabled`/`isOn`/`tip`, mutates existing nodes
+(active, dimmed, tip, swapped icon factory) and creates/removes by id — the owner calls it when
+the relevant observables change. `customize(fn)` is the same contract as the React
+`ControlBarApi`. Clicks dispatch through the latest definition so a customization can swap
+actions. Layout (a bottom-centred strip of hairline sections) lives in `dom-viewers/style.css`:
+app chrome only, tokens only, `--vw-` prefix for its own.
+
 ## Inventory — ~37 UI units
 
 **Complexity:** ⬜ Trivial · 🟨 Moderate · 🟥 Hard
@@ -99,9 +121,9 @@ React hook bridge and subscribing DS handles directly.
 
 | # | Done | Widget | Source | DS target | Cx | Notes |
 |---|:---:|---|---|---|----|---|
-| 6 | | ControlBar | `controlbar/controlBar.tsx` | `ds-toolbar` | 🟨 | Preserve `controlBar.customize()` |
-| 7 | | ControlBarButton | `controlbar/controlBarButton.tsx` | `ds-icon-button` + `ds-tooltip` | 🟨🔓 | `icon: () => React.ReactElement` → DS icon — **public break** |
-| 8 | | ControlBarSection | `controlbar/controlBarSection.tsx` | toolbar group + `ds-divider` | ⬜ | |
+| 6 | ✅ | ControlBar | `controlbar/controlBar.tsx` | `dom-viewers/controlbar/controlBar.ts` | 🟨 | Keyed `update()` replaces re-render; `customize()` keeps the `ControlBarApi` contract. `ds-toolbar` is a table toolbar (search/segmented/actions), not a fit — sections are flex groups styled in `dom-viewers/style.css` |
+| 7 | ✅ | ControlBarButton | `controlbar/controlBarButton.tsx` | `iconButton` atom | 🟨🔓 | `icon: (o?) => Element`; clicks dispatch through the latest definition; state-dependent icon factories are swapped in place |
+| 8 | ✅ | ControlBarSection | `controlbar/controlBarSection.tsx` | `.vim-ds-controlbar__section` | ⬜ | `data-variant` (`default`, `blue`) mapped to hairline / accent tokens |
 
 ### C. Generic floating panels → `ds-panel` + `ds-field`/`ds-setting`
 
@@ -156,7 +178,7 @@ React hook bridge and subscribing DS handles directly.
 
 | # | Done | Widget | Source | DS target | Cx | Notes |
 |---|:---:|---|---|---|----|---|
-| 33 | | Icons | `icons.tsx` | `ds-icon` set | 🟥🔓 | `VIM.React.Icons.*` is public, typed `React.ReactElement` — **public break**; full parity |
+| 33 | ✅ | Icons | `icons.tsx` | `src/vim-web/icons/` + `Dom.Icons` | 🟥🔓 | SVG data extracted to `icons/iconData.ts`; `Dom.Icons.*` returns `SVGSVGElement`, `React.Icons.*` renders the same data. React names stay until the flip — **public break** on removal |
 
 ### I. Structural / bootstrap
 
