@@ -8,7 +8,9 @@ function isWebglViewer (viewer: ViewerRef): viewer is VIM.React.Webgl.ViewerApi 
   return viewer.type === 'webgl'
 }
 
-const root = createRoot(document.getElementById('root')!)
+// Vite HMR re-executes this module; reuse the root instead of creating a second one (React warns).
+const container = document.getElementById('root')!
+const root = ((globalThis as any).__vimRoot ??= createRoot(container))
 
 root.render(<App />)
 
@@ -62,6 +64,7 @@ function App() {
     const mode = VIM.React.createState('orbit')
     const showPanel = VIM.React.createState(false)
     const dsModal = VIM.Dom.Modal.modal()
+    Object.assign(globalThis, { dsModal })
     const modeButton = (id: string, icon: VIM.Dom.Icons.IconFactory, tip: string) => ({
       id, tip, icon, isOn: () => mode.get() === id, action: () => mode.set(id)
     })
@@ -188,6 +191,11 @@ function App() {
           display: 'flex', flexWrap: 'wrap', gap: 6, color: 'var(--text-200)', background: 'var(--stage-900)'
         }}
       />
+      <div
+        id="ds-axes-host"
+        className="ds-root"
+        style={{ position: 'absolute', left: 380, top: 70, width: 136, height: 136, zIndex: 100 }}
+      />
       <div ref={div} style={{ position: 'absolute', inset: 0 }}/>
     </>
   )
@@ -199,6 +207,19 @@ async function createWebgl (viewerRef: RefObject<ViewerRef>, div: HTMLDivElement
   globalThis.viewer = viewer
   // DS-port spike: the DS speed toast beside the React one (change speed with +/- to see both).
   Object.assign(globalThis, { dsSpeedToast: VIM.Dom.Panels.speedToast(viewer.core) })
+  // DS-port spike: axes panel (it adopts the gizmo canvas, so the React axes panel goes empty) and
+  // context menu (it also listens to the core, so a right-click opens both menus while spiking).
+  const dsModal = (globalThis as any).dsModal as VIM.Dom.Modal.ModalApi
+  Object.assign(globalThis, {
+    dsAxes: VIM.Dom.Panels.axesPanel(document.getElementById('ds-axes-host')!, {
+      viewer: viewer.core,
+      framing: viewer.framing,
+      settings: { panelAxes: true, axesOrthographic: true, axesHome: true }
+    }),
+    dsContextMenu: VIM.Dom.Panels.contextMenu({
+      viewer: viewer.core, framing: viewer.framing, modal: dsModal, isolation: viewer.isolation
+    })
+  })
 
   const url = getPathFromUrl() ?? 'https://storage.cdn.vimaec.com/samples/residence.v1.2.75.vim'
   const request = viewer.load({ url }, { prewarmBim: true })

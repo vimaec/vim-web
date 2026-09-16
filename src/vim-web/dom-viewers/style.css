@@ -7,8 +7,76 @@
   no transitions. Own tokens are prefixed `--vw-`.
 */
 :root {
+  --vw-z-overlay: 10;
   --vw-z-ui: 20;
   --vw-z-panel: 30;
+}
+
+/* Event relay over the canvas (see panels/overlay.ts) — invisible, perf-critical. */
+.vim-ds-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: var(--vw-z-overlay);
+  touch-action: none;
+}
+
+/* Everything right of the side panel; left/width are set from the side width. */
+.vim-ds-rest-of-screen {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.vim-ds-logo {
+  position: absolute;
+  top: var(--ds-space-4);
+  left: var(--ds-space-4);
+  width: min(128px, 20%);
+  z-index: var(--vw-z-ui);
+  pointer-events: auto;
+}
+.vim-ds-logo__img {
+  display: block;
+  max-width: 100%;
+}
+
+/* Axes gizmo — a square with the core canvas inset and a button band over its bottom quarter. */
+.vim-ds-axes {
+  position: absolute;
+  top: var(--ds-space-4);
+  right: var(--ds-space-4);
+  width: min(112px, 22vmin);
+  height: min(112px, 22vmin);
+  z-index: var(--vw-z-ui);
+  border: 1px solid var(--hairline);
+  background: var(--stage-900);
+}
+.vim-ds-axes__gizmo {
+  position: absolute;
+  inset: var(--ds-space-1) var(--ds-space-1) calc(25% + var(--ds-space-1)) var(--ds-space-1);
+}
+.vim-ds-axes__canvas {
+  position: absolute;
+  inset: 0;
+  opacity: 0.6;
+  filter: saturate(0);
+}
+.vim-ds-axes:hover .vim-ds-axes__canvas {
+  opacity: 1;
+  filter: none;
+}
+.vim-ds-axes__buttons {
+  position: absolute;
+  top: 75%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  background: var(--stage-800);
+  border-top: 1px solid var(--hairline);
 }
 
 /* Control bar — a flat strip of hairline-bordered sections, bottom-centred. */

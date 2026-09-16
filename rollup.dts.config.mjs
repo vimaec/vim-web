@@ -71,7 +71,16 @@ export default {
           const id = m[1]
           const peek = code.substring(m.index, m.index + 500)
           // Names match the access path: Core.Webgl → Core_Webgl, React.Ultra → React_Ultra
-          if (peek.includes('createCoreWebglViewer')) nameMap.set(id, 'Core_Webgl')
+          // DS-based layer (dom-viewers) first: its barrels re-export pure React-era modules
+          // (contextMenuIds, …), so the React markers below would claim them (see DS_PORT.md).
+          if (peek.includes('CheckboxOptions')) nameMap.set(id, 'Dom_Components')
+          else if (peek.includes('_controlBar as controlBar')) nameMap.set(id, 'Dom_ControlBar')
+          else if (peek.includes('_genericPanel as genericPanel')) nameMap.set(id, 'Dom_Generic')
+          else if (peek.includes('_isolationPanel as isolationPanel')) nameMap.set(id, 'Dom_Panels')
+          else if (peek.includes('_modal as modal')) nameMap.set(id, 'Dom_Modal')
+          else if (peek.includes('childScope')) nameMap.set(id, 'Dom')
+          // Core / React
+          else if (peek.includes('createCoreWebglViewer')) nameMap.set(id, 'Core_Webgl')
           else if (peek.includes('createCoreUltraViewer')) nameMap.set(id, 'Core_Ultra')
           else if (peek.includes('createWebglViewer')) nameMap.set(id, 'React_Webgl')
           else if (peek.includes('createUltraViewer')) nameMap.set(id, 'React_Ultra')
@@ -80,13 +89,6 @@ export default {
           else if (peek.includes('isFalse')) nameMap.set(id, 'React_Settings')
           else if (peek.includes('errorStyle')) nameMap.set(id, 'React_Errors')
           else if (peek.includes('contextMenuIds')) nameMap.set(id, 'React_ContextMenu')
-          // DS-based layer (dom-viewers) — see DS_PORT.md
-          else if (peek.includes('CheckboxOptions')) nameMap.set(id, 'Dom_Components')
-          else if (peek.includes('_controlBar as controlBar')) nameMap.set(id, 'Dom_ControlBar')
-          else if (peek.includes('_genericPanel as genericPanel')) nameMap.set(id, 'Dom_Generic')
-          else if (peek.includes('_isolationPanel as isolationPanel')) nameMap.set(id, 'Dom_Panels')
-          else if (peek.includes('_modal as modal')) nameMap.set(id, 'Dom_Modal')
-          else if (peek.includes('childScope')) nameMap.set(id, 'Dom')
           // Content-based detection where the expected name is fragile: the React barrel is
           // only the bare `index_d` while it happens to deconflict first, and Core.Ultra's
           // `createCoreUltraViewer` sorts past the 500-char peek.

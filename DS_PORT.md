@@ -116,6 +116,17 @@ places toasts top-right — the side-panel offset logic is gone.
 swallows backdrop / Esc at capture phase and hides the × while `canClose` is false. A `closable`
 option in the DS would remove the workaround.
 
+## Small panels
+
+`panels/contextMenu.ts` builds its entries from the current selection/visibility each time it
+opens and shows them on the DS menu (`createMenu`: body-level, closes on backdrop, Esc and item
+click); disabled entries are dropped rather than greyed, as the React menu hid them. It subscribes
+to the core's `inputs.onContextMenu` itself and exposes `show()` for the BIM tree. `axesPanel.ts`
+adopts the core axes canvas into a chrome square and sizes it with a ResizeObserver; `overlay.ts`
+(⚡) and `restOfScreen.ts` are the imperative twins of their React layout helpers; `logo.ts` is the
+link. Pure modules still living under `react-viewers/` (`contextMenuIds`, `settings/userBoolean`,
+the assets) are deep-imported with a bridge comment and move into this layer at the flip.
+
 ## Inventory — ~37 UI units
 
 **Complexity:** ⬜ Trivial · 🟨 Moderate · 🟥 Hard
@@ -179,15 +190,15 @@ React hook bridge and subscribing DS handles directly.
 |---|:---:|---|---|---|----|---|
 | 18 | ✅ | Modal | `panels/modal.tsx` | `ds-modal` | 🟨 | `modal/modal.ts` — same 3-slot priority stack and `ModalApi`; loading is non-dismissible via capture-phase interceptors (DS follow-up) |
 | 19 | ✅ | MessageBox | `panels/messageBox.tsx` | `ds-modal` head/body/foot | 🟨 | `modal/messageBox.ts` — title/icon in head, footer in foot, chevron minimize; `body`/`icon`/`footer` take DOM (🔓) |
-| 20 | | ContextMenu | `panels/contextMenu.tsx` | `ds-menu` | 🟨🔓 | Preserve `contextMenu.customize()` |
+| 20 | ✅ | ContextMenu | `panels/contextMenu.tsx` | `ds-menu` | 🟨🔓 | `panels/contextMenu.ts` — listens to `inputs.onContextMenu` itself, `show()` for the BIM tree; `customize()` keeps the `ContextMenuApi` contract; `action: () => void` (🔓, no React event) |
 | 21 | ✅ | Toast | `panels/toast.tsx` | `ds-toaster` | 🟨 | `panels/speedToast.ts` — DS places toasts top-right; the side-panel offset logic is gone |
 | 22 | ✅ | LoadingBox | `panels/loadingBox.tsx` | `ds-bar` (percent) / `ds-skeleton` (indeterminate) | 🟨 | `modal/loadingBox.ts` — the animated bar is out (envelope); `more` takes DOM (🔓); `ultraSuggestion()` |
 | 23 | ✅ | Help | `panels/help.tsx` | `ds-modal` | 🟨 | `modal/help.ts` — quick-controls image in the modal body |
-| 24 | | AxesPanel | `panels/axesPanel.tsx` | bespoke + `ds-icon` | 🟨 | |
-| 25 | | Logo | `panels/logo.tsx` | `ds-icon` / `<img>` | ⬜ | |
+| 24 | ✅ | AxesPanel | `panels/axesPanel.tsx` | chrome square + `iconButton` atoms | 🟨 | `panels/axesPanel.ts` — adopts the core axes canvas, ResizeObserver sizes it; ortho/perspective icon swaps on `camera.onSettingsChanged` |
+| 25 | ✅ | Logo | `panels/logo.tsx` | `<img>` | ⬜ | `panels/logo.ts` |
 | 26 | | SidePanel | `panels/sidePanel.tsx` | `ds-panel` + DS `columnGrip()` | 🟥 | Resizable/collapsible; DS `dom.ts` ships `columnGrip` drag-resize |
-| 27 | | RestOfScreen | `panels/restOfScreen.tsx` | layout helper | 🟨 | ResizeObserver → direct layout |
-| 28 | | **Overlay** | `panels/overlay.tsx` | port as-is (imperative) | 🟨⚡ | **Not visual** — event relay over the canvas that avoids browser hit-testing 10k+ DOM nodes. Must preserve |
+| 27 | ✅ | RestOfScreen | `panels/restOfScreen.tsx` | layout helper | 🟨 | `panels/restOfScreen.ts` — `left`/`width` from `side.getWidth()`, re-synced on body resize and `update()` |
+| 28 | ✅ | **Overlay** | `panels/overlay.tsx` | port as-is (imperative) | 🟨⚡ | `panels/overlay.ts` — verbatim relay, plus the listener cleanup the React version lacked |
 
 ### F. Settings
 
