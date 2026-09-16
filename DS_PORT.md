@@ -99,6 +99,23 @@ subscribed so `enabled` / `visible` re-sync in place where React re-rendered. En
 chrome (`.vim-ds-entry`, label 50% / control) because `ds-setting`'s fixed 170px label column
 overflows a 300px popover. `element` / `renderValue` entries take DOM instead of JSX (🔓).
 
+## Dialogs
+
+`dom-viewers/modal/` is the viewer's single dialog. `modal()` keeps the React `Modal`'s three
+priority slots (help > message > loading) and shows the top one on a DS modal (`createModal`:
+backdrop, head, body, foot, Esc/backdrop/× dismissal, focus trap). Its `ModalApi` is the contract
+`webgl/loading.ts` and `ultra/modal.tsx` already drive, so they need no changes. Renders coalesce
+to a microtask so rapid progress updates draw once. `renderMessageBox` maps title/icon/body/footer
+onto head/body/foot and adds a chevron minimize; `renderLoadingBox` replaces the animated bar (the
+envelope forbids animation) with a determinate `ds-bar` for percent progress and a static
+`ds-skeleton` otherwise; `renderHelp` shows the quick-controls image. `body`/`icon`/`footer`/`more`
+take DOM, not JSX (🔓). The speed toast (`panels/speedToast.ts`) sits on `createToaster`, which
+places toasts top-right — the side-panel offset logic is gone.
+
+**DS follow-up:** `createModal` is always dismissible. A loading dialog must not be, so `modal()`
+swallows backdrop / Esc at capture phase and hides the × while `canClose` is false. A `closable`
+option in the DS would remove the workaround.
+
 ## Inventory — ~37 UI units
 
 **Complexity:** ⬜ Trivial · 🟨 Moderate · 🟥 Hard
@@ -160,12 +177,12 @@ React hook bridge and subscribing DS handles directly.
 
 | # | Done | Widget | Source | DS target | Cx | Notes |
 |---|:---:|---|---|---|----|---|
-| 18 | | Modal | `panels/modal.tsx` | `ds-modal` | 🟨 | |
-| 19 | | MessageBox | `panels/messageBox.tsx` | `ds-confirm` / `ds-modal` | 🟨 | |
+| 18 | ✅ | Modal | `panels/modal.tsx` | `ds-modal` | 🟨 | `modal/modal.ts` — same 3-slot priority stack and `ModalApi`; loading is non-dismissible via capture-phase interceptors (DS follow-up) |
+| 19 | ✅ | MessageBox | `panels/messageBox.tsx` | `ds-modal` head/body/foot | 🟨 | `modal/messageBox.ts` — title/icon in head, footer in foot, chevron minimize; `body`/`icon`/`footer` take DOM (🔓) |
 | 20 | | ContextMenu | `panels/contextMenu.tsx` | `ds-menu` | 🟨🔓 | Preserve `contextMenu.customize()` |
-| 21 | | Toast | `panels/toast.tsx` | `ds-toaster` | 🟨 | |
-| 22 | | LoadingBox | `panels/loadingBox.tsx` | `ds-skeleton` / `ds-bar` | 🟨 | No dedicated DS progress bar — confirm mapping |
-| 23 | | Help | `panels/help.tsx` | `ds-modal` / `ds-panel` | 🟨 | |
+| 21 | ✅ | Toast | `panels/toast.tsx` | `ds-toaster` | 🟨 | `panels/speedToast.ts` — DS places toasts top-right; the side-panel offset logic is gone |
+| 22 | ✅ | LoadingBox | `panels/loadingBox.tsx` | `ds-bar` (percent) / `ds-skeleton` (indeterminate) | 🟨 | `modal/loadingBox.ts` — the animated bar is out (envelope); `more` takes DOM (🔓); `ultraSuggestion()` |
+| 23 | ✅ | Help | `panels/help.tsx` | `ds-modal` | 🟨 | `modal/help.ts` — quick-controls image in the modal body |
 | 24 | | AxesPanel | `panels/axesPanel.tsx` | bespoke + `ds-icon` | 🟨 | |
 | 25 | | Logo | `panels/logo.tsx` | `ds-icon` / `<img>` | ⬜ | |
 | 26 | | SidePanel | `panels/sidePanel.tsx` | `ds-panel` + DS `columnGrip()` | 🟥 | Resizable/collapsible; DS `dom.ts` ships `columnGrip` drag-resize |

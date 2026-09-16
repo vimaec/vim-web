@@ -101,3 +101,30 @@
   opacity: 0.5;
   pointer-events: none;
 }
+
+/* Modal content — the DS modal supplies backdrop, head, body and foot. */
+.vim-ds-help-img {
+  display: block;
+  width: min(900px, 80vw);
+  height: auto;
+}
+.vim-ds-loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  min-width: 280px;
+}
+.vim-ds-loading__progress {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: var(--ds-fs-label);
+  color: var(--text-300);
+}
+.vim-ds-message-body {
+  white-space: pre-wrap;
+}
+.vim-ds-ultra-suggestion {
+  text-align: center;
+  font-size: var(--ds-fs-label);
+  color: var(--text-300);
+}

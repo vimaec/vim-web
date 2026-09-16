@@ -85,6 +85,7 @@ export default {
           else if (peek.includes('_controlBar as controlBar')) nameMap.set(id, 'Dom_ControlBar')
           else if (peek.includes('_genericPanel as genericPanel')) nameMap.set(id, 'Dom_Generic')
           else if (peek.includes('_isolationPanel as isolationPanel')) nameMap.set(id, 'Dom_Panels')
+          else if (peek.includes('_modal as modal')) nameMap.set(id, 'Dom_Modal')
           else if (peek.includes('childScope')) nameMap.set(id, 'Dom')
           // Content-based detection where the expected name is fragile: the React barrel is
           // only the bare `index_d` while it happens to deconflict first, and Core.Ultra's

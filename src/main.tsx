@@ -61,6 +61,7 @@ function App() {
     const I = VIM.Dom.Icons
     const mode = VIM.React.createState('orbit')
     const showPanel = VIM.React.createState(false)
+    const dsModal = VIM.Dom.Modal.modal()
     const modeButton = (id: string, icon: VIM.Dom.Icons.IconFactory, tip: string) => ({
       id, tip, icon, isOn: () => mode.get() === id, action: () => mode.set(id)
     })
@@ -69,7 +70,18 @@ function App() {
       {
         id: 'misc', variant: 'blue', buttons: [
           { id: 'settings', tip: 'Settings', icon: I.settings, isOn: () => showPanel.get(), action: () => showPanel.set(!showPanel.get()) },
-          { id: 'help', tip: 'Help', icon: I.help, action: () => console.log('DS help') }
+          { id: 'help', tip: 'Help', icon: I.help, action: () => dsModal.help(true) },
+          {
+            id: 'message', tip: 'Message demo', icon: I.more,
+            action: () => dsModal.message({ title: 'DS Message', body: 'A message box on the DS modal.', footer: 'Footer', canClose: true, minimize: true })
+          },
+          {
+            id: 'loading', tip: 'Loading demo (2.5 s)', icon: I.frameScene,
+            action: () => {
+              dsModal.loading({ message: 'Loading in DS Mode', progress: 42, mode: 'percent', more: VIM.Dom.Modal.ultraSuggestion() })
+              setTimeout(() => dsModal.loading(undefined), 2500)
+            }
+          }
         ]
       }
     ])
@@ -117,7 +129,7 @@ function App() {
     ]
     return () => {
       for (const u of unsubs) u()
-      for (const h of [panel, sel, inp, btn, cb, tips, bar, barTips, gridTips]) h.destroy()
+      for (const h of [panel, sel, inp, btn, cb, tips, bar, barTips, gridTips, dsModal]) h.destroy()
       grid.replaceChildren()
     }
   }, [])
@@ -185,6 +197,8 @@ async function createWebgl (viewerRef: RefObject<ViewerRef>, div: HTMLDivElement
   const viewer = await VIM.React.Webgl.createViewer(div)
   viewerRef.current = viewer
   globalThis.viewer = viewer
+  // DS-port spike: the DS speed toast beside the React one (change speed with +/- to see both).
+  Object.assign(globalThis, { dsSpeedToast: VIM.Dom.Panels.speedToast(viewer.core) })
 
   const url = getPathFromUrl() ?? 'https://storage.cdn.vimaec.com/samples/residence.v1.2.75.vim'
   const request = viewer.load({ url }, { prewarmBim: true })
