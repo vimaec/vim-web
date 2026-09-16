@@ -1,6 +1,8 @@
 import { RefObject, useEffect, useRef, ChangeEvent } from 'react'
 import { createRoot } from 'react-dom/client'
 import * as VIM from './vim-web'
+// DS-port spike: the real settings builder feeds the DS settings panel (shared GenericCommonEntry type).
+import { getIsolationSettings } from './vim-web/react-viewers/settings/settingsPanelContent'
 
 type ViewerRef = VIM.React.Webgl.ViewerApi | VIM.React.Ultra.ViewerApi
 
@@ -84,6 +86,10 @@ function App() {
               dsModal.loading({ message: 'Loading in DS Mode', progress: 42, mode: 'percent', more: VIM.Dom.Modal.ultraSuggestion() })
               setTimeout(() => dsModal.loading(undefined), 2500)
             }
+          },
+          {
+            id: 'error', tip: 'Error demo', icon: I.trash,
+            action: () => dsModal.message(VIM.Dom.Errors.webglFileError('https://example.com/model.vim', 'HTTP 404 Not Found'))
           }
         ]
       }
@@ -196,6 +202,11 @@ function App() {
         className="ds-root"
         style={{ position: 'absolute', left: 380, top: 70, width: 136, height: 136, zIndex: 100 }}
       />
+      <div
+        id="ds-settings-host"
+        className="ds-root"
+        style={{ position: 'absolute', left: 530, top: 70, width: 300, height: 320, zIndex: 100 }}
+      />
       <div ref={div} style={{ position: 'absolute', inset: 0 }}/>
     </>
   )
@@ -218,6 +229,9 @@ async function createWebgl (viewerRef: RefObject<ViewerRef>, div: HTMLDivElement
     }),
     dsContextMenu: VIM.Dom.Panels.contextMenu({
       viewer: viewer.core, framing: viewer.framing, modal: dsModal, isolation: viewer.isolation
+    }),
+    dsSettings: VIM.Dom.Settings.settingsPanel(document.getElementById('ds-settings-host')!, {
+      entries: getIsolationSettings(viewer.isolation, viewer.renderSettings)
     })
   })
 

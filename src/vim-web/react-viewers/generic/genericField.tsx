@@ -4,61 +4,26 @@ import { InputNumber } from "./inputNumber";
 import { StateRef, useRefresher } from "../helpers/reactUtils";
 import { Input, Checkbox, Select } from '../components'
 
-// A text field.
-export interface GenericTextEntry {
-  type: "text";
-  id: string;
-  label: string;
-  enabled?: () => boolean;
-  visible?: () => boolean;
-  state: StateRef<string>;
-}
-
-export interface GenericNumberEntry {
-  type: "number";
-  id: string;
-  label: string;
-  enabled?: () => boolean;
-  visible?: () => boolean;
-  state: StateRef<number>;
-  min?: number;
-  max?: number;
-  step?: number;
-  info?: string;
-  transform?: (n: number) => number;
-}
-
-// A boolean field.
-export interface GenericBoolEntry {
-  type: "bool";
-  id: string;
-  label: string;
-  enabled?: () => boolean;
-  visible?: () => boolean;
-  state: StateRef<boolean>;
-}
-
-// A select/dropdown field.
-export interface GenericSelectEntry {
-  type: "select";
-  id: string;
-  label: string;
-  enabled?: () => boolean;
-  visible?: () => boolean;
-  options: { label: string; value: string }[];
-  state: StateRef<string>;
-}
-
-export interface GenericSubtitleEntry {
-  type: 'section'
-  id: string
-  label: string
-}
-
-export interface GenericGroupEntry {
-  type: 'group'
-  id: string
-  label: string
+// The control, section and group entries are shared with the DS layer
+// (dom-viewers/generic/entries.ts) so the settings builders can feed either
+// renderer; only the JSX-carrying entries below are React-specific.
+import type {
+  GenericTextEntry,
+  GenericNumberEntry,
+  GenericBoolEntry,
+  GenericSelectEntry,
+  GenericSectionEntry,
+  GenericGroupEntry,
+  GenericCommonEntry
+} from '../../dom-viewers/generic/entries'
+export type {
+  GenericTextEntry,
+  GenericNumberEntry,
+  GenericBoolEntry,
+  GenericSelectEntry,
+  GenericSectionEntry,
+  GenericGroupEntry,
+  GenericCommonEntry
 }
 
 export interface GenericReadonlyEntry {
@@ -77,12 +42,7 @@ export interface GenericElementEntry {
 }
 
 export type GenericEntryType =
-  | GenericTextEntry
-  | GenericBoolEntry
-  | GenericNumberEntry
-  | GenericSelectEntry
-  | GenericSubtitleEntry
-  | GenericGroupEntry
+  | GenericCommonEntry
   | GenericReadonlyEntry
   | GenericElementEntry
 

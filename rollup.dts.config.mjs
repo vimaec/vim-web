@@ -78,6 +78,9 @@ export default {
           else if (peek.includes('_genericPanel as genericPanel')) nameMap.set(id, 'Dom_Generic')
           else if (peek.includes('_isolationPanel as isolationPanel')) nameMap.set(id, 'Dom_Panels')
           else if (peek.includes('_modal as modal')) nameMap.set(id, 'Dom_Modal')
+          else if (peek.includes('_settingsPanel as settingsPanel')) nameMap.set(id, 'Dom_Settings')
+          // getErrorMessage is unique to the DS errors barrel; the React one also exports webglFileError.
+          else if (peek.includes('_getErrorMessage as getErrorMessage')) nameMap.set(id, 'Dom_Errors')
           else if (peek.includes('childScope')) nameMap.set(id, 'Dom')
           // Core / React
           else if (peek.includes('createCoreWebglViewer')) nameMap.set(id, 'Core_Webgl')
@@ -104,6 +107,7 @@ export default {
         // Fix file-derived namespace names (icons.tsx → icons_d, style.ts → style_d)
         nameMap.set('icons_d', 'React_Icons')
         nameMap.set('iconSet_d', 'Dom_Icons')
+        nameMap.set('errorText_d', 'Dom_Errors_Style')
         nameMap.set('style_d', 'React_ControlBar_Style')
         nameMap.set('errorStyle_d', 'React_Errors_Style')
 

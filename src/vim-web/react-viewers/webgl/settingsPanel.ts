@@ -1,6 +1,6 @@
 import { THREE } from "../..";
 import { Viewer } from "../../core-viewers/webgl";
-import { GenericEntryType } from '../generic/genericField'
+import { GenericCommonEntry } from '../generic/genericField'
 import { SettingsPanelKeys } from "../settings/settingsKeys";
 import { getIsolationSettings } from "../settings/settingsPanelContent";
 import { IsolationApi } from "../state/sharedIsolation";
@@ -15,7 +15,7 @@ function tog(
   key: keyof WebglSettings['ui'],
   src: WebglSettings['ui'],
   refs: UiRefs,
-): GenericEntryType[] {
+): GenericCommonEntry[] {
   if (src[key] === 'AlwaysTrue' || src[key] === 'AlwaysFalse') return []
   return [{ type: 'bool', id, label, state: refs[key] }]
 }
@@ -26,7 +26,7 @@ export function getWebglSettingsContent(
   renderSettings: RenderSettingsApi,
   refs: UiRefs,
   srcUi: WebglSettings['ui'],
-): GenericEntryType[] {
+): GenericCommonEntry[] {
   const t = (id: string, label: string, key: keyof WebglSettings['ui']) =>
     tog(id, label, key, srcUi, refs)
 

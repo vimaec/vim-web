@@ -1,6 +1,7 @@
 export type {
   GenericEntryType,
   GenericControlEntry,
+  GenericCommonEntry,
   GenericTextEntry,
   GenericNumberEntry,
   GenericBoolEntry,

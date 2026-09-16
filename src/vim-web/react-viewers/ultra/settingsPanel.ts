@@ -1,8 +1,8 @@
-import { GenericEntryType } from '../generic/genericField'
+import { GenericCommonEntry } from '../generic/genericField'
 import { IsolationApi } from '../state/sharedIsolation'
 
 /** Ultra settings — only ghost controls are functional server-side. */
-export function getUltraSettingsContent(isolation: IsolationApi): GenericEntryType[] {
+export function getUltraSettingsContent(isolation: IsolationApi): GenericCommonEntry[] {
   return [
     {
       type: 'section',

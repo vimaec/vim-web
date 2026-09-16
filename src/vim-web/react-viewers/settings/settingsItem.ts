@@ -1,2 +1,5 @@
-export type { GenericEntryType as SettingsItem } from '../generic/genericField'
-export type SettingsCustomization = (items: import('../generic/genericField').GenericEntryType[]) => import('../generic/genericField').GenericEntryType[]
+import type { GenericCommonEntry } from '../generic/genericField'
+
+/** A settings entry — the subset of generic entries both UI layers render. */
+export type SettingsItem = GenericCommonEntry
+export type SettingsCustomization = (items: SettingsItem[]) => SettingsItem[]

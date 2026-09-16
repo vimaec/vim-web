@@ -196,3 +196,45 @@
   font-size: var(--ds-fs-label);
   color: var(--text-300);
 }
+
+/* Settings page (inside the side panel). */
+.vim-ds-settings .ds-panel__body {
+  padding: var(--ds-space-2);
+}
+
+/* Error message typography (modal body). */
+.vim-ds-error {
+  color: var(--text-200);
+  font-size: var(--ds-fs-body);
+  line-height: 1.45;
+}
+.vim-ds-error__main {
+  margin: 0 0 var(--ds-space-3);
+}
+.vim-ds-error__subtitle {
+  margin: 0 0 var(--ds-space-1);
+  font-weight: 700;
+  color: var(--text-100);
+}
+.vim-ds-error__list {
+  margin: 0 0 var(--ds-space-3) var(--ds-space-5);
+  padding: 0;
+}
+.vim-ds-error__list--dot {
+  list-style: disc;
+}
+.vim-ds-error__list--num {
+  list-style: decimal;
+}
+.vim-ds-error__detail {
+  font-style: italic;
+  color: var(--text-300);
+  overflow-wrap: break-word;
+}
+.vim-ds-error__bullet-label {
+  color: var(--text-300);
+}
+.vim-ds-error__bullet-value {
+  color: var(--text-200);
+  word-break: break-all;
+}

@@ -1,9 +1,9 @@
 import { SettingsPanelKeys } from './settingsKeys'
-import { GenericEntryType } from '../generic/genericField'
+import { GenericCommonEntry } from '../generic/genericField'
 import { RenderSettingsApi } from '../state/renderSettings'
 import { IsolationApi } from '../state/sharedIsolation'
 
-export function getIsolationSettings(isolation: IsolationApi, renderSettings: RenderSettingsApi): GenericEntryType[] {
+export function getIsolationSettings(isolation: IsolationApi, renderSettings: RenderSettingsApi): GenericCommonEntry[] {
   return [
     {
       type: 'section',

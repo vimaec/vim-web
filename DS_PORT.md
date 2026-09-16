@@ -127,6 +127,18 @@ adopts the core axes canvas into a chrome square and sizes it with a ResizeObser
 link. Pure modules still living under `react-viewers/` (`contextMenuIds`, `settings/userBoolean`,
 the assets) are deep-imported with a bridge comment and move into this layer at the flip.
 
+## Settings & errors
+
+`settings/settingsPanel.ts` is a filled DS panel over `genericContent`, shown by the side panel. The
+settings *builders* (`getIsolationSettings`, `getWebglSettingsContent`, `getUltraSettingsContent`)
+are logic that stays; they now return **`GenericCommonEntry[]`** — the control/section/group subset
+both layers render identically, defined in `dom-viewers/generic/entries.ts` and re-exported by the
+React `genericField.tsx` — so either renderer consumes them without casts. `errors/` holds the DOM
+twins of the message-box builders (`webglFileError` and the six Ultra screens) over
+`errorText.ts` typography, plus `ultraErrors.ts` (`getErrorMessage`, `getRequestErrorMessage`).
+Bodies are structured HTML: no DS organism fits a multi-paragraph message. The React
+`serverConnectionError` computed `isLocalUrl(url)` and never used it; the twin drops the dead call.
+
 ## Inventory — ~37 UI units
 
 **Complexity:** ⬜ Trivial · 🟨 Moderate · 🟥 Hard
@@ -204,15 +216,15 @@ React hook bridge and subscribing DS handles directly.
 
 | # | Done | Widget | Source | DS target | Cx | Notes |
 |---|:---:|---|---|---|----|---|
-| 29 | | SettingsPanel | `settings/settingsPanel.tsx` | `ds-panel` + `ds-setting` | 🟨 | |
+| 29 | ✅ | SettingsPanel | `settings/settingsPanel.tsx` | `ds-panel` (`fill`) + `genericContent` | 🟨 | `settings/settingsPanel.ts`; the settings builders are retyped to the shared `GenericCommonEntry` so both layers consume them |
 
 ### G. Error screens
 
 | # | Done | Widget | Source | DS target | Cx | Notes |
 |---|:---:|---|---|---|----|---|
-| 30 | | Error styling | `errors/errorStyle.tsx`, `errors.ts` | `ds-banner`/`ds-empty`/`ds-card` | 🟨 | |
-| 31 | | WebGL file error | `errors/webglFileError.tsx` | `ds-banner`/`ds-empty` | 🟨 | |
-| 32 | | Ultra errors (×6) | `ultra/errors/*.tsx` | `ds-banner`/`ds-empty` | 🟨 | One template, six screens |
+| 30 | ✅ | Error styling | `errors/errorStyle.tsx`, `errors.ts` | structured HTML, tokens | 🟨 | `errors/errorText.ts` — main/subtitle/lists/bullets and `.ds-link`; no DS organism fits a multi-paragraph message |
+| 31 | ✅ | WebGL file error | `errors/webglFileError.tsx` | message box | 🟨 | `errors/errors.ts` |
+| 32 | ✅ | Ultra errors (×6) | `ultra/errors/*.tsx` | message box | 🟨 | `errors/errors.ts` + `errors/ultraErrors.ts` (client-state → message mappers) |
 
 ### H. Icon set
 

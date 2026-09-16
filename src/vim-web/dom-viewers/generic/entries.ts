@@ -80,3 +80,9 @@ export type GenericEntryType =
 
 /** Entries that carry a bound control. */
 export type GenericControlEntry = GenericTextEntry | GenericBoolEntry | GenericNumberEntry | GenericSelectEntry
+
+/**
+ * The entries both layers render identically (no DOM/JSX payload). The
+ * settings builders return this, so either renderer consumes them directly.
+ */
+export type GenericCommonEntry = GenericControlEntry | GenericSectionEntry | GenericGroupEntry
