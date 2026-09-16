@@ -11,6 +11,9 @@
  * the mount container provides it.
  */
 import 'vim-html-ds/styles/ds.css'
+import './style.css'
 
 export * as Components from './components'
+export * as ControlBar from './controlbar'
+export * as Icons from './iconSet'
 export { childScope, type ChildScope } from './ds'

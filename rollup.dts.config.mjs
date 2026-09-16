@@ -82,6 +82,7 @@ export default {
           else if (peek.includes('contextMenuIds')) nameMap.set(id, 'React_ContextMenu')
           // DS-based layer (dom-viewers) — see DS_PORT.md
           else if (peek.includes('CheckboxOptions')) nameMap.set(id, 'Dom_Components')
+          else if (peek.includes('_controlBar as controlBar')) nameMap.set(id, 'Dom_ControlBar')
           else if (peek.includes('childScope')) nameMap.set(id, 'Dom')
           // Content-based detection where the expected name is fragile: the React barrel is
           // only the bare `index_d` while it happens to deconflict first, and Core.Ultra's
@@ -97,6 +98,7 @@ export default {
 
         // Fix file-derived namespace names (icons.tsx → icons_d, style.ts → style_d)
         nameMap.set('icons_d', 'React_Icons')
+        nameMap.set('iconSet_d', 'Dom_Icons')
         nameMap.set('style_d', 'React_ControlBar_Style')
         nameMap.set('errorStyle_d', 'React_Errors_Style')
 

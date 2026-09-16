@@ -1,0 +1,41 @@
+/*
+  vim-web chrome layout on top of vim-html-ds.
+
+  Only app-level layout lives here (where the control bar sits, how sections
+  group). Components carry no visual CSS of their own — that is ds.css's job.
+  DS envelope: tokens only (no hard hex), no border-radius, no box-shadow,
+  no transitions. Own tokens are prefixed `--vw-`.
+*/
+:root {
+  --vw-z-ui: 20;
+}
+
+/* Control bar — a flat strip of hairline-bordered sections, bottom-centred. */
+.vim-ds-controlbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--ds-space-4);
+  z-index: var(--vw-z-ui);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: 0 var(--ds-space-2);
+  /* The strip spans the width; only its sections take the pointer. */
+  pointer-events: none;
+}
+.vim-ds-controlbar__section {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-1);
+  border: 1px solid var(--hairline);
+  background: var(--stage-800);
+  pointer-events: auto;
+}
+.vim-ds-controlbar__section[data-variant="blue"] {
+  border-color: var(--vim-cyan);
+  background: var(--vim-cyan-tint);
+}

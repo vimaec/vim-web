@@ -17,6 +17,8 @@ function App() {
   const viewerRef = useRef<ViewerRef>(undefined)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const dsSpike = useRef<HTMLDivElement>(null)
+  const dsBar = useRef<HTMLDivElement>(null)
+  const dsGrid = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const el = div.current!
@@ -55,14 +57,39 @@ function App() {
       state: choice,
       options: [{ value: 'a', label: 'Alpha' }, { value: 'b', label: 'Beta' }, { value: 'c', label: 'Gamma' }]
     })
+    // Control bar: pointer-mode buttons whose active state follows `mode`; the bar re-syncs on change.
+    const I = VIM.Dom.Icons
+    const mode = VIM.React.createState('orbit')
+    const modeButton = (id: string, icon: VIM.Dom.Icons.IconFactory, tip: string) => ({
+      id, tip, icon, isOn: () => mode.get() === id, action: () => mode.set(id)
+    })
+    const bar = VIM.Dom.ControlBar.controlBar(dsBar.current!, [
+      { id: 'pointer', buttons: [modeButton('orbit', I.orbit, 'Orbit'), modeButton('pan', I.pan, 'Pan'), modeButton('zoom', I.zoom, 'Zoom')] },
+      { id: 'misc', variant: 'blue', buttons: [{ id: 'help', tip: 'Help', icon: I.help, action: () => console.log('DS help') }] }
+    ])
+    const barTips = c.tooltipZone(dsBar.current!)
+    // Icon grid: every icon rendered once by the DOM renderer.
+    const grid = dsGrid.current!
+    for (const [name, make] of Object.entries(I)) {
+      if (typeof make !== 'function') continue
+      const svg = make({ width: 16, height: 16 })
+      svg.setAttribute(c.TIP_ATTR, name)
+      grid.appendChild(svg)
+    }
+    const gridTips = c.tooltipZone(grid)
     const unsubs = [
       checked.onChange.subscribe(v => console.log('DS checkbox:', v)),
       text.onChange.subscribe(v => console.log('DS input:', v)),
-      choice.onChange.subscribe(v => console.log('DS select:', v))
+      choice.onChange.subscribe(v => console.log('DS select:', v)),
+      mode.onChange.subscribe(m => {
+        console.log('DS mode:', m)
+        bar.update()
+      })
     ]
     return () => {
       for (const u of unsubs) u()
-      for (const h of [sel, inp, btn, cb, tips]) h.destroy()
+      for (const h of [sel, inp, btn, cb, tips, bar, barTips, gridTips]) h.destroy()
+      grid.replaceChildren()
     }
   }, [])
 
@@ -105,6 +132,19 @@ function App() {
         style={{
           position: 'absolute', left: 10, bottom: 60, zIndex: 100, width: 200, padding: 8,
           display: 'flex', flexDirection: 'column', gap: 6
+        }}
+      />
+      <div
+        ref={dsBar}
+        className="ds-root"
+        style={{ position: 'absolute', left: 10, top: 70, width: 360, height: 56, zIndex: 100 }}
+      />
+      <div
+        ref={dsGrid}
+        className="ds-root"
+        style={{
+          position: 'absolute', left: 10, top: 140, width: 360, zIndex: 100, padding: 8,
+          display: 'flex', flexWrap: 'wrap', gap: 6, color: 'var(--text-200)', background: 'var(--stage-900)'
         }}
       />
       <div ref={div} style={{ position: 'absolute', inset: 0 }}/>
