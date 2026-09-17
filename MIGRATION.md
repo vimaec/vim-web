@@ -1,4 +1,63 @@
-# Migration Guide: vim-web 0.5 → 1.0.0-beta.1
+# Migration Guide
+
+## vim-web 1.0 beta → DS UI (React removed)
+
+The React UI layer is gone. The UI is now framework-free DOM built on the vim-html-ds design
+system, and vim-web has **no peer dependencies** besides `three`.
+
+### Namespace
+
+```ts
+// Before
+const viewer = await VIM.React.Webgl.createViewer(div, settings)
+const ultra = await VIM.React.Ultra.createViewer(div, settings)
+
+// After
+const viewer = await VIM.Dom.Webgl.createViewer(div, settings)
+const ultra = await VIM.Dom.Ultra.createViewer(div, settings)
+```
+
+`ViewerApi`, `FramingApi`, `SectionBoxApi`, `IsolationApi`, `RenderSettingsApi`, `viewer.ui`,
+`createContainer`, `StateRef` / `FuncRef` / `createState` are unchanged and now live under
+`VIM.Dom`. Settings shapes (`WebglSettings`, `UltraSettings`) are unchanged.
+
+### Callbacks that took or returned JSX now use DOM
+
+```ts
+// Control bar icons: an Element factory instead of a React component
+viewer.controlBar.customize(bar => [...bar, {
+  id: 'mine', buttons: [{ id: 'b', tip: 'Mine', icon: VIM.Dom.Icons.checkmark, action: () => {} }]
+}])
+
+// Context menu actions take no event
+{ id: 'custom', label: 'Custom', enabled: true, action: () => {} }
+
+// BIM info render overrides return an Element; `standard()` renders the default
+viewer.bimInfo.onRenderHeaderEntryValue = ({ data, standard }) => {
+  const el = standard()
+  el.append(' !')
+  return el
+}
+
+// Message boxes: body / footer / icon accept a string or an Element
+viewer.modal.message({ title: 'Hello', body: 'Plain text or an Element', canClose: true })
+```
+
+`VIM.React.Icons.*` → `VIM.Dom.Icons.*` (same names; each returns an `SVGSVGElement`).
+
+### Dependencies
+
+Remove `react` and `react-dom` from your app if vim-web was the only consumer. The `vim-web/style.css`
+import is still required; it now contains the design-system tokens and the viewer chrome.
+
+### CSS
+
+Internal class names changed: widgets use the design system's `ds-*` classes and the viewer chrome
+uses `vim-ds-*`. The `vim-component` / `vim-gfx` / `vim-ui` container classes are unchanged.
+
+---
+
+# vim-web 0.5 → 1.0.0-beta.1
 
 ## Install
 
@@ -185,9 +244,7 @@ All Tailwind utility classes (`vc-flex`, `vc-text-sm`, etc.) have been replaced 
 
 ## Peer Dependencies
 
-| | 0.5 | 1.0-beta.1 |
-|---|---|---|
-| react | ^18.3.1 | ^18.3.1 \|\| ^19.0.0 |
-| react-dom | ^18.3.1 | ^18.3.1 \|\| ^19.0.0 |
-
-React 18.3+ continues to work. React 19 is now also supported.
+| | 0.5 | 1.0-beta.1 | DS UI |
+|---|---|---|---|
+| react | ^18.3.1 | ^18.3.1 \|\| ^19.0.0 | — |
+| react-dom | ^18.3.1 | ^18.3.1 \|\| ^19.0.0 | — |

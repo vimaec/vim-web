@@ -1,6 +1,6 @@
 # VIM Web
 
-React-based 3D viewers for VIM files with BIM (Building Information Modeling) support.
+3D viewers for VIM files with BIM (Building Information Modeling) support. The UI is framework-free DOM built on the vim-html-ds design system (a git submodule); there is no React.
 
 ## Quick Reference
 
@@ -8,7 +8,7 @@ React-based 3D viewers for VIM files with BIM (Building Information Modeling) su
 
 | Task | WebGL | Ultra |
 |------|-------|-------|
-| **Create viewer** | `VIM.React.Webgl.createViewer(div, settings)` | `VIM.React.Ultra.createViewer(div, settings)` |
+| **Create viewer** | `VIM.Dom.Webgl.createViewer(div, settings)` | `VIM.Dom.Ultra.createViewer(div, settings)` |
 | **Load model** | `await viewer.load({ url }).getVim()` | `viewer.load({ url })` |
 | **Get element** | `vim.getElementFromIndex(index)` | `vim.getElementFromIndex(index)` |
 | **Select** | `viewer.core.selection.select(element)` | `viewer.core.selection.select(element)` |
@@ -22,8 +22,13 @@ React-based 3D viewers for VIM files with BIM (Building Information Modeling) su
 | Purpose | Path |
 |---------|------|
 | Main exports | `src/vim-web/index.ts` |
-| WebGL React viewer | `src/vim-web/react-viewers/webgl/viewer.tsx` |
-| Ultra React viewer | `src/vim-web/react-viewers/ultra/viewer.tsx` |
+| UI layer barrel | `src/vim-web/dom-viewers/index.ts` |
+| WebGL viewer (UI root) | `src/vim-web/dom-viewers/webgl/viewer.ts` |
+| Ultra viewer (UI root) | `src/vim-web/dom-viewers/ultra/viewer.ts` |
+| UI API interfaces | `src/vim-web/dom-viewers/api.ts` |
+| BIM tree | `src/vim-web/dom-viewers/bim/bimTree.ts` |
+| Control bar sections | `src/vim-web/dom-viewers/controlbar/sections.ts` |
+| Design system (submodule) | `vim-html-ds/` (built into `vim-html-ds/dist` by `npm run build:ds`) |
 | WebGL core viewer | `src/vim-web/core-viewers/webgl/viewer/viewer.ts` |
 | Ultra core viewer | `src/vim-web/core-viewers/ultra/viewer.ts` |
 | Element3D (WebGL) | `src/vim-web/core-viewers/webgl/loader/element3d.ts` |
@@ -32,7 +37,7 @@ React-based 3D viewers for VIM files with BIM (Building Information Modeling) su
 | Camera | `src/vim-web/core-viewers/webgl/viewer/camera/` |
 | Gizmos | `src/vim-web/core-viewers/webgl/viewer/gizmos/` |
 | RPC Client (Ultra) | `src/vim-web/core-viewers/ultra/rpcClient.ts` |
-| StateRef hooks | `src/vim-web/react-viewers/helpers/reactUtils.ts` |
+| StateRef / FuncRef | `src/vim-web/state/observable.ts` |
 | GPU Picker | `src/vim-web/core-viewers/webgl/viewer/rendering/gpuPicker.ts` |
 | Picking Material | `src/vim-web/core-viewers/webgl/loader/materials/pickingMaterial.ts` |
 | InsertableGeometry | `src/vim-web/core-viewers/webgl/loader/progressive/insertableGeometry.ts` |
@@ -45,7 +50,7 @@ React-based 3D viewers for VIM files with BIM (Building Information Modeling) su
 | InsertableMesh | `src/vim-web/core-viewers/webgl/loader/progressive/insertableMesh.ts` |
 | InstancedMesh | `src/vim-web/core-viewers/webgl/loader/progressive/instancedMesh.ts` |
 | InsertableMeshFactory | `src/vim-web/core-viewers/webgl/loader/progressive/insertableMeshFactory.ts` |
-| ComponentLoader | `src/vim-web/react-viewers/webgl/loading.ts` |
+| WebglLoader | `src/vim-web/dom-viewers/webgl/loader.ts` |
 | Core LoadRequest | `src/vim-web/core-viewers/webgl/loader/progressive/loadRequest.ts` |
 | G3dSubset | `src/vim-web/core-viewers/webgl/loader/progressive/g3dSubset.ts` |
 | G3dMeshOffsets | `src/vim-web/core-viewers/webgl/loader/progressive/g3dOffsets.ts` |
@@ -62,8 +67,9 @@ import * as VIM from 'vim-web'
 // Access namespaces
 VIM.Core.Webgl.Viewer      // WebGL core
 VIM.Core.Ultra.Viewer      // Ultra core
-VIM.React.Webgl.createViewer  // React WebGL factory
-VIM.React.Ultra.createViewer  // React Ultra factory
+VIM.Dom.Webgl.createViewer  // WebGL viewer with UI
+VIM.Dom.Ultra.createViewer  // Ultra viewer with UI
+VIM.Dom.Icons.home()        // SVG icon factories
 VIM.THREE                  // Three.js re-export
 ```
 
@@ -71,10 +77,11 @@ VIM.THREE                  // Three.js re-export
 
 ## Tech Stack
 
-- **TypeScript 6**, **React 18.3/19**, **Vite 8**
-- **Three.js 0.183**
+- **TypeScript 6**, **Vite 8**, no UI framework
+- **Three.js 0.183** (peer dependency in the 1.0 line)
+- **vim-html-ds** design system — git submodule at `vim-html-ds/`, imperative DOM factories (`createX(host, opts) => { el, destroy, setVisible }`) and `styles/ds.css` tokens
 - **ste-signals** / **ste-simple-events** for typed events, **vim-format** for BIM data
-- **@headless-tree** for BIM tree, **@tanstack/react-virtual** for virtualization
+- **@headless-tree/core** for the BIM tree state; rows are windowed with the DS `windowRange()`
 
 ## Architecture
 
@@ -97,13 +104,20 @@ src/vim-web/
 │   │   └── viewer/         # Camera, raycaster, rendering, gizmos
 │   ├── ultra/              # RPC client for streaming server
 │   └── shared/             # Common interfaces (IVim, Selection, Input)
-└── react-viewers/          # React UI layer
-    ├── webgl/              # Full UI (BIM tree, context menu, gizmos)
-    ├── ultra/              # Minimal UI
-    └── helpers/            # StateRef, hooks, utilities
+├── state/                  # StateRef / FuncRef observables (framework-neutral)
+├── icons/                  # SVG icon data + factory
+└── dom-viewers/            # UI layer on vim-html-ds (exported as VIM.Dom)
+    ├── webgl/, ultra/      # Viewer roots (createViewer), settings, adapters, loader
+    ├── state/              # Framing, section box, isolation, ui refs, side state, tools
+    ├── controlbar/         # Control bar + section definitions + ids
+    ├── bim/                # BIM panel, virtual tree, search, info panel + data model
+    ├── panels/             # Side panel, context menu, axes, logo, overlay, floating panels
+    ├── modal/, generic/, settings/, errors/, components/
+    ├── api.ts              # Public API interfaces (FramingApi, IsolationApi, …)
+    └── ds.ts               # Re-export of the built design system
 ```
 
-### ViewerApi (React-to-Core API)
+### ViewerApi (UI-to-Core API)
 
 ```typescript
 // WebGL ViewerApi
@@ -249,7 +263,7 @@ viewer.gizmos.markers.remove(marker)
 
 ## StateRef Pattern
 
-Custom state management in React layer. Critical for customization.
+Observable state used throughout the UI layer and its public API. Critical for customization.
 
 ```typescript
 // StateRef<T> - Observable state
@@ -265,10 +279,14 @@ const setter: FuncRef<Box3, void>           // With arg
 action.call()                  // Execute
 action.update(prev => () => { prev(); doAfter() })  // Wrap with middleware
 
-// In React components
-state.useOnChange((v) => ...)  // Hook subscription
-state.useMemo((v) => compute(v))
+// Creating your own
+const flag = VIM.Dom.createState(false)             // StateRef<boolean>
+const run = VIM.Dom.createFuncRef(() => doThing())   // FuncRef<void, void>
+// Persisted / validated variant (localStorage key, validate(next, current))
+const opacity = VIM.Dom.State.createSettingState(() => 0.5, { storageKey: 'my.opacity' })
 ```
+
+`onChange.subscribe()` returns the unsubscribe function — keep it and call it in your `destroy()`.
 
 ---
 
@@ -384,7 +402,7 @@ viewer.controlBar.customize((bar) => [{
   buttons: [{
     id: 'my-button',
     tip: 'My Button',
-    icon: VIM.React.Icons.checkmark,
+    icon: VIM.Dom.Icons.checkmark,   // (options?) => SVGSVGElement — any Element factory works
     action: () => { /* ... */ }
   }]
 }])
@@ -407,8 +425,12 @@ viewer.contextMenu.customize((menu) => [
 ### BIM Info Panel
 
 ```typescript
-// Modify values
-viewer.bimInfo.onRenderHeaderEntryValue = data => <>{data.data.value + " !"}</>
+// Override rendering (return DOM; `standard()` renders the default)
+viewer.bimInfo.onRenderHeaderEntryValue = ({ data }) => {
+  const span = document.createElement('span')
+  span.textContent = data.value + ' !'
+  return span
+}
 
 // Add custom data
 viewer.bimInfo.onData = data => {
@@ -429,8 +451,8 @@ viewer.bimInfo.onData = data => {
 ```typescript
 import * as VIM from 'vim-web'
 
-const viewer = await VIM.React.Webgl.createViewer(containerDiv, {
-  isolation: { enabled: 'auto', useGhostMaterial: true }
+const viewer = await VIM.Dom.Webgl.createViewer(containerDiv, {
+  isolation: { showGhost: true }
 })
 
 const vim = await viewer.load({ url: 'model.vim' }).getVim()
@@ -533,11 +555,13 @@ for (let row = 0; row < gridSize; row++) {
 | Pattern | Usage | Example |
 |---------|-------|---------|
 | `I` prefix | Interfaces | `IVim`, `ICamera`, `ISelectable` |
-| `Api` suffix | React API handles | `ViewerApi`, `FramingApi` |
-| `Ref` suffix | Reactive primitives | `StateRef`, `ActionRef` |
-| `use` prefix | React hooks | `useStateRef` |
-| `vim-` prefix | CSS classes | `vim-bim-tree` |
-| `--c-` prefix | CSS variables | `--c-primary` |
+| `Api` suffix | UI API handles | `ViewerApi`, `FramingApi` |
+| `Ref` suffix | Reactive primitives | `StateRef`, `FuncRef` |
+| `create` prefix | Factories (state, widgets, viewers) | `createState`, `createViewer`, `createSideState` |
+| `Handle` suffix | What a widget factory returns (`el`, `destroy`, …) | `BimTreeHandle`, `ControlBarHandle` |
+| `ds-` prefix | Design-system CSS classes (from `vim-html-ds`) | `ds-panel`, `ds-tree__item` |
+| `vim-ds-` prefix | vim-web chrome layout CSS classes | `vim-ds-controlbar`, `vim-ds-side` |
+| `--vw-` prefix | vim-web CSS tokens (DS tokens are `--stage-*`, `--text-*`, `--vim-cyan*`, `--ds-*`) | `--vw-z-panel` |
 
 ## Code Style
 
@@ -550,15 +574,18 @@ for (let row = 0; row < gridSize; row++) {
 ### Import Discipline
 
 - **Core files** (`core-viewers/`): Import directly from source files, never through barrel files (index.ts)
-- **React layer** (`react-viewers/`): Import through barrel files (`import * as Core from '../../core-viewers'`), never reach into deep internal paths
+- **UI layer** (`dom-viewers/`): Import the core through its barrel (`import * as Core from '../../core-viewers'`), never reach into deep internal paths; import the design system through `dom-viewers/ds.ts`
 
 ## Commands
 
 ```bash
-npm run dev           # Dev server (localhost:5173)
+npm run dev           # Dev server (localhost:5173) — `/` WebGL, `/ultra` Ultra, `?vim=<url>`
 npm run build         # Production build (vite + tsc declarations + rollup d.ts bundles)
+npm run build:ds      # Builds the vim-html-ds submodule (runs automatically before dev/build)
 npm run documentation # TypeDoc
 ```
+
+The submodule must be initialized (`git submodule update --init`) before the first build.
 
 ---
 
@@ -572,7 +599,7 @@ Full call chain from `viewer.load()` to rendered scene:
 
 ```
 viewer.load(url)
-  → ComponentLoader.load() — allocates vimIndex (0-255)
+  → WebglLoader.load() — allocates vimIndex (0-255)
     → Core LoadRequest — parses BFast → G3d + VimDocument + ElementMapping
       → Creates Vim (no geometry yet)
     → initVim() — viewer.add(vim), await vim.load()
@@ -581,13 +608,13 @@ viewer.load(url)
 ```
 
 **Key steps:**
-1. `ComponentLoader` allocates a `vimIndex` (0-255) and creates a `LoadRequest`
+1. `WebglLoader` allocates a `vimIndex` (0-255) and creates a `LoadRequest`
 2. `LoadRequest.loadFromVim()` parses the BFast container: fetches G3d geometry, creates `G3dMaterial`, parses `VimDocument` (BIM data), builds `ElementMapping` (instance-to-element map), creates `Scene` and `VimMeshFactory`
 3. `Vim` is constructed with the factory but **no geometry yet** — geometry is loaded separately via `vim.load()` or `vim.load(subset)`
 4. `VimMeshFactory.add()` splits the subset: ≤5 instances → `InsertableMeshFactory` (merged, chunked), >5 → `InstancedMeshFactory` (GPU instanced)
 5. `Scene.addMesh()` adds the Three.js mesh to the renderer, applies the scene transform matrix, iterates submeshes, and wires each to its `Element3D` via `addSubmesh()`
 
-**`load()` vs `open()`:** Both parse the VIM file, but only `load()` (via `ComponentLoader`) triggers `vim.load()` to build geometry. `open()` creates a Vim with no meshes — call `vim.load()` or `vim.load(subset)` later.
+**`load()` vs `open()`:** Both parse the VIM file, but only `load()` (via `WebglLoader`) triggers `vim.load()` to build geometry. `open()` creates a Vim with no meshes — call `vim.load()` or `vim.load(subset)` later.
 
 ### Progressive Loading
 
@@ -775,66 +802,53 @@ viewer.remove(vim)                 // Removes and disposes the vim
 
 ---
 
-## React Layer Patterns & Gotchas
+## UI Layer Patterns & Gotchas
 
-### StateRef<T> Interface vs Concrete Type
+### Widget Shape
 
-The `StateRef<T>` interface only exposes: `get()`, `set()`, `confirm()`, `onChange`.
+Every UI unit is a factory `createX(host, opts) => handle`, following the design system: it appends its root to `host` and returns `{ el, destroy(), … }` (often `setVisible`, `update`). Composites own their children and destroy them in reverse order. There is no render loop — a widget syncs itself when its inputs change.
 
-The object returned by `useStateRef()` also has: `useOnChange()`, `useValidate()`, `useMemo()` — but these are NOT on the `StateRef<T>` interface type.
+### Binding Pattern (observable ⇄ DS widget)
 
-If a variable is typed as `StateRef<T>` (e.g., in ViewerState), you cannot call `useOnChange` on it. Use `onChange.subscribe()` in a useEffect instead.
+1. Create the DS node from the observable's current value
+2. Write user input back into the observable
+3. Subscribe to the observable and push changes into the DS handle (guard against echoing your own write)
+4. `destroy()` unsubscribes, then destroys the DS node
+
+See `dom-viewers/components/checkbox.ts` for the canonical example, `bim/bimTree.ts` for the largest.
 
 ### Subscription Cleanup
 
-ste-signals `.sub()` and `.subscribe()` both return unsubscribe functions. Always return them from useEffect cleanup:
+`.subscribe()` (ste-signals / ste-simple-events) returns the unsubscribe function. Collect them and call them in `destroy()`:
 
 ```typescript
-// CORRECT
-useEffect(() => {
-    const unsub = signal.subscribe(() => { ... });
-    return unsub
-}, []);
-
-// WRONG — leaks subscription
-useEffect(() => {
-    signal.subscribe(() => { ... });
-}, []);
+const unsubscribes = [
+  state.onChange.subscribe(v => sync(v)),
+  viewer.selection.onSelectionChanged.subscribe(refresh)
+]
+return { el, destroy: () => { for (const u of unsubscribes) u(); el.remove() } }
 ```
 
-### Resource Cleanup Checklist
+Cleanup checklist for `destroy()`: subscriptions, `ResizeObserver.disconnect()`, `clearTimeout`, `removeEventListener`, and any body-level DS nodes (menus, modals, toasters) the widget created.
 
-When writing or reviewing useEffect hooks, ensure cleanup for:
-1. `.subscribe()` / `.sub()` — return unsub from effect
-2. `ResizeObserver` — call `.disconnect()` in cleanup
-3. `setTimeout` — call `clearTimeout()` in cleanup
-4. Event listeners — call `removeEventListener()` in cleanup
+### Frame-Debounced Core Signals
 
-### Hook Naming Convention
+`selection.onSelectionChanged` and `renderer.onSceneUpdated` dispatch once per animation frame. UI that must react at once to its own action (e.g. the BIM tree's visibility check) updates itself immediately and treats the signal as the confirmation.
 
-Any function calling React hooks (useState, useEffect, useRef, etc.) MUST be prefixed with `use`. Non-hook helper functions must NOT call hooks.
+### StateRef<T> Interface
 
-### Intentional useEffect Without Dependencies
-
-These run every render and are intentional:
-- `ReactTooltip.rebuild()` — tooltips need DOM re-scan after changes
-- `resizeGfx()` in sidePanel — canvas must resize on every render
-
-State updates should NOT be in depless effects — use `onChange.subscribe` pattern instead.
+`StateRef<T>` is `get()`, `set()`, `onChange`. Persistence and validation are not on the interface — use `createSettingState(init, { storageKey, validate })` from `dom-viewers/state`, which returns a plain `StateRef`.
 
 ### IsolationApi Pattern
 
 `IsolationApi` has delegation methods (`hasSelection`, `showAll`, `isolateSelection`, etc.). Consumers call `isolation.showAll()` directly — never expose the internal adapter.
 
-The adapter (`IIsolationAdapter`) is an implementation detail:
-- WebGL adapter uses closure variables (`let ghost = false`)
-- Ultra adapter also uses closure variables (NOT useStateRef — that would be a Rules of Hooks violation since the adapter factory is not a hook)
+The adapter (`IIsolationAdapter`) is an implementation detail with closure state: `webgl/isolationAdapters.ts` (also produces the render-settings adapter) and `ultra/isolationAdapter.ts`.
 
-### Control Bar Customization
+### Control Bar
 
-Both viewers apply customization through the hook parameter, not at render time:
+The bar is keyed: `bar.update(sections)` re-syncs buttons in place (active state, tip, icon factory swap, dim/disable) instead of re-rendering. The viewer roots rebuild the section definitions from `controlbar/sections.ts` and call `update()` on every signal the bar depends on. `customize()` is the public hook (`ControlBarApi`).
 
-```typescript
-const controlBar = useControlBar(..., customization)
-<ControlBar content={controlBar} />
-```
+### Design-System Envelope
+
+Components carry no visual CSS of their own; `vim-html-ds/styles/ds.css` does. Chrome layout lives in `dom-viewers/style.css` with tokens only (no hex, no border-radius, no box-shadow, no transitions). DS components require a `.ds-root` ancestor — the viewer roots add it to the container's UI mount. Tooltips are declarative: set `data-ds-tip` (`Components.TIP_ATTR`) on a target inside a `tooltipZone(root)`.
