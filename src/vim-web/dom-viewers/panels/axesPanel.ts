@@ -44,16 +44,40 @@ export function axesPanel (host: HTMLElement, opts: {
     gizmo.appendChild(canvas)
     canvas.classList.add('vim-ds-axes__canvas')
   }
-  const observer = new ResizeObserver(() => {
-    viewer.gizmos.axes.resize(gizmo.clientWidth)
-    // Remove the core's default placement of the canvas.
-    if (canvas) {
-      canvas.style.top = '0px'
-      canvas.style.right = '0px'
-    }
-  })
+  /**
+   * Sizes the canvas to the gizmo box and centers it. The core renders a
+   * square canvas, so the box's smaller side sets the size — sizing by width
+   * alone would overflow the shorter axis onto the buttons. Idempotent: it
+   * writes only when something is off, so re-entry through the style observer
+   * below settles immediately.
+   */
+  const place = () => {
+    if (!canvas) return
+    const width = gizmo.clientWidth
+    const height = gizmo.clientHeight
+    const size = Math.min(width, height)
+    if (size <= 0) return
+    if (canvas.width !== size) viewer.gizmos.axes.resize(size)
+    const top = `${Math.round((height - size) / 2)}px`
+    const left = `${Math.round((width - size) / 2)}px`
+    if (canvas.style.top === top && canvas.style.left === left && canvas.style.right === 'auto') return
+    // Replace the core's own top-right corner placement with a centered one.
+    canvas.style.top = top
+    canvas.style.left = left
+    canvas.style.right = 'auto'
+  }
+
+  const observer = new ResizeObserver(place)
   observer.observe(gizmo)
   disposers.push(() => observer.disconnect())
+
+  // The core re-places and re-sizes the canvas on its own whenever the viewport
+  // resizes; re-center after it rather than racing it.
+  if (canvas) {
+    const styleWatch = new MutationObserver(place)
+    styleWatch.observe(canvas, { attributes: true, attributeFilter: ['style', 'width', 'height'] })
+    disposers.push(() => styleWatch.disconnect())
+  }
 
   const showOrtho = isTrue(settings.axesOrthographic)
   const showHome = isTrue(settings.axesHome)

@@ -59,13 +59,13 @@
   background: var(--stage-800);
   overflow: hidden;
 }
+/* The gizmo owns the area above the button band; the canvas is centered in it by the panel. */
 .vim-ds-axes__gizmo {
   position: absolute;
-  inset: var(--ds-space-2) var(--ds-space-2) calc(25% + var(--ds-space-1)) var(--ds-space-2);
+  inset: var(--ds-space-2) var(--ds-space-2) 34px var(--ds-space-2);
+  overflow: hidden;
 }
 .vim-ds-axes__canvas {
-  position: absolute;
-  inset: 0;
   opacity: 0.6;
   filter: saturate(0);
 }
@@ -75,10 +75,10 @@
 }
 .vim-ds-axes__buttons {
   position: absolute;
-  top: 75%;
   left: 0;
   right: 0;
   bottom: 0;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: space-evenly;
@@ -251,6 +251,26 @@
   inset: 0;
   display: flex;
   flex-direction: column;
+}
+
+/* Panel close (×) — the DS 20px box leaves the glyph small and optically high; this centers it
+   in a round hit target sized like the viewer's other chrome buttons. */
+.vim-ds-side .ds-panel__close,
+.vim-ds-floating .ds-panel__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 20px;
+  /* The glyph's ink sits above its box's center; nudge it back onto the title's baseline. */
+  padding-bottom: 2px;
+}
+.vim-ds-side .ds-panel__close:hover,
+.vim-ds-floating .ds-panel__close:hover {
+  background: var(--stage-700);
+  color: var(--text-100);
 }
 
 /* Settings page (inside the side panel). */
