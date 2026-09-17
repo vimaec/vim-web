@@ -47,6 +47,8 @@ export function getDefaultUltraSettings(): UltraSettings {
     isolation: {
       autoIsolate: false,
       showGhost: true,
+      ghostOpacity: 0.13,
+      ghostColor: '#FFFFFF',
       showTransparent: true,
       showRooms: false,
     },

@@ -60,7 +60,7 @@ export async function createDomUltraViewer (
   const sectionBox = createUltraSectionBox(core, fullSettings.sectionBox)
   const framing = createUltraFraming(core, sectionBox, fullSettings.camera.autoCamera)
   const side = createSideState(true, 400)
-  const isolation = createUltraIsolation(core, fullSettings.isolation.showGhost)
+  const isolation = createUltraIsolation(core, fullSettings.isolation)
 
   core.inputs.keyboard.override('KeyF', 'up', () => framing.frameSelection.call())
   if (fullSettings.cursor?.default !== undefined) core.inputs.pointerMode = fullSettings.cursor.default

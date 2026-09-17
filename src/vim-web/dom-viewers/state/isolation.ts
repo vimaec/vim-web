@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import type * as Core from '../../core-viewers'
 import type { ISignal } from '../../core-viewers/shared/events'
 import { createFuncRef, createState, type FuncRef, type StateRef } from '../../state'
@@ -230,9 +231,10 @@ export function createRenderSettings (adapter: IRenderSettingsAdapter): RenderSe
 }
 
 export function createWebglIsolation (viewer: Core.Webgl.Viewer, settings?: IsolationSettings) {
-  // Seed the material with the configured ghost opacity before the state initializes from it;
-  // a persisted localStorage value still takes precedence (the state reads it first).
+  // Seed the material with the configured ghost look before the state initializes from it;
+  // a persisted localStorage opacity still takes precedence (the state reads it first).
   if (settings?.ghostOpacity !== undefined) viewer.materials.ghostOpacity = settings.ghostOpacity
+  if (settings?.ghostColor !== undefined) viewer.materials.ghostColor = new THREE.Color(settings.ghostColor)
   const { isolationAdapter, renderSettingsAdapter } = createWebglAdapters(viewer, settings)
   return {
     isolation: createSharedIsolation(isolationAdapter),
@@ -240,6 +242,8 @@ export function createWebglIsolation (viewer: Core.Webgl.Viewer, settings?: Isol
   }
 }
 
-export function createUltraIsolation (viewer: Core.Ultra.Viewer, showGhostDefault?: boolean) {
-  return createSharedIsolation(createUltraIsolationAdapter(viewer, showGhostDefault))
+export function createUltraIsolation (viewer: Core.Ultra.Viewer, settings?: IsolationSettings) {
+  if (settings?.ghostOpacity !== undefined) viewer.renderer.ghostOpacity = settings.ghostOpacity
+  if (settings?.ghostColor !== undefined) viewer.renderer.ghostColor = new THREE.Color(settings.ghostColor)
+  return createSharedIsolation(createUltraIsolationAdapter(viewer, settings?.showGhost))
 }

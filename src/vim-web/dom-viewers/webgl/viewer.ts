@@ -1,4 +1,8 @@
+import * as THREE from 'three'
 import * as Core from '../../core-viewers'
+
+/** Default canvas background (the design's stage colour). */
+const STAGE_BACKGROUND = 0x101218
 
 import { type Container, createContainer } from '../container'
 import { createSettings } from '../settings/settingsState'
@@ -63,7 +67,11 @@ export async function createDomWebglViewer (
   // DS components expect a .ds-root ancestor.
   cmp.ui.classList.add('ds-root', 'vim-ds-ui')
 
-  const core = Core.Webgl.createViewer(coreSettings)
+  // The UI's stage colour; a caller's own background wins.
+  const core = Core.Webgl.createViewer({
+    ...coreSettings,
+    background: { ...coreSettings.background, color: coreSettings.background?.color ?? new THREE.Color(STAGE_BACKGROUND) }
+  })
   core.viewport.reparent(cmp.gfx)
 
   const fullSettings = createSettings(settings, getDefaultSettings())

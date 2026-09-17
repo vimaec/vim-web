@@ -84,18 +84,19 @@
   border-top: 1px solid var(--hairline);
 }
 
-/* Control bar — a flat strip of hairline-bordered sections, bottom-centred. */
+/* Control bar — floating pills of circular buttons, bottom-centred. The viewer design's one
+   rounded element (the DS envelope is square); everything else stays on tokens. */
 .vim-ds-controlbar {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: var(--ds-space-4);
+  bottom: var(--ds-space-5);
   z-index: var(--vw-z-ui);
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: var(--ds-space-2);
+  gap: var(--ds-space-3);
   padding: 0 var(--ds-space-2);
   /* The strip spans the width; only its sections take the pointer. */
   pointer-events: none;
@@ -103,15 +104,44 @@
 .vim-ds-controlbar__section {
   display: flex;
   align-items: center;
-  gap: var(--ds-space-1);
-  padding: var(--ds-space-1);
+  gap: 2px;
+  padding: 3px;
   border: 1px solid var(--hairline);
+  border-radius: 999px;
   background: var(--stage-800);
   pointer-events: auto;
 }
 .vim-ds-controlbar__section[data-variant="blue"] {
   border-color: var(--vim-cyan);
   background: var(--vim-cyan-tint);
+}
+.vim-ds-controlbar__divider {
+  width: 1px;
+  height: 20px;
+  margin: 0 var(--ds-space-1);
+  background: var(--hairline-soft);
+}
+.vim-ds-controlbar .ds-iconbtn {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-300);
+}
+.vim-ds-controlbar .ds-iconbtn:hover {
+  background: var(--stage-600);
+  color: var(--text-100);
+}
+.vim-ds-controlbar .ds-iconbtn.ds-active {
+  background: var(--vim-cyan);
+  color: var(--stage-950);
+  outline: 1px solid var(--vim-cyan);
+  outline-offset: 2px;
+}
+.vim-ds-controlbar .ds-iconbtn .ds-iconbtn__svg {
+  width: 18px;
+  height: 18px;
 }
 
 /* Floating popover (generic panels) — a DS panel positioned above its anchor by floatAbove(). */
@@ -268,6 +298,9 @@
   flex: 1 1 auto;
   min-height: 0;
   max-height: none;
+}
+.vim-ds-bim-info__loading[hidden] {
+  display: none;
 }
 .vim-ds-bim-info__loading {
   display: block;

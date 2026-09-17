@@ -14,6 +14,8 @@ export type ControlBarButton = {
   icon: (options?: IconOptions) => Element
   isOn?: () => boolean
   variant?: ButtonVariant
+  /** Draws a thin divider before this button, splitting the section's pill into groups. */
+  dividerBefore?: boolean
 }
 
 export type ControlBarSection = {
@@ -41,7 +43,7 @@ export type ControlBarHandle = {
   destroy (): void
 }
 
-type ButtonEntry = { handle: IconButtonHandle, icon: ControlBarButton['icon'], def: ControlBarButton }
+type ButtonEntry = { handle: IconButtonHandle, icon: ControlBarButton['icon'], def: ControlBarButton, divider?: HTMLSpanElement }
 type SectionEntry = { el: HTMLDivElement, buttons: Map<string, ButtonEntry> }
 
 const ICON_CLASS = 'ds-iconbtn__svg'
@@ -94,6 +96,16 @@ export function controlBar (host: HTMLElement, sections: ControlBarSection[]): C
     entry.handle.el.dataset.variant = def.variant ?? 'default'
     entry.handle.el.dataset.on = String(on)
     // Re-appending keeps declaration order without rebuilding.
+    if (def.dividerBefore) {
+      if (!entry.divider) {
+        entry.divider = document.createElement('span')
+        entry.divider.className = 'vim-ds-controlbar__divider'
+      }
+      section.el.appendChild(entry.divider)
+    } else {
+      entry.divider?.remove()
+      entry.divider = undefined
+    }
     section.el.appendChild(entry.handle.el)
   }
 
@@ -116,13 +128,17 @@ export function controlBar (host: HTMLElement, sections: ControlBarSection[]): C
     }
     for (const [id, button] of entry.buttons) {
       if (seen.has(id)) continue
+      button.divider?.remove()
       button.handle.destroy()
       entry.buttons.delete(id)
     }
   }
 
   const removeSection = (id: string, entry: SectionEntry) => {
-    for (const button of entry.buttons.values()) button.handle.destroy()
+    for (const button of entry.buttons.values()) {
+      button.divider?.remove()
+      button.handle.destroy()
+    }
     entry.el.remove()
     entries.delete(id)
   }

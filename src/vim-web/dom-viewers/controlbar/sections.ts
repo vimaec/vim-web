@@ -169,6 +169,7 @@ export function visibilitySection (isolation: IsolationApi, settings: ControlBar
       {
         id: Ids.visibilityShowAll,
         tip: 'Show All',
+        dividerBefore: true,
         enabled: () => isTrue(settings.visibilityShowAll),
         action: () => isolation.showAll(),
         icon: Icons.showAll,

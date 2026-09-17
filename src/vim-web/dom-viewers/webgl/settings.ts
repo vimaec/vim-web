@@ -27,6 +27,10 @@ export type IsolationSettings = {
    * to localStorage) takes precedence over this.
    */
   ghostOpacity?: number
+  /**
+   * Initial ghost colour as a CSS hex string. When omitted the material's built-in default is used.
+   */
+  ghostColor?: string
 }
 
 export type SectionBoxSettings = {
@@ -101,6 +105,8 @@ export function getDefaultSettings(): WebglSettings {
     isolation: {
       autoIsolate: false,
       showGhost: true,
+      ghostOpacity: 0.13,
+      ghostColor: '#FFFFFF',
       showTransparent: true,
       showRooms: false,
     },
