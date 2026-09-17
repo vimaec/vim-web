@@ -12,6 +12,11 @@
   --vw-z-panel: 30;
 }
 
+/* The UI mount is a .ds-root (tokens, fonts, box-sizing) but sits over the canvas: no ground of its own. */
+.vim-ui.ds-root {
+  background: transparent;
+}
+
 /* Event relay over the canvas (see panels/overlay.ts) — invisible, perf-critical. */
 .vim-ds-overlay {
   position: absolute;
