@@ -4,11 +4,14 @@ import * as VIM from './vim-web'
 // DS-port spike: the real settings builder feeds the DS settings panel (shared GenericCommonEntry type).
 import { getIsolationSettings } from './vim-web/react-viewers/settings/settingsPanelContent'
 
-type ViewerRef = VIM.React.Webgl.ViewerApi | VIM.React.Ultra.ViewerApi
+type ViewerRef = VIM.React.ViewerApi | VIM.Dom.ViewerApi
 
-function isWebglViewer (viewer: ViewerRef): viewer is VIM.React.Webgl.ViewerApi {
+function isWebglViewer (viewer: ViewerRef): viewer is VIM.React.Webgl.ViewerApi | VIM.Dom.Webgl.ViewerApi {
   return viewer.type === 'webgl'
 }
+
+// `?ds` runs the React-free DS viewer root instead of the React root + DS spike widgets.
+const dsMode = () => new URLSearchParams(window.location.search).has('ds')
 
 // Vite HMR re-executes this module; reuse the root instead of creating a second one (React warns).
 const container = document.getElementById('root')!
@@ -27,7 +30,10 @@ function App() {
   useEffect(() => {
     const el = div.current!
     if (window.location.pathname.includes('ultra')) {
-      createUltra(viewerRef, el)
+      if (dsMode()) createDsUltra(viewerRef, el)
+      else createUltra(viewerRef, el)
+    } else if (dsMode()) {
+      createDsWebgl(viewerRef, el)
     } else {
       createWebgl(viewerRef, el)
     }
@@ -43,6 +49,7 @@ function App() {
   // DS-port spike: mount the React-free DS atoms beside the viewer to prove the toolchain end to end.
   // The icon button's `on` is bound to the checkbox's state, so toggling one updates the other.
   useEffect(() => {
+    if (dsMode()) return
     const host = dsSpike.current!
     const checked = VIM.React.createState(false)
     const text = VIM.React.createState('hello')
@@ -286,6 +293,31 @@ async function createWebgl (viewerRef: RefObject<ViewerRef>, div: HTMLDivElement
   const url = getPathFromUrl() ?? 'https://storage.cdn.vimaec.com/samples/residence.v1.2.75.vim'
   const request = viewer.load({ url }, { prewarmBim: true })
   await request.getVim()
+  viewer.framing.frameScene.call()
+}
+
+// DS viewer root: the whole UI is the React-free DS layer.
+async function createDsWebgl (viewerRef: RefObject<ViewerRef>, div: HTMLDivElement) {
+  const viewer = await VIM.Dom.Webgl.createViewer(div)
+  viewerRef.current = viewer
+  globalThis.viewer = viewer
+  const url = getPathFromUrl() ?? 'https://storage.cdn.vimaec.com/samples/residence.v1.2.75.vim'
+  const request = viewer.load({ url }, { prewarmBim: true })
+  await request.getVim()
+  viewer.framing.frameScene.call()
+}
+
+async function createDsUltra (viewerRef: RefObject<ViewerRef>, div: HTMLDivElement) {
+  const viewer = await VIM.Dom.Ultra.createViewer(div)
+  viewerRef.current = viewer
+  globalThis.viewer = viewer
+  await viewer.core.connect()
+  const url = getPathFromUrl() ?? 'https://storage.cdn.vimaec.com/samples/residence.v1.2.75.vim'
+  const result = await viewer.load({ url }).getResult()
+  if (result.isError) {
+    console.error('Load failed:', result.type, result.error)
+    return
+  }
   viewer.framing.frameScene.call()
 }
 

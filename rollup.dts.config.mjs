@@ -73,7 +73,9 @@ export default {
           // Names match the access path: Core.Webgl → Core_Webgl, React.Ultra → React_Ultra
           // DS-based layer (dom-viewers) first: its barrels re-export pure React-era modules
           // (contextMenuIds, …), so the React markers below would claim them (see DS_PORT.md).
-          if (peek.includes('_bimPanel as bimPanel')) nameMap.set(id, 'Dom_Bim')
+          if (peek.includes('createDomWebglViewer')) nameMap.set(id, 'Dom_Webgl')
+          else if (peek.includes('createDomUltraViewer')) nameMap.set(id, 'Dom_Ultra')
+          else if (peek.includes('_bimPanel as bimPanel')) nameMap.set(id, 'Dom_Bim')
           else if (peek.includes('CheckboxOptions')) nameMap.set(id, 'Dom_Components')
           else if (peek.includes('_controlBar as controlBar')) nameMap.set(id, 'Dom_ControlBar')
           else if (peek.includes('_genericPanel as genericPanel')) nameMap.set(id, 'Dom_Generic')
@@ -82,7 +84,8 @@ export default {
           else if (peek.includes('_settingsPanel as settingsPanel')) nameMap.set(id, 'Dom_Settings')
           // getErrorMessage is unique to the DS errors barrel; the React one also exports webglFileError.
           else if (peek.includes('_getErrorMessage as getErrorMessage')) nameMap.set(id, 'Dom_Errors')
-          else if (peek.includes('_createSideState as createSideState')) nameMap.set(id, 'Dom_State')
+          // createFraming sorts first in the state barrel; the React layer has no such export.
+          else if (peek.includes('_createFraming as createFraming')) nameMap.set(id, 'Dom_State')
           else if (peek.includes('childScope')) nameMap.set(id, 'Dom')
           // Core / React
           else if (peek.includes('createCoreWebglViewer')) nameMap.set(id, 'Core_Webgl')

@@ -9,11 +9,12 @@ type Vim = Core.Ultra.IUltraVim & { readonly visibility: IVisibilitySynchronizer
 type Element3D = Core.Ultra.IUltraElement3D & { state: VisibilityState }
 
 export function useUltraIsolation(viewer: Viewer, showGhostDefault?: boolean) {
-  const adapter = createAdapter(viewer, showGhostDefault)
+  const adapter = createUltraIsolationAdapter(viewer, showGhostDefault)
   return useSharedIsolation(adapter)
 }
 
-function createAdapter(viewer: Viewer, showGhostDefault?: boolean): IIsolationAdapter {
+/** Plain closure over the core; shared with the DS layer (`dom-viewers/state/isolation.ts`). */
+export function createUltraIsolationAdapter(viewer: Viewer, showGhostDefault?: boolean): IIsolationAdapter {
   const ghost = createState<boolean>(showGhostDefault ?? false)
 
   const hideState = () => ghost.get() ? VisibilityState.GHOSTED : VisibilityState.HIDDEN

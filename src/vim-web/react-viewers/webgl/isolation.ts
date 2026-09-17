@@ -24,7 +24,8 @@ export function useWebglIsolation(viewer: Core.Webgl.Viewer, initialState?: Isol
   return { isolation, renderSettings }
 }
 
-function createWebglAdapters(viewer: Core.Webgl.Viewer, initialState?: IsolationSettings) {
+/** Plain closures over the core; shared with the DS layer (`dom-viewers/state/isolation.ts`). */
+export function createWebglAdapters(viewer: Core.Webgl.Viewer, initialState?: IsolationSettings) {
   // Shared closure state — read by both adapters (e.g. showGhost triggers updateMaterials).
   let ghost = initialState?.showGhost ?? false
   let showTransparent = initialState?.showTransparent ?? true

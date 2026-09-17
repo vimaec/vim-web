@@ -13,6 +13,14 @@
 import 'vim-html-ds/styles/ds.css'
 import './style.css'
 
+// Viewer roots
+export * as Webgl from './webgl'
+export * as Ultra from './ultra'
+import type { WebglViewerApi } from './webgl/viewerApi'
+import type { UltraViewerApi } from './ultra/viewerApi'
+export type ViewerApi = WebglViewerApi | UltraViewerApi
+
+// UI namespaces
 export * as Bim from './bim'
 export * as Components from './components'
 export * as ControlBar from './controlbar'

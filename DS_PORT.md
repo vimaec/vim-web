@@ -169,6 +169,23 @@ is cleared in `finally`, since the core echoes the selection synchronously. **bi
 the page and docks the info panel in a `heightResizable` `ds-collapse`. **state/webglState.ts** is
 `createWebglState`, the twin of `useViewerState` (vim / selection / filtered elements / filter).
 
+## Viewer roots
+
+`dom-viewers/webgl/viewer.ts` and `dom-viewers/ultra/viewer.ts` are the imperative twins of the two
+React roots: same container, same core, same `ViewerApi` surface. What the React tree did through
+hooks and re-renders is split in two. **State** lives in `dom-viewers/state/`: `createSettingState`
+(the `useStateRef` extras — localStorage persistence and a validation step), `createFraming`,
+`createSectionBox`, `createSharedIsolation` / `createRenderSettings` (over the adapters the React
+hook files now export), `createUiRefs` + `liveUiSettings` (one `StateRef` per `ui` key and a live
+view of the settings shape so predicates follow runtime toggles), and the tool states behind the
+bar (pointer, fullscreen, measure) with `onChange` events. **Composition** is a linear function: the
+side panel hosts the BIM and settings pages (shown per `side.getContent()`; the BIM page is rebuilt
+when `ui.bimTree` / `ui.bimInfo` change), `restOfScreen` hosts the overlay, logo, control bar,
+floating panels and axes, and the context menu, toast and modal are body-level. The control bar
+re-syncs with `bar.update(sections())` on every signal the React bar re-rendered on. `dispose()`
+tears everything down in reverse. `controlbar/sections.ts` ports the section builders onto Dom
+icons; `webgl/loader.ts` is `ComponentLoader` on the Dom modal.
+
 ## Inventory — ~37 UI units
 
 **Complexity:** ⬜ Trivial · 🟨 Moderate · 🟥 Hard
@@ -266,10 +283,10 @@ React hook bridge and subscribing DS handles directly.
 
 | # | Done | Widget | Source | DS target | Cx | Notes |
 |---|:---:|---|---|---|----|---|
-| 34 | | Container | `container.tsx` | keep; add `.ds-root` to the UI mount | ⬜ | Public type |
-| 35 | | WebGL viewer root | `webgl/viewer.tsx` | imperative mount + compose | 🟥 | Replaces the React tree |
-| 36 | | Ultra viewer root | `ultra/viewer.tsx` | imperative mount | 🟥 | |
-| 37 | | Ultra isolation/modal UI | `ultra/isolationPanel.tsx`, `ultra/modal.tsx` | `ds-panel` / `ds-modal` | 🟨 | |
+| 34 | ✅ | Container | `container.tsx` | keep; `.ds-root` on the UI mount | ⬜ | The Dom roots reuse `createContainer` and add `ds-root vim-ds-ui` to `ui`; the public type is unchanged |
+| 35 | ✅ | WebGL viewer root | `webgl/viewer.tsx` | `dom-viewers/webgl/viewer.ts` | 🟥 | `Dom.Webgl.createViewer` — the same `ViewerApi` surface on Dom hooks. State twins in `dom-viewers/state/` (framing, sectionBox, isolation + renderSettings, uiState, tools, settingState); `controlbar/sections.ts` on Dom icons; `webgl/loader.ts` on the Dom modal |
+| 36 | ✅ | Ultra viewer root | `ultra/viewer.tsx` | `dom-viewers/ultra/viewer.ts` | 🟥 | `Dom.Ultra.createViewer`; `ultra/modal.ts` twins `updateModal` / `updateProgress` on the Dom modal |
+| 37 | ✅ | Ultra isolation/modal UI | `ultra/isolationPanel.tsx`, `ultra/modal.tsx` | `genericPanel` + shared Dom modal | 🟨 | The ghost-only panel is two entries on `genericPanel` inside the Ultra root |
 
 ## Critical path
 
