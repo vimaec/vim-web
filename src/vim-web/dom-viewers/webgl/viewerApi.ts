@@ -1,6 +1,6 @@
 import type * as Core from '../../core-viewers'
-import type { FramingApi, IsolationApi, RenderSettingsApi, SectionBoxApi, WebglUiApi } from '../../react-viewers'
-import type { Container } from '../../react-viewers/container'
+import type { FramingApi, IsolationApi, RenderSettingsApi, SectionBoxApi, WebglUiApi } from '../api'
+import type { Container } from '../container'
 import type { BimInfoPanelApi } from '../bim'
 import type { ControlBarCustomization } from '../controlbar'
 import type { GenericPanelApi } from '../generic'

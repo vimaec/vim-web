@@ -1,8 +1,34 @@
 import type * as THREE from 'three'
 import type * as Core from '../../core-viewers'
 import type { ISignal } from '../../core-viewers/shared/events'
-import type { FramingApi, SectionBoxApi } from '../../react-viewers'
-import { createFuncRef, createState } from '../../state'
+import { createFuncRef, createState, type FuncRef, type StateRef } from '../../state'
+import type { SectionBoxApi } from './sectionBox'
+
+/**
+ * High-level framing controls for the viewer. Provides semantic operations
+ * like "frame selection" and "frame scene".
+ *
+ * For low-level camera movement (orbit, pan, zoom, snap/lerp), use
+ * `viewer.core.camera`.
+ *
+ * @example
+ * viewer.framing.frameSelection.call()
+ * viewer.core.camera.lerp(1).frame('all')
+ */
+export interface FramingApi {
+  /** When true, automatically frames the camera on the selection whenever it changes. */
+  autoCamera: StateRef<boolean>
+  /** Resets the camera to its last saved position. */
+  reset: FuncRef<void, void>
+  /** Frames the camera on the current selection (or scene if nothing selected). */
+  frameSelection: FuncRef<void, Promise<void>>
+  /** Frames the camera to show all loaded geometry. */
+  frameScene: FuncRef<void, Promise<void>>
+  /** Returns the bounding box of the current selection, or undefined if nothing selected. */
+  getSelectionBox: FuncRef<void, Promise<THREE.Box3 | undefined>>
+  /** Returns the bounding box of all loaded geometry. */
+  getSceneBox: FuncRef<void, Promise<THREE.Box3 | undefined>>
+}
 
 export type CameraAdapter = {
   onSelectionChanged: ISignal
@@ -15,8 +41,8 @@ export type CameraAdapter = {
 export type FramingHandle = FramingApi & { destroy (): void }
 
 /**
- * The framework-neutral twin of `useFraming`: semantic camera operations over
- * a viewer adapter. Section fits re-frame when auto-camera is on, as before.
+ * Semantic camera operations over a viewer adapter. Section fits re-frame
+ * when auto-camera is on.
  */
 export function createFraming (adapter: CameraAdapter, section: SectionBoxApi, initialAutoCamera = false): FramingHandle {
   const autoCamera = createState(initialAutoCamera)

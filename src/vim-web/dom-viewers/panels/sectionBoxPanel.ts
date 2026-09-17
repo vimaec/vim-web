@@ -1,4 +1,4 @@
-import type { SectionBoxApi } from '../../react-viewers'
+import type { SectionBoxApi } from '../api'
 import { genericPanel, type GenericPanelHandle } from '../generic'
 
 /** Entry ids, for `customize()`. */

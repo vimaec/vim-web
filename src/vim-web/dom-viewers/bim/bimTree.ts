@@ -8,12 +8,11 @@ import {
 } from '@headless-tree/core'
 import { createEmpty, windowRange } from '../ds'
 import type * as Core from '../../core-viewers'
-import type { FramingApi, IsolationApi } from '../../react-viewers'
+import type { FramingApi, IsolationApi } from '../api'
 import type { StateRef } from '../../state'
 import { TIP_ATTR, tooltipZone } from '../components/tooltip'
 import type { ContextMenuPosition } from '../panels/contextMenu'
-// Pure data model; the module moves into this layer at the flip.
-import type { BimNode, BimTreeData } from '../../react-viewers/bim/bimTreeData'
+import type { BimNode, BimTreeData } from '../bim/bimTreeData'
 
 type IElement3D = Core.Webgl.IElement3D
 type Tree = TreeInstance<BimNode>

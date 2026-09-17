@@ -17,7 +17,7 @@ export type GenericPanelOptions = {
 
 export type GenericPanelCustomization = (entries: GenericEntryType[]) => GenericEntryType[]
 
-/** Public customization hook — the same contract as the React `GenericPanelApi`. */
+/** Public customization hook — the public `GenericPanelApi` contract. */
 export type GenericPanelApi = {
   customize (fn: GenericPanelCustomization): void
 }

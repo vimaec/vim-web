@@ -389,9 +389,9 @@ export class UltraViewer implements IUltraViewer {
 }
 
 /**
- * Creates a headless Ultra viewer without React UI.
+ * Creates a headless Ultra viewer without UI.
  * Use this for programmatic-only usage or custom UI frameworks.
- * For a full React UI viewer, use `React.Ultra.createViewer()` instead.
+ * For the viewer with UI, use `Dom.Ultra.createViewer()` instead.
  *
  * @param parent - The parent HTML element to which the canvas will be appended.
  * @param logger - Optional logger for logging messages.

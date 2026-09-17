@@ -1,7 +1,7 @@
 import { createSearch } from '../ds'
 import type * as Core from '../../core-viewers'
 import type { StateRef } from '../../state'
-import type { AugmentedElement } from '../../react-viewers/helpers/element'
+import type { AugmentedElement } from '../helpers/element'
 
 const SEARCH_DELAY_MS = 200
 

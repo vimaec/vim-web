@@ -186,6 +186,26 @@ re-syncs with `bar.update(sections())` on every signal the React bar re-rendered
 tears everything down in reverse. `controlbar/sections.ts` ports the section builders onto Dom
 icons; `webgl/loader.ts` is `ComponentLoader` on the Dom modal.
 
+## The flip
+
+With the roots in place the React layer is gone: `react-viewers/` is deleted, `react`, `react-dom`,
+`@headless-tree/react` and `@tanstack/react-virtual` are out of `package.json` (no peer
+dependencies remain), the Vite React plugin and `jsx` compiler option are removed, and the public
+entry exports `Core`, `Dom` and `THREE`. The framework-neutral modules the React layer owned moved
+into `dom-viewers/` under the same sub-directory names (`settings/`, `helpers/`, `bim/`, `webgl/`,
+`ultra/`, `panels/`, `controlbar/`, `container.ts`); the interfaces that lived in hook files
+(`FramingApi`, `SectionBoxApi`, `IsolationApi`, `RenderSettingsApi`, `WebglUiApi`, `UltraUiApi`)
+now sit beside their `create*` implementations in `state/` and are re-exported from
+`dom-viewers/api.ts`. The container / cursor / performance-counter CSS came over into
+`dom-viewers/style.css`; everything else in the React stylesheet was widget CSS the DS replaces.
+`src/main.ts` is the plain-TypeScript sandbox (`/`, `/ultra`, `?vim=<url>`).
+
+**Consumer migration:** `VIM.React.Webgl.createViewer` → `VIM.Dom.Webgl.createViewer` (same for
+Ultra); the `ViewerApi` surface is unchanged except for the 🔓 items above — control-bar icons are
+`(options?) => Element`, context-menu actions take no event, BIM-info render overrides return
+`Element`, message-box bodies / footers / icons take DOM. `VIM.React.Icons.*` → `VIM.Dom.Icons.*`
+(returns `SVGSVGElement`). Namespace naming (`Dom`) is the working name and is open to change.
+
 ## Inventory — ~37 UI units
 
 **Complexity:** ⬜ Trivial · 🟨 Moderate · 🟥 Hard

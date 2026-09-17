@@ -36,7 +36,7 @@ export type ControlBarHandle = {
    * the base definition.
    */
   update (sections?: ControlBarSection[]): void
-  /** Public customization hook; the same contract as the React `ControlBarApi`. */
+  /** Public customization hook; the public `ControlBarApi` contract. */
   customize (fn: ControlBarCustomization): void
   destroy (): void
 }

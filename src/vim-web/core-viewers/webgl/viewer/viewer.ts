@@ -296,9 +296,9 @@ export class WebglViewer implements IWebglViewer {
 }
 
 /**
- * Creates a headless WebGL viewer without React UI.
+ * Creates a headless WebGL viewer without UI.
  * Use this for programmatic-only usage or custom UI frameworks.
- * For a full React UI viewer, use `React.Webgl.createViewer()` instead.
+ * For the viewer with UI, use `Dom.Webgl.createViewer()` instead.
  *
  * @param settings - Optional renderer config (camera, materials, lighting). See {@link ViewerSettings}.
  * @returns A new WebGL viewer.

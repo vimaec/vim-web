@@ -1,18 +1,17 @@
 import { PointerMode } from '../../core-viewers'
 import type * as Core from '../../core-viewers'
-import type { FramingApi, IsolationApi, SectionBoxApi } from '../../react-viewers'
+import type { FramingApi, IsolationApi, SectionBoxApi } from '../api'
 import type {
   ControlBarCameraSettings,
   ControlBarCursorSettings,
   ControlBarMeasureSettings,
   ControlBarSectionBoxSettings,
   ControlBarVisibilitySettings
-} from '../../react-viewers/state/controlBarState'
-import type { UltraSettings } from '../../react-viewers/ultra/settings'
-import type { WebglSettings } from '../../react-viewers/webgl/settings'
-import { isFalse, isTrue } from '../../react-viewers/settings/userBoolean'
-// Pure id table; the module moves into this layer at the flip.
-import { controlBarIds as Ids } from '../../react-viewers/controlbar/controlBarIds'
+} from '../controlbar/sectionSettings'
+import type { UltraSettings } from '../ultra/settings'
+import type { WebglSettings } from '../webgl/settings'
+import { isFalse, isTrue } from '../settings/userBoolean'
+import { controlBarIds as Ids } from './controlBarIds'
 import * as Icons from '../iconSet'
 import type { ModalApi } from '../modal'
 import type { SideState } from '../state/sideState'

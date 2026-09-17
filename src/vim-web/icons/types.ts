@@ -1,5 +1,5 @@
 /**
- * Common icon options, shared by the React and DOM renderers.
+ * Common icon options for the SVG icon factories.
  */
 export type IconOptions = {
   height?: number | string

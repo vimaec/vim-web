@@ -1,9 +1,8 @@
 import { SimpleEventDispatcher } from 'ste-simple-events'
 import type * as Core from '../../core-viewers'
 import type { ISimpleEvent } from '../../core-viewers/shared/events'
-// Plain helpers; they move into this layer at the flip.
-import { type CursorManager, pointerToCursor } from '../../react-viewers/helpers/cursor'
-import { FullScreenObserver } from '../../react-viewers/helpers/fullScreenObserver'
+import { type CursorManager, pointerToCursor } from '../helpers/cursor'
+import { FullScreenObserver } from '../helpers/fullScreenObserver'
 
 /**
  * Small tool states behind control bar buttons — the twins of

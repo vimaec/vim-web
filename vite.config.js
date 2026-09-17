@@ -1,8 +1,6 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
-import react from '@vitejs/plugin-react'
 export default defineConfig({
-  plugins: [react()],
   resolve: {
     // vim-html-ds is a git submodule; alias so `vim-html-ds/...` resolves into it (see DS_PORT.md)
     alias: { 'vim-html-ds': resolve(__dirname, 'vim-html-ds') }
@@ -12,19 +10,10 @@ export default defineConfig({
     lib: {
       formats: ['iife', 'es'],
       entry: resolve(__dirname, 'src/vim-web/index.ts'),
-      name: 'VIMReact'
+      name: 'VIM'
     },
     rollupOptions: {
-      external: ['react', 'react-dom', /^react\//, /^react-dom\//],
       output: {
-        // Save react and react-dom as globals so they can be provided as external dependencies
-        globals: {
-          'react': 'React',
-          'react/jsx-runtime': 'React',
-          'react-dom': 'ReactDOM',
-          'react-dom/client': 'ReactDOM'
-        },
-
         // Keep style.css name
         assetFileNames: (assetInfo) => {
           if (assetInfo.names[0] === 'vim-web.css') {

@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "jsx": "react-jsx",
     "target": "ESNext",
     "module": "ESNext",
     "rootDir": "src",

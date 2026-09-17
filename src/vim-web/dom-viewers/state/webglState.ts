@@ -1,7 +1,6 @@
 import type * as Core from '../../core-viewers'
 import { createState, type StateRef } from '../../state'
-// Pure BIM element helpers; the module moves into this layer at the flip.
-import { filterElements, getElements, type AugmentedElement } from '../../react-viewers/helpers/element'
+import { filterElements, getElements, type AugmentedElement } from '../helpers/element'
 
 export type WebglState = {
   /** The first loaded vim. */

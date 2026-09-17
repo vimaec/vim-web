@@ -1,6 +1,5 @@
 import { createState, type StateRef } from '../../state'
-// Plain storage helpers; the module moves into this layer at the flip.
-import { storageGet, storageSet } from '../../react-viewers/settings/localStorage'
+import { storageGet, storageSet } from '../settings/localStorage'
 
 export type SettingStateOptions<T> = {
   /** Persists the value under this localStorage key; a stored value wins over the initializer. */

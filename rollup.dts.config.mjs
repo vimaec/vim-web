@@ -70,9 +70,7 @@ export default {
         for (const m of code.matchAll(/declare namespace (index_d(?:\$[0-9a-z]+)?) \{/g)) {
           const id = m[1]
           const peek = code.substring(m.index, m.index + 500)
-          // Names match the access path: Core.Webgl → Core_Webgl, React.Ultra → React_Ultra
-          // DS-based layer (dom-viewers) first: its barrels re-export pure React-era modules
-          // (contextMenuIds, …), so the React markers below would claim them (see DS_PORT.md).
+          // Names match the access path: Core.Webgl → Core_Webgl, Dom.Ultra → Dom_Ultra
           if (peek.includes('createDomWebglViewer')) nameMap.set(id, 'Dom_Webgl')
           else if (peek.includes('createDomUltraViewer')) nameMap.set(id, 'Dom_Ultra')
           else if (peek.includes('_bimPanel as bimPanel')) nameMap.set(id, 'Dom_Bim')
@@ -87,34 +85,17 @@ export default {
           // createFraming sorts first in the state barrel; the React layer has no such export.
           else if (peek.includes('_createFraming as createFraming')) nameMap.set(id, 'Dom_State')
           else if (peek.includes('childScope')) nameMap.set(id, 'Dom')
-          // Core / React
+          // Core
           else if (peek.includes('createCoreWebglViewer')) nameMap.set(id, 'Core_Webgl')
           else if (peek.includes('createCoreUltraViewer')) nameMap.set(id, 'Core_Ultra')
-          else if (peek.includes('createWebglViewer')) nameMap.set(id, 'React_Webgl')
-          else if (peek.includes('createUltraViewer')) nameMap.set(id, 'React_Ultra')
           else if (peek.includes('PointerMode')) nameMap.set(id, 'Core')
-          else if (peek.includes('controlBarIds')) nameMap.set(id, 'React_ControlBar')
-          else if (peek.includes('isFalse')) nameMap.set(id, 'React_Settings')
-          else if (peek.includes('errorStyle')) nameMap.set(id, 'React_Errors')
-          else if (peek.includes('contextMenuIds')) nameMap.set(id, 'React_ContextMenu')
-          // Content-based detection where the expected name is fragile: the React barrel is
-          // only the bare `index_d` while it happens to deconflict first, and Core.Ultra's
-          // `createCoreUltraViewer` sorts past the 500-char peek.
-          else if (peek.includes(' as ContextMenu,')) nameMap.set(id, 'React')
+          // Core.Ultra's `createCoreUltraViewer` sorts past the 500-char peek.
           else if (peek.includes('INVALID_HANDLE')) nameMap.set(id, 'Core_Ultra')
         }
 
-        // Bare index_d is the React top-level namespace
-        if (!nameMap.has('index_d') && code.includes('declare namespace index_d {')) {
-          nameMap.set('index_d', 'React')
-        }
-
-        // Fix file-derived namespace names (icons.tsx → icons_d, style.ts → style_d)
-        nameMap.set('icons_d', 'React_Icons')
+        // Fix file-derived namespace names (iconSet.ts → iconSet_d)
         nameMap.set('iconSet_d', 'Dom_Icons')
         nameMap.set('errorText_d', 'Dom_Errors_Style')
-        nameMap.set('style_d', 'React_ControlBar_Style')
-        nameMap.set('errorStyle_d', 'React_Errors_Style')
 
         // Replace longest names first (index_d$10 before index_d$1 before index_d)
         // Use \b prefix to prevent style_d matching inside errorStyle_d
@@ -139,22 +120,22 @@ export default {
       renderChunk(code) {
         // Collect all alias names (not namespace names) from standalone declarations
         const aliases = new Set()
-        for (const m of code.matchAll(/^type ((?:Core|React|Dom)_\w+)/gm)) {
+        for (const m of code.matchAll(/^type ((?:Core|Dom)_\w+)/gm)) {
           aliases.add(m[1])
         }
-        for (const m of code.matchAll(/^declare const ((?:Core|React|Dom)_\w+):/gm)) {
+        for (const m of code.matchAll(/^declare const ((?:Core|Dom)_\w+):/gm)) {
           aliases.add(m[1])
         }
 
         // Remove standalone type alias lines
-        code = code.replace(/^type (?:Core|React|Dom)_\w+[^;]*;\n/gm, '')
+        code = code.replace(/^type (?:Core|Dom)_\w+[^;]*;\n/gm, '')
         // Remove standalone const alias lines
-        code = code.replace(/^declare const (?:Core|React|Dom)_\w+: typeof \w+;\n/gm, '')
+        code = code.replace(/^declare const (?:Core|Dom)_\w+: typeof \w+;\n/gm, '')
 
         // In export blocks, replace known aliases with direct references:
         // "Core_Webgl_IFoo as IFoo" → "IFoo"
         // Namespace references like "Core_Ultra as Ultra" are NOT in aliases set, so kept
-        code = code.replace(/(?:Core|React|Dom)_\w+ as (\w+)/g, (match, realName) => {
+        code = code.replace(/(?:Core|Dom)_\w+ as (\w+)/g, (match, realName) => {
           const aliasName = match.split(' as ')[0]
           return aliases.has(aliasName) ? realName : match
         })
@@ -165,8 +146,6 @@ export default {
   ],
   external: [
     'three',
-    'react',
-    'react-dom',
     'deepmerge',
     'vim-format',
     /\.css$/,

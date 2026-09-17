@@ -1,15 +1,31 @@
 import type * as Core from '../../core-viewers'
 import { webglFileError } from '../errors'
+import { LoadRequest } from '../helpers/loadRequest'
 import { ultraSuggestion, type ModalApi } from '../modal'
-// Plain request wrapper; it moves into this layer at the flip.
-import { LoadRequest } from '../../react-viewers/helpers/loadRequest'
-import type { OpenSettings } from '../../react-viewers/webgl/loading'
 
-export type { OpenSettings }
+type AddSettings = {
+  /**
+   * Controls whether to frame the camera on a vim every time it is updated.
+   * Default: true
+   */
+  autoFrame?: boolean
+  /**
+   * Pre-caches BIM parameter table columns in the background after loading.
+   * Eliminates the ~300ms delay on the first `getBimParameters()` call.
+   * Default: false
+   */
+  prewarmBim?: boolean
+}
+
+export type OpenSettings = Core.Webgl.VimPartialSettings & AddSettings
+
+export type LoadingError = {
+  url: string
+  error: string
+}
 
 /**
- * Loads vims with progress, completion and error reporting on the modal —
- * the twin of `ComponentLoader`, taking the modal directly.
+ * Loads vims with progress, completion and error reporting on the modal.
  */
 export class WebglLoader {
   private readonly _viewer: Core.Webgl.Viewer

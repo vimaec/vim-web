@@ -6,7 +6,7 @@ const FILL = '$fill'
 
 /**
  * Builds an icon as a real SVG element from the shared icon data — the DOM
- * counterpart of the React `Icons.*` functions, with the same options.
+ * SVG icon factories built from the extracted icon data, with the shared options.
  */
 export function createIcon (
   name: IconName,

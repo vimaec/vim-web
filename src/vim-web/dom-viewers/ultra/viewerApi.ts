@@ -1,6 +1,6 @@
 import type * as Core from '../../core-viewers'
-import type { FramingApi, IsolationApi, SectionBoxApi, UltraUiApi } from '../../react-viewers'
-import type { Container } from '../../react-viewers/container'
+import type { FramingApi, IsolationApi, SectionBoxApi, UltraUiApi } from '../api'
+import type { Container } from '../container'
 import type { GenericPanelApi } from '../generic'
 import type { ModalApi } from '../modal'
 import type { ControlBarApi } from '../webgl/viewerApi'

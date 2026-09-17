@@ -1,7 +1,6 @@
 import type * as Core from '../../core-viewers'
-import type { FramingApi } from '../../react-viewers'
-// Pure settings helpers; the module moves into this layer at the flip.
-import { isTrue, type UserBoolean } from '../../react-viewers/settings/userBoolean'
+import type { FramingApi } from '../api'
+import { isTrue, type UserBoolean } from '../settings/userBoolean'
 import { home, orthographic, perspective } from '../iconSet'
 import { iconButton, TIP_ATTR } from '../components'
 

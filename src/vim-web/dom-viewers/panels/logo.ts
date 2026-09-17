@@ -1,5 +1,4 @@
-// The asset stays with the React layer until the flip; it is a plain file, not React code.
-import logoImage from '../../react-viewers/assets/logo.png'
+import logoImage from '../../assets/logo.png'
 
 export type LogoHandle = {
   el: HTMLDivElement

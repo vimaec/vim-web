@@ -1,5 +1,5 @@
 /**
- * Framework-neutral reactivity core shared by the React and DS UI layers.
+ * Framework-neutral reactivity core of the UI layer.
  *
  * - `StateRef<T>` — observable state with get/set/onChange
  * - `FuncRef<TArg, TReturn>` — callable function reference with `update` middleware

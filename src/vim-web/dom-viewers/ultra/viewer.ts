@@ -1,10 +1,10 @@
 import * as Core from '../../core-viewers'
-// Plain React-era modules (no React in them); they move into this layer at the flip.
-import { type Container, createContainer } from '../../react-viewers/container'
-import { createSettings } from '../../react-viewers/settings/settingsState'
-import { disableLocalStorage } from '../../react-viewers/settings/localStorage'
-import { getDefaultUltraSettings, type PartialUltraSettings, type UltraSettings } from '../../react-viewers/ultra/settings'
-import { getUltraSettingsContent } from '../../react-viewers/ultra/settingsPanel'
+
+import { type Container, createContainer } from '../container'
+import { createSettings } from '../settings/settingsState'
+import { disableLocalStorage } from '../settings/localStorage'
+import { getDefaultUltraSettings, type PartialUltraSettings, type UltraSettings } from './settings'
+import { getUltraSettingsContent } from './settingsContent'
 
 import { tooltipZone } from '../components'
 import { controlBar } from '../controlbar'

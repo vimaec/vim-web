@@ -1,5 +1,4 @@
 export * as Core from './core-viewers'
-export * as React from './react-viewers'
 export * as Dom from './dom-viewers'
 export * as THREE from 'three'
 export type { ISignal, ISimpleEvent } from './core-viewers/shared/events'

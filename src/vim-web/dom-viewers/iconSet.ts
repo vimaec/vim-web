@@ -9,9 +9,9 @@ const factories = Object.fromEntries(
 ) as Record<IconName, IconFactory>
 
 /**
- * The icon set as DOM factories, mirroring `VIM.React.Icons` name for name:
- * `Dom.Icons.home()` returns an `SVGSVGElement` where `React.Icons.home()`
- * returns a ReactElement. The names are listed explicitly so TypeScript flags
+ * The icon set as DOM factories, one per icon name:
+ * `Dom.Icons.home()` returns an `SVGSVGElement`;
+ * the names are listed explicitly so TypeScript flags
  * any drift between this list and the generated icon data.
  */
 export const {

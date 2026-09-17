@@ -1,11 +1,10 @@
 import { createMenu, type MenuEntry } from '../ds'
 import type * as Core from '../../core-viewers'
-import type { FramingApi, IsolationApi } from '../../react-viewers'
+import type { FramingApi, IsolationApi } from '../api'
 import type { ModalApi } from '../modal'
-// Pure id table; the module moves into this layer at the flip.
-import { contextMenuIds as Ids } from '../../react-viewers/contextMenu/contextMenuIds'
+import { contextMenuIds as Ids } from './contextMenuIds'
 
-export { contextMenuIds } from '../../react-viewers/contextMenu/contextMenuIds'
+export { contextMenuIds } from './contextMenuIds'
 
 export type ContextMenuButton = {
   type: 'button'
@@ -29,7 +28,7 @@ export type ContextMenuElement = ContextMenuButton | ContextMenuDivider
 /** Maps the base entries to the entries actually shown. */
 export type ContextMenuCustomization = (elements: ContextMenuElement[]) => ContextMenuElement[]
 
-/** Public customization hook — the same contract as the React `ContextMenuApi`. */
+/** Public customization hook — the public `ContextMenuApi` contract. */
 export type ContextMenuApi = {
   customize (fn: ContextMenuCustomization): void
 }

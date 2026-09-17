@@ -1,7 +1,7 @@
 /**
  * Positions a floating element relative to an anchor: centred above it, below
  * it when there is no room on top, clamped to the viewport sides.
- * Pure — also used by the React hook in react-viewers/helpers/layout.ts.
+ * Pure position math, kept separate so it can be unit-tested.
  */
 export function computeFloatingPosition (originRect: DOMRect, panelRect: DOMRect): { top: number, left: number } {
   let left = originRect.left + originRect.width / 2 - panelRect.width / 2

@@ -1,4 +1,4 @@
-import type { IsolationApi, RenderSettingsApi } from '../../react-viewers'
+import type { IsolationApi, RenderSettingsApi } from '../api'
 import { genericPanel, type GenericPanelHandle } from '../generic'
 
 /** Entry ids, for `customize()`. */

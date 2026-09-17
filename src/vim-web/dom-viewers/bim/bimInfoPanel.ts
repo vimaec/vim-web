@@ -1,10 +1,9 @@
 import type * as Core from '../../core-viewers'
 import type { StateRef } from '../../state'
 import { genericContent, type GenericContentHandle } from '../generic'
-// Pure data modules; they move into this layer at the flip.
-import { getObjectData } from '../../react-viewers/bim/bimInfoObject'
-import { getVimData } from '../../react-viewers/bim/bimInfoVim'
-import type { AugmentedElement } from '../../react-viewers/helpers/element'
+import { getObjectData } from '../bim/bimInfoObject'
+import { getVimData } from '../bim/bimInfoVim'
+import type { AugmentedElement } from '../helpers/element'
 import type { BimInfoPanelApi, Data } from './bimInfoApi'
 import { bodyToEntries, headerToEntries } from './bimInfoEntries'
 

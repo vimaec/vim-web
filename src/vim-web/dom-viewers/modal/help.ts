@@ -1,5 +1,4 @@
-// The asset stays with the React layer until the flip; it is a plain file, not React code.
-import helpImage from '../../react-viewers/assets/quick-controls.svg'
+import helpImage from '../../assets/quick-controls.svg'
 
 export const HELP_TITLE = 'Key navigation controls'
 

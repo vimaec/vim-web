@@ -1,17 +1,61 @@
 import * as THREE from 'three'
 import type * as Core from '../../core-viewers'
+import type { ISignal } from '../../core-viewers/shared/events'
 import { addBox } from '../../utils/threeUtils'
-import { createFuncRef, createState } from '../../state'
-import type { ISectionBoxAdapter, SectionBoxApi } from '../../react-viewers/state/sectionBoxState'
-import type { SectionBoxSettings } from '../../react-viewers/webgl/settings'
+import { createFuncRef, createState, type FuncRef, type StateRef } from '../../state'
+import type { SectionBoxSettings } from '../webgl/settings'
 import { createSettingState } from './settingState'
+
+export type Offsets = {
+  topOffset: string
+  sideOffset: string
+  bottomOffset: string
+}
+
+export type OffsetField = keyof Offsets
+
+/**
+ * Controls the section box clipping volume. Shared between WebGL and Ultra.
+ *
+ * @example
+ * viewer.sectionBox.active.set(true)
+ * viewer.sectionBox.sectionSelection.call()  // Fit to selection
+ * viewer.sectionBox.sectionScene.call()      // Fit to scene
+ */
+export interface SectionBoxApi {
+  active: StateRef<boolean>
+  visible: StateRef<boolean>
+  auto: StateRef<boolean>
+
+  sectionSelection: FuncRef<void, Promise<void>>
+  sectionScene: FuncRef<void, Promise<void>>
+  sectionBox: FuncRef<THREE.Box3, void>
+  getBox: () => THREE.Box3
+
+  showOffsetPanel: StateRef<boolean>
+
+  topOffset: StateRef<number>
+  sideOffset: StateRef<number>
+  bottomOffset: StateRef<number>
+
+  getSelectionBox: FuncRef<void, Promise<THREE.Box3 | undefined>>
+  getSceneBox: FuncRef<void, Promise<THREE.Box3 | undefined>>
+}
+
+export interface ISectionBoxAdapter {
+  setActive: (b: boolean) => void
+  setVisible: (visible: boolean) => void
+  getBox: () => THREE.Box3
+  setBox: (box: THREE.Box3) => void
+  onSelectionChanged: ISignal
+  // Overridable at the viewer level
+  getSelectionBox: () => Promise<THREE.Box3 | undefined>
+  getSceneBox: () => Promise<THREE.Box3 | undefined>
+}
 
 export type SectionBoxHandle = SectionBoxApi & { destroy (): void }
 
-/**
- * The framework-neutral twin of `useSectionBox`: the section box clipping
- * volume as observables over a viewer adapter. Shared by WebGL and Ultra.
- */
+/** The section box clipping volume as observables over a viewer adapter. */
 export function createSectionBox (adapter: ISectionBoxAdapter, initial?: SectionBoxSettings): SectionBoxHandle {
   const active = createState(initial?.active ?? false)
   const auto = createState(initial?.auto ?? false)
