@@ -46,20 +46,22 @@
   max-width: 100%;
 }
 
-/* Axes gizmo — a square with the core canvas inset and a button band over its bottom quarter. */
+/* Axes gizmo — a rounded card with the core canvas inset and a flat button band over its bottom quarter. */
 .vim-ds-axes {
   position: absolute;
-  top: var(--ds-space-4);
-  right: var(--ds-space-4);
-  width: min(112px, 22vmin);
-  height: min(112px, 22vmin);
+  top: var(--ds-space-5);
+  right: var(--ds-space-5);
+  width: min(160px, 28vmin);
+  height: min(160px, 28vmin);
   z-index: var(--vw-z-ui);
   border: 1px solid var(--hairline);
-  background: var(--stage-900);
+  border-radius: 24px;
+  background: var(--stage-800);
+  overflow: hidden;
 }
 .vim-ds-axes__gizmo {
   position: absolute;
-  inset: var(--ds-space-1) var(--ds-space-1) calc(25% + var(--ds-space-1)) var(--ds-space-1);
+  inset: var(--ds-space-2) var(--ds-space-2) calc(25% + var(--ds-space-1)) var(--ds-space-2);
 }
 .vim-ds-axes__canvas {
   position: absolute;
@@ -80,8 +82,6 @@
   display: flex;
   align-items: center;
   justify-content: space-evenly;
-  background: var(--stage-800);
-  border-top: 1px solid var(--hairline);
 }
 
 /* Control bar — floating pills of circular buttons, bottom-centred. The viewer design's one
@@ -121,7 +121,8 @@
   margin: 0 var(--ds-space-1);
   background: var(--hairline-soft);
 }
-.vim-ds-controlbar .ds-iconbtn {
+.vim-ds-controlbar .ds-iconbtn,
+.vim-ds-axes .ds-iconbtn {
   width: 36px;
   height: 36px;
   border: 0;
@@ -129,17 +130,20 @@
   background: transparent;
   color: var(--text-300);
 }
-.vim-ds-controlbar .ds-iconbtn:hover {
+.vim-ds-controlbar .ds-iconbtn:hover,
+.vim-ds-axes .ds-iconbtn:hover {
   background: var(--stage-600);
   color: var(--text-100);
 }
-.vim-ds-controlbar .ds-iconbtn.ds-active {
+.vim-ds-controlbar .ds-iconbtn.ds-active,
+.vim-ds-axes .ds-iconbtn.ds-active {
   background: var(--vim-cyan);
   color: var(--stage-950);
   outline: 1px solid var(--vim-cyan);
   outline-offset: 2px;
 }
-.vim-ds-controlbar .ds-iconbtn .ds-iconbtn__svg {
+.vim-ds-controlbar .ds-iconbtn .ds-iconbtn__svg,
+.vim-ds-axes .ds-iconbtn .ds-iconbtn__svg {
   width: 18px;
   height: 18px;
 }
