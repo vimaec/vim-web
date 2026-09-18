@@ -31,6 +31,7 @@ import {
   speedToast
 } from '../panels'
 import { settingsPanel } from '../settings'
+import { modelName, topBar, webglTopBarContent } from '../topbar'
 import {
   createFullScreenState,
   createMeasureState,
@@ -159,23 +160,50 @@ export async function createDomWebglViewer (
   on(refs.panelBimTree.onChange, buildBimPage)
   on(refs.panelBimInfo.onChange, buildBimPage)
 
+  // The application bar. It owns the top strip above the side panel and the viewport, so it also
+  // offsets the canvas container and re-measures the viewport.
+  const topBarHandle = topBar(cmp.ui, {
+    content: webglTopBarContent({ side, modal: modalHandle, fullScreen, settings: live }),
+    gfx: cmp.gfx,
+    resize: () => core.viewport.resizeToParent()
+  })
+
   const rest = restOfScreen(cmp.ui, side)
   on(side.onChange, () => rest.update())
   const overlayHandle = overlay(rest.el, core.viewport.canvas)
+  // The brand lives in the bar; the floating logo is the fallback when the bar is off.
   const logoHandle = logo(rest.el)
-  const syncLogo = () => { logoHandle.el.hidden = !refs.panelLogo.get() }
-  syncLogo()
-  on(refs.panelLogo.onChange, syncLogo)
+  const syncBranding = () => {
+    const showLogo = refs.panelLogo.get()
+    const showBar = refs.panelTopBar.get()
+    topBarHandle.setVisible(showBar)
+    topBarHandle.setBrandVisible(showLogo)
+    logoHandle.el.hidden = !showLogo || showBar
+  }
+  syncBranding()
+  on(refs.panelLogo.onChange, syncBranding)
+  on(refs.panelTopBar.onChange, syncBranding)
+
+  // The document title follows the loaded model. The core leaves `vim.source` unset on url
+  // loads, so the root remembers what it was asked for and prefers the vim's own value.
+  let requested = ''
+  const syncTitle = () => topBarHandle.setTitle(modelName(state.vim.get()?.source) || requested)
+  syncTitle()
+  on(state.vim.onChange, syncTitle)
 
   const sections = () => webglControlBarSections({
-    viewer: core, framing, modal: modalHandle, side, settings: live, sectionBox, isolation, pointer, measure, fullScreen
+    viewer: core, framing, settings: live, sectionBox, isolation, pointer, measure
   })
   const bar = controlBar(rest.el, sections())
   const syncBar = () => bar.setVisible(refs.panelControlBar.get())
   syncBar()
   on(refs.panelControlBar.onChange, syncBar)
-  // The React bar re-rendered on any state change; re-sync on the same signals.
-  const refreshBar = () => bar.update(sections())
+  // The React bar re-rendered on any state change; re-sync on the same signals. The top bar's
+  // checkmarks and fullscreen icon read the same state, so they refresh together.
+  const refreshBar = () => {
+    bar.update(sections())
+    topBarHandle.update(webglTopBarContent({ side, modal: modalHandle, fullScreen, settings: live }))
+  }
   for (const event of [
     pointer.onChange, measure.onChange, fullScreen.onChange, side.onChange,
     isolation.visibility.onChange, isolation.autoIsolate.onChange, isolation.showPanel.onChange,
@@ -207,9 +235,21 @@ export async function createDomWebglViewer (
     type: 'webgl',
     container: cmp,
     core,
-    load: (source, loadSettings) => loader.load(source, loadSettings),
-    open: (source, loadSettings) => loader.open(source, loadSettings),
-    unload: vim => core.unload(vim),
+    load: (source, loadSettings) => {
+      requested = modelName(source.url)
+      syncTitle()
+      return loader.load(source, loadSettings)
+    },
+    open: (source, loadSettings) => {
+      requested = modelName(source.url)
+      syncTitle()
+      return loader.open(source, loadSettings)
+    },
+    unload: vim => {
+      core.unload(vim)
+      if (core.vims.length === 0) requested = ''
+      syncTitle()
+    },
     isolation,
     renderSettings,
     framing,
@@ -218,6 +258,7 @@ export async function createDomWebglViewer (
     sectionBox,
     contextMenu: contextMenuHandle,
     controlBar: bar,
+    topBar: topBarHandle,
     modal: modalHandle,
     bimInfo,
     ui,
@@ -229,6 +270,7 @@ export async function createDomWebglViewer (
       isolationPanelHandle.destroy()
       sectionBoxPanelHandle.destroy()
       bar.destroy()
+      topBarHandle.destroy()
       logoHandle.destroy()
       overlayHandle.destroy()
       rest.destroy()
@@ -251,3 +293,4 @@ export async function createDomWebglViewer (
     }
   }
 }
+

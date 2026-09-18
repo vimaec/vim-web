@@ -4,6 +4,7 @@ import type { Container } from '../container'
 import type { GenericPanelApi } from '../generic'
 import type { ModalApi } from '../modal'
 import type { ControlBarApi } from '../webgl/viewerApi'
+import type { TopBarApi } from '../topbar'
 
 /**
  * Root-level API of the Ultra viewer — the same surface as the React
@@ -19,6 +20,8 @@ export type UltraViewerApi = {
   modal: ModalApi
   sectionBox: SectionBoxApi
   controlBar: ControlBarApi
+  /** The application bar above the side panel and the viewport. */
+  topBar: TopBarApi
   framing: FramingApi
   isolation: IsolationApi
   isolationPanel: GenericPanelApi

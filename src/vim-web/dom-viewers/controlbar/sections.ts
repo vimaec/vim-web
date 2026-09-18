@@ -10,12 +10,10 @@ import type {
 } from '../controlbar/sectionSettings'
 import type { UltraSettings } from '../ultra/settings'
 import type { WebglSettings } from '../webgl/settings'
-import { isFalse, isTrue } from '../settings/userBoolean'
+import { isTrue } from '../settings/userBoolean'
 import { controlBarIds as Ids } from './controlBarIds'
 import * as Icons from '../iconSet'
-import type { ModalApi } from '../modal'
-import type { SideState } from '../state/sideState'
-import type { FullScreenState, MeasureState, PointerState } from '../state/tools'
+import type { MeasureState, PointerState } from '../state/tools'
 import type { ControlBarSection } from './controlBar'
 
 /**
@@ -223,73 +221,14 @@ export function visibilitySection (isolation: IsolationApi, settings: ControlBar
   }
 }
 
-const settingsButton = (side: SideState, settings: WebglSettings | UltraSettings) => ({
-  id: Ids.miscSettings,
-  enabled: () => isTrue(settings.ui.miscSettings),
-  tip: 'Settings',
-  action: () => side.toggleContent('settings'),
-  icon: Icons.settings
-})
-
-const helpButton = (modal: ModalApi, settings: WebglSettings | UltraSettings) => ({
-  id: Ids.miscHelp,
-  enabled: () => isTrue(settings.ui.miscHelp),
-  tip: 'Help',
-  action: () => modal.help(true),
-  icon: Icons.help
-})
-
-export function webglMiscSection (
-  modal: ModalApi,
-  side: SideState,
-  fullScreen: FullScreenState,
-  settings: WebglSettings
-): ControlBarSection {
-  return {
-    id: Ids.miscSpan,
-    enable: () => anyWebglMiscButton(settings),
-    variant: 'default',
-    buttons: [
-      {
-        id: Ids.miscInspector,
-        enabled: () => showBimButton(settings),
-        tip: 'Project Inspector',
-        action: () => side.toggleContent('bim'),
-        icon: Icons.treeView
-      },
-      settingsButton(side, settings),
-      helpButton(modal, settings),
-      {
-        id: Ids.miscMaximize,
-        enabled: () => isTrue(settings.ui.miscMaximise) && settings.capacity.canGoFullScreen,
-        tip: () => fullScreen.get() ? 'Minimize' : 'Fullscreen',
-        action: () => fullScreen.toggle(),
-        icon: fullScreen.get() ? Icons.minimize : Icons.fullScreen
-      }
-    ]
-  }
-}
-
-export function ultraMiscSection (modal: ModalApi, side: SideState, settings: UltraSettings): ControlBarSection {
-  return {
-    id: Ids.miscSpan,
-    enable: () => anyUltraMiscButton(settings),
-    variant: 'default',
-    buttons: [settingsButton(side, settings), helpButton(modal, settings)]
-  }
-}
-
 export function webglControlBarSections (opts: {
   viewer: Core.Webgl.Viewer
   framing: FramingApi
-  modal: ModalApi
-  side: SideState
   settings: WebglSettings
   sectionBox: SectionBoxApi
   isolation: IsolationApi
   pointer: PointerState
   measure: MeasureState
-  fullScreen: FullScreenState
 }): ControlBarSection[] {
   const { settings } = opts
   return [
@@ -297,16 +236,13 @@ export function webglControlBarSections (opts: {
     cameraSection(opts.framing, settings.ui),
     visibilitySection(opts.isolation, settings.ui),
     measureSection(opts.measure, settings.ui),
-    sectionBoxSection(opts.sectionBox, () => opts.viewer.selection.any(), settings.ui),
-    webglMiscSection(opts.modal, opts.side, opts.fullScreen, settings)
+    sectionBoxSection(opts.sectionBox, () => opts.viewer.selection.any(), settings.ui)
   ]
 }
 
 export function ultraControlBarSections (opts: {
   viewer: Core.Ultra.Viewer
   framing: FramingApi
-  modal: ModalApi
-  side: SideState
   settings: UltraSettings
   sectionBox: SectionBoxApi
   isolation: IsolationApi
@@ -315,24 +251,13 @@ export function ultraControlBarSections (opts: {
   return [
     cameraSection(opts.framing, settings.ui),
     visibilitySection(opts.isolation, settings.ui),
-    sectionBoxSection(opts.sectionBox, () => opts.viewer.selection.any(), settings.ui),
-    ultraMiscSection(opts.modal, opts.side, settings)
+    sectionBoxSection(opts.sectionBox, () => opts.viewer.selection.any(), settings.ui)
   ]
 }
 
-function showBimButton (settings: WebglSettings) {
-  if (isFalse(settings.ui.miscProjectInspector)) return false
-  return isTrue(settings.ui.panelBimTree) || isTrue(settings.ui.panelBimInfo)
-}
 
 function anyCursorButton (settings: ControlBarCursorSettings) {
   return isTrue(settings.cursorOrbit) || isTrue(settings.cursorLookAround) || isTrue(settings.cursorPan) || isTrue(settings.cursorZoom)
 }
 
-function anyWebglMiscButton (settings: WebglSettings) {
-  return isTrue(settings.ui.miscProjectInspector) || isTrue(settings.ui.miscSettings) || isTrue(settings.ui.miscHelp) || isTrue(settings.ui.miscMaximise)
-}
 
-function anyUltraMiscButton (settings: UltraSettings) {
-  return isTrue(settings.ui.miscSettings) || isTrue(settings.ui.miscHelp)
-}

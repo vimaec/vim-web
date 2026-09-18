@@ -69,6 +69,7 @@ export type WebglSettings = {
       ControlBarMeasureSettings & {
     
     // panels
+    panelTopBar: UserBoolean
     panelLogo: UserBoolean
     panelBimTree: UserBoolean
     panelBimInfo: UserBoolean
@@ -124,6 +125,7 @@ export function getDefaultSettings(): WebglSettings {
       autoCamera: false,
     },
     ui: {
+      panelTopBar: true,
       panelLogo: true,
       panelPerformance: false,
       panelBimTree: true,

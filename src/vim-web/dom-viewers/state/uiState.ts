@@ -12,6 +12,7 @@ import { isTrue, type UserBoolean } from '../settings/userBoolean'
  */
 export type WebglUiApi = {
   // Panels
+  topBar: StateRef<boolean>
   logo: StateRef<boolean>
   controlBar: StateRef<boolean>
   bimTree: StateRef<boolean>
@@ -56,6 +57,7 @@ export type WebglUiApi = {
 /** Reactive UI visibility API for the Ultra viewer. */
 export type UltraUiApi = {
   // Panels
+  topBar: StateRef<boolean>
   logo: StateRef<boolean>
   controlBar: StateRef<boolean>
   // Cursors
@@ -114,6 +116,7 @@ export function liveUiSettings<T extends Record<string, UserBoolean>> (refs: UiR
 
 export function webglUiApi (refs: UiRefs): WebglUiApi {
   return {
+    topBar: refs.panelTopBar,
     logo: refs.panelLogo,
     controlBar: refs.panelControlBar,
     bimTree: refs.panelBimTree,
@@ -151,6 +154,7 @@ export function webglUiApi (refs: UiRefs): WebglUiApi {
 
 export function ultraUiApi (refs: UiRefs): UltraUiApi {
   return {
+    topBar: refs.panelTopBar,
     logo: refs.panelLogo,
     controlBar: refs.panelControlBar,
     cursorOrbit: refs.cursorOrbit,

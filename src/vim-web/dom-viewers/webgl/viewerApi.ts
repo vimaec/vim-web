@@ -6,6 +6,7 @@ import type { ControlBarCustomization } from '../controlbar'
 import type { GenericPanelApi } from '../generic'
 import type { ModalApi } from '../modal'
 import type { ContextMenuApi } from '../panels'
+import type { TopBarApi } from '../topbar'
 import type { OpenSettings } from './loader'
 
 export type { OpenSettings }
@@ -38,6 +39,8 @@ export type WebglViewerApi = {
   sectionBox: SectionBoxApi
   contextMenu: ContextMenuApi
   controlBar: ControlBarApi
+  /** The application bar above the side panel and the viewport. */
+  topBar: TopBarApi
   modal: ModalApi
   framing: FramingApi
   bimInfo: BimInfoPanelApi

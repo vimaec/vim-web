@@ -51,6 +51,7 @@ export function getWebglSettingsContent(
 
     { type: 'group', id: 'ui', label: 'UI' },
     { type: 'section', id: SettingsPanelKeys.PanelsSubtitle, label: 'Panels' },
+    ...t(SettingsPanelKeys.PanelsShowTopBarToggle, 'Top Bar', 'panelTopBar'),
     ...t(SettingsPanelKeys.PanelsShowLogoToggle, 'Logo', 'panelLogo'),
     ...t(SettingsPanelKeys.ControlBarShowControlBarToggle, 'Control Bar', 'panelControlBar'),
     ...t(SettingsPanelKeys.PanelsShowAxesPanelToggle, 'Axes', 'panelAxes'),

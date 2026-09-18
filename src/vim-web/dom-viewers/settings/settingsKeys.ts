@@ -6,6 +6,7 @@ export class SettingsPanelKeys {
 
   // === Panels ===
   static PanelsSubtitle = 'panels'
+  static PanelsShowTopBarToggle = 'topBar'
   static PanelsShowLogoToggle = 'logo'
   static PanelsShowBimTreeToggle = 'bimTree'
   static PanelsShowBimInfoToggle = 'bimInfo'

@@ -27,6 +27,7 @@ export type UltraSettings = {
       ControlBarSectionBoxSettings &
       ControlBarVisibilitySettings & {
       // Panels
+      panelTopBar: UserBoolean
       panelLogo: UserBoolean
       panelControlBar: UserBoolean
       
@@ -67,6 +68,7 @@ export function getDefaultUltraSettings(): UltraSettings {
     },
     ui: {
       // panels
+      panelTopBar: true,
       panelLogo: true,
       panelControlBar: true,
 

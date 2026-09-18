@@ -14,6 +14,7 @@ import { genericPanel } from '../generic'
 import { modal, type ModalApi } from '../modal'
 import { logo, overlay, restOfScreen, sectionBoxPanel, sidePanel } from '../panels'
 import { settingsPanel } from '../settings'
+import { modelName, topBar, ultraTopBarContent } from '../topbar'
 import {
   createSideState,
   createUiRefs,
@@ -85,22 +86,41 @@ export async function createDomUltraViewer (
   syncPages()
   on(side.onChange, syncPages)
 
+  // The application bar. It owns the top strip above the side panel and the viewport, so it also
+  // offsets the canvas container and re-measures the viewport.
+  const topBarHandle = topBar(cmp.ui, {
+    content: ultraTopBarContent({ side, modal: modalHandle, settings: live }),
+    gfx: cmp.gfx,
+    resize: () => core.viewport.resizeToParent()
+  })
+
   const rest = restOfScreen(cmp.ui, side)
   on(side.onChange, () => rest.update())
+  // The brand lives in the bar; the floating logo is the fallback when the bar is off.
   const logoHandle = logo(rest.el)
-  const syncLogo = () => { logoHandle.el.hidden = !refs.panelLogo.get() }
-  syncLogo()
-  on(refs.panelLogo.onChange, syncLogo)
+  const syncBranding = () => {
+    const showLogo = refs.panelLogo.get()
+    const showBar = refs.panelTopBar.get()
+    topBarHandle.setVisible(showBar)
+    topBarHandle.setBrandVisible(showLogo)
+    logoHandle.el.hidden = !showLogo || showBar
+  }
+  syncBranding()
+  on(refs.panelLogo.onChange, syncBranding)
+  on(refs.panelTopBar.onChange, syncBranding)
   const overlayHandle = overlay(rest.el, core.viewport.canvas)
 
   const sections = () => ultraControlBarSections({
-    viewer: core, framing, modal: modalHandle, side, settings: live, sectionBox, isolation
+    viewer: core, framing, settings: live, sectionBox, isolation
   })
   const bar = controlBar(rest.el, sections())
   const syncBar = () => bar.setVisible(refs.panelControlBar.get())
   syncBar()
   on(refs.panelControlBar.onChange, syncBar)
-  const refreshBar = () => bar.update(sections())
+  const refreshBar = () => {
+    bar.update(sections())
+    topBarHandle.update(ultraTopBarContent({ side, modal: modalHandle, settings: live }))
+  }
   for (const event of [
     side.onChange,
     isolation.visibility.onChange, isolation.autoIsolate.onChange, isolation.showPanel.onChange,
@@ -131,6 +151,8 @@ export async function createDomUltraViewer (
     ]
   })
 
+  const ultraLoad = patchLoad(core, modalHandle)
+
   return {
     type: 'ultra',
     container: cmp,
@@ -143,13 +165,18 @@ export async function createDomUltraViewer (
     sectionBoxPanel: sectionBoxPanelHandle,
     ui,
     controlBar: bar,
-    load: patchLoad(core, modalHandle),
+    topBar: topBarHandle,
+    load: source => {
+      topBarHandle.setTitle(modelName(source.url))
+      return ultraLoad(source)
+    },
     unload: vim => core.unload(vim),
     dispose: () => {
       for (const d of disposers) d()
       isolationPanelHandle.destroy()
       sectionBoxPanelHandle.destroy()
       bar.destroy()
+      topBarHandle.destroy()
       overlayHandle.destroy()
       logoHandle.destroy()
       rest.destroy()

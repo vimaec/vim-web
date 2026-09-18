@@ -25,10 +25,110 @@
   touch-action: none;
 }
 
+/* Top bar — a full-width strip above both the side panel and the viewport. It publishes its own
+   height as --vw-topbar-h, which everything below reads; the bar's own code offsets the canvas. */
+.vim-ds-ui {
+  --vw-topbar-h: 0px;
+}
+.vim-ds-ui[data-topbar] {
+  --vw-topbar-h: 34px;
+}
+.vim-ds-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--vw-topbar-h);
+  z-index: var(--vw-z-panel);
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding-right: var(--ds-space-1);
+  background: var(--stage-900);
+  border-bottom: 1px solid var(--hairline);
+}
+.vim-ds-topbar__brand {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  gap: 6px;
+  padding: 0 var(--ds-space-3);
+  font-size: var(--ds-fs-label);
+  color: var(--text-200);
+}
+.vim-ds-topbar__logo {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+.vim-ds-topbar__mark {
+  font-weight: 700;
+  color: var(--text-100);
+}
+.vim-ds-topbar__menus {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+}
+.vim-ds-topbar__menu {
+  align-self: stretch;
+  padding: 0 var(--ds-space-3);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-200);
+  font-family: inherit;
+  font-size: var(--ds-fs-label);
+  cursor: pointer;
+}
+.vim-ds-topbar__menu:hover {
+  background: var(--stage-800);
+  color: var(--text-100);
+}
+.vim-ds-topbar__menu[data-open] {
+  background: var(--stage-800);
+  color: var(--text-100);
+  box-shadow: inset 0 -2px 0 var(--vim-cyan);
+}
+/* The title sits in the gap the menus and actions leave, so it reads as centered without
+   overlapping either cluster. */
+.vim-ds-topbar__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  font-size: var(--ds-fs-label);
+  color: var(--text-300);
+}
+.vim-ds-topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+.vim-ds-topbar .ds-iconbtn {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-300);
+}
+.vim-ds-topbar .ds-iconbtn:hover {
+  background: var(--stage-700);
+  color: var(--text-100);
+}
+.vim-ds-topbar .ds-iconbtn .ds-iconbtn__svg {
+  width: 15px;
+  height: 15px;
+}
+
 /* Everything right of the side panel; left/width are set from the side width. */
 .vim-ds-rest-of-screen {
   position: absolute;
-  top: 0;
+  top: var(--vw-topbar-h);
   right: 0;
   bottom: 0;
 }
@@ -359,9 +459,9 @@
 /* Side panel — width and visibility are set from the side state; the DS grip sits on its right edge. */
 .vim-ds-side {
   position: absolute;
-  top: 0;
+  top: var(--vw-topbar-h);
   left: 0;
-  height: 100%;
+  height: calc(100% - var(--vw-topbar-h));
   z-index: var(--vw-z-ui);
   background: var(--stage-900);
   border-right: 1px solid var(--hairline);

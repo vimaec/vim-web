@@ -28,6 +28,7 @@
 | UI API interfaces | `src/vim-web/dom-viewers/api.ts` |
 | BIM tree | `src/vim-web/dom-viewers/bim/bimTree.ts` |
 | Control bar sections | `src/vim-web/dom-viewers/controlbar/sections.ts` |
+| Top bar (menus, brand, title) | `src/vim-web/dom-viewers/topbar/topBar.ts` |
 | Design system (submodule) | `vim-html-ds/` (built into `vim-html-ds/dist` by `npm run build:ds`) |
 | WebGL core viewer | `src/vim-web/core-viewers/webgl/viewer/viewer.ts` |
 | Ultra core viewer | `src/vim-web/core-viewers/ultra/viewer.ts` |
@@ -844,6 +845,15 @@ Cleanup checklist for `destroy()`: subscriptions, `ResizeObserver.disconnect()`,
 `IsolationApi` has delegation methods (`hasSelection`, `showAll`, `isolateSelection`, etc.). Consumers call `isolation.showAll()` directly — never expose the internal adapter.
 
 The adapter (`IIsolationAdapter`) is an implementation detail with closure state: `webgl/isolationAdapters.ts` (also produces the render-settings adapter) and `ultra/isolationAdapter.ts`.
+
+### Top Bar vs Control Bar
+
+The split is tools versus everything else. The control bar at the bottom holds verbs applied to the
+scene (pointer modes, framing, visibility, measure, section box). The top bar holds what is not a
+tool: the brand, `View` and `Help` menus, the model title and window actions. Nothing appears in
+both. The bar spans the full width above the side panel and the viewport, publishes its height as
+`--vw-topbar-h` for the layout below it, and offsets the canvas container itself. Both bars expose
+the same `customize()` contract.
 
 ### Control Bar
 
