@@ -33,13 +33,17 @@ the whole time and every widget is independently verifiable.
 
 ## Open decisions
 
-- **Web fonts.** `ds.css` declares Manrope + JetBrains Mono via `@font-face`. Vite library mode
-  inlines every referenced asset as base64, so the four woff2 files add **~154 KB** to
-  `dist/style.css` (~319 KB total) for every consumer. Options: keep as-is (zero config, heavier
-  CSS); strip the `@font-face` rules at build time and let hosts opt in to loading the fonts (the DS
-  falls back to the system stack, which changes the visual envelope); or emit them as separate
-  assets via a plugin (library mode ignores `assetsInlineLimit`). Decide before the first release
-  that ships the DS layer.
+- **Web fonts — now the biggest item in the package.** Since DS 1.0.0 (`ds.css` declares Retina and
+  Roboto) the referenced faces are three Retina weights as both `woff` and `woff2` plus two Roboto
+  variable `ttf` files. Vite library mode inlines every CSS-referenced asset as base64 regardless of
+  `assetsInlineLimit` (verified: setting it to 0 changes nothing), so `dist/style.css` is **1.9 MB**
+  (1.05 MB gzipped), up from 270 KB before the upgrade. Roughly 965 KB of that is the two Roboto
+  variable TTFs and another ~190 KB is the `woff` duplicates of faces already provided as `woff2`.
+  Options, cheapest first: ask the DS to ship `woff2` only (a subset Roboto woff2 is ~100 KB, so the
+  whole payload drops to ~150 KB); strip the `@font-face` rules at build time and let hosts opt into
+  the fonts (the DS falls back to the Segoe UI / system stack, which changes the envelope); or
+  post-process the built CSS to emit the faces as files beside `style.css`. Decide before the first
+  release that ships this layer.
 
 ## Binding pattern (set by `components/checkbox.ts`)
 
