@@ -210,10 +210,130 @@
 }
 
 /* Modal content — the DS modal supplies backdrop, head, body and foot. */
-.vim-ds-help-img {
+
+/* Help poster (modal/help.ts) — a card grid of mouse diagrams, keycaps and shortcut rows.
+   Cards are the one other rounded surface beside the control bar, matching VIM Flex's. */
+.vim-ds-help-body {
+  width: min(860px, calc(100vw - 64px));
+}
+.vim-ds-help {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--ds-space-2);
+}
+.vim-ds-help__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-width: 0;
+  padding: 14px var(--ds-space-2) var(--ds-space-3);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  background: var(--stage-800);
+}
+.vim-ds-help__card--wide {
+  grid-column: span 2;
+}
+.vim-ds-help__card h4 {
+  margin: 0;
+  text-align: center;
+  font-size: var(--ds-fs-label);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-100);
+}
+.vim-ds-help__how {
+  text-align: center;
+  font-size: var(--ds-fs-label);
+  color: var(--text-300);
+}
+.vim-ds-help__mouse {
   display: block;
-  width: min(900px, 80vw);
-  height: auto;
+}
+.vim-ds-help__kbd {
+  min-width: 12px;
+  padding: 2px var(--ds-space-2);
+  text-align: center;
+  white-space: nowrap;
+  border: 1px solid var(--hairline);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--stage-950);
+  color: var(--text-100);
+  font-size: var(--ds-fs-label);
+  font-weight: 600;
+}
+.vim-ds-help__kbd--big {
+  width: 32px;
+  padding: 6px 0;
+  font-size: var(--ds-fs-body);
+}
+.vim-ds-help__keys {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.vim-ds-help__clusters {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 30px;
+}
+.vim-ds-help__wasd {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: var(--ds-space-1) var(--ds-space-2);
+  justify-items: center;
+}
+.vim-ds-help__updown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-1);
+}
+.vim-ds-help__key {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.vim-ds-help__caption {
+  font-size: var(--ds-fs-small);
+  font-style: italic;
+  color: var(--text-400);
+}
+.vim-ds-help__rows {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 18px;
+  width: 100%;
+}
+.vim-ds-help__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-width: 0;
+  font-size: var(--ds-fs-label);
+  color: var(--text-300);
+}
+.vim-ds-help__row .vim-ds-help__kbd {
+  flex: 0 0 auto;
+}
+/* Phone / narrow: one column per card instead of the four-up poster. */
+@media (max-width: 720px) {
+  .vim-ds-help {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .vim-ds-help__card--wide {
+    grid-column: span 2;
+  }
+  .vim-ds-help__rows {
+    grid-template-columns: 1fr;
+  }
 }
 .vim-ds-loading {
   display: flex;
