@@ -5,6 +5,8 @@ import type { SideState } from '../state/sideState'
 import type { FullScreenState } from '../state/tools'
 import type { UltraSettings } from '../ultra/settings'
 import type { WebglSettings } from '../webgl/settings'
+import type { ViewPanelApi } from '../viewpanel'
+import { PARAMETERS_VIEW } from '../bim'
 import { topBarIds as Ids } from './topBarIds'
 import type { TopBarContent } from './topBar'
 
@@ -56,13 +58,18 @@ const settingsItem = (side: SideState, settings: WebglSettings | UltraSettings) 
   action: () => side.toggleContent('settings')
 })
 
+/** Opens the view, or closes it when its tab is already up. */
+const toggleView = (views: ViewPanelApi, id: string) =>
+  () => { if (views.isOpen(id)) views.close(id); else views.open(id) }
+
 export function webglTopBarContent (opts: {
   side: SideState
   modal: ModalApi
   fullScreen: FullScreenState
   settings: WebglSettings
+  views: ViewPanelApi
 }): TopBarContent {
-  const { side, modal, fullScreen, settings } = opts
+  const { side, modal, fullScreen, settings, views } = opts
   return {
     menus: [
       {
@@ -75,6 +82,13 @@ export function webglTopBarContent (opts: {
             enabled: () => showInspector(settings),
             isOn: () => side.getContent() === 'bim',
             action: () => side.toggleContent('bim')
+          },
+          {
+            id: Ids.viewParameters,
+            label: 'Parameters',
+            enabled: () => isTrue(settings.ui.panelBimInfo),
+            isOn: () => views.isOpen(PARAMETERS_VIEW),
+            action: toggleView(views, PARAMETERS_VIEW)
           },
           settingsItem(side, settings)
         ]

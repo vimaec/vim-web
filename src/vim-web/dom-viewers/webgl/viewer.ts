@@ -14,7 +14,7 @@ import { applyWebglBindings } from './inputsBindings'
 import { CursorManager } from '../helpers/cursor'
 import { addPerformanceCounter } from '../panels/performance'
 
-import { bimPanel, createBimInfoApi, type BimPanelHandle } from '../bim'
+import { bimPanel, createBimInfoApi, parametersView, PARAMETERS_VIEW, type BimPanelHandle } from '../bim'
 import { tooltipZone } from '../components'
 import { controlBar } from '../controlbar'
 import { webglControlBarSections } from '../controlbar/sections'
@@ -140,19 +140,24 @@ export async function createDomWebglViewer (
     entries: getWebglSettingsContent(core, isolation, renderSettings, refs, fullSettings.ui),
     onClose: () => side.popContent()
   })
-  const contextMenuHandle = contextMenu({ viewer: core, framing, modal: modalHandle, isolation })
+  const contextMenuHandle = contextMenu({
+    viewer: core,
+    framing,
+    modal: modalHandle,
+    isolation,
+    openParameters: isTrue(live.ui.panelBimInfo) ? () => views.open(PARAMETERS_VIEW) : undefined
+  })
   let bimPage: BimPanelHandle | undefined
   const buildBimPage = () => {
     bimPage?.destroy()
     bimPage = undefined
-    if (!isTrue(live.ui.panelBimTree) && !isTrue(live.ui.panelBimInfo)) return
+    if (!isTrue(live.ui.panelBimTree)) return
     bimPage = bimPanel(sidePanelHandle.body, {
       viewer: core,
       framing,
       isolation,
       state,
-      settings: { panelBimTree: live.ui.panelBimTree, panelBimInfo: live.ui.panelBimInfo },
-      bimInfo,
+      settings: { panelBimTree: live.ui.panelBimTree },
       onClose: () => side.popContent(),
       onContextMenu: position => contextMenuHandle.show(position)
     })
@@ -166,12 +171,15 @@ export async function createDomWebglViewer (
   buildBimPage()
   on(side.onChange, syncPages)
   on(refs.panelBimTree.onChange, buildBimPage)
-  on(refs.panelBimInfo.onChange, buildBimPage)
+
+  // Element data is a view of the right-hand panel, not part of the tree page.
+  views.register(PARAMETERS_VIEW, () => parametersView({ state, api: bimInfo }))
+  on(refs.panelBimInfo.onChange, show => { if (!show) views.close(PARAMETERS_VIEW) })
 
   // The application bar. It owns the top strip above the side panel and the viewport, so it also
   // offsets the canvas container and re-measures the viewport.
   const topBarHandle = topBar(cmp.ui, {
-    content: webglTopBarContent({ side, modal: modalHandle, fullScreen, settings: live }),
+    content: webglTopBarContent({ side, modal: modalHandle, fullScreen, settings: live, views }),
     gfx: cmp.gfx,
     resize: () => core.viewport.resizeToParent()
   })
@@ -210,7 +218,7 @@ export async function createDomWebglViewer (
   // checkmarks and fullscreen icon read the same state, so they refresh together.
   const refreshBar = () => {
     bar.update(sections())
-    topBarHandle.update(webglTopBarContent({ side, modal: modalHandle, fullScreen, settings: live }))
+    topBarHandle.update(webglTopBarContent({ side, modal: modalHandle, fullScreen, settings: live, views }))
   }
   for (const event of [
     pointer.onChange, measure.onChange, fullScreen.onChange, side.onChange,

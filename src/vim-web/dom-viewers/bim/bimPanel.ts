@@ -1,4 +1,4 @@
-import { createCollapse, createEmpty, createPanel, type CollapseHandle, type EmptyHandle } from '../ds'
+import { createEmpty, createPanel, type EmptyHandle } from '../ds'
 import type * as Core from '../../core-viewers'
 import type { FramingApi, IsolationApi } from '../api'
 import { createState } from '../../state'
@@ -6,8 +6,6 @@ import type { ContextMenuPosition } from '../panels/contextMenu'
 import type { WebglState } from '../state/webglState'
 import { toTreeData, type BimTreeData } from '../bim/bimTreeData'
 import { isTrue, type UserBoolean } from '../settings/userBoolean'
-import type { BimInfoPanelApi } from './bimInfoApi'
-import { bimInfoPanel, type BimInfoPanelHandle } from './bimInfoPanel'
 import { bimSearch, type BimSearchHandle } from './bimSearch'
 import { bimTree, type BimTreeHandle } from './bimTree'
 
@@ -17,9 +15,8 @@ export type BimPanelOptions = {
   isolation: IsolationApi
   /** The viewer's vim / selection / filtered elements / filter observables. */
   state: WebglState
-  /** Which halves to build (read once). */
-  settings: { panelBimTree: UserBoolean, panelBimInfo: UserBoolean }
-  bimInfo: BimInfoPanelApi
+  /** Read once at build time. */
+  settings: { panelBimTree: UserBoolean }
   /** Shows a × in the head; the side panel passes `side.popContent`. */
   onClose?: () => void
   /** Right-click on a tree row: open the viewer context menu there. */
@@ -33,24 +30,20 @@ export type BimPanelHandle = {
 }
 
 /**
- * The 'Project Inspector' page shown in the side panel: search and the
- * virtual BIM tree above, 'Bim Inspector' (the info panel) as a
- * height-resizable DS collapse docked below — the DS grab bar replaces the
- * React version's fixed split. With one half disabled, the other fills the
- * page.
+ * The 'Project Inspector' page of the side panel: the search box over the
+ * virtual BIM tree, and nothing else. Element data lives in the Parameters
+ * view of the right-hand panel, as it does in VIM Flex's Explore workflow,
+ * which leaves this panel free to be all tree.
  */
 export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHandle {
   const { viewer, framing, isolation, state } = opts
   const showTree = isTrue(opts.settings.panelBimTree)
-  const showInfo = isTrue(opts.settings.panelBimInfo)
 
   const panel = createPanel(host, { title: 'Project Inspector', fill: true, onClose: opts.onClose })
   panel.el.classList.add('vim-ds-bim')
 
   const treeData = createState<BimTreeData | undefined>(undefined)
   const rebuildTreeData = () => treeData.set(toTreeData(state.vim.get(), state.elements.get(), 'Family'))
-  const lastOf = (elements: Core.Webgl.IElement3D[]) => elements[elements.length - 1]
-  const lastSelected = createState<Core.Webgl.IElement3D | undefined>(lastOf(state.selection.get()))
 
   let search: BimSearchHandle | undefined
   let tree: BimTreeHandle | undefined
@@ -71,21 +64,6 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
     })
   }
 
-  let section: CollapseHandle | undefined
-  let info: BimInfoPanelHandle | undefined
-  if (showInfo) {
-    section = createCollapse(panel.body, {
-      title: 'Bim Inspector',
-      heightResizable: showTree,
-      minHeight: 80,
-      // Leave the search box and a few rows to the tree.
-      maxHeightOf: () => panel.body.clientHeight - 120
-    })
-    section.el.classList.add('vim-ds-bim__info')
-    if (!showTree) section.el.classList.add('vim-ds-bim__info--full')
-    info = bimInfoPanel(section.body, { object: lastSelected, vim: state.vim, elements: state.elements, api: opts.bimInfo })
-  }
-
   /** A filter with no matches shows an empty state in place of the tree. */
   const syncResults = () => {
     if (!upper || !tree) return
@@ -102,8 +80,7 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
       rebuildTreeData()
       syncResults()
     }),
-    state.filter.onChange.subscribe(syncResults),
-    state.selection.onChange.subscribe(elements => lastSelected.set(lastOf(elements)))
+    state.filter.onChange.subscribe(syncResults)
   ]
   rebuildTreeData()
   syncResults()
@@ -113,8 +90,6 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
     setVisible: visible => panel.setVisible(visible),
     destroy: () => {
       for (const u of unsubscribes) u()
-      info?.destroy()
-      section?.destroy()
       noResults?.destroy()
       tree?.destroy()
       search?.destroy()

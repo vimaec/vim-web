@@ -14,4 +14,6 @@ export const contextMenuIds = {
   ignoreSection: 'ignoreSection',
   resetSection: 'resetSection',
   fitSectionToSelection: 'fitSectionToSelection',
+  dividerParameters: 'dividerParameters',
+  parameters: 'parameters',
 } as const

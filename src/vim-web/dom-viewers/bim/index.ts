@@ -1,3 +1,4 @@
+export { parametersView, PARAMETERS_VIEW } from './parametersView'
 export { bimPanel, type BimPanelHandle, type BimPanelOptions } from './bimPanel'
 export { bimTree, type BimTreeHandle, type BimTreeOptions } from './bimTree'
 export { bimSearch, type BimSearchHandle, type BimSearchOptions } from './bimSearch'

@@ -52,6 +52,8 @@ export function contextMenu (opts: {
   framing: FramingApi
   modal: ModalApi
   isolation: IsolationApi
+  /** Adds a "Parameters" entry that opens the view. Omitted, no entry is shown. */
+  openParameters?: () => void
 }): ContextMenuHandle {
   const { viewer, framing, modal, isolation } = opts
   const menu = createMenu()
@@ -69,7 +71,10 @@ export function contextMenu (opts: {
       { type: 'button', id: Ids.isolateSelection, label: 'Isolate Object', keyboard: 'I', action: () => isolation.isolateSelection(), enabled: hasSelection && visibility === 'some' },
       { type: 'button', id: Ids.hideObject, label: 'Hide Object', keyboard: 'V', action: () => isolation.hideSelection(), enabled: hasSelection && !isolation.hasHiddenSelection() },
       { type: 'button', id: Ids.showObject, label: 'Show Object', keyboard: 'V', action: () => isolation.showSelection(), enabled: hasSelection && isolation.hasHiddenSelection() },
-      { type: 'button', id: Ids.showAll, label: 'Show All', keyboard: 'Esc', action: () => isolation.showAll(), enabled: visibility !== 'all' }
+      { type: 'button', id: Ids.showAll, label: 'Show All', keyboard: 'Esc', action: () => isolation.showAll(), enabled: visibility !== 'all' },
+      // As in VIM Flex's Explore page, where the menu reaches the Parameters view.
+      { type: 'divider', id: Ids.dividerParameters, enabled: !!opts.openParameters },
+      { type: 'button', id: Ids.parameters, label: 'Parameters', action: () => opts.openParameters?.(), enabled: !!opts.openParameters && hasSelection }
     ]
   }
 

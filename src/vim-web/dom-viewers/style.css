@@ -12,6 +12,12 @@
   --vw-z-panel: 30;
 }
 
+/* The viewer's root owns the stage colour, so nothing shows through before the first frame is
+   painted (or at all, if a caller disables rendering). */
+.vim-component {
+  background: var(--stage-950);
+}
+
 /* The UI mount is a .ds-root (tokens, fonts, box-sizing) but sits over the canvas: no ground of its own. */
 .vim-ui.ds-root {
   background: transparent;

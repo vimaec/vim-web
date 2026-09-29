@@ -2,6 +2,7 @@
 export const topBarIds = {
   viewMenu: 'topBar.view',
   viewInspector: 'topBar.view.inspector',
+  viewParameters: 'topBar.view.parameters',
   viewSettings: 'topBar.view.settings',
   helpMenu: 'topBar.help',
   helpControls: 'topBar.help.controls',
