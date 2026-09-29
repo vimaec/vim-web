@@ -19,18 +19,8 @@ import { tooltipZone } from '../components'
 import { controlBar } from '../controlbar'
 import { webglControlBarSections } from '../controlbar/sections'
 import { modal } from '../modal'
-import {
-  axesPanel,
-  contextMenu,
-  isolationPanel,
-  logo,
-  overlay,
-  restOfScreen,
-  sectionBoxPanel,
-  sidePanel,
-  speedToast
-} from '../panels'
-import { settingsPanel } from '../settings'
+import { axesPanel, contextMenu, logo, overlay, restOfScreen, sidePanel, speedToast } from '../panels'
+import { settingsView, SETTINGS_VIEW } from '../settings'
 import { viewPanel } from '../viewpanel'
 import { modelName, topBar, webglTopBarContent } from '../topbar'
 import {
@@ -108,9 +98,6 @@ export async function createDomWebglViewer (
 
   side.setHasBim(state.vim.get()?.bim !== undefined)
   on(state.vim.onChange, vim => side.setHasBim(vim?.bim !== undefined))
-  // The two floating panels are exclusive.
-  on(sectionBox.showOffsetPanel.onChange, show => { if (show) isolation.showPanel.set(false) })
-  on(isolation.showPanel.onChange, show => { if (show) sectionBox.showOffsetPanel.set(false) })
 
   // ---- DOM -------------------------------------------------------------------
   const tips = tooltipZone(cmp.ui)
@@ -136,10 +123,6 @@ export async function createDomWebglViewer (
     gfx: cmp.gfx,
     resize: () => core.viewport.resizeToParent()
   })
-  const settingsPage = settingsPanel(sidePanelHandle.body, {
-    entries: getWebglSettingsContent(core, isolation, renderSettings, refs, fullSettings.ui),
-    onClose: () => side.popContent()
-  })
   const contextMenuHandle = contextMenu({
     viewer: core,
     framing,
@@ -164,9 +147,7 @@ export async function createDomWebglViewer (
     syncPages()
   }
   const syncPages = () => {
-    const content = side.getContent()
-    bimPage?.setVisible(content === 'bim')
-    settingsPage.setVisible(content === 'settings')
+    bimPage?.setVisible(side.getContent() === 'bim')
   }
   buildBimPage()
   on(side.onChange, syncPages)
@@ -174,7 +155,15 @@ export async function createDomWebglViewer (
 
   // Element data is a view of the right-hand panel, not part of the tree page.
   views.register(PARAMETERS_VIEW, () => parametersView({ state, api: bimInfo }))
+  views.register(SETTINGS_VIEW, () => settingsView({
+    entries: () => getWebglSettingsContent(core, isolation, renderSettings, sectionBox, refs, fullSettings.ui)
+  }))
   on(refs.panelBimInfo.onChange, show => { if (!show) views.close(PARAMETERS_VIEW) })
+
+  const toggleSettingsView = () => {
+    if (views.isOpen(SETTINGS_VIEW)) views.close(SETTINGS_VIEW)
+    else views.open(SETTINGS_VIEW)
+  }
 
   // The application bar. It owns the top strip above the side panel and the viewport, so it also
   // offsets the canvas container and re-measures the viewport.
@@ -222,14 +211,12 @@ export async function createDomWebglViewer (
   }
   for (const event of [
     pointer.onChange, measure.onChange, fullScreen.onChange, side.onChange,
-    isolation.visibility.onChange, isolation.autoIsolate.onChange, isolation.showPanel.onChange,
-    sectionBox.active.onChange, sectionBox.visible.onChange, sectionBox.auto.onChange, sectionBox.showOffsetPanel.onChange,
+    isolation.visibility.onChange, isolation.autoIsolate.onChange,
+    sectionBox.active.onChange, sectionBox.visible.onChange, sectionBox.auto.onChange, 
     framing.autoCamera.onChange, core.selection.onSelectionChanged, core.renderer.onSceneUpdated,
     ...Object.values(refs).map(r => r.onChange)
   ] as { subscribe (fn: (...args: unknown[]) => void): () => void }[]) disposers.push(event.subscribe(refreshBar))
 
-  const sectionBoxPanelHandle = sectionBoxPanel(rest.el, { sectionBox, anchor: () => bar.el })
-  const isolationPanelHandle = isolationPanel(rest.el, { isolation, renderSettings, anchor: () => bar.el })
   const axes = axesPanel(rest.el, { viewer: core, framing, settings: live.ui })
   const syncAxes = () => {
     const show = refs.panelAxes.get()
@@ -245,7 +232,7 @@ export async function createDomWebglViewer (
   cursor.register()
   core.viewport.canvas.tabIndex = 0
   core.inputs.keyboard.override('KeyF', 'up', () => framing.frameSelection.call())
-  applyWebglBindings(core, framing, isolation, side)
+  applyWebglBindings(core, framing, isolation, () => toggleSettingsView())
 
   return {
     type: 'webgl',
@@ -269,8 +256,6 @@ export async function createDomWebglViewer (
     isolation,
     renderSettings,
     framing,
-    isolationPanel: isolationPanelHandle,
-    sectionBoxPanel: sectionBoxPanelHandle,
     sectionBox,
     contextMenu: contextMenuHandle,
     controlBar: bar,
@@ -284,8 +269,6 @@ export async function createDomWebglViewer (
       cursor.unregister()
       toast.destroy()
       axes.destroy()
-      isolationPanelHandle.destroy()
-      sectionBoxPanelHandle.destroy()
       bar.destroy()
       topBarHandle.destroy()
       views.destroy()
@@ -293,7 +276,6 @@ export async function createDomWebglViewer (
       overlayHandle.destroy()
       rest.destroy()
       bimPage?.destroy()
-      settingsPage.destroy()
       contextMenuHandle.destroy()
       sidePanelHandle.destroy()
       tips.destroy()

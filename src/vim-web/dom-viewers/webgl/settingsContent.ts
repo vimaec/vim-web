@@ -4,7 +4,7 @@ import { GenericCommonEntry } from '../generic'
 import { SettingsPanelKeys } from "../settings/settingsKeys";
 import { getIsolationSettings } from "../settings/settingsPanelContent";
 import { IsolationApi } from '../api';
-import { RenderSettingsApi } from '../api';
+import { RenderSettingsApi, SectionBoxApi } from '../api';
 import { WebglSettings } from "./settings";
 import { createState } from '../../state';
 import { UiRefs } from '../api';
@@ -24,6 +24,7 @@ export function getWebglSettingsContent(
   viewer: Viewer,
   isolation: IsolationApi,
   renderSettings: RenderSettingsApi,
+  sectionBox: SectionBoxApi,
   refs: UiRefs,
   srcUi: WebglSettings['ui'],
 ): GenericCommonEntry[] {
@@ -48,6 +49,21 @@ export function getWebglSettingsContent(
 
     { type: 'section', id: 'renderSettings', label: 'Render Settings' },
     ...isolationEntries,
+
+    // The offsets the floating section box popover used to own; VIM Flex keeps them here too.
+    { type: 'section', id: 'sectionBoxOffsets', label: 'Section Box Offsets' },
+    {
+      type: 'number', id: 'sectionBoxOffsetTop', label: 'Top', info: '[0,20]',
+      min: 0, max: 20, step: 0.5, state: sectionBox.topOffset,
+    },
+    {
+      type: 'number', id: 'sectionBoxOffsetSide', label: 'Side', info: '[0,20]',
+      min: 0, max: 20, step: 0.5, state: sectionBox.sideOffset,
+    },
+    {
+      type: 'number', id: 'sectionBoxOffsetBottom', label: 'Bottom', info: '[0,20]',
+      min: 0, max: 20, step: 0.5, state: sectionBox.bottomOffset,
+    },
 
     { type: 'group', id: 'ui', label: 'UI' },
     { type: 'section', id: SettingsPanelKeys.PanelsSubtitle, label: 'Panels' },

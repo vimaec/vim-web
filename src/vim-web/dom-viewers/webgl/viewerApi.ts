@@ -3,7 +3,6 @@ import type { FramingApi, IsolationApi, RenderSettingsApi, SectionBoxApi, WebglU
 import type { Container } from '../container'
 import type { BimInfoPanelApi } from '../bim'
 import type { ControlBarCustomization } from '../controlbar'
-import type { GenericPanelApi } from '../generic'
 import type { ModalApi } from '../modal'
 import type { ContextMenuApi } from '../panels'
 import type { TopBarApi } from '../topbar'
@@ -47,8 +46,6 @@ export type WebglViewerApi = {
   modal: ModalApi
   framing: FramingApi
   bimInfo: BimInfoPanelApi
-  isolationPanel: GenericPanelApi
-  sectionBoxPanel: GenericPanelApi
   /** Runtime UI visibility toggles, one StateRef per `ui` settings key. */
   ui: WebglUiApi
   /** Cleans up and releases resources used by the viewer. */

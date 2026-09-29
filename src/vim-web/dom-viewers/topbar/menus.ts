@@ -7,6 +7,7 @@ import type { UltraSettings } from '../ultra/settings'
 import type { WebglSettings } from '../webgl/settings'
 import type { ViewPanelApi } from '../viewpanel'
 import { PARAMETERS_VIEW } from '../bim'
+import { SETTINGS_VIEW } from '../settings'
 import { topBarIds as Ids } from './topBarIds'
 import type { TopBarContent } from './topBar'
 
@@ -49,18 +50,18 @@ const helpMenu = (modal: ModalApi, settings: WebglSettings | UltraSettings) => (
   ]
 })
 
-const settingsItem = (side: SideState, settings: WebglSettings | UltraSettings) => ({
+/** Opens the view, or closes it when its tab is already up. */
+const toggleView = (views: ViewPanelApi, id: string) =>
+  () => { if (views.isOpen(id)) views.close(id); else views.open(id) }
+
+const settingsItem = (views: ViewPanelApi, settings: WebglSettings | UltraSettings) => ({
   id: Ids.viewSettings,
   label: 'Settings',
   shortcut: 'F4',
   enabled: () => isTrue(settings.ui.miscSettings),
-  isOn: () => side.getContent() === 'settings',
-  action: () => side.toggleContent('settings')
+  isOn: () => views.isOpen(SETTINGS_VIEW),
+  action: toggleView(views, SETTINGS_VIEW)
 })
-
-/** Opens the view, or closes it when its tab is already up. */
-const toggleView = (views: ViewPanelApi, id: string) =>
-  () => { if (views.isOpen(id)) views.close(id); else views.open(id) }
 
 export function webglTopBarContent (opts: {
   side: SideState
@@ -90,7 +91,7 @@ export function webglTopBarContent (opts: {
             isOn: () => views.isOpen(PARAMETERS_VIEW),
             action: toggleView(views, PARAMETERS_VIEW)
           },
-          settingsItem(side, settings)
+          settingsItem(views, settings)
         ]
       },
       helpMenu(modal, settings)
@@ -108,14 +109,14 @@ export function webglTopBarContent (opts: {
 }
 
 export function ultraTopBarContent (opts: {
-  side: SideState
   modal: ModalApi
   settings: UltraSettings
+  views: ViewPanelApi
 }): TopBarContent {
-  const { side, modal, settings } = opts
+  const { modal, settings, views } = opts
   return {
     menus: [
-      { id: Ids.viewMenu, label: 'View', items: [settingsItem(side, settings)] },
+      { id: Ids.viewMenu, label: 'View', items: [settingsItem(views, settings)] },
       helpMenu(modal, settings)
     ],
     actions: []

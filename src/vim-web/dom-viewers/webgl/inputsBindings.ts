@@ -1,5 +1,4 @@
 import * as Core from '../../core-viewers'
-import { SideState } from '../state/sideState'
 import { FramingApi } from '../api'
 import { IsolationApi } from '../api'
 
@@ -7,11 +6,12 @@ export function applyWebglBindings(
   viewer: Core.Webgl.Viewer,
   framing: FramingApi,
   isolation: IsolationApi,
-  sideState: SideState)
+  /** F4 / numpad-divide: the viewer decides what "settings" means. */
+  toggleSettings: () => void)
 {
   const k = viewer.inputs.keyboard
-  k.override("F4", 'up', () => sideState.toggleContent('settings'))
-  k.override("NumpadDivide", 'up', () => sideState.toggleContent('settings'))
+  k.override("F4", 'up', toggleSettings)
+  k.override("NumpadDivide", 'up', toggleSettings)
   k.override("KeyF", 'up', () => framing.frameSelection.call())
   k.override("KeyI", 'up', () =>{
     if(isolation.hasVisibleSelection() && isolation.visibility.get() === 'some'){

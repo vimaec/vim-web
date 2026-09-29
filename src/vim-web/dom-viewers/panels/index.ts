@@ -1,5 +1,3 @@
-export { isolationPanel, isolationPanelIds } from './isolationPanel'
-export { sectionBoxPanel, sectionBoxPanelIds } from './sectionBoxPanel'
 export { speedToast } from './speedToast'
 export { overlay, type OverlayHandle } from './overlay'
 export { restOfScreen, type RestOfScreenHandle } from './restOfScreen'

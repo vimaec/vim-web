@@ -1,7 +1,8 @@
 import { SimpleEventDispatcher } from 'ste-simple-events'
 import type { ISimpleEvent } from '../../core-viewers/shared/events'
 
-export type SideContent = 'none' | 'bim' | 'settings' | 'logs'
+/** Settings moved to the right-hand view panel, so the side panel holds one page. */
+export type SideContent = 'none' | 'bim'
 
 const MIN_WIDTH = 160
 

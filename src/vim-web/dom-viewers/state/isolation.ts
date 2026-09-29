@@ -23,8 +23,6 @@ export interface IsolationApi {
   visibility: StateRef<VisibilityStatus>
   /** Whether auto-isolate is enabled (observable). When true, selecting an element auto-isolates it. */
   autoIsolate: StateRef<boolean>
-  /** Whether the isolation settings panel is shown (observable). */
-  showPanel: StateRef<boolean>
   /** Whether hidden elements are rendered as ghosts (observable). */
   showGhost: StateRef<boolean>
   /** Ghost material opacity 0-1 (observable). */
@@ -140,7 +138,6 @@ export type RenderSettingsHandle = RenderSettingsApi & { destroy (): void }
 export function createSharedIsolation (adapter: IIsolationAdapter): IsolationHandle {
   const visibility = createState<VisibilityStatus>(adapter.computeVisibility())
   const autoIsolate = createState(false)
-  const showPanel = createState(false)
   const showGhost = createState(adapter.getShowGhost())
   // Block zero — a fully transparent ghost is invisible, same as hidden.
   const ghostOpacity = createSettingState(() => adapter.getGhostOpacity(), {
@@ -174,7 +171,6 @@ export function createSharedIsolation (adapter: IIsolationAdapter): IsolationHan
   return {
     visibility,
     autoIsolate,
-    showPanel,
     showGhost,
     ghostOpacity,
     onAutoIsolate,

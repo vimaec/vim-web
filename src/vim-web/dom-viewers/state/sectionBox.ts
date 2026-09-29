@@ -32,7 +32,6 @@ export interface SectionBoxApi {
   sectionBox: FuncRef<THREE.Box3, void>
   getBox: () => THREE.Box3
 
-  showOffsetPanel: StateRef<boolean>
 
   topOffset: StateRef<number>
   sideOffset: StateRef<number>
@@ -61,7 +60,6 @@ export function createSectionBox (adapter: ISectionBoxAdapter, initial?: Section
   const auto = createState(initial?.auto ?? false)
   // Cannot change these while not active.
   const visible = createSettingState(() => false, { validate: v => active.get() && v })
-  const showOffsetPanel = createSettingState(() => false, { validate: v => active.get() && v })
   const topOffset = createState(initial?.topOffset ?? 1)
   const sideOffset = createState(initial?.sideOffset ?? 1)
   const bottomOffset = createState(initial?.bottomOffset ?? 1)
@@ -106,7 +104,6 @@ export function createSectionBox (adapter: ISectionBoxAdapter, initial?: Section
     active.onChange.subscribe(v => {
       adapter.setActive(v)
       visible.set(v)
-      showOffsetPanel.set(false)
       if (v && auto.get()) sectionSelection.call()
       else sectionScene.call()
     }),
@@ -121,7 +118,6 @@ export function createSectionBox (adapter: ISectionBoxAdapter, initial?: Section
     active,
     visible,
     auto,
-    showOffsetPanel,
     topOffset,
     sideOffset,
     bottomOffset,

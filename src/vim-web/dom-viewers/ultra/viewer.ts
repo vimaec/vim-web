@@ -10,10 +10,9 @@ import { tooltipZone } from '../components'
 import { controlBar } from '../controlbar'
 import { ultraControlBarSections } from '../controlbar/sections'
 import { getRequestErrorMessage } from '../errors'
-import { genericPanel } from '../generic'
 import { modal, type ModalApi } from '../modal'
-import { logo, overlay, restOfScreen, sectionBoxPanel, sidePanel } from '../panels'
-import { settingsPanel } from '../settings'
+import { logo, overlay, restOfScreen, sidePanel } from '../panels'
+import { settingsView, SETTINGS_VIEW } from '../settings'
 import { viewPanel } from '../viewpanel'
 import { modelName, topBar, ultraTopBarContent } from '../topbar'
 import {
@@ -67,8 +66,6 @@ export async function createDomUltraViewer (
   core.inputs.keyboard.override('KeyF', 'up', () => framing.frameSelection.call())
   if (fullSettings.cursor?.default !== undefined) core.inputs.pointerMode = fullSettings.cursor.default
 
-  on(sectionBox.showOffsetPanel.onChange, show => { if (show) isolation.showPanel.set(false) })
-  on(isolation.showPanel.onChange, show => { if (show) sectionBox.showOffsetPanel.set(false) })
   on(core.onStateChanged, state => updateModal(modalHandle, state))
 
   // ---- DOM -------------------------------------------------------------------
@@ -86,18 +83,12 @@ export async function createDomUltraViewer (
     gfx: cmp.gfx,
     resize: () => core.viewport.resizeToParent()
   })
-  const settingsPage = settingsPanel(sidePanelHandle.body, {
-    entries: getUltraSettingsContent(isolation),
-    onClose: () => side.popContent()
-  })
-  const syncPages = () => settingsPage.setVisible(side.getContent() === 'settings')
-  syncPages()
-  on(side.onChange, syncPages)
+  views.register(SETTINGS_VIEW, () => settingsView({ entries: () => getUltraSettingsContent(isolation) }))
 
   // The application bar. It owns the top strip above the side panel and the viewport, so it also
   // offsets the canvas container and re-measures the viewport.
   const topBarHandle = topBar(cmp.ui, {
-    content: ultraTopBarContent({ side, modal: modalHandle, settings: live }),
+    content: ultraTopBarContent({ modal: modalHandle, settings: live, views }),
     gfx: cmp.gfx,
     resize: () => core.viewport.resizeToParent()
   })
@@ -127,37 +118,16 @@ export async function createDomUltraViewer (
   on(refs.panelControlBar.onChange, syncBar)
   const refreshBar = () => {
     bar.update(sections())
-    topBarHandle.update(ultraTopBarContent({ side, modal: modalHandle, settings: live }))
+    topBarHandle.update(ultraTopBarContent({ modal: modalHandle, settings: live, views }))
   }
   for (const event of [
     side.onChange,
-    isolation.visibility.onChange, isolation.autoIsolate.onChange, isolation.showPanel.onChange,
-    sectionBox.active.onChange, sectionBox.visible.onChange, sectionBox.auto.onChange, sectionBox.showOffsetPanel.onChange,
+    isolation.visibility.onChange, isolation.autoIsolate.onChange,
+    sectionBox.active.onChange, sectionBox.visible.onChange, sectionBox.auto.onChange,
     framing.autoCamera.onChange, core.selection.onSelectionChanged, core.renderer.onSceneUpdated,
     ...Object.values(refs).map(r => r.onChange)
   ] as { subscribe (fn: (...args: unknown[]) => void): () => void }[]) disposers.push(event.subscribe(refreshBar))
 
-  const sectionBoxPanelHandle = sectionBoxPanel(rest.el, { sectionBox, anchor: () => bar.el })
-  // Ultra-specific isolation panel — only ghost controls (the server handles rendering).
-  const isolationPanelHandle = genericPanel(rest.el, {
-    title: 'Render Settings',
-    show: isolation.showPanel,
-    anchor: () => bar.el,
-    entries: [
-      { type: 'bool', id: 'isolationPanel.showGhost', label: 'Show Ghost', state: isolation.showGhost },
-      {
-        type: 'number',
-        id: 'isolationPanel.ghostOpacity',
-        label: 'Ghost Opacity',
-        state: isolation.ghostOpacity,
-        enabled: () => isolation.showGhost.get(),
-        min: 0,
-        max: 1,
-        step: 1 / 255,
-        transform: n => Math.max(0, Math.min(1, n))
-      }
-    ]
-  })
 
   const ultraLoad = patchLoad(core, modalHandle)
 
@@ -169,8 +139,6 @@ export async function createDomUltraViewer (
     isolation,
     sectionBox,
     framing,
-    isolationPanel: isolationPanelHandle,
-    sectionBoxPanel: sectionBoxPanelHandle,
     ui,
     controlBar: bar,
     topBar: topBarHandle,
@@ -182,15 +150,12 @@ export async function createDomUltraViewer (
     unload: vim => core.unload(vim),
     dispose: () => {
       for (const d of disposers) d()
-      isolationPanelHandle.destroy()
-      sectionBoxPanelHandle.destroy()
       bar.destroy()
       topBarHandle.destroy()
       views.destroy()
       overlayHandle.destroy()
       logoHandle.destroy()
       rest.destroy()
-      settingsPage.destroy()
       sidePanelHandle.destroy()
       tips.destroy()
       modalHandle.destroy()

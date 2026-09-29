@@ -1,7 +1,6 @@
 import type * as Core from '../../core-viewers'
 import type { FramingApi, IsolationApi, SectionBoxApi, UltraUiApi } from '../api'
 import type { Container } from '../container'
-import type { GenericPanelApi } from '../generic'
 import type { ModalApi } from '../modal'
 import type { ControlBarApi } from '../webgl/viewerApi'
 import type { TopBarApi } from '../topbar'
@@ -27,8 +26,6 @@ export type UltraViewerApi = {
   views: ViewPanelApi
   framing: FramingApi
   isolation: IsolationApi
-  isolationPanel: GenericPanelApi
-  sectionBoxPanel: GenericPanelApi
   /** Runtime UI visibility toggles, one StateRef per `ui` settings key. */
   ui: UltraUiApi
   /** Disposes of the viewer and its resources. */

@@ -71,14 +71,6 @@ export function sectionBoxSection (
         isOn: () => section.auto.get(),
         action: () => section.auto.set(!section.auto.get()),
         icon: Icons.sectionBoxAuto
-      },
-      {
-        id: Ids.sectioningSettings,
-        tip: () => section.showOffsetPanel.get() ? 'Close Section Settings' : 'Section Settings',
-        enabled: () => section.active.get() && isTrue(settings.sectioningSettings),
-        isOn: () => section.showOffsetPanel.get(),
-        action: () => section.showOffsetPanel.set(!section.showOffsetPanel.get()),
-        icon: Icons.slidersHoriz
       }
     ]
   }
@@ -208,14 +200,6 @@ export function visibilitySection (isolation: IsolationApi, settings: ControlBar
         action: () => isolation.autoIsolate.set(!isolation.autoIsolate.get()),
         isOn: () => isolation.autoIsolate.get(),
         icon: Icons.autoIsolate
-      },
-      {
-        id: Ids.visibilitySettings,
-        enabled: () => isTrue(settings.visibilitySettings),
-        tip: () => isolation.showPanel.get() ? 'Close Isolation Settings' : 'Isolation Settings',
-        action: () => isolation.showPanel.set(!isolation.showPanel.get()),
-        icon: Icons.slidersHoriz,
-        isOn: () => isolation.showPanel.get()
       }
     ]
   }
