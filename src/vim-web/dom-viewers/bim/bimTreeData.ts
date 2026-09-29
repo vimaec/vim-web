@@ -8,6 +8,9 @@ import { AugmentedElement } from '../helpers/element'
 export type NodeVisibility = 'visible' | 'partial' | 'hidden'
 export type Grouping = 'Family' | 'Level' | 'Workset'
 
+/** Shown where a model leaves the grouping value unset. */
+export const UNGROUPED = '(none)'
+
 /** A single node in the BIM tree. */
 export type BimNode = {
   id: string
@@ -29,19 +32,21 @@ export function toTreeData(
   if (!vim) return
   if (!elements?.length) return
 
+  // A model can leave any of these unset (an element on no level, outside every workset). Naming
+  // the gap keeps those elements reachable instead of collecting them under a blank row.
+  const named = (value: string | undefined) => value || UNGROUPED
+
   const main: (e: AugmentedElement) => string =
     grouping === 'Family'
-      ? (e) => e.categoryName
+      ? (e) => named(e.categoryName)
       : grouping === 'Level'
-        ? (e) => e.levelName
-        : grouping === 'Workset'
-          ? (e) => e.worksetName
-          : null
+        ? (e) => named(e.levelName)
+        : (e) => named(e.worksetName)
 
   const tree = toMapTree(elements, [
     main,
-    (e) => e.familyName,
-    (e) => e.familyTypeName,
+    (e) => named(e.familyName),
+    (e) => named(e.familyTypeName),
   ])
   sort(tree)
 

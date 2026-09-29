@@ -546,6 +546,22 @@
   display: flex;
   flex-direction: column;
 }
+.vim-ds-bim-grouping {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-2) 0;
+}
+.vim-ds-bim-grouping__label {
+  flex: 0 0 auto;
+  font-size: var(--ds-fs-label);
+  color: var(--text-300);
+}
+.vim-ds-bim-grouping .ds-select {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .vim-ds-bim-search {
   display: flex;
   align-items: center;

@@ -1,11 +1,13 @@
 import { createEmpty, createPanel, type EmptyHandle } from '../ds'
 import type * as Core from '../../core-viewers'
 import type { FramingApi, IsolationApi } from '../api'
+import { createSettingState } from '../state/settingState'
 import { createState } from '../../state'
 import type { ContextMenuPosition } from '../panels/contextMenu'
 import type { WebglState } from '../state/webglState'
-import { toTreeData, type BimTreeData } from '../bim/bimTreeData'
+import { toTreeData, type BimTreeData, type Grouping } from '../bim/bimTreeData'
 import { isTrue, type UserBoolean } from '../settings/userBoolean'
+import { select, type SelectHandle } from '../components'
 import { bimSearch, type BimSearchHandle } from './bimSearch'
 import { bimTree, type BimTreeHandle } from './bimTree'
 
@@ -43,9 +45,13 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
   panel.el.classList.add('vim-ds-bim')
 
   const treeData = createState<BimTreeData | undefined>(undefined)
-  const rebuildTreeData = () => treeData.set(toTreeData(state.vim.get(), state.elements.get(), 'Family'))
+  // The tree's top level. VIM Flex groups by any column through a drawer; our tree data offers
+  // these three, so the control is a plain choice over what actually exists.
+  const grouping = createSettingState<Grouping>(() => 'Family', { storageKey: 'vim.bim.grouping' })
+  const rebuildTreeData = () => treeData.set(toTreeData(state.vim.get(), state.elements.get(), grouping.get()))
 
   let search: BimSearchHandle | undefined
+  let groupingSelect: SelectHandle<Grouping> | undefined
   let tree: BimTreeHandle | undefined
   let noResults: EmptyHandle | undefined
   let upper: HTMLDivElement | undefined
@@ -53,6 +59,23 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
     upper = document.createElement('div')
     upper.className = 'vim-ds-bim__tree'
     panel.body.appendChild(upper)
+
+    const groupRow = document.createElement('div')
+    groupRow.className = 'vim-ds-bim-grouping'
+    const groupLabel = document.createElement('span')
+    groupLabel.className = 'vim-ds-bim-grouping__label'
+    groupLabel.textContent = 'Group by'
+    groupRow.appendChild(groupLabel)
+    upper.appendChild(groupRow)
+    groupingSelect = select(groupRow, {
+      state: grouping,
+      options: [
+        { value: 'Family', label: 'Category' },
+        { value: 'Level', label: 'Level' },
+        { value: 'Workset', label: 'Workset' }
+      ]
+    })
+
     search = bimSearch(upper, { viewer, filter: state.filter, elements: state.elements })
     tree = bimTree(upper, {
       viewer,
@@ -80,7 +103,8 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
       rebuildTreeData()
       syncResults()
     }),
-    state.filter.onChange.subscribe(syncResults)
+    state.filter.onChange.subscribe(syncResults),
+    grouping.onChange.subscribe(rebuildTreeData)
   ]
   rebuildTreeData()
   syncResults()
@@ -92,6 +116,7 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
       for (const u of unsubscribes) u()
       noResults?.destroy()
       tree?.destroy()
+      groupingSelect?.destroy()
       search?.destroy()
       panel.destroy()
     }
