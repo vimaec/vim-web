@@ -31,6 +31,7 @@ import {
   speedToast
 } from '../panels'
 import { settingsPanel } from '../settings'
+import { viewPanel } from '../viewpanel'
 import { modelName, topBar, webglTopBarContent } from '../topbar'
 import {
   createFullScreenState,
@@ -124,6 +125,13 @@ export async function createDomWebglViewer (
 
   const sidePanelHandle = sidePanel(cmp.ui, {
     side,
+    root: cmp.root,
+    gfx: cmp.gfx,
+    resize: () => core.viewport.resizeToParent()
+  })
+
+  // The tabbed dock on the right. Views register here and are built on first open.
+  const views = viewPanel(cmp.ui, {
     root: cmp.root,
     gfx: cmp.gfx,
     resize: () => core.viewport.resizeToParent()
@@ -259,6 +267,7 @@ export async function createDomWebglViewer (
     contextMenu: contextMenuHandle,
     controlBar: bar,
     topBar: topBarHandle,
+    views,
     modal: modalHandle,
     bimInfo,
     ui,
@@ -271,6 +280,7 @@ export async function createDomWebglViewer (
       sectionBoxPanelHandle.destroy()
       bar.destroy()
       topBarHandle.destroy()
+      views.destroy()
       logoHandle.destroy()
       overlayHandle.destroy()
       rest.destroy()

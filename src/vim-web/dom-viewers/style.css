@@ -29,6 +29,7 @@
    height as --vw-topbar-h, which everything below reads; the bar's own code offsets the canvas. */
 .vim-ds-ui {
   --vw-topbar-h: 0px;
+  --vw-viewpanel-w: 0px;
 }
 .vim-ds-ui[data-topbar] {
   --vw-topbar-h: 34px;
@@ -125,12 +126,40 @@
   height: 15px;
 }
 
-/* Everything right of the side panel; left/width are set from the side width. */
+/* Everything between the two docks: `left` follows the side panel, `right` the view panel. */
 .vim-ds-rest-of-screen {
+  position: absolute;
+  top: var(--vw-topbar-h);
+  right: var(--vw-viewpanel-w);
+  bottom: 0;
+}
+
+/* Right view panel — a tab strip over one body per open view, resizable from its left edge. */
+.vim-ds-viewpanel {
   position: absolute;
   top: var(--vw-topbar-h);
   right: 0;
   bottom: 0;
+  width: var(--vw-viewpanel-w);
+  z-index: var(--vw-z-ui);
+  display: flex;
+  flex-direction: column;
+  background: var(--stage-900);
+  border-left: 1px solid var(--hairline);
+}
+.vim-ds-viewpanel__tabs {
+  flex: 0 0 auto;
+  border-bottom: 1px solid var(--hairline);
+}
+.vim-ds-viewpanel__bodies {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.vim-ds-viewpanel__body {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
 }
 
 .vim-ds-logo {

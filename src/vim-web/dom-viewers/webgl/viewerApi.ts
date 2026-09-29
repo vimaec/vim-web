@@ -7,6 +7,7 @@ import type { GenericPanelApi } from '../generic'
 import type { ModalApi } from '../modal'
 import type { ContextMenuApi } from '../panels'
 import type { TopBarApi } from '../topbar'
+import type { ViewPanelApi } from '../viewpanel'
 import type { OpenSettings } from './loader'
 
 export type { OpenSettings }
@@ -41,6 +42,8 @@ export type WebglViewerApi = {
   controlBar: ControlBarApi
   /** The application bar above the side panel and the viewport. */
   topBar: TopBarApi
+  /** The tabbed dock on the right; views are registered here and opened by id. */
+  views: ViewPanelApi
   modal: ModalApi
   framing: FramingApi
   bimInfo: BimInfoPanelApi

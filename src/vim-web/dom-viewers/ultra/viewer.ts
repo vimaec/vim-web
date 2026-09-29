@@ -14,6 +14,7 @@ import { genericPanel } from '../generic'
 import { modal, type ModalApi } from '../modal'
 import { logo, overlay, restOfScreen, sectionBoxPanel, sidePanel } from '../panels'
 import { settingsPanel } from '../settings'
+import { viewPanel } from '../viewpanel'
 import { modelName, topBar, ultraTopBarContent } from '../topbar'
 import {
   createSideState,
@@ -74,6 +75,13 @@ export async function createDomUltraViewer (
   const tips = tooltipZone(cmp.ui)
   const sidePanelHandle = sidePanel(cmp.ui, {
     side,
+    root: cmp.root,
+    gfx: cmp.gfx,
+    resize: () => core.viewport.resizeToParent()
+  })
+
+  // The tabbed dock on the right. Views register here and are built on first open.
+  const views = viewPanel(cmp.ui, {
     root: cmp.root,
     gfx: cmp.gfx,
     resize: () => core.viewport.resizeToParent()
@@ -166,6 +174,7 @@ export async function createDomUltraViewer (
     ui,
     controlBar: bar,
     topBar: topBarHandle,
+    views,
     load: source => {
       topBarHandle.setTitle(modelName(source.url))
       return ultraLoad(source)
@@ -177,6 +186,7 @@ export async function createDomUltraViewer (
       sectionBoxPanelHandle.destroy()
       bar.destroy()
       topBarHandle.destroy()
+      views.destroy()
       overlayHandle.destroy()
       logoHandle.destroy()
       rest.destroy()

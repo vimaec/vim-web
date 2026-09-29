@@ -74,6 +74,7 @@ export default {
           if (peek.includes('createDomWebglViewer')) nameMap.set(id, 'Dom_Webgl')
           else if (peek.includes('createDomUltraViewer')) nameMap.set(id, 'Dom_Ultra')
           else if (peek.includes('_topBar as topBar')) nameMap.set(id, 'Dom_TopBar')
+          else if (peek.includes('_viewPanel as viewPanel')) nameMap.set(id, 'Dom_ViewPanel')
           else if (peek.includes('_bimPanel as bimPanel')) nameMap.set(id, 'Dom_Bim')
           else if (peek.includes('CheckboxOptions')) nameMap.set(id, 'Dom_Components')
           else if (peek.includes('_controlBar as controlBar')) nameMap.set(id, 'Dom_ControlBar')

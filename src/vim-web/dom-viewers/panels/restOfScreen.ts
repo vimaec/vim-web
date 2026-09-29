@@ -15,9 +15,9 @@ export function restOfScreen (host: HTMLElement, side: { getWidth (): number }):
   el.className = 'vim-ds-rest-of-screen'
 
   const update = () => {
-    const width = side.getWidth()
-    el.style.left = `${width}px`
-    el.style.width = `calc(100% - ${width}px)`
+    // Only the left inset is ours; the right one is the view panel's --vw-viewpanel-w (see style.css),
+    // so the width follows from both edges rather than being computed here.
+    el.style.left = `${side.getWidth()}px`
   }
   const observer = new ResizeObserver(update)
   observer.observe(document.body)
