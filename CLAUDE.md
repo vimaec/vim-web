@@ -29,6 +29,10 @@
 | BIM tree | `src/vim-web/dom-viewers/bim/bimTree.ts` |
 | Control bar sections | `src/vim-web/dom-viewers/controlbar/sections.ts` |
 | Top bar (menus, brand, title) | `src/vim-web/dom-viewers/topbar/topBar.ts` |
+| Right view panel (tabs) | `src/vim-web/dom-viewers/viewpanel/viewPanel.ts` |
+| Parameters view | `src/vim-web/dom-viewers/bim/parametersView.ts` |
+| Settings view | `src/vim-web/dom-viewers/settings/settingsView.ts` |
+| Icon data (generated) | `src/vim-web/icons/iconData.ts` via `scripts/generate-icons.mjs` |
 | Design system (submodule) | `vim-html-ds/` (built into `vim-html-ds/dist` by `npm run build:ds`) |
 | WebGL core viewer | `src/vim-web/core-viewers/webgl/viewer/viewer.ts` |
 | Ultra core viewer | `src/vim-web/core-viewers/ultra/viewer.ts` |
@@ -111,6 +115,8 @@ src/vim-web/
     ├── webgl/, ultra/      # Viewer roots (createViewer), settings, adapters, loader
     ├── state/              # Framing, section box, isolation, ui refs, side state, tools
     ├── controlbar/         # Control bar + section definitions + ids
+    ├── topbar/             # Application bar: brand, menus, title, window actions
+    ├── viewpanel/          # Right-hand tabbed dock; views register and open by id
     ├── bim/                # BIM panel, virtual tree, search, info panel + data model
     ├── panels/             # Side panel, context menu, axes, logo, overlay, floating panels
     ├── modal/, generic/, settings/, errors/, components/
@@ -132,13 +138,13 @@ type WebglViewerApi = {
   framing: FramingApi         // Framing controls (frame selection/scene)
   sectionBox: SectionBoxApi  // Section box
   isolation: IsolationApi    // Isolation mode
-  controlBar: ControlBarApi  // Toolbar customization
+  controlBar: ControlBarApi  // Bottom toolbar customization
+  topBar: TopBarApi          // Application bar customization
+  views: ViewPanelApi        // Right-hand dock: register / open / close views
   contextMenu: ContextMenuApi
   bimInfo: BimInfoPanelApi
   modal: ModalApi
-  ui: WebglUiApi                    // Runtime UI visibility toggles
-  isolationPanel: GenericPanelApi   // Isolation render settings
-  sectionBoxPanel: GenericPanelApi  // Section box offset settings
+  ui: WebglUiApi             // Runtime UI visibility toggles
   dispose: () => void
 }
 
@@ -846,14 +852,55 @@ Cleanup checklist for `destroy()`: subscriptions, `ResizeObserver.disconnect()`,
 
 The adapter (`IIsolationAdapter`) is an implementation detail with closure state: `webgl/isolationAdapters.ts` (also produces the render-settings adapter) and `ultra/isolationAdapter.ts`.
 
-### Top Bar vs Control Bar
+### Layout and Where Things Live
 
-The split is tools versus everything else. The control bar at the bottom holds verbs applied to the
-scene (pointer modes, framing, visibility, measure, section box). The top bar holds what is not a
-tool: the brand, `View` and `Help` menus, the model title and window actions. Nothing appears in
-both. The bar spans the full width above the side panel and the viewport, publishes its height as
-`--vw-topbar-h` for the layout below it, and offsets the canvas container itself. Both bars expose
-the same `customize()` contract.
+The viewer follows VIM Flex's Explore workflow. Four chrome regions own their own offsets, each
+publishing a CSS variable or writing the canvas container's inset directly, so none has to know
+about the others:
+
+| Region | Holds | Offset it owns |
+|---|---|---|
+| Top bar | Brand, `View` / `Help` menus, model title, window actions | `--vw-topbar-h`, canvas `top` |
+| Side panel (left) | The Project Inspector: grouping, search, virtual tree | canvas `left` |
+| View panel (right) | Tabs: Parameters, Settings | `--vw-viewpanel-w`, canvas `right` |
+| Control bar (bottom) | Scene tools only | none, it floats in what is left |
+
+The split is tools versus everything else. Scene verbs (pointer modes, framing, visibility, measure,
+section box) live in the control bar; panels, app state and window actions live in the top bar.
+Nothing appears in both. Element data and settings are views of the right dock, not sections of the
+left panel.
+
+### View Panel
+
+Views register a factory and are built on first open, destroyed on close, so none survives the model
+changing under it. Register in the viewer root, open from a menu:
+
+```typescript
+viewer.views.register('my-view', () => ({
+  title: 'My View',
+  mount: host => { /* build into host */ },
+  destroy: () => { /* undo it */ }
+}))
+viewer.views.open('my-view')
+```
+
+### Control Bar Vocabulary
+
+Borrowed from VIM Flex, so the two products read alike:
+
+- Verbs fire on **mousedown**, so a rapid second press is not swallowed as half a double click.
+- A **slash** (`slash: () => boolean`) strikes the icon for a negated state. The eye slashes for the
+  action the press performs; a button whose slash would claim something we cannot know goes without.
+- An **auto badge** (`auto: true`) marks a mode, so auto-camera and frame share one icon.
+- The **lit state** is a tint and a cyan rim, reserved for state rather than used as a press effect.
+- `dividerBefore` splits a capsule into groups.
+
+### Icons
+
+`icons/iconData.ts` is generated by `scripts/generate-icons.mjs` from Fluent UI System Icons (MIT),
+all at the 20px regular weight. Do not edit it by hand; change the map in the script and re-run.
+Segoe MDL2, which VIM Flex uses, is not available to us: it is an OS font, so it renders as tofu off
+Windows, and its licence permits neither non-Microsoft platforms nor redistribution.
 
 ### Control Bar
 
