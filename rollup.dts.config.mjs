@@ -79,7 +79,7 @@ export default {
           else if (peek.includes('CheckboxOptions')) nameMap.set(id, 'Dom_Components')
           else if (peek.includes('_controlBar as controlBar')) nameMap.set(id, 'Dom_ControlBar')
           else if (peek.includes('_genericPanel as genericPanel')) nameMap.set(id, 'Dom_Generic')
-          else if (peek.includes('_isolationPanel as isolationPanel')) nameMap.set(id, 'Dom_Panels')
+          else if (peek.includes('_axesPanel as axesPanel')) nameMap.set(id, 'Dom_Panels')
           else if (peek.includes('_modal as modal')) nameMap.set(id, 'Dom_Modal')
           else if (peek.includes('_settingsPanel as settingsPanel')) nameMap.set(id, 'Dom_Settings')
           // getErrorMessage is unique to the DS errors barrel; the React one also exports webglFileError.
