@@ -705,30 +705,52 @@
   font-size: var(--ds-fs-eyebrow);
   color: var(--text-400);
 }
-/* Gapless: the drawer's own gap would sit under each row's hairline and skew the rhythm. */
+/* Gapless: the drawer's own gap would sit under each row's hairline and skew the rhythm. The box
+   is the drop line's frame, so it is positioned. */
 .vim-ds-gd__rows {
+  position: relative;
   display: flex;
   flex-direction: column;
 }
+/* The whole row is the drag handle, as a rule row is in Flex's filter drawer: a grip would cost
+   every row a gutter for a hint the cursor already gives. */
 .vim-ds-gd__row {
   display: flex;
   align-items: center;
-  gap: var(--ds-space-1);
-  padding: 2px 0;
+  gap: var(--ds-space-2);
+  padding: 3px var(--ds-space-1);
   border-bottom: 1px solid var(--hairline-soft);
+  cursor: grab;
+}
+.vim-ds-gd__row:hover {
+  background: var(--stage-700);
 }
 .vim-ds-gd__row--fixed {
   opacity: 0.5;
+  cursor: default;
+}
+.vim-ds-gd__row--fixed:hover {
+  background: transparent;
+}
+/* The row the pointer is carrying stays in place, faded: the card is what moves. */
+.vim-ds-gd__row--dragsrc {
+  opacity: 0.35;
+}
+.vim-ds-gd--dragging,
+.vim-ds-gd--dragging * {
+  cursor: grabbing !important;
 }
 .vim-ds-gd__rank {
-  flex: 0 0 12px;
+  flex: 0 0 14px;
   text-align: right;
   font-family: var(--font-mono);
   font-size: var(--ds-fs-eyebrow);
   color: var(--text-400);
 }
+/* The name takes what it needs and the family tag takes the rest, so the buttons sit at one stop
+   down the column rather than following the longest name. */
 .vim-ds-gd__name {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -742,11 +764,59 @@
   color: var(--text-300);
 }
 .vim-ds-gd__tag {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-family: var(--font-mono);
   font-size: var(--ds-fs-micro);
   letter-spacing: 0.6px;
   color: var(--text-400);
+}
+/* Drag and drop, in the vocabulary of Flex's filter drawer: a 2px cyan rule with a dot at its head
+   marks the gap the level lands in, and a card carries its name under the pointer. The radius and
+   the shadow are this file's two exceptions — the affordance is Flex's, and the design system has
+   no drag of its own to borrow from. */
+.vim-ds-gd__drop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--vim-cyan);
+  pointer-events: none;
+  z-index: 2;
+}
+.vim-ds-gd__drop[hidden] {
+  display: none;
+}
+.vim-ds-gd__drop::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--vim-cyan);
+}
+.vim-ds-gd__dragcard {
+  position: fixed;
+  /* Body-level, so it rides the design system's overlay band rather than the viewer's own. */
+  z-index: var(--z-toast);
+  display: flex;
+  align-items: center;
+  height: 26px;
+  max-width: 320px;
+  padding: 0 10px;
+  white-space: nowrap;
+  border: 1px solid var(--vim-cyan);
+  background: var(--stage-800);
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--stage-950) 70%, transparent);
+  transform: rotate(-1deg);
+  pointer-events: none;
+  color: var(--text-100);
+  font-size: var(--ds-fs-label);
 }
 .vim-ds-gd__addhead {
   padding-top: var(--ds-space-1);
@@ -760,11 +830,11 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--ds-space-1);
+  gap: var(--ds-space-2);
   padding: 2px 0;
 }
 .vim-ds-gd__famtag {
-  flex: 0 0 52px;
+  flex: 0 0 56px;
   font-family: var(--font-mono);
   font-size: var(--ds-fs-micro);
   letter-spacing: 0.6px;

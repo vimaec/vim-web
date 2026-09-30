@@ -25,6 +25,9 @@ export type BimGroupingHandle = {
 
 const ICON_CLASS = 'ds-iconbtn__svg'
 
+/** Travel before a press becomes a drag, as Flex's rule rows use. */
+const DRAG_THRESHOLD = 4
+
 /**
  * The grouping chrome of the tree page: the `Group by` strip and the drawer its ≡ opens, after VIM
  * Flex's own pair.
@@ -35,8 +38,8 @@ const ICON_CLASS = 'ds-iconbtn__svg'
  * drawer edits the nesting — move a level up or down, remove it, add one by family with the columns the model has no
  * values for struck through — and carries the tier-tag toggle and a reset.
  *
- * Flex also reorders by dragging a row's grip. The arrows say the same thing in a 340px panel, so
- * that is all this offers.
+ * A level moves by the arrows or by dragging its row. The whole row is the handle, as it is in
+ * Flex's filter drawer: a grip would cost every row a gutter for a hint the cursor already gives.
  */
 export function bimGrouping (host: HTMLElement, opts: BimGroupingOptions): BimGroupingHandle {
   const root = document.createElement('div')
@@ -108,9 +111,11 @@ export function bimGrouping (host: HTMLElement, opts: BimGroupingOptions): BimGr
     })
 
     toggle = iconButton(strip, {
-      icon: Icons.slidersHoriz({ className: ICON_CLASS }),
+      icon: Icons.menu({ className: ICON_CLASS }),
       tip: 'Edit the tree grouping',
       className: 'vim-ds-gb__more',
+      // The pills' own height, so the strip reads as one rank.
+      size: 'sm',
       on: open,
       onClick: () => setOpen(!open)
     })
@@ -119,16 +124,120 @@ export function bimGrouping (host: HTMLElement, opts: BimGroupingOptions): BimGr
   // ---- the drawer ---------------------------------------------------------
 
   const button = (host: HTMLElement, icon: () => Element, tip: string, disabled: boolean, onClick: () => void) => {
-    const handle = iconButton(host, { icon: icon(), tip, disabled, onClick })
+    const handle = iconButton(host, { icon: icon(), tip, disabled, size: 'xs', onClick })
     handle.el.classList.add('vim-ds-gd__btn')
     handle.el.setAttribute('aria-label', tip)
     mounted.push(handle)
+  }
+
+  // ---- dragging a level ---------------------------------------------------
+
+  const dropLine = document.createElement('div')
+  dropLine.className = 'vim-ds-gd__drop'
+  dropLine.hidden = true
+
+  type Drag = { column: GroupingColumn, x: number, y: number, active: boolean, slot: number, card?: HTMLElement }
+  let drag: Drag | undefined
+
+  const levelRows = () =>
+    [...drawer.querySelectorAll<HTMLElement>('.vim-ds-gd__row[data-col]')]
+
+  /**
+   * Where the dragged level lands, as an index into the nesting without it. Its own row rides the
+   * pointer, so its rect is skipped: measuring it would answer 'right where it already is' at every
+   * offset and no drag would move anything.
+   */
+  const dropSlot = (rows: HTMLElement[], from: number, y: number) => {
+    let slot = 0
+    for (let i = 0; i < rows.length; i++) {
+      if (i === from) continue
+      const rect = rows[i].getBoundingClientRect()
+      if (y > rect.top + rect.height / 2) slot++
+    }
+    return slot
+  }
+
+  /** The cyan rule in the gap the level will land in. */
+  const showDrop = (rows: HTMLElement[], from: number, slot: number) => {
+    const box = dropLine.parentElement
+    if (!box) return
+    const origin = box.getBoundingClientRect().top
+    const edge = slot <= from ? rows[slot] : rows[slot]
+    const rect = (edge ?? rows[rows.length - 1]).getBoundingClientRect()
+    const top = slot <= from ? rect.top : rect.bottom
+    dropLine.style.top = `${Math.round(top - origin)}px`
+    dropLine.hidden = false
+  }
+
+  const endDrag = (commit: boolean) => {
+    if (!drag) return
+    const current = drag
+    drag = undefined
+    document.removeEventListener('pointermove', onPointerMove)
+    document.removeEventListener('pointerup', onPointerUp)
+    document.removeEventListener('keydown', onDragKey)
+    current.card?.remove()
+    dropLine.hidden = true
+    drawer.classList.remove('vim-ds-gd--dragging')
+    for (const row of levelRows()) row.classList.remove('vim-ds-gd__row--dragsrc')
+    if (!commit || !current.active) return
+    const order = opts.grouping.get()
+    const from = order.indexOf(current.column)
+    if (from < 0 || current.slot < 0 || current.slot === from) return
+    const next = order.filter(c => c !== current.column)
+    next.splice(current.slot, 0, current.column)
+    apply(next)
+  }
+
+  const onDragKey = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') endDrag(false)
+  }
+
+  const onPointerMove = (e: PointerEvent) => {
+    if (!drag) return
+    if (!drag.active) {
+      if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < DRAG_THRESHOLD) return
+      drag.active = true
+      drawer.classList.add('vim-ds-gd--dragging')
+      const rows = levelRows()
+      const from = rows.findIndex(r => r.dataset.col === drag!.column)
+      rows[from]?.classList.add('vim-ds-gd__row--dragsrc')
+      // The card is what the pointer is carrying, at the page level so no scroll box clips it.
+      const card = document.createElement('div')
+      card.className = 'vim-ds-gd__dragcard'
+      card.textContent = drag.column
+      document.body.appendChild(card)
+      drag.card = card
+    }
+    if (drag.card) {
+      drag.card.style.left = `${e.clientX + 12}px`
+      drag.card.style.top = `${e.clientY - 10}px`
+    }
+    const rows = levelRows()
+    const from = rows.findIndex(r => r.dataset.col === drag!.column)
+    if (from < 0) return
+    drag.slot = dropSlot(rows, from, e.clientY)
+    if (drag.slot === from) dropLine.hidden = true
+    else showDrop(rows, from, drag.slot)
+  }
+
+  const onPointerUp = () => endDrag(true)
+
+  const startDrag = (e: PointerEvent, column: GroupingColumn) => {
+    // A press on one of the row's buttons is that button's, never a drag.
+    if ((e.target as HTMLElement).closest('.ds-iconbtn')) return
+    if (e.button !== 0 || opts.grouping.get().length < 2) return
+    drag = { column, x: e.clientX, y: e.clientY, active: false, slot: -1 }
+    document.addEventListener('pointermove', onPointerMove)
+    document.addEventListener('pointerup', onPointerUp)
+    document.addEventListener('keydown', onDragKey)
   }
 
   const renderRow = (column: GroupingColumn, index: number, nesting: GroupingColumn[]) => {
     const row = document.createElement('div')
     row.className = 'vim-ds-gd__row'
     row.dataset.col = column
+    row.addEventListener('pointerdown', e => startDrag(e, column))
 
     const rank = document.createElement('span')
     rank.className = 'vim-ds-gd__rank'
@@ -153,6 +262,7 @@ export function bimGrouping (host: HTMLElement, opts: BimGroupingOptions): BimGr
   }
 
   const renderDrawer = () => {
+    endDrag(false)
     for (const handle of mounted.splice(0)) handle.destroy()
     tags?.destroy()
     tags = undefined
@@ -174,6 +284,7 @@ export function bimGrouping (host: HTMLElement, opts: BimGroupingOptions): BimGr
 
     const rows = document.createElement('div')
     rows.className = 'vim-ds-gd__rows'
+    rows.appendChild(dropLine)
     nesting.forEach((column, i) => rows.appendChild(renderRow(column, i, nesting)))
 
     // The terminal row is fixed: every grouping bottoms out at the elements themselves.
@@ -187,7 +298,7 @@ export function bimGrouping (host: HTMLElement, opts: BimGroupingOptions): BimGr
     terminalName.textContent = 'Element'
     const terminalTag = document.createElement('span')
     terminalTag.className = 'vim-ds-gd__tag'
-    terminalTag.textContent = 'FIXED'
+    terminalTag.textContent = 'FIXED TERMINAL ROW'
     terminal.append(terminalRank, terminalName, terminalTag)
     rows.appendChild(terminal)
     drawer.appendChild(rows)
@@ -265,6 +376,7 @@ export function bimGrouping (host: HTMLElement, opts: BimGroupingOptions): BimGr
   return {
     el: root,
     destroy: () => {
+      endDrag(false)
       for (const u of unsubscribes) u()
       for (const handle of mounted.splice(0)) handle.destroy()
       tags?.destroy()

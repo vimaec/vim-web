@@ -38,6 +38,7 @@ const MAP = {
   minimize: 'full_screen_minimize',
   treeView: 'text_bullet_list_tree',
   more: 'more_horizontal',
+  menu: 'line_horizontal_3',
   collapse: 'chevron_down',
   chevronUp: 'chevron_up',
   arrowLeft: 'chevron_left',

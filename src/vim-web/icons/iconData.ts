@@ -172,6 +172,18 @@ export const iconData = {
       }
     ]
   },
+  "menu": {
+    "viewBox": "0 0 20 20",
+    "fill": "$fill",
+    "children": [
+      {
+        "tag": "path",
+        "attrs": {
+          "d": "M2 4.5c0-.28.22-.5.5-.5h15a.5.5 0 0 1 0 1h-15a.5.5 0 0 1-.5-.5m0 5c0-.28.22-.5.5-.5h15a.5.5 0 0 1 0 1h-15a.5.5 0 0 1-.5-.5m.5 4.5a.5.5 0 0 0 0 1h15a.5.5 0 0 0 0-1z"
+        }
+      }
+    ]
+  },
   "collapse": {
     "viewBox": "0 0 20 20",
     "fill": "$fill",

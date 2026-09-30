@@ -8,6 +8,8 @@ export type IconButtonOptions = {
   on?: StateRef<boolean> | boolean
   tip?: string
   disabled?: boolean
+  /** The design system's smaller squares: `sm` matches a pill's height, `xs` a dense row's. */
+  size?: 'sm' | 'xs'
   className?: string
   onClick?: (ev: MouseEvent) => void
 }
@@ -29,6 +31,7 @@ export function iconButton (host: HTMLElement, opts: IconButtonOptions): IconBut
   const ds = createIconButton(host, {
     icon: typeof opts.icon === 'string' ? opts.icon : undefined,
     active: reactive ? reactive.get() : opts.on === true,
+    size: opts.size,
     tip: opts.tip,
     disabled: opts.disabled,
     onClick: opts.onClick
