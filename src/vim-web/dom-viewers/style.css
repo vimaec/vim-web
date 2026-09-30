@@ -594,11 +594,15 @@
 }
 
 /* BIM page (inside the side panel): search + virtual tree above, resizable inspector section below. */
+/* The page manages its own scrolling — the tree scrolls inside itself — so the panel body must
+   not scroll too: its scrollbar reserved a strip on the right and pushed every control below the
+   head 11px in from the head's own close button. */
 .vim-ds-bim .ds-panel__body {
   display: flex;
   flex-direction: column;
   min-height: 0;
   padding: 0;
+  overflow: hidden;
 }
 .vim-ds-bim__tree {
   flex: 1 1 auto;
@@ -607,11 +611,13 @@
   flex-direction: column;
 }
 /* Grouping chrome: the Group by strip and the drawer its ≡ opens, after VIM Flex's pair. */
+/* The design system's panel head pads by 12px, so the chrome under it does too: the drawer's ≡ and
+   the search box then stand in the same column as the head's close button. */
 .vim-ds-grouping {
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  padding: var(--ds-space-2) var(--ds-space-2) 0;
+  padding: var(--ds-space-2) var(--ds-space-3) 0;
 }
 .vim-ds-gb {
   display: flex;
@@ -649,6 +655,7 @@
   overflow: hidden;
   display: inline-flex;
   align-items: center;
+  line-height: 1;
   gap: 4px;
   height: var(--ds-control-h-sm);
   box-sizing: border-box;
@@ -840,18 +847,27 @@
   letter-spacing: 0.6px;
   color: var(--text-400);
 }
+/* A definite height with the line box centred in it, rather than a tall line box the text sits at
+   the top of. A label in caps has no descenders, so its box rides a pixel high without the same
+   compensation VIM Flex gives its own caps buttons. */
 .vim-ds-gd__chip,
 .vim-ds-gd__reset {
   flex: 0 0 auto;
-  padding: 1px 8px;
+  display: inline-flex;
+  align-items: center;
+  height: var(--ds-control-h-sm);
+  /* Measured, not guessed: the ink of a label with no descenders sits about half a descent above
+     the box's centre, which is the 2px VIM Flex gives its own caps buttons. */
+  padding: 2px 8px 0;
   border: 1px solid var(--hairline-soft);
   background: var(--stage-800);
   color: var(--text-200);
   cursor: pointer;
   font-family: var(--font-body);
   font-size: var(--ds-fs-eyebrow);
-  line-height: 1.6;
+  line-height: 1;
 }
+
 .vim-ds-gd__chip:hover:not(:disabled),
 .vim-ds-gd__reset:hover {
   border-color: var(--vim-cyan);
@@ -880,12 +896,18 @@
 .vim-ds-gd__reset {
   letter-spacing: 0.6px;
 }
+/* The caps eyebrows beside them sit on the same centre line. */
+.vim-ds-gd__famtag,
+.vim-ds-gd__addhead,
+.vim-ds-gb__eyebrow {
+  line-height: 1;
+}
 
 .vim-ds-bim-search {
   display: flex;
   align-items: center;
   gap: var(--ds-space-2);
-  padding: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
 }
 .vim-ds-bim-search .ds-search {
   flex: 1 1 auto;
@@ -924,12 +946,16 @@
   overflow: hidden;
 }
 /* A sortable header's label: it gives way before the column does, so the sort arrow keeps its
-   place in the numeric column's text inset. */
+   place in the numeric column's text inset. The arrow hangs out of flow in that inset, so the
+   label in a numeric column keeps a beat clear of it rather than running into it. */
 .vim-ds-bim-tree__collbl {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.vim-ds-bim-tree .ds-cols__col--num .vim-ds-bim-tree__collbl {
+  margin-right: 4px;
 }
 .vim-ds-bim__info {
   flex: 0 0 auto;
@@ -974,6 +1000,9 @@
 }
 .vim-ds-bim-info__step {
   flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 22px;
   height: 22px;
   padding: 0;
@@ -1077,6 +1106,9 @@
   color: var(--text-400);
 }
 .vim-ds-bim-info__tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 18px;
   height: 18px;
   padding: 0;
