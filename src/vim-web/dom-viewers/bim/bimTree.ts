@@ -80,7 +80,12 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
   container.setAttribute('aria-label', 'BIM Tree')
   const spacer = el('div', 'ds-tree__spacer')
   const rows = el('div', 'ds-tree__rows')
-  container.append(spacer, rows)
+  // The sticky ancestor trail: in flow at the top of the scroll box, while the spacer and the row
+  // window are positioned over it. A scroll aid, so it stays out of the accessibility tree — the
+  // real rows carry it.
+  const trail = el('div', 'ds-tree__trail')
+  trail.setAttribute('aria-hidden', 'true')
+  container.append(trail, spacer, rows)
   root.appendChild(container)
   const empty = createEmpty(root, { title: 'Bim data not available . . .' })
   const tips = tooltipZone(root)
@@ -113,6 +118,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     if (!tree || !data) {
       unbindAll()
       syncHeader()
+      trail.replaceChildren()
       spacer.style.height = '0px'
       return
     }
@@ -127,6 +133,8 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     syncHeader()
     spacer.style.height = `${win.totalHeight}px`
     rows.style.transform = `translateY(${win.offsetY}px)`
+    // The trail reads the first row actually on screen, not the overscanned window start.
+    renderTrail(items, Math.floor(container.scrollTop / ROW_HEIGHT))
     const state = tree.getState()
     const selected = new Set(state.selectedItems)
     let k = 0
@@ -141,6 +149,58 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
       bound.delete(row)
       row.remove()
     }
+  }
+
+  /**
+   * The open-group chain above the first visible row, pinned to the top of the scroll box so context
+   * survives mid-scroll. Walked up the flat item list by decreasing level, as Flex walks it — never
+   * a DOM scan. A row at the outermost level has no ancestors and leaves the trail empty, which the
+   * design system renders as nothing.
+   */
+  const renderTrail = (items: Item[], firstVisible: number) => {
+    const first = items[firstVisible]
+    if (!first || first.getItemMeta().level < 1) {
+      trail.replaceChildren()
+      return
+    }
+    const chain: { item: Item, index: number }[] = []
+    let need = first.getItemMeta().level - 1
+    for (let i = firstVisible - 1; i >= 0 && need >= 0; i--) {
+      if (items[i].getItemMeta().level !== need) continue
+      chain.unshift({ item: items[i], index: i })
+      need--
+    }
+    const frag = document.createDocumentFragment()
+    for (const link of chain) frag.appendChild(trailRow(link.item, link.index))
+    trail.replaceChildren(frag)
+  }
+
+  /** One pinned ancestor: the same row vocabulary, captioned and indented like its real row. */
+  const trailRow = (item: Item, index: number) => {
+    const level = item.getItemMeta().level
+    const node = item.getItemData()
+    const row = el('div', `ds-tree__item ds-open ds-depth-${Math.min(level, 3)}`)
+    row.style.setProperty('--depth', String(level))
+    // An empty check cell holds that column open, so a pinned label stands over the labels below it.
+    row.appendChild(el('span', 'ds-tree__check'))
+    const toggle = el('span', 'ds-tree__toggle')
+    toggle.appendChild(el('span', 'ds-tree__caret'))
+    row.appendChild(toggle)
+    const column = data?.columns[level]
+    if (column !== undefined) {
+      const tag = el('span', 'ds-tree__lvl')
+      tag.textContent = levelShorthand(column)
+      row.appendChild(tag)
+    }
+    const label = el('span', 'ds-tree__label')
+    label.textContent = node?.title ?? ''
+    row.appendChild(label)
+    const count = el('span', 'ds-tree__cell ds-tree__meta ds-tree__meta--accent')
+    count.textContent = String(node?.count ?? 0)
+    row.appendChild(count)
+    // Click a pinned ancestor to scroll its own row back to the top.
+    row.addEventListener('click', () => { container.scrollTop = index * ROW_HEIGHT })
+    return row
   }
 
   /**
