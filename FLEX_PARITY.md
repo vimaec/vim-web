@@ -10,9 +10,9 @@ Every item below names what Flex does, what we do today, and what to change. Ite
 called out directly. Nothing here invents a feature: anything needing the query layer or core work
 is called out as blocked rather than planned.
 
-**Status after round 2:** T1–T5 and S1–S2 are done; each carries the commit that closed it. S3 and
-S4 are settled without a change, for the reasons recorded under them. S5 stays blocked upstream.
-T7 and T8 are new findings, for round 3.
+**Status after round 3:** T1–T10 and S1–S2 are done; each carries the commit that closed it. S3
+and S4 are settled without a change, for the reasons recorded under them. S5 stays blocked
+upstream. The parameters pane got its own round (P1–P5). G1, the grouping drawer, is what is left.
 
 ## Tree
 
@@ -76,7 +76,7 @@ walks up the flat item list by decreasing level. A pinned row repeats the full r
 the same columns — an empty check cell, the tag, the label, the count — so it stands exactly over
 the rows below it; Flex omits the check cell and lets its trail sit left of its rows.
 
-### T5. Count column — done (`433ff2d6`); sortable header deferred
+### T5. Count column and sortable header — done (`433ff2d6`, `c9d51301`)
 
 **Flex** renders a Count column by default and sorts from the header.
 
@@ -88,7 +88,11 @@ build time rather than walked per render. A leaf's cell stays empty, which is wh
 column does with a leaf too. Rows also took the design system's depth tint (`ds-depth-0..3`) in the
 same pass, since that is what makes a level legible in Flex without reading the pill.
 
-Sorting still waits: it wants an ordering in the tree data, not a column.
+Sorting landed too, and cheaply: `BimTreeData.sort` reorders the child arrays already in memory
+and renumbers the flat order a shift-range slices — nothing is re-queried and no node is rebuilt,
+so ids stay valid and both the expansion and the selection survive a sort. A whole click measures
+under 80ms on a 4,473-element model, most of it the headless-tree rebuild. Name sorting collates
+numerically, so Countertop2 precedes Countertop10.
 
 ### T6. Checkbox vocabulary (note, not a change)
 
@@ -149,37 +153,112 @@ MDL2 codepoint, not an SVG path. On any non-Windows browser it renders as tofu. 
 system gains SVG paths for the `ICON_GLYPHS` names, or we pass our own icon. Worth raising upstream,
 since it affects every glyph-named design-system icon we might use.
 
-## For round 3
+## Parameters pane — done
 
-### T7. Double-click a group expands it
+### P1. Multi-selection summary (`c4ff7ad9`)
+
+Flex's summary page: the identity fields read their shared value or `(varies)`, the body keeps only
+the parameters every selected element carries, and one they all carry but value differently reads
+`(varies)` too, under a note saying so. Parameters come from the vim's own cache, so this is a
+lookup per element rather than a query per element — 1,700 elements summarize in 173ms.
+
+### P2. Flex's dressing (`c4ff7ad9`, `ce8a3bb7`)
+
+Mono uppercase identity keys over a hairline; group headings that are a caret, an accented title
+and a count rather than design-system bands; dense rows; values that wrap rather than truncate;
+blanks dashed; collapse-all / expand-all with the groups they act on. The bands stay in the
+settings list, where a short list of controls wants the weight.
+
+Three numbers were off and are fixed: the body was not inset (Flex insets 8px / 12px), the group
+rules used the design system's soft hairline rather than Flex's 4% tint, and the instance / type
+caption carried a rule of its own that made a caption look like a group.
+
+### P3. Raw values (`396663f9`, `c70a070b`)
+
+A parameter is stored as a `raw|display` pair and both our core and vim-format's helper discarded
+the raw half, so there was nothing for a toggle to show. `getBimParameters()` now answers
+`BimParameter`, with `rawValue` beside `value`, and the toggle adds a third column rather than
+swapping the value — a stored value is only interesting beside what it displays as. Splitting the
+pair properly also fixed blank rows: a pair with an empty display half falls back to its raw value,
+as Flex's does.
+
+### P4. Pager (`631ec8dc`)
+
+`‹ Summary ›` above the panel, reaching 200 elements where Flex draws the same line; the summary
+still speaks for the whole selection and the dropdown says how many it does not page through. A new
+selection starts over at the summary.
+
+### P5. The eye (`9b83002e`)
+
+Collapses the selection to the element on show, with a strip that puts it back and lands on the page
+the eye was pressed on; the offer retires when any other selection arrives. Flex tags its own
+selection writes with a nonce and recognizes the echo by it; our selection observable carries no
+cause, so the write is remembered and its echo recognized by contents.
+
+**Not adopted:** the per-row filter funnel (it wants tree rules) and compare mode (it wants a second
+model). Both are query-layer features.
+
+## For round 4
+
+### G1. The grouping drawer
+
+**Flex** opens a drawer off the GROUP BY strip: reorder the levels (drag, Up, Down), remove one
+(×), add one by family with per-model availability (IDENTITY: Category, Family, Type, Family Type;
+MODEL: Workset, Model, BIM Document; SPATIAL: Level, Room), toggle the tier tags, and reset to the
+workflow's default nesting.
+
+**Ours** is a `Group by` select over three fixed presets, each a fixed three-level nesting.
+
+**Feasible without the query layer.** `toTreeData` builds the nesting from `AugmentedElement`
+fields, so an ordered, editable level list over the columns we actually have — Category, Family,
+Type, Workset, Level, BIM Document — is a UI change, not a data one. Room and Domain have no data
+here and would be offered only once they do. The tier-tag toggle, which T2 left out for want of a
+place to put it, belongs in the same drawer.
+
+## Closed inspections
+
+### Ctrl and shift beyond the range anchor — answered, done (`1303403e`)
+
+Flex's `activateInterval` takes an `additive` flag: ctrl with shift adds the interval to the
+selection instead of replacing it. Ours does now too.
+
+### Whether Flex reveals the focused row on an engine pick — answered, done (`1303403e`)
+
+It does: `applyExternalSelection` marks and then scrolls to the first marked row, but only when the
+selection did not come from the tree itself, and it never expands. Ours revealed the last element
+picked; it now reveals the first marked row in tree order, since a rectangle hands over its
+elements in no particular order.
+
+### T10. The keyboard ring belongs to the keyboard — done (`1303403e`)
+
+Flex re-seats the roving index on a click but deliberately leaves its ring off, so a mouse gesture
+leaves two visible states. Ours painted the selection fill and the focus ring at once.
+
+## Done in round 3
+
+### T7. Double-click a group expands it — done (`1303403e`)
 
 **Flex** activates the row and expands it (`onDblClick`, group rows only); its framing lives on the
 control bar, not on the tree.
 
-**Ours** frames the selection on a double-click, anywhere in the tree — behaviour inherited from
-the React viewer and part of the public feel, so this is a decision, not a defect. Expanding *and*
-framing a group is a third option and probably the useful one: the double-click already selects the
-whole group, so framing it and opening it answer the same gesture.
+**Ours** framed the selection on a double-click, anywhere in the tree — behaviour inherited from
+the React viewer and part of the public feel. Both now happen: a double-click on a group frames it
+*and* opens it, since the gesture had already selected the whole group.
 
-### T8. Clicking the sole selected row releases it
+### T8. Clicking the sole selected row releases it — done (`1303403e`)
 
 **Flex** treats a plain click on the row that is already the only selection as a release: the
 selection clears and the focus ring goes with it. It is the only in-tree gesture that drops a
 selection, since a 3D click never reaches its DOM.
 
-**Ours** re-selects the same row. Small and self-contained: the guard is that the click carries no
-modifier, is not the second half of a double-click, and the row is the whole selection.
-
-## Still to inspect
-
-- What Flex does on ctrl and shift beyond the range anchor (`activateInterval` takes both).
-- Whether Flex's tree reveals the focused row on an engine pick, and how.
-- The grouping drawer, for where a level-tag toggle and multi-column grouping would live.
+**Ours** re-selected the same row. It now releases, guarded so that the click carries no modifier,
+is not the second half of a double-click, and the row is the whole selection.
 
 ## Order
 
-Round 2 ran T1, S1, S2, then T2, then T3 with T5's count on top of it, then T4 — each built,
-verified live and committed on its own.
+Round 2 ran T1, S1, S2, then T2, then T3 with T5's count on top of it, then T4. Round 3 ran the
+header sort, the parameters pane (P1–P5) and the click vocabulary (T7, T8, T9, T10). Each was
+built, verified live and committed on its own.
 
-Round 3 starts with **T8** (self-contained), then **T7** once its framing question is answered, then
-the header sort under **T5**. **S5** waits on the design system.
+Round 4 is **G1**, the grouping drawer, which is also where T2's tier-tag toggle goes. **S5** still
+waits on the design system.
