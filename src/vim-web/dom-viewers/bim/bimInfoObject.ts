@@ -12,6 +12,9 @@ export type ElementParameter = {
   isInstance: boolean;
 };
 
+/** What a field reads when the selected elements disagree about it, as VIM Flex words it. */
+export const VARIES = '(varies)'
+
 export async function getObjectData (object: Core.Webgl.IElement3D, elements: AugmentedElement[]) : Promise<BIM.Data> {
   const element = object
     ? elements.find((e) => e.index === object.element)
@@ -23,6 +26,78 @@ export async function getObjectData (object: Core.Webgl.IElement3D, elements: Au
   ])
 
   return { header, body }
+}
+
+/**
+ * Several elements at once: what they agree on. The identity fields read the shared value or
+ * `(varies)`, and the body keeps only the parameters every selected element carries — VIM Flex's
+ * summary page. A parameter they all carry but value differently reads `(varies)` too, so the list
+ * says what is common without claiming one element's value for the rest.
+ */
+export async function getSelectionData (
+  objects: Core.Webgl.IElement3D[],
+  elements: AugmentedElement[]
+): Promise<BIM.Data> {
+  const byIndex = new Map(elements.map(e => [e.index, e]))
+  const selected = objects.map(o => byIndex.get(o.element)).filter(e => e !== undefined)
+
+  const [header, body] = await Promise.all([
+    Promise.resolve(getSharedHeader(selected)),
+    getSharedBody(objects)
+  ])
+
+  return {
+    header,
+    body,
+    note: `${objects.length} elements selected. Showing only the parameters every one of them ` +
+      `carries; ${VARIES} marks values that differ between them.`
+  }
+}
+
+/** Each identity field's shared value, or `(varies)`. */
+function getSharedHeader (infos: AugmentedElement[]): BIM.Entry[] | undefined {
+  if (infos.length === 0) return undefined
+  const shared = (read: (info: AugmentedElement) => string | undefined) => {
+    const first = read(infos[0]) ?? ''
+    for (let i = 1; i < infos.length; i++) {
+      if ((read(infos[i]) ?? '') !== first) return VARIES
+    }
+    return first
+  }
+  return [
+    { key: 'document', label: 'Document', value: shared(i => i.bimDocumentName) },
+    { key: 'workset', label: 'Workset', value: shared(i => i.worksetName) },
+    { key: 'category', label: 'Category', value: shared(i => i.categoryName) },
+    { key: 'familyName', label: 'Family Name', value: shared(i => i.familyName) },
+    { key: 'familyTypeName', label: 'Family Type', value: shared(i => i.familyTypeName) },
+    { key: 'elementId', label: 'Element Id', value: shared(i => i.id?.toString()) }
+  ]
+}
+
+/** The parameters every selected element carries, valued or marked `(varies)`. */
+async function getSharedBody (objects: Core.Webgl.IElement3D[]): Promise<BIM.Section[]> {
+  // The parameters come from the vim's own cache, so this is a lookup per element rather than a
+  // query per element — a whole-model selection stays a handful of milliseconds.
+  const all = await Promise.all(objects.map(o => o.getBimParameters()))
+  const present = all.filter(p => p !== undefined && p !== null)
+  if (present.length === 0) return null
+
+  const key = (p: ElementParameter) => `${p.isInstance ? 'i' : 't'}|${p.group ?? ''}|${p.name ?? ''}`
+  const shared = new Map<string, ElementParameter>()
+  for (const p of present[0]) {
+    if (!acceptParameter(p) || shared.has(key(p))) continue
+    shared.set(key(p), { ...p })
+  }
+  for (let i = 1; i < present.length && shared.size > 0; i++) {
+    const mine = new Map<string, ElementParameter>()
+    for (const p of present[i]) if (!mine.has(key(p))) mine.set(key(p), p)
+    for (const [k, entry] of shared) {
+      const match = mine.get(k)
+      if (!match) shared.delete(k)
+      else if (match.value !== entry.value) entry.value = VARIES
+    }
+  }
+  return toSections([...shared.values()])
 }
 
 export function getHeader (info: AugmentedElement | undefined): BIM.Entry[] | undefined {
@@ -51,7 +126,7 @@ export function getHeader (info: AugmentedElement | undefined): BIM.Entry[] | un
     {
       key: 'familyTypeName',
       label: 'Family Type',
-      value: info.familyName ?? ''
+      value: info.familyTypeName ?? ''
     },
     {
       key: 'elementId',
@@ -64,19 +139,22 @@ export function getHeader (info: AugmentedElement | undefined): BIM.Entry[] | un
 export async function getBody (
   object: Core.Webgl.IElement3D
 ): Promise<BIM.Section[]> {
-  let parameters = await object?.getBimParameters()
+  const parameters = await object?.getBimParameters()
   if (!parameters) return null
+  return toSections(parameters.filter((p) => acceptParameter(p)))
+}
 
-  parameters = parameters.filter((p) => acceptParameter(p))
-  parameters = parameters.sort((a, b) => compare(a.group, b.group, orderMap))
+/** The instance / type split, each grouped by the parameter's own Revit group, in Revit's order. */
+function toSections (parameters: ElementParameter[]): BIM.Section[] {
+  const sorted = [...parameters].sort((a, b) => compare(a.group, b.group, orderMap))
 
   const instance = toGroups(groupBy(
-    parameters.filter((p) => p.isInstance),
+    sorted.filter((p) => p.isInstance),
     (p) => p.group
   ))
 
   const type = toGroups(groupBy(
-    parameters.filter((p) => !p.isInstance),
+    sorted.filter((p) => !p.isInstance),
     (p) => p.group
   ))
 

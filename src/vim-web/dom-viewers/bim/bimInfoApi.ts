@@ -36,6 +36,8 @@ export type Data = {
   header: Entry[] | undefined
   /** The body, typically one or more sections of grouped entries. */
   body: Section[] | undefined
+  /** A line above the body saying how to read it — set when several elements are summarized. */
+  note?: string
 }
 
 /**

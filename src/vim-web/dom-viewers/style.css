@@ -681,6 +681,139 @@
   min-height: 0;
   max-height: none;
 }
+/* Parameters, drawn as VIM Flex draws it: a labelled identity block, then groups whose heading is
+   a caret, an accented title and a count over a hairline — no bands, and rows dense enough that a
+   long parameter list reads as a list rather than a stack of controls. */
+.vim-ds-bim-info__header {
+  margin-bottom: var(--ds-space-3);
+  padding-bottom: var(--ds-space-2);
+  border-bottom: 1px solid var(--hairline);
+}
+.vim-ds-bim-info__header .vim-ds-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px var(--ds-space-3);
+}
+.vim-ds-bim-info__header .vim-ds-entry {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  align-items: center;
+  min-height: 0;
+  padding: 0;
+}
+.vim-ds-bim-info__header .vim-ds-entry__label {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--ds-fs-eyebrow);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-400);
+}
+.vim-ds-bim-info__header .vim-ds-entry__value {
+  color: var(--text-100);
+}
+/* Why a multi-selection's list is shorter than any one element's. */
+.vim-ds-bim-info__note {
+  margin: 0 0 var(--ds-space-2);
+  padding: var(--ds-space-1) var(--ds-space-2);
+  border-left: 2px solid var(--hairline);
+  font-size: var(--ds-fs-eyebrow);
+  color: var(--text-400);
+}
+.vim-ds-bim-info__note[hidden] {
+  display: none;
+}
+/* Collapse-all / expand-all, sitting with the groups they act on. */
+.vim-ds-bim-info__tools {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
+  margin-bottom: 2px;
+}
+.vim-ds-bim-info__tools[hidden] {
+  display: none;
+}
+.vim-ds-bim-info__tool {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-300);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--ds-fs-label);
+  line-height: 1;
+}
+.vim-ds-bim-info__tool:hover {
+  color: var(--text-100);
+}
+.vim-ds-group {
+  border-bottom: 1px solid var(--hairline-soft);
+}
+.vim-ds-group__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 5px 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  user-select: none;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: var(--ds-fs-eyebrow);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-400);
+}
+.vim-ds-group--accent .vim-ds-group__head {
+  color: var(--vim-cyan);
+}
+.vim-ds-group__count {
+  color: var(--text-400);
+}
+.vim-ds-group.ds-open > .vim-ds-group__head .ds-tree__caret {
+  transform: rotate(90deg);
+}
+.vim-ds-group:not(.ds-open) > .vim-ds-group__body {
+  display: none;
+}
+/* The rows of one group: two columns the whole group shares, so keys and values line up across it. */
+.vim-ds-group--accent > .vim-ds-group__body {
+  display: grid;
+  grid-template-columns: minmax(90px, 40%) 1fr;
+  gap: 1px var(--ds-space-3);
+  padding: 2px 0 8px 13px;
+}
+.vim-ds-list--flat .vim-ds-entry {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  align-items: start;
+  min-height: 0;
+  padding: 0;
+}
+.vim-ds-list--flat .vim-ds-entry__label {
+  flex: none;
+  color: var(--text-300);
+}
+/* A parameter value wraps rather than truncating: an id or a level path is the whole point of the
+   row, and there is nowhere else to read it. */
+.vim-ds-list--flat .vim-ds-entry__value {
+  overflow: visible;
+  white-space: normal;
+  word-break: break-word;
+  color: var(--text-100);
+}
+/* A parameter the element carries but leaves empty still reads as a row with nothing in it, the
+   way Flex dashes its blanks — otherwise the value column looks broken rather than empty. */
+.vim-ds-list--flat .vim-ds-entry__value:empty::after {
+  content: '—';
+  color: var(--text-400);
+}
 .vim-ds-bim-info__loading[hidden] {
   display: none;
 }

@@ -4,6 +4,8 @@ import type { GenericControlEntry, GenericEntryType, GenericNumberEntry } from '
 
 type Section = { id: string, label: string, items: GenericEntryType[] }
 type Group = { id: string, label: string, sections: Section[] }
+/** A heading that can be opened and closed, whichever way it is drawn. */
+type Foldable = { open (value: boolean): void }
 type Rendered = { sync: () => void, destroy: () => void }
 type Control = { setDisabled (disabled: boolean): void, destroy (): void }
 
@@ -118,11 +120,55 @@ function renderEntry (host: HTMLElement, entry: GenericEntryType): Rendered {
   }
 }
 
+export type GenericContentOptions = {
+  /**
+   * Draws headings VIM Flex's way instead of the design system's bands: a caret, an accented
+   * uppercase title and the row count, over a hairline. The parameters view uses it; a settings
+   * list keeps the bands, which carry more weight and suit a short list of controls.
+   */
+  flat?: boolean
+}
+
 export type GenericContentHandle = {
   el: HTMLDivElement
   /** Re-evaluates every entry's `enabled` / `visible`. */
   sync (): void
+  /** Opens or closes every heading at once. */
+  setAllOpen (open: boolean): void
   destroy (): void
+}
+
+/** A Flex-style heading: caret, title, count, and the rows beneath it. */
+function flatGroup (host: HTMLElement, title: string, count: number | undefined, accent: boolean) {
+  const root = document.createElement('div')
+  root.className = accent ? 'vim-ds-group vim-ds-group--accent ds-open' : 'vim-ds-group ds-open'
+  const head = document.createElement('button')
+  head.type = 'button'
+  head.className = 'vim-ds-group__head'
+  const caret = document.createElement('span')
+  caret.className = 'ds-tree__caret'
+  const label = document.createElement('span')
+  label.className = 'vim-ds-group__title'
+  label.textContent = title
+  head.append(caret, label)
+  if (count !== undefined) {
+    const badge = document.createElement('span')
+    badge.className = 'vim-ds-group__count'
+    badge.textContent = `(${count})`
+    head.appendChild(badge)
+  }
+  const body = document.createElement('div')
+  body.className = 'vim-ds-group__body'
+  root.append(head, body)
+  host.appendChild(root)
+
+  const open = (value: boolean) => {
+    root.classList.toggle('ds-open', value)
+    head.setAttribute('aria-expanded', String(value))
+  }
+  open(true)
+  head.addEventListener('click', () => open(!root.classList.contains('ds-open')))
+  return { body, open, destroy: () => root.remove() }
 }
 
 /**
@@ -131,13 +177,18 @@ export type GenericContentHandle = {
  * every change, this subscribes to each entry's state and re-syncs
  * `enabled` / `visible` in place.
  */
-export function genericContent (host: HTMLElement, items: GenericEntryType[]): GenericContentHandle {
+export function genericContent (
+  host: HTMLElement,
+  items: GenericEntryType[],
+  opts: GenericContentOptions = {}
+): GenericContentHandle {
   const root = document.createElement('div')
-  root.className = 'vim-ds-list'
+  root.className = opts.flat ? 'vim-ds-list vim-ds-list--flat' : 'vim-ds-list'
   host.appendChild(root)
 
   const rendered: Rendered[] = []
   const disposers: (() => void)[] = []
+  const foldables: Foldable[] = []
 
   const renderList = (target: HTMLElement, entries: GenericEntryType[]) => {
     for (const entry of entries) rendered.push(renderEntry(target, entry))
@@ -147,8 +198,16 @@ export function genericContent (host: HTMLElement, items: GenericEntryType[]): G
       renderList(target, section.items)
       return
     }
+    if (opts.flat) {
+      const group = flatGroup(target, section.label, section.items.length, true)
+      disposers.push(() => group.destroy())
+      foldables.push(group)
+      renderList(group.body, section.items)
+      return
+    }
     const collapse = createCollapse(target, { title: section.label, open: true })
     disposers.push(() => collapse.destroy())
+    foldables.push({ open: value => collapse.toggle(value) })
     renderList(collapse.body, section.items)
   }
 
@@ -162,8 +221,18 @@ export function genericContent (host: HTMLElement, items: GenericEntryType[]): G
         for (const section of group.sections) renderSection(root, section)
         continue
       }
+      if (opts.flat) {
+        // The outer level (instance versus type properties) is a quieter heading than the parameter
+        // groups inside it: Flex has no such level at all, so it must not outshout what it holds.
+        const outer = flatGroup(root, group.label, undefined, false)
+        disposers.push(() => outer.destroy())
+        foldables.push(outer)
+        for (const section of group.sections) renderSection(outer.body, section)
+        continue
+      }
       const collapse = createCollapse(root, { title: group.label, open: true })
       disposers.push(() => collapse.destroy())
+      foldables.push({ open: value => collapse.toggle(value) })
       for (const section of group.sections) renderSection(collapse.body, section)
     }
   }
@@ -176,6 +245,7 @@ export function genericContent (host: HTMLElement, items: GenericEntryType[]): G
   return {
     el: root,
     sync,
+    setAllOpen: open => { for (const f of foldables) f.open(open) },
     destroy: () => {
       for (const dispose of disposers) dispose()
       for (const r of rendered) r.destroy()

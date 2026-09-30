@@ -9,15 +9,15 @@ import { bimInfoPanel, type BimInfoPanelHandle } from './bimInfoPanel'
 export const PARAMETERS_VIEW = 'parameters'
 
 /**
- * The Parameters tab of the right-hand panel: the BIM data of the last
- * selected element, or the vim's own when nothing is selected. Follows VIM
- * Flex, where Parameters is a view beside the viewport rather than a section
- * of the tree panel, and is purely reactive — it never writes the selection.
+ * The Parameters tab of the right-hand panel: the BIM data of the selected
+ * element, what a multi-selection shares, or the vim's own when nothing is
+ * selected. Follows VIM Flex, where Parameters is a view beside the viewport
+ * rather than a section of the tree panel, and is purely reactive — it never
+ * writes the selection.
  */
 export function parametersView (opts: { state: WebglState, api: BimInfoPanelApi }): ViewSpec {
   const { state, api } = opts
-  const lastOf = (elements: Core.Webgl.IElement3D[]) => elements[elements.length - 1]
-  const object = createState<Core.Webgl.IElement3D | undefined>(undefined)
+  const objects = createState<Core.Webgl.IElement3D[]>([])
   let info: BimInfoPanelHandle | undefined
   let unsubscribe: (() => void) | undefined
 
@@ -25,9 +25,9 @@ export function parametersView (opts: { state: WebglState, api: BimInfoPanelApi 
     title: 'Parameters',
     mount: host => {
       // Seed from whatever is already selected; the view may be opened long after the pick.
-      object.set(lastOf(state.selection.get()))
-      unsubscribe = state.selection.onChange.subscribe(elements => object.set(lastOf(elements)))
-      info = bimInfoPanel(host, { object, vim: state.vim, elements: state.elements, api })
+      objects.set(state.selection.get())
+      unsubscribe = state.selection.onChange.subscribe(elements => objects.set(elements))
+      info = bimInfoPanel(host, { objects, vim: state.vim, elements: state.elements, api })
     },
     destroy: () => {
       unsubscribe?.()
