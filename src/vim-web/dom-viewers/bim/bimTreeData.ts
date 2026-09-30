@@ -8,6 +8,16 @@ import { AugmentedElement } from '../helpers/element'
 export type NodeVisibility = 'visible' | 'partial' | 'hidden'
 export type Grouping = 'Family' | 'Level' | 'Workset'
 
+/** What a tree column sorts by, and which way. */
+export type SortKey = 'name' | 'count'
+export type SortDir = 'asc' | 'desc'
+
+/**
+ * Numeric collation, so 'Countertop2' comes before 'Countertop10' and an element's '#649003' reads
+ * as a number. The default string order puts '10' before '2'.
+ */
+const COLLATOR = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
+
 /** Shown where a model leaves the grouping value unset. */
 export const UNGROUPED = '(none)'
 
@@ -189,6 +199,46 @@ export class BimTreeData {
       .filter(i => i !== undefined)
       .map(i => this.vim.getElementFromIndex(i))
       .filter(Boolean)
+  }
+
+  // --- Ordering ---
+
+  /**
+   * Reorders every node's children. Nothing is re-queried and no node is rebuilt — ids stay put, so
+   * the expansion and the selection survive a sort. The cost is one sort per child array plus one
+   * walk to renumber the flat order that a shift-range selection slices: a few milliseconds on a
+   * model of a few thousand elements.
+   */
+  sort(key: SortKey, dir: SortDir) {
+    const sign = dir === 'desc' ? -1 : 1
+    const byName = (a: string, b: string) =>
+      sign * COLLATOR.compare(this.nodes.get(a).title, this.nodes.get(b).title)
+    // Equal counts fall back to the name, always ascending: a column of ties should read
+    // alphabetically rather than in whatever order the data happened to arrive in.
+    const byCount = (a: string, b: string) => {
+      const diff = this.nodes.get(a).count - this.nodes.get(b).count
+      return diff !== 0 ? sign * diff : COLLATOR.compare(this.nodes.get(a).title, this.nodes.get(b).title)
+    }
+    const compare = key === 'count' ? byCount : byName
+    for (const node of this.nodes.values()) {
+      if (node.childIds.length > 1) node.childIds.sort(compare)
+    }
+    this._reindex()
+  }
+
+  /** Renumbers the parent-first flat order after a reorder, the order `getRange` slices. */
+  private _reindex() {
+    this._orderedIds.length = 0
+    this._idToOrder.clear()
+    const walk = (id: string) => {
+      this._idToOrder.set(id, this._orderedIds.length)
+      this._orderedIds.push(id)
+      for (const child of this.nodes.get(id).childIds) walk(child)
+    }
+    // A node whose parent is not in the map is a root; the map's own order keeps the roots in theirs.
+    for (const node of this.nodes.values()) {
+      if (!this.nodes.has(node.parentId)) walk(node.id)
+    }
   }
 
   // --- Visibility ---

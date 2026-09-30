@@ -12,7 +12,8 @@ import type { FramingApi, IsolationApi } from '../api'
 import type { StateRef } from '../../state'
 import { TIP_ATTR, tooltipZone } from '../components/tooltip'
 import type { ContextMenuPosition } from '../panels/contextMenu'
-import { levelShorthand, type BimNode, type BimTreeData } from '../bim/bimTreeData'
+import { levelShorthand, type BimNode, type BimTreeData, type SortDir, type SortKey } from '../bim/bimTreeData'
+import { createSettingState } from '../state/settingState'
 
 type IElement3D = Core.Webgl.IElement3D
 type Tree = TreeInstance<BimNode>
@@ -68,11 +69,22 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
   headCheck.setAttribute('role', 'checkbox')
   headCheck.appendChild(el('span', 'ds-check__box'))
   headCheckCell.appendChild(headCheck)
-  const headName = el('span', 'ds-cols__col ds-cols__col--grow ds-cols__col--static')
-  headName.textContent = 'Name'
-  const headCount = el('span', 'ds-cols__col ds-cols__col--num ds-cols__col--static')
-  headCount.textContent = 'Elements'
-  head.append(headCheckCell, headName, headCount)
+  const column = (key: SortKey, label: string, className: string) => {
+    const button = el('button', `ds-cols__col ${className}`)
+    button.type = 'button'
+    button.dataset.col = key
+    const text = el('span', 'vim-ds-bim-tree__collbl')
+    text.textContent = label
+    const arrow = el('span', 'ds-cols__arrow')
+    button.append(text, arrow)
+    head.appendChild(button)
+    return { button, arrow }
+  }
+  head.appendChild(headCheckCell)
+  const columns = [
+    column('name', 'Name', 'ds-cols__col--grow'),
+    column('count', 'Elements', 'ds-cols__col--num')
+  ]
   root.appendChild(head)
   const container = el('div', 'ds-tree ds-tree--virtual')
   container.tabIndex = 0
@@ -89,6 +101,13 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
   root.appendChild(container)
   const empty = createEmpty(root, { title: 'Bim data not available . . .' })
   const tips = tooltipZone(root)
+
+  // The sort outlives a reload, as Flex's column layout does. One state, so the key and the
+  // direction can never disagree.
+  const sort = createSettingState<`${SortKey}:${SortDir}`>(() => 'name:asc', {
+    storageKey: 'vim.bim.sort',
+    validate: next => (/^(name|count):(asc|desc)$/.test(next) ? next : 'name:asc')
+  })
 
   let data: BimTreeData | undefined
   let tree: Tree | undefined
@@ -149,6 +168,37 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
       bound.delete(row)
       row.remove()
     }
+  }
+
+  const readSort = () => sort.get().split(':') as [SortKey, SortDir]
+
+  /** Paints the arrow on the sorted column and clears the others. */
+  const syncColumns = () => {
+    const [key, dir] = readSort()
+    for (const c of columns) {
+      const active = c.button.dataset.col === key
+      c.button.classList.toggle('ds-sorted', active)
+      c.arrow.textContent = active ? (dir === 'asc' ? '▲' : '▼') : ''
+      c.button.setAttribute('aria-sort', active ? (dir === 'asc' ? 'ascending' : 'descending') : 'none')
+    }
+  }
+
+  /**
+   * A click sorts by that column; a click on the column already sorted flips it. Only the child
+   * arrays move, so the tree keeps its expansion and its selection across a sort.
+   */
+  const sortBy = (key: SortKey) => {
+    const [current, dir] = readSort()
+    sort.set(`${key}:${key === current && dir === 'asc' ? 'desc' : 'asc'}`)
+    applySort()
+  }
+
+  const applySort = () => {
+    syncColumns()
+    if (!data || !tree) return
+    const [key, dir] = readSort()
+    data.sort(key, dir)
+    tree.rebuildTree()
   }
 
   /**
@@ -365,6 +415,8 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
       return
     }
     tree = buildTree(d)
+    const [key, dir] = readSort()
+    d.sort(key, dir)
     tree.rebuildTree()
     syncSelection(opts.selection.get())
   }
@@ -484,6 +536,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     if (!root.contains(e.relatedTarget as Node | null)) viewer.inputs.keyboard.active = true
   }
 
+  for (const c of columns) c.button.addEventListener('click', () => sortBy(c.button.dataset.col as SortKey))
   headCheck.addEventListener('click', toggleAll)
   rows.addEventListener('click', onClick)
   rows.addEventListener('contextmenu', onContextMenu)
@@ -501,6 +554,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
       scheduleRender()
     })
   ]
+  syncColumns()
   setData(opts.treeData.get())
 
   return {

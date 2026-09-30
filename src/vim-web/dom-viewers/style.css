@@ -655,12 +655,22 @@
 /* The Elements column. One width for the header cell and the row cells under it, which is what puts
    a column's digits under its label; the design system supplies the gutter and the text inset. */
 .vim-ds-bim-tree {
-  --vw-bim-count-w: 64px;
+  /* Flex's default value column is 64px; ours holds a word rather than an icon, so it takes the
+     few extra pixels that keep the ELEMENTS label whole. */
+  --vw-bim-count-w: 72px;
 }
 .vim-ds-bim-tree .ds-cols__col--num,
 .vim-ds-bim-tree .ds-tree__cell {
   width: var(--vw-bim-count-w);
   overflow: hidden;
+}
+/* A sortable header's label: it gives way before the column does, so the sort arrow keeps its
+   place in the numeric column's text inset. */
+.vim-ds-bim-tree__collbl {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .vim-ds-bim__info {
   flex: 0 0 auto;
