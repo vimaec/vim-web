@@ -733,6 +733,29 @@
   opacity: 0.35;
   cursor: default;
 }
+.vim-ds-bim-info__eye {
+  flex: 0 0 auto;
+}
+/* The way back from the eye: a labelled strip across the panel, under the pager that offered it. */
+.vim-ds-bim-info__back {
+  flex: 0 0 auto;
+  padding: 5px var(--ds-space-3);
+  border: 0;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--stage-800);
+  color: var(--vim-cyan);
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: var(--ds-fs-label);
+}
+.vim-ds-bim-info__back:hover {
+  background: var(--stage-700);
+  color: var(--text-100);
+}
+.vim-ds-bim-info__back[hidden] {
+  display: none;
+}
 
 /* Parameters, drawn as VIM Flex draws it: a labelled identity block, then groups whose heading is
    a caret, an accented title and a count over a hairline — no bands, and rows dense enough that a

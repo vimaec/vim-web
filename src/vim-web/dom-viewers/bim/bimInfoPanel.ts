@@ -1,7 +1,8 @@
 import type * as Core from '../../core-viewers'
 import type { StateRef } from '../../state'
 import { genericContent, type GenericContentHandle } from '../generic'
-import { checkbox, select, type SelectOption } from '../components'
+import { checkbox, iconButton, select, type SelectOption } from '../components'
+import * as Icons from '../iconSet'
 import { createSettingState } from '../state/settingState'
 import { createState } from '../../state'
 import { getObjectData, getSelectionData } from '../bim/bimInfoObject'
@@ -28,6 +29,12 @@ export type BimInfoPanelOptions = {
   vim: StateRef<Core.Webgl.IWebglVim | undefined>
   elements: StateRef<AugmentedElement[]>
   api: BimInfoPanelApi
+  /**
+   * Writes the selection. Given it, the pager offers an eye that collapses a multi-selection down
+   * to the element on show, with a strip that puts the selection back. Without it the panel stays
+   * read-only and no eye appears.
+   */
+  onSelect?: (elements: Core.Webgl.IElement3D[]) => void
 }
 
 export type BimInfoPanelHandle = {
@@ -74,6 +81,67 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
   })
   const next = step('›', 'Next element', 1)
 
+  /**
+   * The eye states in the viewport what the pager is showing: it collapses the selection to that
+   * one element. The strip below puts back what it collapsed.
+   *
+   * Flex tags each of its own selection writes with a nonce and recognizes the echo by it. Our
+   * selection is an observable with no room for a cause, so the write is remembered and the echo
+   * recognized by its contents: an echo that matches what we asked for keeps the offer, anything
+   * else retires it. A reader who picks exactly that element by hand keeps the offer too, which is
+   * the answer they would want anyway.
+   */
+  let restore: Core.Webgl.IElement3D[] | undefined
+  let restorePage = '0'
+  let written: Core.Webgl.IElement3D[] | undefined
+
+  const back = document.createElement('button')
+  back.type = 'button'
+  back.className = 'vim-ds-bim-info__back'
+  back.hidden = true
+
+  const eyeButton = opts.onSelect
+    ? iconButton(pager, {
+      icon: Icons.visible({ className: 'ds-iconbtn__svg' }),
+      tip: 'Select this element; the strip below restores the selection',
+      className: 'vim-ds-bim-info__eye',
+      onClick: () => collapseToShown()
+    })
+    : undefined
+
+  const write = (elements: Core.Webgl.IElement3D[]) => {
+    written = elements
+    opts.onSelect?.(elements)
+  }
+
+  const syncBack = () => {
+    back.hidden = restore === undefined
+    if (restore) back.textContent = `‹ Back to the ${restore.length} selected`
+  }
+
+  const collapseToShown = () => {
+    const objects = shown()
+    const target = objects.length > 1 ? objects[pageIndex() - 1] : undefined
+    if (!target) return
+    restore = objects
+    // Back returns to the very page the eye was pressed on.
+    restorePage = page.get()
+    syncBack()
+    write([target])
+  }
+
+  back.addEventListener('click', () => {
+    const previous = restore
+    restore = undefined
+    syncBack()
+    if (!previous) return
+    pendingPage = restorePage
+    write(previous)
+  })
+
+  /** The page to land on once the restored selection echoes back. */
+  let pendingPage: string | undefined
+
   // A parameter is stored as a 'raw|display' pair; this reads the other half, as Flex's own
   // Show raw values does. Remembered, because whoever wants raw values wants them all session.
   const showRaw = createSettingState(() => false, { storageKey: 'vim.params.raw' })
@@ -113,7 +181,7 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
   const scroll = document.createElement('div')
   scroll.className = 'vim-ds-bim-info__scroll'
   scroll.append(loading, header, note, tools, body)
-  root.append(pager, scroll)
+  root.append(pager, back, scroll)
 
   let headerContent: GenericContentHandle | undefined
   let bodyContent: GenericContentHandle | undefined
@@ -149,6 +217,8 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
     pageSelect.setOptions(options)
     previous.disabled = pageIndex() <= 0
     next.disabled = pageIndex() >= reach
+    // Greyed on the summary rather than hidden, so the buttons never shift underfoot.
+    eyeButton?.setDisabled(pageIndex() < 1)
   }
 
   const clear = () => {
@@ -205,10 +275,19 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
       syncPager()
       load()
     }),
-    // A new selection is a new summary: the pager starts over rather than landing on whichever
-    // element happened to sit at the old page's number.
-    opts.objects.onChange.subscribe(() => {
-      page.set('0')
+    opts.objects.onChange.subscribe(elements => {
+      const echo = written !== undefined && sameElements(written, elements)
+      written = undefined
+      // The eye's own echo keeps its offer; any other selection means the reader moved on.
+      if (!echo) {
+        restore = undefined
+        syncBack()
+      }
+      // A new selection is a new summary: the pager starts over rather than landing on whichever
+      // element happened to sit at the old page's number. The exception is the strip's own echo,
+      // which lands on the page the eye was pressed on.
+      page.set(echo && pendingPage !== undefined ? pendingPage : '0')
+      pendingPage = undefined
       syncPager()
       load()
     }),
@@ -219,6 +298,7 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
     })
   ]
   syncPager()
+  syncBack()
   load()
 
   return {
@@ -228,10 +308,18 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
       generation++
       clearTimeout(timer)
       for (const u of unsubscribes) u()
+      eyeButton?.destroy()
       pageSelect.destroy()
       raw.destroy()
       clear()
       root.remove()
     }
   }
+}
+
+/** Whether two selections hold the same elements, order aside. */
+function sameElements (a: Core.Webgl.IElement3D[], b: Core.Webgl.IElement3D[]) {
+  if (a.length !== b.length) return false
+  const set = new Set(a)
+  return b.every(e => set.has(e))
 }

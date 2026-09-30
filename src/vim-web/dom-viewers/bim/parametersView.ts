@@ -12,10 +12,17 @@ export const PARAMETERS_VIEW = 'parameters'
  * The Parameters tab of the right-hand panel: the BIM data of the selected
  * element, what a multi-selection shares, or the vim's own when nothing is
  * selected. Follows VIM Flex, where Parameters is a view beside the viewport
- * rather than a section of the tree panel, and is purely reactive — it never
- * writes the selection.
+ * rather than a section of the tree panel. It only reads the selection, with
+ * one exception the reader asks for: the pager's eye collapses a
+ * multi-selection to the element on show, and its strip puts the selection
+ * back.
  */
-export function parametersView (opts: { state: WebglState, api: BimInfoPanelApi }): ViewSpec {
+export function parametersView (opts: {
+  state: WebglState
+  api: BimInfoPanelApi
+  /** Writes the selection, for the pager's eye. Without it the view stays read-only. */
+  select?: (elements: Core.Webgl.IElement3D[]) => void
+}): ViewSpec {
   const { state, api } = opts
   const objects = createState<Core.Webgl.IElement3D[]>([])
   let info: BimInfoPanelHandle | undefined
@@ -27,7 +34,13 @@ export function parametersView (opts: { state: WebglState, api: BimInfoPanelApi 
       // Seed from whatever is already selected; the view may be opened long after the pick.
       objects.set(state.selection.get())
       unsubscribe = state.selection.onChange.subscribe(elements => objects.set(elements))
-      info = bimInfoPanel(host, { objects, vim: state.vim, elements: state.elements, api })
+      info = bimInfoPanel(host, {
+        objects,
+        vim: state.vim,
+        elements: state.elements,
+        api,
+        onSelect: opts.select
+      })
     },
     destroy: () => {
       unsubscribe?.()

@@ -431,9 +431,12 @@ viewer.contextMenu.customize((menu) => [
 
 ### Parameters View
 
-The Parameters tab reads the selection and never writes it. One element shows its own parameters;
-several show what they share, with `(varies)` where values differ, a note saying so and a pager
-(`‹ Summary ›`, reaching 200 elements) stepping into each element's own view. `Show raw values`
+The Parameters tab only reads the selection, with one exception the reader asks for. One element
+shows its own parameters; several show what they share, with `(varies)` where values differ, a note
+saying so and a pager (`‹ Summary ›`, reaching 200 elements) stepping into each element's own view.
+The pager's eye collapses the selection to the element on show and a strip puts it back; it appears
+only when the view is given a `select` writer, and it recognizes its own echo by comparing the
+selection it wrote, since our selection observable carries no cause. `Show raw values`
 reads the other half of the stored `raw|display` pair, which `getBimParameters()` returns as
 `BimParameter.rawValue` beside `value`.
 

@@ -157,7 +157,11 @@ export async function createDomWebglViewer (
   on(refs.panelBimTree.onChange, buildBimPage)
 
   // Element data is a view of the right-hand panel, not part of the tree page.
-  views.register(PARAMETERS_VIEW, () => parametersView({ state, api: bimInfo }))
+  views.register(PARAMETERS_VIEW, () => parametersView({
+    state,
+    api: bimInfo,
+    select: elements => core.selection.select(elements)
+  }))
   views.register(SETTINGS_VIEW, () => settingsView({
     entries: () => getWebglSettingsContent(core, isolation, renderSettings, sectionBox, refs, fullSettings.ui)
   }))
