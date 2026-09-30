@@ -612,9 +612,14 @@
 }
 /* Grouping chrome: the Group by strip and the drawer its ≡ opens, after VIM Flex's pair. */
 /* The design system's panel head pads by 12px, so the chrome under it does too: the drawer's ≡ and
-   the search box then stand in the same column as the head's close button. */
+   the search box then stand in the same column as the head's close button.
+
+   It also yields first when the panel is short: an open drawer scrolls inside whatever is left
+   rather than pushing the tree out of the page. */
 .vim-ds-grouping {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   padding: var(--ds-space-2) var(--ds-space-3) 0;
@@ -913,9 +918,10 @@
   flex: 1 1 auto;
   min-width: 0;
 }
+/* The tree keeps a floor: whatever else the page is showing, it is the page. */
 .vim-ds-bim-tree {
   flex: 1 1 auto;
-  min-height: 0;
+  min-height: 96px;
   display: flex;
   flex-direction: column;
 }
