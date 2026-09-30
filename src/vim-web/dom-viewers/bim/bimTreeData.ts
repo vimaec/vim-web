@@ -163,6 +163,19 @@ export class BimTreeData {
     return [...new Set(nodeIds.flatMap(id => this.getAncestors(id)))]
   }
 
+  /** Whichever of these nodes comes first in tree order, for a reveal that has several to choose from. */
+  firstInOrder(ids: string[]): string | undefined {
+    let best: string | undefined
+    let bestOrder = Infinity
+    for (const id of ids) {
+      const order = this._idToOrder.get(id)
+      if (order === undefined || order >= bestOrder) continue
+      best = id
+      bestOrder = order
+    }
+    return best
+  }
+
   /** Returns all node IDs between start and end (inclusive) in tree order. O(1) lookup + O(range) slice. */
   getRange(start: string, end: string): string[] {
     const startIdx = this._idToOrder.get(start)

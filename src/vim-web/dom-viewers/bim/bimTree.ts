@@ -118,6 +118,11 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
   const parts = new WeakMap<HTMLElement, { check: HTMLElement, tag: HTMLElement, label: HTMLElement, count: HTMLElement }>()
 
   let treeOrigin = false
+  // Whether the roving focus was seated by the keyboard. A mouse gesture seats the index so the
+  // arrows continue from there, but leaves the ring off: a click already says where it landed
+  // through the selection, and Flex draws the same distinction.
+  let focusFromKey = false
+  let focusFromClick = false
   let rangeAnchor = ROOT_ID
   const lastClick = { target: '', time: 0 }
 
@@ -160,7 +165,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     for (let i = win.firstIndex; i <= win.lastIndex; i++, k++) {
       const row = pool[k] ?? (pool[k] = rows.appendChild(createRow()))
       const item = items[i]
-      bindRow(row, item, selected.has(item.getId()), item.getId() === state.focusedItem)
+      bindRow(row, item, selected.has(item.getId()), focusFromKey && item.getId() === state.focusedItem)
     }
     while (pool.length > k) {
       const row = pool.pop()!
@@ -378,6 +383,9 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
         const now = Date.now()
         if (lastClick.target === id && now - lastClick.time < DOUBLE_CLICK_MS) {
           framing.frameSelection.call()
+          // Flex opens a group on a double-click; ours frames it too, which is the viewer's own
+          // gesture and the reason the tree has one.
+          if (item.isFolder() && !item.isExpanded()) item.expand()
           lastClick.target = ''
           lastClick.time = 0
         } else {
@@ -391,6 +399,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
       setSelectedItems: scheduleRender,
       // The hook fires after the state is applied; read it rather than the (value | updater) argument.
       setFocusedItem: () => {
+        focusFromKey = !focusFromClick
         scheduleRender()
         const id = tree?.getState().focusedItem
         if (id) revealItem(id)
@@ -451,10 +460,23 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
       .map(e => d.getNodeFromElement(e.element))
       .filter((id): id is string => id !== undefined)
     tree.setSelectedItems(d.getSelection(elements.map(e => e.element)))
-    if (ids.length > 0) revealItem(ids[ids.length - 1])
+    // The first of them in tree order, not the last one picked: a rectangle hands over its
+    // elements in no particular order, and the top of the marked run is where a reader looks.
+    const first = d.firstInOrder(ids)
+    if (first !== undefined) revealItem(first)
   }
 
-  /** Tree → viewer: click, shift-click (range), ctrl-click (toggle). */
+  /** Whether the selection is exactly these elements and nothing else. */
+  const isWholeSelection = (elements: IElement3D[]) =>
+    elements.length > 0 &&
+    viewer.selection.count() === elements.length &&
+    elements.every(e => viewer.selection.has(e))
+
+  /**
+   * Tree → viewer: click, shift-click (range, additive with ctrl), ctrl-click (toggle). A plain
+   * click on the row that is already the whole selection releases it — Flex's one in-tree way to
+   * drop a selection, and ours too now that a viewport click is not the only way back to nothing.
+   */
   const select = (e: MouseEvent, item: Item) => {
     if (!tree || !data) return
     const id = item.getId()
@@ -463,8 +485,15 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     try {
       if (e.shiftKey) {
         const range = data.getRange(rangeAnchor, id)
-        viewer.selection.select(data.getElementsFromNodes(range.flatMap(r => data!.getLeafs(r))))
-        tree.setSelectedItems(range)
+        const elements = data.getElementsFromNodes(range.flatMap(r => data!.getLeafs(r)))
+        if (e.ctrlKey || e.metaKey) {
+          // Ctrl with shift adds the range to the selection instead of replacing it.
+          viewer.selection.add(elements)
+          tree.setSelectedItems([...new Set([...tree.getState().selectedItems, ...range])])
+        } else {
+          viewer.selection.select(elements)
+          tree.setSelectedItems(range)
+        }
       } else if (e.ctrlKey || e.metaKey) {
         const elements = data.getLeafElements(id)
         if (item.isSelected()) {
@@ -476,15 +505,29 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
         }
         rangeAnchor = id
       } else {
-        viewer.selection.select(data.getLeafElements(id))
-        tree.setSelectedItems([id])
+        const elements = data.getLeafElements(id)
+        // `detail < 2` keeps the second half of a double-click out of this: the first click made
+        // the row the whole selection, and without the guard the second would drop it again.
+        if (e.detail < 2 && isWholeSelection(elements)) {
+          viewer.selection.clear()
+          tree.setSelectedItems([])
+        } else {
+          viewer.selection.select(elements)
+          tree.setSelectedItems([id])
+        }
         rangeAnchor = id
       }
     } finally {
       treeOrigin = false
     }
     item.primaryAction()
-    item.setFocused()
+    // Seats the roving index without lighting its ring — see focusFromKey.
+    focusFromClick = true
+    try {
+      item.setFocused()
+    } finally {
+      focusFromClick = false
+    }
   }
 
   const toggleVisibility = (item: Item) => {
