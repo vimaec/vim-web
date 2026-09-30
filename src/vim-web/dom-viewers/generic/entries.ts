@@ -58,6 +58,8 @@ export type GenericReadonlyEntry = {
   id: string
   label: string
   value: string
+  /** A second, quieter value column, rendered only where the host asks for one (`raw`). */
+  rawValue?: string
   visible?: () => boolean
   renderValue?: () => Element | string
 }

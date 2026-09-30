@@ -42,7 +42,14 @@ function headerEntryToGeneric (entry: Entry, i: number, api: BimInfoPanelApi): G
 function bodyEntryToReadonly (entry: Entry, i: number, api: BimInfoPanelApi): GenericEntryType {
   const render = api.onRenderBodyEntryValue
   const renderValue = render ? () => render({ data: entry, standard: textOf(entry.value) }) : undefined
-  return { type: 'readonly', id: entryId('be', entry.key, i), label: entry.label ?? '', value: entry.value ?? '', renderValue }
+  return {
+    type: 'readonly',
+    id: entryId('be', entry.key, i),
+    label: entry.label ?? '',
+    value: entry.value ?? '',
+    rawValue: entry.rawValue,
+    renderValue
+  }
 }
 
 function bodyEntryToGeneric (entry: Entry, i: number, api: BimInfoPanelApi): GenericEntryType {

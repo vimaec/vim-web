@@ -12,8 +12,7 @@ export const VARIES = '(varies)'
 
 export async function getObjectData (
   object: Core.Webgl.IElement3D,
-  elements: AugmentedElement[],
-  raw = false
+  elements: AugmentedElement[]
 ) : Promise<BIM.Data> {
   const element = object
     ? elements.find((e) => e.index === object.element)
@@ -21,7 +20,7 @@ export async function getObjectData (
 
   const [header, body] = await Promise.all([
     getHeader(element),
-    getBody(object, raw)
+    getBody(object)
   ])
 
   return { header, body }
@@ -35,15 +34,14 @@ export async function getObjectData (
  */
 export async function getSelectionData (
   objects: Core.Webgl.IElement3D[],
-  elements: AugmentedElement[],
-  raw = false
+  elements: AugmentedElement[]
 ): Promise<BIM.Data> {
   const byIndex = new Map(elements.map(e => [e.index, e]))
   const selected = objects.map(o => byIndex.get(o.element)).filter(e => e !== undefined)
 
   const [header, body] = await Promise.all([
     Promise.resolve(getSharedHeader(selected)),
-    getSharedBody(objects, raw)
+    getSharedBody(objects)
   ])
 
   return {
@@ -75,7 +73,7 @@ function getSharedHeader (infos: AugmentedElement[]): BIM.Entry[] | undefined {
 }
 
 /** The parameters every selected element carries, valued or marked `(varies)`. */
-async function getSharedBody (objects: Core.Webgl.IElement3D[], raw: boolean): Promise<BIM.Section[]> {
+async function getSharedBody (objects: Core.Webgl.IElement3D[]): Promise<BIM.Section[]> {
   // The parameters come from the vim's own cache, so this is a lookup per element rather than a
   // query per element — a whole-model selection stays a handful of milliseconds.
   const all = await Promise.all(objects.map(o => o.getBimParameters()))
@@ -83,20 +81,24 @@ async function getSharedBody (objects: Core.Webgl.IElement3D[], raw: boolean): P
   if (present.length === 0) return null
 
   const key = (p: ElementParameter) => `${p.isInstance ? 'i' : 't'}|${p.group ?? ''}|${p.name ?? ''}`
-  // Compared as shown: raw values can differ where the displayed ones agree, and the reader should
-  // be told about the values in front of them.
   const shared = new Map<string, ElementParameter>()
   for (const p of present[0]) {
     if (!acceptParameter(p) || shared.has(key(p))) continue
-    shared.set(key(p), { ...p, value: shownValue(p, raw) })
+    shared.set(key(p), { ...p })
   }
+  // Each half is compared on its own: two elements can store different raw values behind the same
+  // displayed one, and a reader looking at the raw column deserves to be told.
   for (let i = 1; i < present.length && shared.size > 0; i++) {
     const mine = new Map<string, ElementParameter>()
     for (const p of present[i]) if (!mine.has(key(p))) mine.set(key(p), p)
     for (const [k, entry] of shared) {
       const match = mine.get(k)
-      if (!match) shared.delete(k)
-      else if (shownValue(match, raw) !== entry.value) entry.value = VARIES
+      if (!match) {
+        shared.delete(k)
+        continue
+      }
+      if (match.value !== entry.value) entry.value = VARIES
+      if (match.rawValue !== entry.rawValue) entry.rawValue = VARIES
     }
   }
   return toSections([...shared.values()])
@@ -139,19 +141,11 @@ export function getHeader (info: AugmentedElement | undefined): BIM.Entry[] | un
 }
 
 export async function getBody (
-  object: Core.Webgl.IElement3D,
-  raw = false
+  object: Core.Webgl.IElement3D
 ): Promise<BIM.Section[]> {
   const parameters = await object?.getBimParameters()
   if (!parameters) return null
-  return toSections(
-    parameters.filter((p) => acceptParameter(p)).map(p => ({ ...p, value: shownValue(p, raw) }))
-  )
-}
-
-/** Which half of the stored pair to show. */
-function shownValue (parameter: ElementParameter, raw: boolean) {
-  return raw ? (parameter.rawValue ?? parameter.value) : parameter.value
+  return toSections(parameters.filter((p) => acceptParameter(p)))
 }
 
 /** The instance / type split, each grouped by the parameter's own Revit group, in Revit's order. */
@@ -186,7 +180,10 @@ function parameterToEntry (element: ElementParameter, index : number): BIM.Entry
   return {
     key: `${element.name ?? ''}-${index}`,
     label: element.name ?? '',
-    value: element.value ?? ''
+    value: element.value ?? '',
+    // A row whose displayed value varies says so once; its raw column stays empty rather than
+    // repeating the word, which is how Flex reads a mixed row.
+    rawValue: element.value === VARIES ? '' : element.rawValue
   }
 }
 

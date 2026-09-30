@@ -8,6 +8,11 @@ export type Entry = {
   label: string | undefined
   /** The value of the entry, displayed to the user. */
   value: string | undefined
+  /**
+   * The stored value behind `value`, shown in its own column while `Show raw values` is on. Empty
+   * says there is nothing to show for this row; undefined says none was recorded.
+   */
+  rawValue?: string
 }
 
 /** A group of entries within a body section of the BIM info panel. */

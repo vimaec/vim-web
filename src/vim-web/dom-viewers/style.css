@@ -889,6 +889,25 @@
   flex: none;
   color: var(--text-300);
 }
+/* With the raw column on, the key column gives way rather than the values: two value columns of
+   equal width, as Flex splits them. */
+.vim-ds-bim-info--raw .vim-ds-group--accent > .vim-ds-group__body {
+  grid-template-columns: minmax(80px, 28%) 1fr 1fr;
+}
+/* The stored value reads as machine text beside the displayed one, and dims to a dash where it has
+   nothing of its own to say. */
+.vim-ds-entry__raw {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: var(--ds-fs-small);
+  color: var(--text-300);
+}
+.vim-ds-entry__raw[data-quiet] {
+  color: var(--text-500);
+}
 /* A parameter value wraps rather than truncating: an id or a level path is the whole point of the
    row, and there is nowhere else to read it. */
 .vim-ds-list--flat .vim-ds-entry__value {

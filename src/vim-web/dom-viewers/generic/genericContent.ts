@@ -1,6 +1,6 @@
 import { createCollapse, createDivider } from '../ds'
 import { checkbox, input, numberInput, select, TIP_ATTR } from '../components'
-import type { GenericControlEntry, GenericEntryType, GenericNumberEntry } from './entries'
+import type { GenericControlEntry, GenericEntryType, GenericNumberEntry, GenericReadonlyEntry } from './entries'
 
 type Section = { id: string, label: string, items: GenericEntryType[] }
 type Group = { id: string, label: string, sections: Section[] }
@@ -63,7 +63,7 @@ function mountControl (host: HTMLElement, entry: GenericControlEntry): Control {
   }
 }
 
-function renderEntry (host: HTMLElement, entry: GenericEntryType): Rendered {
+function renderEntry (host: HTMLElement, entry: GenericEntryType, opts: GenericContentOptions): Rendered {
   // Groups and sections are laid out by the hierarchy; a stray section in a flat list becomes a divider.
   if (entry.type === 'group') return { sync: noop, destroy: noop }
   if (entry.type === 'section') {
@@ -97,6 +97,7 @@ function renderEntry (host: HTMLElement, entry: GenericEntryType): Rendered {
     else value.appendChild(content)
     value.setAttribute(TIP_ATTR, entry.value)
     cell.appendChild(value)
+    if (opts.raw) row.appendChild(rawCell(entry))
     return {
       sync: () => { row.hidden = entry.visible?.() === false },
       destroy: () => row.remove()
@@ -122,6 +123,11 @@ function renderEntry (host: HTMLElement, entry: GenericEntryType): Rendered {
 
 export type GenericContentOptions = {
   /**
+   * Gives every readonly row a second, quieter column for its `rawValue` — the stored value beside
+   * the displayed one, rather than in place of it. The host sizes the extra column.
+   */
+  raw?: boolean
+  /**
    * Draws headings VIM Flex's way instead of the design system's bands: a caret, an accented
    * uppercase title and the row count, over a hairline. The parameters view uses it; a settings
    * list keeps the bands, which carry more weight and suit a short list of controls.
@@ -136,6 +142,21 @@ export type GenericContentHandle = {
   /** Opens or closes every heading at once. */
   setAllOpen (open: boolean): void
   destroy (): void
+}
+
+/**
+ * The raw column of one row. It has something to say only when a raw value was recorded, is not
+ * the empty marker a varying row leaves behind, and differs from what is already displayed;
+ * otherwise it dashes, so the column reads as a column rather than a duplicate.
+ */
+function rawCell (entry: GenericReadonlyEntry) {
+  const raw = document.createElement('span')
+  raw.className = 'vim-ds-entry__raw'
+  const speaks = entry.rawValue !== undefined && entry.rawValue !== '' && entry.rawValue !== entry.value
+  raw.textContent = entry.rawValue === '' ? '' : speaks ? entry.rawValue! : '—'
+  raw.toggleAttribute('data-quiet', !speaks)
+  if (speaks) raw.setAttribute(TIP_ATTR, entry.rawValue!)
+  return raw
 }
 
 /** A Flex-style heading: caret, title, count, and the rows beneath it. */
@@ -191,7 +212,7 @@ export function genericContent (
   const foldables: Foldable[] = []
 
   const renderList = (target: HTMLElement, entries: GenericEntryType[]) => {
-    for (const entry of entries) rendered.push(renderEntry(target, entry))
+    for (const entry of entries) rendered.push(renderEntry(target, entry, opts))
   }
   const renderSection = (target: HTMLElement, section: Section) => {
     if (!section.label) {

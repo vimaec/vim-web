@@ -145,6 +145,7 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
   // A parameter is stored as a 'raw|display' pair; this reads the other half, as Flex's own
   // Show raw values does. Remembered, because whoever wants raw values wants them all session.
   const showRaw = createSettingState(() => false, { storageKey: 'vim.params.raw' })
+  const syncRaw = () => root.classList.toggle('vim-ds-bim-info--raw', showRaw.get())
 
   // Flex's group tools, above the groups they act on, sharing their row with the raw toggle.
   const tools = document.createElement('div')
@@ -235,7 +236,7 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
     tools.hidden = !data?.body?.length
     if (!data) return
     headerContent = genericContent(header, headerToEntries(data, opts.api))
-    bodyContent = genericContent(body, bodyToEntries(data, opts.api), { flat: true })
+    bodyContent = genericContent(body, bodyToEntries(data, opts.api), { flat: true, raw: showRaw.get() })
   }
 
   const load = () => {
@@ -257,8 +258,8 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
       let data = objects.length === 0
         ? await getVimData(vim)
         : objects.length === 1 || paged
-          ? await getObjectData(target, opts.elements.get(), showRaw.get())
-          : await getSelectionData(objects, opts.elements.get(), showRaw.get())
+          ? await getObjectData(target, opts.elements.get())
+          : await getSelectionData(objects, opts.elements.get())
       if (gen !== generation) return
       // Yield again so the browser can paint between the query and the render.
       await tick()
@@ -270,7 +271,10 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
   }
 
   const unsubscribes = [
-    showRaw.onChange.subscribe(load),
+    showRaw.onChange.subscribe(() => {
+      syncRaw()
+      load()
+    }),
     page.onChange.subscribe(() => {
       syncPager()
       load()
@@ -299,6 +303,7 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
   ]
   syncPager()
   syncBack()
+  syncRaw()
   load()
 
   return {
