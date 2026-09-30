@@ -1,8 +1,9 @@
 import type * as Core from '../../core-viewers'
 import type { StateRef } from '../../state'
 import { genericContent, type GenericContentHandle } from '../generic'
-import { checkbox } from '../components'
+import { checkbox, select, type SelectOption } from '../components'
 import { createSettingState } from '../state/settingState'
+import { createState } from '../../state'
 import { getObjectData, getSelectionData } from '../bim/bimInfoObject'
 import { getVimData } from '../bim/bimInfoVim'
 import type { AugmentedElement } from '../helpers/element'
@@ -10,6 +11,13 @@ import type { BimInfoPanelApi, Data } from './bimInfoApi'
 import { bodyToEntries, headerToEntries } from './bimInfoEntries'
 
 const DEBOUNCE_MS = 50
+
+/**
+ * How far the pager reaches into a selection. A rectangle takes thousands at a time and an option
+ * each is a list nobody walks; the summary still speaks for the whole selection, and the pager says
+ * how many elements it does not page through. VIM Flex draws the same line at the same place.
+ */
+const MAX_NAVIGATED = 200
 
 export type BimInfoPanelOptions = {
   /**
@@ -40,6 +48,31 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
   const root = document.createElement('div')
   root.className = 'vim-ds-bim-info'
   host.appendChild(root)
+
+  // Which page the panel is on: 0 is the shared summary, n is the nth selected element's own view.
+  const page = createState('0')
+  const pageIndex = () => Number(page.get())
+
+  // The pager: a slim strip of its own above the panel, as Flex heads its multi-selection.
+  const pager = document.createElement('div')
+  pager.className = 'vim-ds-bim-info__pager'
+  const step = (label: string, tip: string, delta: number) => {
+    const button = document.createElement('button')
+    button.type = 'button'
+    button.className = 'vim-ds-bim-info__step'
+    button.textContent = label
+    button.setAttribute('aria-label', tip)
+    button.addEventListener('click', () => page.set(String(pageIndex() + delta)))
+    pager.appendChild(button)
+    return button
+  }
+  const previous = step('‹', 'Previous element', -1)
+  const pageSelect = select(pager, {
+    state: page,
+    options: [{ value: '0', label: 'Summary' }],
+    className: 'vim-ds-bim-info__pagesel'
+  })
+  const next = step('›', 'Next element', 1)
 
   // A parameter is stored as a 'raw|display' pair; this reads the other half, as Flex's own
   // Show raw values does. Remembered, because whoever wants raw values wants them all session.
@@ -80,13 +113,43 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
   const scroll = document.createElement('div')
   scroll.className = 'vim-ds-bim-info__scroll'
   scroll.append(loading, header, note, tools, body)
-  root.appendChild(scroll)
+  root.append(pager, scroll)
 
   let headerContent: GenericContentHandle | undefined
   let bodyContent: GenericContentHandle | undefined
   let generation = 0
   let timer: ReturnType<typeof setTimeout> | undefined
   const tick = () => new Promise<void>(r => setTimeout(r, 0))
+
+  /** The elements the panel is showing, in selection order. */
+  const shown = () => opts.objects.get().filter(o => o.type === 'Element3D')
+
+  /**
+   * Names each navigable element in the dropdown and says how many the pager leaves out. Rebuilt
+   * per selection rather than per render: the options are the selection.
+   */
+  const syncPager = () => {
+    const objects = shown()
+    pager.hidden = objects.length < 2
+    if (objects.length < 2) return
+    const reach = Math.min(objects.length, MAX_NAVIGATED)
+    const byIndex = new Map(opts.elements.get().map(e => [e.index, e]))
+    const options: SelectOption[] = [{
+      value: '0',
+      label: objects.length > reach
+        ? `Summary (${objects.length} elements, first ${reach} navigable)`
+        : `Summary (${objects.length} elements)`
+    }]
+    for (let i = 0; i < reach; i++) {
+      const info = byIndex.get(objects[i].element)
+      const name = info?.familyTypeName ?? info?.categoryName ?? ''
+      const id = info?.id?.toString()
+      options.push({ value: String(i + 1), label: id ? `#${id} ${name}`.trim() : `Element ${objects[i].element}` })
+    }
+    pageSelect.setOptions(options)
+    previous.disabled = pageIndex() <= 0
+    next.disabled = pageIndex() >= reach
+  }
 
   const clear = () => {
     headerContent?.destroy()
@@ -109,7 +172,7 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
     clearTimeout(timer)
     const gen = ++generation
     timer = setTimeout(async () => {
-      const objects = opts.objects.get().filter(o => o.type === 'Element3D')
+      const objects = shown()
       const vim = opts.vim.get()
       if (objects.length === 0 && !vim) {
         render(undefined)
@@ -117,11 +180,13 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
       }
       await tick()
       if (gen !== generation) return
-      // One element reads as itself; several read as what they share; none falls back to the vim.
-      const target = objects[0]
+      // One element reads as itself; several read as what they share, until the pager steps into
+      // one of them; none falls back to the vim.
+      const paged = objects.length > 1 ? objects[pageIndex() - 1] : undefined
+      const target = paged ?? objects[0]
       let data = objects.length === 0
         ? await getVimData(vim)
-        : objects.length === 1
+        : objects.length === 1 || paged
           ? await getObjectData(target, opts.elements.get(), showRaw.get())
           : await getSelectionData(objects, opts.elements.get(), showRaw.get())
       if (gen !== generation) return
@@ -136,10 +201,24 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
 
   const unsubscribes = [
     showRaw.onChange.subscribe(load),
-    opts.objects.onChange.subscribe(load),
+    page.onChange.subscribe(() => {
+      syncPager()
+      load()
+    }),
+    // A new selection is a new summary: the pager starts over rather than landing on whichever
+    // element happened to sit at the old page's number.
+    opts.objects.onChange.subscribe(() => {
+      page.set('0')
+      syncPager()
+      load()
+    }),
     opts.vim.onChange.subscribe(load),
-    opts.elements.onChange.subscribe(load)
+    opts.elements.onChange.subscribe(() => {
+      syncPager()
+      load()
+    })
   ]
+  syncPager()
   load()
 
   return {
@@ -149,6 +228,7 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
       generation++
       clearTimeout(timer)
       for (const u of unsubscribes) u()
+      pageSelect.destroy()
       raw.destroy()
       clear()
       root.remove()

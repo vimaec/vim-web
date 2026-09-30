@@ -696,6 +696,44 @@
   padding: var(--ds-space-2) var(--ds-space-3);
 }
 
+/* The multi-selection pager: ‹ Summary › over the panel, on its own strip so stepping through a
+   selection never moves the list under the pointer. */
+.vim-ds-bim-info__pager {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding: 3px var(--ds-space-2);
+  border-bottom: 1px solid var(--hairline);
+}
+.vim-ds-bim-info__pager[hidden] {
+  display: none;
+}
+.vim-ds-bim-info__pagesel {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.vim-ds-bim-info__step {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-300);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--ds-fs-value);
+  line-height: 1;
+}
+.vim-ds-bim-info__step:hover {
+  color: var(--text-100);
+}
+.vim-ds-bim-info__step:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
 /* Parameters, drawn as VIM Flex draws it: a labelled identity block, then groups whose heading is
    a caret, an accented title and a count over a hairline — no bands, and rows dense enough that a
    long parameter list reads as a list rather than a stack of controls. */
