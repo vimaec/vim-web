@@ -10,9 +10,9 @@ Every item below names what Flex does, what we do today, and what to change. Ite
 called out directly. Nothing here invents a feature: anything needing the query layer or core work
 is called out as blocked rather than planned.
 
-**Status after round 3:** T1–T10 and S1–S2 are done; each carries the commit that closed it. S3
-and S4 are settled without a change, for the reasons recorded under them. S5 stays blocked
-upstream. The parameters pane got its own round (P1–P5). G1, the grouping drawer, is what is left.
+**Status after round 4:** T1–T10, S1–S2, P1–P5 and G1 are done; each carries the commit that
+closed it. S3 and S4 are settled without a change, for the reasons recorded under them. S5 stays
+blocked upstream, and is the only item left open.
 
 ## Tree
 
@@ -198,9 +198,9 @@ cause, so the write is remembered and its echo recognized by contents.
 **Not adopted:** the per-row filter funnel (it wants tree rules) and compare mode (it wants a second
 model). Both are query-layer features.
 
-## For round 4
+## Done in round 4
 
-### G1. The grouping drawer
+### G1. The grouping drawer — done (`e5572d04`)
 
 **Flex** opens a drawer off the GROUP BY strip: reorder the levels (drag, Up, Down), remove one
 (×), add one by family with per-model availability (IDENTITY: Category, Family, Type, Family Type;
@@ -209,11 +209,24 @@ workflow's default nesting.
 
 **Ours** is a `Group by` select over three fixed presets, each a fixed three-level nesting.
 
-**Feasible without the query layer.** `toTreeData` builds the nesting from `AugmentedElement`
-fields, so an ordered, editable level list over the columns we actually have — Category, Family,
-Type, Workset, Level, BIM Document — is a UI change, not a data one. Room and Domain have no data
-here and would be offered only once they do. The tier-tag toggle, which T2 left out for want of a
-place to put it, belongs in the same drawer.
+**Done, without the query layer.** `toTreeData` builds the nesting from `AugmentedElement` fields,
+so the ordered list is a UI change: the strip is numbered pills, the drawer is a row per level with
+its family tag and move-up / move-down / remove, the fixed Element terminal row, ADD GROUP chips by
+family, the tier-tag toggle (the switch T2 was missing) and a reset. The columns are the six we can
+read; Room and Domain stay out, since a column we cannot read is worse than one we do not offer.
+
+Flex probes its database for which columns a model has values for; we scan the elements already in
+hand for the same answer, so a column the model says nothing about is offered struck through rather
+than silently producing one `(none)` band.
+
+A stored nesting is guarded per column, so a preset string from an older build falls back to the
+default instead of breaking the tree.
+
+**Two divergences, both about a 340px panel.** Flex reorders by dragging a row's grip; the arrows
+say the same thing in a panel this narrow, so that is all the drawer offers. And Flex ends its strip
+with a `· Element` leaf indicator, which costs more width than it says when the pills are the
+information and the drawer's terminal row states it anyway — dropping it is what lets the default
+three levels read in full on one line.
 
 ## Closed inspections
 
@@ -257,8 +270,10 @@ is not the second half of a double-click, and the row is the whole selection.
 ## Order
 
 Round 2 ran T1, S1, S2, then T2, then T3 with T5's count on top of it, then T4. Round 3 ran the
-header sort, the parameters pane (P1–P5) and the click vocabulary (T7, T8, T9, T10). Each was
-built, verified live and committed on its own.
+header sort, the parameters pane (P1–P5) and the click vocabulary (T7, T8, T9, T10). Round 4 ran
+G1, the grouping drawer. Each was built, verified live and committed on its own.
 
-Round 4 is **G1**, the grouping drawer, which is also where T2's tier-tag toggle goes. **S5** still
-waits on the design system.
+**S5** is all that is left, and it waits on the design system gaining SVG paths for its
+glyph-named icons. What remains unmatched beyond that is query-layer work — Flex's tree rules and
+filter drawer, the per-row parameter funnel, compare mode, marquee selection — which needs a
+database we do not have, not a round of parity.

@@ -429,6 +429,15 @@ viewer.contextMenu.customize((menu) => [
 ])
 ```
 
+### Tree Grouping
+
+The tree groups by an ordered list of columns (`GroupingColumn`: Category, Family, Type, Workset,
+Level, BIM Document), edited through `bim/bimGrouping.ts` — the `Group by` strip and the drawer its
+≡ opens, after VIM Flex's own pair. `toTreeData(vim, elements, columns)` builds the nesting from
+`AugmentedElement` fields, and `BimTreeData.columns` is what the level pills read. The nesting and
+the tier-tag switch persist (`vim.bim.grouping`, `vim.bim.tierTags`), and a stored nesting is
+guarded per column so an unknown one falls back to `DEFAULT_GROUPING`.
+
 ### Parameters View
 
 The Parameters tab only reads the selection, with one exception the reader asks for. One element
