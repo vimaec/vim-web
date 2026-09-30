@@ -67,6 +67,7 @@ export function sectionBoxSection (
       {
         id: Ids.sectioningAuto,
         tip: () => section.auto.get() ? 'Disable Auto Section' : 'Auto Section',
+        auto: true,
         enabled: () => section.active.get() && isTrue(settings.sectioningAuto),
         isOn: () => section.auto.get(),
         action: () => section.auto.set(!section.auto.get()),
@@ -119,6 +120,7 @@ export function cameraSection (camera: FramingApi, settings: ControlBarCameraSet
         id: Ids.cameraAuto,
         enabled: () => isTrue(settings.cameraAuto),
         tip: () => camera.autoCamera.get() ? 'Disable Auto Camera' : 'Auto Camera',
+        auto: true,
         isOn: () => camera.autoCamera.get(),
         action: () => camera.autoCamera.set(!camera.autoCamera.get()),
         icon: Icons.autoCamera
@@ -126,6 +128,7 @@ export function cameraSection (camera: FramingApi, settings: ControlBarCameraSet
       {
         id: Ids.cameraFrameSelection,
         enabled: () => isTrue(settings.cameraFrameSelection),
+        dividerBefore: true,
         tip: 'Frame Selection',
         action: () => camera.frameSelection.call(),
         icon: Icons.frameSelection
@@ -142,7 +145,6 @@ export function cameraSection (camera: FramingApi, settings: ControlBarCameraSet
 }
 
 export function visibilitySection (isolation: IsolationApi, settings: ControlBarVisibilitySettings): ControlBarSection {
-  const someVisible = () => isolation.hasVisibleSelection() || !isolation.hasHiddenSelection()
   return {
     id: Ids.visibilitySpan,
     variant: 'default',
@@ -166,28 +168,31 @@ export function visibilitySection (isolation: IsolationApi, settings: ControlBar
         isOn: () => !isolation.autoIsolate.get() && isolation.visibility.get() !== 'all',
         variant: 'disabled'
       },
+      // One button for both halves, as in VIM Flex: the slash shows what the press WILL do, so a
+      // visible selection wears the struck eye (pressing hides it) and a hidden one the open eye.
       {
-        id: Ids.visibilityHideSelection,
-        enabled: () => someVisible() && isTrue(settings.visibilityToggle),
-        tip: 'Hide Selection',
-        action: () => isolation.hideSelection(),
-        icon: Icons.hideSelection,
-        isOn: () => !isolation.autoIsolate.get() && isolation.hasVisibleSelection(),
-        variant: 'disabled'
-      },
-      {
-        id: Ids.visibilityShowSelection,
-        enabled: () => !someVisible() && isTrue(settings.visibilityToggle),
-        tip: 'Show Selection',
-        action: () => isolation.showSelection(),
-        icon: Icons.showSelection,
-        isOn: () => !isolation.autoIsolate.get() && isolation.hasHiddenSelection(),
+        id: Ids.visibilityToggleSelection,
+        enabled: () => isTrue(settings.visibilityToggle),
+        tip: () => isolation.hasHiddenSelection() && !isolation.hasVisibleSelection()
+          ? 'Show Selection — V'
+          : 'Hide Selection — V',
+        action: () => {
+          if (isolation.hasVisibleSelection()) isolation.hideSelection()
+          else isolation.showSelection()
+        },
+        icon: Icons.visible,
+        slash: () => isolation.hasVisibleSelection(),
+        isOn: () => !isolation.autoIsolate.get() && isolation.hasSelection(),
         variant: 'disabled'
       },
       {
         id: Ids.visibilityIsolateSelection,
         enabled: () => isTrue(settings.visibilityIsolate),
-        tip: 'Isolate Selection',
+        dividerBefore: true,
+        // No slash here. VIM Flex strikes this one while THIS selection is the isolated view, which
+        // it knows from an `isolated` flag; our visibility is 'some' whenever anything is hidden, so
+        // a slash driven by it would lie. The lit state already says isolation is in force.
+        tip: 'Isolate Selection — I',
         action: () => isolation.isolateSelection(),
         icon: Icons.isolateSelection,
         isOn: () => !isolation.autoIsolate.get() && isolation.hasVisibleSelection() && isolation.visibility.get() === 'some',
@@ -197,6 +202,7 @@ export function visibilitySection (isolation: IsolationApi, settings: ControlBar
         id: Ids.visibilityAutoIsolate,
         enabled: () => isTrue(settings.visibilityAutoIsolate),
         tip: () => isolation.autoIsolate.get() ? 'Disable Auto Isolate' : 'Auto Isolate',
+        auto: true,
         action: () => isolation.autoIsolate.set(!isolation.autoIsolate.get()),
         isOn: () => isolation.autoIsolate.get(),
         icon: Icons.autoIsolate

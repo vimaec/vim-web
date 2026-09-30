@@ -258,9 +258,11 @@
 }
 .vim-ds-controlbar .ds-iconbtn,
 .vim-ds-axes .ds-iconbtn {
+  position: relative;
   width: 36px;
   height: 36px;
-  border: 0;
+  /* Transparent rather than absent, so the active state's border does not shift the icon. */
+  border: 1px solid transparent;
   border-radius: 50%;
   background: transparent;
   color: var(--text-300);
@@ -270,12 +272,39 @@
   background: var(--stage-600);
   color: var(--text-100);
 }
+/* The lit outline is reserved for state, matching VIM Flex: a tint and a cyan rim rather than a
+   solid fill, so a bar with several things on does not read as a row of buttons shouting. */
 .vim-ds-controlbar .ds-iconbtn.ds-active,
 .vim-ds-axes .ds-iconbtn.ds-active {
-  background: var(--vim-cyan);
-  color: var(--stage-950);
-  outline: 1px solid var(--vim-cyan);
-  outline-offset: 2px;
+  background: var(--vim-cyan-tint);
+  border-color: var(--vim-cyan);
+  color: var(--text-100);
+}
+/* An auto-* mode: the plain icon with a corner badge, so auto-camera and frame share one glyph. */
+.vim-ds-controlbar .ds-iconbtn[data-auto]::after {
+  content: "";
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 2px var(--stage-800);
+}
+/* A negated state, struck through the glyph: what the press will do (hide) or the state the view
+   is in (isolated). Which of the two is the button's own choice; its tip names the action. */
+.vim-ds-controlbar .ds-iconbtn[data-slash]::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: calc(50% - 1px);
+  height: 2px;
+  background: currentColor;
+  transform: rotate(-45deg);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--stage-800) 85%, transparent);
+  pointer-events: none;
 }
 .vim-ds-controlbar .ds-iconbtn .ds-iconbtn__svg,
 .vim-ds-axes .ds-iconbtn .ds-iconbtn__svg {

@@ -16,6 +16,10 @@ export type ControlBarButton = {
   variant?: ButtonVariant
   /** Draws a thin divider before this button, splitting the section's pill into groups. */
   dividerBefore?: boolean
+  /** Marks an auto-* mode with a corner badge, as VIM Flex marks its auto toggles. */
+  auto?: boolean
+  /** Strikes the icon through while true — a negated state (hidden, un-isolate). */
+  slash?: () => boolean
 }
 
 export type ControlBarSection = {
@@ -76,9 +80,14 @@ export function controlBar (host: HTMLElement, sections: ControlBarSection[]): C
       const handle = iconButton(section.el, {
         icon: def.icon({ className: ICON_CLASS }),
         on,
-        tip,
-        // Dispatch through the latest definition so customize() can swap actions.
-        onClick: () => section.buttons.get(def.id)?.def.action()
+        tip
+      })
+      // Fired on mousedown rather than click, as VIM Flex's bar does: one action per press, so a
+      // rapid second press is not swallowed as the second half of a double click.
+      handle.el.addEventListener('mousedown', event => {
+        if (event.button !== 0) return
+        event.preventDefault()
+        section.buttons.get(def.id)?.def.action()
       })
       entry = { handle, icon: def.icon, def }
       section.buttons.set(def.id, entry)
@@ -95,6 +104,8 @@ export function controlBar (host: HTMLElement, sections: ControlBarSection[]): C
     entry.handle.setDisabled(isDimmed(def, on))
     entry.handle.el.dataset.variant = def.variant ?? 'default'
     entry.handle.el.dataset.on = String(on)
+    entry.handle.el.toggleAttribute('data-auto', !!def.auto)
+    entry.handle.el.toggleAttribute('data-slash', def.slash?.() ?? false)
     // Re-appending keeps declaration order without rebuilding.
     if (def.dividerBefore) {
       if (!entry.divider) {

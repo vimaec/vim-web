@@ -18,10 +18,8 @@ export const controlBarIds = {
   visibilityClearSelection: 'controlBar.visibilityClearSelection',
   visibilityShowAll: 'controlBar.visibilityShowAll',
   visibilityIsolateSelection: 'controlBar.visibilityIsolateSelection',
-  visibilityHideSelection: 'controlBar.visibilityHideSelection',
-  visibilityShowSelection: 'controlBar.visibilityShowSelection',
+  visibilityToggleSelection: 'controlBar.visibilityToggleSelection',
   visibilityAutoIsolate: 'controlBar.visibilityAutoIsolate',
-  visibilitySettings: 'controlBar.visibilitySettings',
 
   // Section buttons
   sectioningSpan: 'controlBar.sectioningSpan',
@@ -30,7 +28,6 @@ export const controlBarIds = {
   sectioningFitSelection: 'controlBar.sectioningFitSelection',
   sectioningFitScene: 'controlBar.sectioningFitScene',
   sectioningAuto: 'controlBar.sectioningAuto',
-  sectioningSettings: 'controlBar.sectioningSettings',
 
   // Measure buttons
   measureSpan: 'controlBar.measureSpan',
