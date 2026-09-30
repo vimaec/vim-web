@@ -429,6 +429,14 @@ viewer.contextMenu.customize((menu) => [
 ])
 ```
 
+### Parameters View
+
+The Parameters tab reads the selection and never writes it. One element shows its own parameters;
+several show what they share, with `(varies)` where values differ, a note saying so and a pager
+(`‹ Summary ›`, reaching 200 elements) stepping into each element's own view. `Show raw values`
+reads the other half of the stored `raw|display` pair, which `getBimParameters()` returns as
+`BimParameter.rawValue` beside `value`.
+
 ### BIM Info Panel
 
 ```typescript
