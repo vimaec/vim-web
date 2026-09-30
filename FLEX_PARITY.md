@@ -1,4 +1,4 @@
-# VIM Flex parity — round 2
+# VIM Flex parity
 
 What VIM Flex's Explore workflow does that vim-web does not yet, gathered by reading
 `vim-renderer/run/cef-builtin` (the shell, `vf-element-tree`, `vf-tree-view`, `vf-data-tree`,
@@ -12,7 +12,10 @@ is called out as blocked rather than planned.
 
 **Status after round 4:** T1–T10, S1–S2, P1–P5 and G1 are done; each carries the commit that
 closed it. S3 and S4 are settled without a change, for the reasons recorded under them. S5 stays
-blocked upstream, and is the only item left open.
+blocked upstream.
+
+**Round 5** is the list below, from a fresh read of every control on Flex's Explore page. See
+[Round 5 inventory](#round-5-inventory).
 
 ## Tree
 
@@ -281,3 +284,138 @@ G1, the grouping drawer. Each was built, verified live and committed on its own.
 glyph-named icons. What remains unmatched beyond that is query-layer work — Flex's tree rules and
 filter drawer, the per-row parameter funnel, compare mode, marquee selection — which needs a
 database we do not have, not a round of parity.
+
+---
+
+# Round 5 inventory
+
+Taken by reading every control on Flex's Explore element-tree page — `explore.html`,
+`vf-element-tree`, `vf-data-settings`, `vf-data-filter`, `vf-filter-drawer`, `vf-display-editor`,
+`vf-export-modal`, `vf-grouping-drawer`, `vf-tree-view`, `vf-checked-rules`, `vf-presets` — and
+classifying each as plain UI over data in memory, or query-layer (it issues SQL over the model
+through DuckDB).
+
+Explore builds the page with every chrome part on at defaults: no `columns`, no
+`resizableColumns`, no `chrome` overrides, `display` on.
+
+## Feasible now — plain UI in Flex too
+
+### R1. The ROWS stepper
+
+Two `sm` icon buttons at the right of the VIEW row, no text label — `Collapse one level` and
+`Expand one level` — disabled at depth 0 and at the last grouping level, reset to 0 on every
+rebuild. Flex's own is plain UI at the group levels (`expandToLevel`), and only its last step is a
+query, because that one materializes leaves. Ours are already materialized, so the whole thing is
+plain UI here. This is the single best-value item on the list: a deep nesting is unusable without
+it.
+
+### R2. A total readout under the tree
+
+Flex's footer reads `Total elements` and the count, right-aligned. (In Hierarchy view it reads
+`<n> top-level · <n> embedded · <n> total`, which needs the hierarchy — see R10.) Ours has no
+footer at all, and the root node already carries the count the Elements column rolls up.
+
+### R3. What the search says
+
+Three wordings, all plain UI:
+
+- The box's placeholder is `Search name, type, id…`; ours says `Search elements…`.
+- While a filter narrows the list, Flex shows `N of M match` beside the FILTER BY pill. Ours says
+  nothing — a search that hides 3,000 rows reads the same as one that hides none.
+- An empty tree takes one of four exact strings: `No elements match this filter and search`,
+  `No elements match “<search>”`, `No elements match this filter`, `This model has no elements to
+  show`. Ours has one, `No results for "<search>"`, and a separate `Bim data not available . . .`.
+
+### R4. The rest of the tree's keyboard
+
+Flex binds `Home` / `End` to the first and last row, and `Enter` / `Space` to activate a row — the
+same path as a body click, Ctrl additive, deliberately *not* expansion. We bind the four arrows and
+nothing else.
+
+### R5. Export
+
+An `Export… (elements as CSV, or Revit ids)` icon on the VIEW row opens a 440px dialog: a
+`Selection only` / `All shown` scope (locked to All when nothing is selected), a live `→ N
+elements` line, an `ELEMENTS CSV` section with `Download…` and `Copy`, and a `REVIT IDS` section
+with one card per BIM document, each with its id count and a `Copy` that flips to `Copied ✓`.
+
+Flex's is query-layer because its rows live in DuckDB; every column it exports — ElementId,
+Domain, VIM, BIM Document, Workset, Level, Room, Category, Family, Type — is one we already hold on
+`AugmentedElement`, so ours would be a walk of the tree in memory. The one new thing is handing the
+file to the browser.
+
+### R6. Presets
+
+A button in the panel head carrying the active preset's name, a dot for unsaved drift, and a menu:
+the built-in `Default`, each saved preset (sub-line = the grouping joined by `›`), then
+`Save changes`, `Save as new…`, `Rename…`, `Delete…`, `Clear preset`. Flex snapshots
+`{tree, customSql, grouping, view, display}`. Ours would snapshot what we have: the grouping, the
+sort and the tier-tag switch. Plain UI in Flex, plain UI here.
+
+### R7. Colour the model by a grouping level
+
+Every GROUP BY pill in Flex is a button: pressing it colours the 3D by that column
+(`Color every element by <col>`), and pressing the lit one stops. Flex reaches it through its
+display-rule engine, which is query-layer — but the gesture does not have to be. We hold every
+element's value at every grouping level and `Element3D.color` takes a colour, so a palette over the
+distinct values at one level is plain UI here. The pill's `ds-active` state and tip already exist in
+our strip's markup.
+
+### R8. The collapse gutter
+
+A 12px strip down the left of the chrome that folds the whole bar into one line:
+`Filter: <summary> · Group by Category › Family / Type · Display: 2 rules`. Worth having only if
+our chrome grows past the grouping strip and the search box; noted so the next round does not
+reinvent it.
+
+## Blocked — query-layer
+
+None of these can be honest without a database over the model, and none of them is worth faking:
+
+- **R9. The FILTER BY row and its editor.** A boolean tree of sets (`ALL` / `ANY` / `NONE` /
+  `NOT ALL`), rules over seven facets plus parameters, per-rule counts and 3D previews, a value
+  picker with `Value` / `Raw value` / `Count`, eight operators, custom SQL with a probe, undo
+  toasts. Every choice list and every count is a query.
+- **R10. The VIEW segment** (`All elements` / `Hierarchy`) and the `⊕N` host drill-in. The segment
+  is disabled until a probe says the model carries hierarchy, and expanding a host leaf queries its
+  children.
+- **R11. The DISPLAY row and its rule editor.** Show / ghost / hide / colour rules over value sets,
+  gradients with statistics, an `Everything else` terminal rule. The rule *effects* are within our
+  reach (visibility and colour are ours), the *rule language* is not.
+- **R12. The checked-rules vocabulary.** Flex's tree checkboxes are filter rules with five ratified
+  states (`include`, `includeInherit`, `includePartial`, `exclude`, `excludeInherit`) and an
+  `−n exceptions` badge; every gesture materializes through SQL. Ours mean visibility, which is a
+  different statement and stays as it is — see T6.
+- **R13. The zero-match banner.** `0 elements match — since <step>` with an `Edit rule` button that
+  opens the editor on the culprit. It needs R9.
+
+## Noted, not to be copied
+
+Flex's README describes three things its code no longer does; we should not build from the prose:
+
+- A `.ds-dot` colour swatch on group rows — the view supports `rowSwatch`, `vf-element-tree` never
+  passes it.
+- `shuffle` and `palette` buttons on the GROUP BY row — only the `≡` is constructed; re-rolling
+  colours now lives in the display rule pane.
+- Resizable columns — the capability exists but Explore does not pass `resizableColumns`.
+
+Also: Flex's Explore has **no column picker**, **no row context menu**, and **no selection-count
+readout** in the tree chrome. Our context menu on a tree row is ours, not a parity item.
+
+## Outstanding from earlier rounds
+
+- **S5.** The per-row reset affordance in settings, blocked on the design system gaining SVG paths
+  for its glyph-named icons.
+- **The design system's row centring.** Inside a tree row the label, the count and the level pill
+  all sit about 1.5px above centre, because the line box is centred rather than the ink and most of
+  these strings carry no descenders. They agree with each other, so a row reads as aligned; the fix
+  belongs in `ds.css`, with S5.
+- **The Ultra viewer has no Parameters view.** It registers Settings only, since `bimInfoPanel`
+  is typed to the WebGL `IElement3D`.
+- **The 1.9MB `dist/style.css`.** The font payload decision from round 1, recorded in DS_PORT.md.
+
+## Suggested order for round 5
+
+**R1** and **R2** first — small, and the stepper is what a four-level nesting needs. Then **R3**
+and **R4**, which are wording and bindings. Then **R7**, the first one that touches the 3D. **R5**
+and **R6** are each a day's work and independent of the rest.
