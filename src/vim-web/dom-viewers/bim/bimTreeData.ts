@@ -51,6 +51,8 @@ export type BimNode = {
   childIds: string[]
   elementIndex?: number
   visible: NodeVisibility
+  /** Elements under this node — its own leaves. A leaf counts one: itself. */
+  count: number
 }
 
 /**
@@ -106,6 +108,7 @@ export class BimTreeData {
     this._orderedIds = []
     this._idToOrder = new Map()
     this._buildTree(map, '')
+    this._computeCounts()
   }
 
   // --- Data Loader (for headless-tree) ---
@@ -224,6 +227,24 @@ export class BimTreeData {
     this._orderedIds.push(node.id)
   }
 
+  /**
+   * Rolls the leaf counts up once, after the structure is final. The count is the tree's own shape,
+   * so unlike visibility it never changes and is never recomputed.
+   */
+  private _computeCounts() {
+    const count = (id: string): number => {
+      const node = this.nodes.get(id)
+      if (node.count > 0) return node.count
+      if (node.childIds.length > 0) {
+        let total = 0
+        for (const c of node.childIds) total += count(c)
+        node.count = total
+      }
+      return node.count
+    }
+    for (const id of this.nodes.keys()) count(id)
+  }
+
   private _buildTree(map: MapTree<string, AugmentedElement>, parentId: string): string[] {
     const childIds: string[] = []
 
@@ -234,12 +255,12 @@ export class BimTreeData {
       if (value instanceof Map) {
         // Branch node — added before children for parent-first tree order.
         // childIds backfilled after recursion since they aren't known yet.
-        this._addNode({ id, parentId, title: key, childIds: [], visible: undefined })
+        this._addNode({ id, parentId, title: key, childIds: [], visible: undefined, count: 0 })
         const grandchildIds = this._buildTree(value, id)
         this.nodes.get(id).childIds = grandchildIds
       } else {
         // Type node — added before leaves. childIds backfilled after loop.
-        this._addNode({ id, parentId, title: key, childIds: [], visible: undefined })
+        this._addNode({ id, parentId, title: key, childIds: [], visible: undefined, count: 0 })
         const leafIds: string[] = []
         for (const e of value) {
           const leafId = String(this._nextId++)
@@ -251,6 +272,7 @@ export class BimTreeData {
             childIds: [],
             elementIndex: e.index,
             visible: undefined,
+            count: 1,
           })
           this._elementToNode.set(e.index, leafId)
         }

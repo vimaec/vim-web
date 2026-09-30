@@ -652,6 +652,16 @@
   border-left: 0;
   border-right: 0;
 }
+/* The Elements column. One width for the header cell and the row cells under it, which is what puts
+   a column's digits under its label; the design system supplies the gutter and the text inset. */
+.vim-ds-bim-tree {
+  --vw-bim-count-w: 64px;
+}
+.vim-ds-bim-tree .ds-cols__col--num,
+.vim-ds-bim-tree .ds-tree__cell {
+  width: var(--vw-bim-count-w);
+  overflow: hidden;
+}
 .vim-ds-bim__info {
   flex: 0 0 auto;
 }

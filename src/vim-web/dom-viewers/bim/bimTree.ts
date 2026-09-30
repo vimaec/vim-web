@@ -24,7 +24,7 @@ const OVERSCAN = 10
 const DOUBLE_CLICK_MS = 300
 /** `toMapTree` puts everything under one 'root' entry, which BimTreeData numbers '0'. */
 const ROOT_ID = '0'
-const EMPTY_NODE: BimNode = { id: ROOT_ID, parentId: '', title: '', childIds: [], visible: undefined }
+const EMPTY_NODE: BimNode = { id: ROOT_ID, parentId: '', title: '', childIds: [], visible: undefined, count: 0 }
 
 export type BimTreeOptions = {
   viewer: Core.Webgl.Viewer
@@ -70,7 +70,9 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
   headCheckCell.appendChild(headCheck)
   const headName = el('span', 'ds-cols__col ds-cols__col--grow ds-cols__col--static')
   headName.textContent = 'Name'
-  head.append(headCheckCell, headName)
+  const headCount = el('span', 'ds-cols__col ds-cols__col--num ds-cols__col--static')
+  headCount.textContent = 'Elements'
+  head.append(headCheckCell, headName, headCount)
   root.appendChild(head)
   const container = el('div', 'ds-tree ds-tree--virtual')
   container.tabIndex = 0
@@ -89,7 +91,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
   /** Which item each pooled row currently shows (headless-tree tracks row elements per item). */
   const bound = new Map<HTMLElement, Item>()
   /** Each pooled row's own parts, so binding never indexes into its children. */
-  const parts = new WeakMap<HTMLElement, { check: HTMLElement, tag: HTMLElement, label: HTMLElement }>()
+  const parts = new WeakMap<HTMLElement, { check: HTMLElement, tag: HTMLElement, label: HTMLElement, count: HTMLElement }>()
 
   let treeOrigin = false
   let rangeAnchor = ROOT_ID
@@ -168,21 +170,23 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     row.setAttribute('role', 'treeitem')
     const toggle = el('span', 'ds-tree__toggle')
     toggle.appendChild(el('span', 'ds-tree__caret'))
-    const cell = el('span', 'ds-tree__check')
+    const checkCell = el('span', 'ds-tree__check')
     const check = el('button', 'ds-check')
     check.type = 'button'
     check.setAttribute('role', 'checkbox')
     check.appendChild(el('span', 'ds-check__box'))
-    cell.appendChild(check)
+    checkCell.appendChild(check)
     // The level pill says which grouping tier a group row is; leaves carry their own identity.
     const tag = el('span', 'ds-tree__lvl')
     tag.hidden = true
     const label = el('span', 'ds-tree__label')
+    // The accented metric cell under the Elements header.
+    const count = el('span', 'ds-tree__cell ds-tree__meta ds-tree__meta--accent')
     // Check cell first, as Flex orders it: the column is fixed at the row's left edge and the depth
     // indent rides on the toggle after it, so every row's box stands at one x under the header's.
-    row.append(cell, toggle, tag, label)
+    row.append(checkCell, toggle, tag, label, count)
     // Rows are recycled, so each keeps a handle on its own parts rather than being indexed into.
-    parts.set(row, { check, tag, label })
+    parts.set(row, { check, tag, label, count })
     return row
   }
 
@@ -199,6 +203,8 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     const open = folder && item.isExpanded()
     row.dataset.id = item.getId()
     row.style.setProperty('--depth', String(level))
+    // The design system's depth tint, capped at its four steps — Flex paints its rows the same way.
+    row.className = `ds-tree__item ds-depth-${Math.min(level, 3)}`
     row.classList.toggle('ds-leaf', !folder)
     row.classList.toggle('ds-open', open)
     row.classList.toggle('ds-sel', selected)
@@ -209,7 +215,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     if (folder) row.setAttribute('aria-expanded', String(open))
     else row.removeAttribute('aria-expanded')
 
-    const { check, tag, label } = parts.get(row)!
+    const { check, tag, label, count } = parts.get(row)!
 
     const title = node?.title ?? ''
     label.textContent = title
@@ -220,6 +226,10 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     const column = folder ? data?.columns[level] : undefined
     tag.hidden = column === undefined
     tag.textContent = column === undefined ? '' : levelShorthand(column)
+
+    // A group counts the elements under it; a leaf is an element, so its cell stays empty — the
+    // column answers "how many", which only a group is a question about.
+    count.textContent = folder ? String(node?.count ?? 0) : ''
 
     const visible = node?.visible
     check.classList.toggle('ds-on', visible === 'visible')
