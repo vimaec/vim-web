@@ -36,7 +36,9 @@ export function getIsolationSettings(isolation: IsolationApi, renderSettings: Re
       id: 'ghostOpacity',
       label: 'Ghost Opacity',
       info: '[0,1]',
-      step: 1 / 255,
+      // A readable percent-scale step; the DS stepper formats to the step's decimals, and 1/255
+      // (a byte-alpha artifact) would print 0.130000.
+      step: 0.01,
       transform: (n) => Math.max(0, Math.min(1, n)),
       state: isolation.ghostOpacity,
     },

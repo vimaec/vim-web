@@ -337,9 +337,6 @@
   font-size: var(--ds-fs-label);
   color: var(--text-200);
 }
-.vim-ds-entry:nth-child(odd) {
-  background: var(--stage-800);
-}
 .vim-ds-entry__label {
   flex: 0 0 50%;
   min-width: 0;
@@ -557,9 +554,43 @@
   color: var(--text-100);
 }
 
-/* Settings page (inside the side panel). */
+/* Settings page (a tab of the right-hand panel). */
 .vim-ds-settings .ds-panel__body {
   padding: var(--ds-space-2);
+}
+/* A settings row puts its label on its own line above a full-width control, as VIM Flex does: a
+   narrow panel has no room for the label/control split the generic row uses elsewhere. */
+.vim-ds-settings .vim-ds-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  min-height: 0;
+  padding: 6px var(--ds-space-2);
+}
+.vim-ds-settings .vim-ds-entry__label {
+  flex: none;
+}
+.vim-ds-settings .vim-ds-entry__control {
+  width: 100%;
+}
+.vim-ds-settings .vim-ds-entry__control > .ds-select,
+.vim-ds-settings .vim-ds-entry__control > .ds-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+/* A checkbox is the exception: the box stays beside its label rather than under it. */
+.vim-ds-settings .vim-ds-entry[data-type="bool"] {
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+.vim-ds-settings .vim-ds-entry[data-type="bool"] .vim-ds-entry__label {
+  flex: 1 1 auto;
+}
+.vim-ds-settings .vim-ds-entry[data-type="bool"] .vim-ds-entry__control {
+  width: auto;
+  flex: 0 0 auto;
 }
 
 /* BIM page (inside the side panel): search + virtual tree above, resizable inspector section below. */

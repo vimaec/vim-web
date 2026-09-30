@@ -259,20 +259,22 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
 
   // ---- selection -----------------------------------------------------------
 
-  /** Viewer → tree: expand ancestors, highlight, reveal the last selected element. */
+  /**
+   * Viewer → tree: highlight the selection and reveal it if it is already on screen.
+   *
+   * Deliberately does NOT expand anything. VIM Flex leaves the tree as the user arranged it and
+   * only marks the rows; expanding every ancestor of every pick rearranges the tree underneath
+   * them. `getSelection` returns the leaf and its ancestors, so a collapsed branch still shows
+   * that something inside it is selected, and `revealItem` is a no-op for a row that is not
+   * currently listed.
+   */
   const syncSelection = (elements: IElement3D[]) => {
     if (!tree || !data || treeOrigin) return
     const d = data
     const ids = elements
       .map(e => d.getNodeFromElement(e.element))
       .filter((id): id is string => id !== undefined)
-    const ancestors = new Set<string>()
-    for (const id of ids) {
-      for (const ancestor of d.getAncestors(id)) if (ancestor !== id) ancestors.add(ancestor)
-    }
-    tree.applySubStateUpdate('expandedItems', previous => [...new Set([...previous, ...ancestors])])
     tree.setSelectedItems(d.getSelection(elements.map(e => e.element)))
-    tree.rebuildTree()
     if (ids.length > 0) revealItem(ids[ids.length - 1])
   }
 

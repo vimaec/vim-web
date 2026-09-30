@@ -75,6 +75,9 @@ function renderEntry (host: HTMLElement, entry: GenericEntryType): Rendered {
 
   const row = document.createElement('div')
   row.className = 'vim-ds-entry'
+  // The row's kind, so a host can shape it per control (a checkbox keeps its label beside it
+  // where a select takes the full width).
+  row.dataset.type = entry.type
   const label = document.createElement('span')
   label.className = 'vim-ds-entry__label'
   label.textContent = entry.label
