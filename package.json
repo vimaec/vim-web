@@ -48,6 +48,7 @@
     "publish:both": "npm run publish:package && npm run publish:documentation"
   },
   "devDependencies": {
+    "@fluentui/svg-icons": "^1.1.343",
     "@types/dom-webcodecs": "^0.1.13",
     "gh-pages": "^6.3.0",
     "rollup": "^4.60.0",
