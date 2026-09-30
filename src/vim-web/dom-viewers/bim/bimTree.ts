@@ -59,6 +59,19 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
 
   const root = el('div', 'vim-ds-bim-tree')
   host.appendChild(root)
+  // Column header strip, fused to the scroll box below it. VIM Flex heads its element tree the same
+  // way: a check-all cell sitting over the rows' check column, then the name column.
+  const head = el('div', 'ds-cols ds-cols--attached')
+  const headCheckCell = el('span', 'ds-tree__check')
+  const headCheck = el('button', 'ds-check')
+  headCheck.type = 'button'
+  headCheck.setAttribute('role', 'checkbox')
+  headCheck.appendChild(el('span', 'ds-check__box'))
+  headCheckCell.appendChild(headCheck)
+  const headName = el('span', 'ds-cols__col ds-cols__col--grow ds-cols__col--static')
+  headName.textContent = 'Name'
+  head.append(headCheckCell, headName)
+  root.appendChild(head)
   const container = el('div', 'ds-tree ds-tree--virtual')
   container.tabIndex = 0
   container.setAttribute('role', 'tree')
@@ -97,6 +110,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
   const render = () => {
     if (!tree || !data) {
       unbindAll()
+      syncHeader()
       spacer.style.height = '0px'
       return
     }
@@ -108,6 +122,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
       rowCount: items.length,
       overscan: OVERSCAN
     })
+    syncHeader()
     spacer.style.height = `${win.totalHeight}px`
     rows.style.transform = `translateY(${win.offsetY}px)`
     const state = tree.getState()
@@ -126,6 +141,28 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     }
   }
 
+  /**
+   * The header box wears the whole model's visibility, the same tri-state the rows wear, read from
+   * the root node `updateVisibility` already rolls up.
+   */
+  const syncHeader = () => {
+    const visible = data?.getItem(ROOT_ID)?.visible
+    headCheck.classList.toggle('ds-on', visible === 'visible')
+    headCheck.classList.toggle('ds-partial', visible === 'partial')
+    headCheck.setAttribute('aria-checked', visible === 'visible' ? 'true' : visible === 'partial' ? 'mixed' : 'false')
+    headCheck.setAttribute(TIP_ATTR, visible === 'visible' ? 'Hide all' : 'Show all')
+  }
+
+  /** Flex's rule: a mixed or empty header checks everything, a fully checked one clears. */
+  const toggleAll = () => {
+    if (!data) return
+    if (data.getItem(ROOT_ID)?.visible === 'visible') isolation.hideAll()
+    else isolation.showAll()
+    // Reflect the click at once, as a row's own toggle does; the scene event confirms it next frame.
+    data.updateVisibility()
+    scheduleRender()
+  }
+
   const createRow = () => {
     const row = el('div', 'ds-tree__item')
     row.setAttribute('role', 'treeitem')
@@ -141,7 +178,9 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     const tag = el('span', 'ds-tree__lvl')
     tag.hidden = true
     const label = el('span', 'ds-tree__label')
-    row.append(toggle, cell, tag, label)
+    // Check cell first, as Flex orders it: the column is fixed at the row's left edge and the depth
+    // indent rides on the toggle after it, so every row's box stands at one x under the header's.
+    row.append(cell, toggle, tag, label)
     // Rows are recycled, so each keeps a handle on its own parts rather than being indexed into.
     parts.set(row, { check, tag, label })
     return row
@@ -249,6 +288,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     tree = undefined
     data = d
     container.hidden = !d
+    head.hidden = !d
     empty.setVisible(!d)
     if (!d) {
       render()
@@ -374,6 +414,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     if (!root.contains(e.relatedTarget as Node | null)) viewer.inputs.keyboard.active = true
   }
 
+  headCheck.addEventListener('click', toggleAll)
   rows.addEventListener('click', onClick)
   rows.addEventListener('contextmenu', onContextMenu)
   root.addEventListener('focusin', onFocusIn)

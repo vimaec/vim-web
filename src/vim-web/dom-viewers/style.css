@@ -645,6 +645,13 @@
   border-left: 0;
   border-right: 0;
 }
+/* Same treatment for the header strip above it: it keeps its own height and sheds the side borders
+   the side panel already draws. */
+.vim-ds-bim-tree .ds-cols {
+  flex: 0 0 auto;
+  border-left: 0;
+  border-right: 0;
+}
 .vim-ds-bim__info {
   flex: 0 0 auto;
 }
