@@ -4,6 +4,9 @@ import * as Core from '../../core-viewers'
 /** Default canvas background (the design's stage colour). */
 const STAGE_BACKGROUND = 0x101218
 
+/** Opening width of the side panel, clamped to the container once it is measured. */
+const SIDE_WIDTH = 340
+
 import { type Container, createContainer } from '../container'
 import { createSettings } from '../settings/settingsState'
 import { disableLocalStorage } from '../settings/localStorage'
@@ -85,10 +88,10 @@ export async function createDomWebglViewer (
   const framing = createWebglFraming(core, sectionBox, fullSettings.camera.autoCamera)
   const cursor = new CursorManager(core)
   const loader = new WebglLoader(core, modalHandle)
-  const side = createSideState(
-    isTrue(live.ui.panelBimTree) || isTrue(live.ui.panelBimInfo),
-    Math.min(cmp.root.clientWidth * 0.25, 340)
-  )
+  // A fixed default rather than a share of the container: at construction the container is often
+  // not laid out yet and reports zero, which used to open the panel at its 160px floor and leave
+  // it there. The side panel clamps this down once the container has a real width.
+  const side = createSideState(isTrue(live.ui.panelBimTree) || isTrue(live.ui.panelBimInfo), SIDE_WIDTH)
   const bimInfo = createBimInfoApi()
   const state = createWebglState(core)
   const { isolation, renderSettings } = createWebglIsolation(core, fullSettings.isolation)

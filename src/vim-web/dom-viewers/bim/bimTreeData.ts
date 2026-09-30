@@ -11,6 +11,38 @@ export type Grouping = 'Family' | 'Level' | 'Workset'
 /** Shown where a model leaves the grouping value unset. */
 export const UNGROUPED = '(none)'
 
+/** The column each tree depth groups by, outermost first. Only the first level varies. */
+const GROUPING_COLUMNS: Record<Grouping, readonly string[]> = {
+  Family: ['Category', 'Family', 'Type'],
+  Level: ['Level', 'Family', 'Type'],
+  Workset: ['Workset', 'Family', 'Type']
+}
+
+/** Fixed shorthands for the level pill a group row wears, matching VIM Flex's table. */
+const LEVEL_SHORTHANDS: Record<string, string> = {
+  Category: 'CAT',
+  Family: 'FAM',
+  Type: 'TYPE',
+  'BIM Document': 'DOC',
+  VIM: 'VIM',
+  Workset: 'WSET',
+  Level: 'LVL',
+  Room: 'ROOM',
+  Domain: 'DOM'
+}
+
+/**
+ * The short marker for a grouping column. An unknown column falls back to its word initials
+ * ('Family / Type' becomes 'FT') and then to its first four letters, as VIM Flex does.
+ */
+export function levelShorthand (column: string): string {
+  const known = LEVEL_SHORTHANDS[column]
+  if (known) return known
+  const words = column.split(/[^A-Za-z0-9]+/).filter(Boolean)
+  if (words.length > 1) return words.map(w => w[0]).join('').toUpperCase().slice(0, 4)
+  return column.toUpperCase().slice(0, 4)
+}
+
 /** A single node in the BIM tree. */
 export type BimNode = {
   id: string
@@ -50,13 +82,15 @@ export function toTreeData(
   ])
   sort(tree)
 
-  const result = new BimTreeData(vim, tree)
+  const result = new BimTreeData(vim, tree, GROUPING_COLUMNS[grouping])
   result.updateVisibility()
   return result
 }
 
 export class BimTreeData {
   readonly vim: Core.Webgl.IWebglVim
+  /** The grouping column at each depth, outermost first; a leaf depth has none. */
+  readonly columns: readonly string[]
   /** Node map. Nodes are mutable (visibility, childIds) but the map structure is stable after construction. */
   readonly nodes: Map<string, BimNode>
   private readonly _elementToNode: Map<number, string>
@@ -64,8 +98,9 @@ export class BimTreeData {
   private readonly _idToOrder: Map<string, number>  // id → index in _orderedIds for O(1) lookup
   private _nextId = 0
 
-  constructor(vim: Core.Webgl.IWebglVim, map: MapTree<string, AugmentedElement>) {
+  constructor(vim: Core.Webgl.IWebglVim, map: MapTree<string, AugmentedElement>, columns: readonly string[] = []) {
     this.vim = vim
+    this.columns = columns
     this.nodes = new Map()
     this._elementToNode = new Map()
     this._orderedIds = []

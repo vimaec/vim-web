@@ -12,7 +12,7 @@ import type { FramingApi, IsolationApi } from '../api'
 import type { StateRef } from '../../state'
 import { TIP_ATTR, tooltipZone } from '../components/tooltip'
 import type { ContextMenuPosition } from '../panels/contextMenu'
-import type { BimNode, BimTreeData } from '../bim/bimTreeData'
+import { levelShorthand, type BimNode, type BimTreeData } from '../bim/bimTreeData'
 
 type IElement3D = Core.Webgl.IElement3D
 type Tree = TreeInstance<BimNode>
@@ -75,6 +75,8 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
   const pool: HTMLDivElement[] = []
   /** Which item each pooled row currently shows (headless-tree tracks row elements per item). */
   const bound = new Map<HTMLElement, Item>()
+  /** Each pooled row's own parts, so binding never indexes into its children. */
+  const parts = new WeakMap<HTMLElement, { check: HTMLElement, tag: HTMLElement, label: HTMLElement }>()
 
   let treeOrigin = false
   let rangeAnchor = ROOT_ID
@@ -135,7 +137,13 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     check.setAttribute('role', 'checkbox')
     check.appendChild(el('span', 'ds-check__box'))
     cell.appendChild(check)
-    row.append(toggle, cell, el('span', 'ds-tree__label'))
+    // The level pill says which grouping tier a group row is; leaves carry their own identity.
+    const tag = el('span', 'ds-tree__lvl')
+    tag.hidden = true
+    const label = el('span', 'ds-tree__label')
+    row.append(toggle, cell, tag, label)
+    // Rows are recycled, so each keeps a handle on its own parts rather than being indexed into.
+    parts.set(row, { check, tag, label })
     return row
   }
 
@@ -162,13 +170,19 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     if (folder) row.setAttribute('aria-expanded', String(open))
     else row.removeAttribute('aria-expanded')
 
+    const { check, tag, label } = parts.get(row)!
+
     const title = node?.title ?? ''
-    const label = row.children[2] as HTMLElement
     label.textContent = title
     label.setAttribute(TIP_ATTR, title)
 
+    // Group rows wear their tier ('CAT', 'FAM', 'TYPE'); a leaf and any depth past the grouping
+    // columns wear none.
+    const column = folder ? data?.columns[level] : undefined
+    tag.hidden = column === undefined
+    tag.textContent = column === undefined ? '' : levelShorthand(column)
+
     const visible = node?.visible
-    const check = row.children[1].firstElementChild as HTMLElement
     check.classList.toggle('ds-on', visible === 'visible')
     check.classList.toggle('ds-partial', visible === 'partial')
     check.setAttribute('aria-checked', visible === 'visible' ? 'true' : visible === 'partial' ? 'mixed' : 'false')

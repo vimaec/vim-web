@@ -49,8 +49,11 @@ export function sidePanel (host: HTMLElement, opts: {
   }
   const clamp = () => {
     const width = side.getWidth()
-    if (width === 0) return
-    side.setWidth(Math.max(side.minWidth, Math.min(width, maxSize())))
+    const max = maxSize()
+    // A root that is not laid out yet reports zero, and clamping to that would pin the panel to
+    // its floor for the rest of the session.
+    if (width === 0 || max <= 0) return
+    side.setWidth(Math.max(side.minWidth, Math.min(width, max)))
   }
 
   const unsubscribe = side.onChange.subscribe(apply)
