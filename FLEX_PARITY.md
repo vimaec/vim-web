@@ -222,11 +222,15 @@ than silently producing one `(none)` band.
 A stored nesting is guarded per column, so a preset string from an older build falls back to the
 default instead of breaking the tree.
 
-**Two divergences, both about a 340px panel.** Flex reorders by dragging a row's grip; the arrows
-say the same thing in a panel this narrow, so that is all the drawer offers. And Flex ends its strip
-with a `· Element` leaf indicator, which costs more width than it says when the pills are the
-information and the drawer's terminal row states it anyway — dropping it is what lets the default
-three levels read in full on one line.
+Dragging landed in a follow-up (`f92fee66`), in the vocabulary of Flex's *filter* drawer rather
+than its grouping drawer: the whole row is the handle, so there is no grip gutter, and the drag
+wears that drawer's cyan drop rule with a dot at its head, its pointer-borne card, its faded source
+row and its 4px threshold. The strip's toggle is a burger at the pills' height, as Flex's is, and
+the drawer's row metrics now come from Flex's stylesheet rather than my eye.
+
+**One divergence, about a 340px panel.** Flex ends its strip with a `· Element` leaf indicator,
+which costs more width than it says when the pills are the information and the drawer's terminal row
+states it anyway — dropping it is what lets the default three levels read in full on one line.
 
 ## Closed inspections
 
