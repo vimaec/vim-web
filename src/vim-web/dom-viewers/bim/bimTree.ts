@@ -32,6 +32,8 @@ export type BimTreeOptions = {
   framing: FramingApi
   isolation: IsolationApi
   treeData: StateRef<BimTreeData | undefined>
+  /** Whether group rows wear their level pill; the grouping drawer owns the switch. */
+  tierTags: StateRef<boolean>
   /** The viewer's selected elements; the tree highlights and reveals them. */
   selection: StateRef<IElement3D[]>
   /** Right-click on a row (after selecting it): open the viewer context menu there. */
@@ -241,7 +243,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     const toggle = el('span', 'ds-tree__toggle')
     toggle.appendChild(el('span', 'ds-tree__caret'))
     row.appendChild(toggle)
-    const column = data?.columns[level]
+    const column = opts.tierTags.get() ? data?.columns[level] : undefined
     if (column !== undefined) {
       const tag = el('span', 'ds-tree__lvl')
       tag.textContent = levelShorthand(column)
@@ -337,8 +339,8 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     label.setAttribute(TIP_ATTR, title)
 
     // Group rows wear their tier ('CAT', 'FAM', 'TYPE'); a leaf and any depth past the grouping
-    // columns wear none.
-    const column = folder ? data?.columns[level] : undefined
+    // columns wear none, and the drawer can turn the lot off.
+    const column = folder && opts.tierTags.get() ? data?.columns[level] : undefined
     tag.hidden = column === undefined
     tag.textContent = column === undefined ? '' : levelShorthand(column)
 
@@ -591,6 +593,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
 
   const unsubscribes = [
     opts.treeData.onChange.subscribe(setData),
+    opts.tierTags.onChange.subscribe(scheduleRender),
     opts.selection.onChange.subscribe(syncSelection),
     viewer.renderer.onSceneUpdated.subscribe(() => {
       data?.updateVisibility()

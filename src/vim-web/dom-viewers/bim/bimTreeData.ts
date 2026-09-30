@@ -6,7 +6,50 @@ import { MapTree, sort, toMapTree } from '../helpers/data'
 import { AugmentedElement } from '../helpers/element'
 
 export type NodeVisibility = 'visible' | 'partial' | 'hidden'
-export type Grouping = 'Family' | 'Level' | 'Workset'
+
+/** A column the tree can group by: the ones our element data actually carries. */
+export type GroupingColumn = 'Category' | 'Family' | 'Type' | 'Workset' | 'Level' | 'BIM Document'
+
+/** What each column reads off an element. */
+const COLUMN_VALUES: Record<GroupingColumn, (element: AugmentedElement) => string | undefined> = {
+  Category: e => e.categoryName,
+  Family: e => e.familyName,
+  Type: e => e.familyTypeName,
+  Workset: e => e.worksetName,
+  Level: e => e.levelName,
+  'BIM Document': e => e.bimDocumentName
+}
+
+/**
+ * The families the grouping drawer offers, in display order, as VIM Flex groups its own chips. Flex
+ * also offers Room and Domain; our element data carries neither, and a column we cannot read is
+ * worse than one we do not offer.
+ */
+export const GROUPING_FAMILIES: readonly { name: string, columns: readonly GroupingColumn[] }[] = [
+  { name: 'IDENTITY', columns: ['Category', 'Family', 'Type'] },
+  { name: 'MODEL', columns: ['Workset', 'BIM Document'] },
+  { name: 'SPATIAL', columns: ['Level'] }
+]
+
+/** The nesting the tree opens with, and what the drawer's reset returns to. */
+export const DEFAULT_GROUPING: readonly GroupingColumn[] = ['Category', 'Family', 'Type']
+
+const ALL_COLUMNS = GROUPING_FAMILIES.flatMap(f => [...f.columns])
+
+/** Whether a name is one of the columns we group by — the guard on a stored nesting. */
+export function isGroupingColumn (value: unknown): value is GroupingColumn {
+  return typeof value === 'string' && (ALL_COLUMNS as string[]).includes(value)
+}
+
+/**
+ * Whether the loaded elements carry any value for this column. Flex probes its database for the
+ * same answer; ours is a scan of the elements already in hand, so a column the model says nothing
+ * about can be offered struck through rather than silently producing one '(none)' band.
+ */
+export function columnInModel (elements: AugmentedElement[], column: GroupingColumn): boolean {
+  const read = COLUMN_VALUES[column]
+  return elements.some(e => read(e))
+}
 
 /** What a tree column sorts by, and which way. */
 export type SortKey = 'name' | 'count'
@@ -20,13 +63,6 @@ const COLLATOR = new Intl.Collator(undefined, { numeric: true, sensitivity: 'bas
 
 /** Shown where a model leaves the grouping value unset. */
 export const UNGROUPED = '(none)'
-
-/** The column each tree depth groups by, outermost first. Only the first level varies. */
-const GROUPING_COLUMNS: Record<Grouping, readonly string[]> = {
-  Family: ['Category', 'Family', 'Type'],
-  Level: ['Level', 'Family', 'Type'],
-  Workset: ['Workset', 'Family', 'Type']
-}
 
 /** Fixed shorthands for the level pill a group row wears, matching VIM Flex's table. */
 const LEVEL_SHORTHANDS: Record<string, string> = {
@@ -71,7 +107,7 @@ export type BimNode = {
 export function toTreeData(
   vim: Core.Webgl.IWebglVim,
   elements: AugmentedElement[],
-  grouping: Grouping
+  grouping: readonly GroupingColumn[]
 ) {
   if (!vim) return
   if (!elements?.length) return
@@ -80,21 +116,13 @@ export function toTreeData(
   // the gap keeps those elements reachable instead of collecting them under a blank row.
   const named = (value: string | undefined) => value || UNGROUPED
 
-  const main: (e: AugmentedElement) => string =
-    grouping === 'Family'
-      ? (e) => named(e.categoryName)
-      : grouping === 'Level'
-        ? (e) => named(e.levelName)
-        : (e) => named(e.worksetName)
-
-  const tree = toMapTree(elements, [
-    main,
-    (e) => named(e.familyName),
-    (e) => named(e.familyTypeName),
-  ])
+  // An empty nesting would leave every element at the root; the default stands in for it, which is
+  // also what the drawer's last remaining level refuses to be removed for.
+  const columns = grouping.length > 0 ? grouping : DEFAULT_GROUPING
+  const tree = toMapTree(elements, columns.map(c => (e: AugmentedElement) => named(COLUMN_VALUES[c](e))))
   sort(tree)
 
-  const result = new BimTreeData(vim, tree, GROUPING_COLUMNS[grouping])
+  const result = new BimTreeData(vim, tree, columns)
   result.updateVisibility()
   return result
 }

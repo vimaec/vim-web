@@ -184,6 +184,18 @@ export const iconData = {
       }
     ]
   },
+  "chevronUp": {
+    "viewBox": "0 0 20 20",
+    "fill": "$fill",
+    "children": [
+      {
+        "tag": "path",
+        "attrs": {
+          "d": "M4.15 12.35a.5.5 0 0 1 0-.7L9.6 6.16a.55.55 0 0 1 .78 0l5.47 5.49a.5.5 0 0 1-.71.7L10 7.2l-5.15 5.16a.5.5 0 0 1-.7 0"
+        }
+      }
+    ]
+  },
   "arrowLeft": {
     "viewBox": "0 0 20 20",
     "fill": "$fill",

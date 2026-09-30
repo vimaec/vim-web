@@ -606,20 +606,209 @@
   display: flex;
   flex-direction: column;
 }
-.vim-ds-bim-grouping {
+/* Grouping chrome: the Group by strip and the drawer its ≡ opens, after VIM Flex's pair. */
+.vim-ds-grouping {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding: var(--ds-space-2) var(--ds-space-2) 0;
+}
+.vim-ds-gb {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-1);
+  min-width: 0;
+}
+/* One line, always: Flex's strip wraps because its bar is wide, but in a 340px panel a wrapped
+   strip orphans the leaf indicator. The pills give way instead, clipping a long column name with
+   its tip behind it. */
+.vim-ds-gb__levels {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  flex-wrap: nowrap;
+}
+/* The step that sets the label apart rides the eyebrow, not the strip's gap: that gap is the
+   rhythm between the pills themselves. */
+.vim-ds-gb__eyebrow {
+  flex: 0 0 auto;
+  margin-right: 2px;
+  font-family: var(--font-mono);
+  font-size: var(--ds-fs-eyebrow);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-400);
+}
+/* The pills shrink before the strip wraps: in a 340px panel a wrapped strip orphans the leaf
+   indicator, and a clipped column name (with the tip behind it) reads better than that. */
+.vim-ds-gb__pill {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: var(--ds-control-h-sm);
+  box-sizing: border-box;
+  padding: 0 4px;
+  white-space: nowrap;
+  border: 1px solid var(--hairline);
+  background: var(--stage-700);
+  color: var(--text-200);
+  font-size: var(--ds-fs-label);
+  user-select: none;
+}
+.vim-ds-gb__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vim-ds-gb__rank {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: var(--ds-fs-eyebrow);
+  color: var(--text-400);
+}
+.vim-ds-gb__more {
+  flex: 0 0 auto;
+}
+.vim-ds-gd {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  margin-top: var(--ds-space-2);
+  padding: var(--ds-space-2);
+  border: 1px solid var(--hairline);
+  background: var(--stage-900);
+}
+.vim-ds-gd[hidden] {
+  display: none;
+}
+.vim-ds-gd__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ds-space-2);
+  padding-bottom: var(--ds-space-1);
+  border-bottom: 1px solid var(--hairline);
+}
+.vim-ds-gd__title {
+  font-family: var(--font-mono);
+  font-size: var(--ds-fs-eyebrow);
+  letter-spacing: 0.8px;
+  font-weight: 700;
+  color: var(--text-100);
+}
+.vim-ds-gd__hint {
+  font-size: var(--ds-fs-eyebrow);
+  color: var(--text-400);
+}
+/* Gapless: the drawer's own gap would sit under each row's hairline and skew the rhythm. */
+.vim-ds-gd__rows {
+  display: flex;
+  flex-direction: column;
+}
+.vim-ds-gd__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding: 2px 0;
+  border-bottom: 1px solid var(--hairline-soft);
+}
+.vim-ds-gd__row--fixed {
+  opacity: 0.5;
+}
+.vim-ds-gd__rank {
+  flex: 0 0 12px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: var(--ds-fs-eyebrow);
+  color: var(--text-400);
+}
+.vim-ds-gd__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--ds-fs-label);
+  font-weight: 700;
+  color: var(--text-100);
+}
+.vim-ds-gd__row--fixed .vim-ds-gd__name {
+  font-weight: 400;
+  color: var(--text-300);
+}
+.vim-ds-gd__tag {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: var(--ds-fs-micro);
+  letter-spacing: 0.6px;
+  color: var(--text-400);
+}
+.vim-ds-gd__addhead {
+  padding-top: var(--ds-space-1);
+  font-family: var(--font-mono);
+  font-size: var(--ds-fs-eyebrow);
+  letter-spacing: 0.8px;
+  font-weight: 700;
+  color: var(--text-300);
+}
+.vim-ds-gd__fam {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ds-space-1);
+  padding: 2px 0;
+}
+.vim-ds-gd__famtag {
+  flex: 0 0 52px;
+  font-family: var(--font-mono);
+  font-size: var(--ds-fs-micro);
+  letter-spacing: 0.6px;
+  color: var(--text-400);
+}
+.vim-ds-gd__chip,
+.vim-ds-gd__reset {
+  flex: 0 0 auto;
+  padding: 1px 8px;
+  border: 1px solid var(--hairline-soft);
+  background: var(--stage-800);
+  color: var(--text-200);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--ds-fs-eyebrow);
+  line-height: 1.6;
+}
+.vim-ds-gd__chip:hover:not(:disabled),
+.vim-ds-gd__reset:hover {
+  border-color: var(--vim-cyan);
+  color: var(--text-100);
+}
+/* A column the model has no values for is offered struck through rather than withheld: the reader
+   learns the column exists and that this model says nothing about it. */
+.vim-ds-gd__chip:disabled {
+  opacity: 0.45;
+  cursor: default;
+  text-decoration: line-through;
+}
+.vim-ds-gd__foot {
   display: flex;
   align-items: center;
   gap: var(--ds-space-2);
-  padding: var(--ds-space-2) var(--ds-space-2) 0;
+  padding-top: var(--ds-space-2);
+  border-top: 1px solid var(--hairline);
 }
-.vim-ds-bim-grouping__label {
+.vim-ds-gd__foot .ds-check {
   flex: 0 0 auto;
-  font-size: var(--ds-fs-label);
-  color: var(--text-300);
 }
-.vim-ds-bim-grouping .ds-select {
+.vim-ds-gd__spacer {
   flex: 1 1 auto;
-  min-width: 0;
+}
+.vim-ds-gd__reset {
+  letter-spacing: 0.6px;
 }
 
 .vim-ds-bim-search {

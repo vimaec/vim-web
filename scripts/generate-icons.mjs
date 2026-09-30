@@ -39,6 +39,7 @@ const MAP = {
   treeView: 'text_bullet_list_tree',
   more: 'more_horizontal',
   collapse: 'chevron_down',
+  chevronUp: 'chevron_up',
   arrowLeft: 'chevron_left',
   fullArrowLeft: 'arrow_left',
 
