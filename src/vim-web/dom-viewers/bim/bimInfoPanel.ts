@@ -64,7 +64,12 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
   note.className = 'vim-ds-bim-info__note'
   const body = document.createElement('div')
   body.className = 'vim-ds-bim-info__body'
-  root.append(loading, header, note, tools, body)
+  // Everything but the strips above scrolls together, inset from the panel's edges as Flex insets
+  // its body — a value should not touch the panel's border.
+  const scroll = document.createElement('div')
+  scroll.className = 'vim-ds-bim-info__scroll'
+  scroll.append(loading, header, note, tools, body)
+  root.appendChild(scroll)
 
   let headerContent: GenericContentHandle | undefined
   let bodyContent: GenericContentHandle | undefined

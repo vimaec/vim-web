@@ -681,6 +681,21 @@
   min-height: 0;
   max-height: none;
 }
+/* The panel fills its tab and scrolls its own content, so the strips above the parameters can stay
+   put while the list moves under them. */
+.vim-ds-bim-info {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.vim-ds-bim-info__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--ds-space-2) var(--ds-space-3);
+}
+
 /* Parameters, drawn as VIM Flex draws it: a labelled identity block, then groups whose heading is
    a caret, an accented title and a count over a hairline — no bands, and rows dense enough that a
    long parameter list reads as a list rather than a stack of controls. */
@@ -749,8 +764,14 @@
 .vim-ds-bim-info__tool:hover {
   color: var(--text-100);
 }
-.vim-ds-group {
-  border-bottom: 1px solid var(--hairline-soft);
+/* A parameter group's rule is barely there — it separates without ruling the page, which is what
+   lets a long list read as one column. Only parameter groups carry it: the instance / type heading
+   above them is a caption, not a group. */
+.vim-ds-group--accent {
+  border-bottom: 1px solid color-mix(in srgb, var(--text-100) 4%, transparent);
+}
+.vim-ds-group:not(.vim-ds-group--accent) + .vim-ds-group:not(.vim-ds-group--accent) {
+  margin-top: var(--ds-space-2);
 }
 .vim-ds-group__head {
   display: flex;
