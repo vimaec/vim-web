@@ -749,6 +749,13 @@
 .vim-ds-bim-info__tools[hidden] {
   display: none;
 }
+/* The raw-value toggle shares the tools' row, pushed to the far side — Flex's arrangement, and it
+   spends no vertical space of its own. */
+.vim-ds-bim-info__raw {
+  margin-right: auto;
+  font-size: var(--ds-fs-eyebrow);
+  color: var(--text-400);
+}
 .vim-ds-bim-info__tool {
   width: 18px;
   height: 18px;

@@ -61,11 +61,21 @@ export interface IElement3D extends ISelectable {
    * @returns Array of `{ name: string, value: string, group: string }` objects.
    * Type is `VimHelpers.ElementParameter` from vim-format (accessible via `VIM.BIM.VimHelpers`).
    */
-  getBimParameters(): Promise<VimHelpers.ElementParameter[]>
+  getBimParameters(): Promise<BimParameter[]>
   /** Retrieves the bounding box in Z-up world space (X = right, Y = forward, Z = up), or undefined if the element has no geometry. */
   getBoundingBox(): Promise<THREE.Box3 | undefined>
   /** Retrieves the center position in Z-up world space, or undefined if the element has no geometry. */
   getCenter(target?: THREE.Vector3): Promise<THREE.Vector3 | undefined>
+}
+
+/**
+ * One BIM parameter of an element. A parameter is stored as a `raw|display` pair, so both halves
+ * are given: `value` is what the exporter meant to be read, `rawValue` what it stored. They are the
+ * same string for a parameter stored without a pair.
+ */
+export type BimParameter = VimHelpers.ElementParameter & {
+  /** The stored value, before the exporter's display formatting. */
+  rawValue: string | undefined
 }
 
 /**
@@ -274,15 +284,19 @@ export class Element3D implements IElement3D {
    * Asynchronously retrieves Bim parameters for the element associated with this object.
    * @returns {VimHelpers.ElementParameter[]} An array of all bim parameters for this elements.
    */
-  async getBimParameters (): Promise<VimHelpers.ElementParameter[]> {
+  async getBimParameters (): Promise<BimParameter[]> {
     const cache = await this._vim.getParameterCache()
-    if (!cache) return VimHelpers.getElementParameters(this._vim.bim, this.element)
+    if (!cache) {
+      // Without the cache the format helper answers, and it keeps only the display half.
+      const parameters = await VimHelpers.getElementParameters(this._vim.bim, this.element)
+      return parameters.map(p => ({ ...p, rawValue: p.value }))
+    }
 
     // Pre-computed element set: this element + family type + family (all O(1) lookups)
     const related = cache.familyElements.get(this.element) ?? new Map([[this.element, true]])
 
     const { values, descriptorIndices, descriptorNames, descriptorGroups, parametersByElement } = cache
-    const result: VimHelpers.ElementParameter[] = []
+    const result: BimParameter[] = []
 
     // Only visit parameter rows belonging to related elements (O(params per element), not O(all params))
     for (const [elementIdx, isInstance] of related) {
@@ -291,10 +305,15 @@ export class Element3D implements IElement3D {
       for (const i of rows) {
         const descriptor = descriptorIndices[i]
         const value = values[i]
-        const displayValue = value?.indexOf('|') >= 0 ? value.substring(value.indexOf('|') + 1) : value
+        // A parameter is stored as 'raw|display'. A pair with an empty display half falls back to
+        // the raw value rather than reading as blank.
+        const split = value?.indexOf('|') ?? -1
+        const rawValue = split >= 0 ? value.substring(0, split) : value
+        const displayValue = split >= 0 ? (value.substring(split + 1) || rawValue) : value
         result.push({
           name: Number.isInteger(descriptor) ? descriptorNames?.[descriptor] : undefined,
           value: displayValue,
+          rawValue,
           group: Number.isInteger(descriptor) ? descriptorGroups?.[descriptor] : undefined,
           isInstance,
         })

@@ -1,6 +1,8 @@
 import type * as Core from '../../core-viewers'
 import type { StateRef } from '../../state'
 import { genericContent, type GenericContentHandle } from '../generic'
+import { checkbox } from '../components'
+import { createSettingState } from '../state/settingState'
 import { getObjectData, getSelectionData } from '../bim/bimInfoObject'
 import { getVimData } from '../bim/bimInfoVim'
 import type { AugmentedElement } from '../helpers/element'
@@ -39,9 +41,18 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
   root.className = 'vim-ds-bim-info'
   host.appendChild(root)
 
-  // Flex's group tools, above the groups they act on.
+  // A parameter is stored as a 'raw|display' pair; this reads the other half, as Flex's own
+  // Show raw values does. Remembered, because whoever wants raw values wants them all session.
+  const showRaw = createSettingState(() => false, { storageKey: 'vim.params.raw' })
+
+  // Flex's group tools, above the groups they act on, sharing their row with the raw toggle.
   const tools = document.createElement('div')
   tools.className = 'vim-ds-bim-info__tools'
+  const raw = checkbox(tools, {
+    state: showRaw,
+    label: 'Show raw values',
+    className: 'vim-ds-bim-info__raw'
+  })
   const tool = (label: string, tip: string, open: boolean) => {
     const button = document.createElement('button')
     button.type = 'button'
@@ -111,8 +122,8 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
       let data = objects.length === 0
         ? await getVimData(vim)
         : objects.length === 1
-          ? await getObjectData(target, opts.elements.get())
-          : await getSelectionData(objects, opts.elements.get())
+          ? await getObjectData(target, opts.elements.get(), showRaw.get())
+          : await getSelectionData(objects, opts.elements.get(), showRaw.get())
       if (gen !== generation) return
       // Yield again so the browser can paint between the query and the render.
       await tick()
@@ -124,6 +135,7 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
   }
 
   const unsubscribes = [
+    showRaw.onChange.subscribe(load),
     opts.objects.onChange.subscribe(load),
     opts.vim.onChange.subscribe(load),
     opts.elements.onChange.subscribe(load)
@@ -137,6 +149,7 @@ export function bimInfoPanel (host: HTMLElement, opts: BimInfoPanelOptions): Bim
       generation++
       clearTimeout(timer)
       for (const u of unsubscribes) u()
+      raw.destroy()
       clear()
       root.remove()
     }

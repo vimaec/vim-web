@@ -1,7 +1,7 @@
 // Types
 export type { VimSettings, VimPartialSettings } from './vimSettings';
 export type { RequestSource, IWebglLoadRequest } from './progressive/loadRequest';
-export type { IElement3D } from './element3d';
+export type { BimParameter, IElement3D } from './element3d';
 export type { IScene } from './scene';
 export type { IMaterials } from './materials/materials';
 export { MaterialSet } from './materials/materialSet';
