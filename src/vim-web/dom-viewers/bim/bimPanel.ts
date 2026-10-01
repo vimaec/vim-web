@@ -15,6 +15,7 @@ import {
   type SortSetting
 } from '../bim/bimTreeData'
 import { isTrue, type UserBoolean } from '../settings/userBoolean'
+import type { CapacitySettings } from '../webgl/settings'
 import { iconButton, type IconButtonHandle } from '../components'
 import * as Icons from '../iconSet'
 import type { ModalApi } from '../modal'
@@ -32,7 +33,7 @@ export type BimPanelOptions = {
   /** The viewer's vim / selection / filtered elements / filter observables. */
   state: WebglState
   /** Read once at build time. */
-  settings: { panelBimTree: UserBoolean }
+  settings: { panelBimTree: UserBoolean, capacity: CapacitySettings }
   /** The viewer's dialog, for the Export sheet in the panel head. */
   modal?: ModalApi
   /** Right-click on a tree row: open the viewer context menu there. */
@@ -138,7 +139,11 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
 
   const openExport = () => {
     const body = document.createElement('div')
-    const content = bimExport(body, { rows: orderedElements, selected: selectedElements })
+    const content = bimExport(body, {
+      rows: orderedElements,
+      selected: selectedElements,
+      canDownload: opts.settings.capacity.canDownload
+    })
     opts.modal?.message({
       title: 'Export',
       body,
@@ -149,8 +154,12 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
     })
   }
 
-  // The head's actions, in order: the preset picker, then export.
-  presets = bimPresets(panel.actions, { grouping, sort, tierTags })
+  // The head's actions, in order: the preset picker, then export. A preset is nothing but a thing
+  // recalled later, so with local storage denied the picker would promise what it cannot keep: it
+  // is left out rather than offered and quietly forgotten.
+  if (opts.settings.capacity.canReadLocalStorage) {
+    presets = bimPresets(panel.actions, { grouping, sort, tierTags })
+  }
 
   if (opts.modal) {
     exportButton = iconButton(panel.actions, {

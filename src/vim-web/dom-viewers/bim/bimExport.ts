@@ -6,6 +6,11 @@ export type BimExportOptions = {
   rows: () => AugmentedElement[]
   /** The selected elements, whether or not the tree is showing them. */
   selected: () => AugmentedElement[]
+  /**
+   * Whether the host lets the viewer hand a file to the browser (`capacity.canDownload`). With it
+   * off the sheet offers the clipboard only, rather than a button that would be refused.
+   */
+  canDownload: boolean
 }
 
 export type BimExportHandle = {
@@ -117,14 +122,16 @@ export function bimExport (host: HTMLElement, opts: BimExportOptions): BimExport
   root.appendChild(csvSection)
 
   const buttons: ButtonHandle[] = []
-  buttons.push(createButton(csvActions, {
-    label: 'Download…',
-    onClick: () => {
-      const rows = elements()
-      download(toCsv(rows), 'elements.csv')
-      csvNote.textContent = `${rows.length.toLocaleString()} rows downloaded`
-    }
-  }))
+  if (opts.canDownload) {
+    buttons.push(createButton(csvActions, {
+      label: 'Download…',
+      onClick: () => {
+        const rows = elements()
+        download(toCsv(rows), 'elements.csv')
+        csvNote.textContent = `${rows.length.toLocaleString()} rows downloaded`
+      }
+    }))
+  }
   buttons.push(createButton(csvActions, {
     label: 'Copy',
     onClick: async () => {

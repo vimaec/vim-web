@@ -143,7 +143,7 @@ export async function createDomWebglViewer (
       framing,
       isolation,
       state,
-      settings: { panelBimTree: live.ui.panelBimTree },
+      settings: { panelBimTree: live.ui.panelBimTree, capacity: fullSettings.capacity },
       modal: modalHandle,
       onContextMenu: position => contextMenuHandle.show(position)
     })
