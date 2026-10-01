@@ -1255,13 +1255,12 @@
 }
 
 /* The preset picker in the panel head: a design-system select carrying the active preset's name,
-   with a dot while the page has drifted from what it saved. */
+   with a dot while the page has drifted from what it saved. It keeps the select's own height and
+   padding — squeezing it put the label on a half pixel, which rounds the wrong way at some scales
+   and reads as text off its centre. */
 .vim-ds-presets {
   min-width: 0;
   max-width: 150px;
-  height: var(--ds-control-h-sm);
-  gap: var(--ds-space-1);
-  padding: 1px 6px 0;
 }
 .vim-ds-presets__dot {
   flex: 0 0 auto;

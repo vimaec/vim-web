@@ -156,7 +156,7 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
     exportButton = iconButton(panel.actions, {
       icon: Icons.download({ className: 'ds-iconbtn__svg' }),
       tip: 'Export… (elements as CSV, or Revit ids)',
-      size: 'sm',
+      // The head's own control height, so it stands level with the preset select beside it.
       className: 'vim-ds-bim__export',
       onClick: openExport
     })
