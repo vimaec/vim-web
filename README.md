@@ -96,15 +96,32 @@ The viewer exposes customization points for:
 
 ## Peer Dependencies
 
-`vim-web` does not bundle `react`, `react-dom`, or `three` — the host application provides them, so a single instance of each is shared across the app. Install them alongside the package:
+`three` is `vim-web`'s only peer dependency — the host application provides it, so a single instance is shared across the app. Install it alongside the package:
 
 ```bash
-npm install vim-web three react react-dom
+npm install vim-web three
 ```
 
 `three` is pinned to the version the library is built and tested against (currently `^0.183`). **Only the pinned version is officially tested and supported**, but other three.js versions may work just as well — the public API surface `vim-web` relies on is stable across recent releases. If your app pins a different `three`, override the peer range at your own risk; keeping a single shared copy of three is still preferable to the duplicate-instance problems that come from bundling it.
 
 TypeScript users should also install `@types/three` matching their `three` version, since three.js does not ship its own type definitions.
+
+## Browser Support
+
+The viewer needs **WebGL 2**, and its stylesheet uses `color-mix()`, `:has()` and `subgrid`. That
+puts the floor at:
+
+| Browser | Minimum |
+|---|---|
+| Chrome / Edge | 117 |
+| Safari | 17.0 |
+| Firefox | 121 |
+
+`subgrid` is the newest of the three in Chrome (117, September 2023); `:has()` is the newest in
+Firefox (121, December 2023); Safari reaches all three by 17.0, with `:has()` from 15.4 and
+`color-mix()` from 16.2. Older browsers will load the viewer and render the model — WebGL 2 reaches
+back much further — but parts of the chrome will lay out wrongly, so these are the versions the UI
+is supported on rather than the versions it refuses to run in.
 
 ## Tech Stack
 

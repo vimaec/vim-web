@@ -70,6 +70,12 @@
   "peerDependencies": {
     "three": "^0.183.2"
   },
+  "browserslist": [
+    "chrome >= 117",
+    "edge >= 117",
+    "safari >= 17",
+    "firefox >= 121"
+  ],
   "keywords": [
     "3d",
     "viewer",
