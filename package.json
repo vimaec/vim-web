@@ -1,6 +1,6 @@
 {
   "name": "vim-web",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "description": "WebGL and cloud-streaming 3D viewers for VIM files with BIM support",
   "type": "module",
   "files": [
@@ -8,7 +8,7 @@
     "!dist/types"
   ],
   "readme": "README.md",
-  "main": "./dist/vim-web.iife.js",
+  "main": "./dist/vim-web.js",
   "types": "./dist/vim-web.d.ts",
   "module": "./dist/vim-web.js",
   "exports": {
@@ -50,6 +50,7 @@
   "devDependencies": {
     "@fluentui/svg-icons": "^1.1.343",
     "@types/dom-webcodecs": "^0.1.13",
+    "@types/three": "^0.183.1",
     "gh-pages": "^6.3.0",
     "rollup": "^4.60.0",
     "rollup-plugin-dts": "^6.4.1",
@@ -59,14 +60,15 @@
   },
   "dependencies": {
     "@headless-tree/core": "^1.6.3",
-    "@types/three": "^0.183.1",
     "deepmerge": "^4.3.1",
     "is-plain-object": "^5.0.0",
     "stats-js": "^1.0.1",
     "ste-signals": "^3.0.11",
     "ste-simple-events": "^3.0.11",
-    "three": "^0.183.2",
     "vim-format": "^1.0.16-dev.6"
+  },
+  "peerDependencies": {
+    "three": "^0.183.2"
   },
   "keywords": [
     "3d",

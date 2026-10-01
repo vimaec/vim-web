@@ -1,7 +1,7 @@
 /**
  * Input coordinator that routes device events to viewer-specific adapters.
  *
- * See INPUT.md for architecture, pointer modes, and customization patterns.
+ * See .claude/docs/input.md for architecture, pointer modes, and customization patterns.
  */
 
 import type { ISignal } from '../events'
@@ -93,7 +93,7 @@ export interface IInputHandler {
  * Input handler coordinator.
  *
  * Manages two-tier pointer modes (active/override).
- * See INPUT.md for mode system and customization.
+ * See .claude/docs/input.md for mode system and customization.
  * @internal
  */
 export class InputHandler implements IInputHandler {

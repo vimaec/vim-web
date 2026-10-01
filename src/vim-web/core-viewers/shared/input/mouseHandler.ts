@@ -1,7 +1,7 @@
 /**
  * Mouse and pointer input handler.
  *
- * See INPUT.md for architecture, coordinate systems, and performance patterns.
+ * See .claude/docs/input.md for architecture, coordinate systems, and performance patterns.
  */
 
 import { BaseInputHandler } from "./baseInputHandler";

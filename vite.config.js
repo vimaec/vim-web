@@ -8,11 +8,13 @@ export default defineConfig({
   build: {
     sourcemap: true,
     lib: {
-      formats: ['iife', 'es'],
-      entry: resolve(__dirname, 'src/vim-web/index.ts'),
-      name: 'VIM'
+      formats: ['es'],
+      entry: resolve(__dirname, 'src/vim-web/index.ts')
     },
     rollupOptions: {
+      // three is a peer dependency provided by the host app, never bundled — this keeps a single
+      // instance of it in the consuming app. React is gone, so its externals go with it.
+      external: ['three', /^three\//],
       output: {
         // Keep style.css name
         assetFileNames: (assetInfo) => {
