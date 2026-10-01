@@ -210,6 +210,11 @@ export class BimTreeData {
     return result
   }
 
+  /** Every leaf, in the order the tree is showing them — what an export walks. */
+  orderedLeaves(): string[] {
+    return this._orderedIds.filter(id => this.nodes.get(id).childIds.length === 0)
+  }
+
   /** Whichever of these nodes comes first in tree order, for a reveal that has several to choose from. */
   firstInOrder(ids: string[]): string | undefined {
     let best: string | undefined

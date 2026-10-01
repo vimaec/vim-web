@@ -13,6 +13,10 @@ import {
   type GroupingColumn
 } from '../bim/bimTreeData'
 import { isTrue, type UserBoolean } from '../settings/userBoolean'
+import { iconButton, type IconButtonHandle } from '../components'
+import * as Icons from '../iconSet'
+import type { ModalApi } from '../modal'
+import { bimExport } from './bimExport'
 import { bimGrouping, type BimGroupingHandle } from './bimGrouping'
 import { bimRows, type BimRowsHandle } from './bimRows'
 import { bimSearch, type BimSearchHandle } from './bimSearch'
@@ -26,6 +30,8 @@ export type BimPanelOptions = {
   state: WebglState
   /** Read once at build time. */
   settings: { panelBimTree: UserBoolean }
+  /** The viewer's dialog, for the Export sheet in the panel head. */
+  modal?: ModalApi
   /** Shows a × in the head; the side panel passes `side.popContent`. */
   onClose?: () => void
   /** Right-click on a tree row: open the viewer context menu there. */
@@ -73,6 +79,7 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
 
   let search: BimSearchHandle | undefined
   let rows: BimRowsHandle | undefined
+  let exportButton: IconButtonHandle | undefined
   let groupingChrome: BimGroupingHandle | undefined
   let tree: BimTreeHandle | undefined
   let noResults: EmptyHandle | undefined
@@ -98,6 +105,47 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
       selection: state.selection,
       onContextMenu: opts.onContextMenu
     })
+  }
+
+  /** The shown elements in tree order, and the selected ones — what an export is scoped by. */
+  const orderedElements = () => {
+    const data = treeData.get()
+    if (!data) return []
+    const byIndex = new Map(state.elements.get().map(e => [e.index, e]))
+    return data.orderedLeaves()
+      .map(id => byIndex.get(data.getItem(id)?.elementIndex))
+      .filter(e => e !== undefined)
+  }
+
+  const selectedElements = () => {
+    const byIndex = new Map(state.allElements.get().map(e => [e.index, e]))
+    return state.selection.get()
+      .map(o => byIndex.get(o.element))
+      .filter(e => e !== undefined)
+  }
+
+  const openExport = () => {
+    const body = document.createElement('div')
+    const content = bimExport(body, { rows: orderedElements, selected: selectedElements })
+    opts.modal?.message({
+      title: 'Export',
+      body,
+      onClose: () => {
+        content.destroy()
+        opts.modal?.message(undefined)
+      }
+    })
+  }
+
+  if (opts.modal) {
+    exportButton = iconButton(panel.actions, {
+      icon: Icons.download({ className: 'ds-iconbtn__svg' }),
+      tip: 'Export… (elements as CSV, or Revit ids)',
+      size: 'sm',
+      className: 'vim-ds-bim__export',
+      onClick: openExport
+    })
+    exportButton.el.setAttribute('aria-label', 'Export')
   }
 
   /**
@@ -157,6 +205,7 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
     destroy: () => {
       for (const u of unsubscribes) u()
       noResults?.destroy()
+      exportButton?.destroy()
       tree?.destroy()
       rows?.destroy()
       groupingChrome?.destroy()

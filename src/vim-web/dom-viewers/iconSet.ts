@@ -16,7 +16,8 @@ const factories = Object.fromEntries(
  */
 export const {
   pointer, filter, slidersHoriz, settings, help, trash, checkmark, undo, closeIcon, home,
-  fullScreen, minimize, treeView, more, menu, collapse, chevronUp, arrowLeft, fullArrowLeft, visible,
+  fullScreen, minimize, treeView, more, menu, download, collapse, chevronUp, arrowLeft, fullArrowLeft,
+  visible,
   hidden,
   frameScene, autoCamera, orbit, look, perspective, orthographic, camera, pan, zoom, frameRect,
   frameSelection, showAll, showSelection, hideSelection, isolateSelection, autoIsolate,

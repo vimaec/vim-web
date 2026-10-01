@@ -144,6 +144,7 @@ export async function createDomWebglViewer (
       isolation,
       state,
       settings: { panelBimTree: live.ui.panelBimTree },
+      modal: modalHandle,
       onClose: () => side.popContent(),
       onContextMenu: position => contextMenuHandle.show(position)
     })
