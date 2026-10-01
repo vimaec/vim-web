@@ -509,7 +509,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
    * click on the row that is already the whole selection releases it — Flex's one in-tree way to
    * drop a selection, and ours too now that a viewport click is not the only way back to nothing.
    */
-  const select = (e: SelectGesture, item: Item, fromKey = false) => {
+  const select = (e: SelectGesture, item: Item, fromKey = false, canRelease = true) => {
     if (!tree || !data) return
     const id = item.getId()
     // The viewer echoes the selection back synchronously; the tree state is already right.
@@ -540,7 +540,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
         const elements = data.getLeafElements(id)
         // `detail < 2` keeps the second half of a double-click out of this: the first click made
         // the row the whole selection, and without the guard the second would drop it again.
-        if (e.detail < 2 && isWholeSelection(elements)) {
+        if (canRelease && e.detail < 2 && isWholeSelection(elements)) {
           viewer.selection.clear()
           tree.setSelectedItems([])
         } else {
@@ -602,7 +602,10 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     if (!item) return
     e.preventDefault()
     e.stopPropagation()
-    select(e, item)
+    // A right-click selects but never releases: a context-menu event carries `detail: 0`, so the
+    // release path would otherwise fire on the row the menu is about to act on and leave its verbs
+    // with nothing to act on.
+    select(e, item, false, false)
     opts.onContextMenu?.({ x: e.clientX, y: e.clientY })
   }
 

@@ -33,6 +33,15 @@
 
 /* Top bar — a full-width strip above both the side panel and the viewport. It publishes its own
    height as --vw-topbar-h, which everything below reads; the bar's own code offsets the canvas. */
+/* The `hidden` attribute loses to any class that sets `display`, and most of this layer's do: the
+   attribute's rule and a class's rule have the same weight, so the later one wins and the element
+   stays on screen. One rule puts the attribute back in charge everywhere this layer draws, rather
+   than a line per component that the next component forgets. */
+.vim-ds-ui [hidden],
+.ds-modal [hidden] {
+  display: none !important;
+}
+
 .vim-ds-ui {
   --vw-topbar-h: 0px;
   --vw-viewpanel-w: 0px;
@@ -152,11 +161,6 @@
   flex-direction: column;
   background: var(--stage-900);
   border-left: 1px solid var(--hairline);
-}
-/* A class that sets `display` outranks the attribute's own rule: without this the closed panel
-   keeps its 1px left border and draws a line down the window's right edge. */
-.vim-ds-viewpanel[hidden] {
-  display: none;
 }
 .vim-ds-viewpanel__tabs {
   flex: 0 0 auto;
@@ -725,9 +729,6 @@
   border: 1px solid var(--hairline);
   background: var(--stage-900);
 }
-.vim-ds-gd[hidden] {
-  display: none;
-}
 .vim-ds-gd__head {
   display: flex;
   align-items: baseline;
@@ -827,9 +828,6 @@
   background: var(--vim-cyan);
   pointer-events: none;
   z-index: 2;
-}
-.vim-ds-gd__drop[hidden] {
-  display: none;
 }
 .vim-ds-gd__drop::before {
   content: '';
@@ -972,9 +970,6 @@
 }
 /* A class that sets `display` outranks the attribute's own rule, so hiding it has to be said here
    — without this the tree's own empty state shows through the page's. */
-.vim-ds-bim-tree[hidden] {
-  display: none;
-}
 /* The scroll box fills the tree area; the side panel already draws the vertical hairlines, and the
    page draws no rule between its own rows — VIM Flex's bar runs its controls together and lets the
    content say where one ends. */
@@ -1017,15 +1012,6 @@
 .vim-ds-bim-tree .ds-cols__col--num .vim-ds-bim-tree__collbl {
   margin-right: 4px;
 }
-.vim-ds-bim__info {
-  flex: 0 0 auto;
-}
-/* Info only (tree disabled): the section fills the page and loses the DS 50% resting cap. */
-.vim-ds-bim__info--full {
-  flex: 1 1 auto;
-  min-height: 0;
-  max-height: none;
-}
 /* The panel fills its tab and scrolls its own content, so the strips above the parameters can stay
    put while the list moves under them. */
 .vim-ds-bim-info {
@@ -1050,9 +1036,6 @@
   gap: var(--ds-space-1);
   padding: 3px var(--ds-space-2);
   border-bottom: 1px solid var(--hairline);
-}
-.vim-ds-bim-info__pager[hidden] {
-  display: none;
 }
 .vim-ds-bim-info__pagesel {
   flex: 1 1 auto;
@@ -1101,9 +1084,6 @@
   background: var(--stage-700);
   color: var(--text-100);
 }
-.vim-ds-bim-info__back[hidden] {
-  display: none;
-}
 
 /* Parameters, drawn as VIM Flex draws it: a labelled identity block, then groups whose heading is
    a caret, an accented title and a count over a hairline — no bands, and rows dense enough that a
@@ -1145,18 +1125,12 @@
   font-size: var(--ds-fs-eyebrow);
   color: var(--text-400);
 }
-.vim-ds-bim-info__note[hidden] {
-  display: none;
-}
 /* Collapse-all / expand-all, sitting with the groups they act on. */
 .vim-ds-bim-info__tools {
   display: flex;
   justify-content: flex-end;
   gap: 2px;
   margin-bottom: 2px;
-}
-.vim-ds-bim-info__tools[hidden] {
-  display: none;
 }
 /* The raw-value toggle shares the tools' row, pushed to the far side — Flex's arrangement, and it
    spends no vertical space of its own. */
@@ -1273,9 +1247,6 @@
   content: '—';
   color: var(--text-400);
 }
-.vim-ds-bim-info__loading[hidden] {
-  display: none;
-}
 .vim-ds-bim-info__loading {
   display: block;
   padding: var(--ds-space-2);
@@ -1297,9 +1268,6 @@
   width: 5px;
   height: 5px;
   background: var(--vim-cyan);
-}
-.vim-ds-presets__dot[hidden] {
-  display: none;
 }
 
 /* Export sheet (modal body): a scope, the element rows, then the Revit ids a document at a time. */

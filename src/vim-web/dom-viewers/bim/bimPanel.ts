@@ -35,8 +35,6 @@ export type BimPanelOptions = {
   settings: { panelBimTree: UserBoolean }
   /** The viewer's dialog, for the Export sheet in the panel head. */
   modal?: ModalApi
-  /** Kept for callers that still hand one in; the panel head no longer shows a close. */
-  onClose?: () => void
   /** Right-click on a tree row: open the viewer context menu there. */
   onContextMenu?: (position: ContextMenuPosition) => void
 }
@@ -48,10 +46,12 @@ export type BimPanelHandle = {
 }
 
 /**
- * The 'Project Inspector' page of the side panel: the search box over the
- * virtual BIM tree, and nothing else. Element data lives in the Parameters
- * view of the right-hand panel, as it does in VIM Flex's Explore workflow,
- * which leaves this panel free to be all tree.
+ * The 'Project Inspector' page of the side panel, after VIM Flex's Explore page: the grouping strip
+ * and its drawer, the search box with the ROWS stepper, the virtual tree, and a footer saying how
+ * much of the model it is showing. The head carries the preset picker and Export.
+ *
+ * Element data is not here — it lives in the Parameters view of the right-hand panel, as it does in
+ * Flex, which leaves this page free to be all tree.
  */
 export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHandle {
   const { viewer, framing, isolation, state } = opts
@@ -102,7 +102,7 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
 
     groupingChrome = bimGrouping(upper, { grouping, tierTags, elements: state.elements })
 
-    search = bimSearch(upper, { viewer, filter: state.filter, elements: state.elements })
+    search = bimSearch(upper, { viewer, filter: state.filter })
     // The stepper rides the search row: it is pressed often, and the grouping strip has no room
     // for two more squares beside the pills.
     rows = bimRows(search.el, { depth, max: () => grouping.get().length })
@@ -149,7 +149,7 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
     })
   }
 
-  // The head's actions, right to left: the preset picker, then export, then the panel's own close.
+  // The head's actions, in order: the preset picker, then export.
   presets = bimPresets(panel.actions, { grouping, sort, tierTags })
 
   if (opts.modal) {

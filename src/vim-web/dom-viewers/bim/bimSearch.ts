@@ -1,7 +1,6 @@
 import { createSearch } from '../ds'
 import type * as Core from '../../core-viewers'
 import type { StateRef } from '../../state'
-import type { AugmentedElement } from '../helpers/element'
 
 const SEARCH_DELAY_MS = 200
 
@@ -9,8 +8,6 @@ export type BimSearchOptions = {
   viewer: Core.Webgl.Viewer
   /** The filter string; written after a short debounce, cleared at once. */
   filter: StateRef<string>
-  /** The filtered elements — their count is shown while a filter is typed. */
-  elements: StateRef<AugmentedElement[] | undefined>
 }
 
 export type BimSearchHandle = {
@@ -36,19 +33,8 @@ export function bimSearch (host: HTMLElement, opts: BimSearchOptions): BimSearch
       clearTimeout(timer)
       if (!value) opts.filter.set('')
       else timer = setTimeout(() => opts.filter.set(value), SEARCH_DELAY_MS)
-      syncCount()
     }
   })
-
-  const count = document.createElement('span')
-  count.className = 'vim-ds-bim-search__count ds-tree__meta'
-  root.appendChild(count)
-  const syncCount = () => {
-    const n = opts.elements.get()?.length
-    const show = search.getValue().length > 0 && n !== undefined
-    count.hidden = !show
-    count.textContent = show ? String(n) : ''
-  }
 
   const input = search.el.querySelector('input')!
   const onFocus = () => { opts.viewer.inputs.keyboard.active = false }
@@ -59,11 +45,8 @@ export function bimSearch (host: HTMLElement, opts: BimSearchOptions): BimSearch
   const unsubscribes = [
     opts.filter.onChange.subscribe(v => {
       if (search.getValue() !== v) search.setValue(v)
-      syncCount()
-    }),
-    opts.elements.onChange.subscribe(syncCount)
+    })
   ]
-  syncCount()
 
   return {
     el: root,

@@ -162,8 +162,9 @@ export function bimGrouping (host: HTMLElement, opts: BimGroupingOptions): BimGr
     const box = dropLine.parentElement
     if (!box) return
     const origin = box.getBoundingClientRect().top
-    const edge = slot <= from ? rows[slot] : rows[slot]
-    const rect = (edge ?? rows[rows.length - 1]).getBoundingClientRect()
+    // The row at the slot either way; which of its edges the line takes is what the direction
+    // decides — above it when the level moves up, below it when it moves down.
+    const rect = (rows[slot] ?? rows[rows.length - 1]).getBoundingClientRect()
     const top = slot <= from ? rect.top : rect.bottom
     dropLine.style.top = `${Math.round(top - origin)}px`
     dropLine.hidden = false
