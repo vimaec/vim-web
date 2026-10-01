@@ -1,4 +1,14 @@
 export { parametersView, PARAMETERS_VIEW } from './parametersView'
+// The tree's data model. Exported because the option types below name it: without these a
+// consumer cannot write down the type of what `bimTree` and `bimPanel` are handed.
+export {
+  toTreeData,
+  DEFAULT_GROUPING,
+  BimTreeData,
+  type BimNode,
+  type GroupingColumn,
+  type SortSetting
+} from './bimTreeData'
 export { bimPanel, type BimPanelHandle, type BimPanelOptions } from './bimPanel'
 export { bimTree, type BimTreeHandle, type BimTreeOptions } from './bimTree'
 export { bimSearch, type BimSearchHandle, type BimSearchOptions } from './bimSearch'

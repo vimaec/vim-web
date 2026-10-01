@@ -604,7 +604,10 @@ for (let row = 0; row < gridSize; row++) {
 - No semicolons, trailing commas, single quotes
 - Index files control module exports
 - Vitest, with the tests in `tests/` mirroring `src/vim-web/`; `npm test` runs them, and CI runs
-  them on every branch. The build is still the type gate — there is no separate `tsc` step
+  them on every branch. The build is still the type gate — there is no separate `tsc` step. DOM
+  tests opt into happy-dom with a file-level `// @vitest-environment happy-dom`. Neither viewer root
+  can be built there — WebGL wants a WebGL 2 context, Ultra wants `OffscreenCanvas.getContext` — so
+  the UI tests cover the chrome and the data model, and leave the roots to a live run
 - No linter or formatter — TypeScript compiler is the only gate
 - Do not keep deprecated code or backwards-compatibility shims unless explicitly requested
 

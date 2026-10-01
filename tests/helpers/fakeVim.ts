@@ -23,6 +23,8 @@ export type FakeModel = {
   elements: AugmentedElement[]
   /** The 3D element behind an index, as the tree resolves it. */
   element: (index: number) => Core.Webgl.IElement3D
+  /** The element a geometry instance belongs to — what the isolation API is handed. */
+  elementFromInstance: (instance: number) => Core.Webgl.IElement3D | undefined
 }
 
 /**
@@ -32,6 +34,7 @@ export type FakeModel = {
  */
 export function fakeModel (specs: ElementSpec[]): FakeModel {
   const objects = new Map<number, Core.Webgl.IElement3D>()
+  const byInstance = new Map<number, Core.Webgl.IElement3D>()
   const elements: AugmentedElement[] = []
 
   for (const spec of specs) {
@@ -42,6 +45,7 @@ export function fakeModel (specs: ElementSpec[]): FakeModel {
       instances: spec.instances ?? [spec.index]
     } as unknown as Core.Webgl.IElement3D
     objects.set(spec.index, object)
+    for (const instance of spec.instances ?? [spec.index]) byInstance.set(instance, object)
 
     elements.push({
       index: spec.index,
@@ -60,5 +64,10 @@ export function fakeModel (specs: ElementSpec[]): FakeModel {
     getElementFromIndex: (index: number) => objects.get(index)
   } as unknown as Core.Webgl.IWebglVim
 
-  return { vim, elements, element: index => objects.get(index)! }
+  return {
+    vim,
+    elements,
+    element: index => objects.get(index)!,
+    elementFromInstance: instance => byInstance.get(instance)
+  }
 }

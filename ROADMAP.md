@@ -57,27 +57,31 @@ release when one is cut, so the build is reproducible by anyone who can reach th
 
 ## Stage 2 — confidence
 
-### 2.1 A test suite, finally  ·  **started** (`225a4372`)
+### 2.1 A test suite, finally  ·  **done**
 
-Vitest is set up, CI runs it on every branch and pull request, and the release workflow runs it
-before publishing. `BimTreeData` is covered by 27 tests. The viewer smoke test and the tree's click
-vocabulary are still to write.
+There was no test directory and no test runner; `tsc` was the only gate. The branch rewrote 233
+files and some 11,500 lines of UI, and every behaviour in it was verified by driving a browser by
+hand — none of it repeatable by anyone else, which made the next change to the tree a gamble.
 
-There is no test directory and no test runner; `tsc` is the only gate, as
-[CLAUDE.md](CLAUDE.md) says outright. The branch rewrote 233 files and some 11,500 lines of UI, and
-every behaviour in it was verified by driving a browser by hand. None of that is repeatable by
-anyone else, which makes the next change to the tree a gamble.
+Vitest now runs on every branch and pull request and before every publish, over 57 tests in three
+files:
 
-The minimum worth having before a stable tag:
+- **`BimTreeData`** (27). Pure logic, no DOM: grouping, `sort`, counts, `updateVisibility`,
+  `openToDepth`, `getRange`, `orderedLeaves`. Where a regression would be both likely and invisible.
+- **The tree's click vocabulary** (19, happy-dom). The gestures the parity rounds settled: plain
+  click selects, a second plain click releases, ctrl adds and removes, shift ranges from the last
+  plain pick, ctrl with shift adds the range, right-click does not release, double-click frames and
+  opens. Plus the depth stepper, the keyboard ring, the hand-off of the viewer's keyboard, and the
+  visibility checkboxes rolling up.
+- **A smoke test** (11, happy-dom). The public module graph and the chrome around the canvas:
+  container, control bar, top bar, view panel, modal, grouping strip, ROWS stepper — each mounted,
+  driven and destroyed.
 
-- **`BimTreeData` unit tests.** Pure logic, no DOM: grouping, `sort`, `_computeCounts`,
-  `updateVisibility`, `openToDepth`, `getRange`, `orderedLeaves`. This is where a regression would
-  be both likely and invisible.
-- **A viewer smoke test.** Construct both `Dom.Webgl` and `Dom.Ultra` viewers in a headless DOM and
-  dispose them, which catches the whole wiring graph at once.
-- **A handful of tree interaction tests** over the click vocabulary the parity rounds settled:
-  plain click selects, a second plain click releases, ctrl adds, shift ranges, right-click does not
-  release.
+Neither viewer root is in that smoke test, and deliberately: `Dom.Webgl` wants a WebGL 2 context and
+Ultra's stream decoder wants `OffscreenCanvas.getContext`, and happy-dom has neither. Faking a GPU
+would only test the fake. Constructing both roots is what 2.2's live run covers, and a browser-based
+runner (Vitest's browser mode, or Playwright) is the way to have it headless — worth doing, not
+worth blocking a stable tag on.
 
 ### 2.2 Exercise Ultra against a live server  ·  **ready, needs the server**
 
@@ -179,12 +183,12 @@ repository or a deliberate decision behind it.
 | 1 | three.js packaging (1.1) | — | **done** `69e6870c` |
 | 2 | Release workflow (1.2) | — | **done** `10eab583` |
 | 3 | Browser baseline (3.3) | — | **done** `82796f86` |
-| 4 | `BimTreeData` tests and a viewer smoke test (2.1) | a few days | next |
+| 4 | ~~`BimTreeData` tests and a viewer smoke test (2.1)~~ | — | **done** |
 | 5 | Narrow the public surface (3.2) | a day | after the tests, so the cuts are covered |
 | 6 | Ultra against Flex's server (2.2) | a day | needs the server |
 | 7 | The paperwork (Stage 4) | a day | last, so it describes what shipped |
 | 8 | Pin the design system to a tag (1.3) | hours | a DS release |
 | 9 | Font payload (3.1) | upstream | the DS's new font solution |
 
-Four and five are the work in front of us; six through nine are waiting on something outside this
-repository or are best done last.
+Five is the work in front of us; six through nine are waiting on something outside this repository
+or are best done last.
