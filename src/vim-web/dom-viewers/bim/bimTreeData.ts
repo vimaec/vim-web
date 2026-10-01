@@ -191,6 +191,25 @@ export class BimTreeData {
     return [...new Set(nodeIds.flatMap(id => this.getAncestors(id)))]
   }
 
+  /**
+   * The nodes to hold open so the tree shows `depth` levels of groups: 0 leaves every group closed,
+   * and the number of grouping columns opens the last one onto its elements.
+   */
+  openToDepth(depth: number): string[] {
+    const result: string[] = []
+    const walk = (id: string, level: number) => {
+      const node = this.nodes.get(id)
+      if (!node || node.childIds.length === 0 || level >= depth) return
+      result.push(id)
+      for (const child of node.childIds) walk(child, level + 1)
+    }
+    // The root sits one level above the outermost group, and is always open.
+    for (const node of this.nodes.values()) {
+      if (!this.nodes.has(node.parentId)) walk(node.id, -1)
+    }
+    return result
+  }
+
   /** Whichever of these nodes comes first in tree order, for a reveal that has several to choose from. */
   firstInOrder(ids: string[]): string | undefined {
     let best: string | undefined

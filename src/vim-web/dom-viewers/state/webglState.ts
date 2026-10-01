@@ -9,6 +9,8 @@ export type WebglState = {
   selection: StateRef<Core.Webgl.IElement3D[]>
   /** The vim's elements with mesh, passing the current filter. */
   elements: StateRef<AugmentedElement[]>
+  /** Every element with mesh, filter aside — what a count compares against. */
+  allElements: StateRef<AugmentedElement[]>
   /** Free-text filter over id, name, category, family and type. */
   filter: StateRef<string>
 }
@@ -70,6 +72,7 @@ export function createWebglState (viewer: Core.Webgl.Viewer): WebglStateHandle {
     vim,
     selection,
     elements,
+    allElements,
     filter,
     destroy: () => {
       generation++

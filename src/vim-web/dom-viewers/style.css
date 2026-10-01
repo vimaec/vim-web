@@ -914,6 +914,22 @@
   gap: var(--ds-space-2);
   padding: var(--ds-space-2) var(--ds-space-3);
 }
+/* The ROWS stepper rides the search row; no label, as Flex has none — the arrows say it. */
+.vim-ds-rows {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+/* The footer's count, in the design system's own foot slot. */
+.vim-ds-bim .ds-panel__foot {
+  justify-content: flex-start;
+  padding: 6px var(--ds-space-3);
+}
+.vim-ds-bim__total {
+  font-size: var(--ds-fs-eyebrow);
+  color: var(--text-400);
+}
 .vim-ds-bim-search .ds-search {
   flex: 1 1 auto;
   min-width: 0;
@@ -924,6 +940,11 @@
   min-height: 96px;
   display: flex;
   flex-direction: column;
+}
+/* A class that sets `display` outranks the attribute's own rule, so hiding it has to be said here
+   — without this the tree's own empty state shows through the page's. */
+.vim-ds-bim-tree[hidden] {
+  display: none;
 }
 /* The scroll box fills the tree area; the side panel already draws the vertical hairlines. */
 .vim-ds-bim-tree .ds-tree--virtual {

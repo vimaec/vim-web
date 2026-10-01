@@ -34,6 +34,8 @@ export type BimTreeOptions = {
   treeData: StateRef<BimTreeData | undefined>
   /** Whether group rows wear their level pill; the grouping drawer owns the switch. */
   tierTags: StateRef<boolean>
+  /** How many levels of groups stand open. The stepper writes it; a rebuild resets it to 0. */
+  depth: StateRef<number>
   /** The viewer's selected elements; the tree highlights and reveals them. */
   selection: StateRef<IElement3D[]>
   /** Right-click on a row (after selecting it): open the viewer context menu there. */
@@ -413,6 +415,13 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     return t
   }
 
+  /** Opens every group above `depth` and closes the rest — the stepper's one gesture. */
+  const applyDepth = () => {
+    if (!tree || !data) return
+    tree.applySubStateUpdate('expandedItems', data.openToDepth(opts.depth.get()))
+    tree.rebuildTree()
+  }
+
   const setData = (d: BimTreeData | undefined) => {
     tree?.registerElement(null)
     unbindAll()
@@ -429,6 +438,9 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     const [key, dir] = readSort()
     d.sort(key, dir)
     tree.rebuildTree()
+    // A new tree starts closed, as Flex's stepper resets on every rebuild.
+    opts.depth.set(0)
+    applyDepth()
     syncSelection(opts.selection.get())
   }
 
@@ -594,6 +606,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
   const unsubscribes = [
     opts.treeData.onChange.subscribe(setData),
     opts.tierTags.onChange.subscribe(scheduleRender),
+    opts.depth.onChange.subscribe(applyDepth),
     opts.selection.onChange.subscribe(syncSelection),
     viewer.renderer.onSceneUpdated.subscribe(() => {
       data?.updateVisibility()

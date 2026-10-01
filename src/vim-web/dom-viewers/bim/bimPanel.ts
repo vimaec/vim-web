@@ -14,6 +14,7 @@ import {
 } from '../bim/bimTreeData'
 import { isTrue, type UserBoolean } from '../settings/userBoolean'
 import { bimGrouping, type BimGroupingHandle } from './bimGrouping'
+import { bimRows, type BimRowsHandle } from './bimRows'
 import { bimSearch, type BimSearchHandle } from './bimSearch'
 import { bimTree, type BimTreeHandle } from './bimTree'
 
@@ -50,6 +51,11 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
   const panel = createPanel(host, { title: 'Project Inspector', fill: true, onClose: opts.onClose })
   panel.el.classList.add('vim-ds-bim')
 
+  // The design system's own footer slot carries the count, as Flex's footer does.
+  const total = document.createElement('span')
+  total.className = 'vim-ds-bim__total'
+  panel.foot.appendChild(total)
+
   const treeData = createState<BimTreeData | undefined>(undefined)
   // The nesting, outermost first, edited through the grouping drawer. A stored value from an older
   // build (or a column that has since gone) fails the guard and falls back to the default.
@@ -61,9 +67,12 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
         : [...DEFAULT_GROUPING]
   })
   const tierTags = createSettingState(() => true, { storageKey: 'vim.bim.tierTags' })
+  // How many levels of groups stand open. Session state, reset by every rebuild.
+  const depth = createState(0)
   const rebuildTreeData = () => treeData.set(toTreeData(state.vim.get(), state.elements.get(), grouping.get()))
 
   let search: BimSearchHandle | undefined
+  let rows: BimRowsHandle | undefined
   let groupingChrome: BimGroupingHandle | undefined
   let tree: BimTreeHandle | undefined
   let noResults: EmptyHandle | undefined
@@ -76,25 +85,49 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
     groupingChrome = bimGrouping(upper, { grouping, tierTags, elements: state.elements })
 
     search = bimSearch(upper, { viewer, filter: state.filter, elements: state.elements })
+    // The stepper rides the search row: it is pressed often, and the grouping strip has no room
+    // for two more squares beside the pills.
+    rows = bimRows(search.el, { depth, max: () => grouping.get().length })
     tree = bimTree(upper, {
       viewer,
       framing,
       isolation,
       treeData,
       tierTags,
+      depth,
       selection: state.selection,
       onContextMenu: opts.onContextMenu
     })
   }
 
-  /** A filter with no matches shows an empty state in place of the tree. */
+  /**
+   * The footer's readout, in VIM Flex's words: the model's own total, or how much of it the search
+   * leaves while one is typed.
+   */
+  const syncTotal = () => {
+    const shown = state.elements.get()?.length ?? 0
+    const all = state.allElements.get()?.length ?? 0
+    if (state.filter.get().length > 0 && shown !== all) {
+      total.textContent = `${shown.toLocaleString()} of ${all.toLocaleString()} match`
+      return
+    }
+    total.textContent = `Total elements ${all.toLocaleString()}`
+  }
+
+  /** A search with no matches shows an empty state in place of the tree, worded as Flex words it. */
   const syncResults = () => {
     if (!upper || !tree) return
     const filter = state.filter.get()
-    const none = filter.length > 0 && (state.elements.get()?.length ?? 0) === 0
-    tree.el.hidden = none
+    const empty = (state.elements.get()?.length ?? 0) === 0
+    tree.el.hidden = empty
     noResults?.destroy()
-    noResults = none ? createEmpty(upper, { title: `No results for "${filter}"` }) : undefined
+    noResults = empty
+      ? createEmpty(upper, {
+        title: filter.length > 0
+          ? `No elements match “${filter}”`
+          : 'This model has no elements to show'
+      })
+      : undefined
   }
 
   const unsubscribes = [
@@ -102,12 +135,21 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
     state.elements.onChange.subscribe(() => {
       rebuildTreeData()
       syncResults()
+      syncTotal()
     }),
-    state.filter.onChange.subscribe(syncResults),
-    grouping.onChange.subscribe(rebuildTreeData)
+    state.allElements.onChange.subscribe(syncTotal),
+    state.filter.onChange.subscribe(() => {
+      syncResults()
+      syncTotal()
+    }),
+    grouping.onChange.subscribe(() => {
+      rebuildTreeData()
+      rows?.sync()
+    })
   ]
   rebuildTreeData()
   syncResults()
+  syncTotal()
 
   return {
     el: panel.el,
@@ -116,6 +158,7 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
       for (const u of unsubscribes) u()
       noResults?.destroy()
       tree?.destroy()
+      rows?.destroy()
       groupingChrome?.destroy()
       search?.destroy()
       panel.destroy()

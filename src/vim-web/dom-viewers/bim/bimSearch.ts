@@ -30,7 +30,7 @@ export function bimSearch (host: HTMLElement, opts: BimSearchOptions): BimSearch
 
   let timer: ReturnType<typeof setTimeout> | undefined
   const search = createSearch(root, {
-    placeholder: 'Search elements...',
+    placeholder: 'Search name, type, id…',
     value: opts.filter.get(),
     onInput: value => {
       clearTimeout(timer)
