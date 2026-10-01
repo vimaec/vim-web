@@ -40,6 +40,8 @@ const MAP = {
   more: 'more_horizontal',
   menu: 'line_horizontal_3',
   download: 'arrow_download',
+  arrowUp: 'arrow_up',
+  arrowDown: 'arrow_down',
   collapse: 'chevron_down',
   chevronUp: 'chevron_up',
   arrowLeft: 'chevron_left',

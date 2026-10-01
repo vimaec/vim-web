@@ -1,4 +1,4 @@
-import { createBar, createSkeleton } from '../ds'
+import { createBar } from '../ds'
 import type { LoadingBoxProps, ProgressMode } from './types'
 
 export function formatProgress (progress: number, mode: ProgressMode = 'percent'): string {
@@ -9,13 +9,21 @@ export function formatProgress (progress: number, mode: ProgressMode = 'percent'
 }
 
 /**
- * Loading content for the modal body. The React widget was an animated bar;
- * the DS envelope forbids animation, so percent progress drives a
- * determinate `ds-bar` and anything else shows a static skeleton.
+ * Loading content for the modal body: what is being loaded, and how far along. A bar is drawn only
+ * when there is a proportion to draw — a download of unknown length counts bytes instead, and an
+ * empty track that never fills says less than the number beside it.
  */
 export function renderLoadingBox (body: HTMLElement, props: LoadingBoxProps): { destroy (): void } {
   const root = document.createElement('div')
   root.className = 'vim-ds-loading'
+
+  if (props.source) {
+    const source = document.createElement('div')
+    source.className = 'vim-ds-loading__source'
+    source.textContent = props.source
+    source.title = props.source
+    root.appendChild(source)
+  }
 
   const text = formatProgress(props.progress ?? 0, props.mode)
   if (text) {
@@ -26,9 +34,7 @@ export function renderLoadingBox (body: HTMLElement, props: LoadingBoxProps): { 
   }
 
   const determinate = (props.mode ?? 'percent') === 'percent' && (props.progress ?? 0) > 0
-  const indicator = determinate
-    ? createBar(root, { value: props.progress, max: 100 })
-    : createSkeleton(root, { variant: 'block', height: 6 })
+  const indicator = determinate ? createBar(root, { value: props.progress, max: 100 }) : undefined
 
   if (props.more !== undefined) {
     root.appendChild(typeof props.more === 'string' ? document.createTextNode(props.more) : props.more)
@@ -37,7 +43,7 @@ export function renderLoadingBox (body: HTMLElement, props: LoadingBoxProps): { 
 
   return {
     destroy: () => {
-      indicator.destroy()
+      indicator?.destroy()
       root.remove()
     }
   }

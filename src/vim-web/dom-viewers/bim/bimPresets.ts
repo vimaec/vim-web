@@ -1,5 +1,5 @@
 import type { StateRef } from '../../state'
-import { createButton, createConfirm, createMenu, createRename, type ButtonHandle, type MenuEntry, type MenuHandle } from '../ds'
+import { createConfirm, createMenu, createRename, type MenuEntry, type MenuHandle } from '../ds'
 import { TIP_ATTR } from '../components'
 import { storageGet, storageSet } from '../settings/localStorage'
 import {
@@ -63,21 +63,22 @@ export function bimPresets (host: HTMLElement, opts: BimPresetsOptions): BimPres
 
   const menu: MenuHandle = createMenu()
 
-  const button: ButtonHandle = createButton(host, {
-    label: 'Presets',
-    onClick: () => {
-      menu.setItems(items())
-      menu.openUnder(button.el)
-    }
-  })
-  button.el.classList.add('vim-ds-presets')
-  // The label is ours rather than the handle's: `setLabel` replaces the button's whole content,
-  // which would take the drift dot with it.
+  // A picker, not a verb: it wears the design system's select, as Flex's does.
+  const button = document.createElement('button')
+  button.type = 'button'
+  button.className = 'ds-select vim-ds-presets'
   const label = document.createElement('span')
-  label.className = 'vim-ds-presets__label'
+  label.className = 'ds-select__label'
   const dot = document.createElement('span')
   dot.className = 'vim-ds-presets__dot'
-  button.el.replaceChildren(label, dot)
+  const chevron = document.createElement('span')
+  chevron.className = 'ds-select__chev'
+  button.append(label, dot, chevron)
+  host.appendChild(button)
+  button.addEventListener('click', () => {
+    menu.setItems(items())
+    menu.openUnder(button)
+  })
 
   const snapshot = (name: string): BimPreset => ({
     name,
@@ -216,7 +217,7 @@ export function bimPresets (host: HTMLElement, opts: BimPresetsOptions): BimPres
     const off = preset !== undefined && drifted()
     label.textContent = preset?.name ?? 'Presets'
     dot.hidden = !off
-    button.el.setAttribute(TIP_ATTR, preset === undefined
+    button.setAttribute(TIP_ATTR, preset === undefined
       ? 'Presets — save the grouping, sort and tags; recall them later'
       : off
         ? `${preset.name} — changed since saved`
@@ -232,11 +233,11 @@ export function bimPresets (host: HTMLElement, opts: BimPresetsOptions): BimPres
   sync()
 
   return {
-    el: button.el,
+    el: button,
     destroy: () => {
       for (const u of unsubscribes) u()
       menu.destroy()
-      button.destroy()
+      button.remove()
     }
   }
 }

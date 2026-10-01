@@ -36,7 +36,7 @@ export type BimPanelOptions = {
   settings: { panelBimTree: UserBoolean }
   /** The viewer's dialog, for the Export sheet in the panel head. */
   modal?: ModalApi
-  /** Shows a × in the head; the side panel passes `side.popContent`. */
+  /** Kept for callers that still hand one in; the panel head no longer shows a close. */
   onClose?: () => void
   /** Right-click on a tree row: open the viewer context menu there. */
   onContextMenu?: (position: ContextMenuPosition) => void
@@ -58,7 +58,9 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
   const { viewer, framing, isolation, state } = opts
   const showTree = isTrue(opts.settings.panelBimTree)
 
-  const panel = createPanel(host, { title: 'Project Inspector', fill: true, onClose: opts.onClose })
+  // No close button: the page is not something a reader dismisses in passing, and the View menu
+  // already carries the switch.
+  const panel = createPanel(host, { title: 'Project Inspector', fill: true })
   panel.el.classList.add('vim-ds-bim')
 
   // The design system's own footer slot carries the count, as Flex's footer does.

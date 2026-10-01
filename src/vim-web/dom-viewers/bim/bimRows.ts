@@ -38,8 +38,8 @@ export function bimRows (host: HTMLElement, opts: BimRowsOptions): BimRowsHandle
     return handle
   }
 
-  const collapse: IconButtonHandle = step(() => Icons.chevronUp({ className: ICON_CLASS }), 'Collapse one level', -1)
-  const expand: IconButtonHandle = step(() => Icons.collapse({ className: ICON_CLASS }), 'Expand one level', 1)
+  const collapse: IconButtonHandle = step(() => Icons.arrowUp({ className: ICON_CLASS }), 'Collapse one level', -1)
+  const expand: IconButtonHandle = step(() => Icons.arrowDown({ className: ICON_CLASS }), 'Expand one level', 1)
 
   const sync = () => {
     const depth = opts.depth.get()

@@ -54,6 +54,7 @@ export class WebglLoader {
       {
         onProgress: p => this._modal.loading({
           message: 'Loading in WebGL Mode',
+          source: fileName(source.url),
           progress: p.current,
           mode: p.type,
           more: this._addLink ? ultraSuggestion() : undefined
@@ -77,4 +78,12 @@ export class WebglLoader {
       }
     }
   }
+}
+
+/** The last segment of a url, for the dialog that says what is loading. */
+function fileName (url: string | undefined) {
+  if (!url) return undefined
+  const path = url.split(/[?#]/)[0]
+  const name = path.substring(path.lastIndexOf('/') + 1)
+  return name ? decodeURIComponent(name) : undefined
 }

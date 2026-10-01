@@ -7,6 +7,8 @@ export type ProgressMode = 'percent' | 'bytes'
 
 export type LoadingBoxProps = {
   message?: string
+  /** What is being loaded — a file name, shown above the progress. */
+  source?: string
   /** Bytes in `bytes` mode, 0–100 in `percent` mode. */
   progress?: number
   mode?: ProgressMode

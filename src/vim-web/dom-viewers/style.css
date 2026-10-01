@@ -496,17 +496,34 @@
     grid-template-columns: 1fr;
   }
 }
+/* What is loading and how far along, on one line: the file carries the width, the figure the far
+   end. A bar joins them only when there is a proportion to draw. */
 .vim-ds-loading {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: baseline;
   gap: var(--ds-space-2);
   min-width: 280px;
 }
+.vim-ds-loading__source {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--ds-fs-body);
+  color: var(--text-100);
+}
 .vim-ds-loading__progress {
-  text-align: right;
+  flex: 0 0 auto;
+  margin-left: auto;
   font-family: var(--font-mono);
   font-size: var(--ds-fs-label);
   color: var(--text-300);
+}
+.vim-ds-loading .ds-bar,
+.vim-ds-loading .vim-ds-ultra-suggestion {
+  flex: 1 1 100%;
 }
 .vim-ds-message-body {
   white-space: pre-wrap;
@@ -664,18 +681,17 @@
 }
 
 /* Grouping chrome: the Group by strip and the drawer its ≡ opens, after VIM Flex's pair. */
-/* The design system's panel head pads by 12px, so the chrome under it does too: the drawer's ≡ and
-   the search box then stand in the same column as the head's close button. The gutter takes the
-   first 12px, so these pad by the remainder. */
+/* One inset down the page: the gutter takes the first 12px, which is the design system's own panel
+   padding, so everything after it stands in the title's column. */
 .vim-ds-grouping {
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  padding: var(--ds-space-2) var(--ds-space-3) 0 var(--ds-space-1);
+  padding: var(--ds-space-2) var(--ds-space-3) 0 0;
 }
 .vim-ds-gb {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--ds-space-1);
   min-width: 0;
 }
@@ -702,7 +718,8 @@
   color: var(--text-400);
 }
 /* The pills shrink before the strip wraps: in a 340px panel a wrapped strip orphans the leaf
-   indicator, and a clipped column name (with the tip behind it) reads better than that. */
+   indicator, and a clipped column name (with the tip behind it) reads better than that. The 1px
+   top is the same compensation the chips carry — a label with no descenders rides high without it. */
 .vim-ds-gb__pill {
   flex: 0 1 auto;
   min-width: 0;
@@ -710,6 +727,7 @@
   display: inline-flex;
   align-items: center;
   line-height: 1;
+  padding-top: 1px;
   gap: 4px;
   height: var(--ds-control-h-sm);
   box-sizing: border-box;
@@ -727,8 +745,12 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* The mono digit sits higher in its line box than the body text beside it; this puts the two on one
+   line. */
 .vim-ds-gb__rank {
   flex: 0 0 auto;
+  padding-top: 1px;
+  line-height: 1;
   font-family: var(--font-mono);
   font-size: var(--ds-fs-eyebrow);
   color: var(--text-400);
@@ -961,7 +983,7 @@
   display: flex;
   align-items: center;
   gap: var(--ds-space-2);
-  padding: var(--ds-space-2) var(--ds-space-3) var(--ds-space-2) var(--ds-space-1);
+  padding: var(--ds-space-2) var(--ds-space-3) var(--ds-space-2) 0;
 }
 /* The ROWS stepper rides the search row; no label, as Flex has none — the arrows say it. */
 .vim-ds-rows {
@@ -995,19 +1017,23 @@
 .vim-ds-bim-tree[hidden] {
   display: none;
 }
-/* The scroll box fills the tree area; the side panel already draws the vertical hairlines. */
+/* The scroll box fills the tree area; the side panel already draws the vertical hairlines, and the
+   page draws no rule between its own rows — VIM Flex's bar runs its controls together and lets the
+   content say where one ends. */
 .vim-ds-bim-tree .ds-tree--virtual {
   flex: 1 1 auto;
   min-height: 0;
-  border-left: 0;
-  border-right: 0;
+  border: 0;
 }
-/* Same treatment for the header strip above it: it keeps its own height and sheds the side borders
-   the side panel already draws. */
 .vim-ds-bim-tree .ds-cols {
   flex: 0 0 auto;
-  border-left: 0;
-  border-right: 0;
+  border: 0;
+}
+/* The rows and their header start where the chrome above them starts: one left edge for the page,
+   the gutter's own width. */
+.vim-ds-bim-tree .ds-cols,
+.vim-ds-bim-tree .ds-tree--virtual .ds-tree__item {
+  padding-left: var(--ds-space-3);
 }
 /* The Elements column. One width for the header cell and the row cells under it, which is what puts
    a column's digits under its label; the design system supplies the gutter and the text inset. */
@@ -1299,20 +1325,14 @@
   color: var(--text-400);
 }
 
-/* The preset picker in the panel head: the active preset's name, with a dot while the page has
-   drifted from what it saved. */
+/* The preset picker in the panel head: a design-system select carrying the active preset's name,
+   with a dot while the page has drifted from what it saved. */
 .vim-ds-presets {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  max-width: 140px;
-  overflow: hidden;
-  white-space: nowrap;
-}
-.vim-ds-presets__label {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: 150px;
+  height: var(--ds-control-h-sm);
+  gap: var(--ds-space-1);
+  padding: 1px 6px 0;
 }
 .vim-ds-presets__dot {
   flex: 0 0 auto;
