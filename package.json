@@ -33,6 +33,8 @@
   },
   "scripts": {
     "dev": "vite",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "build:ds": "cd vim-html-ds && npm install --no-save --silent && npm run build",
     "predev": "npm run build:ds",
     "prebuild": "npm run build:ds",
@@ -52,11 +54,13 @@
     "@types/dom-webcodecs": "^0.1.13",
     "@types/three": "^0.183.1",
     "gh-pages": "^6.3.0",
+    "happy-dom": "^20.14.5",
     "rollup": "^4.60.0",
     "rollup-plugin-dts": "^6.4.1",
     "typedoc": "^0.28.18",
     "typescript": "^6.0.2",
-    "vite": "^8.0.2"
+    "vite": "^8.0.2",
+    "vitest": "^5.0.3"
   },
   "dependencies": {
     "@headless-tree/core": "^1.6.3",
