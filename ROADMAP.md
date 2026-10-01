@@ -57,7 +57,11 @@ release when one is cut, so the build is reproducible by anyone who can reach th
 
 ## Stage 2 — confidence
 
-### 2.1 A test suite, finally
+### 2.1 A test suite, finally  ·  **started** (`225a4372`)
+
+Vitest is set up, CI runs it on every branch and pull request, and the release workflow runs it
+before publishing. `BimTreeData` is covered by 27 tests. The viewer smoke test and the tree's click
+vocabulary are still to write.
 
 There is no test directory and no test runner; `tsc` is the only gate, as
 [CLAUDE.md](CLAUDE.md) says outright. The branch rewrote 233 files and some 11,500 lines of UI, and

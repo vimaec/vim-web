@@ -603,7 +603,8 @@ for (let row = 0; row < gridSize; row++) {
 
 - No semicolons, trailing commas, single quotes
 - Index files control module exports
-- No test framework configured — build pass is verification
+- Vitest, with the tests in `tests/` mirroring `src/vim-web/`; `npm test` runs them, and CI runs
+  them on every branch. The build is still the type gate — there is no separate `tsc` step
 - No linter or formatter — TypeScript compiler is the only gate
 - Do not keep deprecated code or backwards-compatibility shims unless explicitly requested
 
@@ -618,6 +619,8 @@ for (let row = 0; row < gridSize; row++) {
 npm run dev           # Dev server (localhost:5173) — `/` WebGL, `/ultra` Ultra, `?vim=<url>`
 npm run build         # Production build (vite + tsc declarations + rollup d.ts bundles)
 npm run build:ds      # Builds the vim-html-ds submodule (runs automatically before dev/build)
+npm test              # Vitest, once
+npm run test:watch    # Vitest, watching
 npm run documentation # TypeDoc
 ```
 
