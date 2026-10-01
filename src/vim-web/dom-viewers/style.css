@@ -153,6 +153,11 @@
   background: var(--stage-900);
   border-left: 1px solid var(--hairline);
 }
+/* A class that sets `display` outranks the attribute's own rule: without this the closed panel
+   keeps its 1px left border and draws a line down the window's right edge. */
+.vim-ds-viewpanel[hidden] {
+  display: none;
+}
 .vim-ds-viewpanel__tabs {
   flex: 0 0 auto;
   border-bottom: 1px solid var(--hairline);
@@ -610,6 +615,12 @@
   flex: 0 0 auto;
 }
 
+/* The side panel draws the one divider between itself and the viewport; the design system's panel
+   would add a second against the window's own edge. */
+.vim-ds-side .ds-panel {
+  border-left: 0;
+}
+
 /* BIM page (inside the side panel): search + virtual tree above, resizable inspector section below. */
 /* The page manages its own scrolling — the tree scrolls inside itself — so the panel body must
    not scroll too: its scrollbar reserved a strip on the right and pushed every control below the
@@ -627,67 +638,14 @@
   display: flex;
   flex-direction: column;
 }
-/* The tree page's controls, with Flex's collapse gutter down their left: a thin strip that folds
-   them into one line, and the line itself, which unfolds them again. */
-.vim-ds-chrome {
-  flex: 0 1 auto;
-  min-height: 0;
-  display: flex;
-  align-items: stretch;
-}
-.vim-ds-chrome__gutter {
-  flex: 0 0 12px;
-  padding: 0;
-  border: 0;
-  border-right: 1px solid var(--hairline);
-  background: transparent;
-  cursor: pointer;
-}
-.vim-ds-chrome__gutter:hover {
-  background: var(--stage-800);
-  border-right-color: var(--vim-cyan);
-}
-.vim-ds-chrome__rows {
-  flex: 1 1 auto;
-  min-width: 0;
-  min-height: 0;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-.vim-ds-chrome__rows[hidden] {
-  display: none;
-}
-.vim-ds-chrome__summary {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  padding: var(--ds-space-2) var(--ds-space-3);
-  border: 0;
-  background: transparent;
-  color: var(--text-400);
-  cursor: pointer;
-  text-align: left;
-  font-family: var(--font-body);
-  font-size: var(--ds-fs-eyebrow);
-}
-.vim-ds-chrome__summary:hover {
-  color: var(--text-100);
-}
-.vim-ds-chrome__summary[hidden] {
-  display: none;
-}
-
 /* Grouping chrome: the Group by strip and the drawer its ≡ opens, after VIM Flex's pair. */
-/* One inset down the page: the gutter takes the first 12px, which is the design system's own panel
-   padding, so everything after it stands in the title's column. */
+/* One inset down the page — the design system's own panel padding — so every row stands in the
+   title's column. */
 .vim-ds-grouping {
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  padding: var(--ds-space-2) var(--ds-space-3) 0 0;
+  padding: var(--ds-space-2) var(--ds-space-3) 0;
 }
 .vim-ds-gb {
   display: flex;
@@ -983,7 +941,7 @@
   display: flex;
   align-items: center;
   gap: var(--ds-space-2);
-  padding: var(--ds-space-2) var(--ds-space-3) var(--ds-space-2) 0;
+  padding: var(--ds-space-2) var(--ds-space-3);
 }
 /* The ROWS stepper rides the search row; no label, as Flex has none — the arrows say it. */
 .vim-ds-rows {

@@ -440,9 +440,8 @@ guarded per column so an unknown one falls back to `DEFAULT_GROUPING`.
 
 ### Project Inspector Chrome
 
-The tree page's furniture, after VIM Flex's Explore page: a collapse gutter (`bim/bimChrome.ts`)
-that folds the controls into one line, the grouping strip and drawer, a search row carrying the
-ROWS stepper (`bim/bimRows.ts` — one press opens or closes a whole level, through
+The tree page's furniture, after VIM Flex's Explore page: the grouping strip and drawer, a search
+row carrying the ROWS stepper (`bim/bimRows.ts` — one press opens or closes a whole level, through
 `BimTreeData.openToDepth`), the tree, and a footer reading `Total elements N` or `N of M match`.
 The panel head holds the preset picker (`bim/bimPresets.ts` — grouping, sort and tier tags, stored
 under `vim.bim.presets`) and Export (`bim/bimExport.ts` — the element rows as CSV, and the Revit

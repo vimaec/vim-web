@@ -148,11 +148,15 @@ anyway — dropping it is what lets the default three levels read in full on one
 | R4 | `Home` / `End`, and `Enter` / `Space` to act on the focused row — keeping the ring, which a mouse gesture drops | `e0a397cb` |
 | R5 | Export: a scope, a flat CSV of the element rows, and the Revit ids a document at a time | `bf659ef1` |
 | R6 | Presets: the active name, a drift dot, and recall / save / rename / delete | `0fa46329` |
-| R8 | The collapse gutter and the line it leaves behind | `295cc7c0` |
+| R8 | The collapse gutter and the line it leaves behind — built, then taken back out: a page of two rows did not earn a fold | `295cc7c0`, reverted |
 
 The stepper rides the search row rather than a VIEW row we do not have, and the footer carries both
 counts Flex splits between its footer and its filter row — one readout's worth of information in a
 panel this size.
+
+**R8 is out again.** Flex folds four rows of controls plus a search; ours folds a grouping strip and
+a search box, which is not enough to be worth a gesture. Reconsider if the page ever grows the rows
+that made the gutter worth it in Flex.
 
 ## Closed inspections
 
