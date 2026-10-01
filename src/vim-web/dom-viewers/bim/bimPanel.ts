@@ -19,6 +19,7 @@ import { iconButton, type IconButtonHandle } from '../components'
 import * as Icons from '../iconSet'
 import type { ModalApi } from '../modal'
 import { bimExport } from './bimExport'
+import { bimChrome, type BimChromeHandle } from './bimChrome'
 import { bimGrouping, type BimGroupingHandle } from './bimGrouping'
 import { bimPresets, type BimPresetsHandle } from './bimPresets'
 import { bimRows, type BimRowsHandle } from './bimRows'
@@ -89,6 +90,7 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
   let rows: BimRowsHandle | undefined
   let exportButton: IconButtonHandle | undefined
   let presets: BimPresetsHandle | undefined
+  let chrome: BimChromeHandle | undefined
   let groupingChrome: BimGroupingHandle | undefined
   let tree: BimTreeHandle | undefined
   let noResults: EmptyHandle | undefined
@@ -98,9 +100,11 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
     upper.className = 'vim-ds-bim__tree'
     panel.body.appendChild(upper)
 
-    groupingChrome = bimGrouping(upper, { grouping, tierTags, elements: state.elements })
+    // The controls fold into one line from the gutter down their left, as Flex's bar does.
+    chrome = bimChrome(upper)
+    groupingChrome = bimGrouping(chrome.rows, { grouping, tierTags, elements: state.elements })
 
-    search = bimSearch(upper, { viewer, filter: state.filter, elements: state.elements })
+    search = bimSearch(chrome.rows, { viewer, filter: state.filter, elements: state.elements })
     // The stepper rides the search row: it is pressed often, and the grouping strip has no room
     // for two more squares beside the pills.
     rows = bimRows(search.el, { depth, max: () => grouping.get().length })
@@ -115,6 +119,15 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
       selection: state.selection,
       onContextMenu: opts.onContextMenu
     })
+  }
+
+  /** What the folded controls still say: the nesting, and the search if one is typed. */
+  const syncSummary = () => {
+    const filter = state.filter.get()
+    const nesting = grouping.get().join(' › ')
+    chrome?.setSummary(filter.length > 0
+      ? `Group by ${nesting} · “${filter}”`
+      : `Group by ${nesting}`)
   }
 
   /** The shown elements in tree order, and the selected ones — what an export is scoped by. */
@@ -202,15 +215,18 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
     state.filter.onChange.subscribe(() => {
       syncResults()
       syncTotal()
+      syncSummary()
     }),
     grouping.onChange.subscribe(() => {
       rebuildTreeData()
       rows?.sync()
+      syncSummary()
     })
   ]
   rebuildTreeData()
   syncResults()
   syncTotal()
+  syncSummary()
 
   return {
     el: panel.el,
@@ -220,6 +236,7 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
       noResults?.destroy()
       presets?.destroy()
       exportButton?.destroy()
+      chrome?.destroy()
       tree?.destroy()
       rows?.destroy()
       groupingChrome?.destroy()
