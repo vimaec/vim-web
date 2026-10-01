@@ -1250,6 +1250,31 @@
   color: var(--text-400);
 }
 
+/* The preset picker in the panel head: the active preset's name, with a dot while the page has
+   drifted from what it saved. */
+.vim-ds-presets {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 140px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.vim-ds-presets__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vim-ds-presets__dot {
+  flex: 0 0 auto;
+  width: 5px;
+  height: 5px;
+  background: var(--vim-cyan);
+}
+.vim-ds-presets__dot[hidden] {
+  display: none;
+}
+
 /* Export sheet (modal body): a scope, the element rows, then the Revit ids a document at a time. */
 .vim-ds-export {
   display: flex;

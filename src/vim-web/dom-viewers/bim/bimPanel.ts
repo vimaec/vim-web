@@ -8,9 +8,11 @@ import type { WebglState } from '../state/webglState'
 import {
   DEFAULT_GROUPING,
   isGroupingColumn,
+  isSortSetting,
   toTreeData,
   type BimTreeData,
-  type GroupingColumn
+  type GroupingColumn,
+  type SortSetting
 } from '../bim/bimTreeData'
 import { isTrue, type UserBoolean } from '../settings/userBoolean'
 import { iconButton, type IconButtonHandle } from '../components'
@@ -18,6 +20,7 @@ import * as Icons from '../iconSet'
 import type { ModalApi } from '../modal'
 import { bimExport } from './bimExport'
 import { bimGrouping, type BimGroupingHandle } from './bimGrouping'
+import { bimPresets, type BimPresetsHandle } from './bimPresets'
 import { bimRows, type BimRowsHandle } from './bimRows'
 import { bimSearch, type BimSearchHandle } from './bimSearch'
 import { bimTree, type BimTreeHandle } from './bimTree'
@@ -73,6 +76,11 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
         : [...DEFAULT_GROUPING]
   })
   const tierTags = createSettingState(() => true, { storageKey: 'vim.bim.tierTags' })
+  // Which column sorts the tree. Lives here with the grouping, so a preset can hold both.
+  const sort = createSettingState<SortSetting>(() => 'name:asc', {
+    storageKey: 'vim.bim.sort',
+    validate: next => (isSortSetting(next) ? next : 'name:asc')
+  })
   // How many levels of groups stand open. Session state, reset by every rebuild.
   const depth = createState(0)
   const rebuildTreeData = () => treeData.set(toTreeData(state.vim.get(), state.elements.get(), grouping.get()))
@@ -80,6 +88,7 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
   let search: BimSearchHandle | undefined
   let rows: BimRowsHandle | undefined
   let exportButton: IconButtonHandle | undefined
+  let presets: BimPresetsHandle | undefined
   let groupingChrome: BimGroupingHandle | undefined
   let tree: BimTreeHandle | undefined
   let noResults: EmptyHandle | undefined
@@ -102,6 +111,7 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
       treeData,
       tierTags,
       depth,
+      sort,
       selection: state.selection,
       onContextMenu: opts.onContextMenu
     })
@@ -136,6 +146,9 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
       }
     })
   }
+
+  // The head's actions, right to left: the preset picker, then export, then the panel's own close.
+  presets = bimPresets(panel.actions, { grouping, sort, tierTags })
 
   if (opts.modal) {
     exportButton = iconButton(panel.actions, {
@@ -205,6 +218,7 @@ export function bimPanel (host: HTMLElement, opts: BimPanelOptions): BimPanelHan
     destroy: () => {
       for (const u of unsubscribes) u()
       noResults?.destroy()
+      presets?.destroy()
       exportButton?.destroy()
       tree?.destroy()
       rows?.destroy()

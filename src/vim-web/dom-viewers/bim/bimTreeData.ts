@@ -54,6 +54,13 @@ export function columnInModel (elements: AugmentedElement[], column: GroupingCol
 /** What a tree column sorts by, and which way. */
 export type SortKey = 'name' | 'count'
 export type SortDir = 'asc' | 'desc'
+/** The two as one value, so a column and a direction can never disagree. */
+export type SortSetting = `${SortKey}:${SortDir}`
+
+/** Whether a stored value still names a column and a direction we have. */
+export function isSortSetting (value: unknown): value is SortSetting {
+  return typeof value === 'string' && /^(name|count):(asc|desc)$/.test(value)
+}
 
 /**
  * Numeric collation, so 'Countertop2' comes before 'Countertop10' and an element's '#649003' reads

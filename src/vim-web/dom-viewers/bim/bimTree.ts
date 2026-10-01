@@ -12,8 +12,14 @@ import type { FramingApi, IsolationApi } from '../api'
 import type { StateRef } from '../../state'
 import { TIP_ATTR, tooltipZone } from '../components/tooltip'
 import type { ContextMenuPosition } from '../panels/contextMenu'
-import { levelShorthand, type BimNode, type BimTreeData, type SortDir, type SortKey } from '../bim/bimTreeData'
-import { createSettingState } from '../state/settingState'
+import {
+  levelShorthand,
+  type BimNode,
+  type BimTreeData,
+  type SortDir,
+  type SortKey,
+  type SortSetting
+} from '../bim/bimTreeData'
 
 type IElement3D = Core.Webgl.IElement3D
 /** What `select` reads off a gesture — a mouse event, or a key standing in for one. */
@@ -38,6 +44,8 @@ export type BimTreeOptions = {
   tierTags: StateRef<boolean>
   /** How many levels of groups stand open. The stepper writes it; a rebuild resets it to 0. */
   depth: StateRef<number>
+  /** Which column sorts the tree, and which way. The headers write it. */
+  sort: StateRef<SortSetting>
   /** The viewer's selected elements; the tree highlights and reveals them. */
   selection: StateRef<IElement3D[]>
   /** Right-click on a row (after selecting it): open the viewer context menu there. */
@@ -108,12 +116,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
   const empty = createEmpty(root, { title: 'Bim data not available . . .' })
   const tips = tooltipZone(root)
 
-  // The sort outlives a reload, as Flex's column layout does. One state, so the key and the
-  // direction can never disagree.
-  const sort = createSettingState<`${SortKey}:${SortDir}`>(() => 'name:asc', {
-    storageKey: 'vim.bim.sort',
-    validate: next => (/^(name|count):(asc|desc)$/.test(next) ? next : 'name:asc')
-  })
+  const sort = opts.sort
 
   let data: BimTreeData | undefined
   let tree: Tree | undefined
@@ -201,7 +204,6 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
   const sortBy = (key: SortKey) => {
     const [current, dir] = readSort()
     sort.set(`${key}:${key === current && dir === 'asc' ? 'desc' : 'asc'}`)
-    applySort()
   }
 
   const applySort = () => {
@@ -625,6 +627,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     opts.treeData.onChange.subscribe(setData),
     opts.tierTags.onChange.subscribe(scheduleRender),
     opts.depth.onChange.subscribe(applyDepth),
+    sort.onChange.subscribe(applySort),
     opts.selection.onChange.subscribe(syncSelection),
     viewer.renderer.onSceneUpdated.subscribe(() => {
       data?.updateVisibility()
