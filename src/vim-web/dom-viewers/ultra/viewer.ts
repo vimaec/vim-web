@@ -96,7 +96,7 @@ export async function createDomUltraViewer (
   const rest = restOfScreen(cmp.ui, side)
   on(side.onChange, () => rest.update())
   // The brand lives in the bar; the floating logo is the fallback when the bar is off.
-  const logoHandle = logo(rest.el)
+  const logoHandle = logo(rest.el, { canFollowUrl: fullSettings.capacity.canFollowUrl })
   const syncBranding = () => {
     const showLogo = refs.panelLogo.get()
     const showBar = refs.panelTopBar.get()

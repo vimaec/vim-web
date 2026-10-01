@@ -52,6 +52,11 @@ function download (text: string, name: string) {
   setTimeout(() => URL.revokeObjectURL(url), 0)
 }
 
+/**
+ * The clipboard is not always ours to write: an insecure origin, a frame without the
+ * `clipboard-write` permission, or a browser that wants a fresher gesture all refuse, and on an
+ * insecure origin `navigator.clipboard` is not even there. Every refusal lands in the catch.
+ */
 async function copy (text: string) {
   try {
     await navigator.clipboard.writeText(text)
@@ -136,9 +141,8 @@ export function bimExport (host: HTMLElement, opts: BimExportOptions): BimExport
     label: 'Copy',
     onClick: async () => {
       const rows = elements()
-      csvNote.textContent = await copy(toCsv(rows))
-        ? `${rows.length.toLocaleString()} rows copied`
-        : 'The browser would not take the clipboard'
+      await handOver(toCsv(rows), message => { csvNote.textContent = message },
+        `${rows.length.toLocaleString()} rows`)
     }
   }))
 
@@ -156,6 +160,29 @@ export function bimExport (host: HTMLElement, opts: BimExportOptions): BimExport
   idCards.className = 'vim-ds-export__cards'
   idSection.append(idHead, idHelp, idCards)
   root.appendChild(idSection)
+
+  // Where the text goes when the clipboard refuses it: a box to select by hand. Without it a host
+  // that denies downloads and a browser that denies the clipboard leave the sheet with no way out.
+  const spill = document.createElement('textarea')
+  spill.className = 'vim-ds-export__spill'
+  spill.readOnly = true
+  spill.hidden = true
+  root.appendChild(spill)
+
+  /** Hands text over by whichever route works, and says which one that was. */
+  const handOver = async (text: string, note: (message: string) => void, what: string) => {
+    if (await copy(text)) {
+      spill.hidden = true
+      note(`${what} copied`)
+      return true
+    }
+    spill.value = text
+    spill.hidden = false
+    spill.focus()
+    spill.select()
+    note('The browser refused the clipboard — the text is below, select and copy it')
+    return false
+  }
 
   /** The ids of the current scope, one bucket per document. */
   const byDocument = () => {
@@ -197,7 +224,7 @@ export function bimExport (host: HTMLElement, opts: BimExportOptions): BimExport
       const button = createButton(box, {
         label: 'Copy',
         onClick: async () => {
-          const ok = await copy(ids.join('\n'))
+          const ok = await handOver(ids.join('\n'), () => {}, 'ids')
           button.setLabel(ok ? 'Copied ✓' : 'Refused')
           setTimeout(() => button.setLabel('Copy'), 2000)
         }
@@ -221,6 +248,7 @@ export function bimExport (host: HTMLElement, opts: BimExportOptions): BimExport
       ? `→ ${shown.toLocaleString()} selected elements${extra > 0 ? ` (${extra.toLocaleString()} more selected outside this list)` : ''}`
       : `→ ${shown.toLocaleString()} elements (current filters)`
     csvNote.textContent = ''
+    spill.hidden = true
     renderCards()
   }
   sync()

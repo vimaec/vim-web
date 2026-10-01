@@ -5,18 +5,27 @@ export type LogoHandle = {
   destroy (): void
 }
 
-/** The VIM logo, top-left, linking to vimaec.com. */
-export function logo (host: HTMLElement): LogoHandle {
+export type LogoOptions = {
+  /** `capacity.canFollowUrl`: with it off the mark is shown but does not lead anywhere. */
+  canFollowUrl: boolean
+}
+
+/** The VIM logo, top-left, linking to vimaec.com where the host allows it. */
+export function logo (host: HTMLElement, opts: LogoOptions): LogoHandle {
   const el = document.createElement('div')
   el.className = 'vim-ds-logo'
-  const link = document.createElement('a')
-  link.href = 'https://vimaec.com'
   const img = document.createElement('img')
   img.className = 'vim-ds-logo__img'
   img.src = logoImage
   img.alt = 'VIM'
-  link.appendChild(img)
-  el.appendChild(link)
+  if (opts.canFollowUrl) {
+    const link = document.createElement('a')
+    link.href = 'https://vimaec.com'
+    link.appendChild(img)
+    el.appendChild(link)
+  } else {
+    el.appendChild(img)
+  }
   host.appendChild(el)
   return { el, destroy: () => el.remove() }
 }

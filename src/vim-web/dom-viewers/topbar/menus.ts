@@ -17,17 +17,23 @@ import type { TopBarContent } from './topBar'
  * `bar.update()` and each time a menu opens.
  */
 
-function about (): MessageBoxProps {
+/**
+ * A host that denies `capacity.canFollowUrl` gets the address as text rather than a link: the page
+ * still says where to find us, and nothing in the viewer can navigate away from it.
+ */
+function about (canFollowUrl: boolean): MessageBoxProps {
   const body = document.createElement('div')
   const line = document.createElement('p')
   line.textContent = 'A 3D viewer for VIM files, with BIM data.'
-  const link = document.createElement('a')
-  link.className = 'ds-link'
-  link.href = 'https://vimaec.com'
-  link.target = '_blank'
-  link.rel = 'noreferrer'
-  link.textContent = 'vimaec.com'
-  body.append(line, link)
+  const address = canFollowUrl ? document.createElement('a') : document.createElement('span')
+  address.className = 'ds-link'
+  address.textContent = 'vimaec.com'
+  if (address instanceof HTMLAnchorElement) {
+    address.href = 'https://vimaec.com'
+    address.target = '_blank'
+    address.rel = 'noreferrer'
+  }
+  body.append(line, address)
   return { title: 'VIM Web', body, canClose: true }
 }
 
@@ -45,7 +51,7 @@ const helpMenu = (modal: ModalApi, settings: WebglSettings | UltraSettings) => (
       id: Ids.helpAbout,
       label: 'About VIM Web',
       separatorBefore: true,
-      action: () => modal.message(about())
+      action: () => modal.message(about(settings.capacity.canFollowUrl))
     }
   ]
 })

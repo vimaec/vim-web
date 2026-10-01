@@ -58,10 +58,3 @@ export function bullet (label: string, value: string): DocumentFragment {
   return fragment(create('span', 'vim-ds-error__bullet-label', label), ' ', create('span', 'vim-ds-error__bullet-value', value))
 }
 
-export function link (url: string, text: string): HTMLAnchorElement {
-  const a = create('a', 'ds-link', text)
-  a.href = url
-  a.target = '_blank'
-  a.rel = 'noopener noreferrer'
-  return a
-}

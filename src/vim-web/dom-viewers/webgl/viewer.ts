@@ -184,7 +184,7 @@ export async function createDomWebglViewer (
   on(side.onChange, () => rest.update())
   const overlayHandle = overlay(rest.el, core.viewport.canvas)
   // The brand lives in the bar; the floating logo is the fallback when the bar is off.
-  const logoHandle = logo(rest.el)
+  const logoHandle = logo(rest.el, { canFollowUrl: fullSettings.capacity.canFollowUrl })
   const syncBranding = () => {
     const showLogo = refs.panelLogo.get()
     const showBar = refs.panelTopBar.get()

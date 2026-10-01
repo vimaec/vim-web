@@ -1315,6 +1315,18 @@
   color: var(--text-400);
   min-height: 14px;
 }
+/* The text a refused clipboard leaves behind, to be selected by hand. */
+.vim-ds-export__spill {
+  width: 100%;
+  height: 96px;
+  resize: vertical;
+  padding: var(--ds-space-1) var(--ds-space-2);
+  border: 1px solid var(--hairline);
+  background: var(--stage-950);
+  color: var(--text-200);
+  font-family: var(--font-mono);
+  font-size: var(--ds-fs-eyebrow);
+}
 .vim-ds-export__cards {
   display: flex;
   flex-direction: column;
