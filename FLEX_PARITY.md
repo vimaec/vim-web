@@ -4,89 +4,12 @@ What VIM Flex's Explore workflow does that vim-web does not, gathered by reading
 `vim-renderer/run/cef-builtin` against our `dom-viewers/`. Nothing here invents a feature: an item
 that needs the query layer or core work is called out as blocked rather than planned.
 
-**Where things stand.** Rounds 1–4 are done and summarised at the bottom. The open work is below,
-from a read of every control on Flex's Explore page, each classified as plain UI over data already
-in memory or query-layer (it issues SQL over the model through DuckDB).
+**Where things stand.** Rounds 1–5 are done and summarised at the bottom. What is left is below:
+the items blocked on a database, two on the design system, one held for a successor Flex is
+building, and the places where ours stays as it is on purpose.
 
 Explore builds its page with every chrome part on at defaults: no `columns`, no
 `resizableColumns`, no `chrome` overrides, `display` on.
-
----
-
-## Open — feasible now
-
-These are plain UI in Flex too, so none of them needs a database.
-
-### R1. The ROWS stepper
-
-Two `sm` icon buttons at the right of the VIEW row, no text label — `Collapse one level` and
-`Expand one level` — disabled at depth 0 and at the last grouping level, reset to 0 on every
-rebuild. Flex's own is plain UI at the group levels (`expandToLevel`); only its last step is a
-query, because that one materializes leaves. Ours are already materialized, so the whole thing is
-plain UI here. The best-value item on the list: a four-level nesting is unusable without it.
-
-### R2. A total readout under the tree
-
-Flex's footer reads `Total elements` and the count, right-aligned. (In Hierarchy view it reads
-`<n> top-level · <n> embedded · <n> total`, which needs the hierarchy — see R10.) Ours has no
-footer at all, and the root node already carries the count the Elements column rolls up.
-
-### R3. What the search says
-
-Three wordings, all plain UI:
-
-- The box's placeholder is `Search name, type, id…`; ours says `Search elements…`.
-- While a filter narrows the list, Flex shows `N of M match` beside the FILTER BY pill. Ours says
-  nothing — a search that hides 3,000 rows reads the same as one that hides none.
-- An empty tree takes one of four exact strings: `No elements match this filter and search`,
-  `No elements match “<search>”`, `No elements match this filter`, `This model has no elements to
-  show`. Ours has one, `No results for "<search>"`, and a separate `Bim data not available . . .`.
-
-### R4. The rest of the tree's keyboard
-
-Flex binds `Home` / `End` to the first and last row, and `Enter` / `Space` to activate a row — the
-same path as a body click, Ctrl additive, deliberately *not* expansion. We bind the four arrows and
-nothing else.
-
-### R5. Export
-
-An `Export… (elements as CSV, or Revit ids)` icon on the VIEW row opens a 440px dialog: a
-`Selection only` / `All shown` scope (locked to All when nothing is selected), a live `→ N
-elements` line, an `ELEMENTS CSV` section with `Download…` and `Copy`, and a `REVIT IDS` section
-with one card per BIM document, each with its id count and a `Copy` that flips to `Copied ✓`.
-
-Flex's is query-layer because its rows live in DuckDB; every column it exports — ElementId, Domain,
-VIM, BIM Document, Workset, Level, Room, Category, Family, Type — is one we already hold on
-`AugmentedElement`, so ours would be a walk of the tree in memory. The one new thing is handing the
-file to the browser.
-
-### R6. Presets
-
-A button in the panel head carrying the active preset's name, a dot for unsaved drift, and a menu:
-the built-in `Default`, each saved preset (sub-line = the grouping joined by `›`), then
-`Save changes`, `Save as new…`, `Rename…`, `Delete…`, `Clear preset`. Flex snapshots
-`{tree, customSql, grouping, view, display}`. Ours would snapshot what we have: the grouping, the
-sort and the tier-tag switch.
-
-### R7. Colour the model by a grouping level
-
-Every GROUP BY pill in Flex is a button: pressing it colours the 3D by that column
-(`Color every element by <col>`), and pressing the lit one stops. Flex reaches it through its
-display-rule engine, which is query-layer — but the gesture does not have to be. We hold every
-element's value at every grouping level and `Element3D.color` takes a colour, so a palette over the
-distinct values at one level is plain UI here. The pill's `ds-active` state and tip already exist in
-our strip's markup.
-
-### R8. The collapse gutter
-
-A 12px strip down the left of the chrome that folds the whole bar into one line:
-`Filter: <summary> · Group by Category › Family / Type · Display: 2 rules`. Worth having only if
-our chrome grows past the grouping strip and the search box; noted so the next round does not
-reinvent it.
-
-**Suggested order.** R1 and R2 first — small, and the stepper is what a deep nesting needs. Then
-R3 and R4, which are wording and bindings. Then R7, the first that touches the 3D. R5 and R6 are
-each a day's work and independent of the rest.
 
 ---
 
@@ -124,6 +47,13 @@ None of these can be honest without a query layer over the model, and none is wo
   above centre, because the line box is centred rather than the ink and most of these strings carry
   no descenders. They agree with each other, so a row reads as aligned, and the fix belongs in
   `ds.css` beside S5 rather than in our overrides.
+
+### On Flex
+
+- **R7. Colour the model by a grouping level.** Every GROUP BY pill in Flex is a button that
+  colours the 3D by that column. We could do it without the query layer — we hold every element's
+  value at every level and `Element3D.color` takes a colour — but Flex is building something
+  better in its place, so this waits for that rather than copying what it replaces.
 
 ### Ours, not Flex's
 
@@ -207,6 +137,22 @@ MDL2 is an OS font whose licence covers neither non-Microsoft platforms nor redi
 its filter drawer does. And Flex ends its strip with a `· Element` leaf indicator, which costs more
 width than it says when the pills are the information and the drawer's terminal row states it
 anyway — dropping it is what lets the default three levels read in full on one line.
+
+## Round 5 — the tree page's chrome
+
+| | | |
+|---|---|---|
+| R1 | The ROWS stepper: one press opens or closes a whole level. Fully opening 3,328 elements costs 89ms | `7f56ab6c` |
+| R2 | `Total elements 3,328` in the design system's footer slot | `7f56ab6c` |
+| R3 | Flex's search wordings: the placeholder, `30 of 3,328 match`, and its empty-tree strings | `7f56ab6c` |
+| R4 | `Home` / `End`, and `Enter` / `Space` to act on the focused row — keeping the ring, which a mouse gesture drops | `e0a397cb` |
+| R5 | Export: a scope, a flat CSV of the element rows, and the Revit ids a document at a time | `bf659ef1` |
+| R6 | Presets: the active name, a drift dot, and recall / save / rename / delete | `0fa46329` |
+| R8 | The collapse gutter and the line it leaves behind | `295cc7c0` |
+
+The stepper rides the search row rather than a VIEW row we do not have, and the footer carries both
+counts Flex splits between its footer and its filter row — one readout's worth of information in a
+panel this size.
 
 ## Closed inspections
 

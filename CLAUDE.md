@@ -438,6 +438,16 @@ Level, BIM Document), edited through `bim/bimGrouping.ts` — the `Group by` str
 the tier-tag switch persist (`vim.bim.grouping`, `vim.bim.tierTags`), and a stored nesting is
 guarded per column so an unknown one falls back to `DEFAULT_GROUPING`.
 
+### Project Inspector Chrome
+
+The tree page's furniture, after VIM Flex's Explore page: a collapse gutter (`bim/bimChrome.ts`)
+that folds the controls into one line, the grouping strip and drawer, a search row carrying the
+ROWS stepper (`bim/bimRows.ts` — one press opens or closes a whole level, through
+`BimTreeData.openToDepth`), the tree, and a footer reading `Total elements N` or `N of M match`.
+The panel head holds the preset picker (`bim/bimPresets.ts` — grouping, sort and tier tags, stored
+under `vim.bim.presets`) and Export (`bim/bimExport.ts` — the element rows as CSV, and the Revit
+ids a document at a time, walked from the tree's own leaf order).
+
 ### Parameters View
 
 The Parameters tab only reads the selection, with one exception the reader asks for. One element
