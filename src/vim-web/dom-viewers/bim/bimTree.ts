@@ -16,6 +16,8 @@ import { levelShorthand, type BimNode, type BimTreeData, type SortDir, type Sort
 import { createSettingState } from '../state/settingState'
 
 type IElement3D = Core.Webgl.IElement3D
+/** What `select` reads off a gesture — a mouse event, or a key standing in for one. */
+type SelectGesture = Pick<MouseEvent, 'shiftKey' | 'ctrlKey' | 'metaKey' | 'detail'>
 type Tree = TreeInstance<BimNode>
 type Item = ItemInstance<BimNode>
 
@@ -487,11 +489,25 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     elements.every(e => viewer.selection.has(e))
 
   /**
+   * Enter and Space act on the focused row, the same path a click takes — Ctrl additive, and
+   * deliberately not expansion, which is the arrows' job. Flex draws the same line.
+   */
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return
+    const id = tree?.getState().focusedItem
+    const item = id !== undefined ? tree?.getItemInstance(id) : undefined
+    if (!item) return
+    e.preventDefault()
+    e.stopPropagation()
+    select({ shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, metaKey: e.metaKey, detail: 1 }, item, true)
+  }
+
+  /**
    * Tree → viewer: click, shift-click (range, additive with ctrl), ctrl-click (toggle). A plain
    * click on the row that is already the whole selection releases it — Flex's one in-tree way to
    * drop a selection, and ours too now that a viewport click is not the only way back to nothing.
    */
-  const select = (e: MouseEvent, item: Item) => {
+  const select = (e: SelectGesture, item: Item, fromKey = false) => {
     if (!tree || !data) return
     const id = item.getId()
     // The viewer echoes the selection back synchronously; the tree state is already right.
@@ -535,8 +551,9 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
       treeOrigin = false
     }
     item.primaryAction()
-    // Seats the roving index without lighting its ring — see focusFromKey.
-    focusFromClick = true
+    // A mouse gesture seats the roving index without lighting its ring; a keyboard one keeps it,
+    // since the ring is where the next arrow starts from — see focusFromKey.
+    focusFromClick = !fromKey
     try {
       item.setFocused()
     } finally {
@@ -595,6 +612,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
 
   for (const c of columns) c.button.addEventListener('click', () => sortBy(c.button.dataset.col as SortKey))
   headCheck.addEventListener('click', toggleAll)
+  container.addEventListener('keydown', onKeyDown)
   rows.addEventListener('click', onClick)
   rows.addEventListener('contextmenu', onContextMenu)
   root.addEventListener('focusin', onFocusIn)
@@ -621,6 +639,7 @@ export function bimTree (host: HTMLElement, opts: BimTreeOptions): BimTreeHandle
     refresh: render,
     destroy: () => {
       for (const u of unsubscribes) u()
+      container.removeEventListener('keydown', onKeyDown)
       resize.disconnect()
       tree?.registerElement(null)
       unbindAll()
