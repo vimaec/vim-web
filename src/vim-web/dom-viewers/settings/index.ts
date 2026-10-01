@@ -1,5 +1,4 @@
-export { settingsPanel, type SettingsPanelHandle } from './settingsPanel'
-export { settingsView, SETTINGS_VIEW } from './settingsView'
+// The settings view is registered by the viewer roots; the id opens it through `viewer.views`.
+export { SETTINGS_VIEW } from './settingsView'
 export { type UserBoolean, isTrue, isFalse } from './userBoolean'
-export { createSettings } from './settingsState'
 export type { AnySettings } from './anySettings'

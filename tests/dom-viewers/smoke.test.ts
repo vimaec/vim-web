@@ -1,6 +1,15 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it } from 'vitest'
 import * as VIM from '../../src/vim-web'
+// The chrome is no longer part of the public surface — the viewer roots build it, and a host
+// reaches it through `viewer.controlBar`, `viewer.topBar`, `viewer.views` and `viewer.modal`. The
+// tests below still drive the real widgets, so they come from their own modules.
+import { controlBar, type ControlBarSection } from '../../src/vim-web/dom-viewers/controlbar/controlBar'
+import { topBar } from '../../src/vim-web/dom-viewers/topbar/topBar'
+import { viewPanel } from '../../src/vim-web/dom-viewers/viewpanel/viewPanel'
+import { modal } from '../../src/vim-web/dom-viewers/modal/modal'
+import { bimRows } from '../../src/vim-web/dom-viewers/bim/bimRows'
+import { bimGrouping } from '../../src/vim-web/dom-viewers/bim/bimGrouping'
 
 /**
  * What a headless run can say about the viewer.
@@ -57,6 +66,25 @@ describe('the public module graph', () => {
     expect(ran).toBe(11)
   })
 
+  it('exports the namespaces and nothing else, so widening the surface is deliberate', () => {
+    expect(Object.keys(VIM.Dom).sort()).toEqual([
+      'Bim', 'Components', 'ControlBar', 'Errors', 'Generic', 'Icons', 'Modal', 'Panels',
+      'Settings', 'State', 'TopBar', 'Ultra', 'ViewPanel', 'Webgl',
+      'childScope', 'createContainer', 'createFuncRef', 'createState', 'getElements'
+    ].sort())
+
+    // The chrome namespaces carry types and ids, not the factories that build our own chrome.
+    expect(Object.keys(VIM.Dom.ControlBar)).toEqual(['controlBarIds'])
+    expect(Object.keys(VIM.Dom.TopBar)).toEqual(['topBarIds'])
+    expect(Object.keys(VIM.Dom.Panels)).toEqual(['contextMenuIds'])
+    expect(Object.keys(VIM.Dom.ViewPanel)).toEqual([])
+    expect(Object.keys(VIM.Dom.Modal)).toEqual([])
+    expect(Object.keys(VIM.Dom.State)).toEqual(['createSettingState'])
+    expect(Object.keys(VIM.Dom.Bim).sort()).toEqual([
+      'BimTreeData', 'DEFAULT_GROUPING', 'PARAMETERS_VIEW', 'bimTree', 'parametersView', 'toTreeData'
+    ].sort())
+  })
+
   it('builds icons as detached SVG, so a factory can be handed straight to a button', () => {
     const icon = VIM.Dom.Icons.home()
     expect(icon.tagName.toLowerCase()).toBe('svg')
@@ -80,7 +108,7 @@ describe('the container', () => {
 })
 
 describe('the control bar', () => {
-  const sections = (on: () => boolean, action: () => void): VIM.Dom.ControlBar.ControlBarSection[] => [{
+  const sections = (on: () => boolean, action: () => void): ControlBarSection[] => [{
     id: 'tools',
     buttons: [
       { id: 'measure', tip: 'Measure', icon: VIM.Dom.Icons.home, isOn: on, action },
@@ -91,7 +119,7 @@ describe('the control bar', () => {
   it('draws the enabled buttons, fires them, and re-reads state on update', () => {
     let lit = false
     let fired = 0
-    const bar = VIM.Dom.ControlBar.controlBar(host(), sections(() => lit, () => { fired++ }))
+    const bar = controlBar(host(), sections(() => lit, () => { fired++ }))
 
     const buttons = () => [...bar.el.querySelectorAll<HTMLElement>('.ds-iconbtn')]
     expect(buttons()).toHaveLength(1)
@@ -108,7 +136,7 @@ describe('the control bar', () => {
   })
 
   it('shows what a customization returns, not the base definition', () => {
-    const bar = VIM.Dom.ControlBar.controlBar(host(), sections(() => false, () => {}))
+    const bar = controlBar(host(), sections(() => false, () => {}))
     bar.customize(base => [
       ...base,
       { id: 'mine', buttons: [{ id: 'extra', tip: 'Extra', icon: VIM.Dom.Icons.home, action: () => {} }] }
@@ -122,7 +150,7 @@ describe('the control bar', () => {
 describe('the top bar', () => {
   it('opens a menu, runs an item, and carries the title', () => {
     let ran = 0
-    const bar = VIM.Dom.TopBar.topBar(host(), {
+    const bar = topBar(host(), {
       content: {
         menus: [{
           id: 'view',
@@ -158,7 +186,7 @@ describe('the view panel', () => {
     let built = 0
     let destroyed = 0
 
-    const panel = VIM.Dom.ViewPanel.viewPanel(container.ui, {
+    const panel = viewPanel(container.ui, {
       root: container.root,
       gfx: container.gfx,
       resize: () => {}
@@ -192,7 +220,7 @@ describe('the view panel', () => {
 
 describe('the modal', () => {
   it('shows the highest-priority slot and leaves the body clean when destroyed', async () => {
-    const dialog = VIM.Dom.Modal.modal()
+    const dialog = modal()
     const drawn = () => Promise.resolve()
 
     // A download of unknown length names the file and counts bytes; there is no bar to draw.
@@ -217,7 +245,7 @@ describe('the modal', () => {
 describe('the inspector chrome', () => {
   it('steps the depth within its bounds', () => {
     const depth = VIM.Dom.createState(0)
-    const rows = VIM.Dom.Bim.bimRows(host(), { depth, max: () => 2 })
+    const rows = bimRows(host(), { depth, max: () => 2 })
     const [out, into] = [...rows.el.querySelectorAll<HTMLElement>('.ds-iconbtn')]
 
     into.click()
@@ -235,7 +263,7 @@ describe('the inspector chrome', () => {
   it('writes the nesting from the grouping strip', () => {
     const grouping = VIM.Dom.createState([...VIM.Dom.Bim.DEFAULT_GROUPING])
 
-    const widget = VIM.Dom.Bim.bimGrouping(host(), {
+    const widget = bimGrouping(host(), {
       grouping,
       tierTags: VIM.Dom.createState(true),
       elements: VIM.Dom.createState([])

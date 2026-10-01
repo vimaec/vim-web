@@ -35,7 +35,7 @@ export type {
 export { type StateRef, type FuncRef, createState, createFuncRef } from '../state'
 
 // Element types
-export type { AugmentedElement } from './helpers/element'
+export { getElements, type AugmentedElement } from './helpers/element'
 
 // UI namespaces
 export * as Bim from './bim'

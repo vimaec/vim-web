@@ -118,17 +118,39 @@ The design system also carries 3.9MB of Segoe UI and MDL2 TTFs that **no stylesh
 and which — per the licence reading that drove the icon redraw — we have no right to redistribute.
 That one is worth raising upstream on its own merits, not as a page-weight question.
 
-### 3.2 Narrow the public surface  ·  **agreed: review it**
+### 3.2 Narrow the public surface  ·  **done**
 
-`dom-viewers/index.ts` re-exports every sub-barrel, so `VIM.Dom.Bim.*` currently exposes
-`bimPanel`, `bimTree`, `bimGrouping`, `bimRows`, `bimPresets`, `bimExport`, `bimSearch` and
-`bimInfoPanel`. Several of those were written against exactly one call site and take options shaped
-for it (`bimRows` wants a `max: () => number`; `bimExport` wants `rows` and `selected` getters).
+`dom-viewers/index.ts` re-exported every sub-barrel, so `VIM.Dom` carried the widgets the viewer
+builds its own chrome from — `bimPanel`, `bimSearch`, `bimGrouping`, `bimRows`, `bimPresets`,
+`bimExport`, `controlBar`, `topBar`, `viewPanel`, `modal`, `sidePanel`, `axesPanel`, `logo`,
+`speedToast`, `settingsPanel`, the whole `State` namespace of root wiring. Each takes options
+written for its one call site, and a stable tag would have frozen every one of those shapes.
 
-A stable tag freezes those shapes. The agreed aim is a surface that stays extendable without being
-broad: keep what a host would reasonably compose or replace — the viewer roots, the panel, the tree,
-the info panel, the state primitives, the icon set — and stop exporting the widgets that exist to
-serve one call site inside the panel. Narrowing later is a breaking change; narrowing now is free.
+The rule applied: export the **contracts** a host customizes through, not the factories that build
+our chrome. So the `ControlBar*`, `TopBar*`, `ContextMenu*`, `View*`, `Modal*` and BIM-info types
+stay, together with the id maps (`controlBarIds`, `topBarIds`, `contextMenuIds`) that customizations
+address buttons by; the factories behind them do not. `MIGRATION.md` lists what each removed name is
+reached through now.
+
+Two things went the other way, because a kept export has to be callable:
+
+- `Dom.Bim.bimTree` names `BimTreeData`, `GroupingColumn` and `SortSetting` in its options, and none
+  of the three was exported — a consumer could call it but not write down the type of what it is
+  handed. The data model is exported now, with `toTreeData` and `DEFAULT_GROUPING`.
+- `toTreeData` takes `AugmentedElement[]`, and `getElements(vim)` is the only thing that builds
+  them. The type was exported, the function was not; it is now.
+
+One departure from what was sketched. `bimPanel` was on the keep list, and it is gone: its options
+take `WebglState`, the root's own state bundle, which no host can build — keeping it would have
+frozen a shape nobody could call. A host that wants the inspector elsewhere composes `bimTree`; a
+host that wants ours uses `viewer.ui.bimTree`.
+
+Three modules turned out to have no caller at all and were deleted: `generic/genericPanel.ts` (the
+settings popover became a tab of the view panel), `helpers/floating.ts` (only genericPanel used it)
+and `settings/settingsItem.ts`.
+
+The bundled declarations went from 171,617 to 149,522 bytes. A test pins the surface, so widening it
+again is a deliberate edit rather than a side effect of adding a file.
 
 ### 3.3 Declare a browser baseline  ·  **done** (`82796f86`)
 
@@ -183,12 +205,12 @@ repository or a deliberate decision behind it.
 | 1 | three.js packaging (1.1) | — | **done** `69e6870c` |
 | 2 | Release workflow (1.2) | — | **done** `10eab583` |
 | 3 | Browser baseline (3.3) | — | **done** `82796f86` |
-| 4 | ~~`BimTreeData` tests and a viewer smoke test (2.1)~~ | — | **done** |
-| 5 | Narrow the public surface (3.2) | a day | after the tests, so the cuts are covered |
+| 4 | Tests: `BimTreeData`, the tree, a smoke test (2.1) | — | **done** |
+| 5 | Narrow the public surface (3.2) | — | **done** |
 | 6 | Ultra against Flex's server (2.2) | a day | needs the server |
 | 7 | The paperwork (Stage 4) | a day | last, so it describes what shipped |
 | 8 | Pin the design system to a tag (1.3) | hours | a DS release |
 | 9 | Font payload (3.1) | upstream | the DS's new font solution |
 
-Five is the work in front of us; six through nine are waiting on something outside this repository
-or are best done last.
+Six through nine are what is left: all of them wait on something outside this repository, or are
+best done last so they describe what shipped.

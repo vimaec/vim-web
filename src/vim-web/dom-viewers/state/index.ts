@@ -1,22 +1,6 @@
-export { createSideState, type SideState, type SideContent } from './sideState'
-export { createWebglState, type WebglState, type WebglStateHandle } from './webglState'
+/**
+ * The observable primitives a host writes its own state in. The framing, section box, isolation,
+ * ui and tool state builders are the viewer roots' own wiring — a host reads and writes that state
+ * through the viewer's `FramingApi`, `IsolationApi`, `SectionBoxApi` and `ui` instead.
+ */
 export { createSettingState, type SettingStateOptions } from './settingState'
-export { createFraming, createWebglFraming, createUltraFraming, type CameraAdapter, type FramingHandle } from './framing'
-export { createSectionBox, createWebglSectionBox, createUltraSectionBox, type SectionBoxHandle } from './sectionBox'
-export {
-  createSharedIsolation,
-  createRenderSettings,
-  createWebglIsolation,
-  createUltraIsolation,
-  type IsolationHandle,
-  type RenderSettingsHandle
-} from './isolation'
-export { createUiRefs, liveUiSettings, webglUiApi, ultraUiApi, type UiRefs, type WebglUiApi, type UltraUiApi } from './uiState'
-export {
-  createPointerState,
-  createFullScreenState,
-  createMeasureState,
-  type PointerState,
-  type FullScreenState,
-  type MeasureState
-} from './tools'

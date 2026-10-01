@@ -7,23 +7,24 @@ import { getDefaultUltraSettings, type PartialUltraSettings, type UltraSettings 
 import { getUltraSettingsContent } from './settingsContent'
 
 import { tooltipZone } from '../components'
-import { controlBar } from '../controlbar'
+import { controlBar } from '../controlbar/controlBar'
 import { ultraControlBarSections } from '../controlbar/sections'
 import { getRequestErrorMessage } from '../errors'
-import { modal, type ModalApi } from '../modal'
-import { logo, overlay, restOfScreen, sidePanel } from '../panels'
-import { settingsView, SETTINGS_VIEW } from '../settings'
-import { viewPanel } from '../viewpanel'
-import { modelName, topBar, ultraTopBarContent } from '../topbar'
-import {
-  createSideState,
-  createUiRefs,
-  createUltraFraming,
-  createUltraIsolation,
-  createUltraSectionBox,
-  liveUiSettings,
-  ultraUiApi
-} from '../state'
+import { modal } from '../modal/modal'
+import type { ModalApi } from '../modal'
+import { logo } from '../panels/logo'
+import { overlay } from '../panels/overlay'
+import { restOfScreen } from '../panels/restOfScreen'
+import { sidePanel } from '../panels/sidePanel'
+import { settingsView, SETTINGS_VIEW } from '../settings/settingsView'
+import { viewPanel } from '../viewpanel/viewPanel'
+import { modelName, topBar } from '../topbar/topBar'
+import { ultraTopBarContent } from '../topbar/menus'
+import { createSideState } from '../state/sideState'
+import { createUiRefs, liveUiSettings, ultraUiApi } from '../state/uiState'
+import { createUltraFraming } from '../state/framing'
+import { createUltraIsolation } from '../state/isolation'
+import { createUltraSectionBox } from '../state/sectionBox'
 import { updateModal, updateProgress } from './modal'
 import type { UltraViewerApi } from './viewerApi'
 

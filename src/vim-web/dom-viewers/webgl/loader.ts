@@ -1,7 +1,8 @@
 import type * as Core from '../../core-viewers'
 import { webglFileError } from '../errors'
 import { LoadRequest } from '../helpers/loadRequest'
-import { ultraSuggestion, type ModalApi } from '../modal'
+import { ultraSuggestion } from '../modal/loadingBox'
+import type { ModalApi } from '../modal'
 
 type AddSettings = {
   /**

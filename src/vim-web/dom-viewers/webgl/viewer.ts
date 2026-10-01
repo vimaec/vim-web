@@ -17,28 +17,31 @@ import { applyWebglBindings } from './inputsBindings'
 import { CursorManager } from '../helpers/cursor'
 import { addPerformanceCounter } from '../panels/performance'
 
-import { bimPanel, createBimInfoApi, parametersView, PARAMETERS_VIEW, type BimPanelHandle } from '../bim'
+import { bimPanel, type BimPanelHandle } from '../bim/bimPanel'
+import { createBimInfoApi } from '../bim/bimInfoApi'
+import { parametersView, PARAMETERS_VIEW } from '../bim/parametersView'
 import { tooltipZone } from '../components'
-import { controlBar } from '../controlbar'
+import { controlBar } from '../controlbar/controlBar'
 import { webglControlBarSections } from '../controlbar/sections'
-import { modal } from '../modal'
-import { axesPanel, contextMenu, logo, overlay, restOfScreen, sidePanel, speedToast } from '../panels'
-import { settingsView, SETTINGS_VIEW } from '../settings'
-import { viewPanel } from '../viewpanel'
-import { modelName, topBar, webglTopBarContent } from '../topbar'
-import {
-  createFullScreenState,
-  createMeasureState,
-  createPointerState,
-  createSideState,
-  createUiRefs,
-  createWebglFraming,
-  createWebglIsolation,
-  createWebglSectionBox,
-  createWebglState,
-  liveUiSettings,
-  webglUiApi
-} from '../state'
+import { modal } from '../modal/modal'
+import { axesPanel } from '../panels/axesPanel'
+import { contextMenu } from '../panels/contextMenu'
+import { logo } from '../panels/logo'
+import { overlay } from '../panels/overlay'
+import { restOfScreen } from '../panels/restOfScreen'
+import { sidePanel } from '../panels/sidePanel'
+import { speedToast } from '../panels/speedToast'
+import { settingsView, SETTINGS_VIEW } from '../settings/settingsView'
+import { viewPanel } from '../viewpanel/viewPanel'
+import { modelName, topBar } from '../topbar/topBar'
+import { webglTopBarContent } from '../topbar/menus'
+import { createFullScreenState, createMeasureState, createPointerState } from '../state/tools'
+import { createSideState } from '../state/sideState'
+import { createUiRefs, liveUiSettings, webglUiApi } from '../state/uiState'
+import { createWebglFraming } from '../state/framing'
+import { createWebglIsolation } from '../state/isolation'
+import { createWebglSectionBox } from '../state/sectionBox'
+import { createWebglState } from '../state/webglState'
 import { WebglLoader } from './loader'
 import type { WebglViewerApi } from './viewerApi'
 

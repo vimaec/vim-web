@@ -1,5 +1,5 @@
 import { columnGrip } from '../ds'
-import type { SideState } from '../state'
+import type { SideState } from '../state/sideState'
 
 const MAX_RATIO = 0.75
 

@@ -93,11 +93,10 @@ app chrome only, tokens only, `--vw-` prefix for its own.
 
 ## Generic panels
 
-`dom-viewers/generic/` renders data-driven settings popovers. `genericPanel()` is a DS panel (title,
-close, body — `createPanel` with `fill`) inside a `position: fixed` `.vim-ds-floating` box kept above
-its anchor by `helpers/floating.ts` (`floatAbove`, the imperative twin of `useFloatingPanelPosition`;
-the pure `computeFloatingPosition` is shared with the React hook). The React "overlay" was only a
-`pointer-events: none` positioning layer and is gone. `genericContent()` lays entries out under
+`dom-viewers/generic/` renders data-driven settings entries. It had a `genericPanel()` too — a DS
+panel in a fixed `.vim-ds-floating` box kept above its anchor by `helpers/floating.ts` — but the
+settings popover became a tab of the right-hand view panel, which left both files with no caller;
+they were deleted when the public surface was reviewed. `genericContent()` lays entries out under
 `ds-collapse` groups/sections; each control is one of the atoms, and every entry's `state` is
 subscribed so `enabled` / `visible` re-sync in place where React re-rendered. Entry rows are app
 chrome (`.vim-ds-entry`, label 50% / control) because `ds-setting`'s fixed 170px label column
@@ -252,7 +251,7 @@ React hook bridge and subscribing DS handles directly.
 
 | # | Done | Widget | Source | DS target | Cx | Notes |
 |---|:---:|---|---|---|----|---|
-| 9 | ✅ | GenericPanel | `generic/genericPanel.tsx` | `ds-panel` (`fill`) in a fixed `.vim-ds-floating` box | 🟨 | `generic/genericPanel.ts`; `floatAbove()` replaces the overlay + hook; `customize()` keeps the `GenericPanelApi` contract |
+| 9 | ✅ | GenericPanel | `generic/genericPanel.tsx` | `ds-panel` (`fill`) in a fixed `.vim-ds-floating` box | 🟨 | Ported as `generic/genericPanel.ts`, then deleted: settings moved into the view panel and nothing called it |
 | 10 | ✅ | GenericField | `generic/genericField.tsx` | `ds-collapse` groups/sections + app entry rows | 🟨 | `generic/genericContent.ts`; `ds-setting`'s 170px grid does not fit a 300px popover, so rows are chrome CSS (label 50% / control). `enabled`/`visible` re-sync on any entry state change |
 | 11 | ✅ | InputNumber | `generic/inputNumber.tsx` | `ds-number` | ⬜ | `components/numberInput.ts`; commit + live scrub both write through |
 | 12 | ✅ | IsolationPanel | `panels/isolationPanel.tsx` | composed GenericPanel | 🟨 | `panels/isolationPanel.ts`; same entry ids (`isolationPanelIds`) |
@@ -310,7 +309,7 @@ React hook bridge and subscribing DS handles directly.
 | 34 | ✅ | Container | `container.tsx` | keep; `.ds-root` on the UI mount | ⬜ | The Dom roots reuse `createContainer` and add `ds-root vim-ds-ui` to `ui`; the public type is unchanged |
 | 35 | ✅ | WebGL viewer root | `webgl/viewer.tsx` | `dom-viewers/webgl/viewer.ts` | 🟥 | `Dom.Webgl.createViewer` — the same `ViewerApi` surface on Dom hooks. State twins in `dom-viewers/state/` (framing, sectionBox, isolation + renderSettings, uiState, tools, settingState); `controlbar/sections.ts` on Dom icons; `webgl/loader.ts` on the Dom modal |
 | 36 | ✅ | Ultra viewer root | `ultra/viewer.tsx` | `dom-viewers/ultra/viewer.ts` | 🟥 | `Dom.Ultra.createViewer`; `ultra/modal.ts` twins `updateModal` / `updateProgress` on the Dom modal |
-| 37 | ✅ | Ultra isolation/modal UI | `ultra/isolationPanel.tsx`, `ultra/modal.tsx` | `genericPanel` + shared Dom modal | 🟨 | The ghost-only panel is two entries on `genericPanel` inside the Ultra root |
+| 37 | ✅ | Ultra isolation/modal UI | `ultra/isolationPanel.tsx`, `ultra/modal.tsx` | settings view + shared Dom modal | 🟨 | The ghost-only entries are `ultra/settingsContent.ts`, rendered in the Settings tab; `ultra/modal.ts` drives the shared dialog |
 
 ## Critical path
 

@@ -55,6 +55,32 @@ import is still required; it now contains the design-system tokens and the viewe
 Internal class names changed: widgets use the design system's `ds-*` classes and the viewer chrome
 uses `vim-ds-*`. The `vim-component` / `vim-gfx` / `vim-ui` container classes are unchanged.
 
+### The chrome's own widgets are no longer exported
+
+The viewer builds its own chrome, and each of those widgets takes options written for that one call
+site. Exporting them would freeze those shapes, so `VIM.Dom` now exports the *contracts* a host
+customizes through and keeps the factories to itself. What a host reaches for instead:
+
+| Was | Now |
+|---|---|
+| `Dom.ControlBar.controlBar` | `viewer.controlBar.customize(...)` — the `ControlBar*` types and `controlBarIds` are still exported |
+| `Dom.TopBar.topBar`, `modelName`, `webglTopBarContent`, `ultraTopBarContent` | `viewer.topBar.customize(...)`, `TopBar*` types, `topBarIds` |
+| `Dom.ViewPanel.viewPanel` | `viewer.views.register/open/close`, `ViewSpec`, `ViewFactory`, `ViewPanelApi` |
+| `Dom.Modal.modal`, `formatProgress`, `ultraSuggestion` | `viewer.modal.loading/message/help`, and the `ModalApi` / `*BoxProps` types |
+| `Dom.Panels.sidePanel`, `overlay`, `logo`, `axesPanel`, `speedToast`, `restOfScreen`, `contextMenu` | the viewer mounts these; `viewer.ui.logo` / `.axes` / `.topBar` / `.controlBar` / `.bimTree` toggle the optional ones, and the menu is `viewer.contextMenu.customize(...)` with `contextMenuIds` |
+| `Dom.Bim.bimPanel`, `bimSearch`, `bimGrouping`, `bimRows`, `bimPresets`, `bimExport` | `viewer.ui.bimTree` for the panel; `Dom.Bim.bimTree` with `toTreeData` / `getElements` to build your own |
+| `Dom.Bim.bimInfoPanel`, `createBimInfoApi`, `headerToEntries`, `bodyToEntries` | `viewer.bimInfo` — `Data`, `Entry`, `Group`, `Section`, `DataRender`, `DataCustomization` are still exported |
+| `Dom.Settings.settingsPanel`, `settingsView`, `createSettings` | `viewer.views.open(Dom.Settings.SETTINGS_VIEW)` |
+| `Dom.State.createWebglState`, `createWebglFraming`, `createUltraIsolation`, `createUiRefs`, … | `viewer.framing`, `viewer.isolation`, `viewer.sectionBox`, `viewer.ui`; `Dom.State.createSettingState` stays |
+| `Dom.Webgl.WebglLoader` | `viewer.load()` / `viewer.open()` |
+| `Dom.Ultra.updateModal`, `updateProgress` | nothing — the Ultra root wires its own dialog |
+| `Dom.Generic.genericPanel`, `Dom.Errors.style` | removed; `genericContent` and the error-message builders remain |
+
+Two additions came with the cut: `Dom.getElements(vim)`, which builds the `AugmentedElement[]` that
+`Dom.Bim.toTreeData` takes, and `Dom.Bim`'s tree data model (`BimTreeData`, `BimNode`,
+`GroupingColumn`, `SortSetting`, `DEFAULT_GROUPING`) — the types `bimTree`'s options name, which
+were not exported before.
+
 ---
 
 # vim-web 0.5 → 1.0.0-beta.1

@@ -615,6 +615,11 @@ for (let row = 0; row < gridSize; row++) {
 
 - **Core files** (`core-viewers/`): Import directly from source files, never through barrel files (index.ts)
 - **UI layer** (`dom-viewers/`): Import the core through its barrel (`import * as Core from '../../core-viewers'`), never reach into deep internal paths; import the design system through `dom-viewers/ds.ts`
+- Each `dom-viewers/*/index.ts` is the **public surface** of that folder, not the way its neighbours
+  reach it: a sibling imports the module it wants directly (`'../panels/sidePanel'`), so what the
+  barrel exports can be decided on what a host should see. A widget written for one call site inside
+  the viewer does not belong in a barrel — see [ROADMAP.md](ROADMAP.md) 3.2 and the table in
+  [MIGRATION.md](MIGRATION.md). `tests/dom-viewers/smoke.test.ts` pins the surface
 
 ## Commands
 
