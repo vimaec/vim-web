@@ -12,6 +12,16 @@ on:
           - patch
           - minor
           - major
+          - prerelease
+      dist_tag:
+        description: "npm dist-tag to publish under"
+        required: true
+        default: "latest"
+        type: choice
+        options:
+          - latest
+          - beta
+          - alpha
 
 jobs:
   build:
@@ -19,33 +29,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          # vim-html-ds is a git submodule and `prebuild` builds it; without this the build fails
+          # on an empty directory.
+          submodules: recursive
+          # The version commit and tag are pushed back, so the checkout needs write credentials.
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
 
       - name: Set up Git user
         run: |
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
 
-      - name: Authenticate to NPM
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.VIM_NPM_PUSH }}" > ~/.npmrc
-
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Release Patch
-        if: ${{ github.event.inputs.release_type == 'patch' }}
-        run: npm run release-patch
+      - name: Build
+        run: npm run build
+
+      - name: Version
+        run: npm version ${{ github.event.inputs.release_type }} -m "Release %s [ci-skip]"
+
+      - name: Publish
+        run: npm publish --tag ${{ github.event.inputs.dist_tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.VIM_NPM_PUSH }}
 
-      - name: Release Minor
-        if: ${{ github.event.inputs.release_type == 'minor' }}
-        run: npm run release-minor
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.VIM_NPM_PUSH }}
-
-      - name: Release Major
-        if: ${{ github.event.inputs.release_type == 'major' }}
-        run: npm run release-major
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.VIM_NPM_PUSH }}
+      - name: Push the version commit and tag
+        run: git push --follow-tags
