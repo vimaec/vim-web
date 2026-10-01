@@ -2,7 +2,7 @@
  * @module viw-webgl-react
  */
 import * as Core from '../../core-viewers'
-import { MapTree, sort, toMapTree } from '../helpers/data'
+import { MapTree, toMapTree } from '../helpers/data'
 import { AugmentedElement } from '../helpers/element'
 
 export type NodeVisibility = 'visible' | 'partial' | 'hidden'
@@ -127,8 +127,9 @@ export function toTreeData(
   // also what the drawer's last remaining level refuses to be removed for.
   const columns = grouping.length > 0 ? grouping : DEFAULT_GROUPING
   const tree = toMapTree(elements, columns.map(c => (e: AugmentedElement) => named(COLUMN_VALUES[c](e))))
-  sort(tree)
 
+  // No map sort here: the tree applies its own column sort to the built nodes as soon as it takes
+  // the data, so sorting the map first would be a pass of the same size thrown away.
   const result = new BimTreeData(vim, tree, columns)
   result.updateVisibility()
   return result
