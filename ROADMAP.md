@@ -32,37 +32,26 @@ What is left is not UI work.
 Nothing else matters until a release can actually be cut, and until the artefact it cuts is one a
 host app can live with.
 
-### 1.1 Decide how three.js ships  ·  **needs a decision**
+### 1.1 three.js ships as a peer dependency  ·  **done** (`69e6870c`)
 
-`vite.config.js` declares no `external`, `three` sits in `dependencies`, and `dist/vim-web.js`
-carries three's source. A host that already uses three gets two copies in one page: `instanceof`
-checks across the boundary fail, two renderers compete, memory doubles.
+`origin/sroberge/three-peerdep` is merged. three is externalised from the bundle and declared as the
+one peer dependency; the ESM output drops from 3.25MB to 1.39MB, and the IIFE build goes with it, so
+vim-web ships ESM only. The branch predated the React removal, so only its three half was kept.
 
-A fix exists and was never merged — `982cfd78` ("Ship three as a peer dependency and drop the IIFE
-build") on `origin/sroberge/three-peerdep`. It makes three a peer dependency, externalises it from
-the bundle, and drops the IIFE output that `package.json#main` still points at.
+### 1.2 The release workflow runs  ·  **done** (`10eab583`)
 
-This branch did not cause any of that; it inherits main's packaging. A major-version boundary is
-when packaging changes are free, so the decision is: land that branch, or state deliberately that
-vim-web bundles its own three and owns the consequence. **This is the only item here that cannot be
-done without you.**
+It called `npm run release-patch` / `release-minor` / `release-major`, none of which exist — every
+release run would have failed there — and it checked out without submodules while `prebuild` builds
+`vim-html-ds` from one, so it would have failed even earlier. It now checks out submodules, installs
+from the lockfile, builds, versions with a `[ci-skip]` message so it cannot trigger itself,
+publishes under a dist-tag the operator picks (`latest` is wrong while the package is in beta) and
+pushes the version commit and tag back. A `prerelease` type is there for beta bumps.
 
-### 1.2 Repair the release workflow
-
-`.github/workflows/release.yml` runs `npm run release-patch` / `release-minor` / `release-major`.
-None of those scripts exist in `package.json` — the only publish scripts are `publish:package` and
-its alpha/beta variants. The workflow also checks out with `actions/checkout@v2` and no
-`submodules: true`, while `prebuild` runs `cd vim-html-ds && npm install && npm run build`. A
-release run fails at the build step with an empty submodule directory.
-
-Both are mechanical: add the scripts the workflow calls (or point the workflow at the scripts that
-exist), and fetch submodules on checkout.
-
-### 1.3 Pin the design system to a tag
+### 1.3 Pin the design system to a tag  ·  **waiting on the DS**
 
 The submodule sits at `3bc0a66`, which `git describe` reports as `v0.4.0-116-g3bc0a66` — a merge
-commit 116 commits past the last tag, carrying package version 1.0.0. A stable release should pin a
-tagged design-system release so the build is reproducible by anyone who can reach the repository.
+commit 116 commits past the last tag, carrying package version 1.0.0. Pin a tagged design-system
+release when one is cut, so the build is reproducible by anyone who can reach the repository.
 
 ---
 
@@ -86,17 +75,20 @@ The minimum worth having before a stable tag:
   plain click selects, a second plain click releases, ctrl adds, shift ranges, right-click does not
   release.
 
-### 2.2 Exercise Ultra against a live server
+### 2.2 Exercise Ultra against a live server  ·  **ready, needs the server**
 
 Half the product. [DS_PORT.md](DS_PORT.md) records only a run against a missing server, and the
-viewer root changed underneath it during the port. Connect to a real one and walk the surface:
-load, selection, visibility, section box, the settings view.
+viewer root changed underneath it during the port. VIM Flex's Ultra server is the one to point at.
+Walk the surface: connect, load, selection, visibility, section box, the settings view.
 
 ---
 
 ## Stage 3 — what consumers inherit
 
-### 3.1 The 1.9MB stylesheet
+### 3.1 The 1.9MB stylesheet  ·  **waiting on the DS's new font solution**
+
+The design system is replacing Segoe; the font payload is best settled in the same pass rather than
+worked around here first. The measurements below are what that pass should aim at.
 
 `dist/style.css` is 1,927,745 bytes, of which **1,731,837 (90%) are eight inlined font files**. The
 CSS itself — the design system's rules plus all of ours — is 196KB.
@@ -118,22 +110,23 @@ The design system also carries 3.9MB of Segoe UI and MDL2 TTFs that **no stylesh
 and which — per the licence reading that drove the icon redraw — we have no right to redistribute.
 That one is worth raising upstream on its own merits, not as a page-weight question.
 
-### 3.2 Decide how wide the public surface is  ·  **needs a decision**
+### 3.2 Narrow the public surface  ·  **agreed: review it**
 
 `dom-viewers/index.ts` re-exports every sub-barrel, so `VIM.Dom.Bim.*` currently exposes
 `bimPanel`, `bimTree`, `bimGrouping`, `bimRows`, `bimPresets`, `bimExport`, `bimSearch` and
 `bimInfoPanel`. Several of those were written against exactly one call site and take options shaped
 for it (`bimRows` wants a `max: () => number`; `bimExport` wants `rows` and `selected` getters).
 
-A stable tag freezes those shapes. Either narrow the barrel to what is meant to be composed —
-the viewer roots, the panel, the tree, the info panel — or keep them all and accept that their
-options are now API. Narrowing later is a breaking change; narrowing now is free.
+A stable tag freezes those shapes. The agreed aim is a surface that stays extendable without being
+broad: keep what a host would reasonably compose or replace — the viewer roots, the panel, the tree,
+the info panel, the state primitives, the icon set — and stop exporting the widgets that exist to
+serve one call site inside the panel. Narrowing later is a breaking change; narrowing now is free.
 
-### 3.3 Declare a browser baseline
+### 3.3 Declare a browser baseline  ·  **done** (`82796f86`)
 
-Our stylesheet uses `subgrid` and `color-mix()`; the design system uses `:has()`. That is roughly
-Chrome 117+, Safari 16.4+ and Firefox 121+. There is no `browserslist` in `package.json` and no
-statement in the README. Say it plainly rather than letting a consumer discover it.
+WebGL 2 for the viewer, `color-mix()`, `:has()` and `subgrid` for the chrome: Chrome and Edge 117,
+Safari 17, Firefox 121. The README carries the table and the reasoning, `browserslist` carries it to
+tooling. An older browser still renders the model; it is the chrome's layout that gives way.
 
 ---
 
@@ -177,16 +170,17 @@ repository or a deliberate decision behind it.
 
 ## Order, and what it costs
 
-| | Work | Rough size | Blocked on |
+| | Work | Rough size | State |
 |---|---|---|---|
-| 1 | Release workflow and submodule checkout (1.2) | hours | — |
-| 2 | Pin the design system to a tag (1.3) | hours | a DS release |
-| 3 | three.js packaging (1.1) | hours once decided | **your call** |
-| 4 | `BimTreeData` tests and a viewer smoke test (2.1) | a few days | a runner choice |
-| 5 | Ultra against a live server (2.2) | a day | server access |
-| 6 | Font payload (3.1) | a day ours, more upstream | partly the DS |
-| 7 | Public surface (3.2) | a day | **your call** |
-| 8 | Browser baseline and paperwork (3.3, Stage 4) | a day | — |
+| 1 | three.js packaging (1.1) | — | **done** `69e6870c` |
+| 2 | Release workflow (1.2) | — | **done** `10eab583` |
+| 3 | Browser baseline (3.3) | — | **done** `82796f86` |
+| 4 | `BimTreeData` tests and a viewer smoke test (2.1) | a few days | next |
+| 5 | Narrow the public surface (3.2) | a day | after the tests, so the cuts are covered |
+| 6 | Ultra against Flex's server (2.2) | a day | needs the server |
+| 7 | The paperwork (Stage 4) | a day | last, so it describes what shipped |
+| 8 | Pin the design system to a tag (1.3) | hours | a DS release |
+| 9 | Font payload (3.1) | upstream | the DS's new font solution |
 
-Items 1, 2 and 8 can start now and need nothing from anyone. Items 3 and 7 are the two decisions
-only you can make; everything else follows them.
+Four and five are the work in front of us; six through nine are waiting on something outside this
+repository or are best done last.
