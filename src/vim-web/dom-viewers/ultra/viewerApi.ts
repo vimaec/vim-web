@@ -5,6 +5,7 @@ import type { ModalApi } from '../modal'
 import type { ControlBarApi } from '../webgl/viewerApi'
 import type { TopBarApi } from '../topbar'
 import type { ViewPanelApi } from '../viewpanel'
+import type { SettingsViewApi } from '../settings'
 
 /**
  * Root-level API of the Ultra viewer — the same surface as the React
@@ -24,6 +25,8 @@ export type UltraViewerApi = {
   topBar: TopBarApi
   /** The tabbed dock on the right; views are registered here and opened by id. */
   views: ViewPanelApi
+  /** What the Settings view shows — the hook the isolation popover used to carry. */
+  settingsView: SettingsViewApi
   framing: FramingApi
   isolation: IsolationApi
   /** Runtime UI visibility toggles, one StateRef per `ui` settings key. */

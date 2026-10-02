@@ -17,6 +17,7 @@ import { overlay } from '../panels/overlay'
 import { restOfScreen } from '../panels/restOfScreen'
 import { sidePanel } from '../panels/sidePanel'
 import { settingsView, SETTINGS_VIEW } from '../settings/settingsView'
+import type { SettingsCustomization, SettingsViewApi } from '../settings/settingsApi'
 import { viewPanel } from '../viewpanel/viewPanel'
 import { modelName, topBar } from '../topbar/topBar'
 import { ultraTopBarContent } from '../topbar/menus'
@@ -84,7 +85,17 @@ export async function createDomUltraViewer (
     gfx: cmp.gfx,
     resize: () => core.viewport.resizeToParent()
   })
-  views.register(SETTINGS_VIEW, () => settingsView({ entries: () => getUltraSettingsContent(isolation) }))
+  // Read when the view is built, so a customization registered later still applies.
+  let settingsCustomization: SettingsCustomization | undefined
+  const settingsViewApi: SettingsViewApi = {
+    customize: fn => { settingsCustomization = fn }
+  }
+  views.register(SETTINGS_VIEW, () => settingsView({
+    entries: () => {
+      const base = getUltraSettingsContent(isolation)
+      return settingsCustomization ? settingsCustomization(base) : base
+    }
+  }))
 
   // The application bar. It owns the top strip above the side panel and the viewport, so it also
   // offsets the canvas container and re-measures the viewport.
@@ -144,6 +155,7 @@ export async function createDomUltraViewer (
     controlBar: bar,
     topBar: topBarHandle,
     views,
+    settingsView: settingsViewApi,
     load: source => {
       topBarHandle.setTitle(modelName(source.url))
       return ultraLoad(source)

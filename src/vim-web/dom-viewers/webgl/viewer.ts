@@ -32,6 +32,7 @@ import { restOfScreen } from '../panels/restOfScreen'
 import { sidePanel } from '../panels/sidePanel'
 import { speedToast } from '../panels/speedToast'
 import { settingsView, SETTINGS_VIEW } from '../settings/settingsView'
+import type { SettingsCustomization, SettingsViewApi } from '../settings/settingsApi'
 import { viewPanel } from '../viewpanel/viewPanel'
 import { modelName, topBar } from '../topbar/topBar'
 import { webglTopBarContent } from '../topbar/menus'
@@ -165,8 +166,16 @@ export async function createDomWebglViewer (
     api: bimInfo,
     select: elements => core.selection.select(elements)
   }))
+  // Read when the view is built, so a customization registered later still applies.
+  let settingsCustomization: SettingsCustomization | undefined
+  const settingsViewApi: SettingsViewApi = {
+    customize: fn => { settingsCustomization = fn }
+  }
   views.register(SETTINGS_VIEW, () => settingsView({
-    entries: () => getWebglSettingsContent(core, isolation, renderSettings, sectionBox, refs, fullSettings.ui)
+    entries: () => {
+      const base = getWebglSettingsContent(core, isolation, renderSettings, sectionBox, refs, fullSettings.ui)
+      return settingsCustomization ? settingsCustomization(base) : base
+    }
   }))
   on(refs.panelBimInfo.onChange, show => { if (!show) views.close(PARAMETERS_VIEW) })
 
@@ -271,6 +280,7 @@ export async function createDomWebglViewer (
     controlBar: bar,
     topBar: topBarHandle,
     views,
+    settingsView: settingsViewApi,
     modal: modalHandle,
     bimInfo,
     ui,

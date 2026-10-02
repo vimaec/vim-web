@@ -1,4 +1,4 @@
-import { SettingsPanelKeys } from './settingsKeys'
+import { settingsIds } from './settingsIds'
 import { GenericCommonEntry } from '../generic'
 import { RenderSettingsApi } from '../api'
 import { IsolationApi } from '../api'
@@ -7,18 +7,18 @@ export function getIsolationSettings(isolation: IsolationApi, renderSettings: Re
   return [
     {
       type: 'section',
-      id: SettingsPanelKeys.ControlBarVisibilitySubtitle,
+      id: settingsIds.renderSettingsSection,
       label: 'Render Settings',
     },
     {
       type: 'bool',
-      id: 'showTransparent',
+      id: settingsIds.showTransparent,
       label: 'Show Transparent',
       state: renderSettings.showTransparent,
     },
     {
       type: 'number',
-      id: 'transparentOpacity',
+      id: settingsIds.transparentOpacity,
       label: 'Transparent Opacity',
       info: '[0,1]',
       step: 0.05,
@@ -27,13 +27,13 @@ export function getIsolationSettings(isolation: IsolationApi, renderSettings: Re
     },
     {
       type: 'bool',
-      id: 'showGhost',
+      id: settingsIds.showGhost,
       label: 'Show Ghost',
       state: isolation.showGhost,
     },
     {
       type: 'number',
-      id: 'ghostOpacity',
+      id: settingsIds.ghostOpacity,
       label: 'Ghost Opacity',
       info: '[0,1]',
       // A readable percent-scale step; the DS stepper formats to the step's decimals, and 1/255
@@ -44,13 +44,13 @@ export function getIsolationSettings(isolation: IsolationApi, renderSettings: Re
     },
     {
       type: 'bool',
-      id: 'outlineEnabled',
+      id: settingsIds.outlineEnabled,
       label: 'Selection Outline',
       state: renderSettings.outlineEnabled,
     },
     {
       type: 'select',
-      id: 'outlineQuality',
+      id: settingsIds.outlineQuality,
       label: 'Outline Quality',
       options: [
         { label: 'Low', value: 'low' },
@@ -61,7 +61,7 @@ export function getIsolationSettings(isolation: IsolationApi, renderSettings: Re
     },
     {
       type: 'number',
-      id: 'outlineThickness',
+      id: settingsIds.outlineThickness,
       label: 'Outline Thickness',
       info: '[1,5]',
       transform: (n) => Math.max(1, Math.min(5, Math.round(n))),
@@ -69,7 +69,7 @@ export function getIsolationSettings(isolation: IsolationApi, renderSettings: Re
     },
     {
       type: 'select',
-      id: 'selectionFillMode',
+      id: settingsIds.selectionFillMode,
       label: 'Selection Fill',
       options: [
         { label: 'None', value: 'none' },
@@ -81,7 +81,7 @@ export function getIsolationSettings(isolation: IsolationApi, renderSettings: Re
     },
     {
       type: 'number',
-      id: 'selectionOverlayOpacity',
+      id: settingsIds.selectionOverlayOpacity,
       label: 'Selection Opacity',
       info: '[0,1]',
       transform: (n) => Math.max(0, Math.min(1, n)),

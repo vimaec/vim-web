@@ -34,6 +34,7 @@
   "scripts": {
     "dev": "vite",
     "test": "vitest run",
+    "check:consumers": "tsc -p tsconfig.consumers.json",
     "test:watch": "vitest",
     "build:ds": "cd vim-html-ds && npm install --no-save --silent && npm run build",
     "predev": "npm run build:ds",

@@ -24,6 +24,10 @@ jobs:
       - name: Test
         run: npm test
 
+      # Every API vim-web-demo and vim-powerbi-visual touch, type-checked against this branch.
+      - name: Consumer surface
+        run: npm run check:consumers
+
       # The build is the type gate: there is no separate tsc step, and the declaration
       # bundles catch what the app build does not.
       - name: Build

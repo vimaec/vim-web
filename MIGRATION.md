@@ -45,6 +45,54 @@ viewer.modal.message({ title: 'Hello', body: 'Plain text or an Element', canClos
 
 `VIM.React.Icons.*` → `VIM.Dom.Icons.*` (same names; each returns an `SVGSVGElement`).
 
+### Where each React export went
+
+Everything the React namespace exported has a home, except the React components themselves
+(`Webgl.ViewerComponent`, `Ultra.ViewerComponent`) — mount a viewer into a div instead.
+
+| React | Dom |
+|---|---|
+| `React.Webgl.*`, `React.Ultra.*` | `Dom.Webgl.*`, `Dom.Ultra.*`, unchanged but for the components |
+| `React.ControlBar.Ids` | `Dom.ControlBar.controlBarIds` |
+| `React.ControlBar.IControlBarSection` / `IControlBarButton` | `Dom.ControlBar.ControlBarSection` / `ControlBarButton` |
+| `React.ControlBar.Style.buttonDefaultStyle`, … | the string itself, typed by `Dom.ControlBar.ButtonVariant` / `SectionVariant` (`'default'`, `'blue'`, …) |
+| `React.ControlBar.ControlBarApi` | `Dom.Webgl.ControlBarApi` |
+| `React.ContextMenu.Ids` | `Dom.Panels.contextMenuIds` |
+| `React.ContextMenu.IContextMenuButton` / `IContextMenuDivider` | `Dom.Panels.ContextMenuButton` / `ContextMenuDivider`, each now tagged with `type: 'button' | 'divider'` |
+| `React.Errors.Style` | `Dom.Errors.style` — lower case, and each helper returns a `Node` instead of JSX |
+| `React.Settings.SettingsItem` | `Dom.Generic.GenericCommonEntry` |
+| `React.ModalApi`, `ModalProps`, `MessageBoxProps`, `LoadingBoxProps`, `ProgressMode` | `Dom.Modal.*` |
+| `React.BimInfoPanelApi`, `Data`, `Section`, `Group`, `Entry`, `DataRender`, `DataCustomization` | `Dom.Bim.*` |
+| `React.GenericEntryType`, `GenericTextEntry`, `GenericNumberEntry`, `GenericBoolEntry` | `Dom.Generic.*` |
+| `React.IsolationPanel.Ids`, `React.SectionBoxPanel.Ids`, `React.GenericPanelApi` | `Dom.Settings.settingsIds` — see below |
+
+### The isolation and section-box popovers are one Settings view
+
+Both floating panels are sections of the Settings tab now, so the two customization hooks are one.
+`viewer.isolationPanel.customize` and `viewer.sectionBoxPanel.customize` become
+`viewer.settingsView.customize`, and the two id maps become `Dom.Settings.settingsIds`, which also
+names the entries that were only ever string literals.
+
+```ts
+// Before
+viewer.isolation.showPanel.set(true)
+viewer.isolationPanel.customize(entries => {
+  const item = entries.find(e => e.id === VIM.React.IsolationPanel.Ids.showGhost)
+  if (item && 'label' in item) item.label += ' (custom)'
+  return entries.filter(e => e.id !== VIM.React.IsolationPanel.Ids.ghostOpacity)
+})
+
+// After
+viewer.views.open(VIM.Dom.Settings.SETTINGS_VIEW)
+viewer.settingsView.customize(entries => {
+  const item = entries.find(e => e.id === VIM.Dom.Settings.settingsIds.showGhost)
+  if (item && 'label' in item) item.label += ' (custom)'
+  return entries.filter(e => e.id !== VIM.Dom.Settings.settingsIds.ghostOpacity)
+})
+```
+
+The customization runs each time the view is built, so it always sees the current entries.
+
 ### Dependencies
 
 Remove `react` and `react-dom` from your app if vim-web was the only consumer. The `vim-web/style.css`

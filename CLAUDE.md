@@ -14,7 +14,7 @@
 | **Select** | `viewer.core.selection.select(element)` | `viewer.core.selection.select(element)` |
 | **Frame camera** | `viewer.core.camera.lerp(1).frame(element)` | `viewer.core.camera.frame(element)` |
 | **Set visibility** | `element.visible = false` | `element.visible = false` |
-| **Set color** | `element.color = new THREE.Color(0xff0000)` | `element.color = new RGBA32(0xff0000ff)` |
+| **Set color** | `element.color = new THREE.Color(0xff0000)` | `element.color = new THREE.Color(0xff0000)` |
 | **Section box** | `viewer.sectionBox.active.set(true)` | `viewer.sectionBox.active.set(true)` |
 
 ### Key File Locations
@@ -178,8 +178,8 @@ element.color = new THREE.Color(0xff0000)  // Override color
 // Visual state (Ultra)
 element.visible = false              // Hide (same as WebGL)
 element.outline = true               // Highlight (same as WebGL)
-element.state = VisibilityState.GHOSTED  // Advanced: ghosted appearance
-element.color = new RGBA32(0xff0000ff)
+element.ghosted = true               // Ghosted appearance, independent of the two above
+element.color = new THREE.Color(0xff0000)
 
 // Geometry
 const box = await element.getBoundingBox()
@@ -330,16 +330,14 @@ const inputs = viewer.core.inputs
 inputs.pointerMode = VIM.Core.PointerMode.LOOK
 inputs.moveSpeed = 5  // Range: -10 to +10, exponential (1.25^speed)
 
-// Custom key handlers (mode: 'replace' | 'append' | 'prepend')
-inputs.keyboard.registerKeyDown('KeyR', 'replace', () => { /* ... */ })
-inputs.keyboard.registerKeyUp(['Equal', 'NumpadAdd'], 'replace', () => {
-  inputs.moveSpeed++
+// Every binding is an `override`, which returns a function restoring what was there.
+// Handlers receive the previous one, so a custom binding can still fall through to it.
+const restoreKey = inputs.keyboard.override('KeyR', 'down', original => { original?.() })
+const restoreMouse = inputs.mouse.override({
+  onClick: (original, pos, ctrl) => original(pos, ctrl),
+  onDrag: (original, delta, button) => original(delta, button)
 })
-
-// Custom callbacks (all positions are canvas-relative [0-1])
-inputs.mouse.onClick = (pos, ctrl) => { /* ... */ }
-inputs.mouse.onDrag = (delta, button) => { /* ... */ }
-inputs.touch.onPinchOrSpread = (ratio) => { /* ... */ }
+const restoreTouch = inputs.touch.override({ onPinchOrSpread: (original, ratio) => original(ratio) })
 ```
 
 ### Common Patterns
@@ -377,13 +375,15 @@ viewer.core.socket.onStatusUpdate.subscribe(state => ...)
 
 ### Visibility States
 
-```typescript
-import VisibilityState = VIM.Core.Ultra.VisibilityState
+An Ultra element carries the same independent flags a WebGL one does; the server's
+`VisibilityState` enum is internal to the RPC layer.
 
-element.state = VisibilityState.VISIBLE      // 0
-element.state = VisibilityState.HIDDEN       // 1
-element.state = VisibilityState.GHOSTED      // 2
-element.state = VisibilityState.HIGHLIGHTED  // 16
+```typescript
+element.visible = false   // Hidden, keeping its highlight
+element.ghosted = true    // Ghosted, keeping its highlight
+element.outline = true    // Highlighted
+element.color = new VIM.THREE.Color(0xff0000)   // undefined reverts to the model's own
+viewer.core.renderer.ghostColor = new VIM.THREE.Color(1, 0, 0)
 ```
 
 ### RPC Pattern

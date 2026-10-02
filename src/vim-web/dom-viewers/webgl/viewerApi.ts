@@ -7,6 +7,7 @@ import type { ModalApi } from '../modal'
 import type { ContextMenuApi } from '../panels'
 import type { TopBarApi } from '../topbar'
 import type { ViewPanelApi } from '../viewpanel'
+import type { SettingsViewApi } from '../settings'
 import type { OpenSettings } from './loader'
 
 export type { OpenSettings }
@@ -43,6 +44,8 @@ export type WebglViewerApi = {
   topBar: TopBarApi
   /** The tabbed dock on the right; views are registered here and opened by id. */
   views: ViewPanelApi
+  /** What the Settings view shows — the hook the isolation and section-box popovers used to carry. */
+  settingsView: SettingsViewApi
   modal: ModalApi
   framing: FramingApi
   bimInfo: BimInfoPanelApi

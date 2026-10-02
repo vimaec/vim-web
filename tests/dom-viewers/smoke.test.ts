@@ -83,6 +83,12 @@ describe('the public module graph', () => {
     expect(Object.keys(VIM.Dom.Bim).sort()).toEqual([
       'BimTreeData', 'DEFAULT_GROUPING', 'PARAMETERS_VIEW', 'bimTree', 'parametersView', 'toTreeData'
     ].sort())
+    expect(Object.keys(VIM.Dom.Settings).sort()).toEqual([
+      'SETTINGS_VIEW', 'isFalse', 'isTrue', 'settingsIds'
+    ].sort())
+    // vim-powerbi-visual writes its own error screens with these, so they are an extension point.
+    expect(Object.keys(VIM.Dom.Errors)).toContain('style')
+    expect(typeof VIM.Dom.Errors.style.numList).toBe('function')
   })
 
   it('builds icons as detached SVG, so a factory can be handed straight to a button', () => {
